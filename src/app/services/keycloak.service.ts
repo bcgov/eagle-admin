@@ -101,7 +101,7 @@ export class KeycloakService {
               console.log('KC Refresh Success?:', auth);
             })
             .error((err) => {
-              console.log('KC error:', err);
+              console.log('KC error1:', err);
             });
         };
 
@@ -122,7 +122,7 @@ export class KeycloakService {
             }
           })
           .error((err) => {
-            console.log('KC error:', err);
+            console.log('KC error2:', err);
             reject();
           });
       });

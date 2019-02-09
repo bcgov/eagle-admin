@@ -9,7 +9,7 @@ import * as _ from 'lodash';
 
 import { KeycloakService } from 'app/services/keycloak.service';
 
-import { Application } from 'app/models/application';
+import { Project } from 'app/models/project';
 import { Client } from 'app/models/client';
 import { Comment } from 'app/models/comment';
 import { CommentPeriod } from 'app/models/commentperiod';
@@ -101,9 +101,9 @@ export class ApiService {
   }
 
   //
-  // Applications
+  // Projects
   //
-  getApplications(): Observable<Application[]> {
+  getProjects(): Observable<Project[]> {
     const fields = [
       'eacDecision',
       'name',
@@ -116,16 +116,16 @@ export class ApiService {
     ];
     // NB: max 1000 records
     const queryString = `project?pageNum=0&pageSize=1000&fields=${this.buildValues(fields)}`;
-    return this.http.get<Application[]>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<Project[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // NB: returns array with 1 element
-  getApplication(id: string): Observable<Application[]> {
+  getProject(id: string): Observable<Project[]> {
     const fields = [
-      'cEAAInvolvement',
-      'cELead',
-      'cELeadEmail',
-      'cELeadPhone',
+      'CEAAInvolvement',
+      'CELead',
+      'CELeadEmail',
+      'CELeadPhone',
       'centroid',
       'description',
       'eacDecision',
@@ -171,10 +171,10 @@ export class ApiService {
       'delete'
     ];
     const queryString = `project/${id}?fields=${this.buildValues(fields)}`;
-    return this.http.get<Application[]>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<Project[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  getCountApplications(): Observable<number> {
+  getCountProjects(): Observable<number> {
     const queryString = `project`;
     return this.http.head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
       .pipe(
@@ -185,83 +185,29 @@ export class ApiService {
       );
   }
 
-  // NB: returns array
-  getApplicationsByCrownLandID(clid: string): Observable<Application[]> {
-    const fields = [
-      'agency',
-      'areaHectares',
-      'businessUnit',
-      'centroid',
-      'cl_file',
-      'client',
-      'description',
-      'internal',
-      'legalDescription',
-      'location',
-      'name',
-      'publishDate',
-      'purpose',
-      'status',
-      'subpurpose',
-      'subtype',
-      'tantalisID',
-      'tenureStage',
-      'type'
-    ];
-    const queryString = `application?isDeleted=false&cl_file=${clid}&fields=${this.buildValues(fields)}`;
-    return this.http.get<Application[]>(`${this.pathAPI}/${queryString}`, {});
+  addProject(proj: Project): Observable<Project> {
+    const queryString = `project/`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
-  // NB: returns array with 1 element
-  getApplicationByTantalisId(tantalisId: number): Observable<Application[]> {
-    const fields = [
-      'agency',
-      'areaHectares',
-      'businessUnit',
-      'centroid',
-      'cl_file',
-      'client',
-      'description',
-      'internal',
-      'legalDescription',
-      'location',
-      'name',
-      'publishDate',
-      'purpose',
-      'status',
-      'subpurpose',
-      'subtype',
-      'tantalisID',
-      'tenureStage',
-      'type'
-    ];
-    const queryString = `application?isDeleted=false&tantalisId=${tantalisId}&fields=${this.buildValues(fields)}`;
-    return this.http.get<Application[]>(`${this.pathAPI}/${queryString}`, {});
+  publishProject(proj: Project): Observable<Project> {
+    const queryString = `project/${proj._id}/publish`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
-  addApplication(app: Application): Observable<Application> {
-    const queryString = `application/`;
-    return this.http.post<Application>(`${this.pathAPI}/${queryString}`, app, {});
+  unPublishProject(proj: Project): Observable<Project> {
+    const queryString = `project/${proj._id}/unpublish`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
-  publishApplication(app: Application): Observable<Application> {
-    const queryString = `application/${app._id}/publish`;
-    return this.http.put<Application>(`${this.pathAPI}/${queryString}`, app, {});
+  deleteProject(proj: Project): Observable<Project> {
+    const queryString = `project/${proj._id}`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  unPublishApplication(app: Application): Observable<Application> {
-    const queryString = `application/${app._id}/unpublish`;
-    return this.http.put<Application>(`${this.pathAPI}/${queryString}`, app, {});
-  }
-
-  deleteApplication(app: Application): Observable<Application> {
-    const queryString = `application/${app._id}`;
-    return this.http.delete<Application>(`${this.pathAPI}/${queryString}`, {});
-  }
-
-  saveApplication(app: Application): Observable<Application> {
-    const queryString = `application/${app._id}`;
-    return this.http.put<Application>(`${this.pathAPI}/${queryString}`, app, {});
+  saveProject(proj: Project): Observable<Project> {
+    const queryString = `project/${proj._id}`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
   //
@@ -275,13 +221,13 @@ export class ApiService {
       'geometryName',
       'properties',
       'isDeleted',
-      'applicationID'
+      'projectID'
     ];
     const queryString = `feature?isDeleted=false&tantalisId=${tantalisId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Feature[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  getFeaturesByApplicationId(applicationId: string): Observable<Feature[]> {
+  getFeaturesByProjectId(projectId: string): Observable<Feature[]> {
     const fields = [
       'type',
       'tags',
@@ -289,29 +235,29 @@ export class ApiService {
       'geometryName',
       'properties',
       'isDeleted',
-      'applicationID'
+      'projectID'
     ];
-    const queryString = `feature?isDeleted=false&applicationId=${applicationId}&fields=${this.buildValues(fields)}`;
+    const queryString = `feature?isDeleted=false&projectId=${projectId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Feature[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  deleteFeaturesByApplicationId(applicationID: string): Observable<Object> {
-    const queryString = `feature/?applicationID=${applicationID}`;
+  deleteFeaturesByProjectId(projectID: string): Observable<Object> {
+    const queryString = `feature/?projectID=${projectID}`;
     return this.http.delete(`${this.pathAPI}/${queryString}`, {});
   }
 
   //
   // Decisions
   //
-  getDecisionsByAppId(appId: string): Observable<Decision[]> {
+  getDecisionsByAppId(projId: string): Observable<Decision[]> {
     const fields = [
       '_addedBy',
-      '_application',
+      '_project',
       'code',
       'name',
       'description'
     ];
-    const queryString = `decision?_application=${appId}&fields=${this.buildValues(fields)}`;
+    const queryString = `decision?_project=${projId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Decision[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -319,7 +265,7 @@ export class ApiService {
   getDecision(id: string): Observable<Decision[]> {
     const fields = [
       '_addedBy',
-      '_application',
+      '_project',
       'code',
       'name',
       'description'
@@ -356,14 +302,16 @@ export class ApiService {
   //
   // Comment Periods
   //
-  getPeriodsByAppId(appId: string): Observable<CommentPeriod[]> {
+  getPeriodsByProjId(projId: string): Observable<CommentPeriod[]> {
     const fields = [
-      '_addedBy',
-      '_application',
-      'startDate',
-      'endDate'
+      'project',
+      'dateStarted',
+      'dateCompleted'
     ];
-    const queryString = `commentperiod?isDeleted=false&_application=${appId}&fields=${this.buildValues(fields)}`;
+    const sort = '&sortBy=-dateStarted';
+
+    let queryString = `commentperiod?&project=${projId}&fields=${this.buildValues(fields)}`;
+    if (sort !== null) { queryString += `sortBy=${sort}&`; }
     return this.http.get<CommentPeriod[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -371,7 +319,7 @@ export class ApiService {
   getPeriod(id: string): Observable<CommentPeriod[]> {
     const fields = [
       '_addedBy',
-      '_application',
+      '_project',
       'startDate',
       'endDate'
     ];
@@ -479,15 +427,15 @@ export class ApiService {
   //
   // Documents
   //
-  getDocumentsByAppId(appId: string): Observable<Document[]> {
+  getDocumentsByAppId(projId: string): Observable<Document[]> {
     const fields = [
-      '_application',
+      '_project',
       'documentFileName',
       'displayName',
       'internalURL',
       'internalMime'
     ];
-    const queryString = `document?isDeleted=false&_application=${appId}&fields=${this.buildValues(fields)}`;
+    const queryString = `document?isDeleted=false&_project=${projId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
   }
 

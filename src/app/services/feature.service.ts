@@ -26,8 +26,8 @@ export class FeatureService {
       .catch(error => this.api.handleError(error));
   }
 
-  getByApplicationId(applicationId: string): Observable<Feature[]> {
-    return this.api.getFeaturesByApplicationId(applicationId)
+  getByProjectId(projectId: string): Observable<Feature[]> {
+    return this.api.getFeaturesByProjectId(projectId)
       .map(res => {
         if (res && res.length > 0) {
           const features: Array<Feature> = [];
@@ -41,10 +41,10 @@ export class FeatureService {
       .catch(error => this.api.handleError(error));
   }
 
-  deleteByApplicationId(applicationId: string): Observable<Object> {
-    return this.api.deleteFeaturesByApplicationId(applicationId)
-      .catch(error => this.api.handleError(error));
-  }
+  // deleteByApplicationId(applicationId: string): Observable<Object> {
+  //   return this.api.deleteFeaturesByApplicationId(applicationId)
+  //     .catch(error => this.api.handleError(error));
+  // }
 
   // MBL TODO: PUT/POST functionality.
 

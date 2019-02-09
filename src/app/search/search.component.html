@@ -1,8 +1,7 @@
 <div class="search-container">
   <div class="container">
-    <h1>Find Crown Land Applications</h1>
+    <h1>Find Environmental Assessment Projects</h1>
     <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
-      <label for="keywordInput">Enter Crown Land File or Disposition Transaction number</label>
       <div class="input-group main-search-field">
         <input class="form-control" type="text" name="keywordInput" id="keywordInput"
             [(ngModel)]="terms.keywords" [disabled]="searching" autofocus/>
@@ -37,7 +36,7 @@
           <th class="actions"></th>
         </tr>
       </thead>
-      <ng-template ngFor let-application [ngForOf]="applications">
+      <ng-template ngFor let-application [ngForOf]="projects">
         <tr class="app-details">
           <td class="cl-file">
             <span class="cl-arrow">{{application['clFile']}}</span>
@@ -90,11 +89,11 @@
               <span>
                 {{application.cpStatus || 'Unknown'}}
               </span>
-              <span *ngIf="application.currentPeriod">
+              <span *ngIf="application.currentPeriods">
                 &nbsp;-&nbsp;
-                {{application.currentPeriod.startDate | date:'longDate'}} to {{application.currentPeriod.endDate | date:'longDate'}}
-                <span *ngIf="application.currentPeriod['daysRemaining']">
-                  &nbsp;({{application.currentPeriod['daysRemaining'] + (application.currentPeriod['daysRemaining'] === 1 ? ' day ' : ' days ') + 'remaining'}})
+                {{application.currentPeriods.startDate | date:'longDate'}} to {{application.currentPeriods.endDate | date:'longDate'}}
+                <span *ngIf="application.currentPeriods['daysRemaining']">
+                  &nbsp;({{application.currentPeriods['daysRemaining'] + (application.currentPeriods['daysRemaining'] === 1 ? ' day ' : ' days ') + 'remaining'}})
                 </span>
               </span>
             </span>

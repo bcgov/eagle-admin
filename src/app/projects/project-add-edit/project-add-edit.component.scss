@@ -1,0 +1,165 @@
+@import "assets/styles/base/base.scss";
+
+:host {
+  @include flex-box();
+  @include flex-direction(column);
+  @include flex(1 1 auto);
+  overflow: hidden;
+}
+
+form {
+  margin: 0 auto;
+  padding-top: 3rem;
+  padding-right: 6rem;
+  padding-bottom: 4.25rem;
+  padding-left: 6rem;
+  background: #fff;
+  box-shadow: 0.02rem 0 0.2rem rgba(#000, 0.15);
+}
+  
+.form-group {
+  margin-bottom: 2rem;
+}
+
+// Public Review Dates
+.review-dates {
+  @include clearfix();
+
+  .form-group {
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .spacer {
+    margin-top: 2.5rem;
+    display: inline-block;
+    width: 2rem;
+    text-align: center;
+    font-weight: 700;
+  }
+}
+
+// Title Button Variants
+.publish-btn {
+  width: 9rem;
+}
+
+// Applicant Input 
+.applicant-input {
+  input {
+    text-transform: capitalize;
+
+    &[readonly] {
+      background: #fff;
+    }
+  }
+
+  .btn {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+}
+
+.project-edit {
+  main {
+    section {
+      padding: 1.5rem;
+      
+      section {
+        padding: 0;
+      }
+    }
+  }
+
+  hr {
+    margin: 1.5rem 0;
+  }
+
+  label.h4 {
+    font-weight: 400;
+    line-height: 1.9rem;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+
+  &__list {
+    @include clearfix();
+    
+    li {
+      width: 50%;
+      float: left;
+      padding-top: 1rem;
+      &.full-width {
+        width: 100%;
+      }
+
+      .name,
+      .value {
+        display: block;
+      }
+
+      .name {
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+.form-control {
+  &.app-desc
+  &.app-decision-desc {
+    height: 10rem;
+  }
+
+  &.app-notes {
+    height: 10rem;
+  }
+}
+
+.project-buttons {
+  margin: 2rem 0;
+}
+
+// Disposition Input
+.disp-input {
+  position: relative;
+  
+  button {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    height: calc(2.75rem - 2px);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.geo-shape-data {
+  margin-top: 2rem;
+  
+  .btn {
+    border: none;
+    background: $lightgray;
+  }
+  
+  &__list {
+    section {
+      margin-top: 1.5rem;
+      border-top: 2px solid #ddd;
+    }
+  }
+}
+
+.section-form-btns {
+  text-align: right;
+}
+
+.applicant-display {
+  margin-bottom: 0.8rem;
+  padding: 0.75rem 1rem;
+  background: #f7f8fa;
+}

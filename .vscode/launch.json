@@ -10,20 +10,20 @@
     //   "url": "http://localhost:4200/admin/#",
     //   "webRoot": "${workspaceRoot}"
     // },
-    {
-      "name": "Attach Chrome",
-      "type": "chrome",
-      "request": "attach",
-      "url": "http://localhost:4200/admin",
-      "webRoot": "${workspaceRoot}",
-      "port": 9222
-    // },
     // {
-    //   "name": "Launch Chrome (Test)",
+    //   "name": "Attach Chrome",
     //   "type": "chrome",
-    //   "request": "launch",
-    //   "url": "http://localhost:9876/debug.html",
-    //   "webRoot": "${workspaceRoot}"
+    //   "request": "attach",
+    //   "url": "http://localhost:4200/admin",
+    //   "webRoot": "${workspaceRoot}",
+    //   "port": 9222
+    // },
+    {
+      "name": "Launch Chrome (Test)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:4200/admin",
+      "webRoot": "${workspaceRoot}"
     // },
     // {
     //   "name": "Launch Chrome (E2E)",

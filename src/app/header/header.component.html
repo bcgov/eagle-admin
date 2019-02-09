@@ -1,6 +1,6 @@
 <header class="app-header app-header--solid" id="header">
   <nav class="navbar navbar-expand-md justify-content-between">
-    <a class="navbar-brand" title="EPIC EAGLE" routerLink="/home">
+    <a class="navbar-brand" title="EAGLE" routerLink="/home">
       <span class="navbar-brand__title"><span class="navbar-brand__version"></span></span>
     </a>
     <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
@@ -14,12 +14,12 @@
     <div class="navbar-collapse" [@toggleNav]="isNavMenuOpen ? 'navOpen' : 'navClosed'" id="mainNav">
       <ul class="navbar-nav">
         <li *ngIf="jwt" class="nav-item">
-          <a class="nav-link" routerLink="/applications" title="List all EAs" tabindex="0">
+          <a class="nav-link" routerLink="/projects" title="List all EAs" tabindex="0">
             <span>List Projects</span>
           </a>
         </li>
         <li *ngIf="jwt" class="nav-item">
-          <a class="nav-link" routerLink="/search" title="Search Tantalis for applications" tabindex="0">
+          <a class="nav-link" routerLink="/search" title="Search Tantalis for projects" tabindex="0">
             <span>Find Projects</span>
           </a>
         </li>

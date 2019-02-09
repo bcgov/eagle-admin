@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 
 import { SearchService } from 'app/services/search.service';
 import { SearchTerms } from 'app/models/search';
-import { Application } from 'app/models/application';
+import { Project } from 'app/models/project';
 
 @Component({
   selector: 'app-search',
@@ -20,7 +20,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   public searching = false;
   public ranSearch = false;
   public keywords: Array<string> = [];
-  public applications: Array<Application> = [];
+  public projects: Array<Project> = [];
   public count = 0; // for template
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe = new Subject<boolean>();
@@ -60,35 +60,35 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.searching = true;
     this.count = 0;
     this.keywords = this.terms.keywords && _.uniq(_.compact(this.terms.keywords.split(' '))) || []; // safety checks
-    this.applications.length = 0; // empty the list
+    this.projects.length = 0; // empty the list
 
-    this.searchService.getAppsByClidDtid(this.keywords)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        applications => {
-          applications.forEach(application => {
-            // add if not already in list
-            if (!_.find(this.applications, app => { return app.tantalisID === application.tantalisID; })) {
-              this.applications.push(application);
-            }
-          });
-          this.count = this.applications.length;
-        },
-        error => {
-          console.log('error =', error);
+    // this.searchService.getAppsByClidDtid(this.keywords)
+    //   .takeUntil(this.ngUnsubscribe)
+    //   .subscribe(
+    //     projects => {
+    //       projects.forEach(project => {
+    //         // add if not already in list
+    //         if (!_.find(this.projects, app => { return app.tantalisID === project.tantalisID; })) {
+    //           this.projects.push(project);
+    //         }
+    //       });
+    //       this.count = this.projects.length;
+    //     },
+    //     error => {
+    //       console.log('error =', error);
 
-          // update variables on error
-          this.searching = false;
-          this.ranSearch = true;
+    //       // update variables on error
+    //       this.searching = false;
+    //       this.ranSearch = true;
 
-          this.snackBarRef = this.snackBar.open('Error searching applications ...', 'RETRY');
-          this.snackBarRef.onAction().subscribe(() => this.onSubmit());
-        },
-        () => { // onCompleted
-          // update variables on completion
-          this.searching = false;
-          this.ranSearch = true;
-        });
+    //       this.snackBarRef = this.snackBar.open('Error searching projects ...', 'RETRY');
+    //       this.snackBarRef.onAction().subscribe(() => this.onSubmit());
+    //     },
+    //     () => { // onCompleted
+    //       // update variables on completion
+    //       this.searching = false;
+    //       this.ranSearch = true;
+    //     });
   }
 
   // reload page with current search terms
@@ -106,29 +106,29 @@ export class SearchComponent implements OnInit, OnDestroy {
     this.router.navigate(['search', params]);
   }
 
-  public onImport(application: Application) {
-    if (application) {
-      // save application data from search results
+  public onImport(project: Project) {
+    if (project) {
+      // save project data from search results
       const params = {
         // initial data
-        purpose: application.purpose,
-        subpurpose: application.subpurpose,
-        type: application.type,
-        subtype: application.subtype,
-        status: application.status,
-        tenureStage: application.tenureStage,
-        location: application.location,
-        businessUnit: application.businessUnit,
-        cl_file: application.cl_file,
-        tantalisID: application.tantalisID,
-        legalDescription: application.legalDescription,
-        client: application.client
+        // purpose: project.purpose,
+        // subpurpose: project.subpurpose,
+        // type: project.type,
+        // subtype: project.subtype,
+        // status: project.status,
+        // tenureStage: project.tenureStage,
+        // location: project.location,
+        // businessUnit: project.businessUnit,
+        // cl_file: project.cl_file,
+        // tantalisID: project.tantalisID,
+        // legalDescription: project.legalDescription,
+        // client: project.client
       };
       // go to add-edit page
       this.router.navigate(['/a', 0, 'edit'], { queryParams: params });
     } else {
-      console.log('error, invalid application =', application);
-      this.snackBarRef = this.snackBar.open('Error creating application ...', null, { duration: 3000 });
+      console.log('error, invalid project =', project);
+      this.snackBarRef = this.snackBar.open('Error creating project ...', null, { duration: 3000 });
     }
   }
 

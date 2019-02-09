@@ -1,0 +1,272 @@
+<div class="top-container" *ngIf="project">
+  <div class="container">
+    <div class="title-container">
+      <div class="title-container__title">
+        <h1>Project: {{project.name}}</h1>
+        <!-- <span class="title-container__sub text-muted">Disposition Transaction: {{project.tantalisID}}</span> -->
+      </div>
+      <div class="title-container__actions">
+        <button class="btn btn-light" type="button" [routerLink]="['/p', project._id, 'edit']">
+          Edit
+        </button>
+        <!-- <button class="btn btn-primary" type="button"
+          *ngIf="project.isPublished === false"
+          (click)="publishProject()"
+          [disabled]="isPublishing">
+          <i class="spinner rotating" [hidden]="!isPublishing"></i>
+          <span>{{isPublishing ? 'Publishing' : 'Publish'}}</span>
+        </button>
+        <button class="btn btn-primary" type="button"
+          *ngIf="project.isPublished === true"
+          (click)="unPublishProject()"
+          [disabled]="isUnpublishing">
+          <i class="spinner rotating" [hidden]="!isUnpublishing"></i>
+          <span>{{isUnpublishing ? 'Unpublishing' : 'Unpublish'}}</span>
+        </button> -->
+        <span class="vert-pipe">&nbsp;</span>
+        <button class="btn btn-icon" title="Remove this project from EAGLE"
+          (click)="deleteProject()"
+          [disabled]="isDeleting">
+          <i class="material-icons">
+            delete
+          </i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-container" *ngIf="project">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+        
+        <section class="main-card">
+          <!-- Tabs -->
+          <ngb-tabset>
+            <ngb-tab>
+              <ng-template ngbTabTitle>
+                <i class="material-icons">
+                  info
+                </i>
+                Project Information
+              </ng-template>
+              <ng-template ngbTabContent>
+                <section>
+                  <h2>Description</h2>
+                  <p>{{project.description || 'No project description available'}}</p>
+                </section>
+                <section>
+                  <h2>Details</h2>
+                  <ul class="nv-list">
+                    <li>
+                      <span class="name">Proponent:</span>
+                      <span class="value">{{project.proponent || '-'}}</span>
+                    </li>
+                    <li>
+                      <span class="name">Region:</span>
+                      <!-- TODO: we need to figure out how to interpret region codes. -->
+                      <span class="value">{{project.region || '-' | titlecase}}</span>
+                    </li>
+                    <li>
+                      <span class="name">Location:</span>
+                      <span class="value">{{project.location || '-'}}</span>
+                    </li>
+                    <li>
+                      <span class="name">Type:</span>
+                      <span class="value">{{project.type || '-'}}</span>
+                    </li>
+                    <li>
+                      <span class="name">Sub-type:</span>
+                      <span class="value">{{project.sector || '-'}}</span>
+                    </li>
+                    <li>
+                      <span class="name">EA Decision:</span>
+                      <span class="value">{{project.eacDecision || '-'}}</span>
+                    </li>
+                    <li>
+                      <span class="name">CEAA Involvement:</span>
+                      <span class="value">{{project.CEAAInvolvement || '-'}}</span>
+                    </li>
+                    <li>
+                      <span class="name">CEAA URL:</span>
+                      <span class="value"><a href="{{project.CEAALink}}">{{project.CEAALink || '-'}}</a></span>
+                    </li>
+                    <li>
+                      <span class="name">Project Lead:</span>
+                      <span class="value">
+                        {{project.projectLead || '-'}}<br />
+                        {{project.projectLeadPhone || '-'}}<br />
+                        <a href="mailTo:{{project.projectLeadEmail}}">{{project.projectLeadEmail || '-'}}</a>
+                      </span>
+                    </li>
+                    <li>
+                      <span class="name">Executive Project Director:</span>
+                      <span class="value">
+                        {{project.responsibleEPD || '-'}}<br />
+                        {{project.responsibleEPDPhone || '-'}}<br />
+                        <a href="mailTo:{{project.responsibleEPDEmail}}">{{project.responsibleEPDEmail || '-'}}</a>
+                      </span>
+                    </li>
+                    <li>
+                      <span class="name">Compliance & Enforcement Lead:</span>
+                      <span class="value">
+                        {{project.CELead || '-'}}<br />
+                        {{project.CELeadPhone || '-'}}<br />
+                        <a href="mailTo:{{project.CELeadEmail}}">{{project.CELeadEmail || '-'}}</a>
+                      </span>
+                    </li>
+                  </ul>
+                </section>
+                <section>
+                  <h2>Documents</h2>
+                  <ul class="doc-list">
+                    <!-- <li *ngFor="let doc of project.documents">
+                      <span class="cell icon">
+                        <i class="material-icons link" (click)="api.openDocument(doc)">
+                          insert_drive_file
+                        </i>
+                      </span>
+                      <span class="cell name" [title]="doc.displayName || ''">
+                        <span class="cell__txt-content">
+                          <a (click)="api.openDocument(doc)">{{doc.documentFileName}}</a>
+                        </span>
+                      </span>
+                      <span class="cell actions">
+                      <button class="btn btn-icon" type="button" title="Download this document" (click)="api.downloadDocument(doc)">
+                          <i class="material-icons">file_download</i>
+                        </button>
+                      </span>
+                    </li>
+                    <li class="no-results" *ngIf="project.documents.length === 0">
+                      <em>No project documents</em>
+                    </li> -->
+                  </ul>
+                </section>
+              </ng-template>
+            </ngb-tab>
+            <ngb-tab>
+              <ng-template ngbTabTitle>
+                <i class="material-icons">
+                  pin_drop
+                </i>
+                Location
+              </ng-template>
+              <ng-template ngbTabContent>
+                <section>
+                  <app-project-aside [project]="project"></app-project-aside>
+                </section>
+                <section *ngIf="!project.features || project.features.length === 0">
+                  <!-- if no features, display Legal Description here -->
+                  <!-- otherwise it's displayed in shape section below -->
+                  <h2>Legal Description</h2>
+                  <p [innerHTML]="(project.legalDescription | newlines) || '-'"></p>
+                </section>
+                <section *ngIf="project.features && project.features.length !== 0">
+                  <h2>Geographic Shape Information ({{project.features.length}})</h2>
+                  <ul class="shapefile-list">
+                    <li class="interest-id" *ngFor="let shape of project.features">
+                      <span class="title">Shape ID: {{shape.properties.INTRID_SID}}</span>
+                      <ul class="nv-list">
+                        <li>
+                          <span class="name">Type / Subtype:</span>
+                          <span class="value">{{project.type || '-'}} / {{project.subtype || '-'}}</span>
+                        </li>
+                        <li>
+                          <span class="name">Area (hectares):</span>
+                          <span class="value">
+                            {{shape.properties.TENURE_AREA_IN_HECTARES ? (shape.properties.TENURE_AREA_IN_HECTARES | number:'1.2-2') : '-'}}
+                          </span>
+                        </li>
+                        <li>
+                          <span class="name">Legal Description:</span>
+                          <span class="value" [innerHTML]="(shape.properties.TENURE_LEGAL_DESCRIPTION | newlines) || '-'"></span>
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </section>
+              </ng-template>
+            </ngb-tab>
+          </ngb-tabset>
+        </section>
+
+      </div>
+
+      <div class="col-md-4">
+        <div class="aside-card">
+          <h3 class="title">Comment Period Details</h3>
+          <div class="body" *ngIf="!project.currentPeriods">
+            Not Open For Commenting
+          </div>
+          <div class="body" *ngIf="project.currentPeriods">
+            <ul class="nv-list">
+              <li>
+                <span class="name">Status:</span>
+                <span class="value">{{project.cpStatus}}</span>
+              </li>
+              <li>
+                <span class="name">Start Date:</span>
+                <span class="value">{{project.currentPeriods.startDate | date:'longDate'}}</span>
+              </li>
+              <li>
+                <span class="name">End Date:</span>
+                <span class="value">{{project.currentPeriods.endDate | date:'longDate'}}</span>
+              </li>
+              <li *ngIf="project.currentPeriods['daysRemaining']">
+                <span class="name">Days Remaining:</span>
+                <span class="value">{{project.currentPeriods['daysRemaining']}}</span>
+              </li>
+            </ul>
+            <div class="btn-container">
+              <button class="cta-btn btn btn-sm btn-outline-primary" type="button"
+                [routerLink]="['/comments', project._id]">
+                Review Comments<span *ngIf="project['numComments'] >= 0">&nbsp;({{project['numComments']}})</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="aside-card">
+          <h3 class="title">Project Decision</h3>
+          <div class="body">
+            <div *ngIf="!project.decision">
+              <p class="mb-0">No decisions have been made for this project at this time.</p>
+            </div>
+            <div *ngIf="project.decision">
+              <div [innerHTML]="(project.decision.description | newlines) || '<em>No decision description available</em>'"></div>
+              <ul class="doc-list">
+                <li *ngFor="let doc of project.decision.documents">
+                  <span class="cell icon">
+                    <i class="material-icons link" (click)="api.openDocument(doc)">
+                      insert_drive_file
+                    </i>
+                  </span>
+                  <span class="cell name" [title]="doc.displayName || ''">
+                      <span class="cell__txt-content">
+                        <a (click)="api.openDocument(doc)">{{doc.documentFileName}}</a>
+                      </span>
+                  </span>
+                  <span class="cell actions">
+                    <button class="btn btn-icon" title="Download this document" (click)="api.downloadDocument(doc)">
+                      <i class="material-icons">file_download</i>
+                    </button>
+                  </span>
+                </li>
+                <li class="no-results" *ngIf="project.decision.documents.length === 0">
+                  <em>No decision documents</em>
+                </li>
+              </ul>
+            </div>
+            <div class="btn-container">
+              <button class="cta-btn btn btn-sm btn-outline-primary" type="button"
+                [routerLink]="['/a', project._id, 'edit']"
+                fragment="appDecision">
+                Edit Decision
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -35,11 +35,11 @@ export class CommentService {
       .catch(error => this.api.handleError(error));
   }
 
-  // get all comments for the specified application id
+  // get all comments for the specified project id
   // (including documents)
-  getAllByApplicationId(appId: string, pageNum: number = 0, pageSize: number = 10, sortBy: string = null, params: GetParameters = null): Observable<Comment[]> {
+  getAllByProjectId(appId: string, pageNum: number = 0, pageSize: number = 10, sortBy: string = null, params: GetParameters = null): Observable<Comment[]> {
     // first get the comment periods
-    return this.commentPeriodService.getAllByApplicationId(appId)
+    return this.commentPeriodService.getAllByProjectId(appId)
       .mergeMap(periods => {
         if (periods && periods.length > 0) {
           // get comments for first comment period only

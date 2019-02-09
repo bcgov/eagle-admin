@@ -27,15 +27,16 @@ export class CommentPeriodService {
     this.commentStatuses[this.OPEN] = 'Commenting Open';
   }
 
-  // get all comment periods for the specified application id
-  getAllByApplicationId(appId: string): Observable<CommentPeriod[]> {
-    return this.api.getPeriodsByAppId(appId)
+  // get all comment periods for the specified project id
+  getAllByProjectId(projId: string): Observable<CommentPeriod[]> {
+    return this.api.getPeriodsByProjId(projId)
       .map(res => {
         if (res && res.length > 0) {
           const periods: Array<CommentPeriod> = [];
           res.forEach(cp => {
             periods.push(new CommentPeriod(cp));
           });
+          console.log(periods);
           return periods;
         }
         return [];
@@ -64,9 +65,9 @@ export class CommentPeriodService {
     delete period._id;
 
     // replace newlines with \\n (JSON format)
-    if (period.description) {
-      period.description = period.description.replace(/\n/g, '\\n');
-    }
+    // if (period.instructions) {
+    //   period.instructions = period.instructions.replace(/\n/g, '\\n');
+    // }
 
     return this.api.addCommentPeriod(period)
       .catch(error => this.api.handleError(error));
@@ -102,14 +103,14 @@ export class CommentPeriodService {
   }
 
   getStatus(period: CommentPeriod): string {
-    if (!period || !period.startDate || !period.endDate) {
+    if (!period || !period.dateStarted || !period.dateCompleted) {
       return this.commentStatuses[this.NOT_OPEN];
     }
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startDate = new Date(period.startDate);
-    const endDate = new Date(period.endDate);
+    const startDate = new Date(period.dateStarted);
+    const endDate = new Date(period.dateCompleted);
 
     if (endDate < today) {
       return this.commentStatuses[this.CLOSED];

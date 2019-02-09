@@ -1,0 +1,25 @@
+<div class="sidebar">
+  <section class="active" [hidden]='!showProjectDetails'>
+    <a class="dropdown-btn" [routerLink]="['p', currentProjectId]">
+        Project Details
+      </a>
+      <a role="button" (click)="toggleDropdown();">
+          <i class="material-icons open-icon" [hidden]='showProjectDetailsSubItems'>arrow_drop_down</i>
+          <i class="material-icons close-icon" [hidden]='!showProjectDetailsSubItems'>arrow_drop_up</i>
+        </a>
+      <div [hidden]='!showProjectDetailsSubItems' class="project-details-dropdown-container active">
+        <a [routerLink]="['p', currentProjectId, 'compliance']">Compliance</a>
+        <a [routerLink]="['p', currentProjectId, 'valued-components']">Valued Components</a>
+        <a [routerLink]="['p', currentProjectId, 'project-updates']">Project Updates</a>
+        <a [routerLink]="['p', currentProjectId, 'project-contracts']">Project Contacts</a>
+        <a [routerLink]="['p', currentProjectId, 'comment-periods']">Comment Periods</a>
+        <a [routerLink]="['p', currentProjectId, 'milestones']">Milestones</a>
+    </div>
+  </section>
+
+  <a href="#news">EAO Contacts</a>
+  <a href="#contact">Map</a>
+  <a href="#about">Metrics</a>
+  <a href="#about">Activity Posts</a>
+  <a href="#about">Settings</a>
+</div>

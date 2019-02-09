@@ -227,7 +227,7 @@ describe('SearchComponent', () => {
       subpurpose: 'Powder',
       appStatus: 'Application Under Review',
       cpStatus: 'Commenting Closed',
-      currentPeriod: valemontCommentPeriod
+      currentPeriods: valemontCommentPeriod
     });
 
     const applicationTwo = new Application({
