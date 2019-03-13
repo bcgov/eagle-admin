@@ -5,11 +5,11 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule } from '@angular/core';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { ProjectRoutingModule } from './project-routing.module';
-import { SharedModule } from 'app/shared.module';
+import { CommentPeriodsModule } from './comment-periods/comment-periods.module';
+import { SharedModule } from 'app/shared/shared.module';
 
 // components
 import { CommentDetailComponent } from './review-comments/comment-detail/comment-detail.component';
-import { CommentPeriodsComponent } from './comment-periods/comment-periods.component';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { IndigenousNationsComponent } from './indigenous-nations/indigenous-nations.component';
 import { MilestonesComponent } from './milestones/milestones.component';
@@ -33,11 +33,11 @@ import { ProjectService } from 'app/services/project.service';
     NgbModule.forRoot(),
     NgxPaginationModule,
     ProjectRoutingModule,
+    CommentPeriodsModule,
     SharedModule
   ],
   declarations: [
     CommentDetailComponent,
-    CommentPeriodsComponent,
     ComplianceComponent,
     IndigenousNationsComponent,
     MilestonesComponent,
@@ -51,7 +51,6 @@ import { ProjectService } from 'app/services/project.service';
   ],
   exports: [
     CommentDetailComponent,
-    CommentPeriodsComponent,
     ComplianceComponent,
     IndigenousNationsComponent,
     MilestonesComponent,

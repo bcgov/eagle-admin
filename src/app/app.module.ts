@@ -12,7 +12,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { AppRoutingModule } from 'app/app-routing.module';
 import { ProjectModule } from 'app/project/project.module';
 import { ProjectsModule } from 'app/projects/projects.module';
-import { SharedModule } from 'app/shared.module';
+import { SharedModule } from './shared/shared.module';
 
 // components
 // import { AddEditUserComponent } from 'app/administration/users/add-edit-user/add-edit-user.component';
@@ -46,7 +46,7 @@ import { TopicService } from 'app/services/topic.service';
 import { ValuedComponentService } from './services/valued-component.service';
 
 // feature modules
-import { TokenInterceptor } from './utils/token-interceptor';
+import { TokenInterceptor } from 'app/shared/utils/token-interceptor';
 import { DayCalculatorModalComponent } from './day-calculator-modal/day-calculator-modal.component';
 import { AddEditTopicComponent } from 'app/administration/topics/add-edit-topic/add-edit-topic.component';
 

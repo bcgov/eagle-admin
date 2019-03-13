@@ -5,8 +5,11 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { RouterModule } from '@angular/router';
 
+// components
+import { CommentPeriodsComponent } from './comment-periods.component';
+
 // modules
-import { SharedModule } from 'app/shared.module';
+import { SharedModule } from 'app//shared/shared.module';
 
 @NgModule({
   imports: [
@@ -15,9 +18,10 @@ import { SharedModule } from 'app/shared.module';
     NgbModule.forRoot(),
     NgxPaginationModule,
     RouterModule,
-    SharedModule,
+    SharedModule
   ],
   declarations: [
+    CommentPeriodsComponent
   ],
   entryComponents: [
   ]
