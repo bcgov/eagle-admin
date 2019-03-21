@@ -11,11 +11,6 @@ export interface DataModel {
   model: Topic;
 }
 
-export enum ModalResult {
-  Cancel,
-  Save
-}
-
 @Component({
   templateUrl: './add-edit-topic.component.html',
   styleUrls: ['./add-edit-topic.component.scss']
@@ -47,7 +42,10 @@ export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> i
   }
 
   public cancelVC() {
-    this.activeModal.close(ModalResult.Cancel);
+    this.activeModal.close({
+      isSaved: false,
+      newTopic: null
+    });
   }
   saveVC() {
     this.networkMsg = '';
@@ -57,7 +55,10 @@ export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> i
           () => {
             this.result = true;
             this.isNew = false;
-            this.activeModal.close(ModalResult.Save);
+            this.activeModal.close({
+              isSaved: true,
+              newTopic: this.topic
+            });
           },
           error => {
             console.log('error =', error);
@@ -69,7 +70,10 @@ export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> i
           () => {
             this.result = true;
             this.isNew = false;
-            this.activeModal.close(ModalResult.Save);
+            this.activeModal.close({
+              isSaved: true,
+              newTopic: this.topic
+            });
           },
           error => {
             console.log('error =', error);

@@ -111,7 +111,7 @@ export class ValuedComponentsComponent implements OnInit, OnDestroy {
         currentPage: this.currentPage,
         totalListItems: this.totalVcs,
         sortBy: this.sortBy,
-        sortDirection: this.sortDirection,
+        sortDirection: this.sortDirection
         }
     );
   }

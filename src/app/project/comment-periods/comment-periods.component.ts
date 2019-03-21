@@ -138,7 +138,6 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
     let sorting = (sortDirection > 0 ? '+' : '-') + sortBy;
 
-    this.loading = true;
     this.commentPeriodService.getAllByProjectId(this.currentProjectId, pageNumber, this.pageSize, sorting)
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {

@@ -25,13 +25,11 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnInit() {
     this.loadComponent();
-    // console.log(this.data);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // only run when property "data" changed
-    if (changes['data']) {
-      console.log(changes['data']);
+    if (!changes.firstChange && changes['data'].currentValue) {
       this.data.component = changes['data'].currentValue.component;
       this.data.data = changes['data'].currentValue.data;
       this.data.paginationData = changes['data'].currentValue.paginationData;

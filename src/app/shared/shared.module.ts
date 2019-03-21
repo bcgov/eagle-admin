@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { MatSlideToggleModule } from '@angular/material';
+import { MatSlideToggleModule, MatMenuModule } from '@angular/material';
 import { MatSnackBarModule } from '@angular/material';
 
 import { OrderByPipe } from 'app/shared/pipes/order-by.pipe';
@@ -13,13 +13,15 @@ import { TableTemplateComponent } from 'app/shared/components/table-template/tab
 import { NgxPaginationModule } from 'ngx-pagination';
 
 import { TableDirective } from './components/table-template/table.directive';
+import { DropdownTemplateComponent } from './components/dropdown-template/dropdown-template.component';
 
 @NgModule({
   imports: [
     BrowserModule,
     MatSlideToggleModule,
     MatSnackBarModule,
-    NgxPaginationModule
+    NgxPaginationModule,
+    MatMenuModule
   ],
   declarations: [
     OrderByPipe,
@@ -27,6 +29,7 @@ import { TableDirective } from './components/table-template/table.directive';
     PublishedPipe,
     ObjectFilterPipe,
     VarDirective,
+    DropdownTemplateComponent,
     FileUploadComponent,
     TableTemplateComponent,
     TableDirective
@@ -38,6 +41,7 @@ import { TableDirective } from './components/table-template/table.directive';
     NewlinesPipe,
     PublishedPipe,
     VarDirective,
+    DropdownTemplateComponent,
     FileUploadComponent,
     TableTemplateComponent,
     NgxPaginationModule

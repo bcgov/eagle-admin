@@ -53,6 +53,7 @@ import { AddEditTopicComponent } from 'app/administration/topics/add-edit-topic/
 import { MapComponent } from './map/map.component';
 import { MetricsComponent } from './metrics/metrics.component';
 import { ActivityComponent } from './activity/activity.component';
+import { TopicTableRowsComponent } from './administration/topics/topic-table-rows/topic-table-rows.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -75,6 +76,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     SearchComponent,
     SidebarComponent,
     TopicsComponent,
+    TopicTableRowsComponent,
     MapComponent,
     MetricsComponent,
     ActivityComponent
@@ -126,6 +128,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ConfirmComponent,
     DayCalculatorModalComponent,
     AddEditTopicComponent,
+    TopicTableRowsComponent
   ],
   bootstrap: [AppComponent]
 })

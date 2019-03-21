@@ -1,0 +1,6 @@
+<button class="btn btn-primary" [matMenuTriggerFor]="menu"><i class="material-icons">
+    settings
+  </i></button>
+<mat-menu #menu="matMenu">
+  <button *ngFor="let item of items" (click)="itemClicked(item)" mat-menu-item>{{item}}</button>
+</mat-menu>

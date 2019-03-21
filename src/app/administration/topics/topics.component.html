@@ -1,42 +1,19 @@
 <div class="search-container">
-    <div class="container-fluid-padding">
-      <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a routerLink="/administration">Settings</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Topics</li>
-        </ol>
-        <button type="button"
-                class="btn btn-primary"
-                (click)="editVC(undefined)" >Add new VC</button>
-      </nav>
-      &nbsp;
-      <table class="table table-bordered">
-        <thead class="thead-light">
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Description</th>
-            <th scope="col">Type</th>
-            <th scope="col">Pillar</th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let topic of topics | paginate: { id: 'server', itemsPerPage: pageSize, currentPage: currentPage, totalItems: totalTopics }"
-              class="clickable-row">
-            <td scope="row">{{topic.name}}</td>
-            <td>{{topic.description}}</td>
-            <td>{{topic.type}}</td>
-            <td>{{topic.pillar}}</td>
-            <td>
-              <button type="button" (click)="editVC(topic)" class="btn btn-primary">Edit</button>&nbsp;
-              <button type="button" (click)="deleteVC(topic)" class="btn btn-danger">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="page-controls">
-          <div class="spinner" [ngClass]="{ 'hidden': !topicsLoading }"></div>
-          <pagination-controls (pageChange)="getPaginatedTopics($event)" id="server"></pagination-controls>
-      </div>
+  <div class="container-fluid-padding">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a routerLink="/administration">Settings</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Topics</li>
+      </ol>
+      <button type="button" class="btn btn-primary" (click)="addTopic()">Add new Topic</button>
+    </nav>
+    &nbsp;
+    <div *ngIf="topicTableData">
+      <app-table-template
+      [columns]="topicTableColumns"
+      [data]="topicTableData"
+      (onColumnSort)='setColumnSort($event)'
+      (onPageNumUpdate)='getPaginatedTopics($event)'></app-table-template>
     </div>
   </div>
+</div>
