@@ -466,7 +466,7 @@ export class ApiService {
       );
   }
 
-  getCommentsByPeriodId(periodId: string, pageNum: number, pageSize: number, sortBy: string, count: boolean): Observable<Object> {
+  getCommentsByPeriodId(periodId: string, pageNum: number, pageSize: number, sortBy: string, count: boolean, filter: object): Observable<Object> {
     const fields = [
       '_id',
       'author',
@@ -486,6 +486,11 @@ export class ApiService {
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
     if (sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
     if (count !== null) { queryString += `&count=${count}`; }
+    if (filter !== {}) {
+      Object.keys(filter).forEach(key => {
+        queryString += `&${key}=${filter[key]}`;
+      });
+    }
     queryString += `&fields=${this.buildValues(fields)}`;
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
@@ -742,16 +747,16 @@ export class ApiService {
   getMetrics(pageNum: number, pageSize: number, sortBy: string = null): Observable<SearchResults[]> {
     let queryString = `audit?`;
     let fields = ['fields',
-                  'performedBy',
-                  'deletedBy',
-                  'updatedBy',
-                  'addedBy',
-                  'meta',
-                  'action',
-                  'objId',
-                  'keywords',
-                  'timestamp',
-                  '_objectSchema'];
+      'performedBy',
+      'deletedBy',
+      'updatedBy',
+      'addedBy',
+      'meta',
+      'action',
+      'objId',
+      'keywords',
+      'timestamp',
+      '_objectSchema'];
 
     if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
     if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }

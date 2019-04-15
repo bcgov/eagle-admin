@@ -22,6 +22,13 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   public comments: Array<Comment>;
   public loading = true;
 
+  public filter = {
+    'pending': false,
+    'published': false,
+    'deferred': false,
+    'rejected': false
+  };
+
   public commentTableData: TableObject;
   public commentTableColumns: any[] = [
     {
@@ -72,10 +79,15 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.commentPeriodId = params.commentPeriodId;
-      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+      console.log(params.pending);
+      this.filter.pending = params.pending == null || params.pending === 'false' ? false : true;
+      this.filter.published = params.published == null || params.published === 'false' ? false : true;
+      this.filter.deferred = params.deferred == null || params.deferred === 'false' ? false : true;
+      this.filter.rejected = params.rejected == null || params.rejected === 'false' ? false : true;
+      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, this.filter);
     });
 
-    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortString, true)
+    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortString, true, this.filter)
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res) {
@@ -92,6 +104,23 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
         this.loading = false;
         this._changeDetectionRef.detectChanges();
       });
+  }
+
+  public togglePending() {
+    this.filter.pending = !this.filter.pending;
+    this.getPaginatedComments(1, this.tableParams.sortBy, this.tableParams.sortDirection);
+  }
+  public togglePublished() {
+    this.filter.published = !this.filter.published;
+    this.getPaginatedComments(1, this.tableParams.sortBy, this.tableParams.sortDirection);
+  }
+  public toggleDeffered() {
+    this.filter.deferred = !this.filter.deferred;
+    this.getPaginatedComments(1, this.tableParams.sortBy, this.tableParams.sortDirection);
+  }
+  public toggleRejected() {
+    this.filter.rejected = !this.filter.rejected;
+    this.getPaginatedComments(1, this.tableParams.sortBy, this.tableParams.sortDirection);
   }
 
   setCommentRowData() {
@@ -129,12 +158,12 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, newSortBy, newSortDirection);
 
-    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortString, true)
+    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortString, true, this.filter)
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         this.tableParams.totalListItems = res.totalCount;
         this.comments = res.data;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortString, this.tableParams.currentPage, this.tableParams.pageSize);
+        this.tableTemplateUtils.updateUrl(this.tableParams.sortString, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
         this.setCommentRowData();
         this.loading = false;
         this._changeDetectionRef.detectChanges();

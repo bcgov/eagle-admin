@@ -11,7 +11,7 @@ export class TableTemplateUtils {
     private router: Router
   ) { }
 
-  public updateUrl(sortString, currentPage, pageSize) {
+  public updateUrl(sortString, currentPage, pageSize, filter = null) {
     let currentUrl = this.router.url;
     currentUrl = (this.platformLocation as any).getBaseHrefFromDOM() + currentUrl.slice(1);
     currentUrl = currentUrl.split(';')[0];
@@ -19,11 +19,16 @@ export class TableTemplateUtils {
     if (sortString !== null) {
       currentUrl += `;sortBy=${sortString}`;
     }
+    if (filter !== null) {
+      Object.keys(filter).forEach(key => {
+        currentUrl += `;${key}=${filter[key]}`;
+      });
+    }
     currentUrl += ';ms=' + new Date().getTime();
     window.history.replaceState({}, '', currentUrl);
   }
 
-  public getParamsFromUrl(params) {
+  public getParamsFromUrl(params, filter = null) {
     let pageSize = params.pageSize || Constants.tableDefaults.DEFAULT_PAGE_SIZE;
     let currentPage = params.currentPage ? params.currentPage : Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
 
@@ -36,7 +41,7 @@ export class TableTemplateUtils {
       sortBy = sortString.substring(1);
     }
 
-    this.updateUrl(sortString, currentPage, pageSize);
+    this.updateUrl(sortString, currentPage, pageSize, filter);
 
     return new TableParamsObject(
       pageSize,

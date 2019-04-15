@@ -2,12 +2,58 @@
     <div class="spinner-new rotating"></div>
 </div>
 
-<div *ngIf="tableParams.totalListItems > 0">
-    <app-table-template [columns]="commentTableColumns" [data]="commentTableData" (onColumnSort)='setColumnSort($event)'
-        (onPageNumUpdate)='getPaginatedComments($event)'>
-    </app-table-template>
-</div>
+<section id="header-section">
+    <div class="row">
+        <div class="col-md-12 mt-4">
+            <h2>
+                COMMMENTS
+            </h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <p>
+                FILTER RESULTS
+            </p>
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                <div class="btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-primary" [class.active]="filter.pending">
+                        <input type="checkbox" (click)="togglePending()" autocomplete="off">Pending
+                    </label>
+                </div>
+                &nbsp;
+                <div class="btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-primary" [class.active]="filter.published">
+                        <input type="checkbox" (click)="togglePublished()" autocomplete="off">Published
+                    </label>
+                </div>
+                &nbsp;
+                <div class="btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-primary" [class.active]="filter.deffered">
+                        <input type="checkbox" (click)="toggleDeffered()" autocomplete="off">Deferred
+                    </label>
+                </div>
+                &nbsp;
+                <div class="btn-group-toggle" data-toggle="buttons">
+                    <label class="btn btn-primary" [class.active]="filter.rejected">
+                        <input type="checkbox" (click)="toggleRejected()" autocomplete="off">Rejected
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-right">
+            Displaying {{tableParams.pageSize}} of {{tableParams.totalListItems}} Comments
+        </div>
+    </div>
+</section>
 
-<div *ngIf="tableParams.totalListItems == 0">
-    There are no comments.
-</div>
+<section id="table-section">
+    <div *ngIf="tableParams.totalListItems > 0">
+        <app-table-template [columns]="commentTableColumns" [data]="commentTableData"
+            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='getPaginatedComments($event)'>
+        </app-table-template>
+    </div>
+    <div *ngIf="tableParams.totalListItems == 0">
+        There are no comments.
+    </div>
+</section>
