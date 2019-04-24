@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { Document } from 'app/models/document';
 
 export class Comment {
   _id: string;
@@ -17,12 +18,15 @@ export class Comment {
   publishedNotes: string;
   rejectedNotes: string;
   rejectedReason: string;
-  valuedComponents: Array<String>;
+  valuedComponents: Array<string>;
+  documents: Array<string>;
+
+  documentsList: Array<Document>;
 
   // Permissions
-  read: Array<String> = [];
-  write: Array<String> = [];
-  delete: Array<String> = [];
+  read: Array<string> = [];
+  write: Array<string> = [];
+  delete: Array<string> = [];
 
   constructor(obj?: any) {
     this._id              = obj && obj._id              || null;
@@ -42,10 +46,12 @@ export class Comment {
     this.rejectedNotes    = obj && obj.rejectedNotes    || null;
     this.rejectedReason   = obj && obj.rejectedReason   || null;
     this.valuedComponents = obj && obj.valuedComponents || null;
+    this.documents        = obj && obj.documents        || null;
+    this.documentsList    = obj && obj.documentsList    || null;
 
-    this.read             = obj && obj.read              || null;
-    this.write            = obj && obj.write             || null;
-    this.delete           = obj && obj.delete            || null;
+    this.read             = obj && obj.read             || null;
+    this.write            = obj && obj.write            || null;
+    this.delete           = obj && obj.delete           || null;
 
     if (obj && obj.dateAdded) {
       this.dateAdded = new Date(obj.dateAdded);

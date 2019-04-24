@@ -8,60 +8,23 @@ import { Document } from 'app/models/document';
 
 @Injectable()
 export class DocumentService {
-  private currentState: any;
+  // private currentState: any;
 
-  constructor(private api: ApiService) {
-    this.currentState = {
-    };
-  }
+  constructor(private api: ApiService) { }
 
-  get state(): any { return this.currentState; }
-  set state(state: any) { this.currentState[state.type] = state.data; }
-
-  // get all documents for the specified application id
-  getAllByApplicationId(id: string): Observable<Document[]> {
-    return this.api.getDocumentsByAppId(id)
+  // get a specific document by its id
+  getByMultiId(ids: Array<String>): Observable<Array<Document>> {
+    return this.api.getDocumentsByMultiId(ids)
       .map(res => {
         if (res && res.length > 0) {
-          const documents: Array<Document> = [];
+          // return the first (only) document
+          let docs = [];
           res.forEach(doc => {
-            documents.push(new Document(doc));
+            docs.push(new Document(doc));
           });
-          return documents;
+          return docs;
         }
-        return [];
-      })
-      .catch(error => this.api.handleError(error));
-  }
-
-  // get all documents for the specified comment id
-  getAllByCommentId(commentId: string): Observable<Document[]> {
-    return this.api.getDocumentsByCommentId(commentId)
-      .map(res => {
-        if (res && res.length > 0) {
-          const documents: Array<Document> = [];
-          res.forEach(doc => {
-            documents.push(new Document(doc));
-          });
-          return documents;
-        }
-        return [];
-      })
-      .catch(error => this.api.handleError(error));
-  }
-
-  // get all documents for the specified decision id
-  getAllByDecisionId(decisionId: string): Observable<Document[]> {
-    return this.api.getDocumentsByDecisionId(decisionId)
-      .map(res => {
-        if (res && res.length > 0) {
-          const documents: Array<Document> = [];
-          res.forEach(doc => {
-            documents.push(new Document(doc));
-          });
-          return documents;
-        }
-        return [];
+        return null;
       })
       .catch(error => this.api.handleError(error));
   }

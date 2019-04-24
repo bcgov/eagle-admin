@@ -29,7 +29,7 @@
     </div>
     <div class="form-row">
       <div class="form-group col-md-8">
-        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+        <div class="btn-group btn-group-toggle">
           <div class="btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-primary" [class.active]="commentReviewForm.get('isPublished').value">
               <input type="checkbox" (click)="setEaoStatus('Published')" autocomplete="off"
@@ -83,9 +83,27 @@
       <div class="col-md-4">
         <div class="form-row">
           <div class="form-group col-md-12">
-            <h6>
-              ATTACHMENTS
-            </h6>
+            <label for="proponentResponse"><b>Attachments</b></label>
+            <div class="card" *ngFor="let document of documents">
+              <div class="card-body">
+                <p class="card-text" (click)="downloadFile(document.document)">
+                  {{document.document.internalOriginalName}}
+                </p>
+                <a class="btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-primary" [class.active]="document.document.eaoStatus === 'Published'">
+                    <input type="checkbox" (click)="toggleDocumentPublish(document, 'publish')" autocomplete="off">
+                    Publish
+                  </label>
+                </a>
+                &nbsp;
+                <a class="btn-group-toggle" data-toggle="buttons">
+                  <label class="btn btn-primary" [class.active]="document.document.eaoStatus === 'Rejected'">
+                    <input type="checkbox" (click)="toggleDocumentPublish(document, 'reject')" autocomplete="off">
+                    Reject
+                  </label>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
         <div class="form-row">

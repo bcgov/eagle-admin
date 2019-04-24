@@ -7,12 +7,16 @@ import * as _ from 'lodash';
 
 import { ApiService } from './api';
 import { Comment } from 'app/models/comment';
+import { DocumentService } from './document.service';
+import { flatMap } from 'rxjs/operators';
+import { of, forkJoin } from 'rxjs';
 
 @Injectable()
 export class CommentService {
 
   constructor(
     private api: ApiService,
+    private documentService: DocumentService
   ) { }
 
   // get count of comments for the specified comment period id
@@ -23,11 +27,23 @@ export class CommentService {
 
   getById(commentId: string): Observable<Comment> {
     return this.api.getComment(commentId)
-      .map(comments => {
-        // return the first (only) comment
-        return comments && comments.length > 0 ? new Comment(comments[0]) : null;
-      })
+      .pipe(
+        flatMap(comments => {
+          if (!comments || comments.length === 0) {
+            return of(null as Comment);
+          }
+          if (comments[0].documents == null) {
+            return of(comments[0]);
+          }
+          // now get the rest of the data for this project
+          return this._getExtraAppData(new Comment(comments[0]));
+        })
+      )
       .catch(error => this.api.handleError(error));
+    // .map(comments => {
+    //   // return the first (only) comment
+    //   return comments && comments.length > 0 ? new Comment(comments[0]) : null;
+    // })
   }
 
   save(comment: Comment): Observable<Comment> {
@@ -75,5 +91,14 @@ export class CommentService {
         return {};
       })
       .catch(error => this.api.handleError(error));
+  }
+
+  private _getExtraAppData(comment: Comment): Observable<Comment> {
+    return forkJoin(
+      this.documentService.getByMultiId(comment.documents)
+    ).map(payloads => {
+      comment.documentsList = payloads[0];
+      return comment;
+    });
   }
 }

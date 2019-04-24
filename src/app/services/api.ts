@@ -513,6 +513,7 @@ export class ApiService {
       'commentId',
       'dateAdded',
       'dateUpdated',
+      'documents',
       'eaoNotes',
       'eaoStatus',
       'isAnonymous',
@@ -544,7 +545,6 @@ export class ApiService {
 
   updateCommentStatus(comment: Comment, status: string): Observable<Comment> {
     const queryString = `comment/${comment._id}/status`;
-    console.log(this.http.put<Comment>(`${this.pathAPI}/${queryString}`, status, {}));
     return this.http.put<Comment>(`${this.pathAPI}/${queryString}`, {'status': status}, {});
   }
 
@@ -563,27 +563,13 @@ export class ApiService {
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  getDocumentsByCommentId(commentId: string): Observable<Document[]> {
+  getDocumentsByMultiId(ids: Array<String>): Observable<Document[]> {
     const fields = [
-      '_comment',
-      'documentFileName',
-      'displayName',
-      'internalURL',
-      'internalMime'
+      '_id',
+      'eaoStatus',
+      'internalOriginalName'
     ];
-    const queryString = `document?isDeleted=false&_comment=${commentId}&fields=${this.buildValues(fields)}`;
-    return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
-  }
-
-  getDocumentsByDecisionId(decisionId: string): Observable<Document[]> {
-    const fields = [
-      '_decision',
-      'documentFileName',
-      'displayName',
-      'internalURL',
-      'internalMime'
-    ];
-    const queryString = `document?isDeleted=false&_decision=${decisionId}&fields=${this.buildValues(fields)}`;
+    const queryString = `document?docIds=${this.buildValues(ids)}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -737,7 +723,6 @@ export class ApiService {
   //
   getItem(_id: string, schema: string): Observable<SearchResults[]> {
     let queryString = `search?dataset=Item&_id=${_id}&_schemaName=${schema}`;
-    console.log('queryString:', queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -762,7 +747,6 @@ export class ApiService {
       queryString += `&query` + queryModifier;
     }
     queryString += `&fields=${this.buildValues(fields)}`;
-    console.log('queryString:', queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -787,7 +771,6 @@ export class ApiService {
     if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
     if (sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
     queryString += `fields=${this.buildValues(fields)}`;
-    console.log('queryString:', queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
