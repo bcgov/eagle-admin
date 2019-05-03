@@ -93,7 +93,7 @@
 
   <div class="form-group mb-0">
     <app-file-upload [maxFiles]="50" [maxSize]="10" [showInfo]="false" [showList]="false" [files]="projectFiles"
-      (filesChange)="addDocuments($event, documents); projectFiles = []"></app-file-upload>
+      (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
     <br>
     <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
       <li *ngFor="let doc of documents">
@@ -105,7 +105,7 @@
         </span>
         <span class="cell actions">
           <button class="btn btn-icon" type="button" title="Delete this document"
-            (click)="deleteDocument(doc, documents)">
+            (click)="deleteDocument(doc)">
             <i class="material-icons">delete</i>
           </button>
         </span>

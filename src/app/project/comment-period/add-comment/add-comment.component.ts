@@ -27,7 +27,8 @@ export class AddCommentComponent implements OnInit {
   public projectId;
   public comment = new Comment();
   public commentPeriod: CommentPeriod;
-  public documents = [];
+  public commentFiles: Document[] = [];
+  public documents: Document[] = [];
   public loading = true;
 
   public addCommentForm: FormGroup;
@@ -105,31 +106,31 @@ export class AddCommentComponent implements OnInit {
     } else if (this.addCommentForm.get('isRejected').value) {
       this.comment.eaoNotes = this.addCommentForm.get('rejectionNotesText').value;
       this.comment.eaoStatus = 'Rejected';
-      this.documents.forEach(document => {
-        document.document.eaoStatus = 'Rejected';
-      });
+      // this.documents.forEach(document => {
+      //   document.document.eaoStatus = 'Rejected';
+      // });
     } else {
       this.comment.eaoStatus = 'Reset';
     }
     this.comment.proponentNotes = this.addCommentForm.get('proponentResponseText').value;
     this.comment.valuedComponents = this.storageService.state.currentVCs.data;
 
-    this.documents.forEach(document => {
-      if (document.isEdited) {
-        const formData = new FormData();
-        formData.append('eaoStatus', document.document.eaoStatus);
-        this.documentService.update(formData, document.document._id)
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe(
-            doc => { },
-            error => {
-              console.log('error =', error);
-              alert('Uh-oh, couldn\'t update document');
-            },
-            () => { }
-          );
-      }
-    });
+    // this.documents.forEach(document => {
+    //   if (document.isEdited) {
+    //     const formData = new FormData();
+    //     formData.append('eaoStatus', document.document.eaoStatus);
+    //     this.documentService.update(formData, document.document._id)
+    //       .takeUntil(this.ngUnsubscribe)
+    //       .subscribe(
+    //         doc => { },
+    //         error => {
+    //           console.log('error =', error);
+    //           alert('Uh-oh, couldn\'t update document');
+    //         },
+    //         () => { }
+    //       );
+    //   }
+    // });
 
     this.comment.period = this.commentPeriod._id;
 
@@ -214,6 +215,87 @@ export class AddCommentComponent implements OnInit {
       document.document.eaoStatus = 'Rejected';
     }
     document.isEdited = true;
+  }
+
+  // public uploadDocuments() {
+  //   this.loading = true;
+
+  //   // go through and upload one at a time.
+  //   let observables = of(null);
+
+  //   this.documents.map(doc => {
+  //     const formData = new FormData();
+  //     formData.append('upfile', doc.upfile);
+  //     formData.append('project', this.currentProjectId);
+
+  //     formData.append('documentFileName', doc.documentFileName);
+
+  //     formData.append('documentSource', 'PROJECT');
+
+  //     formData.append('displayName', this.myForm.value.displayName);
+  //     formData.append('milestone', this.myForm.value.labelsel);
+  //     formData.append('dateUploaded', moment(this.myForm.value.dateUploaded));
+  //     formData.append('datePosted', moment(this.myForm.value.datePosted));
+  //     formData.append('type', this.myForm.value.doctypesel);
+  //     formData.append('description', this.myForm.value.description);
+  //     formData.append('documentAuthor', this.myForm.value.authorsel);
+  //     observables = observables.concat(this.documentService.add(formData));
+  //   });
+
+  //   this.storageService.state = { type: 'form', data: null };
+  //   this.storageService.state = { type: 'documents', data: null };
+  //   this.storageService.state = { type: 'labels', data: null };
+
+  //   observables
+  //     .takeUntil(this.ngUnsubscribe)
+  //     .subscribe(
+  //       () => { // onNext
+  //         // do nothing here - see onCompleted() function below
+  //       },
+  //       error => {
+  //         console.log('error =', error);
+  //         alert('Uh-oh, couldn\'t delete project');
+  //         // TODO: should fully reload project here so we have latest non-deleted objects
+  //       },
+  //       () => { // onCompleted
+  //         // delete succeeded --> navigate back to search
+  //         // Clear out the document state that was stored previously.
+  //         this.router.navigate(['p', this.currentProjectId, 'project-documents']);
+  //         this.loading = false;
+  //       }
+  //     );
+  // }
+
+  public addDocuments(files: FileList) {
+    console.log('add docs', files);
+    if (files) { // safety check
+      for (let i = 0; i < files.length; i++) {
+        if (files[i]) {
+          // ensure file is not already in the list
+
+          if (this.documents.find(x => x.documentFileName === files[i].name)) {
+            // this.snackBarRef = this.snackBar.open('Can\'t add duplicate file', null, { duration: 2000 });
+            continue;
+          }
+
+          const document = new Document();
+          document.upfile = files[i];
+          document.documentFileName = files[i].name;
+
+          // save document for upload to db when project is added or saved
+          this.documents.push(document);
+        }
+      }
+    }
+    console.log('add docs', this.documents);
+  }
+
+  public deleteDocument(doc: Document) {
+    if (doc && this.documents) { // safety check
+      // remove doc from current list
+      this.documents = this.documents.filter(item => (item.documentFileName !== doc.documentFileName));
+    }
+    console.log('delete docs', this.documents);
   }
 
   public register() {
