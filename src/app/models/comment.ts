@@ -22,6 +22,7 @@ export class Comment {
   valuedComponents: Array<string>;
   documents: Array<string>;
 
+  // Used for comment review.
   documentsList: Array<Document>;
 
   // Permissions
@@ -49,7 +50,7 @@ export class Comment {
     this.rejectedReason   = obj && obj.rejectedReason   || null;
     this.valuedComponents = obj && obj.valuedComponents || null;
     this.documents        = obj && obj.documents        || null;
-    this.documentsList    = obj && obj.documentsList    || null;
+    this.documentsList    = obj && obj.documentsList    || [];
 
     this.read             = obj && obj.read             || null;
     this.write            = obj && obj.write            || null;

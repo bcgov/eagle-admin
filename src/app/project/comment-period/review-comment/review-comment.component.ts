@@ -6,7 +6,6 @@ import { Subject } from 'rxjs';
 
 import { ApiService } from 'app/services/api';
 import { CommentService } from 'app/services/comment.service';
-import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 
 import { Comment } from 'app/models/comment';
@@ -28,7 +27,6 @@ export class ReviewCommentComponent implements OnInit {
   public projectId;
   public comment: Comment;
   public commentPeriod: CommentPeriod;
-  public documents = [];
   public loading = true;
 
   public commentReviewForm: FormGroup;
@@ -36,7 +34,6 @@ export class ReviewCommentComponent implements OnInit {
   constructor(
     private api: ApiService,
     private commentService: CommentService,
-    private documentService: DocumentService,
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
@@ -51,15 +48,6 @@ export class ReviewCommentComponent implements OnInit {
         if (data.comment) {
           this.comment = data.comment;
           this.storageService.state.currentVCs = { type: 'currentVCs', data: this.comment.valuedComponents };
-
-          if (this.comment.documentsList) {
-            this.comment.documentsList.forEach(document => {
-              this.documents.push({
-                document: document,
-                isEdited: false
-              });
-            });
-          }
 
           if (this.storageService.state.currentCommentPeriod) {
             this.commentPeriod = this.storageService.state.currentCommentPeriod.data;
@@ -101,8 +89,6 @@ export class ReviewCommentComponent implements OnInit {
 
     this.setEaoStatus(this.comment.eaoStatus);
 
-    console.log(this.comment.dateAdded);
-
     this.commentReviewForm.controls.dateAdded.setValue(this.utils.convertJSDateToNGBDate(new Date(this.comment.dateAdded)));
     this.commentReviewForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)));
     this.commentReviewForm.controls.deferralNotesText.setValue(this.comment.eaoNotes);
@@ -130,31 +116,11 @@ export class ReviewCommentComponent implements OnInit {
     } else if (this.commentReviewForm.get('isRejected').value) {
       this.comment.eaoNotes = this.commentReviewForm.get('rejectionNotesText').value;
       this.comment.eaoStatus = 'Rejected';
-      this.documents.forEach(document => {
-        document.document.eaoStatus = 'Rejected';
-      });
     } else {
       this.comment.eaoStatus = 'Reset';
     }
     this.comment.proponentNotes = this.commentReviewForm.get('proponentResponseText').value;
     this.comment.valuedComponents = this.storageService.state.currentVCs.data;
-
-    this.documents.forEach(document => {
-      if (document.isEdited) {
-        const formData = new FormData();
-        formData.append('eaoStatus', document.document.eaoStatus);
-        this.documentService.update(formData, document.document._id)
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe(
-            doc => { },
-            error => {
-              console.log('error =', error);
-              alert('Uh-oh, couldn\'t update document');
-            },
-            () => { }
-          );
-      }
-    });
 
     this.commentService.save(this.comment)
       .takeUntil(this.ngUnsubscribe)
@@ -207,6 +173,10 @@ export class ReviewCommentComponent implements OnInit {
           this.commentReviewForm.controls.isPublished.setValue(false);
           this.commentReviewForm.controls.isDeferred.setValue(false);
           this.commentReviewForm.controls.isRejected.setValue(true);
+
+          this.comment.documentsList.map(document => {
+            document.eaoStatus = 'Rejected';
+          });
         } else {
           this.commentReviewForm.controls.isRejected.setValue(false);
         }
@@ -223,7 +193,6 @@ export class ReviewCommentComponent implements OnInit {
   }
 
   public downloadFile(document: Document) {
-    console.log(document);
     let promises = [];
     promises.push(this.api.downloadDocument(document));
     return Promise.all(promises).then(() => {
@@ -232,12 +201,11 @@ export class ReviewCommentComponent implements OnInit {
   }
 
   public toggleDocumentPublish(document: any, action: String) {
-    if (action === 'publish') {
-      document.document.eaoStatus = 'Published';
-    } else {
-      document.document.eaoStatus = 'Rejected';
+    if (action === 'Published' && !this.commentReviewForm.get('isRejected').value) {
+      document.eaoStatus = 'Published';
+    } else if (action === 'Rejected' && !this.commentReviewForm.get('isRejected').value) {
+      document.eaoStatus = 'Rejected';
     }
-    document.isEdited = true;
   }
 
   public register() {

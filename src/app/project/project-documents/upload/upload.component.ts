@@ -21,7 +21,7 @@ export class UploadComponent implements OnInit {
 
   public currentProjectId: string;
   public authorsel: any;
-  public projectFiles: Document[] = [];
+  public projectFiles: Array<File> = [];
   public documents: Document[] = [];
   public datePosted: NgbDateStruct = null;
   public dateUploaded: NgbDateStruct = null;
@@ -153,7 +153,7 @@ export class UploadComponent implements OnInit {
       );
   }
 
-  public addDocuments(files: FileList, documents: Document[]) {
+  public addDocuments(files: FileList) {
     if (files) { // safety check
       for (let i = 0; i < files.length; i++) {
         if (files[i]) {
@@ -163,6 +163,8 @@ export class UploadComponent implements OnInit {
             // this.snackBarRef = this.snackBar.open('Can\'t add duplicate file', null, { duration: 2000 });
             continue;
           }
+
+          this.projectFiles.push(files[i]);
 
           const document = new Document();
           document.upfile = files[i];
@@ -175,9 +177,10 @@ export class UploadComponent implements OnInit {
     }
   }
 
-  public deleteDocument(doc: Document, documents: Document[]) {
-    if (doc && documents) { // safety check
+  public deleteDocument(doc: Document) {
+    if (doc && this.documents) { // safety check
       // remove doc from current list
+      this.projectFiles = this.projectFiles.filter(item => (item.name !== doc.documentFileName));
       this.documents = this.documents.filter(item => (item.documentFileName !== doc.documentFileName));
     }
   }

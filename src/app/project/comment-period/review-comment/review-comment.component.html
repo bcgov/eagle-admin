@@ -90,29 +90,29 @@
         <div class="form-row">
           <div class="form-group col-md-12">
             <label for="proponentResponse"><b>Attachments</b></label>
-            <div *ngIf="documents.length > 0">
-              <div class="card" *ngFor="let document of documents">
-                <div class="card-body">
-                  <p class="card-text" (click)="downloadFile(document.document)">
-                    {{document.document.internalOriginalName}}
-                  </p>
-                  <a class="btn-group-toggle" data-toggle="buttons">
-                    <label class="btn btn-primary" [class.active]="document.document.eaoStatus === 'Published'">
-                      <input type="checkbox" (click)="toggleDocumentPublish(document, 'publish')" autocomplete="off">
+            <div *ngIf="comment.documentsList?.length > 0">
+              <ul class="doc-list mb-3">
+                <li *ngFor="let document of comment.documentsList">
+                  <span class="cell icon">
+                    <i class="material-icons">insert_drive_file</i>
+                  </span>
+                  <span class="cell name" [title]="document.documentFileName || ''">
+                    <span class="cell__txt-content">{{document.documentFileName}}</span>
+                  </span>
+                  <span class="cell actions">
+                    <a class="btn btn-light" [class.active]="document.eaoStatus === 'Published'" role="button"
+                      title="Publish this document" (click)="toggleDocumentPublish(document, 'Published')">
                       Publish
-                    </label>
-                  </a>
-                  &nbsp;
-                  <a class="btn-group-toggle" data-toggle="buttons">
-                    <label class="btn btn-primary" [class.active]="document.document.eaoStatus === 'Rejected'">
-                      <input type="checkbox" (click)="toggleDocumentPublish(document, 'reject')" autocomplete="off">
+                    </a>
+                    <a class="btn btn-light" [class.active]="document.eaoStatus === 'Rejected'" role="button"
+                      title="Reject this document" (click)="toggleDocumentPublish(document, 'Rejected')">
                       Reject
-                    </label>
-                  </a>
-                </div>
-              </div>
+                    </a>
+                  </span>
+                </li>
+              </ul>
             </div>
-            <div *ngIf="documents.length === 0">
+            <div *ngIf="comment.documentsList?.length === 0">
               <p>This comment has no associated documents.</p>
             </div>
           </div>

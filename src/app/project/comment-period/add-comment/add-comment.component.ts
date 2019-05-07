@@ -1,18 +1,20 @@
-import { Component, OnInit } from '@angular/core';
-import { Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StorageService } from 'app/services/storage.service';
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormControl } from '@angular/forms';
+import { MatSnackBar } from '@angular/material';
+import { Subject, of } from 'rxjs';
+import * as moment from 'moment-timezone';
+
+import { Utils } from 'app/shared/utils/utils';
 
 import { Comment } from 'app/models/comment';
+import { CommentPeriod } from 'app/models/commentPeriod';
 import { Document } from 'app/models/document';
 
-import { CommentPeriod } from 'app/models/commentPeriod';
-import { FormGroup, FormControl } from '@angular/forms';
-import { CommentService } from 'app/services/comment.service';
-import { MatSnackBar } from '@angular/material';
-import { DocumentService } from 'app/services/document.service';
 import { ApiService } from 'app/services/api';
-import { Utils } from 'app/shared/utils/utils';
+import { CommentService } from 'app/services/comment.service';
+import { DocumentService } from 'app/services/document.service';
+import { StorageService } from 'app/services/storage.service';
 
 @Component({
   selector: 'app-add-comment',
@@ -27,7 +29,7 @@ export class AddCommentComponent implements OnInit {
   public projectId;
   public comment = new Comment();
   public commentPeriod: CommentPeriod;
-  public commentFiles: Document[] = [];
+  public commentFiles: Array<File> = [];
   public documents: Document[] = [];
   public loading = true;
 
@@ -106,48 +108,30 @@ export class AddCommentComponent implements OnInit {
     } else if (this.addCommentForm.get('isRejected').value) {
       this.comment.eaoNotes = this.addCommentForm.get('rejectionNotesText').value;
       this.comment.eaoStatus = 'Rejected';
-      // this.documents.forEach(document => {
-      //   document.document.eaoStatus = 'Rejected';
-      // });
     } else {
       this.comment.eaoStatus = 'Reset';
     }
     this.comment.proponentNotes = this.addCommentForm.get('proponentResponseText').value;
     this.comment.valuedComponents = this.storageService.state.currentVCs.data;
 
-    // this.documents.forEach(document => {
-    //   if (document.isEdited) {
-    //     const formData = new FormData();
-    //     formData.append('eaoStatus', document.document.eaoStatus);
-    //     this.documentService.update(formData, document.document._id)
-    //       .takeUntil(this.ngUnsubscribe)
-    //       .subscribe(
-    //         doc => { },
-    //         error => {
-    //           console.log('error =', error);
-    //           alert('Uh-oh, couldn\'t update document');
-    //         },
-    //         () => { }
-    //       );
-    //   }
-    // });
-
     this.comment.period = this.commentPeriod._id;
 
-    this.commentService.add(this.comment)
+    // go through and upload one at a time.
+    const documentsForm = this.uploadDocuments();
+    this.comment.documents = [];
+
+    this.commentService.add(this.comment, documentsForm)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        newComment => {
-          this.comment = newComment;
-        },
+        res => { },
         error => {
           console.log('error =', error);
-          alert('Uh-oh, couldn\'t edit comment period');
+          alert('Uh-oh, couldn\'t add comment');
         },
         () => { // onCompleted
           this.router.navigate(['/p', this.projectId, 'cp', this.commentPeriod._id]);
           this.loading = false;
-          this.openSnackBar('This comment was created successfuly.', 'Close');
+          this.openSnackBar('This comment was updated successfuly.', 'Close');
         }
       );
   }
@@ -185,6 +169,10 @@ export class AddCommentComponent implements OnInit {
           this.addCommentForm.controls.isPublished.setValue(false);
           this.addCommentForm.controls.isDeferred.setValue(false);
           this.addCommentForm.controls.isRejected.setValue(true);
+
+          this.documents.map(document => {
+            document.eaoStatus = 'Rejected';
+          });
         } else {
           this.addCommentForm.controls.isRejected.setValue(false);
         }
@@ -209,93 +197,60 @@ export class AddCommentComponent implements OnInit {
   }
 
   public toggleDocumentPublish(document: any, action: String) {
-    if (action === 'publish') {
-      document.document.eaoStatus = 'Published';
-    } else {
-      document.document.eaoStatus = 'Rejected';
+    if (action === 'Published' && !this.addCommentForm.get('isRejected').value) {
+      document.eaoStatus = 'Published';
+    } else if (action === 'Rejected' && !this.addCommentForm.get('isRejected').value) {
+      document.eaoStatus = 'Rejected';
     }
-    document.isEdited = true;
   }
 
-  // public uploadDocuments() {
-  //   this.loading = true;
+  private uploadDocuments() {
+    let docForms = [];
+    this.documents.map(doc => {
+      const formData = new FormData();
+      formData.append('upfile', doc.upfile);
+      formData.append('project', this.projectId);
+      formData.append('documentFileName', doc.documentFileName);
 
-  //   // go through and upload one at a time.
-  //   let observables = of(null);
+      formData.append('documentSource', 'COMMENT');
+      formData.append('dateUploaded', moment());
+      formData.append('datePosted', moment());
+      formData.append('documentAuthor', this.addCommentForm.get('authorText').value);
+      docForms.push(formData);
+    });
 
-  //   this.documents.map(doc => {
-  //     const formData = new FormData();
-  //     formData.append('upfile', doc.upfile);
-  //     formData.append('project', this.currentProjectId);
+    return docForms;
+  }
 
-  //     formData.append('documentFileName', doc.documentFileName);
-
-  //     formData.append('documentSource', 'PROJECT');
-
-  //     formData.append('displayName', this.myForm.value.displayName);
-  //     formData.append('milestone', this.myForm.value.labelsel);
-  //     formData.append('dateUploaded', moment(this.myForm.value.dateUploaded));
-  //     formData.append('datePosted', moment(this.myForm.value.datePosted));
-  //     formData.append('type', this.myForm.value.doctypesel);
-  //     formData.append('description', this.myForm.value.description);
-  //     formData.append('documentAuthor', this.myForm.value.authorsel);
-  //     observables = observables.concat(this.documentService.add(formData));
-  //   });
-
-  //   this.storageService.state = { type: 'form', data: null };
-  //   this.storageService.state = { type: 'documents', data: null };
-  //   this.storageService.state = { type: 'labels', data: null };
-
-  //   observables
-  //     .takeUntil(this.ngUnsubscribe)
-  //     .subscribe(
-  //       () => { // onNext
-  //         // do nothing here - see onCompleted() function below
-  //       },
-  //       error => {
-  //         console.log('error =', error);
-  //         alert('Uh-oh, couldn\'t delete project');
-  //         // TODO: should fully reload project here so we have latest non-deleted objects
-  //       },
-  //       () => { // onCompleted
-  //         // delete succeeded --> navigate back to search
-  //         // Clear out the document state that was stored previously.
-  //         this.router.navigate(['p', this.currentProjectId, 'project-documents']);
-  //         this.loading = false;
-  //       }
-  //     );
-  // }
 
   public addDocuments(files: FileList) {
-    console.log('add docs', files);
     if (files) { // safety check
       for (let i = 0; i < files.length; i++) {
         if (files[i]) {
           // ensure file is not already in the list
-
           if (this.documents.find(x => x.documentFileName === files[i].name)) {
-            // this.snackBarRef = this.snackBar.open('Can\'t add duplicate file', null, { duration: 2000 });
             continue;
           }
-
+          this.commentFiles.push(files[i]);
           const document = new Document();
           document.upfile = files[i];
           document.documentFileName = files[i].name;
-
+          if (this.addCommentForm.get('isRejected').value) {
+            document.eaoStatus = 'Rejected';
+          }
           // save document for upload to db when project is added or saved
           this.documents.push(document);
         }
       }
     }
-    console.log('add docs', this.documents);
   }
 
   public deleteDocument(doc: Document) {
     if (doc && this.documents) { // safety check
       // remove doc from current list
+      this.commentFiles = this.commentFiles.filter(item => (item.name !== doc.documentFileName));
       this.documents = this.documents.filter(item => (item.documentFileName !== doc.documentFileName));
     }
-    console.log('delete docs', this.documents);
   }
 
   public register() {

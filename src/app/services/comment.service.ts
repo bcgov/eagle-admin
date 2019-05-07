@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import { ApiService } from './api';
 import { Comment } from 'app/models/comment';
 import { DocumentService } from './document.service';
-import { flatMap } from 'rxjs/operators';
+import { flatMap, mergeMap } from 'rxjs/operators';
 import { of, forkJoin } from 'rxjs';
 
 @Injectable()
@@ -33,30 +33,68 @@ export class CommentService {
             return of(null as Comment);
           }
           if (comments[0].documents.length === 0) {
-            return of(comments[0]);
+            return of(new Comment(comments[0]));
           }
           // now get the rest of the data for this project
           return this._getExtraAppData(new Comment(comments[0]));
         })
       )
       .catch(error => this.api.handleError(error));
-    // .map(comments => {
-    //   // return the first (only) comment
-    //   return comments && comments.length > 0 ? new Comment(comments[0]) : null;
-    // })
   }
 
-  add(comment: Comment): Observable<Comment> {
-    return this.api.addComment(comment)
-      .catch(error => this.api.handleError(error));
+  add(comment: Comment, documentForms: Array<FormData> = []): Observable<Comment> {
+    if (documentForms.length > 0) {
+      let observables = of(null);
+      documentForms.map(documentForm => {
+        observables = observables.concat(this.documentService.add(documentForm));
+      });
+      return forkJoin(observables)
+        .pipe(
+          mergeMap(payload => {
+            payload.map(document => {
+              comment.documents.push(document._id);
+            });
+            return this.api.addComment(comment);
+          })
+        );
+    } else {
+      return this.api.addComment(comment)
+        .catch(error => this.api.handleError(error));
+    }
   }
 
   save(comment: Comment): Observable<Comment> {
-    // make a (deep) copy of the passed-in comment so we don't change it
-    const newComment = _.cloneDeep(comment);
+    if (comment.documentsList && comment.documentsList.length > 0) {
+      // Update documents publish status.
+      let observables = of(null);
+      comment.documentsList.map(document => {
+        if (document.eaoStatus === 'Published') {
+          observables = observables.concat(this.documentService.publish(document));
+        } else if (document.eaoStatus === 'Rejected') {
+          observables = observables.concat(this.documentService.unPublish(document));
+        }
+      });
+      comment.documentsList = null;
+      const newComment = _.cloneDeep(comment);
+      observables = observables.concat(this.api.saveComment(newComment));
+      return forkJoin(observables)
+        .pipe(
+          flatMap(payloads => {
+            console.log(payloads);
+            return of(payloads.pop());
+          })
+        );
 
-    return this.api.saveComment(newComment)
-      .catch(error => this.api.handleError(error));
+    } else {
+      // So we don't send this to API.
+      comment.documentsList = null;
+
+      // make a (deep) copy of the passed-in comment so we don't change it
+      const newComment = _.cloneDeep(comment);
+
+      return this.api.saveComment(newComment)
+        .catch(error => this.api.handleError(error));
+    }
   }
 
   publish(comment: Comment): Observable<Comment> {
