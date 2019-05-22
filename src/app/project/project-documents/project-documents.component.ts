@@ -320,10 +320,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = 1;
-    params['sortBy'] = this.tableParams.sortBy = '';
-    params['sortDirection'] = this.tableParams.sortDirection = 0;
-
+    params['currentPage'] = this.tableParams.currentPage;
+    params['sortBy'] = this.tableParams.sortBy;
+    params['sortDirection'] = this.tableParams.sortDirection;
 
     console.log('params =', params);
     console.log('nav:', ['p', this.currentProject._id, 'project-documents', params]);
