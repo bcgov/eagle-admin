@@ -8,7 +8,14 @@
              [(ngModel)]='document.checkbox'>
     </td>
     <td data-label="Name" (click)="goToItem(document)" scope="row" class="col-6">{{document.displayName}}</td>
-    <td data-label="Status" (click)="goToItem(document)" scope="row" class="col-2">{{document.status}}</td>
+    <td data-label="Status" (click)="goToItem(document)" scope="row" class="col-2">
+      <p class="card-text publish-state">
+<!--         <i class="material-icons">
+          {{document.status === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}
+        </i>
+        {{document.status === 'Publish' ?  'Not Published' : 'Published' || '-'}} -->
+      </p>
+    </td>
     <td data-label="Date" (click)="goToItem(document)" scope="row" class="col-2">{{document.datePosted | date:'longDate'}}</td>
     <td data-label="Type" (click)="goToItem(document)" scope="row" class="col-1">{{document.type | listConverter}}</td>
     <td data-label="Milestone" (click)="goToItem(document)" scope="row" class="col-2">{{document.milestone | listConverter}}</td>

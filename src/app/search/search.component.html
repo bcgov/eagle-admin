@@ -86,6 +86,9 @@
               <div class="card-body">
                 <h2 class="card-title">{{result.displayName}}</h2>
                 <p class="card-text"><label>Date:</label> {{result.datePosted | date:'medium'}}</p>
+
+                <p class="card-text">{{result.status}}</p>
+
                 <p *ngIf="result.milestone" class="card-text">Milestone: {{result.milestone | listConverter}}</p>
                 <p *ngIf="result.description" class="card-text">Description: {{result.description}}</p>
                 <div *ngIf="result.project">
@@ -146,6 +149,15 @@
                 <p *ngIf="result.project" class="card-text"><label>Project:</label> {{result.project.name}}</p>
                 <p class="card-text"><label>Date:</label> {{result.datePosted | date:'medium'}}</p>
               </div>
+
+              <p class="card-text publish-state">
+                <i class="material-icons">
+                  {{isPublished === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}
+                </i>
+
+                {{isPublished === 'Publish' ?  'Not Published' : 'Published' || '-'}}
+              </p>
+
               <h2 class="card-title">{{result.displayName}}</h2>
               <p *ngIf="result.milestone" class="card-text">Milestone: {{result.milestone | listConverter}}</p>
               <p *ngIf="result.description" class="card-text">Description: {{result.description}}</p>

@@ -43,10 +43,10 @@
         class="material-icons">edit</i>Edit</button>
     <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1"
       [disabled]="!isEnabled('publish')" type="button" id="button-p"><i
-        class="material-icons">check</i>Publish</button>
+        class="material-icons">cloud_done</i>Publish</button>
     <button (click)="selectAction('unpublish')" class="btn btn-outline-secondary mr-1"
       [disabled]="!isEnabled('unpublish')" type="button" id="button-u"><i
-        class="material-icons">close</i>Unpublish</button>
+        class="material-icons">cloud_off</i>Unpublish</button>
     <button (click)="selectAction('copyLink')" class="btn btn-outline-secondary mr-1"
       [disabled]="!isEnabled('copyLink')" type="button" id="button-cl"><i class="material-icons">link</i>Link</button>
     <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"

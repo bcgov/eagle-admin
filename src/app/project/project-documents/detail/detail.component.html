@@ -28,8 +28,12 @@
       <p id="displayName">{{document.displayName || '-'}}</p>
     </div>
     <div class="label-pair">
-      <h3 for="status">Status: </h3>
-      <p id="status">{{publishText === 'Publish' ?  'Not Published' : 'Published' || '-'}}</p>
+      <p id="status publish-state">
+        <i class="material-icons">
+          {{publishText === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}
+        </i>
+        {{publishText === 'Publish' ?  'Not Published' : 'Published' || '-'}}
+      </p>
     </div>
     <div class="label-pair">
       <h3 for="documentFileName">Filename: </h3>
