@@ -375,7 +375,7 @@ export class AddEditProjectComponent implements OnInit {
           () => { // onCompleted
             this.loading = false;
             this.router.navigated = false;
-            this.openSnackBar('This project was created successfuly.', 'Close');
+            this.openSnackBar('This project was edited successfuly.', 'Close');
             this.router.navigate(['/p', this.projectId, 'project-details']);
           },
           error => {
