@@ -24,19 +24,9 @@ export class AddEditProjectComponent implements OnInit {
   public myForm: FormGroup;
   public documents: any[] = [];
   public back: any = {};
-  public regions: Array<Object> = [
-    {id: 'cariboo', name: 'Cariboo'},
-    {id: 'kootenay', name: 'Kootenay'},
-    {id: 'lower mainland', name: 'Lower Mainland'},
-    {id: 'okanagan', name: 'Okanagan'},
-    {id: 'omineca', name: 'Omineca'},
-    {id: 'peace', name: 'Peace'},
-    {id: 'skeena', name: 'Skeena'},
-    {id: 'thompson-nicola', name: 'Thompson-Nicola'},
-    {id: 'vancouver island', name: 'Vancouver Island'}
-  ];
+  public regions: any[] = [];
+  public temp : any[] = [];
   public sectorsSelected = [];
-
   public PROJECT_SUBTYPES: Object = {
     'Mines': [
       'Coal Mines',
@@ -170,6 +160,17 @@ export class AddEditProjectComponent implements OnInit {
       });
     });
 
+    //This is to get Region infomation from List (db) and put into a list(regions)
+    this.config.lists.map(item => {
+      switch (item.type) {
+        case 'region':
+          this.temp.push(Object.assign({}, item));
+          break;
+      }
+    });
+    for(var _i = 0; _i<this.temp.length; _i++){
+      this.regions.push(this.temp[_i].name);
+    }
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
