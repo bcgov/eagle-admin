@@ -23,14 +23,14 @@ import { Utils } from 'app/shared/utils/utils';
 export class ReviewCommentComponent implements OnInit {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-
   public currentProject;
   public comment: Comment;
   public commentPeriod: CommentPeriod;
   public loading = true;
   public isRejectedRequired = false;
-
   public commentReviewForm: FormGroup;
+  public pendingCommentCount = 0;
+  public nextCommentId;
 
   constructor(
     private api: ApiService,
@@ -65,14 +65,19 @@ export class ReviewCommentComponent implements OnInit {
             // comment period not found --> navigate back to search
             this.router.navigate(['/search']);
           }
+
+          // This is populated in commentService.
+          this.pendingCommentCount = this.commentService.pendingCommentCount;
+          this.nextCommentId = this.commentService.nextCommentId;
+
           this.initForm();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
         } else {
           alert('Uh-oh, couldn\'t load comment');
           // comment period not found --> navigate back to search
           this.router.navigate(['/search']);
         }
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
       });
   }
 
@@ -101,7 +106,7 @@ export class ReviewCommentComponent implements OnInit {
     this.commentReviewForm.controls.rejectionNotesText.setValue(this.comment.rejectedNotes);
   }
 
-  public onSubmit() {
+  public onSubmit(action) {
     this.loading = true;
 
     this.comment.isAnonymous = !this.commentReviewForm.get('isNamePublic').value;
@@ -125,6 +130,7 @@ export class ReviewCommentComponent implements OnInit {
     this.comment.proponentNotes = this.commentReviewForm.get('proponentResponseText').value;
     this.comment.valuedComponents = this.storageService.state.currentVCs.data;
 
+    let previousCommentId = this.comment.commentId;
     this.commentService.save(this.comment)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
@@ -135,9 +141,21 @@ export class ReviewCommentComponent implements OnInit {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t edit comment');
         },
-        () => { // onCompleted
-          this.openSnackBar('Comment Updated.', 'Close');
-          this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+        () => {
+          this.openSnackBar(`Comment #${previousCommentId} updated.`, 'Close');
+          switch (action) {
+            case 'exit': {
+              this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+              break;
+            }
+            case 'next': {
+              this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id, 'c', this.nextCommentId, 'comment-details']);
+              break;
+            }
+            default: {
+              break;
+            }
+          }
           this.loading = false;
         }
       );

@@ -26,17 +26,17 @@ export class TopicService {
   // get all topics
   getAllTopics(pageNum: number = 1, pageSize: number = 10000, sortBy: string = null): Observable<Object> {
     return this.api.getTopics(pageNum, pageSize, sortBy)
-    .map((res: any) => {
-      if (res) {
-        let topics: Array<Topic> = [];
-        res[0].results.forEach(topic => {
-          topics.push(new Topic(topic));
-        });
-        return { totalCount: res[0].total_items, data: topics };
-      }
-      return {};
-    })
-    .catch(error => this.api.handleError(error));
+      .map((res: any) => {
+        if (res) {
+          let topics: Array<Topic> = [];
+          res[0].results.forEach(topic => {
+            topics.push(new Topic(topic));
+          });
+          return { totalCount: res[0].total_items, data: topics };
+        }
+        return {};
+      })
+      .catch(error => this.api.handleError(error));
   }
 
   add(orig: Topic): Observable<Topic> {

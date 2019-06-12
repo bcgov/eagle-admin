@@ -24,10 +24,6 @@ export class GetValuedComponentsComponent implements OnInit, OnDestroy {
   public valuedComponents: ValuedComponent[] = null;
   public terms = new SearchTerms();
   public loadingVCTable = true;
-  public currentPage = 1;
-  public pageSize = 1000;
-  public sortBy = '';
-  public sortDirection = 0;
 
   public tableData: TableObject;
   public tableColumns: any[] = [
@@ -95,14 +91,13 @@ export class GetValuedComponentsComponent implements OnInit, OnDestroy {
           } else {
             this.valuedComponents = [];
           }
-
+          this.loadingVCTable = false;
+          this._changeDetectionRef.detectChanges();
         } else {
           alert('Uh-oh, couldn\'t load valued components');
           // project not found --> navigate back to search
           this.router.navigate(['/search']);
         }
-        this.loadingVCTable = false;
-        this._changeDetectionRef.detectChanges();
       });
   }
 

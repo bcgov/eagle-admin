@@ -73,22 +73,25 @@ export class TopicsComponent implements OnInit, OnDestroy {
     this.route.params.subscribe(params => {
       this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
 
-      this.topicService.getAllTopics(this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
+      this.route.data
         .takeUntil(this.ngUnsubscribe)
         .subscribe((res: any) => {
-          if (res) {
-            this.tableParams.totalListItems = res.totalCount;
-            if (this.tableParams.totalListItems > 0) {
-              this.topics = res.data;
-              this.setTopicRowData();
+          if (res.topics) {
+            if (res.topics.data.length > 0) {
+              this.tableParams.totalListItems = res.topics.totalCount;
+              this.topics = res.topics.data;
+            } else {
+              this.tableParams.totalListItems = 0;
+              this.topics = [];
             }
+            this.setTopicRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load topics');
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
         });
     });
   }

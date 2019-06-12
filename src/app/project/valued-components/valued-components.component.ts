@@ -90,13 +90,13 @@ export class ValuedComponentsComponent implements OnInit, OnDestroy {
             this.valuedComponents = [];
           }
           this.setRowData();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
         } else {
           alert('Uh-oh, couldn\'t load valued components');
           // project not found --> navigate back to search
           this.router.navigate(['/search']);
         }
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
       });
   }
 

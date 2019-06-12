@@ -89,10 +89,10 @@ export class UploadComponent implements OnInit {
       this.labels = this.storageService.state.labels;
     }
     this.loading = false;
+    this._changeDetectionRef.detectChanges();
   }
 
   addLabels() {
-    console.log('Adding labels');
     this.storageService.state = { type: 'form', data: this.myForm };
     this.storageService.state = { type: 'documents', data: this.documents };
     this.storageService.state = { type: 'labels', data: this.labels };

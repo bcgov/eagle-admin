@@ -72,6 +72,50 @@ export class AddEditCommentPeriodComponent implements OnInit {
                   this.storageService.state.currentCommentPeriod = { type: 'currentCommentPeriod', data: this.commentPeriod };
 
                   this.initSelectedDocs();
+
+                  // Get data related to current project
+                  this.currentProject = this.storageService.state.currentProject.data;
+
+                  this.config.lists.map(item => {
+                    switch (item.type) {
+                      case 'doctype':
+                        break;
+                      case 'author':
+                        break;
+                      case 'label':
+                        this.milestones.push(Object.assign({}, item));
+                        break;
+                    }
+                  });
+
+                  if (this.storageService.state.addEditCPForm == null) {
+                    // Prep comment period form.
+                    this.commentPeriodForm = new FormGroup({
+                      'startDate': new FormControl(),
+                      'startTime': new FormControl(),
+                      'endDate': new FormControl(),
+                      'endTime': new FormControl(),
+                      'publishedStateSel': new FormControl(),
+                      'infoForCommentText': new FormControl(),
+                      'descriptionText': new FormControl(),
+                      'milestoneSel': new FormControl(),
+                      openHouses: this.formBuilder.array([])
+                    });
+                    if (this.isEditing) {
+                      this.initForEditing();
+                    } else {
+                      this.commentPeriodForm.controls.startTime.setValue({ hour: 9, minute: 0 });
+                      this.commentPeriodForm.controls.endTime.setValue({ hour: 23, minute: 59 });
+                      this.addOpenHouseRow();
+                      if (this.storageService.state.selectedDocumentsForCP == null) {
+                        this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: [] };
+                      }
+                    }
+                  } else {
+                    this.commentPeriodForm = this.storageService.state.addEditCPForm.data;
+                  }
+
+                  this.loading = false;
                   this._changeDetectionRef.detectChanges();
                 } else {
                   alert('Uh-oh, couldn\'t load comment periods');
@@ -83,50 +127,6 @@ export class AddEditCommentPeriodComponent implements OnInit {
         }
       });
     });
-
-    // Get data related to current project
-    this.currentProject = this.storageService.state.currentProject.data;
-
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'doctype':
-          break;
-        case 'author':
-          break;
-        case 'label':
-          this.milestones.push(Object.assign({}, item));
-          break;
-      }
-    });
-
-    if (this.storageService.state.addEditCPForm == null) {
-      // Prep comment period form.
-      this.commentPeriodForm = new FormGroup({
-        'startDate': new FormControl(),
-        'startTime': new FormControl(),
-        'endDate': new FormControl(),
-        'endTime': new FormControl(),
-        'publishedStateSel': new FormControl(),
-        'infoForCommentText': new FormControl(),
-        'descriptionText': new FormControl(),
-        'milestoneSel': new FormControl(),
-        openHouses: this.formBuilder.array([])
-      });
-      if (this.isEditing) {
-        this.initForEditing();
-      } else {
-        this.commentPeriodForm.controls.startTime.setValue({ hour: 9, minute: 0 });
-        this.commentPeriodForm.controls.endTime.setValue({ hour: 23, minute: 59 });
-        this.addOpenHouseRow();
-        if (this.storageService.state.selectedDocumentsForCP == null) {
-          this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: [] };
-        }
-      }
-    } else {
-      this.commentPeriodForm = this.storageService.state.addEditCPForm.data;
-    }
-
-    this.loading = false;
   }
 
   private initForEditing() {

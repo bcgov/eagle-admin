@@ -31,6 +31,7 @@ import { ProjectResolver } from './project-resolver.service';
 import { ReviewCommentResolver } from './comment-period/review-comment/review-comment-resolver.service';
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
 import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
+import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';
 
 const routes: Routes = [
   {
@@ -105,6 +106,9 @@ const routes: Routes = [
       {
         path: 'project-updates',
         component: ProjectUpdatesComponent,
+        resolve: {
+          documents: ProjectUpdatesResolver
+        }
       },
       {
         path: 'project-contracts',
@@ -198,6 +202,7 @@ const routes: Routes = [
     CommentPeriodsResolver,
     DocumentDetailResolver,
     DocumentsResolver,
+    ProjectUpdatesResolver,
     DocumentDetailResolver,
     TopicResolver,
     ProjectResolver,

@@ -37,7 +37,7 @@ export class ProjectComponent implements OnInit {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
         (data: { project: Project }) => {
-        if (data.project) {
+          if (data.project) {
             this.project = data.project;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             this.loading = false;
@@ -46,7 +46,6 @@ export class ProjectComponent implements OnInit {
             alert('Uh-oh, couldn\'t load project');
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
-            this.loading = false;
           }
         }
       );

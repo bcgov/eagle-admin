@@ -2,6 +2,7 @@ import { Component, OnInit, SimpleChanges, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Dictionary } from 'lodash';
 import * as moment from 'moment';
+import { Utils } from 'app/shared/utils/utils';
 
 export enum DayCalculatorModalResult {
   Dismissed,
@@ -10,8 +11,8 @@ export enum DayCalculatorModalResult {
 }
 
 export class DayCalculatorResult {
-  startDate: Date = null;
-  endDate: Date = null;
+  startDate: any = null;
+  endDate: any  = null;
   numDays: number = null;
 }
 
@@ -44,7 +45,8 @@ export class DayCalculatorModalComponent implements OnInit {
   type = this.types[0];
 
   constructor(
-    public activeModal: NgbActiveModal // also used in template
+    public activeModal: NgbActiveModal, // also used in template
+    private utils: Utils
   ) { }
 
   ngOnInit() {
@@ -184,15 +186,31 @@ export class DayCalculatorModalComponent implements OnInit {
     regular: boolean,
     suspended: boolean,
     numDays: number,
-    startDate: Date,
-    endDate: Date,
-    suspendDate: Date,
-    resumeDate: Date
+    startDate,
+    endDate,
+    suspendDate,
+    resumeDate
     ) {
       let calcRes = new DayCalculatorResult();
+
       calcRes.startDate = startDate;
       calcRes.endDate = endDate;
       calcRes.numDays = numDays;
+
+       // convert NGB Date to Javascript Date
+
+      if (startDate) {
+        startDate = this.utils.convertFormGroupNGBDateToJSDate(startDate);
+      }
+      if (endDate) {
+        endDate = this.utils.convertFormGroupNGBDateToJSDate(endDate);
+      }
+      if (suspendDate) {
+        suspendDate = this.utils.convertFormGroupNGBDateToJSDate(suspendDate);
+      }
+      if (resumeDate) {
+        resumeDate = this.utils.convertFormGroupNGBDateToJSDate(resumeDate);
+      }
 
       let startDateMoment = moment(startDate);
       let endDateMoment = moment(endDate);
@@ -256,7 +274,7 @@ export class DayCalculatorModalComponent implements OnInit {
 
         // Start counting the days
         while (numDays < calcRes.numDays) {
-          endDateMoment.add(1, 'd');
+          endDateMoment.add(1, 'days');
 
           // Factor in a suspension
           if (suspended && suspendDate && endDateMoment >= suspendDateMoment) {
@@ -274,10 +292,13 @@ export class DayCalculatorModalComponent implements OnInit {
           numDays++;
         }
         // convert moment date back to Date() object so it displays in datepicker
-        calcRes.endDate = new Date (endDateMoment.year(), endDateMoment.month(), endDateMoment.day());
+
+        let JS_endDate = new Date (endDateMoment.year(), endDateMoment.month(), endDateMoment.date());
+        calcRes.endDate = this.utils.convertJSDateToNGBDate(JS_endDate);
 
       } else if (endDate && calcRes.numDays) {
         // Find the start date from the end date and number of days
+
         startDateMoment = moment(endDate);
 
         // Include the start date in the calculation.
@@ -302,8 +323,10 @@ export class DayCalculatorModalComponent implements OnInit {
           // If we've made it this far, count the day
           numDays++;
         }
+
         // convert moment date back to Date() object so it displays in datepicker
-        calcRes.startDate = new Date(startDateMoment.year(), startDateMoment.month(), startDateMoment.day());
+        let JS_startDate = new Date (startDateMoment.year(), startDateMoment.month(), startDateMoment.date());
+        calcRes.startDate = this.utils.convertJSDateToNGBDate(JS_startDate);
       }
       return calcRes;
   }
@@ -314,8 +337,11 @@ export class DayCalculatorModalComponent implements OnInit {
       calcRes = this.calculateStartDate(
       this.type.value === 'regular',
       this.type.value === 'suspended',
-      0,
+      this.numDays,
       this.startDate,
+      // console.log("go: print start date in try block")
+      // console.log(this.startDate)
+
       this.endDate,
       this.suspendDate,
       this.resumeDate);

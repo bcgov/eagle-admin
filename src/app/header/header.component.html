@@ -8,7 +8,8 @@
           data-target="#mainNav"
           aria-controls="navbarText"
           aria-expanded="false"
-          aria-label="Toggle navigation">
+          aria-label="Toggle navigation"
+          (click)="toggleNav()">
           <i class="material-icons">menu</i>
           <span>MENU</span>
         </button>
@@ -27,9 +28,6 @@
                 <span class="align-middle"><i class="material-icons">dialpad</i></span>
                 <span class="align-middle">Calculator</span>
             </a>
-        </li>
-        <li>
-            <span>&nbsp;</span>
         </li>
         <!-- LOGGED IN -->
         <li *ngIf="jwt; else loggedOut" class="nav-item" placement="bottom-right">

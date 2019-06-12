@@ -2,10 +2,6 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item active" aria-current="page">All Contacts</li>
   </ol>
-  <!-- <button class="btn btn-primary create-contact" [routerLink]="['contacts/edit']">
-    <i class="material-icons">add</i>
-    <span>Create New Contact</span>
-  </button> -->
 </nav>
 <div class="search-container">
   <div class="fb-container bg-faded">
@@ -15,13 +11,13 @@
       </div>
       <main *ngIf="!loading">
         <section>
-          <app-table-template *ngIf="!loading && totalCount != 0"
+          <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
                               (checkboxChange)='checkChange($event)'
                               [columns]="documentTableColumns"
                               [data]="documentTableData"
                               (onColumnSort)='setColumnSort($event)'
                               (onSelectedRow)='updateSelectedRow($event)'
-                              (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+                              (onPageNumUpdate)='getPaginatedContacts($event, null, null)'>
           </app-table-template>
         </section>
       </main>

@@ -14,10 +14,14 @@ import { of, forkJoin } from 'rxjs';
 @Injectable()
 export class CommentService {
 
+  public pendingCommentCount = 0;
+  public nextCommentId = null;
+
   constructor(
     private api: ApiService,
     private documentService: DocumentService
   ) { }
+
 
   // get count of comments for the specified comment period id
   getCountByPeriodId(periodId: string): Observable<number> {
@@ -25,10 +29,14 @@ export class CommentService {
       .catch(error => this.api.handleError(error));
   }
 
-  getById(commentId: string): Observable<Comment> {
-    return this.api.getComment(commentId)
+  getById(commentId: string, populateNextComment: boolean = false): Observable<Comment> {
+    return this.api.getComment(commentId, populateNextComment)
       .pipe(
-        flatMap(comments => {
+        flatMap(res => {
+          this.pendingCommentCount = res.headers.get('x-pending-comment-count');
+          this.nextCommentId = res.headers.get('x-next-comment-id');
+
+          let comments = res.body;
           if (!comments || comments.length === 0) {
             return of(null as Comment);
           }
@@ -80,7 +88,7 @@ export class CommentService {
       observables.push(this.api.saveComment(newComment));
       return forkJoin(observables)
         .pipe(
-          flatMap( (payloads: any) => {
+          flatMap((payloads: any) => {
             return of(payloads.pop());
           })
         );

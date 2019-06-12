@@ -15,6 +15,6 @@ export class ReviewCommentResolver implements Resolve<Object> {
     const commentId = route.paramMap.get('commentId');
 
     // force-reload so we always have latest data
-    return this.commentService.getById(commentId);
+    return this.commentService.getById(commentId, true);
   }
 }

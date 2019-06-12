@@ -13,7 +13,7 @@
   <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
     <div class="input-group main-search-field">
       <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-        id="keywordInput" [(ngModel)]="keywords" autofocus />
+        id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
       <div class="input-group-append">
         <!-- prevent searching if input is empty or we're already searching -->
         <button class="btn btn-primary" type="submit">
@@ -22,14 +22,14 @@
       </div>
     </div>
     <div class="input-group-append">
-        <button _ngcontent-c7 class="btn btn-primary btn-search-help" type="submit" (click)="navSearchHelp()">
+        <a _ngcontent-c7 class="btn btn-primary btn-search-help"  [routerLink]="['/search-help']" target="_blank">
             <i class="material-icons md-18">info</i>
             <span> Search Help</span>
-        </button>
+        </a>
     </div>
     <div class="results">
       <p *ngIf="!loading && tableParams.totalListItems == 0">
-        No result<span *ngIf="count != 1">s</span> found for "{{keywords}}"
+        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
       </p>
       <div *ngIf="!loading && tableParams.totalListItems > 0">
         {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
@@ -45,11 +45,10 @@
     <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
       id="button-sa">Select All</button>
     <button (click)="selectAction('edit')" class="btn btn-outline-secondary mr-1"
-      [disabled]="!isEnabled('edit') || selectedCount > 1" type="button" id="button-e"><i
+      [disabled]="!isEnabled('edit')" type="button" id="button-e"><i
         class="material-icons">edit</i>Edit</button>
-    <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1"
-      [disabled]="!isEnabled('publish')" type="button" id="button-p"><i
-        class="material-icons">cloud_done</i>Publish</button>
+    <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('publish')"
+      type="button" id="button-p"><i class="material-icons">cloud_done</i>Publish</button>
     <button (click)="selectAction('unpublish')" class="btn btn-outline-secondary mr-1"
       [disabled]="!isEnabled('unpublish')" type="button" id="button-u"><i
         class="material-icons">cloud_off</i>Unpublish</button>
@@ -60,7 +59,7 @@
         class="material-icons">cloud_download</i>Download</button>
     <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
       type="button" id="button-d"><i class="material-icons">delete</i>Delete</button>
-    <a *ngIf='currentProject' class="upload-docs"[ngClass]="{'active': currentProject._id === 'activity'}"
+    <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
       [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
       <button class="btn btn-outline-secondary mr-1" type="button" id="button-d">
         <i class="material-icons">file_upload</i>Upload Document(s)

@@ -17,6 +17,7 @@ import { ActivityComponentResolver } from './activity/activity-component-resolve
 
 import { CanDeactivateGuard } from 'app/services/can-deactivate-guard.service';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
+import { TopicsResolver } from './administration/topics/topics-resolver.services';
 
 const routes: Routes = [
   {
@@ -29,7 +30,10 @@ const routes: Routes = [
   },
   {
     path: 'administration/topics',
-    component: TopicsComponent
+    component: TopicsComponent,
+    resolve: {
+      topics: TopicsResolver
+    }
   },
   {
     path: 'not-authorized',
@@ -99,7 +103,8 @@ const routes: Routes = [
   providers: [
     CanDeactivateGuard,
     ContactsResolverService,
-    ActivityComponentResolver
+    ActivityComponentResolver,
+    TopicsResolver
   ]
 })
 

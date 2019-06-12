@@ -1,0 +1,5 @@
+<tr *ngFor="let entry of entries | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+    class="clickable-row">
+    <td (click)="goToItem(entry)" data-label="Headline" scope="row" class="col-10">{{entry.headline}}</td>
+    <td (click)="goToItem(entry)" data-label="Date Added" scope="row" class="col-2">{{entry.dateAdded | date: 'longDate'}}</td>
+</tr>

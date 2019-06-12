@@ -62,6 +62,7 @@ import { CurrencyPipe } from '@angular/common';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
 import { RecentActivityService } from './services/recent-activity';
 import { SearchHelpComponent } from './search-help/search-help.component';
+import { ActivityDetailTableRowsComponent } from './activity/activity-detail-table-rows/activity-detail-table-rows.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -91,6 +92,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ContactsComponent,
     UserTableRowsComponent,
     ActivityTableRowsComponent,
+    ActivityDetailTableRowsComponent,
     AddEditActivityComponent,
     SearchHelpComponent
   ],
@@ -147,7 +149,8 @@ export function kcFactory(keycloakService: KeycloakService) {
     AddEditActivityComponent,
     TopicTableRowsComponent,
     UserTableRowsComponent,
-    ActivityTableRowsComponent
+    ActivityTableRowsComponent,
+    ActivityDetailTableRowsComponent
   ],
   bootstrap: [AppComponent]
 })

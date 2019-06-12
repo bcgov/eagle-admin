@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DialogService } from 'ng2-bootstrap-modal';
@@ -15,9 +14,7 @@ import { ProjectService } from 'app/services/project.service';
 import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
-import { ProjectComponent } from '../project.component';
 import { StorageService } from 'app/services/storage.service';
-import { OrgService } from 'app/services/org.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -43,11 +40,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     private dialogService: DialogService,
     public projectService: ProjectService, // also used in template
     public commentPeriodService: CommentPeriodService,
-    private cp: CurrencyPipe,
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
-    private projectComponent: ProjectComponent
   ) {
   }
 
@@ -56,7 +51,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
         (data: { project: Project }) => {
-        if (data.project) {
+          if (data.project) {
             this.project = data.project;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
@@ -65,7 +60,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
             alert('Uh-oh, couldn\'t load project');
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
-            // this.loading = false;
           }
         }
       );

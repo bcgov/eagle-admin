@@ -38,10 +38,10 @@
         </div>
       </div>
       <div class="input-group-append">
-        <button _ngcontent-c7 class="btn btn-primary btn-search-help" type="submit" (click)="navSearchHelp()">
-            <i class="material-icons md-18">info</i>
-            <span> Search Help</span>
-        </button>
+            <a _ngcontent-c7 class="btn btn-primary btn-search-help"  [routerLink]="['/search-help']" target="_blank">
+                <i class="material-icons md-18">info</i>
+                <span> Search Help</span>
+            </a>
       </div>
       <div>
         <p class="search-result" *ngIf="ranSearch && !searching && count == 0">

@@ -23,7 +23,7 @@
 
   <div class="form-group mb-0 mt-4">
     <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
-      <div class="form-row">
+      <div *ngIf="!multiEdit" class="form-row">
         <div class="form-group col-md-12">
           Publish?&nbsp;
           <input type="checkbox" [checked]="isPublished" (click)="togglePublish()">
@@ -31,29 +31,35 @@
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">
-          <label for="doctypesel">Document Type*</label>
-          <select required class="form-control" formControlName="doctypesel">
+          <label *ngIf="!multiEdit" for="doctypesel">Document Type*</label>
+          <label *ngIf="multiEdit" for="labelsel">Document Type</label>
+
+          <select [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
             <option *ngFor="let type of doctypes" [ngValue]="type._id">{{type.name}}</option>
           </select>
         </div>
         <div class="form-group col-md-4">
-          <label for="authorsel">Author*</label>
-          <select required class="form-control" formControlName="authorsel">
+          <label *ngIf="!multiEdit" for="authorsel">Author*</label>
+          <label *ngIf="multiEdit" for="labelsel">Author</label>
+
+          <select [required]="!multiEdit"  class="form-control" formControlName="authorsel">
             <option *ngFor="let author of authors" [ngValue]="author._id">{{author.name}}</option>
           </select>
         </div>
         <div class="form-group col-md-4">
-          <label for="labelsel">Milestone*</label>
-          <select required class="form-control" formControlName="labelsel">
+        <label *ngIf="!multiEdit" for="labelsel">Milestone*</label>
+        <label *ngIf="multiEdit" for="labelsel">Milestone</label>
+          <select [required]="!multiEdit"  class="form-control" formControlName="labelsel">
             <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">
-          <label for="inputAddress">Document Date*</label>
+          <label *ngIf="!multiEdit" for="inputAddress">Document Date*</label>
+          <label *ngIf="multiEdit" for="labelsel">Document Date</label>
           <div class="input-group">
-            <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePosted"
+            <input [required]="!multiEdit" type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePosted"
               formControlName="datePosted" ngbDatepicker #datePostedPicker="ngbDatepicker" />
             <div class="input-group-append">
               <button class="btn btn-outline-secondary calendar" (click)="datePostedPicker.toggle()"
@@ -62,9 +68,11 @@
           </div>
         </div>
         <div class="form-group col-md-4">
-          <label for="inputAddress">Date Uploaded*</label>
+          <label *ngIf="!multiEdit" for="inputAddress">Date Uploaded*</label>
+          <label *ngIf="multiEdit" for="labelsel">Date Uploaded</label>
+
           <div class="input-group">
-            <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="dateUploaded"
+            <input [required]="!multiEdit"  type="text" class="form-control" placeholder="yyyy-mm-dd" name="dateUploaded"
               formControlName="dateUploaded" ngbDatepicker #dateUploadedPicker="ngbDatepicker" />
             <div class="input-group-append">
               <button class="btn btn-outline-secondary calendar" (click)="dateUploadedPicker.toggle()"
@@ -73,17 +81,16 @@
           </div>
         </div>
       </div>
-      <div *ngIf="documents && documents.length === 1" class="form-row">
+      <div *ngIf="!multiEdit" class="form-row">
         <div class="form-group col-md-12">
           <label for="displayName">Document Name</label>
           <textarea class="form-control" id="displayName" name="displayName" rows="1" formControlName="displayName"></textarea>
         </div>
       </div>
-      <div class="form-row">
+      <div *ngIf="!multiEdit" class="form-row">
         <div class="form-group col-md-12">
           <label for="inputDescription">Description</label>
-          <textarea class="form-control" id="inputDescription" name="description" rows="1"
-            formControlName="description"></textarea>
+          <textarea class="form-control" id="inputDescription" name="description" rows="1" formControlName="description"></textarea>
         </div>
       </div>
     </form>

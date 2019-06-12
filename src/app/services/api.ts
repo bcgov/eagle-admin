@@ -588,7 +588,7 @@ export class ApiService {
   }
 
   // NB: returns array with 1 element
-  getComment(id: string): Observable<Comment[]> {
+  getComment(id: string, populateNextComment: boolean): Observable<any> {
     const fields = [
       '_id',
       'author',
@@ -613,8 +613,9 @@ export class ApiService {
       'write',
       'delete'
     ];
-    const queryString = `comment/${id}?fields=${this.buildValues(fields)}`;
-    return this.http.get<Comment[]>(`${this.pathAPI}/${queryString}`, {});
+    let queryString = `comment/${id}?fields=${this.buildValues(fields)}`;
+    if (populateNextComment) { queryString += '&populateNextComment=true'; }
+    return this.http.get<any>(`${this.pathAPI}/${queryString}`, { observe: 'response' });
   }
 
   addComment(comment: Comment): Observable<Comment> {

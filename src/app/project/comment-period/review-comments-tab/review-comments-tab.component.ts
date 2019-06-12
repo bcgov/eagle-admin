@@ -127,15 +127,14 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
           } else {
             this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: true };
           }
+          this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
         } else {
           alert('Uh-oh, couldn\'t load comments');
           // project not found --> navigate back to search
           this.router.navigate(['/search']);
         }
-
-        this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
       });
   }
 
@@ -162,7 +161,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
       commentList.push(
         {
           _id: comment._id,
-          // Safetey check if documents are null or are present with an emtpy array
+          // Safety check if documents are null or are present with an emtpy array
           attachments: comment.documents !== null ? comment.documents.length : 0,
           commentId: comment.commentId,
           author: comment.author,

@@ -101,13 +101,13 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
               this.commentPeriods = [];
             }
             this.setCPRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load comment periods');
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
         }
       );
   }

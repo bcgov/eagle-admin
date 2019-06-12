@@ -21,8 +21,13 @@
   <div class="btn-container">
     <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
     &nbsp;
-    <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit"
-      (click)="onSubmit()">Save and Exit</button>
+    <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit('exit')">
+      Save/Exit
+    </button>
+    <button *ngIf='pendingCommentCount > 0' [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit"
+      (click)="onSubmit('next')">
+      Save/Next ({{pendingCommentCount}})
+    </button>
   </div>
 </nav>
 
@@ -150,9 +155,8 @@
       <div class="form-group col-md-6">
         <label for="inputAddDate"><b>Date Added</b></label>
         <div class="input-group">
-          <input id="inputAddDate" container='body' type="text" class="form-control"
-            placeholder="Select an add date" name="dateAdded" formControlName="dateAdded" ngbDatepicker
-            #addDatePicker="ngbDatepicker">
+          <input id="inputAddDate" container='body' type="text" class="form-control" placeholder="Select an add date"
+            name="dateAdded" formControlName="dateAdded" ngbDatepicker #addDatePicker="ngbDatepicker">
           <div class="input-group-append">
             <button disabled class="btn btn-outline-secondary calendar" (click)="addDatePicker.toggle()"
               type="button"></button>
@@ -162,9 +166,8 @@
       <div class="form-group col-md-6">
         <label for="inputPostDate"><b>Date Posted</b></label>
         <div class="input-group">
-          <input id="inputPostDate" container='body' type="text" class="form-control"
-            placeholder="Select a post date" name="datePosted" formControlName="datePosted" ngbDatepicker
-            #postDatePicker="ngbDatepicker">
+          <input id="inputPostDate" container='body' type="text" class="form-control" placeholder="Select a post date"
+            name="datePosted" formControlName="datePosted" ngbDatepicker #postDatePicker="ngbDatepicker">
           <div class="input-group-append">
             <button disabled class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()"
               type="button"></button>
