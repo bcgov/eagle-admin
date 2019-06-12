@@ -24,17 +24,7 @@ export class AddEditProjectComponent implements OnInit {
   public myForm: FormGroup;
   public documents: any[] = [];
   public back: any = {};
-  public regions: Array<Object> = [
-    {id: 'cariboo', name: 'Cariboo'},
-    {id: 'kootenay', name: 'Kootenay'},
-    {id: 'lower mainland', name: 'Lower Mainland'},
-    {id: 'okanagan', name: 'Okanagan'},
-    {id: 'omineca', name: 'Omineca'},
-    {id: 'peace', name: 'Peace'},
-    {id: 'skeena', name: 'Skeena'},
-    {id: 'thompson-nicola', name: 'Thompson-Nicola'},
-    {id: 'vancouver island', name: 'Vancouver Island'}
-  ];
+  public regions: any[] = [];
   public sectorsSelected = [];
 
   public PROJECT_SUBTYPES: Object = {
@@ -170,6 +160,14 @@ export class AddEditProjectComponent implements OnInit {
       });
     });
 
+    // This is to get Region information from List (db) and put into a list(regions)
+    this.config.lists.map(item => {
+      switch (item.type) {
+        case 'region':
+          this.regions.push(item.name);
+          break;
+      }
+    });
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
@@ -329,7 +327,7 @@ export class AddEditProjectComponent implements OnInit {
               'sector': form.controls.sector.value,
               'description': form.controls.description.value,
               'location': form.controls.location.value,
-              'region': form.controls.region.value.id,
+              'region': form.controls.region.value,
               'centroid': [form.get('lon').value, form.get('lat').value],
               'addFile': form.controls.addFile.value,
               'CEAAInvolvement': form.controls.CEAAInvolvement.value,
@@ -387,7 +385,7 @@ export class AddEditProjectComponent implements OnInit {
           () => { // onCompleted
             this.loading = false;
             this.router.navigated = false;
-            this.openSnackBar('This project was created successfuly.', 'Close');
+            this.openSnackBar('This project was created successfully.', 'Close');
             this.router.navigate(['/p', this.projectId, 'project-details']);
           },
           error => {
