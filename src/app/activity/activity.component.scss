@@ -1,3 +1,23 @@
+@import "assets/styles/components/add-edit.scss";
+
+.btn-group-toggle > .btn {
+  margin-bottom: 0;
+  border-radius: 24px;
+  background: none;
+  color: #003367;
+  border: 2px solid #003367;
+  font-weight: 600;
+
+  &:hover {
+    background: #fcb118;
+  }
+
+  &.active {
+  	background: #003367;
+  	color: #fff;
+  }
+}
+
 // Move somewhere global
 h1 {
   letter-spacing: -0.05rem;

@@ -18,9 +18,17 @@ export class TableTemplateUtils {
     currentUrl += `;currentPage=${currentPage};pageSize=${pageSize}`;
     if (keywords !== '') { currentUrl += `;keywords=${keywords}`; }
     if (sortString !== '' && sortString !== null) { currentUrl += `;sortBy=${sortString}`; }
-    if (filter !== null) {
+    if (filter !== null && filter !== {}) {
       Object.keys(filter).forEach(key => {
-        currentUrl += `;${key}=${filter[key]}`;
+        if (filter[key] === true || filter[key] === false) {
+          currentUrl += `;${key}=${filter[key]}`;
+        } else {
+          currentUrl += `;${key}=`;
+          filter[key].split(',').forEach(item => {
+            currentUrl += `${item},`;
+          });
+          currentUrl = currentUrl.slice(0, -1);
+        }
       });
     }
     currentUrl += ';ms=' + new Date().getTime();

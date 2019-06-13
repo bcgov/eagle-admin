@@ -3,32 +3,49 @@ import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/r
 import { Observable } from 'rxjs/Observable';
 
 import { SearchService } from 'app/services/search.service';
-import { ApiService } from 'app/services/api';
+import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
 @Injectable()
 export class ActivityComponentResolver implements Resolve<Observable<object>> {
   constructor(
     private searchService: SearchService,
-    private api: ApiService
+    private tableTemplateUtils: TableTemplateUtils
   ) { }
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<object> {
+  resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const activity = route.paramMap.get('activityId');
     if (activity) {
       return this.searchService.getItem(activity, 'RecentActivity');
     } else {
-      const pageNum = Number(route.queryParams['pageNum'] ? route.queryParams['pageNum'] : 1);
-      const pageSize = Number(route.queryParams['pageSize'] ? route.queryParams['pageSize'] : 10);
-      const sortBy = route.queryParams['sortBy'] ? route.queryParams['sortBy'] : '-dateAdded';
-      const keywords = route.params.keywords;
-      return this.searchService.getSearchResults(keywords,
+      // this.filterForUrl.dateAddedStart = route.params.dateAddedStart == null || route.params.dateAddedStart === '' ? '' : route.params.dateAddedStart;
+      // this.filterForUrl.dateAddedEnd = route.params.dateAddedEnd == null || route.params.dateAddedEnd === '' ? '' : route.params.dateAddedEnd;
+
+      let filter = {};
+      let filterForApi = {};
+      if (route.params.type != null) {
+        filter['type'] = route.params.type;
+        let typeFiltersFromRoute = route.params.type.split(',');
+        let typeFiltersForApi = [];
+        if (typeFiltersFromRoute.includes('publicCommentPeriod')) { typeFiltersForApi.push('Public Comment Period'); }
+        if (typeFiltersFromRoute.includes('news')) { typeFiltersForApi.push('News'); }
+        if (typeFiltersForApi.length > 0) { filterForApi = { 'type': typeFiltersForApi.toString() }; }
+      }
+
+      let tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, filter);
+      if (tableParams.sortBy === '') {
+        tableParams.sortBy = '-dateAdded';
+        this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, null, tableParams.keywords);
+      }
+      return this.searchService.getSearchResults(
+        tableParams.keywords || '',
         'RecentActivity',
         null,
-        pageNum,
-        pageSize,
-        sortBy,
+        tableParams.currentPage,
+        tableParams.pageSize,
+        tableParams.sortBy,
         null,
-        true);
+        true,
+        filterForApi);
     }
   }
 }
