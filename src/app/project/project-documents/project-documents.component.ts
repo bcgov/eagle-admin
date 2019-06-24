@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
-
+import {MatSnackBar } from '@angular/material';
 import { Document } from 'app/models/document';
 import { SearchTerms } from 'app/models/search';
 
@@ -79,6 +79,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private documentService: DocumentService,
     private route: ActivatedRoute,
     private router: Router,
+    private snackBar: MatSnackBar,
     private searchService: SearchService,
     private storageService: StorageService,
     private tableTemplateUtils: TableTemplateUtils
@@ -130,6 +131,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       });
   }
 
+  public openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {verticalPosition: 'top', horizontalPosition: 'center', duration: 4000});
+  }
   public selectAction(action) {
     let promises = [];
 
@@ -151,7 +155,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             selBox.select();
             document.execCommand('copy');
             document.body.removeChild(selBox);
-            // alert('Item has been copied to the clipboard');
+            this.openSnackBar('A  PUBLIC  link to this document has been copied.', 'Close');
           }
         });
         break;
