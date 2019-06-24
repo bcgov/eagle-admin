@@ -130,6 +130,15 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       });
   }
 
+  tempAlert(msg, duration) {
+   let pop_up = document.createElement('div');
+   pop_up.setAttribute('style', 'position:absolute;top:10%;left:40%;background-color:#E3A82B; padding: 20px;border-radius: 25px;');
+   pop_up.innerHTML = msg;
+   setTimeout(function() {
+    pop_up.parentNode.removeChild(pop_up);
+   }, duration);
+   document.body.appendChild(pop_up);
+  }
   public selectAction(action) {
     let promises = [];
 
@@ -151,7 +160,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             selBox.select();
             document.execCommand('copy');
             document.body.removeChild(selBox);
-            // alert('Item has been copied to the clipboard');
+            this.tempAlert('A <strong>PUBLIC</strong> link to this document has been copied.', 4000);
           }
         });
         break;
