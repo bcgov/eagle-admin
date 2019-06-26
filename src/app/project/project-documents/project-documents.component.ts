@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
-
+import {MatSnackBar, MatSnackBarConfig, MatSnackBarHorizontalPosition, MatSnackBarVerticalPosition, } from '@angular/material';
 import { Document } from 'app/models/document';
 import { SearchTerms } from 'app/models/search';
 
@@ -28,6 +28,10 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public documents: Document[] = null;
   public loading = true;
+  // config for MatSnackBar
+  autoHide = 4000;
+  horizontalPosition: MatSnackBarHorizontalPosition = 'center';
+  verticalPosition: MatSnackBarVerticalPosition = 'top';
 
   public documentTableData: TableObject;
   public documentTableColumns: any[] = [
@@ -79,6 +83,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private documentService: DocumentService,
     private route: ActivatedRoute,
     private router: Router,
+    private snackBar: MatSnackBar,
     private searchService: SearchService,
     private storageService: StorageService,
     private tableTemplateUtils: TableTemplateUtils
@@ -130,14 +135,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       });
   }
 
-  tempAlert(msg, duration) {
-   let pop_up = document.createElement('div');
-   pop_up.setAttribute('style', 'position:absolute;top:10%;left:40%;background-color:#E3A82B; padding: 20px;border-radius: 25px;');
-   pop_up.innerHTML = msg;
-   setTimeout(function() {
-    pop_up.parentNode.removeChild(pop_up);
-   }, duration);
-   document.body.appendChild(pop_up);
+  public openSnackBar(message: string, action: string) {
+    let config = new MatSnackBarConfig();
+    config.verticalPosition = this.verticalPosition;
+    config.horizontalPosition = this.horizontalPosition;
+    config.duration = this.autoHide;
+    this.snackBar.open(message, action, config);
   }
   public selectAction(action) {
     let promises = [];
@@ -160,7 +163,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             selBox.select();
             document.execCommand('copy');
             document.body.removeChild(selBox);
-            this.tempAlert('A <strong>PUBLIC</strong> link to this document has been copied.', 4000);
+            this.openSnackBar('A  PUBLIC  link to this document has been copied.', 'Close');
           }
         });
         break;
