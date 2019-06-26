@@ -1,0 +1,60 @@
+<nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
+  <div *ngIf="!isEditing">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/contacts']">Contacts</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/contacts', 'add']">Add</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Add Organization
+      </li>
+    </ol>
+  </div>
+  <div *ngIf="isEditing">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/contacts']">Contacts</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/c', contactId, 'edit']">Edit</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Add Organization
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<main class="container-fluid-padding add-edit-form">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
+    <div class="input-group main-search-field mb-2">
+      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+        id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+      <div class="input-group-append">
+        <!-- prevent searching if input is empty or we're already searching -->
+        <button class="btn btn-primary" type="submit">
+          <span>Search</span>
+        </button>
+      </div>
+    </div>
+    <div class="mb-2">
+      <p *ngIf="tableParams.totalListItems == 0">
+        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
+      </p>
+      <div *ngIf="tableParams.totalListItems > 0">
+        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
+      </div>
+    </div>
+  </form>
+
+  <p><i>Click on the organization table row that you would like to add the contact to:</i></p>
+
+  <app-table-template *ngIf="tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
+    (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
+  </app-table-template>
+</main>

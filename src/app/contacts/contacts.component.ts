@@ -2,12 +2,12 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { User } from 'app/models/user';
-import { SearchService } from 'app/services/search.service';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { UserTableRowsComponent } from './user-table-rows/user-table-rows.component';
 import { SearchTerms } from 'app/models/search';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { StorageService } from 'app/services/storage.service';
 
 @Component({
   selector: 'app-contacts',
@@ -30,17 +30,23 @@ export class ContactsComponent implements OnInit, OnDestroy {
     {
       name: 'Organization',
       value: 'org',
-      width: 'col-4'
+      width: 'col-3'
     },
     {
       name: 'Phone',
       value: 'phoneNumber',
-      width: 'col-3'
+      width: 'col-2'
     },
     {
       name: 'Email',
       value: 'email',
       width: 'col-3'
+    },
+    {
+      name: 'Action',
+      value: 'null',
+      width: 'col-1',
+      nosort: true
     }
   ];
 
@@ -50,48 +56,52 @@ export class ContactsComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private searchService: SearchService,
     private _changeDetectionRef: ChangeDetectorRef,
-    private tableTemplateUtils: TableTemplateUtils
+    private tableTemplateUtils: TableTemplateUtils,
+    private storageService: StorageService
   ) { }
 
   ngOnInit() {
-    this.route.data
+    this.route.params
       .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res && res.users && res.users[0].data.meta && res.users[0].data.meta.length > 0) {
-          this.tableParams.totalListItems = res.users[0].data.meta[0].searchResultsTotal;
-          this.users = res.users[0].data.searchResults;
-        } else {
-          this.tableParams.totalListItems = 0;
-          this.users = [];
-        }
-        this.setDocumentRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      }
-      );
+      .subscribe(params => {
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+        this.route.data
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe((res: any) => {
+            if (res && res.users && res.users[0].data.meta && res.users[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res.users[0].data.meta[0].searchResultsTotal;
+              this.users = res.users[0].data.searchResults;
+            } else {
+              this.tableParams.totalListItems = 0;
+              this.users = [];
+            }
+            this.setDocumentRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
+          });
+      });
   }
 
-  public checkChange(event) {
-  }
-
-  public onSubmit() {
+  public onSubmit(currentPage = 1) {
     // dismiss any open snackbar
     // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
 
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
+    this.loading = true;
 
     // Reset page.
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = 1;
-    params['sortBy'] = this.tableParams.sortBy = '';
+    params['currentPage'] = this.tableParams.currentPage = currentPage;
+    params['pageSize'] = this.tableParams.pageSize;
+    params['keywords'] = this.tableParams.keywords;
+    params['sortBy'] = this.tableParams.sortBy;
 
-    this.router.navigate(['u', params]);
+    this.router.navigate(['contacts', params]);
   }
 
   setDocumentRowData() {
@@ -111,36 +121,17 @@ export class ContactsComponent implements OnInit, OnDestroy {
     } else {
       this.tableParams.sortBy = '+' + column;
     }
-    this.getPaginatedContacts(this.tableParams.currentPage);
+    this.onSubmit(this.tableParams.currentPage);
   }
 
   updateSelectedRow(count) {
     this.selectedCount = count;
   }
 
-  getPaginatedContacts(pageNumber) {
-    // Go to top of page after clicking to a different page.
-    window.scrollTo(0, 0);
-    this.loading = true;
-
-    this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
-
-    this.searchService.getSearchResults(null,
-      'User',
-      null,
-      pageNumber,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      {})
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.users = res[0].data.searchResults;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, null || '');
-        this.setDocumentRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+  addContact() {
+    this.storageService.state.contactForm = null;
+    this.storageService.state.selectedOrganization = null;
+    this.router.navigate(['contacts', 'add']);
   }
 
   ngOnDestroy() {

@@ -14,8 +14,8 @@ import { InputModalComponent } from 'app/input-modal/input-modal.component';
 import { ProjectService } from 'app/services/project.service';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { UserService } from 'app/services/user.service';
 import { ExcelService } from 'app/services/excel.service';
+import { SearchService } from 'app/services/search.service';
 
 @Component({
   selector: 'app-project-groups',
@@ -56,28 +56,27 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
     private dialogService: DialogService,
-    private userService: UserService,
     private excelService: ExcelService,
     private modalService: NgbModal,
     private tableTemplateUtils: TableTemplateUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
-
+    private searchService: SearchService
   ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
 
     this.route.params
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe(params => {
-      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-      if (this.tableParams.sortBy === '') {
-        this.tableParams.sortBy = '-dateAdded';
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-      }
-      this._changeDetectionRef.detectChanges();
-    });
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(params => {
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = '-dateAdded';
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
+        }
+        this._changeDetectionRef.detectChanges();
+      });
 
     this.route.data
       .takeUntil(this.ngUnsubscribe)
@@ -184,21 +183,23 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     // Get all the user emails
     let csvData = [];
     filteredArray.map((item) => {
-      csvData.push(this.userService.getById(item).toPromise());
+      csvData.push(
+        this.searchService.getItem(item._id, 'User').toPromise()
+      );
     });
     this.loading = false;
     return Promise.all(csvData)
-    .then((data) => {
-      // Reload main page.
-      let userData = [];
-      data.map(p => {
-        userData.push({email: p[0].email});
-      });
-      console.log(userData);
+      .then((data) => {
+        // Reload main page.
+        let userData = [];
+        data.map(p => {
+          userData.push({ email: p[0].email });
+        });
+        console.log(userData);
 
-      // Export to CSV
-      this.excelService.exportAsExcelFile(userData, 'contactList');
-    });
+        // Export to CSV
+        this.excelService.exportAsExcelFile(userData, 'contactList');
+      });
   }
 
   async addNewGroup() {

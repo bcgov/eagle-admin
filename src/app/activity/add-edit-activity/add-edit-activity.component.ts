@@ -3,7 +3,6 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { ProjectService } from 'app/services/project.service';
-import { ConfigService } from 'app/services/config.service';
 import { RecentActivityService } from 'app/services/recent-activity';
 import { RecentActivity } from 'app/models/recentActivity';
 import { Utils } from 'app/shared/utils/utils';
@@ -32,20 +31,11 @@ export class AddEditActivityComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private utils: Utils,
-    private configService: ConfigService,
     private recentActivityService: RecentActivityService,
     private projectService: ProjectService
   ) { }
 
   ngOnInit() {
-    this.route.url.subscribe(segments => {
-      segments.forEach(segment => {
-        if (segment.path === 'edit') {
-          this.isEditing = true;
-        }
-      });
-    });
-
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(res => {
@@ -62,6 +52,7 @@ export class AddEditActivityComponent implements OnInit {
             'documentUrl': ''
           });
         } else {
+          this.isEditing = true;
           this.buildForm(res.activity.data);
           this.activity = res.activity.data;
         }

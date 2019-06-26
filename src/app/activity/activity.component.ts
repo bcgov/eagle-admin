@@ -178,13 +178,14 @@ export class ActivityComponent implements OnInit, OnDestroy {
       // this.filter.dateAddedStart = '';
       // this.filter.dateAddedEnd = '';
       this.typeFilters = [];
+    } else {
+      params['sortBy'] = this.tableParams.sortBy;
+      params['pageSize'] = this.tableParams.pageSize;
+      params['keywords'] = this.tableParams.keywords;
+      // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
+      // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
     }
 
-    params['sortBy'] = this.tableParams.sortBy;
-    params['pageSize'] = this.tableParams.pageSize;
-    params['keywords'] = this.tableParams.keywords;
-    // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
-    // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
     this.router.navigate(['activity', params]);
   }

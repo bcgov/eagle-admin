@@ -2,25 +2,40 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item active" aria-current="page">All Contacts</li>
   </ol>
+  <button type="button" class="btn btn-primary" (click)="addContact()">Add New Contact</button>
 </nav>
-<div class="search-container">
-  <div class="fb-container bg-faded">
-    <section class="container-fluid-padding" id="anchor-point">
-      <div class="spinner-container" *ngIf="loading">
-        <div class="spinner-new rotating"></div>
-      </div>
-      <main *ngIf="!loading">
-        <section>
-          <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
-                              (checkboxChange)='checkChange($event)'
-                              [columns]="documentTableColumns"
-                              [data]="documentTableData"
-                              (onColumnSort)='setColumnSort($event)'
-                              (onSelectedRow)='updateSelectedRow($event)'
-                              (onPageNumUpdate)='getPaginatedContacts($event, null, null)'>
-          </app-table-template>
-        </section>
-      </main>
-    </section>
+
+<main class="container-fluid-padding">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
   </div>
-</div>
+  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit(1)">
+    <div class="input-group main-search-field mb-2">
+      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+        id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+      <div class="input-group-append">
+        <!-- prevent searching if input is empty or we're already searching -->
+        <button class="btn btn-primary" type="submit">
+          <span>Search</span>
+        </button>
+      </div>
+    </div>
+    <div class="mb-2">
+      <p *ngIf="tableParams.totalListItems == 0">
+        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
+      </p>
+      <div *ngIf="tableParams.totalListItems > 0">
+        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
+      </div>
+    </div>
+  </form>
+  <div *ngIf="tableParams.totalListItems > 0">
+    <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+      [columns]="documentTableColumns" [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
+      (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
+    </app-table-template>
+  </div>
+  <div *ngIf="tableParams.totalListItems == 0">
+    There are no contacts.
+  </div>
+</main>

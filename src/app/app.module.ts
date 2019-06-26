@@ -67,6 +67,9 @@ import { PinsTableRowsComponent } from './project/pins-list/pins-table-rows/pins
 import { GroupsTableRowsComponent } from './project/project-groups/project-groups-table-rows/project-groups-table-rows.component';
 import { InputModalComponent } from './input-modal/input-modal.component';
 import { GroupTableRowsComponent } from './project/project-groups/group-contact/group-table-rows/group-table-rows.component';
+import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-contact.component';
+import { AddOrganizationComponent } from './contacts/add-organization/add-organization.component';
+import { AddOrganizationTableRowsComponent } from './contacts/add-organization/add-organization-table-rows/add-organization-table-rows.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -79,6 +82,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ConfirmComponent,
     DayCalculatorModalComponent,
     InputModalComponent,
+    AddEditContactComponent,
     AddEditTopicComponent,
     FooterComponent,
     HeaderComponent,
@@ -101,7 +105,9 @@ export function kcFactory(keycloakService: KeycloakService) {
     ActivityTableRowsComponent,
     ActivityDetailTableRowsComponent,
     AddEditActivityComponent,
-    SearchHelpComponent
+    SearchHelpComponent,
+    AddOrganizationComponent,
+    AddOrganizationTableRowsComponent
   ],
   imports: [
     BrowserAnimationsModule,
@@ -155,13 +161,17 @@ export function kcFactory(keycloakService: KeycloakService) {
     InputModalComponent,
     AddEditTopicComponent,
     AddEditActivityComponent,
+    AddEditContactComponent,
+    AddEditTopicComponent,
+    AddOrganizationComponent,
     TopicTableRowsComponent,
     GroupsTableRowsComponent,
     GroupTableRowsComponent,
     UserTableRowsComponent,
     PinsTableRowsComponent,
     ActivityTableRowsComponent,
-    ActivityDetailTableRowsComponent
+    ActivityDetailTableRowsComponent,
+    AddOrganizationTableRowsComponent
   ],
   bootstrap: [AppComponent]
 })

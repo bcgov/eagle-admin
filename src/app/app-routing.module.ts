@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-contact.component';
 import { LoginComponent } from './login/login.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { SearchComponent } from './search/search.component';
@@ -21,6 +22,9 @@ import { TopicsResolver } from './administration/topics/topics-resolver.services
 import { PinsGlobalComponentResolver } from './project/pins-list/pins-global-resolver.service';
 import { ProjectGroupResolver } from './project/project-groups/project-group-resolver.services';
 import { ProjectContactsGroupResolverService } from './project/project-groups/project-contact-group-resolver.services';
+import { AddOrganizationResolver } from './contacts/add-organization/add-organization-resolver.services';
+import { AddOrganizationComponent } from './contacts/add-organization/add-organization.component';
+import { EditContactResolver } from './contacts/add-edit-contact/edit-contact-resolver.services';
 
 const routes: Routes = [
   {
@@ -53,6 +57,31 @@ const routes: Routes = [
   {
     path: 'metrics',
     component: MetricsComponent
+  },
+  {
+    path: 'c/:contactId/edit/add-org',
+    component: AddOrganizationComponent,
+    resolve: {
+      organizations: AddOrganizationResolver
+    }
+  },
+  {
+    path: 'c/:contactId/edit',
+    component: AddEditContactComponent,
+    resolve: {
+      contact: EditContactResolver
+    }
+  },
+  {
+    path: 'contacts/add/add-org',
+    component: AddOrganizationComponent,
+    resolve: {
+      organizations: AddOrganizationResolver
+    }
+  },
+  {
+    path: 'contacts/add',
+    component: AddEditContactComponent,
   },
   {
     path: 'contacts',
@@ -106,10 +135,12 @@ const routes: Routes = [
   providers: [
     CanDeactivateGuard,
     ContactsResolverService,
+    EditContactResolver,
     ProjectGroupResolver,
     ProjectContactsGroupResolverService,
     PinsGlobalComponentResolver,
     ActivityComponentResolver,
+    AddOrganizationResolver,
     TopicsResolver
   ]
 })

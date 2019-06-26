@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 
@@ -10,22 +9,22 @@ import { Router } from '@angular/router';
   styleUrls: ['./user-table-rows.component.scss']
 })
 export class UserTableRowsComponent implements OnInit {
-    @Input() data: TableObject;
+  @Input() data: TableObject;
 
-    public contacts: any;
-    public paginationData: any;
+  public contacts: any;
+  public paginationData: any;
+  public dropdownItems = ['Edit', 'Delete'];
 
-    constructor(
-        private router: Router
-    ) { }
+  constructor(
+    private router: Router
+  ) { }
 
-    ngOnInit() {
-        this.contacts = this.data.data;
-        this.paginationData = this.data.paginationData;
-    }
+  ngOnInit() {
+    this.contacts = this.data.data;
+    this.paginationData = this.data.paginationData;
+  }
 
-    editContact(contact) {
-      console.log('edit contact:', contact);
-      this.router.navigate([`contacts/${contact._id}/edit`]);
-    }
+  editItem(contact) {
+    this.router.navigate(['c/', contact._id, 'edit']);
+  }
 }

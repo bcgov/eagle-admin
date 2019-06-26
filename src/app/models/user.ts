@@ -45,5 +45,9 @@ export class User {
     this.postalCode           = obj && obj.postalCode           || undefined;
     this.notes           = obj && obj.notes           || undefined;
     this.checkbox           = obj && obj.checkbox           || undefined;
+
+    Object.keys(obj).map(e => {
+      this[`${e}`] = `${obj[e]}`;
+    });
   }
 }

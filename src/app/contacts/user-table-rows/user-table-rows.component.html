@@ -1,7 +1,12 @@
-<tr
-    *ngFor="let contact of contacts | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+<tr *ngFor="let contact of contacts | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+    class="clickable-row">
     <td scope="row" data-label="Name" class="col-3">{{contact.displayName || '-'}}</td>
-    <td scope="row" data-label="Organization" class="col-4">{{contact?.org?.name || '-' }}</td>
-    <td scope="row" data-label="Phone" class="col-3">{{contact.phoneNumber || '-'}}</td>
+    <td scope="row" data-label="Organization" class="col-3">{{contact?.org?.name || '-' }}</td>
+    <td scope="row" data-label="Phone" class="col-2">{{contact.phoneNumber || '-'}}</td>
     <td scope="row" data-label="Email" class="col-3">{{contact.email || '-'}}</td>
+    <td class="col-1 clickable" data-label="Event" scope="row">
+        <i (click)="editItem(contact)" class="material-icons">
+            edit
+        </i>
+    </td>
 </tr>

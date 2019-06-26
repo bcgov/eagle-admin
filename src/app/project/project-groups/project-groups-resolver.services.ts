@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/forkJoin';
 
 import { SearchService } from 'app/services/search.service';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { of } from 'rxjs';
-import { ProjectService } from 'app/services/project.service';
-import { containsTree } from '@angular/router/src/url_tree';
-import { UserService } from 'app/services/user.service';
 
 @Injectable()
 export class ProjectContactsResolver implements Resolve<Observable<object>> {

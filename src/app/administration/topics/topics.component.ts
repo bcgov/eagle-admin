@@ -52,7 +52,8 @@ export class TopicsComponent implements OnInit, OnDestroy {
     {
       name: 'Action',
       value: 'null',
-      width: 'col-1'
+      width: 'col-1',
+      nosort: true
     }
   ];
 

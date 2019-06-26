@@ -112,7 +112,7 @@ export class ApiService {
         // login successful if there's a jwt token in the response
         if (res && res.accessToken) {
           this.token = res.accessToken;
-
+          window.localStorage.clear();
           // store username and jwt token in local storage to keep user logged in between page refreshes
           window.localStorage.setItem('currentUser', JSON.stringify({ username: username, token: this.token }));
 
@@ -270,7 +270,7 @@ export class ApiService {
 
   addGroupToProject(proj: Project, group: any): Observable<Project> {
     const queryString = `project/${proj._id}/group`;
-    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, {group: group}, {});
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { group: group }, {});
   }
 
   deletePin(projId: string, pinId: string): Observable<Project> {
@@ -985,31 +985,6 @@ export class ApiService {
   //
   // Users
   //
-  getUsers(): Observable<User[]> {
-    const fields = [
-      'displayName',
-      'username',
-      'firstName',
-      'lastName'
-    ];
-    const queryString = `user?fields=${this.buildValues(fields)}`;
-    return this.http.get<User[]>(`${this.pathAPI}/${queryString}`, {});
-  }
-
-  getUser(id: any): Observable<User> {
-    const fields = [
-      'displayName',
-      'username',
-      'firstName',
-      'lastName',
-      'org',
-      'phoneNumber',
-      'email',
-    ];
-    const queryString = `user/${id}?fields=${this.buildValues(fields)}`;
-    return this.http.get<User>(`${this.pathAPI}/${queryString}`, {});
-  }
-
   saveUser(user: User): Observable<User> {
     const queryString = `user/${user._id}`;
     return this.http.put<User>(`${this.pathAPI}/${queryString}`, user, {});
