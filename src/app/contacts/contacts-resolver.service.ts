@@ -11,16 +11,18 @@ export class ContactsResolverService implements Resolve<object> {
   ) { }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<object> {
-    const pageNum = Number(route.queryParams['pageNum'] ? route.queryParams['pageNum'] : 1);
-    const pageSize = Number(route.queryParams['pageSize'] ? route.queryParams['pageSize'] : 10);
-    const sortBy = route.queryParams['sortBy'] ? route.queryParams['sortBy'] : null;
+    const pageNum = route.params.currentPage ? route.params.currentPage : 1;
+    const pageSize = route.params.pageSize ? route.params.pageSize : 25;
+    const sortBy = route.params.sortBy ? route.params.sortBy : '+displayName';
     const keywords = route.params.keywords;
+    let filter = {};
+
     return this.searchService.getSearchResults(keywords,
                                               'User',
                                               null,
                                               pageNum,
                                               pageSize,
                                               sortBy,
-                                              {});
+                                              filter);
   }
 }

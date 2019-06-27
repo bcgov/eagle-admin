@@ -20,7 +20,7 @@ import { DocumentTableRowsComponent } from './project-documents/project-document
 import { IndigenousNationsComponent } from './indigenous-nations/indigenous-nations.component';
 import { MatTabsModule, MatMenuModule } from '@angular/material';
 import { MilestonesComponent } from './milestones/milestones.component';
-import { ProjectContactsComponent } from './project-contacts/project-contacts.component';
+import { ProjectGroupsComponent } from './project-groups/project-groups.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
@@ -45,6 +45,8 @@ import { AddDocumentComponent } from './comment-periods/add-edit-comment-period/
 import { AddDocumentTableRowsComponent } from './comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
 import { AddCommentComponent } from './comment-period/add-comment/add-comment.component';
 import { CommentPeriodBannerComponent } from './comment-period-banner/comment-period-banner.component';
+import { PinsListComponent } from './pins-list/pins-list.component';
+import { GroupsTableRowsComponent } from './project-groups/project-groups-table-rows/project-groups-table-rows.component';
 
 @NgModule({
   imports: [
@@ -75,11 +77,12 @@ import { CommentPeriodBannerComponent } from './comment-period-banner/comment-pe
     DocumentDetailComponent,
     DocumentEditComponent,
     DocumentTableRowsComponent,
+    GroupsTableRowsComponent,
     GetValuedComponentsComponent,
     GetValuedComponentTableRowsComponent,
     IndigenousNationsComponent,
     MilestonesComponent,
-    ProjectContactsComponent,
+    ProjectGroupsComponent,
     ProjectDetailComponent,
     ProjectDocumentsComponent,
     ProjectUpdatesComponent,
@@ -89,7 +92,8 @@ import { CommentPeriodBannerComponent } from './comment-period-banner/comment-pe
     TopicTableRowsComponent,
     UploadComponent,
     ValuedComponentsComponent,
-    ValuedComponentTableRowsComponent
+    ValuedComponentTableRowsComponent,
+    PinsListComponent
   ],
   entryComponents: [
     AddDocumentTableRowsComponent,
@@ -97,6 +101,7 @@ import { CommentPeriodBannerComponent } from './comment-period-banner/comment-pe
     CommentPeriodsComponent,
     CommentPeriodsTableRowsComponent,
     DocumentTableRowsComponent,
+    GroupsTableRowsComponent,
     ReviewCommentsTabTableRowsComponent,
     UploadComponent,
     ValuedComponentTableRowsComponent,
@@ -107,10 +112,11 @@ import { CommentPeriodBannerComponent } from './comment-period-banner/comment-pe
     ComplianceComponent,
     IndigenousNationsComponent,
     MilestonesComponent,
-    ProjectContactsComponent,
+    ProjectGroupsComponent,
     ProjectDetailComponent,
     ProjectUpdatesComponent,
-    ValuedComponentsComponent
+    ValuedComponentsComponent,
+    PinsListComponent
   ],
   providers: [
     ApiService,

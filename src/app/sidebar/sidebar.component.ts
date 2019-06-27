@@ -57,7 +57,10 @@ export class SidebarComponent implements OnInit {
         case 'project-updates': {
           break;
         }
-        case 'project-contracts': {
+        case 'project-groups': {
+          break;
+        }
+        case 'project-pins': {
           break;
         }
         case 'project-documents': {

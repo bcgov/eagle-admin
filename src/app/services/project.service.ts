@@ -15,6 +15,7 @@ import { DecisionService } from './decision.service';
 
 import { Project } from 'app/models/project';
 import { CommentPeriod } from 'app/models/commentPeriod';
+import { Org } from 'app/models/org';
 
 interface GetParameters {
   getFeatures?: boolean;
@@ -181,6 +182,21 @@ export class ProjectService {
   unPublish(proj: Project): Observable<Project> {
     return this.api.unPublishProject(proj)
       .catch(error => this.api.handleError(error));
+  }
+
+  addPins(proj: Project, pins: any): Observable<Project> {
+    return this.api.addPinsToProject(proj, pins)
+    .catch(error => this.api.handleError(error));
+  }
+
+  deletePin(projId: string, pin: string): Observable<Project> {
+    return this.api.deletePin(projId, pin)
+    .catch(error => this.api.handleError(error));
+  }
+
+  getPins(proj: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
+    return this.api.getProjectPins(proj, pageNum, pageSize, sortBy)
+    .catch(error => this.api.handleError(error));
   }
 
   // isAccepted(status: string): boolean {

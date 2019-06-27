@@ -68,10 +68,17 @@ export class Project {
   activeDate: String;
   activeStatus: any;
 
+  // Project contacts
+  projLead: any;
+  execProjectDirector: any;
+  complianceLead: any;
+
   // Permissions
   read: Array<String> = [];
   write: Array<String> = [];
   delete: Array<String> = [];
+
+  pins: any[] = [];
 
   // Not from API directly
   currentPeriods: CommentPeriod[];
@@ -143,6 +150,10 @@ export class Project {
     this.write               = obj && obj.write               || undefined;
     this.delete              = obj && obj.delete              || undefined;
 
+    this.projLead            = obj && obj.projLead              || undefined;
+    this.execProjectDirector = obj && obj.execProjectDirector   || undefined;
+    this.complianceLead      = obj && obj.complianceLead        || undefined;
+
     // if (obj && obj.publishDate) {
     //   this.publishDate = new Date(obj.publishDate);
     // }
@@ -154,6 +165,12 @@ export class Project {
     // if (obj && obj.legalDescription) {
     //   this.legalDescription = obj.legalDescription.replace(/\\n/g, '\n');
     // }
+    // copy pins
+    if (obj && obj.pins) {
+      obj.pins.forEach(pin => {
+        this.pins.push(pin);
+      });
+    }
 
     // copy centroid
     if (obj && obj.centroid) {

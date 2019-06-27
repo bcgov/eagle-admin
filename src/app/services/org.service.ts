@@ -16,7 +16,6 @@ export class OrgService {
     return this.api.getOrg(id)
       .map((org: any) => {
         // return the first (only) project
-        console.log('org getter', org);
         return org.length > 0 ? new Org(org[0]) : null;
       })
       .catch(error => this.api.handleError(error));

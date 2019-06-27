@@ -18,6 +18,7 @@ import { ActivityComponentResolver } from './activity/activity-component-resolve
 import { CanDeactivateGuard } from 'app/services/can-deactivate-guard.service';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
 import { TopicsResolver } from './administration/topics/topics-resolver.services';
+import { PinsGlobalComponentResolver } from './project/pins-list/pins-global-resolver.service';
 
 const routes: Routes = [
   {
@@ -103,6 +104,7 @@ const routes: Routes = [
   providers: [
     CanDeactivateGuard,
     ContactsResolverService,
+    PinsGlobalComponentResolver,
     ActivityComponentResolver,
     TopicsResolver
   ]

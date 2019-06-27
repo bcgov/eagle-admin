@@ -217,6 +217,10 @@ export class ApiService {
       'projectStatusDate',
       'activeDate',
       'updatedBy',
+      'projLead',
+      'execProjectDirector',
+      'complianceLead',
+      'pins',
       'read',
       'write',
       'delete'
@@ -257,6 +261,24 @@ export class ApiService {
   deleteProject(proj: Project): Observable<Project> {
     const queryString = `project/${proj._id}`;
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  addPinsToProject(proj: Project, pins: any): Observable<Project> {
+    const queryString = `project/${proj._id}/pin`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, pins, {});
+  }
+
+  deletePin(projId: string, pinId: string): Observable<Project> {
+    const queryString = `project/${projId}/pin/${pinId}`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  getProjectPins(id: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
+    let queryString = `project/${id}/pin`;
+    if (pageNum !== null) { queryString += `?pageNum=${pageNum - 1}`; }
+    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
+    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
+    return this.http.get<any>(`${this.pathAPI}/${queryString}`, {});
   }
 
   saveProject(proj: Project): Observable<Project> {
@@ -944,6 +966,20 @@ export class ApiService {
     ];
     const queryString = `user?fields=${this.buildValues(fields)}`;
     return this.http.get<User[]>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  getUser(id: any): Observable<User> {
+    const fields = [
+      'displayName',
+      'username',
+      'firstName',
+      'lastName',
+      'org',
+      'phoneNumber',
+      'email',
+    ];
+    const queryString = `user/${id}?fields=${this.buildValues(fields)}`;
+    return this.http.get<User>(`${this.pathAPI}/${queryString}`, {});
   }
 
   saveUser(user: User): Observable<User> {

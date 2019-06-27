@@ -15,7 +15,7 @@ import { DocumentDetailComponent } from './project-documents/detail/detail.compo
 import { DocumentEditComponent } from './project-documents/document-edit/document-edit.component';
 import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectComponent } from './project.component';
-import { ProjectContactsComponent } from './project-contacts/project-contacts.component';
+import { ProjectGroupsComponent } from './project-groups/project-groups.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
@@ -32,6 +32,13 @@ import { ReviewCommentResolver } from './comment-period/review-comment/review-co
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
 import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
 import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';
+import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
+import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
+import { PinsListComponent } from './pins-list/pins-list.component';
+import { ContactsResolverService } from 'app/contacts/contacts-resolver.service';
+import { ContactsComponent } from 'app/contacts/contacts.component';
+import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
+import { PinsGlobalComponentResolver } from './pins-list/pins-global-resolver.service';
 
 const routes: Routes = [
   {
@@ -111,8 +118,32 @@ const routes: Routes = [
         }
       },
       {
-        path: 'project-contracts',
-        component: ProjectContactsComponent,
+        path: 'project-groups',
+        component: ProjectGroupsComponent,
+        resolve: {
+          contacts: ProjectContactsResolver
+        }
+      },
+      {
+        path: 'project-groups/select',
+        component: ContactSelectComponent,
+        resolve: {
+          contacts: ContactsResolverService
+        }
+      },
+      {
+        path: 'project-pins',
+        component: PinsListComponent,
+        resolve: {
+          contacts: PinsComponentResolver
+        }
+      },
+      {
+        path: 'project-pins/select',
+        component: ContactSelectComponent,
+        resolve: {
+          contacts: PinsGlobalComponentResolver
+        }
       },
       {
         path: 'comment-periods/add/add-documents',
@@ -207,7 +238,9 @@ const routes: Routes = [
     TopicResolver,
     ProjectResolver,
     ReviewCommentResolver,
-    ValuedComponentsResolver
+    ValuedComponentsResolver,
+    PinsComponentResolver,
+    ProjectContactsResolver
   ]
 })
 

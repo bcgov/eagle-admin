@@ -12,13 +12,13 @@
       background-color: #e8eff5;
       padding: .7rem 0.15rem .85rem;
       border: none;
-      border-bottom: 2px solid transparent;
+      // border-bottom: 2px solid transparent;
 
       @media screen and (max-width: 600px) {
         padding: .7rem 0.5rem .85rem;
       }
       &:hover {
-        border-bottom: 2px solid #007bff;
+        // border-bottom: 2px solid #007bff;
       }
     }
   }
