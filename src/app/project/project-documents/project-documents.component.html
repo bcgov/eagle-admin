@@ -26,10 +26,19 @@
             <i class="material-icons md-18">info</i>
             <span> Search Help</span>
         </a>
-        <button *ngIf="!loading && tableParams.totalListItems > tableParams.pageSize"
-            class="btn btn-primary btn-search-help" (click)="onShowAll()">
-        <span> Show All Results</span>
-        </button>
+    <div class="row">
+        <div class="ml-auto " ngbDropdown placement="bottom-right">
+        <button class="btn btn-secondary btn-num-items dropdown-toggle" id="actionDropdown" ngbDropdownToggle>Items per page</button>
+        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+                <a class="dropdown-item" (click)="onNumItems(10)">10</a>
+            <a class="dropdown-item" (click)="onNumItems(25)">25</a>
+            <a class="dropdown-item" (click)="onNumItems(50)">50</a>
+            <a class="dropdown-item" (click)="onNumItems(100)">100</a>
+            <a class="dropdown-item" (click)="onNumItems('max')">Show All</a>
+        </div>
+        </div>
+    </div>
+
     </div>
     <div class="results">
       <p *ngIf="!loading && tableParams.totalListItems == 0">
