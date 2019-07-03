@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { ApiService } from 'app/services/api';
 import { JwtUtil } from 'app/jwt-util';
 import { KeycloakService } from 'app/services/keycloak.service';
+import { DialogService } from 'ng2-bootstrap-modal';
+import { ConfirmComponent } from 'app/confirm/confirm.component';
 
 import { DayCalculatorModalComponent } from 'app/day-calculator-modal/day-calculator-modal.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -47,6 +49,7 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private api: ApiService,
+    private dialogService: DialogService,
     private keycloakService: KeycloakService,
     private modalService: NgbModal,
     public router: Router
@@ -70,6 +73,17 @@ export class HeaderComponent implements OnInit {
     // Make sure they have the right role.
     if (!this.keycloakService.isValidForSite()) {
       this.router.navigate(['/not-authorized']);
+    }
+
+    let isIEOrEdge = /msie\s|trident\/|edge\//i.test(window.navigator.userAgent);
+    if ( isIEOrEdge ) {
+    this.dialogService.addDialog(ConfirmComponent,
+      {
+        title: 'Browser Incompatible',
+        message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.'
+      }, {
+        backdropColor: 'rgba(0, 0, 0, 0.5)'
+      });
     }
   }
 
