@@ -76,6 +76,10 @@
       <p id="milestone">{{document.milestone | listConverter}}</p>
     </div>
     <div class="label-pair">
+            <h3 for="projectPhase">Project Phase: </h3>
+            <p id="projectPhase">{{document.projectPhase | listConverter}}</p>
+          </div>
+    <div class="label-pair">
       <h3 for="internalSize">Filesize: </h3>
       <p id="internalSize">{{utils.formatBytes(document.internalSize)}}</p>
     </div>

@@ -63,6 +63,13 @@
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">
+            <label *ngIf="!multiEdit" for="projectphasesel">Project Phase*</label>
+            <label *ngIf="multiEdit" for="labelsel">Project Phase</label>
+            <select [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
+                <option *ngFor="let projectPhase of projectPhases" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
+            </select>
+        </div>
+        <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="inputAddress">Document Date*</label>
           <label *ngIf="multiEdit" for="labelsel">Document Date</label>
           <div class="input-group">

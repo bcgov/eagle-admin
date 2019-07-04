@@ -19,6 +19,7 @@ export class Document {
   eaoStatus: string;
   datePosted: Date;
   dateUpdated: Date;
+  projectPhase: string;
 
   checkbox: boolean;
   upfile: File;
@@ -48,6 +49,7 @@ export class Document {
     this.description = obj && obj.description || null;
     this.documentAuthor = obj && obj.documentAuthor || null;
     this.eaoStatus = obj && obj.eaoStatus || null;
+    this.projectPhase = obj && obj.projectPhase || null;
 
     this.checkbox = obj && obj.checkbox || null;
     this.upfile = obj && obj.upfile || null;

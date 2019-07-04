@@ -33,6 +33,7 @@ export class UploadComponent implements OnInit {
   public myForm: FormGroup;
   public loading = true;
   public docNameInvalid = false;
+  public projectPhases: any[] = [];
 
   constructor(
     private router: Router,
@@ -57,6 +58,9 @@ export class UploadComponent implements OnInit {
         case 'label':
           this.labels.push(Object.assign({}, item));
           break;
+        case 'projectPhase':
+          this.projectPhases.push(Object.assign({}, item));
+          break;
       }
     });
 
@@ -70,7 +74,8 @@ export class UploadComponent implements OnInit {
         'datePosted': new FormControl(),
         'dateUploaded': new FormControl(),
         'displayName': new FormControl(),
-        'description': new FormControl()
+        'description': new FormControl(),
+        'projectphasesel': new FormControl()
       });
       let today = new Date();
       let todayObj = {
@@ -130,6 +135,7 @@ export class UploadComponent implements OnInit {
       formData.append('type', this.myForm.value.doctypesel);
       formData.append('description', this.myForm.value.description);
       formData.append('documentAuthor', this.myForm.value.authorsel);
+      formData.append('projectPhase', this.myForm.value.projectphasesel);
       observables.push(this.documentService.add(formData));
     });
 

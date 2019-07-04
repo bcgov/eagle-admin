@@ -31,6 +31,7 @@ export class DocumentEditComponent implements OnInit {
   public loading = true;
   public multiEdit = false;
   public docNameInvalid = false;
+  public projectPhases: any[] = [];
 
   constructor(
     private config: ConfigService,
@@ -56,6 +57,9 @@ export class DocumentEditComponent implements OnInit {
           break;
         case 'label':
           this.labels.push(Object.assign({}, item));
+          break;
+        case 'projectPhase':
+          this.projectPhases.push(Object.assign({}, item));
           break;
       }
     });
@@ -86,7 +90,8 @@ export class DocumentEditComponent implements OnInit {
             'labelsel': new FormControl(this.documents[0].milestone),
             'datePosted': new FormControl(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))),
             'displayName': new FormControl(this.documents[0].displayName),
-            'description': new FormControl(this.documents[0].description)
+            'description': new FormControl(this.documents[0].description),
+            'projectphasesel': new FormControl(this.documents[0].projectPhase)
           });
         } else {
           this.multiEdit = true;
@@ -96,7 +101,8 @@ export class DocumentEditComponent implements OnInit {
             'labelsel': new FormControl(),
             'datePosted': new FormControl(),
             'displayName': new FormControl(),
-            'description': new FormControl()
+            'description': new FormControl(),
+            'projectphasesel': new FormControl()
           });
         }
       }
@@ -164,6 +170,7 @@ export class DocumentEditComponent implements OnInit {
         formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value))).toISOString());
         formData.append('type', this.myForm.value.doctypesel);
         formData.append('documentAuthor', this.myForm.value.authorsel);
+        formData.append('projectPhase', this.myForm.value.projectphasesel);
       } else {
         doc.documentFileName !== null ? formData.append('documentFileName', doc.documentFileName) : Function.prototype;
         doc.displayName !== null ? formData.append('displayName', doc.displayName) : Function.prototype;
@@ -184,6 +191,10 @@ export class DocumentEditComponent implements OnInit {
         // apply changes to documentAuthor if any
         let documentAuthor = this.multiEditGetUpdatedValue(this.myForm.value.authorsel, doc.documentAuthor);
         documentAuthor !== undefined && documentAuthor !== null ? formData.append('documentAuthor', documentAuthor) : Function.prototype;
+
+        // apply changes to projectPhase if any
+        let projectPhase = this.multiEditGetUpdatedValue(this.myForm.value.projectphasesel, doc.projectPhase);
+        projectPhase !== undefined && projectPhase !== null ? formData.append('projectPhase', projectPhase) : Function.prototype;
       }
 
       // TODO
