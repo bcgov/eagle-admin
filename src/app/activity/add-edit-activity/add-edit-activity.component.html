@@ -20,7 +20,7 @@
     <div class="text-right">
       <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
       &nbsp;
-      <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
+      <button [disabled]="!myForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
     </div>
     <h2>Activity Post</h2>
     <div class="flex-container">
@@ -37,8 +37,8 @@
     </div>
     <div class="flex-container">
       <div class="label-pair med">
-        <label for="project">Project* </label>
-        <select required class="form-control" formControlName="project">
+        <label for="project">Project </label>
+        <select class="form-control" formControlName="project">
           <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
         </select>
       </div>
@@ -65,7 +65,7 @@
     </div>
     <div class="flex-container">
       <div class="label-pair lrg">
-        <label for="documentUrl">Document URL* </label>
+        <label for="documentUrl">Document URL</label>
         <input documentUrl="documentUrl" id="documentUrl" formControlName="documentUrl" type="text"
           class="form-control" />
       </div>
