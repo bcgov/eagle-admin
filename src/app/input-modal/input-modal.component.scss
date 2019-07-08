@@ -1,0 +1,94 @@
+@import "~assets/styles/base/base.scss";
+
+.day-calculator-modal {
+  position: relative;
+  border-radius: 0.3rem;
+  background: #ffffff; /* Old browsers */
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .day-calculator-modal {
+    padding: 1rem;
+    background: #ffffff; /* Old browsers */
+  }
+}
+
+h2 {
+  margin-bottom: 2rem;
+  letter-spacing: -0.04rem;
+  font-weight: 600;
+}
+
+label {
+  margin-bottom: 0.5rem;
+  color: #171717;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+input {
+  height: 2.75rem;
+  font-size: 1rem;
+}
+
+.close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.intro-text {
+  margin-bottom: 2rem;
+}
+
+.form-btns {
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 767px) {
+  h2 {
+    margin-right: 3rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.75rem;
+    font-size: 1.75rem;
+  }
+
+  p, label {
+    line-height: 1.25rem;
+    font-size: 0.9375rem;
+  }
+
+  .close-btn {
+    right: 1rem;
+  }
+
+  .form-btns {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.explore-btn {
+  padding: 0;
+  border-width: 0;
+  font-size: inherit;
+  font-weight: 600;
+  vertical-align: inherit;
+}
+
+button.calendar, button.calendar:active {
+  width: 2.75rem;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAcCAYAAAAEN20fAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEUSURBVEiJ7ZQxToVAEIY/YCHGxN6XGOIpnpaEsBSeQC9ArZbm9TZ6ADyBNzAhQGGl8Riv4BLAWAgmkpBYkH1b8FWT2WK/zJ8ZJ4qiI6XUI3ANnGKWBnht2/ZBDRK3hgVGNsCd7/ui+JkEIrKtqurLpEWaphd933+IyI3LEIdpCYCiKD6HcuOa/nwOa0ScJEnk0BJg0UTUWJRl6RxCYEzEmomsIlPU3IPW+grIAbquy+q6fluy/28RIBeRMwDXdXMgXLj/B2uimRXpui4D9sBeRLKl+1N+L+t6RwbWrZliTTTr1oxYtzVWiTQAcRxvTX+eJMnlUDaO1vpZRO5NS0x48sIwfPc87xg4B04MCzQi8hIEwe4bl1DnFMCN2zsAAAAASUVORK5CYII=') !important;
+  background-repeat: no-repeat;
+  background-size: 23px;
+  background-position: center;
+}
+
+.input-group {
+  margin-bottom: 30px;
+}
+
+.hide-show {
+  color: blue;
+  cursor: pointer;
+}

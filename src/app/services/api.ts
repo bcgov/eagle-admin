@@ -268,6 +268,11 @@ export class ApiService {
     return this.http.post<Project>(`${this.pathAPI}/${queryString}`, pins, {});
   }
 
+  addGroupToProject(proj: Project, group: any): Observable<Project> {
+    const queryString = `project/${proj._id}/group`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, {group: group}, {});
+  }
+
   deletePin(projId: string, pinId: string): Observable<Project> {
     const queryString = `project/${projId}/pin/${pinId}`;
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
@@ -279,6 +284,29 @@ export class ApiService {
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
     if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
     return this.http.get<any>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  getProjectGroupMembers(id: string, groupId: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
+    let queryString = `project/${id}/group/${groupId}/members`;
+    if (pageNum !== null) { queryString += `?pageNum=${pageNum - 1}`; }
+    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
+    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
+    return this.http.get<any>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  addMembersToGroup(proj: Project, groupId: string, members: any): Observable<Project> {
+    const queryString = `project/${proj._id}/group/${groupId}/members`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, members, {});
+  }
+
+  deleteMembersFromGroup(projId: string, groupId: string, member: string): Observable<Project> {
+    const queryString = `project/${projId}/group/${groupId}/members/${member}`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  deleteGroup(proj: Project, groupId: string): Observable<Project> {
+    const queryString = `project/${proj._id}/group/${groupId}`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
   saveProject(proj: Project): Observable<Project> {

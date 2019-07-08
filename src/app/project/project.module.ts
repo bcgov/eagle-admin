@@ -47,6 +47,8 @@ import { AddCommentComponent } from './comment-period/add-comment/add-comment.co
 import { CommentPeriodBannerComponent } from './comment-period-banner/comment-period-banner.component';
 import { PinsListComponent } from './pins-list/pins-list.component';
 import { GroupsTableRowsComponent } from './project-groups/project-groups-table-rows/project-groups-table-rows.component';
+import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
+import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
 
 @NgModule({
   imports: [
@@ -78,6 +80,7 @@ import { GroupsTableRowsComponent } from './project-groups/project-groups-table-
     DocumentEditComponent,
     DocumentTableRowsComponent,
     GroupsTableRowsComponent,
+    GroupContactComponent,
     GetValuedComponentsComponent,
     GetValuedComponentTableRowsComponent,
     IndigenousNationsComponent,
@@ -89,6 +92,7 @@ import { GroupsTableRowsComponent } from './project-groups/project-groups-table-
     ReviewCommentComponent,
     ReviewCommentsTabComponent,
     ReviewCommentsTabTableRowsComponent,
+    GroupContactSelectComponent,
     TopicTableRowsComponent,
     UploadComponent,
     ValuedComponentsComponent,

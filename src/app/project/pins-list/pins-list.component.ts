@@ -10,10 +10,7 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { SearchTerms } from 'app/models/search';
-import { Utils } from 'app/shared/utils/utils';
 import { StorageService } from 'app/services/storage.service';
-import { User } from 'app/models/user';
-import { UserService } from 'app/services/user.service';
 import { Org } from 'app/models/org';
 import { ProjectService } from 'app/services/project.service';
 import { DialogService } from 'ng2-bootstrap-modal';
@@ -110,10 +107,6 @@ export class PinsListComponent implements OnInit, OnDestroy {
   public selectAction(action) {
     // select all documents
     switch (action) {
-      case 'add':
-        // Add activity
-        this.router.navigate(['/project-pins', 'add']);
-        break;
       case 'delete':
         this.deleteItems();
         break;

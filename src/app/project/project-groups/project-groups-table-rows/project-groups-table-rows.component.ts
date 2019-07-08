@@ -37,10 +37,4 @@ export class GroupsTableRowsComponent implements OnInit, TableComponent {
     });
     this.selectedCount.emit(count);
   }
-
-  goToItem(item) {
-    // console.log("item:", item);
-    // console.log('p', item.project, 'project-groups', 'detail', item._id)
-    // this.router.navigate(['p', item.project, 'project-groups', 'detail', item._id]);
-  }
 }

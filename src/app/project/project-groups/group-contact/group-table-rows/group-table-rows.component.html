@@ -1,0 +1,8 @@
+<tr
+(click)="selectItem(contact)" *ngFor="let contact of contacts | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+    <td data-label="Select" scope="row" class="col-1">
+      <input type="checkbox" aria-label="Checkbox for row contact" [(ngModel)]='contact.checkbox'>
+    </td>
+    <td scope="row" data-label="Name" class="col-4">{{contact.displayName || '-'}}</td>
+    <td scope="row" data-label="Email" class="col-7">{{contact.email || '-'}}</td>
+</tr>

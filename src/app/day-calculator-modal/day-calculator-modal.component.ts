@@ -339,8 +339,6 @@ export class DayCalculatorModalComponent implements OnInit {
       this.type.value === 'suspended',
       this.numDays,
       this.startDate,
-      // console.log("go: print start date in try block")
-      // console.log(this.startDate)
 
       this.endDate,
       this.suspendDate,

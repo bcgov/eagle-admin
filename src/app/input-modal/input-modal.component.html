@@ -1,0 +1,29 @@
+<div class="day-calculator-modal">
+
+  <div class="modal-header">
+    <button class="close-btn btn btn-icon gtm-day-calculator-dismiss" type="button" aria-label="Close"
+      (click)="cancel()">
+      <i class="material-icons">close</i>
+    </button>
+    <h2>Add Group</h2>
+  </div>
+
+  <div class="modal-body">
+    <form>
+      <div class="row">
+        <div class="col-sm-12">
+          <label>Enter a group name</label>
+          <div class="form-group">
+            <input class="form-control" type="text" name="groupNameField" [(ngModel)]="groupName" />
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-primary" type="button" (click)="cancel()">Cancel</button>
+    <button class="btn btn-success" type="button" (click)="save()">Save</button>
+  </div>
+
+</div>

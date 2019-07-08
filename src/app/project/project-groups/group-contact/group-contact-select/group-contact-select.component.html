@@ -1,0 +1,59 @@
+<nav class="action-container" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a [routerLink]="['/projects']">All Projects</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="this.storageService.state?.back?.url">{{this.storageService.state?.back?.label}}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Select Contact(s)</li>
+  </ol>
+</nav>
+
+<div class="container-fluid-padding">
+  <form #f="ngForm" class="search-form ui form" (ngSubmit)="getPaginatedDocs(1)">
+    <p><b>Name Filter:</b></p>
+    <div class="form-row">
+      <div class="form-group col-md-12">
+        <div class="input-group main-search-field">
+          <input class="form-control" type="text" name="keywordInput" placeholder="Enter a name to filter..."
+            id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+          <button class="btn btn-primary" type="submit">
+            <span>Search</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="input-group-prepend">
+    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
+      id="button-sa">Select All</button>
+  </div>
+
+  <div *ngIf="!loading && tableParams.totalListItems === 0">
+    No contacts found.
+  </div>
+
+  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+    [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+    (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+  </app-table-template>
+
+  <div class="btn-group" role="group" aria-label="Action Buttons" *ngIf="!loading && tableParams.totalListItems != 0">
+    <div class="input-group-prepend">
+      <button class="btn btn-outline-primary mr-1" type="button" id="button-cl" (click)="goBack()"><i
+          class="material-icons">arrow_back</i>Back</button>
+    </div>
+    <div class="input-group-prepend">
+      <button (click)="save()" class="btn btn-outline-primary mr-1" type="submit" id="button-cl"><i
+          class="material-icons">save</i>Save</button>
+    </div>
+  </div>
+</div>

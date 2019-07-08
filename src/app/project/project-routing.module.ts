@@ -36,9 +36,12 @@ import { PinsComponentResolver } from './pins-list/pins-component-resolver.servi
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
 import { PinsListComponent } from './pins-list/pins-list.component';
 import { ContactsResolverService } from 'app/contacts/contacts-resolver.service';
-import { ContactsComponent } from 'app/contacts/contacts.component';
 import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
 import { PinsGlobalComponentResolver } from './pins-list/pins-global-resolver.service';
+import { ProjectGroupResolver } from './project-groups/project-group-resolver.services';
+import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
+import { ProjectContactsGroupResolverService } from './project-groups/project-contact-group-resolver.services';
+import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
 
 const routes: Routes = [
   {
@@ -125,8 +128,16 @@ const routes: Routes = [
         }
       },
       {
-        path: 'project-groups/select',
-        component: ContactSelectComponent,
+        path: 'project-groups/g/:groupId/members',
+        component: GroupContactComponent,
+        resolve: {
+          group: ProjectGroupResolver,
+          users: ProjectContactsGroupResolverService
+        }
+      },
+      {
+        path: 'project-groups/g/:groupId/members/select',
+        component: GroupContactSelectComponent,
         resolve: {
           contacts: ContactsResolverService
         }

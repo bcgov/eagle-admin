@@ -15,17 +15,25 @@
     No project groups found.
   </div>
 
-  <div class="input-group-prepend">
-    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
-      id="button-sa">Select All</button>
-    <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
-      type="button" id="button-d"><i class="material-icons">delete</i>Delete</button>
-    <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-      [routerLink]="['/p', currentProject._id, 'project-groups', 'select']">
-      <button (click)="setBackURL()" class="btn btn-outline-secondary mr-1" type="button" id="button-d">
-        <i class="material-icons">add</i>Add Contact(s)
+  <div *ngIf="!loading && tableParams.totalListItems !== 0">
+    <div class='input-group-prepend'>
+      <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button" id="button-sa"><i
+          class="material-icons">select_all</i>Select
+        All</button>
+      <button (click)="selectAction('add')" class="btn btn-outline-secondary mr-1" type="button" id="button-d">
+        <i class="material-icons">add</i>Add Group
       </button>
-    </a>
+      <button (click)="selectAction('edit')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('edit')"
+        type="button" id="button-d"><i class="material-icons">edit</i>Edit Group</button>
+      <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+        [routerLink]="['/p', currentProject._id, 'project-groups', 'select']">
+      </a>
+      <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
+        type="button" id="button-d"><i class="material-icons">delete</i>Delete
+        Group</button>
+      <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('export')"
+        type="button" id="button-d"><i class="material-icons">import_export</i>Export</button>
+    </div>
   </div>
   <br>
 

@@ -9,6 +9,13 @@ import { StorageService } from 'app/services/storage.service';
 import { SearchTerms } from 'app/models/search';
 import { User } from 'app/models/user';
 import { GroupsTableRowsComponent } from './project-groups-table-rows/project-groups-table-rows.component';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { InputModalComponent } from 'app/input-modal/input-modal.component';
+import { ProjectService } from 'app/services/project.service';
+import { DialogService } from 'ng2-bootstrap-modal';
+import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { UserService } from 'app/services/user.service';
+import { ExcelService } from 'app/services/excel.service';
 
 @Component({
   selector: 'app-project-groups',
@@ -27,6 +34,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
   public typeFilters = [];
   public selectedCount = 0;
+  private inputModal: NgbModalRef = null;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -39,26 +47,22 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     },
     {
       name: 'Name',
-      value: 'displayName',
-      width: 'col-3'
-    },
-    {
-      name: 'Organization',
-      value: 'org.name',
-      width: 'col-4'
-    },
-    {
-      name: 'Email',
-      width: 'col-5',
-      nosort: true
+      value: 'name',
+      width: 'col-11'
     }
   ];
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
+    private dialogService: DialogService,
+    private userService: UserService,
+    private excelService: ExcelService,
+    private modalService: NgbModal,
     private tableTemplateUtils: TableTemplateUtils,
-    private storageService: StorageService
+    private projectService: ProjectService,
+    private storageService: StorageService,
+
   ) { }
 
   ngOnInit() {
@@ -112,7 +116,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     let list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.forEach((item: any) => {
-        list.push(new User(item.contact));
+        list.push(item);
       });
       this.tableData = new TableObject(
         GroupsTableRowsComponent,
@@ -127,9 +131,6 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   }
 
   public selectAction(action) {
-    let promises = [];
-
-    // select all documents
     switch (action) {
       case 'selectAll':
         let someSelected = false;
@@ -145,11 +146,109 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
         this._changeDetectionRef.detectChanges();
         break;
-      }
+      case 'edit':
+        let selected = this.tableData.data.filter(item => item.checkbox === true);
+        console.log('selected:', selected);
+        this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', selected[0]._id, 'members']);
+        break;
+      case 'add':
+        this.addNewGroup();
+        break;
+      case 'delete':
+        this.deleteItems();
+        break;
+      case 'export':
+        this.exportItems();
+        break;
     }
+  }
+
+  async exportItems() {
+    let itemsToExport = [];
+    this.tableData.data.map((item) => {
+      if (item.checkbox === true) {
+        itemsToExport.push(item);
+      }
+    });
+    let list = [];
+    itemsToExport.map(group => {
+      group.members.map(member => {
+        list.push(member);
+      });
+    });
+
+    let filteredArray = list.reduce((unique, item) => {
+      return unique.includes(item) ? unique : [...unique, item];
+    }, []);
+
+    // Get all the user emails
+    let csvData = [];
+    filteredArray.map((item) => {
+      csvData.push(this.userService.getById(item).toPromise());
+    });
+    this.loading = false;
+    return Promise.all(csvData)
+    .then((data) => {
+      // Reload main page.
+      let userData = [];
+      data.map(p => {
+        userData.push({email: p[0].email});
+      });
+      console.log(userData);
+
+      // Export to CSV
+      this.excelService.exportAsExcelFile(userData, 'contactList');
+    });
+  }
+
+  async addNewGroup() {
+    this.inputModal = this.modalService.open(InputModalComponent, { backdrop: 'static', windowClass: 'day-calculator-modal' });
+    this.inputModal.result.then(async result => {
+      if (result) {
+        // Add the group name
+        await this.projectService.addGroup(this.currentProject, result).toPromise();
+        this.onSubmit();
+      }
+    });
+    return;
+  }
+
+  async deleteItems() {
+    this.dialogService.addDialog(ConfirmComponent,
+      {
+        title: 'Delete Groups',
+        message: 'Click <strong>OK</strong> to delete selected Group or <strong>Cancel</strong> to return to the list.'
+      }, {
+        backdropColor: 'rgba(0, 0, 0, 0.5)'
+      })
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        isConfirmed => {
+          if (isConfirmed) {
+            this.loading = true;
+            let itemsToDelete = [];
+            this.tableData.data.map((item) => {
+              if (item.checkbox === true) {
+                itemsToDelete.push({ promise: this.projectService.deleteGroup(this.currentProject, item._id).toPromise(), item: item });
+              }
+            });
+            this.loading = false;
+            return Promise.all(itemsToDelete).then(() => {
+              // Reload main page.
+              this.onSubmit();
+            });
+          }
+          this.loading = false;
+        }
+      );
+  }
 
   isEnabled(button) {
-    return this.selectedCount > 0;
+    if (button === 'edit') {
+      return this.selectedCount === 1;
+    } else {
+      return this.selectedCount > 0;
+    }
   }
 
   setColumnSort(column) {

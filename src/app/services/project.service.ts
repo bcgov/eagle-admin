@@ -189,6 +189,16 @@ export class ProjectService {
     .catch(error => this.api.handleError(error));
   }
 
+  addGroup(proj: Project, group: any): Observable<Project> {
+    return this.api.addGroupToProject(proj, group)
+    .catch(error => this.api.handleError(error));
+  }
+
+  deleteGroup(proj: Project, group: string): Observable<Project> {
+    return this.api.deleteGroup(proj, group)
+    .catch(error => this.api.handleError(error));
+  }
+
   deletePin(projId: string, pin: string): Observable<Project> {
     return this.api.deletePin(projId, pin)
     .catch(error => this.api.handleError(error));
@@ -196,6 +206,21 @@ export class ProjectService {
 
   getPins(proj: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
     return this.api.getProjectPins(proj, pageNum, pageSize, sortBy)
+    .catch(error => this.api.handleError(error));
+  }
+
+  getGroupMembers(proj: string, groupId: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
+    return this.api.getProjectGroupMembers(proj, groupId, pageNum, pageSize, sortBy)
+    .catch(error => this.api.handleError(error));
+  }
+
+  addGroupMembers(proj: Project, groupId: string, members: any): Observable<Project> {
+    return this.api.addMembersToGroup(proj, groupId, members)
+    .catch(error => this.api.handleError(error));
+  }
+
+  deleteGroupMembers(projectId: string, groupId: string, member: string): Observable<Project> {
+    return this.api.deleteMembersFromGroup(projectId, groupId, member)
     .catch(error => this.api.handleError(error));
   }
 

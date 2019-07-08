@@ -4,7 +4,5 @@
   <td data-label="Select" (click)="selectItem(item)" scope="row" class="col-1">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='item.checkbox'>
   </td>
-  <td data-label="Name" (click)="selectItem(item)" scope="row" class="col-3">{{item.displayName}}</td>
-  <td data-label="Organization" (click)="selectItem(item)" scope="row" class="col-4">{{item.org.name}}</td>
-  <td data-label="Type" (click)="selectItem(item)" scope="row" class="col-5">{{item.email}}</td>
+  <td data-label="Name" (click)="selectItem(item)" scope="row" class="col-11">{{item.name}}</td>
 </tr>
