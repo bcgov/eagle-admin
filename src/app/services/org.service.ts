@@ -12,12 +12,13 @@ export class OrgService {
     private api: ApiService
   ) { }
 
-  getById(id: String): Observable<Org> {
-    return this.api.getOrg(id)
-      .map((org: any) => {
-        // return the first (only) project
-        return org.length > 0 ? new Org(org[0]) : null;
-      })
+  save(org: Org): Observable<Org> {
+    return this.api.saveOrg(org)
+      .catch(error => this.api.handleError(error));
+  }
+
+  add(org: Org): Observable<Org> {
+    return this.api.addOrg(org)
       .catch(error => this.api.handleError(error));
   }
 }

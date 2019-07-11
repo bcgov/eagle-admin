@@ -38,7 +38,6 @@ import { CommentService } from 'app/services/comment.service';
 import { ConfigService } from 'app/services/config.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
-// import { FeatureService } from 'app/services/recent-activity';
 import { KeycloakService } from 'app/services/keycloak.service';
 import { ProjectService } from 'app/services/project.service';
 import { SearchService } from 'app/services/search.service';
@@ -68,8 +67,11 @@ import { GroupsTableRowsComponent } from './project/project-groups/project-group
 import { InputModalComponent } from './input-modal/input-modal.component';
 import { GroupTableRowsComponent } from './project/project-groups/group-contact/group-table-rows/group-table-rows.component';
 import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-contact.component';
-import { LinkOrganizationComponent } from './contacts/link-organization/link-organization.component';
-import { LinkOrganizationTableRowsComponent } from './contacts/link-organization/link-organization-table-rows/link-organization-table-rows.component';
+import { OrganizationsComponent } from './organizations/organizations.component';
+import { OrganizationsTableRowsComponent } from './organizations/organizations-table-rows/organizations-table-rows.component';
+import { AddEditOrganizationComponent } from './organizations/add-edit-organization/add-edit-organization.component';
+import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
+import { LinkOrganizationTableRowsComponent } from './shared/components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -77,22 +79,35 @@ export function kcFactory(keycloakService: KeycloakService) {
 
 @NgModule({
   declarations: [
+    ActivityComponent,
+    ActivityDetailTableRowsComponent,
+    ActivityTableRowsComponent,
+    AddEditActivityComponent,
+    AddEditContactComponent,
+    AddEditOrganizationComponent,
+    AddEditTopicComponent,
     AdministrationComponent,
     AppComponent,
     ConfirmComponent,
+    ContactsComponent,
     DayCalculatorModalComponent,
-    InputModalComponent,
-    AddEditContactComponent,
-    AddEditTopicComponent,
     FooterComponent,
+    GroupTableRowsComponent,
     HeaderComponent,
-    ToggleButtonComponent,
     HomeComponent,
+    InputModalComponent,
     LoginComponent,
+    MapComponent,
+    MetricsComponent,
     NotAuthorizedComponent,
+    OrganizationsComponent,
+    OrganizationsTableRowsComponent,
+    PinsTableRowsComponent,
     ProjectComponent,
     SearchComponent,
+    SearchHelpComponent,
     SidebarComponent,
+    ToggleButtonComponent,
     TopicsComponent,
     TopicTableRowsComponent,
     MapComponent,
@@ -107,7 +122,8 @@ export function kcFactory(keycloakService: KeycloakService) {
     AddEditActivityComponent,
     SearchHelpComponent,
     LinkOrganizationComponent,
-    LinkOrganizationTableRowsComponent
+    LinkOrganizationTableRowsComponent,
+    UserTableRowsComponent
   ],
   imports: [
     BrowserAnimationsModule,
@@ -146,32 +162,36 @@ export function kcFactory(keycloakService: KeycloakService) {
     CurrencyPipe,
     DecisionService,
     DocumentService,
-    // FeatureService,
     ProjectService,
     RecentActivityService,
     SearchService,
-    UserService,
-    TopicService,
     SideBarService,
+    TopicService,
+    UserService,
     ValuedComponentService
   ],
   entryComponents: [
-    ConfirmComponent,
-    DayCalculatorModalComponent,
-    InputModalComponent,
-    AddEditTopicComponent,
+    ActivityDetailTableRowsComponent,
+    ActivityTableRowsComponent,
     AddEditActivityComponent,
     AddEditContactComponent,
+    AddEditOrganizationComponent,
+    AddEditTopicComponent,
     AddEditTopicComponent,
     LinkOrganizationComponent,
     TopicTableRowsComponent,
+    ConfirmComponent,
+    DayCalculatorModalComponent,
     GroupsTableRowsComponent,
     GroupTableRowsComponent,
-    UserTableRowsComponent,
+    InputModalComponent,
+    OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ActivityTableRowsComponent,
     ActivityDetailTableRowsComponent,
-    LinkOrganizationTableRowsComponent
+    LinkOrganizationTableRowsComponent,
+    TopicTableRowsComponent,
+    UserTableRowsComponent
   ],
   bootstrap: [AppComponent]
 })

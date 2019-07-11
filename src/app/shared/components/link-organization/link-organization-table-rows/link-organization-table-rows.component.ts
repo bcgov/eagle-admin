@@ -30,10 +30,6 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
 
   selectItem(item) {
     this.storageService.state.selectedOrganization = item;
-    if (!item.isEditing) {
-      this.router.navigate(['/contacts', 'add']);
-    } else {
-      this.router.navigate(['/c', item.contactId, 'edit']);
-    }
+    this.router.navigate(this.storageService.state.backUrl);
   }
 }

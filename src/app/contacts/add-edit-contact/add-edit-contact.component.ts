@@ -29,7 +29,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   public contactForm: FormGroup;
   public isEditing = false;
   public loading = false;
-  public phonePattern;
   public contactOrganizationName = '';
   public contactId = '';
   public contact = null;
@@ -38,6 +37,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     browser_spellcheck: true,
     height: 240
   };
+  public phonePattern;
   public salutationList = ['Mr.', 'Mrs.', 'Miss', 'Dr.', 'Ms', 'Chief', 'Mayor', 'Minister'];
   public provinceList = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
 
@@ -63,6 +63,63 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(res => {
         this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
+        this.contactId = this.isEditing ? res.contact.data._id : '';
+
+        if (!this.isEditing) {
+          this.storageService.state.backUrl = ['/contacts', 'add'];
+          if (this.storageService.state.editGroupBackUrl) {
+            this.storageService.state.breadcrumbs = [
+              {
+                route: ['/projects'],
+                label: 'All Projects'
+              },
+              {
+                route: ['/p', this.currentProject._id],
+                label: this.currentProject.name
+              },
+              {
+                route: ['/p', this.currentProject._id, 'project-groups'],
+                label: 'Groups'
+              },
+              {
+                route: this.storageService.state.back.url,
+                label: this.storageService.state.back.label
+              },
+              {
+                route: this.backUrl,
+                label: 'Select Contact(s)'
+              },
+              {
+                route: ['/contacts', 'add'],
+                label: 'Add Contact'
+              }
+            ];
+          } else {
+            this.storageService.state.breadcrumbs = [
+              {
+                route: ['/contacts'],
+                label: 'Contacts'
+              },
+              {
+                route: ['/contacts', 'add'],
+                label: 'Add'
+              }
+            ];
+          }
+        } else {
+          this.storageService.state.backUrl = ['/c', this.contactId, 'edit'];
+          this.storageService.state.breadcrumbs = [
+            {
+              route: ['/contacts'],
+              label: 'Contacts'
+            },
+            {
+              route: ['/c', this.contactId, 'edit'],
+              label: 'Edit'
+            }
+          ];
+        }
+
         if (this.storageService.state.contactForm == null) {
           if (!this.isEditing) {
             this.buildForm({
@@ -96,7 +153,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
             this.buildForm(res.contact.data);
           }
         } else {
-          this.contactId = this.isEditing ? res.contact.data._id : '';
           this.contactForm = this.storageService.state.contactForm;
           this.contactForm.controls.org.setValue(org);
         }
@@ -127,7 +183,14 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     });
   }
 
-  onSubmit() {
+  private clearStorageService() {
+    this.storageService.state.contactForm = null;
+    this.storageService.state.selectedOrganization = null;
+    this.storageService.state.backUrl = null;
+    this.storageService.state.editGroupBackUrl = null;
+  }
+
+  public onSubmit() {
     // Validating form
     // TODO: cover all validation cases.
     if (this.contactForm.controls.firstName.value === '') {
@@ -167,8 +230,8 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       notes: this.contactForm.controls.notes.value
     });
 
-    this.storageService.state.contactForm = null;
-    this.storageService.state.selectedOrganization = null;
+    this.clearStorageService();
+
     if (!this.isEditing) {
       this.userService.add(user)
         .subscribe(item => {
@@ -199,12 +262,18 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
 
   public removeSelectedOrg() {
+    this.storageService.state.selectedOrganization = null;
     this.contactOrganizationName = '';
     this.contactForm.controls.org.setValue('');
   }
 
   public onCancel() {
-    this.router.navigate(['/contacts']);
+    this.clearStorageService();
+    if (this.backUrl == null) {
+      this.router.navigate(['/contacts']);
+    } else {
+      this.router.navigate(this.backUrl);
+    }
   }
 
   get phoneNumber() {

@@ -1,0 +1,10 @@
+<tr *ngFor="let organization of organizations | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+    class="clickable-row">
+    <td scope="row" data-label="Name" class="col-6">{{organization.name || '-'}}</td>
+    <td scope="row" data-label="Organization" class="col-5">{{organization.companyType || '-' }}</td>
+    <td class="col-1 clickable" data-label="Event" scope="row">
+        <i (click)="editItem(organization)" class="material-icons">
+            edit
+        </i>
+    </td>
+</tr>

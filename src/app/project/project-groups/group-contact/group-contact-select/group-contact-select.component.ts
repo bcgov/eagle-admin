@@ -142,6 +142,11 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
         break;
       case 'createContact':
+        this.storageService.state.contactForm = null;
+        this.storageService.state.selectedOrganization = null;
+        this.storageService.state.backUrl = null;
+        this.storageService.state.editGroupBackUrl = null;
+
         this.storageService.state.editGroupBackUrl = {
           url: ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'],
           currentProject: this.currentProject

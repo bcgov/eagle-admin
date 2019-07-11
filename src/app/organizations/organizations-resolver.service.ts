@@ -6,7 +6,7 @@ import { SearchService } from 'app/services/search.service';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
 @Injectable()
-export class ContactsResolver implements Resolve<object> {
+export class OrganizationsResolver implements Resolve<object> {
   constructor(
     private searchService: SearchService,
     private tableTemplateUtils: TableTemplateUtils
@@ -17,7 +17,7 @@ export class ContactsResolver implements Resolve<object> {
 
     return this.searchService.getSearchResults(
       tableParams.keywords || '',
-      'User',
+      'Organization',
       null,
       tableParams.currentPage,
       tableParams.pageSize,

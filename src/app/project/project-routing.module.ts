@@ -35,13 +35,14 @@ import { ProjectUpdatesResolver } from './project-updates/project-updates-resolv
 import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
 import { PinsListComponent } from './pins-list/pins-list.component';
-import { ContactsResolverService } from 'app/contacts/contacts-resolver.service';
+import { ContactsResolver } from 'app/contacts/contacts-resolver.service';
 import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
 import { PinsGlobalComponentResolver } from './pins-list/pins-global-resolver.service';
 import { ProjectGroupResolver } from './project-groups/project-group-resolver.services';
 import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
-import { ProjectContactsGroupResolverService } from './project-groups/project-contact-group-resolver.services';
+import { ProjectContactsGroupResolver } from './project-groups/project-contact-group-resolver.services';
 import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
+import { AddEditContactComponent } from 'app/contacts/add-edit-contact/add-edit-contact.component';
 
 const routes: Routes = [
   {
@@ -132,14 +133,14 @@ const routes: Routes = [
         component: GroupContactComponent,
         resolve: {
           group: ProjectGroupResolver,
-          users: ProjectContactsGroupResolverService
+          users: ProjectContactsGroupResolver
         }
       },
       {
         path: 'project-groups/g/:groupId/members/select',
         component: GroupContactSelectComponent,
         resolve: {
-          contacts: ContactsResolverService
+          contacts: ContactsResolver
         }
       },
       {

@@ -45,7 +45,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
   public contactId = '';
-
+  public breadcrumbs;
 
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
@@ -60,6 +60,13 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
       this.backUrl = this.storageService.state.editGroupBackUrl.url;
       this.currentProject = this.storageService.state.editGroupBackUrl.currentProject;
     }
+    if (this.storageService.state.breadcrumbs) {
+      this.breadcrumbs = this.storageService.state.breadcrumbs;
+    } else {
+      // TODO: determine where to boot out.
+      this.router.navigate(['/']);
+    }
+
     // get data from route resolver
     this.route.params
       .takeUntil(this.ngUnsubscribe)

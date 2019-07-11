@@ -21,7 +21,7 @@
         <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
       </li>
       <li class="breadcrumb-item">
-        <a [routerLink]="storageService.state?.back?.url">{{this.storageService.state?.back?.label}}</a>
+        <a [routerLink]="storageService.state?.back?.url">{{storageService.state?.back?.label}}</a>
       </li>
       <li class="breadcrumb-item">
         <a [routerLink]="backUrl">Select Contact(s)</a>

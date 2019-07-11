@@ -20,5 +20,4 @@ export class UserService {
     return this.api.addUser(user)
       .catch(error => this.api.handleError(error));
   }
-
 }
