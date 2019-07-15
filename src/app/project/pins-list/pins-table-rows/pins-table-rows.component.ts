@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, EventEmitter, Output, OnDestroy } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
@@ -14,7 +14,7 @@ import { RecentActivityService } from 'app/services/recent-activity';
   styleUrls: ['./pins-table-rows.component.scss']
 })
 
-export class PinsTableRowsComponent implements OnInit, TableComponent {
+export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent {
   @Input() data: TableObject;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
@@ -91,5 +91,10 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
       }
     });
     this.selectedCount.emit(count);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { StorageService } from 'app/services/storage.service';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
@@ -14,7 +14,7 @@ import { ActivityDetailTableRowsComponent } from 'app/activity/activity-detail-t
   templateUrl: './project-updates.component.html',
   styleUrls: ['./project-updates.component.scss']
 })
-export class ProjectUpdatesComponent implements OnInit {
+export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
   public currentProject;
   public loading = true;
@@ -134,5 +134,10 @@ export class ProjectUpdatesComponent implements OnInit {
     params['keywords'] = encode(this.tableParams.keywords = this.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

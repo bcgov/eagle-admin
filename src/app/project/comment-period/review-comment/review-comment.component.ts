@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material';
 import { Subject } from 'rxjs';
@@ -20,7 +20,7 @@ import { Utils } from 'app/shared/utils/utils';
   styleUrls: ['./review-comment.component.scss']
 })
 
-export class ReviewCommentComponent implements OnInit {
+export class ReviewCommentComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public currentProject;
@@ -237,5 +237,10 @@ export class ReviewCommentComponent implements OnInit {
     this.snackBar.open(message, action, {
       duration: 2000,
     });
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

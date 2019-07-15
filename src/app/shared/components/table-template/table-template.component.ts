@@ -42,10 +42,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     this.onColumnSort.emit(property);
   }
 
-  ngOnDestroy() {
-    clearInterval(this.interval);
-  }
-
   loadComponent() {
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.data.component);
 
@@ -65,5 +61,9 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   updatePageNumber(pageNum) {
     this.onPageNumUpdate.emit(pageNum);
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.interval);
   }
 }

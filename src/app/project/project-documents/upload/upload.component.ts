@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
@@ -17,7 +17,7 @@ import { Utils } from 'app/shared/utils/utils';
   templateUrl: './upload.component.html',
   styleUrls: ['./upload.component.scss']
 })
-export class UploadComponent implements OnInit {
+export class UploadComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public authorsel: any;
@@ -158,7 +158,7 @@ export class UploadComponent implements OnInit {
   }
 
   public validateChars() {
-    if ( this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g) ) {
+    if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
       this.docNameInvalid = true;
     } else {
       this.docNameInvalid = false;
@@ -198,4 +198,8 @@ export class UploadComponent implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

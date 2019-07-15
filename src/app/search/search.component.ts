@@ -66,14 +66,6 @@ export class SearchComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnDestroy() {
-    // dismiss any open snackbar
-    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
-
   handleRadioChange(value) {
     this.terms.dataset = value;
     this.onSubmit();
@@ -148,5 +140,13 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     // console.log('params =', params);
     this.router.navigate(['search', params]);
+  }
+
+  ngOnDestroy() {
+    // dismiss any open snackbar
+    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
+
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

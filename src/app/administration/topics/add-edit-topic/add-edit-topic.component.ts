@@ -1,9 +1,10 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { DialogComponent, DialogService } from 'ng2-bootstrap-modal';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { Topic } from 'app/models/topic';
 import { TopicService } from 'app/services/topic.service';
+import { Subject } from 'rxjs/Subject';
 
 export interface DataModel {
   title: string;
@@ -18,13 +19,15 @@ export interface DataModel {
 
 // NOTE: dialog components must not implement OnDestroy
 //       otherwise they don't return a result
-export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> implements DataModel, OnInit {
+export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> implements DataModel, OnInit, OnDestroy {
   @Input() model: Topic;
   title: string;
   message: string;
   topic: Topic;
   isNew: boolean;
   networkMsg: string;
+
+  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   constructor(dialogService: DialogService,
     public activeModal: NgbActiveModal, // also used in template
@@ -66,6 +69,7 @@ export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> i
           });
     } else {
       this.topicService.save(this.topic)
+        .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => {
             this.result = true;
@@ -80,5 +84,10 @@ export class AddEditTopicComponent extends DialogComponent<DataModel, boolean> i
             this.networkMsg = error;
           });
     }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

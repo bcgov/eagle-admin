@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { User } from 'app/models/user';
 import { SearchTerms } from 'app/models/search';
@@ -14,7 +14,7 @@ import { Org } from 'app/models/org';
   templateUrl: './group-contact-select.component.html',
   styleUrls: ['./group-contact-select.component.scss']
 })
-export class GroupContactSelectComponent implements OnInit {
+export class GroupContactSelectComponent implements OnInit, OnDestroy {
   public currentProject;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
@@ -44,16 +44,16 @@ export class GroupContactSelectComponent implements OnInit {
     }
 
     this.route.params
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe(params => {
-      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-      if (this.tableParams.sortBy === '') {
-        // this.tableParams.sortBy = '+displayName';
-        this.tableParams.sortBy = this.storageService.state.sortBy;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-      }
-      this._changeDetectionRef.detectChanges();
-    });
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(params => {
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
+        if (this.tableParams.sortBy === '') {
+          // this.tableParams.sortBy = '+displayName';
+          this.tableParams.sortBy = this.storageService.state.sortBy;
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
+        }
+        this._changeDetectionRef.detectChanges();
+      });
 
     this.route.data
       .takeUntil(this.ngUnsubscribe)
@@ -141,52 +141,57 @@ export class GroupContactSelectComponent implements OnInit {
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
         this._changeDetectionRef.detectChanges();
         break;
-      }
+    }
+  }
+
+  setColumnSort(column) {
+    if (this.tableParams.sortBy.charAt(0) === '+') {
+      this.tableParams.sortBy = '-' + column;
+    } else {
+      this.tableParams.sortBy = '+' + column;
+    }
+    this.getPaginatedDocs(this.tableParams.currentPage);
+  }
+
+  getPaginatedDocs(pageNumber, reset = false) {
+    // NOTE: Angular Router doesn't reload page on same URL
+    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
+    // WORKAROUND: add timestamp to force URL to be different than last time
+    this.loading = true;
+    this._changeDetectionRef.detectChanges();
+
+    const params = this.terms.getParams();
+    params['ms'] = new Date().getMilliseconds();
+    params['dataset'] = this.terms.dataset;
+    params['currentPage'] = this.tableParams.currentPage = pageNumber;
+
+    if (reset) {
+      this.tableParams.sortBy = '';
+      this.tableParams.pageSize = 25;
+      this.tableParams.keywords = '';
+      // this.filter.dateAddedStart = '';
+      // this.filter.dateAddedEnd = '';
+      this.typeFilters = [];
     }
 
-    setColumnSort(column) {
-      if (this.tableParams.sortBy.charAt(0) === '+') {
-        this.tableParams.sortBy = '-' + column;
-      } else {
-        this.tableParams.sortBy = '+' + column;
-      }
-      this.getPaginatedDocs(this.tableParams.currentPage);
-    }
+    params['sortBy'] = this.tableParams.sortBy;
+    params['pageSize'] = this.tableParams.pageSize;
+    params['keywords'] = this.tableParams.keywords;
+    // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
+    // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
+    if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    getPaginatedDocs(pageNumber, reset = false) {
-      // NOTE: Angular Router doesn't reload page on same URL
-      // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-      // WORKAROUND: add timestamp to force URL to be different than last time
-      this.loading = true;
-      this._changeDetectionRef.detectChanges();
+    let arr = [];
+    this.storageService.state.back.url.map(u => {
+      arr.push(u);
+    });
+    arr.push('select');
+    arr.push(params);
+    this.router.navigate(arr);
+  }
 
-      const params = this.terms.getParams();
-      params['ms'] = new Date().getMilliseconds();
-      params['dataset'] = this.terms.dataset;
-      params['currentPage'] = this.tableParams.currentPage = pageNumber;
-
-      if (reset) {
-        this.tableParams.sortBy = '';
-        this.tableParams.pageSize = 25;
-        this.tableParams.keywords = '';
-        // this.filter.dateAddedStart = '';
-        // this.filter.dateAddedEnd = '';
-        this.typeFilters = [];
-      }
-
-      params['sortBy'] = this.tableParams.sortBy;
-      params['pageSize'] = this.tableParams.pageSize;
-      params['keywords'] = this.tableParams.keywords;
-      // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
-      // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
-      if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
-
-      let arr = [];
-      this.storageService.state.back.url.map(u => {
-        arr.push(u);
-      });
-      arr.push('select');
-      arr.push(params);
-      this.router.navigate(arr);
-    }
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

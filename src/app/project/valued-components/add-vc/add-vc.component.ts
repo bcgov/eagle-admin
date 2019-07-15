@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { TableObject } from 'app/shared/components/table-template/table-object';
@@ -23,7 +23,7 @@ import { TopicTableRowsComponent } from './topic-table-rows/topic-table-rows.com
   styleUrls: ['./add-vc.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddVcComponent implements OnInit {
+export class AddVcComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public topics: Topic[] = null;
   public currentProject;
@@ -189,4 +189,8 @@ export class AddVcComponent implements OnInit {
       });
   }
 
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

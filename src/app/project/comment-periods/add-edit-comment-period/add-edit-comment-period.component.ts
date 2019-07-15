@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl, FormBuilder, FormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material';
 import { Subject } from 'rxjs/Subject';
@@ -20,7 +20,7 @@ import { Utils } from 'app/shared/utils/utils';
   styleUrls: ['./add-edit-comment-period.component.scss']
 })
 
-export class AddEditCommentPeriodComponent implements OnInit {
+export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public currentProject;
@@ -361,5 +361,10 @@ export class AddEditCommentPeriodComponent implements OnInit {
     this.snackBar.open(message, action, {
       duration: 2000,
     });
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

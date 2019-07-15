@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, FormArray, NgForm, ReactiveFormsModule } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
@@ -19,7 +19,7 @@ import { Project } from 'app/models/project';
   templateUrl: './add-edit-project.component.html',
   styleUrls: ['./add-edit-project.component.scss']
 })
-export class AddEditProjectComponent implements OnInit {
+export class AddEditProjectComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public myForm: FormGroup;
   public documents: any[] = [];
@@ -320,33 +320,34 @@ export class AddEditProjectComponent implements OnInit {
   }
 
   convertFormToProject(form) {
-    return { 'name': form.controls.name.value,
-              'proponent': form.controls.proponent.value,
-              'build': form.controls.build.value,
-              'type': form.controls.type.value,
-              'sector': form.controls.sector.value,
-              'description': form.controls.description.value,
-              'location': form.controls.location.value,
-              'region': form.controls.region.value,
-              'centroid': [form.get('lon').value, form.get('lat').value],
-              'addFile': form.controls.addFile.value,
-              'CEAAInvolvement': form.controls.CEAAInvolvement.value,
-              'CEAALink': form.controls.CEAALink.value,
-              'ea': form.controls.ea.value,
-              'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
-              'eaStatus': form.controls.eaStatus.value,
-              // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
-              'status': form.controls.status.value,
-              // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
-              'eacDecision': form.controls.eacDecision.value,
-              'decisionDate': !isNaN(form.get('decisionDate').value.day) ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value))).toISOString() : null,
-              'substantially': form.controls.substantially.value === 'yes' ? true : false,
-              // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
-              'activeStatus': form.controls.activeStatus.value,
-              // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
-              'responsibleEPD': form.controls.responsibleEPD.value,
-              'projectLead': form.controls.projectLead.value,
-              'projectAdmin': form.controls.projectAdmin.value
+    return {
+      'name': form.controls.name.value,
+      'proponent': form.controls.proponent.value,
+      'build': form.controls.build.value,
+      'type': form.controls.type.value,
+      'sector': form.controls.sector.value,
+      'description': form.controls.description.value,
+      'location': form.controls.location.value,
+      'region': form.controls.region.value,
+      'centroid': [form.get('lon').value, form.get('lat').value],
+      'addFile': form.controls.addFile.value,
+      'CEAAInvolvement': form.controls.CEAAInvolvement.value,
+      'CEAALink': form.controls.CEAALink.value,
+      'ea': form.controls.ea.value,
+      'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
+      'eaStatus': form.controls.eaStatus.value,
+      // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
+      'status': form.controls.status.value,
+      // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
+      'eacDecision': form.controls.eacDecision.value,
+      'decisionDate': !isNaN(form.get('decisionDate').value.day) ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value))).toISOString() : null,
+      'substantially': form.controls.substantially.value === 'yes' ? true : false,
+      // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
+      'activeStatus': form.controls.activeStatus.value,
+      // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
+      'responsibleEPD': form.controls.responsibleEPD.value,
+      'projectLead': form.controls.projectLead.value,
+      'projectAdmin': form.controls.projectAdmin.value
     };
   }
 
@@ -402,8 +403,13 @@ export class AddEditProjectComponent implements OnInit {
     });
   }
 
-  register (myForm: FormGroup) {
+  register(myForm: FormGroup) {
     console.log('Successful registration');
     console.log(myForm);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

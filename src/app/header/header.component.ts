@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router } from '@angular/router';
 import { ApiService } from 'app/services/api';
@@ -10,6 +10,7 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { DayCalculatorModalComponent } from 'app/day-calculator-modal/day-calculator-modal.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DayCalculatorModalResult } from 'app/day-calculator-modal/day-calculator-modal.component';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'app-header',
@@ -33,7 +34,7 @@ import { DayCalculatorModalResult } from 'app/day-calculator-modal/day-calculato
   ]
 })
 
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   isNavMenuOpen = false;
   welcomeMsg: String;
   private _api: ApiService;
@@ -46,6 +47,7 @@ export class HeaderComponent implements OnInit {
   };
   private dayCalculatorModal: NgbModalRef = null;
   private showDayCalculatorModal = false;
+  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private api: ApiService,
@@ -55,18 +57,20 @@ export class HeaderComponent implements OnInit {
     public router: Router
   ) {
     this._api = api;
-    router.events.subscribe(val => {
-      const token = this.keycloakService.getToken();
-      // TODO: Change this to observe the change in the _api.token
-      if (token) {
-        const jwt = new JwtUtil().decodeToken(token);
-        this.welcomeMsg = jwt ? ('Hello ' + jwt.preferred_username) : 'Login';
-        this.jwt = jwt;
-      } else {
-        this.welcomeMsg = 'Login';
-        this.jwt = null;
-      }
-    });
+    router.events
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(val => {
+        const token = this.keycloakService.getToken();
+        // TODO: Change this to observe the change in the _api.token
+        if (token) {
+          const jwt = new JwtUtil().decodeToken(token);
+          this.welcomeMsg = jwt ? ('Hello ' + jwt.preferred_username) : 'Login';
+          this.jwt = jwt;
+        } else {
+          this.welcomeMsg = 'Login';
+          this.jwt = null;
+        }
+      });
   }
 
   ngOnInit() {
@@ -76,14 +80,14 @@ export class HeaderComponent implements OnInit {
     }
 
     let isIEOrEdge = /msie\s|trident\/|edge\//i.test(window.navigator.userAgent);
-    if ( isIEOrEdge ) {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Browser Incompatible',
-        message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      });
+    if (isIEOrEdge) {
+      this.dialogService.addDialog(ConfirmComponent,
+        {
+          title: 'Browser Incompatible',
+          message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.'
+        }, {
+          backdropColor: 'rgba(0, 0, 0, 0.5)'
+        });
     }
   }
 
@@ -129,5 +133,10 @@ export class HeaderComponent implements OnInit {
 
   closeNav() {
     this.isNavMenuOpen = false;
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -12,7 +12,7 @@ import { StorageService } from 'app/services/storage.service';
   styleUrls: ['./comment-period.component.scss']
 })
 
-export class CommentPeriodComponent implements OnInit {
+export class CommentPeriodComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -58,5 +58,10 @@ export class CommentPeriodComponent implements OnInit {
       this.commentPeriod = this.storageService.state.currentCommentPeriod.data;
       this.loading = false;
     }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

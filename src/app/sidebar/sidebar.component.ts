@@ -1,11 +1,10 @@
-import { Component, HostBinding, OnInit } from '@angular/core';
-import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { Observable } from 'rxjs';
-import { container } from '@angular/core/src/render3/instructions';
+import { Component, HostBinding, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 
 import { SideBarService } from 'app/services/sidebar.service';
 import { filter } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,7 +12,9 @@ import { StorageService } from 'app/services/storage.service';
   styleUrls: ['./sidebar.component.scss']
 })
 
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
+  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+
   public isNavMenuOpen = false;
   public routerSnapshot = null;
   public showProjectDetails = false;
@@ -25,25 +26,28 @@ export class SidebarComponent implements OnInit {
   isOpen = false;
 
   constructor(private router: Router,
-              private storageService: StorageService,
-              private sideBarService: SideBarService) {
+    private storageService: StorageService,
+    private sideBarService: SideBarService) {
 
     router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(event => {
+      filter(event => event instanceof NavigationEnd))
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(event => {
         this.routerSnapshot = event;
         this.SetActiveSidebarItem();
-    });
+      });
   }
 
   ngOnInit() {
-    this.sideBarService.change.subscribe(isOpen => {
-      this.isOpen = isOpen;
-    });
+    this.sideBarService.change
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(isOpen => {
+        this.isOpen = isOpen;
+      });
   }
 
   SetActiveSidebarItem() {
-    let urlArray =  this.routerSnapshot.url.split('/');
+    let urlArray = this.routerSnapshot.url.split('/');
     // urlArray[0] will be empty so we use shift to get rid of it.
     urlArray.shift();
     if (urlArray[0] === 'p') {
@@ -105,5 +109,10 @@ export class SidebarComponent implements OnInit {
   goToDocuments(currentProjectId) {
     this.storageService.state.projectDocumentTableParams = null;
     this.router.navigate(['p', currentProjectId, 'project-documents']);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, ParamMap, Params } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Document } from 'app/models/document';
@@ -7,14 +7,13 @@ import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { DocumentService } from 'app/services/document.service';
 import { MatSnackBar } from '@angular/material';
-import { Utils } from 'app/shared/utils/utils';
 
 @Component({
   selector: 'app-detail',
   templateUrl: './detail.component.html',
   styleUrls: ['./detail.component.scss']
 })
-export class DocumentDetailComponent implements OnInit {
+export class DocumentDetailComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public document: Document = null;
   public currentProject: Project = null;
@@ -28,7 +27,6 @@ export class DocumentDetailComponent implements OnInit {
     private storageService: StorageService,
     private snackBar: MatSnackBar,
     private documentService: DocumentService,
-    private utils: Utils
   ) {
   }
 
@@ -87,5 +85,10 @@ export class DocumentDetailComponent implements OnInit {
     this.snackBar.open(message, action, {
       duration: 2000,
     });
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

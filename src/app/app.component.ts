@@ -28,5 +28,4 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.configService.destroy();
   }
-
 }

@@ -83,14 +83,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.router.navigate(['p', this.project._id, 'edit']);
   }
 
-  ngOnDestroy() {
-    // dismiss any open snackbar
-    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-  }
-
   public deleteProject() {
     if (this.project['numComments'] > 0) {
       this.dialogService.addDialog(ConfirmComponent,
@@ -279,4 +271,11 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       );
   }
 
+  ngOnDestroy() {
+    // dismiss any open snackbar
+    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
+
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

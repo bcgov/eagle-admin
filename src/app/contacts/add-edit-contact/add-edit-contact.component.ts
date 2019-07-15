@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { Topic } from 'app/models/topic';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,7 +22,7 @@ export interface DataModel {
 
 // NOTE: dialog components must not implement OnDestroy
 //       otherwise they don't return a result
-export class AddEditContactComponent implements OnInit {
+export class AddEditContactComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public contactForm: FormGroup;
@@ -211,5 +211,10 @@ export class AddEditContactComponent implements OnInit {
   }
   get cellPhoneNumber() {
     return this.contactForm.get('cellPhoneNumber');
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

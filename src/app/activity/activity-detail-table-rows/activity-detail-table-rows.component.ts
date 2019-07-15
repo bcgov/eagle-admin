@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -16,7 +16,7 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
   styleUrls: ['./activity-detail-table-rows.component.scss']
 })
 
-export class ActivityDetailTableRowsComponent implements OnInit, TableComponent {
+export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, TableComponent {
   @Input() data: TableObject;
 
   public entries: any;
@@ -80,5 +80,10 @@ export class ActivityDetailTableRowsComponent implements OnInit, TableComponent 
   goToItem(activity) {
     console.log('activity:', activity);
     this.router.navigate(['/activity', activity._id, 'edit']);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

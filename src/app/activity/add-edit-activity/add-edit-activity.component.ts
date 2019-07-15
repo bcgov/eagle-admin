@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -12,7 +12,7 @@ import { Utils } from 'app/shared/utils/utils';
   templateUrl: './add-edit-activity.component.html',
   styleUrls: ['./add-edit-activity.component.scss']
 })
-export class AddEditActivityComponent implements OnInit {
+export class AddEditActivityComponent implements OnInit, OnDestroy {
   public myForm: FormGroup;
   public isEditing = false;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
@@ -139,4 +139,8 @@ export class AddEditActivityComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+  }
 }

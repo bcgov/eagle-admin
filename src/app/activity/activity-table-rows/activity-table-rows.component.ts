@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
@@ -14,7 +14,7 @@ import { RecentActivityService } from 'app/services/recent-activity';
   styleUrls: ['./activity-table-rows.component.scss']
 })
 
-export class ActivityTableRowsComponent implements OnInit, TableComponent {
+export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableComponent {
   @Input() data: TableObject;
 
   public entries: any;
@@ -78,5 +78,10 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   goToItem(activity) {
     console.log('activity:', activity);
     this.router.navigate(['/activity', activity._id, 'edit']);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

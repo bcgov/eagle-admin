@@ -1,15 +1,17 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormGroup, FormControl, FormArray, NgForm, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormControl } from '@angular/forms';
 
 import { StorageService } from 'app/services/storage.service';
+import { Subject } from 'rxjs/Subject';
 
 @Component({
   selector: 'app-add-label',
   templateUrl: './add-label.component.html',
   styleUrls: ['./add-label.component.scss']
 })
-export class AddLabelComponent implements OnInit {
+export class AddLabelComponent implements OnInit, OnDestroy {
+  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public currentProjectId: string;
   public myForm: FormGroup;
   public labels: any[] = [];
@@ -22,9 +24,11 @@ export class AddLabelComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.route.parent.paramMap.subscribe(params => {
-      this.currentProjectId = params.get('projId');
-    });
+    this.route.parent.paramMap
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(params => {
+        this.currentProjectId = params.get('projId');
+      });
 
     this.myForm = new FormGroup({
       'doctypesel': new FormControl(),
@@ -47,12 +51,17 @@ export class AddLabelComponent implements OnInit {
     this.storageService.state.labels = this.labels;
   }
 
-  register (myForm: FormGroup) {
+  register(myForm: FormGroup) {
     console.log('Successful registration');
     console.log(myForm);
   }
 
   cancel() {
     this.router.navigate(this.back.url);
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

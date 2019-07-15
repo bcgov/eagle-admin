@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { MatSnackBar } from '@angular/material';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -16,7 +16,7 @@ import { DocumentService } from 'app/services/document.service';
   styleUrls: ['./comment-period-details-tab.component.scss']
 })
 
-export class CommentPeriodDetailsTabComponent implements OnInit {
+export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -139,5 +139,10 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
 
   public checkIfCanDelete() {
     this.canDeleteCommentPeriod = this.storageService.state.canDeleteCommentPeriod.data;
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }

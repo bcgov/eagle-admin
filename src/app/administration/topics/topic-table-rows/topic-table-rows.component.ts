@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
@@ -15,7 +15,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./topic-table-rows.component.scss']
 })
 
-export class TopicTableRowsComponent implements OnInit, TableComponent {
+export class TopicTableRowsComponent implements OnInit, OnDestroy, TableComponent {
   @Input() data: TableObject;
 
   public topics: any;
@@ -103,5 +103,10 @@ export class TopicTableRowsComponent implements OnInit, TableComponent {
         break;
       }
     }
+  }
+
+  ngOnDestroy() {
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
   }
 }
