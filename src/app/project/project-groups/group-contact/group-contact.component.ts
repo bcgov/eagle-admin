@@ -152,6 +152,9 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         // Add activity
         this.setBackURL();
         break;
+      case 'copyEmail':
+        this.copyEmail();
+        break;
       case 'export':
         this.exportItems();
         break;
@@ -172,6 +175,53 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
         break;
     }
+  }
+
+  async copyEmail() {
+    let itemsToExport = [];
+    this.tableData.data.map((item) => {
+      if (item.checkbox === true) {
+        itemsToExport.push(item);
+      }
+    });
+    let list = [];
+    itemsToExport.map(member => {
+      list.push(member);
+    });
+
+    let filteredArray = list.reduce((unique, item) => {
+      return unique.includes(item) ? unique : [...unique, item];
+    }, []);
+
+    // Get all the user emails
+    let csvData = [];
+    filteredArray.map((item) => {
+      csvData.push(
+        this.searchService.getItem(item._id, 'User').toPromise()
+      );
+    });
+    this.loading = false;
+    return Promise.all(csvData)
+      .then((data) => {
+        // Reload main page.
+        let userData = '';
+        data.map(p => {
+          userData += p.data.email + ';';
+        });
+        console.log(userData);
+        let selBox = document.createElement('textarea');
+        selBox.style.position = 'fixed';
+        selBox.style.left = '0';
+        selBox.style.top = '0';
+        selBox.style.opacity = '0';
+        selBox.value = userData;
+        document.body.appendChild(selBox);
+        selBox.focus();
+        selBox.select();
+        document.execCommand('copy');
+        document.body.removeChild(selBox);
+        this.openSnackBar('Emails have been copied to your clipboard.', 'Close');
+      });
   }
 
   async exportItems() {
@@ -203,7 +253,17 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         // Reload main page.
         let userData = [];
         data.map(p => {
-          userData.push({ email: p.data.email });
+          userData.push({
+            name: p.data.firstName + ' ' + p.data.lastName,
+            title: p.data.title,
+            organization: p.data.orgName,
+            phone: p.data.phoneNumber,
+            address: p.data.address1 + (p.data.address2 === '' ? '' : p.data.address2),
+            city: p.data.city,
+            province: p.data.province,
+            postal: p.data.postalCode,
+            email: p.data.email
+          });
         });
         console.log(userData);
 

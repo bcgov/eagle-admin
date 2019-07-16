@@ -42,6 +42,8 @@
               class="material-icons">delete</i>Remove</button>
           <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('export')"
             type="button" id="button-d"><i class="material-icons">import_export</i>Export</button>
+          <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
+            type="button" id="button-d"><i class="material-icons">import_export</i>Copy Emails</button>
         </div>
       </div>
       <br>

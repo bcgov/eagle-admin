@@ -16,6 +16,7 @@ import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ExcelService } from 'app/services/excel.service';
 import { SearchService } from 'app/services/search.service';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-project-groups',
@@ -58,6 +59,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     private dialogService: DialogService,
     private excelService: ExcelService,
     private modalService: NgbModal,
+    private snackBar: MatSnackBar,
     private tableTemplateUtils: TableTemplateUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
@@ -131,6 +133,9 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
 
   public selectAction(action) {
     switch (action) {
+      case 'copyEmail':
+        this.copyEmail();
+        break;
       case 'selectAll':
         let someSelected = false;
         this.tableData.data.map((item) => {
@@ -160,6 +165,55 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
         this.exportItems();
         break;
     }
+  }
+
+  async copyEmail() {
+    let itemsToExport = [];
+    this.tableData.data.map((item) => {
+      if (item.checkbox === true) {
+        itemsToExport.push(item);
+      }
+    });
+    let list = [];
+    itemsToExport.map(group => {
+      group.members.map(member => {
+        list.push(member);
+      });
+    });
+
+    let filteredArray = list.reduce((unique, item) => {
+      return unique.includes(item) ? unique : [...unique, item];
+    }, []);
+
+    // Get all the user emails
+    let csvData = [];
+    filteredArray.map((item) => {
+      csvData.push(
+        this.searchService.getItem(item, 'User').toPromise()
+      );
+    });
+    this.loading = false;
+    return Promise.all(csvData)
+      .then((data) => {
+        // Reload main page.
+        let userData = '';
+        data.map(p => {
+          userData += p.data.email + ';';
+        });
+        console.log(userData);
+        let selBox = document.createElement('textarea');
+        selBox.style.position = 'fixed';
+        selBox.style.left = '0';
+        selBox.style.top = '0';
+        selBox.style.opacity = '0';
+        selBox.value = userData;
+        document.body.appendChild(selBox);
+        selBox.focus();
+        selBox.select();
+        document.execCommand('copy');
+        document.body.removeChild(selBox);
+        this.openSnackBar('Emails have been copied to your clipboard.', 'Close');
+      });
   }
 
   async exportItems() {
@@ -192,7 +246,17 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
       .then((data) => {
         let userData = [];
         data.map(p => {
-          userData.push({ email: p.data.email });
+          userData.push({
+            name: p.data.firstName + ' ' + p.data.lastName,
+            title: p.data.title,
+            organization: p.data.orgName,
+            phone: p.data.phoneNumber,
+            address: p.data.address1 + (p.data.address2 === '' ? '' : p.data.address2),
+            city: p.data.city,
+            province: p.data.province,
+            postal: p.data.postalCode,
+            email: p.data.email
+          });
         });
         console.log(userData);
 
@@ -322,6 +386,12 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     } else {
       this.typeFilters.push(filterItem);
     }
+  }
+
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 2000,
+    });
   }
 
   ngOnDestroy() {
