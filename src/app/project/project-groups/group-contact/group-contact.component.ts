@@ -221,6 +221,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     this.storageService.state.tableColumns = this.tableColumns;
     this.storageService.state.rowComponent = GroupTableRowsComponent;
     this.storageService.state.sortBy = this.tableParams.sortBy;
+    this.storageService.state.groupId = this.groupId;
     this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', 'select']);
   }
 

@@ -7,7 +7,6 @@ import { Subject } from 'rxjs';
 import { User } from 'app/models/user';
 import { UserService } from 'app/services/user.service';
 import { StorageService } from 'app/services/storage.service';
-import { SearchService } from 'app/services/search.service';
 
 export interface DataModel {
   title: string;
@@ -24,6 +23,7 @@ export interface DataModel {
 //       otherwise they don't return a result
 export class AddEditContactComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private backUrl;
 
   public contactForm: FormGroup;
   public isEditing = false;
@@ -32,14 +32,11 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   public contactOrganizationName = '';
   public contactId = '';
   public contact = null;
-
-
   public tinyMceSettings = {
     skin: false,
     browser_spellcheck: true,
     height: 240
   };
-
   public salutationList = ['Mr.', 'Mrs.', 'Miss', 'Dr.', 'Ms'];
   public provinceList = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
 
@@ -58,6 +55,10 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
         if (this.storageService.state.selectedOrganization) {
           this.contactOrganizationName = this.storageService.state.selectedOrganization.name;
           org = this.storageService.state.selectedOrganization._id;
+        }
+
+        if (this.storageService.state.editGroupBackUrl) {
+          this.backUrl = this.storageService.state.editGroupBackUrl;
         }
 
         this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
@@ -173,7 +174,13 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       this.userService.add(user)
         .subscribe(item => {
           console.log('item', item);
-          this.router.navigate(['/contacts']);
+          if (this.backUrl == null) {
+            this.router.navigate(['/contacts']);
+          } else {
+            console.log(this.backUrl);
+            console.log(this.storageService.state.back);
+            this.router.navigate(this.backUrl);
+          }
         });
     } else {
       user._id = this.contactId;

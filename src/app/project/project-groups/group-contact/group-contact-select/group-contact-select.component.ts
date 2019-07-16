@@ -141,6 +141,9 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
         this._changeDetectionRef.detectChanges();
         break;
+      case 'createContact':
+        this.storageService.state.editGroupBackUrl = ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'];
+        this.router.navigate(['/contacts', 'add']);
     }
   }
 
