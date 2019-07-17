@@ -4,10 +4,10 @@
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <li class="breadcrumb-item">
-      <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page"><a
-        [routerLink]="['/p', currentProject._id, 'project-documents']">Documents</a></li>
+        <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id, 'project-documents']">Documents</a></li>
     <li class="breadcrumb-item active" aria-current="page">Document Details</li>
   </ol>
 </nav>
