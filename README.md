@@ -2,8 +2,17 @@
 
 # Pre-requisites
 
-- Node.js 8.12.0 (run `node -v` to verify)
-- npm 6.4.1 (run `npm -v` to verify)
+We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.
+
+Run the following commands:
+```
+asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+asdf reshim nodejs
+npm i -g yarn
+yarn install
+```
+We use a config file for asdf called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
+
 - Angular CLI 6.2.1 (run `npm ls -g @angular/cli --depth=0` to verify)
 - Yarn 1.10.1 or greater (run `yarn -v` to verify)
 - TSLint 5.11.0 or greater  (run `tslint -v` to verify)
