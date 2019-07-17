@@ -63,7 +63,7 @@ export class ValuedComponentsComponent implements OnInit, OnDestroy {
 
   public selectedCount = 0;
   public currentProject;
-
+  public flag = true;
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
     private dialogService: DialogService,
@@ -152,17 +152,14 @@ export class ValuedComponentsComponent implements OnInit, OnDestroy {
 
   public selectAction(action) {
     // select all valuedComponents
+
     switch (action) {
       case 'selectAll':
-        let someSelected = false;
-        this.tableData.data.map((item) => {
-          if (item.checkbox === true) {
-            someSelected = true;
-          }
-          item.checkbox = !someSelected;
+         this.tableData.data.map((item) => {
+            item.checkbox = this.flag;
         });
-
-        this.selectedCount = someSelected ? 0 : this.tableData.data.length;
+        this.flag = !this.flag;
+        this.selectedCount = this.flag ? 0 : this.tableData.data.length;
         this._changeDetectionRef.detectChanges();
         break;
       case 'delete':
