@@ -1,5 +1,5 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <div *ngIf="!isEditing">
+  <div *ngIf="!isEditing && backUrl == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
         <a [routerLink]="['/contacts']">Contacts</a>
@@ -8,11 +8,32 @@
         <a [routerLink]="['/contacts', 'add']">Add</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
-        Add Organization
+        Link Organization
       </li>
     </ol>
   </div>
-  <div *ngIf="isEditing">
+  <div *ngIf="!isEditing && backUrl">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a [routerLink]="['/projects']">All Projects</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a [routerLink]="storageService.state?.back?.url">{{this.storageService.state?.back?.label}}</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a [routerLink]="backUrl">Select Contact(s)</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Add Contact</li>
+        <li class="breadcrumb-item active" aria-current="page">Link Organization</li>
+      </ol>
+    </div>
+  <div *ngIf="isEditing && backUrl == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
         <a [routerLink]="['/contacts']">Contacts</a>
@@ -21,7 +42,7 @@
         <a [routerLink]="['/c', contactId, 'edit']">Edit</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
-        Add Organization
+        Link Organization
       </li>
     </ol>
   </div>

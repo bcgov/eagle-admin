@@ -142,7 +142,10 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
         break;
       case 'createContact':
-        this.storageService.state.editGroupBackUrl = ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'];
+        this.storageService.state.editGroupBackUrl = {
+          url: ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'],
+          currentProject: this.currentProject
+        };
         this.router.navigate(['/contacts', 'add']);
     }
   }
@@ -172,16 +175,12 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
       this.tableParams.sortBy = '';
       this.tableParams.pageSize = 25;
       this.tableParams.keywords = '';
-      // this.filter.dateAddedStart = '';
-      // this.filter.dateAddedEnd = '';
       this.typeFilters = [];
     }
 
     params['sortBy'] = this.tableParams.sortBy;
     params['pageSize'] = this.tableParams.pageSize;
     params['keywords'] = this.tableParams.keywords;
-    // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
-    // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
     let arr = [];

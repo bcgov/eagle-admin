@@ -6,12 +6,12 @@ import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 
 @Component({
-  selector: 'tbody[app-add-organization-table-rows]',
-  templateUrl: './add-organization-table-rows.component.html',
-  styleUrls: ['./add-organization-table-rows.component.scss']
+  selector: 'tbody[app-link-organization-table-rows]',
+  templateUrl: './link-organization-table-rows.component.html',
+  styleUrls: ['./link-organization-table-rows.component.scss']
 })
 
-export class AddOrganizationTableRowsComponent implements OnInit, TableComponent {
+export class LinkOrganizationTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 

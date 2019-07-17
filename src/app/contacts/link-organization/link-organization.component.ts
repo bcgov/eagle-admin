@@ -6,19 +6,19 @@ import { SearchTerms } from 'app/models/search';
 
 import { StorageService } from 'app/services/storage.service';
 
-import { AddOrganizationTableRowsComponent } from './add-organization-table-rows/add-organization-table-rows.component';
+import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { Org } from 'app/models/org';
 
 @Component({
-  selector: 'app-add-organization',
-  templateUrl: './add-organization.component.html',
-  styleUrls: ['./add-organization.component.scss'],
+  selector: 'app-link-organization',
+  templateUrl: './link-organization.component.html',
+  styleUrls: ['./link-organization.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddOrganizationComponent implements OnInit, OnDestroy {
+export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public organizations: Org[] = null;
@@ -41,6 +41,7 @@ export class AddOrganizationComponent implements OnInit, OnDestroy {
   ];
 
   public currentProject;
+  public backUrl;
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
   public contactId = '';
@@ -55,6 +56,10 @@ export class AddOrganizationComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    if (this.storageService.state.editGroupBackUrl) {
+      this.backUrl = this.storageService.state.editGroupBackUrl.url;
+      this.currentProject = this.storageService.state.editGroupBackUrl.currentProject;
+    }
     // get data from route resolver
     this.route.params
       .takeUntil(this.ngUnsubscribe)
@@ -109,9 +114,9 @@ export class AddOrganizationComponent implements OnInit, OnDestroy {
     params['pageSize'] = this.tableParams.pageSize;
 
     if (this.isEditing) {
-      this.router.navigate(['c', this.contactId, 'edit', 'add-org', params]);
+      this.router.navigate(['c', this.contactId, 'edit', 'link-org', params]);
     } else {
-      this.router.navigate(['contacts', 'add', 'add-org', params]);
+      this.router.navigate(['contacts', 'add', 'link-org', params]);
     }
   }
 
@@ -130,7 +135,7 @@ export class AddOrganizationComponent implements OnInit, OnDestroy {
         );
       });
       this.tableData = new TableObject(
-        AddOrganizationTableRowsComponent,
+        LinkOrganizationTableRowsComponent,
         dataList,
         this.tableParams
       );

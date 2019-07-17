@@ -68,8 +68,8 @@ import { GroupsTableRowsComponent } from './project/project-groups/project-group
 import { InputModalComponent } from './input-modal/input-modal.component';
 import { GroupTableRowsComponent } from './project/project-groups/group-contact/group-table-rows/group-table-rows.component';
 import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-contact.component';
-import { AddOrganizationComponent } from './contacts/add-organization/add-organization.component';
-import { AddOrganizationTableRowsComponent } from './contacts/add-organization/add-organization-table-rows/add-organization-table-rows.component';
+import { LinkOrganizationComponent } from './contacts/link-organization/link-organization.component';
+import { LinkOrganizationTableRowsComponent } from './contacts/link-organization/link-organization-table-rows/link-organization-table-rows.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -106,8 +106,8 @@ export function kcFactory(keycloakService: KeycloakService) {
     ActivityDetailTableRowsComponent,
     AddEditActivityComponent,
     SearchHelpComponent,
-    AddOrganizationComponent,
-    AddOrganizationTableRowsComponent
+    LinkOrganizationComponent,
+    LinkOrganizationTableRowsComponent
   ],
   imports: [
     BrowserAnimationsModule,
@@ -163,7 +163,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     AddEditActivityComponent,
     AddEditContactComponent,
     AddEditTopicComponent,
-    AddOrganizationComponent,
+    LinkOrganizationComponent,
     TopicTableRowsComponent,
     GroupsTableRowsComponent,
     GroupTableRowsComponent,
@@ -171,7 +171,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     PinsTableRowsComponent,
     ActivityTableRowsComponent,
     ActivityDetailTableRowsComponent,
-    AddOrganizationTableRowsComponent
+    LinkOrganizationTableRowsComponent
   ],
   bootstrap: [AppComponent]
 })

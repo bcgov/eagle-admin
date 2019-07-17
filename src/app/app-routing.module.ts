@@ -22,8 +22,8 @@ import { TopicsResolver } from './administration/topics/topics-resolver.services
 import { PinsGlobalComponentResolver } from './project/pins-list/pins-global-resolver.service';
 import { ProjectGroupResolver } from './project/project-groups/project-group-resolver.services';
 import { ProjectContactsGroupResolverService } from './project/project-groups/project-contact-group-resolver.services';
-import { AddOrganizationResolver } from './contacts/add-organization/add-organization-resolver.services';
-import { AddOrganizationComponent } from './contacts/add-organization/add-organization.component';
+import { LinkOrganizationResolver } from './contacts/link-organization/link-organization-resolver.services';
+import { LinkOrganizationComponent } from './contacts/link-organization/link-organization.component';
 import { EditContactResolver } from './contacts/add-edit-contact/edit-contact-resolver.services';
 
 const routes: Routes = [
@@ -59,10 +59,10 @@ const routes: Routes = [
     component: MetricsComponent
   },
   {
-    path: 'c/:contactId/edit/add-org',
-    component: AddOrganizationComponent,
+    path: 'c/:contactId/edit/link-org',
+    component: LinkOrganizationComponent,
     resolve: {
-      organizations: AddOrganizationResolver
+      organizations: LinkOrganizationResolver
     }
   },
   {
@@ -73,10 +73,10 @@ const routes: Routes = [
     }
   },
   {
-    path: 'contacts/add/add-org',
-    component: AddOrganizationComponent,
+    path: 'contacts/add/link-org',
+    component: LinkOrganizationComponent,
     resolve: {
-      organizations: AddOrganizationResolver
+      organizations: LinkOrganizationResolver
     }
   },
   {
@@ -140,7 +140,7 @@ const routes: Routes = [
     ProjectContactsGroupResolverService,
     PinsGlobalComponentResolver,
     ActivityComponentResolver,
-    AddOrganizationResolver,
+    LinkOrganizationResolver,
     TopicsResolver
   ]
 })

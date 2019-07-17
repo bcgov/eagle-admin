@@ -6,7 +6,7 @@ import { SearchService } from 'app/services/search.service';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
 @Injectable()
-export class AddOrganizationResolver implements Resolve<Observable<object>> {
+export class LinkOrganizationResolver implements Resolve<Observable<object>> {
   constructor(
     private searchService: SearchService,
     private tableTemplateUtils: TableTemplateUtils

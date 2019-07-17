@@ -1,5 +1,5 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <div *ngIf="!isEditing">
+  <div *ngIf="!isEditing && this.backUrl == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/contacts']">Contacts</a>
@@ -9,7 +9,27 @@
       </li>
     </ol>
   </div>
-  <div *ngIf="isEditing">
+  <div *ngIf="!isEditing && this.backUrl">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/projects']">All Projects</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a [routerLink]="storageService.state?.back?.url">{{this.storageService.state?.back?.label}}</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a [routerLink]="backUrl">Select Contact(s)</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">Add Contact</li>
+    </ol>
+  </div>
+  <div *ngIf="isEditing && this.backUrl == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/contacts']">Contacts</a>
@@ -69,7 +89,7 @@
       <div class="label-pair">
         <label for="organizations">Organization* </label>
         <div *ngIf="contactOrganizationName === '' || contactOrganizationName == null">
-          <button class="btn btn-primary" type="button" (click)="addOrganization()">Add Organization</button>
+          <button class="btn btn-primary" type="button" (click)="linkOrganization()">Link Organization</button>
         </div>
         <div *ngIf="contactOrganizationName !== '' && contactOrganizationName">
           <span class="cell icon">
@@ -116,8 +136,8 @@
         </div>
       </div>
       <div class="label-pair">
-        <label for="email">Email* </label>
-        <input required name="email" id="email" formControlName="email" type="text" class="form-control" />
+        <label for="email">Email</label>
+        <input name="email" id="email" formControlName="email" type="text" class="form-control" />
       </div>
     </div>
 

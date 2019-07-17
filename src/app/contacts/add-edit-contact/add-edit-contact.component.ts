@@ -25,6 +25,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   private backUrl;
 
+  public currentProject;
   public contactForm: FormGroup;
   public isEditing = false;
   public loading = false;
@@ -37,7 +38,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     browser_spellcheck: true,
     height: 240
   };
-  public salutationList = ['Mr.', 'Mrs.', 'Miss', 'Dr.', 'Ms'];
+  public salutationList = ['Mr.', 'Mrs.', 'Miss', 'Dr.', 'Ms', 'Chief', 'Mayor', 'Minister'];
   public provinceList = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
 
   constructor(
@@ -48,21 +49,20 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    if (this.storageService.state.editGroupBackUrl) {
+      this.backUrl = this.storageService.state.editGroupBackUrl.url;
+      this.currentProject = this.storageService.state.editGroupBackUrl.currentProject;
+    }
+    let org = '';
+    if (this.storageService.state.selectedOrganization) {
+      this.contactOrganizationName = this.storageService.state.selectedOrganization.name;
+      org = this.storageService.state.selectedOrganization._id;
+    }
+
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(res => {
-        let org = '';
-        if (this.storageService.state.selectedOrganization) {
-          this.contactOrganizationName = this.storageService.state.selectedOrganization.name;
-          org = this.storageService.state.selectedOrganization._id;
-        }
-
-        if (this.storageService.state.editGroupBackUrl) {
-          this.backUrl = this.storageService.state.editGroupBackUrl;
-        }
-
         this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
-
         if (this.storageService.state.contactForm == null) {
           if (!this.isEditing) {
             this.buildForm({
@@ -139,9 +139,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     } else if (this.contactForm.controls.salutation.value === '') {
       alert('You must select a salutation.');
       return;
-    } else if (this.contactForm.controls.email.value === '') {
-      alert('Email cannot be empty.');
-      return;
     } else if (this.contactForm.controls.org.value === '') {
       alert('You must select an organization.');
       return;
@@ -170,6 +167,8 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       notes: this.contactForm.controls.notes.value
     });
 
+    this.storageService.state.contactForm = null;
+    this.storageService.state.selectedOrganization = null;
     if (!this.isEditing) {
       this.userService.add(user)
         .subscribe(item => {
@@ -177,8 +176,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
           if (this.backUrl == null) {
             this.router.navigate(['/contacts']);
           } else {
-            console.log(this.backUrl);
-            console.log(this.storageService.state.back);
             this.router.navigate(this.backUrl);
           }
         });
@@ -192,12 +189,12 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  public addOrganization() {
+  public linkOrganization() {
     this.storageService.state.contactForm = this.contactForm;
     if (!this.isEditing) {
-      this.router.navigate(['/contacts', 'add', 'add-org']);
+      this.router.navigate(['/contacts', 'add', 'link-org']);
     } else {
-      this.router.navigate(['/c', this.contactId, 'edit', 'add-org']);
+      this.router.navigate(['/c', this.contactId, 'edit', 'link-org']);
     }
   }
 
