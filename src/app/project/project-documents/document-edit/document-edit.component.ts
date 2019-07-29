@@ -64,10 +64,10 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     let copy_doctype = this.doctypes;
     this.doctypes = [];
     // This order was created by mapping the doctype items from the database with the EAO defined ordered list
-    let doclist_order = [0, 1, 2, 8, 7, 9, 3, 17, 18, 19, 4, 5, 20, 10, 6, 12, 11, 13, 14, 15, 16];
+    let docList_order = [0, 1, 2, 6, 10, 11, 14, 4, 3, 5, 13, 16, 15, 17, 18, 19, 7, 8, 9, 12];
     // We map the doctypes to put in the correct order as defined in doclist_order
-    doclist_order.map((item, i) => {
-      this.doctypes[i] = copy_doctype[item];
+    docList_order.map((item, i) => {
+      this.doctypes[item] = copy_doctype[i];
     });
 
     // Check if documents are null (nav straight to this page)
