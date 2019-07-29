@@ -91,9 +91,9 @@ export class ApiService {
         break;
 
       default:
-        // Dev
-        this.pathAPI = 'https://eagle-prod.pathfinder.gov.bc.ca/api';
-        this.env = 'prod';
+        // test
+        this.pathAPI = 'https://eagle-test.pathfinder.gov.bc.ca/api';
+        this.env = 'test';
     }
   }
 
