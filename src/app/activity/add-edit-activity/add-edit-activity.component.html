@@ -26,25 +26,32 @@
     <div class="flex-container">
       <div class="label-pair lrg">
         <label for="headline">Headline* </label>
-        <input name="headline" id="headline" formControlName="headline" type="text" class="form-control" />
+        <input required name="headline" id="headline" formControlName="headline" type="text" class="form-control" />
       </div>
     </div>
     <div class="flex-container">
       <div class="label-pair lrg">
         <label for="content">Content* </label>
-        <editor [init]="tinyMceSettings" name="content" id="content" formControlName="content"></editor>
+        <editor required [init]="tinyMceSettings" name="content" id="content" formControlName="content"></editor>
       </div>
+    </div>
+    <div *ngIf="typeIsPCP && !projectIsSelected" class="alert alert-warning" role="alert">
+      Please select a project.
+    </div>
+    <div *ngIf="typeIsPCP && projectIsSelected && periods.length === 0" class="alert alert-warning" role="alert">
+      No public comment periods exist for selected project.
     </div>
     <div class="flex-container">
       <div class="label-pair med">
-        <label for="project">Project </label>
-        <select class="form-control" formControlName="project">
+        <label *ngIf="!typeIsPCP" for="project">Project </label>
+        <label *ngIf="typeIsPCP" for="project">Project* </label>
+        <select [required]="typeIsPCP" class="form-control" formControlName="project" (change)="updateProject()">
           <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
         </select>
       </div>
       <div class="label-pair">
         <label for="type">Type* </label>
-        <select required class="form-control" formControlName="type">
+        <select required default="select" class="form-control" formControlName="type" (change)="updateType()">
           <option>Public Comment Period</option>
           <option>News</option>
         </select>
@@ -61,6 +68,15 @@
               type="button"></button>
           </div>
         </div>
+      </div>
+      <div class="label-pair">
+        <label *ngIf="!typeIsPCP" for="pcp">Public Comment Period</label>
+        <label *ngIf="typeIsPCP" for="pcp">Public Comment Period* </label>
+        <select [required]="typeIsPCP" class="form-control" formControlName="pcp">
+          <!-- this default value is so that when you are switching between projects and this PCP selector is being populated it doesn't default to the first PCP -->
+          <option disabled hidden [ngValue]=""></option>
+          <option *ngFor="let period of periods" [ngValue]="period._id" >{{period.dateStarted | date: 'MMMM d'}} - {{period.dateCompleted | date}}</option>
+        </select>
       </div>
     </div>
     <div class="flex-container">
