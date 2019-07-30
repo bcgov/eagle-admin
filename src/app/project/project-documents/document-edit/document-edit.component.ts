@@ -86,7 +86,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
           // Set the old data in there if it exists.
           this.myForm = new FormGroup({
             'doctypesel': new FormControl(this.documents[0].type),
-            'authorsel': new FormControl(this.documents[0].documentAuthor),
+            'authorsel': new FormControl(this.documents[0].documentAuthorType),
             'labelsel': new FormControl(this.documents[0].milestone),
             'datePosted': new FormControl(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))),
             'displayName': new FormControl(this.documents[0].displayName),
@@ -169,7 +169,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         formData.append('milestone', this.myForm.value.labelsel);
         formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value))).toISOString());
         formData.append('type', this.myForm.value.doctypesel);
-        formData.append('documentAuthor', this.myForm.value.authorsel);
+        formData.append('documentAuthorType', this.myForm.value.authorsel);
         formData.append('projectPhase', this.myForm.value.projectphasesel);
       } else {
         doc.documentFileName !== null ? formData.append('documentFileName', doc.documentFileName) : Function.prototype;
@@ -189,8 +189,8 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         type !== undefined && type !== null ? formData.append('type', type) : Function.prototype;
 
         // apply changes to documentAuthor if any
-        let documentAuthor = this.multiEditGetUpdatedValue(this.myForm.value.authorsel, doc.documentAuthor);
-        documentAuthor !== undefined && documentAuthor !== null ? formData.append('documentAuthor', documentAuthor) : Function.prototype;
+        let documentAuthorType = this.multiEditGetUpdatedValue(this.myForm.value.authorsel, doc.documentAuthorType);
+        documentAuthorType !== undefined && documentAuthorType !== null ? formData.append('documentAuthorType', documentAuthorType) : Function.prototype;
 
         // apply changes to projectPhase if any
         let projectPhase = this.multiEditGetUpdatedValue(this.myForm.value.projectphasesel, doc.projectPhase);

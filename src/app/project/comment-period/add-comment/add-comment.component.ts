@@ -217,6 +217,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       formData.append('dateUploaded', moment());
       formData.append('datePosted', moment());
       formData.append('documentAuthor', this.addCommentForm.get('authorText').value);
+      // todo add authorType? selector?
       docForms.push(formData);
     });
 

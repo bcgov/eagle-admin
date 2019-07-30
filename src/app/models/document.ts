@@ -16,6 +16,7 @@ export class Document {
   type: string;
   description: string;
   documentAuthor: string;
+  documentAuthorType: string;
   eaoStatus: string;
   datePosted: Date;
   dateUpdated: Date;
@@ -48,6 +49,7 @@ export class Document {
     this.type = obj && obj.type || null;
     this.description = obj && obj.description || null;
     this.documentAuthor = obj && obj.documentAuthor || null;
+    this.documentAuthorType = obj && obj.documentAuthorType || null;
     this.eaoStatus = obj && obj.eaoStatus || null;
     this.projectPhase = obj && obj.projectPhase || null;
 
