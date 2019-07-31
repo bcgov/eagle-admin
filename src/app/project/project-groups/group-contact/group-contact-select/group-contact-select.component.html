@@ -1,16 +1,7 @@
 <nav class="action-container" aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item">
-      <a [routerLink]="['/projects']">All Projects</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
-    </li>
-    <li class="breadcrumb-item">
-      <a [routerLink]="this.storageService.state?.back?.url">{{this.storageService.state?.back?.label}}</a>
+  <ol *ngIf="navigationObject" class="breadcrumb">
+    <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
+      <a [routerLink] (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">Select Contact(s)</li>
   </ol>
@@ -66,7 +57,7 @@
     No contacts found.
   </div>
 
-  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+  <app-table-template *ngIf="!loading && tableParams.totalListItems !== 0" (checkboxChange)='checkChange($event)'
     [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
     (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
   </app-table-template>

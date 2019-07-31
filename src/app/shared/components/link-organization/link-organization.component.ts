@@ -11,6 +11,7 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { Org } from 'app/models/org';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-link-organization',
@@ -40,28 +41,27 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     }
   ];
 
-  public currentProject;
-  public backUrl;
+  public navigationObject;
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
   public contactId = '';
-  public breadcrumbs;
+  public isParentCompany = false;
 
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router,
     public storageService: StorageService,
+    public navigationStackUtils: NavigationStackUtils,
     public tableTemplateUtils: TableTemplateUtils
   ) { }
 
   ngOnInit() {
-    if (this.storageService.state.editGroupBackUrl) {
-      this.backUrl = this.storageService.state.editGroupBackUrl.url;
-      this.currentProject = this.storageService.state.editGroupBackUrl.currentProject;
-    }
-    if (this.storageService.state.breadcrumbs) {
-      this.breadcrumbs = this.storageService.state.breadcrumbs;
+    if (this.navigationStackUtils.getNavigationStack()) {
+      this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
+      if (this.navigationObject.breadcrumbs[0].label === 'Organizations') {
+        this.isParentCompany = true;
+      }
     } else {
       // TODO: determine where to boot out.
       this.router.navigate(['/']);
@@ -156,6 +156,33 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
       this.tableParams.sortBy = '+' + column;
     }
     this.onSubmit(this.tableParams.currentPage);
+  }
+
+  createOrganization() {
+    this.setBreadcrumbs();
+    this.router.navigate(['/orgs', 'add']);
+  }
+
+  private setBreadcrumbs() {
+    let nextBackUrl = [...this.navigationObject.backUrl];
+    nextBackUrl.push('link-org');
+    let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+    nextBreadcrumbs.push(
+      {
+        route: nextBackUrl,
+        label: 'Link Organization'
+      }
+    );
+    this.navigationStackUtils.pushNavigationStack(
+      nextBackUrl,
+      nextBreadcrumbs
+    );
+  }
+
+  goBack() {
+    let url = this.navigationStackUtils.getLastBackUrl();
+    this.navigationStackUtils.popNavigationStack();
+    this.router.navigate(url);
   }
 
   ngOnDestroy() {

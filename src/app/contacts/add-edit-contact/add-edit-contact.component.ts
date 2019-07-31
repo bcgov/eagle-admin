@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { User } from 'app/models/user';
 import { UserService } from 'app/services/user.service';
 import { StorageService } from 'app/services/storage.service';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 export interface DataModel {
   title: string;
@@ -23,7 +24,7 @@ export interface DataModel {
 //       otherwise they don't return a result
 export class AddEditContactComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  private backUrl;
+  private navigationObject;
 
   public currentProject;
   public contactForm: FormGroup;
@@ -44,14 +45,14 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private navigationStackUtils: NavigationStackUtils,
     private storageService: StorageService,
     private userService: UserService
   ) { }
 
   ngOnInit() {
-    if (this.storageService.state.editGroupBackUrl) {
-      this.backUrl = this.storageService.state.editGroupBackUrl.url;
-      this.currentProject = this.storageService.state.editGroupBackUrl.currentProject;
+    if (this.navigationStackUtils.getNavigationStack()) {
+      this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
     }
     let org = '';
     if (this.storageService.state.selectedOrganization) {
@@ -64,61 +65,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       .subscribe(res => {
         this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
         this.contactId = this.isEditing ? res.contact.data._id : '';
-
-        if (!this.isEditing) {
-          this.storageService.state.backUrl = ['/contacts', 'add'];
-          if (this.storageService.state.editGroupBackUrl) {
-            this.storageService.state.breadcrumbs = [
-              {
-                route: ['/projects'],
-                label: 'All Projects'
-              },
-              {
-                route: ['/p', this.currentProject._id],
-                label: this.currentProject.name
-              },
-              {
-                route: ['/p', this.currentProject._id, 'project-groups'],
-                label: 'Groups'
-              },
-              {
-                route: this.storageService.state.back.url,
-                label: this.storageService.state.back.label
-              },
-              {
-                route: this.backUrl,
-                label: 'Select Contact(s)'
-              },
-              {
-                route: ['/contacts', 'add'],
-                label: 'Add Contact'
-              }
-            ];
-          } else {
-            this.storageService.state.breadcrumbs = [
-              {
-                route: ['/contacts'],
-                label: 'Contacts'
-              },
-              {
-                route: ['/contacts', 'add'],
-                label: 'Add'
-              }
-            ];
-          }
-        } else {
-          this.storageService.state.backUrl = ['/c', this.contactId, 'edit'];
-          this.storageService.state.breadcrumbs = [
-            {
-              route: ['/contacts'],
-              label: 'Contacts'
-            },
-            {
-              route: ['/c', this.contactId, 'edit'],
-              label: 'Edit'
-            }
-          ];
-        }
 
         if (this.storageService.state.contactForm == null) {
           if (!this.isEditing) {
@@ -160,6 +106,54 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       });
   }
 
+  private setBreadcrumbs() {
+    if (!this.isEditing) {
+      if (this.navigationObject) {
+        // We're coming from a different component so we have to preserve our nav stack.
+        console.log('nav object', this.navigationObject);
+        let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+        nextBreadcrumbs.push(
+          {
+            route: ['/contacts', 'add'],
+            label: 'Add Contact'
+          }
+        );
+        this.navigationStackUtils.pushNavigationStack(
+          ['/contacts', 'add'],
+          nextBreadcrumbs
+        );
+      } else {
+        this.navigationStackUtils.pushNavigationStack(
+          ['/contacts', 'add'],
+          [
+            {
+              route: ['/contacts'],
+              label: 'Contacts'
+            },
+            {
+              route: ['/contacts', 'add'],
+              label: 'Add'
+            }
+          ]
+        );
+      }
+    } else {
+      this.navigationStackUtils.pushNavigationStack(
+        ['/c', this.contactId, 'edit'],
+        [
+          {
+            route: ['/contacts'],
+            label: 'Contacts'
+          },
+          {
+            route: ['/c', this.contactId, 'edit'],
+            label: 'Edit'
+          }
+        ]
+      );
+    }
+  }
+
   private buildForm(data) {
     this.contactForm = new FormGroup({
       'firstName': new FormControl(data.firstName),
@@ -186,8 +180,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   private clearStorageService() {
     this.storageService.state.contactForm = null;
     this.storageService.state.selectedOrganization = null;
-    this.storageService.state.backUrl = null;
-    this.storageService.state.editGroupBackUrl = null;
   }
 
   public onSubmit() {
@@ -236,10 +228,10 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       this.userService.add(user)
         .subscribe(item => {
           console.log('item', item);
-          if (this.backUrl == null) {
-            this.router.navigate(['/contacts']);
+          if (this.navigationStackUtils.getLastBackUrl()) {
+            this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
           } else {
-            this.router.navigate(this.backUrl);
+            this.router.navigate(['/contacts']);
           }
         });
     } else {
@@ -254,6 +246,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
 
   public linkOrganization() {
     this.storageService.state.contactForm = this.contactForm;
+    this.setBreadcrumbs();
     if (!this.isEditing) {
       this.router.navigate(['/contacts', 'add', 'link-org']);
     } else {
@@ -269,10 +262,12 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
 
   public onCancel() {
     this.clearStorageService();
-    if (this.backUrl == null) {
+    let backUrl = this.navigationStackUtils.getLastBackUrl();
+    if (backUrl === null) {
       this.router.navigate(['/contacts']);
     } else {
-      this.router.navigate(this.backUrl);
+      this.navigationStackUtils.popNavigationStack();
+      this.router.navigate(backUrl);
     }
   }
 

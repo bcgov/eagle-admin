@@ -8,6 +8,7 @@ import { SearchTerms } from 'app/models/search';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { StorageService } from 'app/services/storage.service';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-contacts',
@@ -57,6 +58,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
+    private navigationStackUtils: NavigationStackUtils,
     private tableTemplateUtils: TableTemplateUtils,
     private storageService: StorageService
   ) { }
@@ -131,6 +133,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   addContact() {
     this.storageService.state.contactForm = null;
     this.storageService.state.selectedOrganization = null;
+    this.navigationStackUtils.clearNavigationStack();
     this.router.navigate(['contacts', 'add']);
   }
 

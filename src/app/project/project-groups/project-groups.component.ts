@@ -17,6 +17,7 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ExcelService } from 'app/services/excel.service';
 import { SearchService } from 'app/services/search.service';
 import { MatSnackBar } from '@angular/material';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-project-groups',
@@ -53,17 +54,18 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     }
   ];
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
     private dialogService: DialogService,
     private excelService: ExcelService,
     private modalService: NgbModal,
-    private snackBar: MatSnackBar,
-    private tableTemplateUtils: TableTemplateUtils,
+    private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private searchService: SearchService,
+    private snackBar: MatSnackBar,
     private storageService: StorageService,
-    private searchService: SearchService
+    private tableTemplateUtils: TableTemplateUtils
   ) { }
 
   ngOnInit() {
@@ -100,17 +102,6 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
           this.router.navigate(['/search']);
         }
       });
-  }
-
-  setBackURL() {
-    this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-groups'], label: 'Groups' };
-    this.storageService.state.add = this.add;
-    this.storageService.state.existing = this.entries;
-    this.storageService.state.component = this;
-    this.storageService.state.componentModel = 'User';
-    this.storageService.state.tableColumns = this.tableColumns;
-    this.storageService.state.rowComponent = GroupsTableRowsComponent;
-    this.storageService.state.sortBy = this.tableParams.sortBy;
   }
 
   setRowData() {
@@ -151,8 +142,8 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
         break;
       case 'edit':
+        this.navigationStackUtils.clearNavigationStack();
         let selected = this.tableData.data.filter(item => item.checkbox === true);
-        console.log('selected:', selected);
         this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', selected[0]._id, 'members']);
         break;
       case 'add':

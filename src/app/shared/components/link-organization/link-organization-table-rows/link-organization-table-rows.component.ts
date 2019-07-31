@@ -4,6 +4,7 @@ import { TableComponent } from 'app/shared/components/table-template/table.compo
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'tbody[app-link-organization-table-rows]',
@@ -20,6 +21,7 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
 
   constructor(
     private router: Router,
+    private navigationStackUtils: NavigationStackUtils,
     private storageService: StorageService
   ) { }
 
@@ -30,6 +32,8 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
 
   selectItem(item) {
     this.storageService.state.selectedOrganization = item;
-    this.router.navigate(this.storageService.state.backUrl);
+    let url = this.navigationStackUtils.getLastBackUrl();
+    this.navigationStackUtils.popNavigationStack();
+    this.router.navigate(url);
   }
 }

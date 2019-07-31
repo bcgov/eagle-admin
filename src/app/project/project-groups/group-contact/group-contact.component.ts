@@ -14,6 +14,7 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ProjectService } from 'app/services/project.service';
 import { MatSnackBar } from '@angular/material';
 import { ExcelService } from 'app/services/excel.service';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-group-contact',
@@ -64,15 +65,16 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
 
   constructor(
-    private route: ActivatedRoute,
-    private excelService: ExcelService,
-    private router: Router,
-    private storageService: StorageService,
-    private dialogService: DialogService,
-    private searchService: SearchService,
-    private projectService: ProjectService,
     private _changeDetectionRef: ChangeDetectorRef,
+    private dialogService: DialogService,
+    private excelService: ExcelService,
+    private navigationStackUtils: NavigationStackUtils,
+    private projectService: ProjectService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private searchService: SearchService,
     private snackBar: MatSnackBar,
+    private storageService: StorageService,
     private tableTemplateUtils: TableTemplateUtils
   ) { }
 
@@ -273,7 +275,6 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   }
 
   setBackURL() {
-    this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members'], label: this.group.name };
     this.storageService.state.update = this.update;
     this.storageService.state.component = this;
     this.storageService.state.componentModel = 'User';
@@ -282,6 +283,28 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     this.storageService.state.sortBy = this.tableParams.sortBy;
     this.storageService.state.groupId = this.groupId;
     this.storageService.state.selectedUsers = [...this.users];
+
+    this.navigationStackUtils.pushNavigationStack(
+      ['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members'],
+      [
+        {
+          route: ['/projects'],
+          label: 'All Projects'
+        },
+        {
+          route: ['/p', this.currentProject._id],
+          label: this.currentProject.name
+        },
+        {
+          route: ['/p', this.currentProject._id, 'project-groups'],
+          label: 'Groups'
+        },
+        {
+          route: ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members'],
+          label: this.group.name
+        }
+      ]
+    );
     this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', 'select']);
   }
 

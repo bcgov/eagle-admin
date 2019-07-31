@@ -1,11 +1,20 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
   <div *ngIf="!isEditing">
-    <ol class="breadcrumb">
+    <ol *ngIf="navigationObject == null" class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/orgs']">Organizations</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Add
+      </li>
+    </ol>
+    <ol *ngIf="navigationObject" class="breadcrumb">
+      <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
+        <a [routerLink]
+          (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Add Organization
       </li>
     </ol>
   </div>
@@ -49,7 +58,7 @@
       <div class="label-pair">
         <label for="description">Parent Company</label>
         <div *ngIf="parentOrganizationName === '' || parentOrganizationName == null">
-          <button class="btn btn-primary" type="button" (click)="linkOrganization()">Link Organization</button>
+          <button class="btn btn-primary" type="button" (click)="linkOrganization()">Link Parent Company</button>
         </div>
         <div *ngIf="parentOrganizationName !== '' && parentOrganizationName">
           <span class="cell icon">
