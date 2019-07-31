@@ -1,5 +1,5 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <div *ngIf="!isEditing && this.backUrl == null">
+  <div *ngIf="!isEditing && navigationObject == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/contacts']">Contacts</a>
@@ -9,27 +9,16 @@
       </li>
     </ol>
   </div>
-  <div *ngIf="!isEditing && this.backUrl">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <a [routerLink]="['/projects']">All Projects</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a [routerLink]="storageService.state?.back?.url">{{storageService.state?.back?.label}}</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a [routerLink]="backUrl">Select Contact(s)</a>
+  <div *ngIf="!isEditing && navigationObject">
+    <ol *ngIf="navigationObject" class="breadcrumb">
+      <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
+        <a [routerLink]
+          (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">Add Contact</li>
     </ol>
   </div>
-  <div *ngIf="isEditing && this.backUrl == null">
+  <div *ngIf="isEditing && navigationObject == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/contacts']">Contacts</a>

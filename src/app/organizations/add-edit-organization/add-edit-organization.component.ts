@@ -7,6 +7,7 @@ import { StorageService } from 'app/services/storage.service';
 
 import { Org } from 'app/models/org';
 import { OrgService } from 'app/services/org.service';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   templateUrl: './add-edit-organization.component.html',
@@ -16,12 +17,13 @@ import { OrgService } from 'app/services/org.service';
 export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public orgForm: FormGroup;
   public isEditing = false;
   public loading = false;
+  public navigationObject;
+  public orgForm: FormGroup;
+  public orgId = '';
   public parentOrganizationName = '';
   public parentOrgId = '';
-  public orgId = '';
 
   public tinyMceSettings = {
     skin: false,
@@ -46,11 +48,16 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private navigationStackUtils: NavigationStackUtils,
     private orgService: OrgService,
     private storageService: StorageService,
   ) { }
 
   ngOnInit() {
+    if (this.navigationStackUtils.getNavigationStack()) {
+      this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
+    }
+
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(res => {
@@ -64,8 +71,6 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
           this.parentOrganizationName = res.organization.parentCompany.data.name;
           this.parentOrgId = res.organization.parentCompany.data._id;
         }
-
-        this.setBreadCrumbs();
 
         if (this.storageService.state.orgForm == null) {
           if (!this.isEditing) {
@@ -114,35 +119,51 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   private clearStorageService() {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedOrganization = null;
-    this.storageService.state.backUrl = null;
-    this.storageService.state.breadcrumbs = null;
   }
 
   private setBreadCrumbs() {
     if (!this.isEditing) {
-      this.storageService.state.backUrl = ['/orgs', 'add'];
-      this.storageService.state.breadcrumbs = [
-        {
-          route: ['/orgs'],
-          label: 'Organizations'
-        },
-        {
-          route: ['/orgs', 'add'],
-          label: 'Add'
-        }
-      ];
+      if (this.navigationObject) {
+        let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+        nextBreadcrumbs.push(
+          {
+            route: ['/orgs', 'add'],
+            label: 'Add Organization'
+          }
+        );
+        this.navigationStackUtils.pushNavigationStack(
+          ['/orgs', 'add'],
+          nextBreadcrumbs
+        );
+      } else {
+        this.navigationStackUtils.pushNavigationStack(
+          ['/orgs', 'add'],
+          [
+            {
+              route: ['/orgs'],
+              label: 'Organizations'
+            },
+            {
+              route: ['/orgs', 'add'],
+              label: 'Add'
+            }
+          ]
+        );
+      }
     } else {
-      this.storageService.state.backUrl = ['/o', this.orgId, 'edit'];
-      this.storageService.state.breadcrumbs = [
-        {
-          route: ['/orgs'],
-          label: 'Organizations'
-        },
-        {
-          route: ['/o', this.orgId, 'edit'],
-          label: 'Edit'
-        }
-      ];
+      this.navigationStackUtils.pushNavigationStack(
+        ['/o', this.orgId, 'edit'],
+        [
+          {
+            route: ['/orgs'],
+            label: 'Organizations'
+          },
+          {
+            route: ['/o', this.orgId, 'edit'],
+            label: 'Edit'
+          }
+        ]
+      );
     }
   }
 
@@ -193,14 +214,16 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
     if (!this.isEditing) {
       this.orgService.add(org)
         .subscribe(item => {
-          console.log('item', item);
-          this.router.navigate(['orgs']);
+          if (this.navigationStackUtils.getLastBackUrl()) {
+            this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
+          } else {
+            this.router.navigate(['orgs']);
+          }
         });
     } else {
       org._id = this.orgId;
       this.orgService.save(org)
         .subscribe(item => {
-          console.log('item', item);
           this.router.navigate(['orgs']);
         });
     }
@@ -208,7 +231,11 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
 
   public onCancel() {
     this.clearStorageService();
-    this.router.navigate(['orgs']);
+    if (this.navigationStackUtils.getLastBackUrl()) {
+      this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
+    } else {
+      this.router.navigate(['orgs']);
+    }
   }
 
   public removeSelectedOrganization() {
@@ -218,6 +245,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    this.setBreadCrumbs();
     this.storageService.state.orgForm = this.orgForm;
     if (!this.isEditing) {
       this.router.navigate(['orgs', 'add', 'link-org']);

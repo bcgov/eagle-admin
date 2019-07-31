@@ -1,10 +1,13 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item" *ngFor="let breadcrumb of breadcrumbs">
-      <a [routerLink]="breadcrumb.route">{{breadcrumb.label}}</a>
+  <ol *ngIf="navigationObject" class="breadcrumb">
+    <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
+      <a [routerLink] (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">
+    <li *ngIf="!isParentCompany" class="breadcrumb-item active" aria-current="page">
       Link Organization
+    </li>
+    <li *ngIf="isParentCompany" class="breadcrumb-item active" aria-current="page">
+      Link Parent Company
     </li>
   </ol>
 </nav>
@@ -34,9 +37,22 @@
     </div>
   </form>
 
+  <div *ngIf="!isParentCompany" class="input-group-prepend">
+    <button (click)="createOrganization()" class="btn btn-outline-primary mr-1" type="button" id="button-sa">
+      Create Organization
+    </button>
+  </div>
+
   <p><i>Click on the organization table row that you would like to add the contact to:</i></p>
 
   <app-table-template *ngIf="tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
     (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
   </app-table-template>
+
+  <div class="btn-group" role="group" aria-label="Action Buttons" *ngIf="!loading && tableParams.totalListItems != 0">
+    <div class="input-group-prepend">
+      <button class="btn btn-outline-primary mr-1" type="button" id="button-cl" (click)="goBack()"><i
+          class="material-icons">arrow_back</i>Back</button>
+    </div>
+  </div>
 </main>

@@ -3,6 +3,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-organizations-table-rows',
@@ -18,6 +19,7 @@ export class OrganizationsTableRowsComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private navigationStackUtils: NavigationStackUtils,
     private storageService: StorageService
   ) { }
 
@@ -29,8 +31,7 @@ export class OrganizationsTableRowsComponent implements OnInit {
   editItem(organization) {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedOrganization = null;
-    this.storageService.state.backUrl = null;
-    this.storageService.state.breadcrumbs = null;
+    this.navigationStackUtils.clearNavigationStack();
     this.router.navigate(['o', organization._id, 'edit']);
   }
 }

@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-user-table-rows',
@@ -16,7 +17,8 @@ export class UserTableRowsComponent implements OnInit {
   public dropdownItems = ['Edit', 'Delete'];
 
   constructor(
-    private router: Router
+    private router: Router,
+    private navigationStackUtils: NavigationStackUtils
   ) { }
 
   ngOnInit() {
@@ -25,6 +27,7 @@ export class UserTableRowsComponent implements OnInit {
   }
 
   editItem(contact) {
+    this.navigationStackUtils.clearNavigationStack();
     this.router.navigate(['c/', contact._id, 'edit']);
   }
 }

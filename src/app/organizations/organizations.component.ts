@@ -8,6 +8,7 @@ import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { StorageService } from 'app/services/storage.service';
 import { OrganizationsTableRowsComponent } from './organizations-table-rows/organizations-table-rows.component';
 import { Org } from 'app/models/org';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-organizations',
@@ -52,6 +53,7 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
+    private navigationStackUtils: NavigationStackUtils,
     private tableTemplateUtils: TableTemplateUtils,
     private storageService: StorageService
   ) { }
@@ -129,8 +131,7 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
   addOrganization() {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedOrganization = null;
-    this.storageService.state.backUrl = null;
-    this.storageService.state.breadcrumbs = null;
+    this.navigationStackUtils.clearNavigationStack();
     this.router.navigate(['orgs', 'add']);
   }
 

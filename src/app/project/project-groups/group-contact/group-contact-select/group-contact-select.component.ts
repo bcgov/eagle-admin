@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { StorageService } from 'app/services/storage.service';
 import { Org } from 'app/models/org';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-group-contact-select',
@@ -15,8 +16,10 @@ import { Org } from 'app/models/org';
   styleUrls: ['./group-contact-select.component.scss']
 })
 export class GroupContactSelectComponent implements OnInit, OnDestroy {
-  public currentProject;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  public navigationObject;
+
+  public currentProject;
   public loading = true;
   public entries: User[] = null;
   public terms = new SearchTerms();
@@ -26,10 +29,12 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public tableColumns: any[];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
+    private navigationStackUtils: NavigationStackUtils,
     private tableTemplateUtils: TableTemplateUtils,
     public storageService: StorageService
   ) { }
@@ -38,7 +43,9 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     this.currentProject = this.storageService.state.currentProject.data;
     this.tableColumns = this.storageService.state.tableColumns;
 
-    if (this.storageService.state.back === undefined) {
+    if (this.navigationStackUtils.getNavigationStack()) {
+      this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
+    } else {
       // redir to project details.
       return this.router.navigate(['/p', this.currentProject._id]);
     }
@@ -48,7 +55,6 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
         if (this.tableParams.sortBy === '') {
-          // this.tableParams.sortBy = '+displayName';
           this.tableParams.sortBy = this.storageService.state.sortBy;
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
@@ -77,10 +83,6 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
       });
   }
 
-  goToItem(route) {
-    this.router.navigate(['/projects']);
-  }
-
   setRowData() {
     let list = [];
     if (this.entries && this.entries.length > 0) {
@@ -97,10 +99,12 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    if (this.storageService.state.back && this.storageService.state.back.url) {
-      this.router.navigate(this.storageService.state.back.url);
-    } else {
+    let backUrl = this.navigationStackUtils.getLastBackUrl();
+    if (backUrl === null) {
       this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
+    } else {
+      this.navigationStackUtils.popNavigationStack();
+      this.router.navigate(backUrl);
     }
   }
 
@@ -116,6 +120,8 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     if (items.length > 0) {
       this.storageService.state.add(items, this.storageService.state.component);
     }
+
+    this.navigationStackUtils.popNavigationStack();
   }
 
   updateSelectedRow(count) {
@@ -144,13 +150,18 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
       case 'createContact':
         this.storageService.state.contactForm = null;
         this.storageService.state.selectedOrganization = null;
-        this.storageService.state.backUrl = null;
-        this.storageService.state.editGroupBackUrl = null;
 
-        this.storageService.state.editGroupBackUrl = {
-          url: ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'],
-          currentProject: this.currentProject
-        };
+        let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+        nextBreadcrumbs.push(
+          {
+            route: ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'],
+            label: 'Select Contact(s)'
+          }
+        );
+        this.navigationStackUtils.pushNavigationStack(
+          ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'],
+          nextBreadcrumbs
+        );
         this.router.navigate(['/contacts', 'add']);
     }
   }
@@ -188,10 +199,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    let arr = [];
-    this.storageService.state.back.url.map(u => {
-      arr.push(u);
-    });
+    let arr = this.navigationObject.backUrl;
     arr.push('select');
     arr.push(params);
     this.router.navigate(arr);

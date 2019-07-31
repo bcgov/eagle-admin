@@ -10,6 +10,7 @@ import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -143,6 +144,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     private config: ConfigService,
     private _changeDetectorRef: ChangeDetectorRef,
     private utils: Utils,
+    private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService
   ) {
@@ -172,7 +174,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
           this.proponentId = data.project.proponent._id;
         }
         this.project = data.project;
-        this.setBreadCrumbs();
         this.buildForm(data);
         this.loading = false;
         try {
@@ -233,35 +234,39 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     }
   }
 
-  private setBreadCrumbs() {
+  private setNavigation() {
     if (!this.isEditing) {
-      this.storageService.state.backUrl = ['/projects', 'add'];
-      this.storageService.state.breadcrumbs = [
-        {
-          route: ['/projects'],
-          label: 'All Projects'
-        },
-        {
-          route: ['/projects', 'add'],
-          label: 'Add'
-        }
-      ];
+      this.navigationStackUtils.pushNavigationStack(
+        ['/projects', 'add'],
+        [
+          {
+            route: ['/projects'],
+            label: 'All Projects'
+          },
+          {
+            route: ['/projects', 'add'],
+            label: 'Add'
+          }
+        ]
+      );
     } else {
-      this.storageService.state.backUrl = ['/p', this.project._id, 'edit'];
-      this.storageService.state.breadcrumbs = [
-        {
-          route: ['/projects'],
-          label: 'All Projects'
-        },
-        {
-          route: ['/p', this.project._id],
-          label: this.project.name
-        },
-        {
-          route: ['/p', this.project._id, 'edit'],
-          label: 'Edit'
-        }
-      ];
+      this.navigationStackUtils.pushNavigationStack(
+        ['/p', this.project._id, 'edit'],
+        [
+          {
+            route: ['/projects'],
+            label: 'All Projects'
+          },
+          {
+            route: ['/p', this.project._id],
+            label: this.project.name
+          },
+          {
+            route: ['/p', this.project._id, 'edit'],
+            label: 'Edit'
+          }
+        ]
+      );
     }
   }
 
@@ -388,12 +393,12 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   private clearStorageService() {
     this.storageService.state.form = null;
     this.storageService.state.selectedOrganization = null;
-    this.storageService.state.backUrl = null;
-    this.storageService.state.breadcrumbs = null;
+    this.navigationStackUtils.popNavigationStack();
   }
 
   public linkOrganization() {
     this.storageService.state.form = this.myForm;
+    this.setNavigation();
     if (!this.isEditing) {
       this.router.navigate(['/projects', 'add', 'link-org']);
     } else {
@@ -402,7 +407,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   }
 
   private validateForm() {
-    console.log(this.myForm.controls.name.value);
     if (this.myForm.controls.name.value === '' || this.myForm.controls.name.value == null) {
       alert('Name cannot be empty.');
       return false;
@@ -450,7 +454,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     }
     if (!this.isEditing) {
       // POST
-      console.log('POST');
       let project = new Project(
         this.convertFormToProject(this.myForm)
       );
@@ -474,7 +477,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         );
     } else {
       // PUT
-      console.log('PUT');
       let project = new Project(this.convertFormToProject(this.myForm));
       console.log('PUTing', project);
       project._id = this.project._id;
@@ -509,10 +511,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     });
   }
 
-  register(myForm: FormGroup) {
-    console.log('Successful registration');
-    console.log(myForm);
-  }
+  register(myForm: FormGroup) { }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();
