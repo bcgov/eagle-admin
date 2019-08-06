@@ -16,6 +16,7 @@ export class Org {
   parentCompany: any;
   companyLegal: String;
   company: String;
+  checkbox: boolean;
 
   constructor(obj?: any) {
     this._id = obj && obj._id || null;
@@ -33,5 +34,6 @@ export class Org {
     this.parentCompany = obj && obj.parentCompany || undefined;
     this.companyLegal = obj && obj.companyLegal || undefined;
     this.company = obj && obj.company || undefined;
+    this.checkbox = obj && obj.checkbox || undefined;
   }
 }

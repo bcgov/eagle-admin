@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { Router } from '@angular/router';
+import { StorageService } from 'app/services/storage.service';
 
 @Component({
   selector: 'app-group-table-rows',
@@ -16,7 +16,7 @@ export class GroupTableRowsComponent implements OnInit {
   public paginationData: any;
 
   constructor(
-    private router: Router
+    private storageService: StorageService
   ) { }
 
   ngOnInit() {
@@ -33,6 +33,16 @@ export class GroupTableRowsComponent implements OnInit {
         count++;
       }
     });
+
+    if (this.storageService.state.selectedUsers) {
+      if (item.checkbox) {
+        this.storageService.state.selectedUsers.push(item);
+      } else {
+        this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (value, index, arr) {
+          return value._id !== item._id;
+        });
+      }
+    }
     this.selectedCount.emit(count);
   }
 }

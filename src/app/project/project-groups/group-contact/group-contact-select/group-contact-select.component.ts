@@ -84,9 +84,11 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   setRowData() {
     let list = [];
     if (this.entries && this.entries.length > 0) {
-      this.entries.forEach((item: any) => {
-        // Switch between the two contact/org components.
-        this.storageService.state.componentModel === 'User' ? list.push(new User(item)) : list.push(new Org(item));
+      this.entries.map((item: any) => {
+        item.checkbox = this.storageService.state.selectedUsers.some(element => {
+          return item._id === element._id;
+        });
+        list.push(item);
       });
       this.tableData = new TableObject(
         this.storageService.state.rowComponent,
@@ -107,15 +109,11 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   save() {
     // Add these records to the group list.
     let items = [];
-    this.tableData.data.map((item) => {
-      if (item.checkbox === true) {
-        items.push(item);
-      }
+    this.storageService.state.selectedUsers.map((item) => {
+      items.push(item);
     });
 
-    if (items.length > 0) {
-      this.storageService.state.add(items, this.storageService.state.component);
-    }
+    this.storageService.state.update(items, this.storageService.state.component);
   }
 
   updateSelectedRow(count) {
@@ -195,6 +193,18 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     arr.push('select');
     arr.push(params);
     this.router.navigate(arr);
+  }
+
+  removeSelectedUser(user) {
+    this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (element) {
+      return element._id !== user._id;
+    });
+    this.tableData.data.map(item => {
+      if (user._id === item._id) {
+        item.checkbox = false;
+      }
+    });
+    this._changeDetectionRef.detectChanges();
   }
 
   ngOnDestroy() {

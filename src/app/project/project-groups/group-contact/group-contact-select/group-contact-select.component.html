@@ -17,6 +17,28 @@
 </nav>
 
 <div class="container-fluid-padding">
+  <p><b>Selected Contacts:</b></p>
+  <div class="user-select-container">
+    <ul class="doc-list mb-3" *ngIf="storageService.state.selectedUsers?.length > 0">
+      <li *ngFor="let user of storageService.state.selectedUsers">
+        <span class="cell icon">
+          <i class="material-icons">perm_contact_calendar</i>
+        </span>
+        <span class="cell name" [title]="user.displayName || ''">
+          <span class="cell__txt-content">{{user.displayName}}</span>
+        </span>
+        <span class="cell actions">
+          <button class="btn btn-icon" type="button" title="Delete this user" (click)="removeSelectedUser(user)">
+            <i class="material-icons">delete</i>
+          </button>
+        </span>
+      </li>
+    </ul>
+    <div *ngIf="storageService.state.selectedUsers?.length === 0">
+      There are no selected users.
+    </div>
+  </div>
+  <br>
   <form #f="ngForm" class="search-form ui form" (ngSubmit)="getPaginatedDocs(1)">
     <p><b>Name Filter:</b></p>
     <div class="form-row">
