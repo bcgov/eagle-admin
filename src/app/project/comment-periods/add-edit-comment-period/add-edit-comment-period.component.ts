@@ -13,7 +13,7 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 
 import { Utils } from 'app/shared/utils/utils';
-
+import {CommentPeriodBusiness} from '@bit/eao.epic.comment-period-business-logic';
 @Component({
   selector: 'app-add-edit-comment-period',
   templateUrl: './add-edit-comment-period.component.html',
@@ -25,12 +25,14 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
   public currentProject;
   public commentPeriod = new CommentPeriod;
+  public makeInstructions = new CommentPeriodBusiness;
   public milestones: any[] = [];
 
   public isEditing = false;
 
   public infoForCommentPreview = '%information for comment%';
   public descriptionPreview = '%description%';
+  public instructionsPreview = '%instructions%';
 
   public publishedState = 'unpublished';
   public commentPeriodForm: FormGroup;
@@ -161,7 +163,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.commentPeriodForm.controls.publishedStateSel.setValue(this.commentPeriod.isPublished ? 'published' : 'unpublished');
 
     // Instructions
-    this.extractVarsFromInstructions(this.commentPeriod.instructions, this.commentPeriodForm);
+    this.extractVarsFromInstructions(this.commentPeriod.informationForComment, this.commentPeriod.description, this.commentPeriodForm);
 
     // Milestone
     this.commentPeriodForm.controls.milestoneSel.setValue(this.commentPeriod.milestone);
@@ -222,9 +224,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
     // Check info for comment
     // Check description
-    this.commentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
-    this.commentPeriod.instructions += ` for ${this.currentProject.name} Project.`;
-    this.commentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
+    this.commentPeriod.informationForComment = this.commentPeriodForm.get('infoForCommentText').value;
+    this.commentPeriod.description = this.commentPeriodForm.get('descriptionText').value;
+    this.commentPeriod.instructions = this.makeInstructions.combineText(this.commentPeriodForm.get('infoForCommentText').value, this.commentPeriodForm.get('descriptionText').value, `${this.currentProject.name}`);
 
     if (this.storageService.state.selectedDocumentsForCP) {
       let docIdArray = [];
@@ -314,10 +316,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     console.log(this.commentPeriodForm);
   }
 
-  private extractVarsFromInstructions(instructionString: String, form: FormGroup) {
-    let firstSentance = instructionString.split('.')[0] + '. ';
-    form.controls.infoForCommentText.setValue(firstSentance.split(' for')[0].replace('Comment Period on the ', ''));
-    form.controls.descriptionText.setValue(instructionString.replace(firstSentance, ''));
+  private extractVarsFromInstructions(informationString: String, descriptionString: String, form: FormGroup) {
+    form.controls.infoForCommentText.setValue(informationString);
+    form.controls.descriptionText.setValue(descriptionString);
     this.updateDescriptionPreview();
   }
 
@@ -350,6 +351,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public updateDescriptionPreview() {
     this.infoForCommentPreview = this.commentPeriodForm.get('infoForCommentText').value;
     this.descriptionPreview = this.commentPeriodForm.get('descriptionText').value;
+    this.instructionsPreview = this.makeInstructions.combineText(this.infoForCommentPreview, this.descriptionPreview, `${this.currentProject.name}`);
     this._changeDetectionRef.detectChanges();
   }
 

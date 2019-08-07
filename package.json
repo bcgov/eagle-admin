@@ -28,6 +28,7 @@
     "@angular/platform-browser-dynamic": "^6.1.7",
     "@angular/router": "^6.1.7",
     "@auth0/angular-jwt": "^2.0.0",
+    "@bit/eao.epic.comment-period-business-logic": "0.0.2",
     "@ng-bootstrap/ng-bootstrap": "^3.2.0",
     "@tinymce/tinymce-angular": "^3.0.1",
     "@types/geojson": "^7946.0.2",
