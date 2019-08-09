@@ -35,16 +35,24 @@ export class TableTemplateUtils {
     window.history.replaceState({}, '', currentUrl);
   }
 
-  public getParamsFromUrl(params, filter = null, defaultPageSize = null) {
-    let pageSize = Constants.tableDefaults.DEFAULT_PAGE_SIZE;
+  public getParamsFromUrl(params, filter = null, defaultPageSize = null, filterFieldList = []) {
+    let pageSize = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
     if (defaultPageSize !== null) {
-      pageSize = defaultPageSize;
+      pageSize = +defaultPageSize;
     } else if (params.pageSize) {
-      pageSize = params.pageSize;
+      pageSize = +params.pageSize;
     }
-    let currentPage = params.currentPage ? params.currentPage : Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
+    let currentPage = params.currentPage ? +params.currentPage : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
     let sortBy = params.sortBy ? params.sortBy : Constants.tableDefaults.DEFAULT_SORT_BY;
     let keywords = params.keywords ? params.keywords : Constants.tableDefaults.DEFAULT_KEYWORDS;
+    if (filter == null) {
+      filter = {};
+    }
+    filterFieldList.map(field => {
+      if (params[field]) {
+        filter[field] = params[field];
+      }
+    });
 
     this.updateUrl(sortBy, currentPage, pageSize, filter, keywords);
 
@@ -53,7 +61,8 @@ export class TableTemplateUtils {
       currentPage,
       0,
       sortBy,
-      keywords
+      keywords,
+      filter
     );
   }
 

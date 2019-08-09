@@ -48,6 +48,19 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
 
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
+  public orgTypeFilter = {
+    filterList: [],
+    indigenousGroup: false,
+    proponent: false,
+    otherAgency: false,
+    localGovernment: false,
+    municipality: false,
+    ministry: false,
+    consultant: false,
+    otherGovernment: false,
+    communityGroup: false,
+    other: false
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -65,7 +78,17 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     this.route.params
       .takeUntil(this.ngUnsubscribe)
       .subscribe(params => {
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+        if (this.storageService.state.orgTableParams) {
+          this.tableParams = this.storageService.state.orgTableParams;
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.filter, this.tableParams.keywords);
+          this.storageService.state.orgTableParams = null;
+        } else {
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, null, ['companyType']);
+        }
+        if (this.tableParams.filter && this.tableParams.filter.companyType) {
+          this.setFilterButtons();
+        }
+
         this.route.data
           .takeUntil(this.ngUnsubscribe)
           .subscribe((res: any) => {
@@ -101,6 +124,11 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
     params['sortBy'] = this.tableParams.sortBy;
 
+    if (this.orgTypeFilter.filterList.length > 0) {
+      params['companyType'] = this.orgTypeFilter.filterList.toString();
+      this.tableParams.filter = { companyType: params.companyType };
+    }
+
     this.router.navigate(['orgs', params]);
   }
 
@@ -132,7 +160,58 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedOrganization = null;
     this.navigationStackUtils.clearNavigationStack();
+    this.storageService.state.orgTableParams = this.tableParams;
     this.router.navigate(['orgs', 'add']);
+  }
+
+  setFilterButtons() {
+    let typeFiltersFromRoute = this.tableParams.filter.companyType.split(',');
+
+    this.orgTypeFilter.indigenousGroup = typeFiltersFromRoute.includes('indigenousGroup');
+    this.orgTypeFilter.proponent = typeFiltersFromRoute.includes('proponent');
+    this.orgTypeFilter.otherAgency = typeFiltersFromRoute.includes('otherAgency');
+    this.orgTypeFilter.localGovernment = typeFiltersFromRoute.includes('localGovernment');
+    this.orgTypeFilter.municipality = typeFiltersFromRoute.includes('municipality');
+    this.orgTypeFilter.ministry = typeFiltersFromRoute.includes('ministry');
+    this.orgTypeFilter.consultant = typeFiltersFromRoute.includes('consultant');
+    this.orgTypeFilter.otherGovernment = typeFiltersFromRoute.includes('otherGovernment');
+    this.orgTypeFilter.communityGroup = typeFiltersFromRoute.includes('communityGroup');
+    this.orgTypeFilter.other = typeFiltersFromRoute.includes('other');
+  }
+
+  setFilter() {
+    this.orgTypeFilter.filterList = [];
+    if (this.orgTypeFilter.indigenousGroup) {
+      this.orgTypeFilter.filterList.push('indigenousGroup');
+    }
+    if (this.orgTypeFilter.proponent) {
+      this.orgTypeFilter.filterList.push('proponent');
+    }
+    if (this.orgTypeFilter.otherAgency) {
+      this.orgTypeFilter.filterList.push('otherAgency');
+    }
+    if (this.orgTypeFilter.localGovernment) {
+      this.orgTypeFilter.filterList.push('localGovernment');
+    }
+    if (this.orgTypeFilter.municipality) {
+      this.orgTypeFilter.filterList.push('municipality');
+    }
+    if (this.orgTypeFilter.ministry) {
+      this.orgTypeFilter.filterList.push('ministry');
+    }
+    if (this.orgTypeFilter.consultant) {
+      this.orgTypeFilter.filterList.push('consultant');
+    }
+    if (this.orgTypeFilter.otherGovernment) {
+      this.orgTypeFilter.filterList.push('otherGovernment');
+    }
+    if (this.orgTypeFilter.communityGroup) {
+      this.orgTypeFilter.filterList.push('communityGroup');
+    }
+    if (this.orgTypeFilter.other) {
+      this.orgTypeFilter.filterList.push('other');
+    }
+    this.onSubmit();
   }
 
   ngOnDestroy() {

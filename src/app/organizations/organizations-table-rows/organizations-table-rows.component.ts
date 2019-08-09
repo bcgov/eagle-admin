@@ -32,6 +32,8 @@ export class OrganizationsTableRowsComponent implements OnInit {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedOrganization = null;
     this.navigationStackUtils.clearNavigationStack();
+
+    this.storageService.state.orgTableParams = this.data.paginationData;
     this.router.navigate(['o', organization._id, 'edit']);
   }
 }

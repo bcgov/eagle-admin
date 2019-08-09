@@ -1,7 +1,7 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
   <ol *ngIf="navigationObject" class="breadcrumb">
     <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
-      <a [routerLink] (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
+      <a href="javascript:void(0);" (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
     </li>
     <li *ngIf="!isParentCompany" class="breadcrumb-item active" aria-current="page">
       Link Organization

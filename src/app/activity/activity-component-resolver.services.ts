@@ -34,7 +34,7 @@ export class ActivityComponentResolver implements Resolve<Observable<object>> {
       let tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, filter);
       if (tableParams.sortBy === '') {
         tableParams.sortBy = '-dateAdded';
-        this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, null, tableParams.keywords);
+        this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, filter, tableParams.keywords);
       }
       return this.searchService.getSearchResults(
         tableParams.keywords || '',

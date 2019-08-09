@@ -8,3 +8,32 @@
     margin-top: 3.5rem;
     float: right;
 }
+
+.btn-group-toggle > .btn {
+    margin-bottom: 0;
+    border-radius: 24px;
+    background: none;
+    color: #003367;
+    border: 2px solid #003367;
+    font-weight: 600;
+  
+    &:hover {
+      background: #fcb118;
+    }
+  
+    &.active {
+        background: #003367;
+        color: #fff;
+    }
+  }
+  
+  @media screen and (max-width: 768px) {
+      .btn-group-toggle {
+      display: block;
+    }
+  
+      .btn-group.btn-group-toggle > div {
+        display: inline-block;
+        margin-top: 6px;
+      }
+  }
