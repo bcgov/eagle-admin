@@ -25,7 +25,8 @@ import { RouterModule } from '@angular/router';
 import { LinkOrganizationComponent } from './components/link-organization/link-organization.component';
 import { LinkOrganizationTableRowsComponent } from './components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
-
+import { PageDropdownComponent } from './components/page-dropdown/page-dropdown.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 @NgModule({
   imports: [
     RouterModule,
@@ -52,7 +53,8 @@ import { NavigationStackUtils } from './utils/navigation-stack-utils';
     PublishedPipe,
     TableDirective,
     TableTemplateComponent,
-    VarDirective
+    VarDirective,
+    PageDropdownComponent
   ],
   exports: [
     CommentStatsComponent,
@@ -70,7 +72,8 @@ import { NavigationStackUtils } from './utils/navigation-stack-utils';
     OrgNamePipe,
     PublishedPipe,
     TableTemplateComponent,
-    VarDirective
+    VarDirective,
+    PageDropdownComponent
   ],
   providers: [
     TableTemplateUtils,

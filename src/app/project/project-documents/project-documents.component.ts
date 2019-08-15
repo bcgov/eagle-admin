@@ -17,6 +17,8 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { PageDropdownComponent } from 'app/shared/components/page-dropdown/page-dropdown.component';
+import { DropdownTemplateComponent } from 'app/shared/components/dropdown-template/dropdown-template.component';
 
 @Component({
   selector: 'app-project-documents',
@@ -29,6 +31,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   public documents: Document[] = null;
   public loading = true;
 
+  public kathytest = [3]
   public documentTableData: TableObject;
   public documentTableColumns: any[] = [
     {

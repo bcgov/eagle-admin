@@ -30,7 +30,7 @@
         <div class="ml-auto " ngbDropdown placement="bottom-right">
         <button class="btn btn-secondary btn-num-items dropdown-toggle" id="actionDropdown" ngbDropdownToggle>Items per page</button>
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-                <a class="dropdown-item" (click)="onNumItems(10)">10</a>
+            <a class="dropdown-item" (click)="onNumItems(10)">10</a>
             <a class="dropdown-item" (click)="onNumItems(25)">25</a>
             <a class="dropdown-item" (click)="onNumItems(50)">50</a>
             <a class="dropdown-item" (click)="onNumItems(100)">100</a>
@@ -38,6 +38,78 @@
         </div>
         </div>
     </div>
+
+    <!-- <div class="row">
+            <div class="ml-auto " ngbDropdown placement="bottom-right">
+            <app-page-dropdown> </app-page-dropdown>
+            </div>
+    </div> -->
+    <app-page-dropdown> </app-page-dropdown>
+    <app-dropdown-template> [items] = "kathytest" </app-dropdown-template>
+
+    <div class="row">
+        <div class="ml-auto " ngbDropdown placement="bottom-right">
+        <button class="btn btn-danger btn-num-items dropdown-toggle" id="actionDropdown" ngbDropdownToggle>Items per page</button>
+        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+            <a class="dropdown-item" href="#">10</a>
+            <a class="dropdown-item" href="#">25</a>
+            <a class="dropdown-item" href="#">50</a>
+            <a class="dropdown-item" href="#">100</a>
+            <a class="dropdown-item" href="#">Show All</a>
+        </div>
+        </div>
+    </div>
+
+    <!-- <div class="row">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Dropdown button
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" href="#">Action</a>
+          <a class="dropdown-item" href="#">Another action</a>
+          <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+      </div> -->
+
+      <!-- <div class="col-md-2">
+        <div ngbDropdown placement="bottom-right">
+          <button class="btn btn-primary" id="actionDropdown" (click)="checkIfCanDelete()" ngbDropdownToggle>Actions</button>
+          <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+            <button class="dropdown-item" (click)="editCommentPeriod()">Edit</button>
+            <button class="dropdown-item" (click)="addComment()">Add a comment</button>
+            <button class="dropdown-item" (click)="exportComments()">Export All Comments</button>
+            <button class="dropdown-item" (click)="togglePublishState()">{{publishAction}}</button>
+            <button *ngIf="canDeleteCommentPeriod" class="dropdown-item" (click)="deleteCommentPeriod()">Delete</button>
+          </div>
+        </div>
+      </div>
+
+    <div class="col-md-2">
+        <div ngbDropdown placement="bottom-right">
+            <button class="btn btn-secondary" id="dropdownMenuButton">
+                Items per page
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" ngbDropdownMenu>
+                <a class="dropdown-item" (click)="onNumItems(25)">25</a>
+                <a class="dropdown-item" (click)="onNumItems(50)">50</a>
+                <a class="dropdown-item" (click)="onNumItems(100)">100</a>
+                <a class="dropdown-item" (click)="onNumItems('max')">Show All</a>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- <div class="row">
+        <div class="ml-auto " ngbDropdown placement="bottom-right">
+            <button class="btn btn-secondary btn-num-items dropdown-toggle" id="actionDropdown" ngbDropdownToggle>Items per page</button>
+            <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+                <a class="dropdown-item" (click)="onNumItems(10)">10</a>
+                <a class="dropdown-item" (click)="onNumItems(25)">25</a>
+                <a class="dropdown-item" (click)="onNumItems(50)">50</a>
+                <a class="dropdown-item" (click)="onNumItems(100)">100</a>
+                <a class="dropdown-item" (click)="onNumItems('max')">Show All</a>
+            </div>
+        </div>
+    </div> -->
 
     </div>
     <div class="results">
