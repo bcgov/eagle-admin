@@ -195,7 +195,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    let arr = this.navigationObject.backUrl;
+    let arr = [...this.navigationObject.backUrl];
     arr.push('select');
     arr.push(params);
     this.router.navigate(arr);

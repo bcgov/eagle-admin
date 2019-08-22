@@ -210,7 +210,6 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         data.map(p => {
           userData += p.data.email + ';';
         });
-        console.log(userData);
         let selBox = document.createElement('textarea');
         selBox.style.position = 'fixed';
         selBox.style.left = '0';
@@ -305,7 +304,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         }
       ]
     );
-    this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', 'select']);
+    this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', 'select', { pageSize: 25 }]);
   }
 
   update(contacts, component) {
