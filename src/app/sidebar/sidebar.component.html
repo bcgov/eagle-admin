@@ -13,8 +13,8 @@
       <a [ngClass]="{'active': currentMenu === 'valued-components'}" class="project-menu" [routerLink]="['p', currentProjectId, 'valued-components']"><i class="material-icons">view_list</i>Valued Components</a>
     </section>
     <a [ngClass]="{'active': currentProjectId === 'activity'}" [routerLink]="['/activity']"><i class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>
-    <a [ngClass]="{'active': currentProjectId === 'contacts' || currentProjectId === 'c'}" [routerLink]="['/contacts']"><i class="material-icons mr-3 ">contacts</i>Contacts</a>
-    <a [ngClass]="{'active': currentProjectId === 'orgs' || currentProjectId === 'o'}" [routerLink]="['/orgs']"><i class="material-icons mr-3 ">business</i>Organizations</a>
+    <a [ngClass]="{'active': currentProjectId.includes('contacts') || currentProjectId === 'c'}" [routerLink]="['/contacts']"><i class="material-icons mr-3 ">contacts</i>Contacts</a>
+    <a [ngClass]="{'active': currentProjectId.includes('orgs') || currentProjectId === 'o'}" [routerLink]="['/orgs']"><i class="material-icons mr-3 ">business</i>Organizations</a>
     <a [ngClass]="{'active': currentProjectId === 'administration'}" [routerLink]="['/administration']"><i class="material-icons mr-3 ">settings</i>Settings</a>
     <a  href="https://projects.eao.gov.bc.ca/eguide/" target="_blank"><i class="material-icons mr-3 ">chrome_reader_mode</i>E-Guide</a>
   </section>
