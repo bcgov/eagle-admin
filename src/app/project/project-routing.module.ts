@@ -12,6 +12,7 @@ import { CommentPeriodsComponent } from './comment-periods/comment-periods.compo
 import { CommentPeriodsResolver } from './comment-periods/comment-periods-resolver.services';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
+import { ComplianceDetailComponent } from './compliance/detail/detail.component';
 import { DocumentEditComponent } from './project-documents/document-edit/document-edit.component';
 import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectComponent } from './project.component';
@@ -26,7 +27,9 @@ import { ValuedComponentsComponent } from './valued-components/valued-components
 import { AddDocumentsResolver } from './comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
 import { CommentPeriodResolver } from './comment-period/comment-period-resolver.service';
 import { DocumentDetailResolver } from './project-documents/detail/document-detail-resolver.service';
+import { ComplianceDetailResolver } from './compliance/detail/compliance-detail-resolver.service';
 import { DocumentsResolver } from './project-documents/project-document-resolver.services';
+import { ComplianceResolver } from './compliance/compliance-resolver.service';
 import { ProjectResolver } from './project-resolver.service';
 import { ReviewCommentResolver } from './comment-period/review-comment/review-comment-resolver.service';
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
@@ -107,6 +110,16 @@ const routes: Routes = [
       {
         path: 'compliance',
         component: ComplianceComponent,
+        resolve: {
+          compliances: ComplianceResolver
+        }
+      },
+      {
+        path: 'compliance/detail/:docId',
+        component: ComplianceDetailComponent,
+        resolve: {
+          compliance: ComplianceDetailResolver
+        }
       },
       {
         path: 'valued-components',
@@ -253,8 +266,9 @@ const routes: Routes = [
     CommentPeriodsResolver,
     DocumentDetailResolver,
     DocumentsResolver,
+    ComplianceResolver,
     ProjectUpdatesResolver,
-    DocumentDetailResolver,
+    ComplianceDetailResolver,
     TopicResolver,
     ProjectResolver,
     ReviewCommentResolver,

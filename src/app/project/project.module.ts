@@ -16,7 +16,9 @@ import { CommentPeriodsComponent } from './comment-periods/comment-periods.compo
 import { CommentPeriodsTableRowsComponent } from './comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
+import { ComplianceDetailComponent } from './compliance/detail/detail.component';
 import { DocumentTableRowsComponent } from './project-documents/project-document-table-rows/project-document-table-rows.component';
+import { ComplianceTableRowsComponent } from './compliance/compliance-table-rows/compliance-table-rows.component';
 import { IndigenousNationsComponent } from './indigenous-nations/indigenous-nations.component';
 import { MatTabsModule, MatMenuModule } from '@angular/material';
 import { MilestonesComponent } from './milestones/milestones.component';
@@ -76,9 +78,10 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
     CommentPeriodsTableRowsComponent,
     ComplianceComponent,
     DocumentDetailComponent,
-    DocumentDetailComponent,
+    ComplianceDetailComponent,
     DocumentEditComponent,
     DocumentTableRowsComponent,
+    ComplianceTableRowsComponent,
     GetValuedComponentsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactComponent,
@@ -105,6 +108,7 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
     CommentPeriodsComponent,
     CommentPeriodsTableRowsComponent,
     DocumentTableRowsComponent,
+    ComplianceTableRowsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,

@@ -4,13 +4,68 @@
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <li class="breadcrumb-item">
-      <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">Compliance</li>
   </ol>
 </nav>
-<main class="container-fluid-padding">
-  <div>
-    <legend>COMING SOON</legend>
+<div class="container-fluid-padding">
+  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
+    <div class="input-group main-search-field">
+      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+        id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+      <div class="input-group-append">
+        <!-- prevent searching if input is empty or we're already searching -->
+        <button class="btn btn-primary" type="submit">
+          <span>Search</span>
+        </button>
+      </div>
+    </div>
+    <div class="input-group-append">
+        <a _ngcontent-c7 class="btn btn-primary btn-search-help"  [routerLink]="['/search-help']" target="_blank">
+            <i class="material-icons md-18">info</i>
+            <span> Search Help</span>
+        </a>
+    <div class="row">
+        <div class="ml-auto " ngbDropdown placement="bottom-right">
+        <button class="btn btn-secondary btn-num-items dropdown-toggle" id="actionDropdown" ngbDropdownToggle>Items per page</button>
+        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+                <a class="dropdown-item" (click)="onNumItems(10)">10</a>
+            <a class="dropdown-item" (click)="onNumItems(25)">25</a>
+            <a class="dropdown-item" (click)="onNumItems(50)">50</a>
+            <a class="dropdown-item" (click)="onNumItems(100)">100</a>
+            <a class="dropdown-item" (click)="onNumItems('max')">Show All</a>
+        </div>
+        </div>
+    </div>
+
+    </div>
+    <div class="results">
+      <p *ngIf="!loading && tableParams.totalListItems == 0">
+        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
+      </p>
+      <div *ngIf="!loading && tableParams.totalListItems > 0">
+        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
+      </div>
+    </div>
+  </form>
+
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
   </div>
-</main>
+
+  <div class="input-group-prepend">
+    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
+      id="button-sa">Select All</button>
+    <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
+      [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
+        class="material-icons">cloud_download</i>Download</button>
+    <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
+      type="button" id="button-d"><i class="material-icons">delete</i>Delete</button>
+  </div>
+
+  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+    [columns]="documentTableColumns" [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
+    (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+  </app-table-template>
+</div>
