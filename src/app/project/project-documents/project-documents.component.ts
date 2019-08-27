@@ -18,6 +18,8 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
+import { Utils } from 'app/shared/utils/utils';
+
 @Component({
   selector: 'app-project-documents',
   templateUrl: './project-documents.component.html',
@@ -82,7 +84,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private searchService: SearchService,
     private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
+    private tableTemplateUtils: TableTemplateUtils,
+    private utils: Utils
   ) { }
 
   ngOnInit() {
@@ -148,9 +151,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             selBox.style.left = '0';
             selBox.style.top = '0';
             selBox.style.opacity = '0';
-            const safeName = item.documentFileName.replace(/ /g, '_');
+            const safeName = this.utils.encodeFilename(item.documentFileName, true);
             selBox.value = window.location.origin + `/api/document/${item._id}/fetch/${safeName}`;
-            // selBox.value = window.location.origin + `/api/public/document/${item._id}/download`;
             document.body.appendChild(selBox);
             selBox.focus();
             selBox.select();
@@ -336,13 +338,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
-    const encode = encodeURIComponent;
-    window['encodeURIComponent'] = (component: string) => {
-      return encode(component).replace(/[!'()*]/g, (c) => {
-        // Also encode !, ', (, ), and *
-        return '%' + c.charCodeAt(0).toString(16);
-      });
-    };
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
@@ -363,20 +358,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
 
-    const encode = encodeURIComponent;
-    window['encodeURIComponent'] = (component: string) => {
-      return encode(component).replace(/[!'()*]/g, (c) => {
-        // Also encode !, ', (, ), and *
-        return '%' + c.charCodeAt(0).toString(16);
-      });
-    };
-
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = encode(this.tableParams.keywords = this.tableParams.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
+    params['keywords'] = this.utils.encode(this.tableParams.keywords = this.tableParams.keywords || '');
     params['pageSize'] = this.tableParams.pageSize = 10;
 
     this.router.navigate(['p', this.currentProject._id, 'project-documents', params]);
