@@ -15,6 +15,7 @@ import { ProjectListTableRowsComponent } from './project-list-table-rows/project
 
 import { SearchService } from 'app/services/search.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { StorageService } from 'app/services/storage.service';
 
 @Component({
   selector: 'app-project-list',
@@ -72,6 +73,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     private tableTemplateUtils: TableTemplateUtils,
     private navigationStackUtils: NavigationStackUtils,
     private searchService: SearchService,
+    private storageService: StorageService,
     private _changeDetectionRef: ChangeDetectorRef
   ) { }
 
@@ -109,6 +111,12 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   addProject() {
     this.navigationStackUtils.clearNavigationStack();
+    this.storageService.state.tableColumns = null;
+    this.storageService.state.sortBy = null;
+    this.storageService.state.form = null;
+    this.storageService.state.selectedContactType = null;
+    this.storageService.state.componentModel = null;
+    this.storageService.state.rowComponent = null;
     this.router.navigate(['/projects', 'add']);
   }
 

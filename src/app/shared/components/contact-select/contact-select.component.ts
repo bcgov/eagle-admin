@@ -8,6 +8,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { StorageService } from 'app/services/storage.service';
 import { Org } from 'app/models/org';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-contact-select',
@@ -15,22 +16,40 @@ import { Org } from 'app/models/org';
   styleUrls: ['./contact-select.component.scss']
 })
 export class ContactSelectComponent implements OnInit, OnDestroy {
-  public currentProject;
-  readonly tabLinks = [
-    { label: 'Contacts', link: 'project-groups' },
-    { label: 'Participating Indigenous Nations', link: 'project-pins' }
-  ];
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
   public entries: User[] = null;
   public terms = new SearchTerms();
   public typeFilters = [];
   public selectedCount = 0;
+  public navigationObject;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
-  public tableColumns: any[];
+  public tableColumns: any[] = [
+    {
+      name: 'Name',
+      value: 'displayName',
+      width: 'col-3'
+    },
+    {
+      name: 'Organization',
+      value: 'orgName',
+      width: 'col-3'
+    },
+    {
+      name: 'Email',
+      value: 'email',
+      width: 'col-3'
+    },
+    {
+      name: 'Phone Number',
+      value: 'phoneNumber',
+      width: 'col-3'
+    }
+  ];
   constructor(
+    private navigationStackUtils: NavigationStackUtils,
     private route: ActivatedRoute,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
@@ -39,50 +58,42 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
-    this.tableColumns = this.storageService.state.tableColumns;
-
-    if (this.storageService.state.back === undefined) {
-      // redir to project details.
-      return this.router.navigate(['/p', this.currentProject._id]);
+    if (this.navigationStackUtils.getNavigationStack()) {
+      this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
+    } else {
+      // TODO: determine where to boot out.
+      this.router.navigate(['/']);
     }
 
     this.route.params
       .takeUntil(this.ngUnsubscribe)
       .subscribe(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-        if (this.tableParams.sortBy === '') {
-          // this.tableParams.sortBy = '+displayName';
+        if (this.tableParams.sortBy === '' && this.storageService.state.sortBy) {
           this.tableParams.sortBy = this.storageService.state.sortBy;
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
-        this._changeDetectionRef.detectChanges();
+        this.route.data
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe((res: any) => {
+            if (res) {
+              if (res.contacts && res.contacts.length > 0 && res.contacts[0].data.meta && res.contacts[0].data.meta.length > 0) {
+                this.tableParams.totalListItems = res.contacts[0].data.meta[0].searchResultsTotal;
+                this.entries = res.contacts[0].data.searchResults;
+              } else {
+                this.tableParams.totalListItems = 0;
+                this.entries = [];
+              }
+              this.setRowData();
+            } else {
+              alert('Uh-oh, couldn\'t load contacts/orgs');
+              // project not found --> navigate back to search
+              this.router.navigate(['/search']);
+            }
+            this._changeDetectionRef.detectChanges();
+            this.loading = false;
+          });
       });
-
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          if (res.contacts && res.contacts.length > 0 && res.contacts[0].data.meta && res.contacts[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = res.contacts[0].data.meta[0].searchResultsTotal;
-            this.entries = res.contacts[0].data.searchResults;
-          } else {
-            this.tableParams.totalListItems = 0;
-            this.entries = [];
-          }
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load contacts/orgs');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
-  }
-
-  goToItem(route) {
-    this.router.navigate(['/projects']);
   }
 
   setRowData() {
@@ -93,9 +104,6 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
         this.storageService.state.componentModel === 'User' ? list.push(new User(item)) : list.push(new Org(item));
       });
       this.tableData = new TableObject(
-        // This switches between these two component types.
-        // GroupsTableRowsComponent,
-        // PinsTableRowsComponent,
         this.storageService.state.rowComponent,
         list,
         this.tableParams
@@ -104,56 +112,13 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    if (this.storageService.state.back && this.storageService.state.back.url) {
-      this.router.navigate(this.storageService.state.back.url);
-    } else {
-      this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
-    }
-  }
-
-  save() {
-    // Add these records to the group list.
-    let items = [];
-    this.tableData.data.map((item) => {
-      if (item.checkbox === true) {
-        items.push(item);
-      }
-    });
-
-    if (items.length > 0) {
-      this.storageService.state.add(items, this.storageService.state.component);
-    }
-    // if (this.storageService.state.back && this.storageService.state.back.url) {
-    //   this.router.navigate(this.storageService.state.back.url);
-    // } else {
-    //   this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
-    // }
+    let url = this.navigationStackUtils.getLastBackUrl();
+    this.navigationStackUtils.popNavigationStack();
+    this.router.navigate(url);
   }
 
   updateSelectedRow(count) {
     this.selectedCount = count;
-  }
-
-  public selectAction(action) {
-    let promises = [];
-
-    // select all documents
-    switch (action) {
-      case 'selectAll':
-        let someSelected = false;
-        this.tableData.data.map((item) => {
-          if (item.checkbox === true) {
-            someSelected = true;
-          }
-        });
-        this.tableData.data.map((item) => {
-          item.checkbox = !someSelected;
-        });
-
-        this.selectedCount = someSelected ? 0 : this.tableData.data.length;
-        this._changeDetectionRef.detectChanges();
-        break;
-    }
   }
 
   setColumnSort(column) {
@@ -166,9 +131,6 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   }
 
   getPaginatedDocs(pageNumber, reset = false) {
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
     this.loading = true;
     this._changeDetectionRef.detectChanges();
 
@@ -181,25 +143,39 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
       this.tableParams.sortBy = '';
       this.tableParams.pageSize = 25;
       this.tableParams.keywords = '';
-      // this.filter.dateAddedStart = '';
-      // this.filter.dateAddedEnd = '';
       this.typeFilters = [];
     }
 
     params['sortBy'] = this.tableParams.sortBy;
     params['pageSize'] = this.tableParams.pageSize;
     params['keywords'] = this.tableParams.keywords;
-    // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
-    // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    let arr = [];
-    this.storageService.state.back.url.map(u => {
-      arr.push(u);
-    });
-    arr.push('select');
+    let arr = [...this.navigationObject.backUrl];
+    arr.push('link-contact');
     arr.push(params);
     this.router.navigate(arr);
+  }
+
+  createContact() {
+    this.storageService.state.contactForm = null;
+    this.storageService.state.selectedOrganization = null;
+
+    let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+    let nextRoute = [...this.navigationObject.breadcrumbs[this.navigationObject.breadcrumbs.length - 1].route];
+    nextRoute.push('link-contact');
+    nextRoute.push({ 'pageSize': 25 });
+    nextBreadcrumbs.push(
+      {
+        route: nextRoute,
+        label: 'Select Contact'
+      }
+    );
+    this.navigationStackUtils.pushNavigationStack(
+      nextRoute,
+      nextBreadcrumbs
+    );
+    this.router.navigate(['/contacts', 'add']);
   }
 
   ngOnDestroy() {

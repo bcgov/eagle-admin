@@ -1,0 +1,7 @@
+<tr (click)="selectItem(contact)"
+  *ngFor="let contact of contacts | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+  <td scope="row" data-label="Name" class="col-3">{{contact.displayName || '-'}}</td>
+  <td scope="row" data-label="Organization" class="col-3">{{contact.orgName || '-'}}</td>
+  <td scope="row" data-label="Email" class="col-3">{{contact.email || '-'}}</td>
+  <td scope="row" data-label="PhoneNumber" class="col-3">{{contact.phoneNumber || '-'}}</td>
+</tr>

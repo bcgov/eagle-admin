@@ -7,7 +7,6 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { StorageService } from 'app/services/storage.service';
-import { Org } from 'app/models/org';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
