@@ -57,11 +57,11 @@
   <div class="input-group-prepend">
     <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
       id="button-sa">Select All</button>
-    <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
+    <!-- <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
       [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
         class="material-icons">cloud_download</i>Download</button>
     <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
-      type="button" id="button-d"><i class="material-icons">delete</i>Delete</button>
+      type="button" id="button-d"><i class="material-icons">delete</i>Delete</button> -->
   </div>
 
   <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
