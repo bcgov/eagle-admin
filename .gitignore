@@ -44,3 +44,7 @@ debug.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Installer Files
+/project_installer.sh
+/setup_helper.sh
