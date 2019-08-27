@@ -180,15 +180,13 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
           switch (this.storageService.state.selectedContactType) {
             case 'epd': {
+              this.myForm.controls.responsibleEPDId.setValue(this.storageService.state.selectedContact._id);
               this.myForm.controls.responsibleEPD.setValue(this.storageService.state.selectedContact.displayName);
-              this.myForm.controls.responsibleEPDPhone.setValue(this.storageService.state.selectedContact.phoneNumber);
-              this.myForm.controls.responsibleEPDEmail.setValue(this.storageService.state.selectedContact.email);
               break;
             }
             case 'lead': {
+              this.myForm.controls.projectLeadId.setValue(this.storageService.state.selectedContact._id);
               this.myForm.controls.projectLead.setValue(this.storageService.state.selectedContact.displayName);
-              this.myForm.controls.projectLeadPhone.setValue(this.storageService.state.selectedContact.phoneNumber);
-              this.myForm.controls.projectLeadEmail.setValue(this.storageService.state.selectedContact.email);
               break;
             }
             default: {
@@ -251,12 +249,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         'substantiallyDate': new FormControl(),
         'activeStatus': new FormControl(),
         'activeDate': new FormControl(),
+        'responsibleEPDId': new FormControl(),
         'responsibleEPD': new FormControl(),
-        'responsibleEPDPhone': new FormControl(),
-        'responsibleEPDEmail': new FormControl(),
+        'projectLeadId': new FormControl(),
         'projectLead': new FormControl(),
-        'projectLeadPhone': new FormControl(),
-        'projectLeadEmail': new FormControl(),
       });
     }
   }
@@ -320,6 +316,13 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       formData.centroid = [-123.3656, 48.4284];
     }
 
+    if (formData.responsibleEPDId == null || formData.responsibleEPDId === '') {
+      formData.responsibleEPD = null;
+    }
+    if (formData.projectLeadId == null || formData.projectLeadId === '') {
+      formData.projectLead = null;
+    }
+
     let theForm = new FormGroup({
       'name': new FormControl(formData.name),
       'proponent': new FormControl(formData.proponent),
@@ -347,12 +350,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       'substantiallyDate': new FormControl(),
       'activeStatus': new FormControl(formData.activeStatus),
       'activeDate': new FormControl(),
-      'responsibleEPD': new FormControl(formData.responsibleEPD),
-      'responsibleEPDPhone': new FormControl(formData.responsibleEPDPhone),
-      'responsibleEPDEmail': new FormControl(formData.responsibleEPDEmail),
-      'projectLead': new FormControl(formData.projectLead),
-      'projectLeadPhone': new FormControl(formData.projectLeadPhone),
-      'projectLeadEmail': new FormControl(formData.projectLeadEmail),
+      'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
+      'responsibleEPD': new FormControl(formData.responsibleEPDObj.displayName),
+      'projectLeadId': new FormControl(formData.projectLeadObj._id),
+      'projectLead': new FormControl(formData.projectLeadObj.displayName),
     });
     this.sectorsSelected = this.PROJECT_SUBTYPES[formData.type];
     return theForm;
@@ -414,12 +415,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
       // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
-      'responsibleEPD': form.controls.responsibleEPD.value,
-      'responsibleEPDPhone': form.controls.responsibleEPDPhone.value,
-      'responsibleEPDEmail': form.controls.responsibleEPDEmail.value,
-      'projectLead': form.controls.projectLead.value,
-      'projectLeadPhone': form.controls.projectLeadPhone.value,
-      'projectLeadEmail': form.controls.projectLeadEmail.value
+      'responsibleEPDId': form.controls.responsibleEPDId.value,
+      'projectLeadId': form.controls.projectLeadId.value,
     };
   }
 
@@ -475,6 +472,12 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
       alert('Longitude must be between -114.01 and -139.06');
+      return;
+    } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
+      alert('You must select an EPD');
+      return;
+    } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
+      alert('You must select a project lead');
       return;
     } else {
       return true;

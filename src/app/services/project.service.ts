@@ -4,37 +4,26 @@ import { flatMap } from 'rxjs/operators';
 import { of, forkJoin } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
-import * as moment from 'moment';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { DocumentService } from './document.service';
-import { CommentPeriodService } from './commentperiod.service';
-import { CommentService } from './comment.service';
-import { DecisionService } from './decision.service';
 
 import { Project } from 'app/models/project';
 import { CommentPeriod } from 'app/models/commentPeriod';
 import { Org } from 'app/models/org';
+import { SearchService } from './search.service';
 
 interface GetParameters {
-  getFeatures?: boolean;
-  getDocuments?: boolean;
-  getCurrentPeriod?: boolean;
-  getDecision?: boolean;
+  getresponsibleEPD?: boolean;
+  getprojectLead?: boolean;
 }
 
 @Injectable()
 export class ProjectService {
-  private project: Project = null; // for caching
   private projectList: Project[] = [];
-
   constructor(
     private api: ApiService,
-    private documentService: DocumentService,
-    private commentPeriodService: CommentPeriodService,
-    private commentService: CommentService,
-    private decisionService: DecisionService
+    private searchService: SearchService
   ) { }
 
   // get count of projects
@@ -71,72 +60,43 @@ export class ProjectService {
             projects[0].commentPeriodForBanner = null;
           }
         }
-
         // return the first (only) project
         return projects.length > 0 ? new Project(projects[0]) : null;
       })
+      .pipe(
+        flatMap(res => {
+          let project = res;
+          if (!project) {
+            return of(null as Project);
+          }
+          if (project.projectLeadId == null && project.responsibleEPDId == null) {
+            return of(new Project(project));
+          }
+          // now get the rest of the data for this project
+          return this._getExtraAppData(
+            new Project(project),
+            {
+              getresponsibleEPD: project.responsibleEPDId !== null && project.responsibleEPDId !== '' || project.responsibleEPDId !== undefined,
+              getprojectLead: project.projectLeadId !== null && project.projectLeadId !== '' || project.projectLeadId !== undefined
+            }
+          );
+        })
+      )
       .catch(error => this.api.handleError(error));
   }
 
-  private _getExtraAppData(project: Project, { getFeatures = false, getDocuments = false, getCurrentPeriod = false, getDecision = false }: GetParameters): Observable<Project> {
+  private _getExtraAppData(project: Project, { getresponsibleEPD = false, getprojectLead = false }: GetParameters): Observable<Project> {
     return forkJoin(
-      // getFeatures ? this.featureService.getByProjectId(project._id) : of(null),
-      // getDocuments ? this.documentService.getAllByProjectId(project._id) : of(null),
-      // getCurrentPeriod ? this.commentPeriodService.getAllByProjectId(project._id) : of(null),
-      // getDecision ? this.decisionService.getByProjectId(project._id, { getDocuments: true }) : of(null)
+      getresponsibleEPD ? this.searchService.getItem(project.responsibleEPDId.toString(), 'User') : of(null),
+      getprojectLead ? this.searchService.getItem(project.projectLeadId.toString(), 'User') : of(null)
     )
       .map(payloads => {
-        if (getFeatures) {
-          // project.features = payloads[0];
+        if (getresponsibleEPD) {
+          project.responsibleEPDObj = payloads[0].data;
         }
-
-        if (getDocuments) {
-          // project.documents = payloads[1];
+        if (getprojectLead) {
+          project.projectLeadObj = payloads[1].data;
         }
-
-        if (getCurrentPeriod) {
-          const periods: Array<CommentPeriod> = payloads[2];
-          // project.currentPeriods = this.commentPeriodService.getCurrent(periods);
-
-          // user-friendly comment period status
-          // project.cpStatus = this.commentPeriodService.getStatus(project.currentPeriods);
-
-          // derive days remaining for display
-          // use moment to handle Daylight Saving Time changes
-          // if (project.currentPeriods && this.commentPeriodService.isOpen(project.currentPeriods)) {
-          //   const now = new Date();
-          //   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          //   project.currentPeriods['daysRemaining']
-          //     = moment(project.currentPeriods.endDate).diff(moment(today), 'days') + 1; // including today
-          // }
-
-          // get the number of comments for the current comment period only
-          // multiple comment periods are currently not supported
-          // if (project.currentPeriods) {
-          //   this.commentService.getCountByPeriodId(project.currentPeriods._id)
-          //     .subscribe(
-          //       numComments => {
-          //         project['numComments'] = numComments;
-          //       }
-          //     );
-          // }
-        }
-
-        if (getDecision) {
-          // project.decision = payloads[3];
-        }
-
-        // 7-digit CL File number for display
-        // if (project.cl_file) {
-        //   project['clFile'] = project.cl_file.toString().padStart(7, '0');
-        // }
-
-        // user-friendly project status
-        // project.projStatus = this.getStatusString(this.getStatusCode(project.status));
-
-        // derive region code
-        // project.region = this.getRegionCode(project.businessUnit);
-
         // finally update the object and return
         return project;
       });
