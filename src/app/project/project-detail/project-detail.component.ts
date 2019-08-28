@@ -79,6 +79,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   editProject() {
     this.storageService.state.project = this.project;
+    this.storageService.state.tableColumns = null;
+    this.storageService.state.sortBy = null;
+    this.storageService.state.form = null;
+    this.storageService.state.selectedContactType = null;
+    this.storageService.state.componentModel = null;
+    this.storageService.state.rowComponent = null;
     this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
     this.router.navigate(['p', this.project._id, 'edit']);
   }

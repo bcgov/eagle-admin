@@ -11,6 +11,7 @@ import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -175,6 +176,27 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         }
         this.project = data.project;
         this.buildForm(data);
+
+        if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
+          switch (this.storageService.state.selectedContactType) {
+            case 'epd': {
+              this.myForm.controls.responsibleEPDId.setValue(this.storageService.state.selectedContact._id);
+              this.myForm.controls.responsibleEPD.setValue(this.storageService.state.selectedContact.displayName);
+              break;
+            }
+            case 'lead': {
+              this.myForm.controls.projectLeadId.setValue(this.storageService.state.selectedContact._id);
+              this.myForm.controls.projectLead.setValue(this.storageService.state.selectedContact.displayName);
+              break;
+            }
+            default: {
+              return;
+            }
+          }
+          this.storageService.state.selectedContactType = null;
+          this.storageService.state.selectedContact = null;
+        }
+
         this.loading = false;
         try {
           this._changeDetectorRef.detectChanges();
@@ -227,9 +249,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         'substantiallyDate': new FormControl(),
         'activeStatus': new FormControl(),
         'activeDate': new FormControl(),
+        'responsibleEPDId': new FormControl(),
         'responsibleEPD': new FormControl(),
+        'projectLeadId': new FormControl(),
         'projectLead': new FormControl(),
-        'projectAdmin': new FormControl()
       });
     }
   }
@@ -293,6 +316,13 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       formData.centroid = [-123.3656, 48.4284];
     }
 
+    if (formData.responsibleEPDId == null || formData.responsibleEPDId === '') {
+      formData.responsibleEPD = null;
+    }
+    if (formData.projectLeadId == null || formData.projectLeadId === '') {
+      formData.projectLead = null;
+    }
+
     let theForm = new FormGroup({
       'name': new FormControl(formData.name),
       'proponent': new FormControl(formData.proponent),
@@ -320,9 +350,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       'substantiallyDate': new FormControl(),
       'activeStatus': new FormControl(formData.activeStatus),
       'activeDate': new FormControl(),
-      'responsibleEPD': new FormControl(formData.responsibleEPD),
-      'projectLead': new FormControl(formData.projectLead),
-      'projectAdmin': new FormControl(formData.projectAdmin)
+      'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
+      'responsibleEPD': new FormControl(formData.responsibleEPDObj.displayName),
+      'projectLeadId': new FormControl(formData.projectLeadObj._id),
+      'projectLead': new FormControl(formData.projectLeadObj.displayName),
     });
     this.sectorsSelected = this.PROJECT_SUBTYPES[formData.type];
     return theForm;
@@ -384,9 +415,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
       // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
-      'responsibleEPD': form.controls.responsibleEPD.value,
-      'projectLead': form.controls.projectLead.value,
-      'projectAdmin': form.controls.projectAdmin.value
+      'responsibleEPDId': form.controls.responsibleEPDId.value,
+      'projectLeadId': form.controls.projectLeadId.value,
     };
   }
 
@@ -442,6 +472,12 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
       alert('Longitude must be between -114.01 and -139.06');
+      return;
+    } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
+      alert('You must select an EPD');
+      return;
+    } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
+      alert('You must select a project lead');
       return;
     } else {
       return true;
@@ -503,6 +539,55 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     this.proponentName = '';
     this.proponentId = '';
     this.myForm.controls.proponent.setValue('');
+  }
+
+  public linkContact(type) {
+    this.setNavigation();
+    this.storageService.state.tableColumns = [
+      {
+        name: 'Name',
+        value: 'displayName',
+        width: 'col-3'
+      },
+      {
+        name: 'Organization',
+        value: 'orgName',
+        width: 'col-3'
+      },
+      {
+        name: 'Email',
+        value: 'email',
+        width: 'col-3'
+      },
+      {
+        name: 'Phone Number',
+        value: 'phoneNumber',
+        width: 'col-3'
+      }
+    ];
+    this.storageService.state.sortBy = '+displayName';
+    this.storageService.state.form = this.myForm;
+    switch (type) {
+      case 'epd': {
+        this.storageService.state.selectedContactType = 'epd';
+        break;
+      }
+      case 'lead': {
+        this.storageService.state.selectedContactType = 'lead';
+        break;
+      }
+      default: {
+        return;
+      }
+    }
+
+    this.storageService.state.componentModel = 'User';
+    this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
+    if (this.isEditing) {
+      this.router.navigate(['/p', this.storageService.state.currentProject.data._id, 'edit', 'link-contact', { pageSize: 25 }]);
+    } else {
+      this.router.navigate(['/projects', 'add', 'link-contact', { pageSize: 25 }]);
+    }
   }
 
   public openSnackBar(message: string, action: string) {

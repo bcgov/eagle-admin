@@ -70,6 +70,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'edit/link-contact',
+        component: ContactSelectComponent,
+        resolve: {
+          contacts: ContactsResolver
+        }
+      },
+      {
         path: 'edit',
         component: AddEditProjectComponent
       },

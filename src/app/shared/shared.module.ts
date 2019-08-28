@@ -25,6 +25,7 @@ import { RouterModule } from '@angular/router';
 import { LinkOrganizationComponent } from './components/link-organization/link-organization.component';
 import { LinkOrganizationTableRowsComponent } from './components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
+import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
 
 @NgModule({
   imports: [
@@ -40,6 +41,7 @@ import { NavigationStackUtils } from './utils/navigation-stack-utils';
   declarations: [
     CommentStatsComponent,
     ContactSelectComponent,
+    ContactSelectTableRowsComponent,
     DropdownTemplateComponent,
     FileUploadComponent,
     LinkOrganizationComponent,
@@ -54,9 +56,13 @@ import { NavigationStackUtils } from './utils/navigation-stack-utils';
     TableTemplateComponent,
     VarDirective
   ],
+  entryComponents: [
+    ContactSelectTableRowsComponent
+  ],
   exports: [
     CommentStatsComponent,
     ContactSelectComponent,
+    ContactSelectTableRowsComponent,
     DropdownTemplateComponent,
     FileUploadComponent,
     LinkOrganizationComponent,
