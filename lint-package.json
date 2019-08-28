@@ -1,0 +1,24 @@
+{
+  "name": "base-app-linting",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "scripts": {
+    "ng": "ng",
+    "pretest": "",
+    "test": "echo 'Test suite should be run with \"`npm run tests` or npm `run tests-ci`\"'",
+    "tests": "ng test",
+    "tests-ci": "ng test --watch=false",
+    "lint": "ng lint --format=stylish",
+    "e2e": "ng e2e"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/compiler": "^6.1.10",
+    "@angular/core": "^6.1.10",
+    "rxjs": "^6.5.2",
+    "@angular-devkit/build-angular": "~0.8.0",
+    "@angular/cli": "^6.2.9",
+    "codelyzer": "^4.5.0",
+    "tslint": "^5.18.0"
+  }
+}
