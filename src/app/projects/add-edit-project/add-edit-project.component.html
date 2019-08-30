@@ -28,7 +28,7 @@
   <div class="spinner-container" *ngIf="loading">
     <div class="spinner-new rotating"></div>
   </div>
-  <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
+  <form *ngIf="myForm && !loading" [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
     <div class="text-right">
       <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
       &nbsp;
