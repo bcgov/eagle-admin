@@ -322,6 +322,18 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     if (formData.projectLeadId == null || formData.projectLeadId === '') {
       formData.projectLead = null;
     }
+    if (formData.responsibleEPDObj == null) {
+      formData.responsibleEPDObj = {
+        _id: null,
+        displayName: null
+      };
+    }
+    if (formData.projectLeadObj == null) {
+      formData.projectLeadObj = {
+        _id: null,
+        displayName: null
+      };
+    }
 
     let theForm = new FormGroup({
       'name': new FormControl(formData.name),
