@@ -23,7 +23,6 @@ import { Org } from 'app/models/org';
 import { RecentActivity } from 'app/models/recentActivity';
 import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
-import { Utils } from 'app/shared/utils/utils';
 
 interface LocalLoginResponse {
   _id: string;
@@ -34,6 +33,14 @@ interface LocalLoginResponse {
   state: boolean;
   accessToken: string;
 }
+
+const encode = encodeURIComponent;
+window['encodeURIComponent'] = (component: string) => {
+  return encode(component).replace(/[!'()*]/g, (c) => {
+    // Also encode !, ', (, ), and *
+    return '%' + c.charCodeAt(0).toString(16);
+  });
+};
 
 @Injectable()
 export class ApiService {
@@ -48,7 +55,6 @@ export class ApiService {
   constructor(
     private http: HttpClient,
     private keycloakService: KeycloakService,
-    private utils: Utils
   ) {
     // this.jwtHelper = new JwtHelperService();
     const currentUser = JSON.parse(window.localStorage.getItem('currentUser'));
@@ -804,7 +810,7 @@ export class ApiService {
     } else {
       filename = document.documentFileName;
     }
-    filename = this.utils.encodeFilename(filename, false);
+    filename = filename.replace(/\\/g, '_').replace(/\//g, '_');
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -847,7 +853,7 @@ export class ApiService {
     } else {
       filename = document.documentFileName;
     }
-    filename = this.utils.encodeFilename(filename, true);
+    filename = encode(filename).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_');
     window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
   }
 

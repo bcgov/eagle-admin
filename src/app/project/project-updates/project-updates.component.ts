@@ -8,7 +8,6 @@ import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { Subject } from 'rxjs';
 import { SearchTerms } from 'app/models/search';
 import { ActivityDetailTableRowsComponent } from 'app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
-import { Utils } from 'app/shared/utils/utils';
 
 @Component({
   selector: 'app-project-updates',
@@ -45,7 +44,6 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private tableTemplateUtils: TableTemplateUtils,
     private _changeDetectionRef: ChangeDetectorRef,
-    private utils: Utils
   ) { }
 
   ngOnInit() {
@@ -102,24 +100,38 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
+    const encode = encodeURIComponent;
+    window['encodeURIComponent'] = (component: string) => {
+      return encode(component).replace(/[!'()*]/g, (c) => {
+        // Also encode !, ', (, ), and *
+        return '%' + c.charCodeAt(0).toString(16);
+      });
+    };
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encode(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = encode(this.tableParams.keywords = this.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
 
   getPaginatedDocs(pageNumber) {
+    const encode = encodeURIComponent;
+    window['encodeURIComponent'] = (component: string) => {
+      return encode(component).replace(/[!'()*]/g, (c) => {
+        // Also encode !, ', (, ), and *
+        return '%' + c.charCodeAt(0).toString(16);
+      });
+    };
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encode(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = encode(this.tableParams.keywords = this.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
