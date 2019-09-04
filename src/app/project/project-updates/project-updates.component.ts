@@ -108,7 +108,7 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encode(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.keywords || '');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
@@ -119,7 +119,7 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encode(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.keywords || '');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
