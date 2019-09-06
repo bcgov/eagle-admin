@@ -820,8 +820,8 @@ export class ApiService {
     }
   }
 
-  public async exportComments(period: String) {
-    const queryString = `comment/export/${period}`;
+  public async exportComments(period: String, format: String) {
+    const queryString = `comment/export/${period}?format=${format}`;
     const blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
     let filename = 'export.csv';
     filename = filename.replace(/\\/g, '_').replace(/\//g, '_');

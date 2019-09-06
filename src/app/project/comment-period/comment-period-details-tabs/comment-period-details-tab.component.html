@@ -19,7 +19,8 @@
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
           <button class="dropdown-item" (click)="editCommentPeriod()">Edit</button>
           <button class="dropdown-item" (click)="addComment()">Add a comment</button>
-          <button class="dropdown-item" (click)="exportComments()">Export All Comments</button>
+          <button class="dropdown-item" (click)="exportCommentsForStaff()">Export All Comments</button>
+          <button class="dropdown-item" (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
           <button class="dropdown-item" (click)="togglePublishState()">{{publishAction}}</button>
           <button *ngIf="canDeleteCommentPeriod" class="dropdown-item" (click)="deleteCommentPeriod()">Delete</button>
         </div>

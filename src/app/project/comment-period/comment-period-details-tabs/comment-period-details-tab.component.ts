@@ -125,10 +125,15 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
     this.router.navigate(['/p', this.commentPeriod.project, 'cp', this.commentPeriod._id, 'add-comment']);
   }
 
-  public exportComments() {
-    // Export all comments to CSV
+  public exportCommentsForStaff() {
+    // Export comments with fields relevant to staff to CSV
     this.openSnackBar('Download Initiated', 'Close');
-    this.api.exportComments(this.commentPeriod._id);
+    this.api.exportComments(this.commentPeriod._id, 'staff');
+  }
+  public   exportCommentsForProponents() {
+    // Export comments with fields relevant to proponents to CSV
+    this.openSnackBar('Download Initiated', 'Close');
+    this.api.exportComments(this.commentPeriod._id, 'proponent');
   }
 
   public downloadDocument(document) {
