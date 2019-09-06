@@ -54,8 +54,8 @@ export class CommentService {
   add(comment: Comment, documentForms: Array<FormData> = []): Observable<Comment> {
     if (documentForms.length > 0) {
       let observables = [];
-      documentForms.map(documentForm => {
-        observables.push(this.documentService.add(documentForm));
+      observables = documentForms.map(documentForm => {
+        return this.documentService.add(documentForm);
       });
       return forkJoin(observables)
         .pipe(

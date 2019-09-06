@@ -213,8 +213,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       case 'unpublish':
         this.unpublishDocument();
         break;
-      case 'copyLink':
-        break;
     }
   }
 
