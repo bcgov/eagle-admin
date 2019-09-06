@@ -363,7 +363,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encode(this.tableParams.keywords = this.tableParams.keywords || '');
+    params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.tableParams.keywords || '');
     params['pageSize'] = this.tableParams.pageSize = 10;
 
     this.router.navigate(['p', this.currentProject._id, 'project-documents', params]);
