@@ -191,8 +191,6 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
           console.log('Download initiated for file(s)');
         });
         break;
-      case 'copyLink':
-        break;
       case 'submitDocs':
         if (this.isEditing) {
           this.router.navigate(['/p', this.currentProject._id, 'cp', this.currentCommentPeriod._id, 'edit']);
