@@ -105,7 +105,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public PROJECT_STATUS: Array<Object> = [
     'Initiated',
     'Submitted',
-    'In Progress',
+    'In Progress', // default, set in BuildForm() and BuildFormFromData()
     'Certified',
     'Not Certified',
     'Decommissioned'
@@ -118,7 +118,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   ];
 
   public EAC_DECISIONS: Array<Object> = [
-    'In Progress',
+    'In Progress', // default, set in BuildForm() and BuildFormFromData()
     'Certificate Issued',
     'Certificate Refused',
     'Further Assessment Required',
@@ -241,9 +241,9 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         'notes': new FormControl(),
         'eaStatus': new FormControl(),
         'eaStatusDate': new FormControl(),
-        'status': new FormControl(),
+        'status': new FormControl(this.PROJECT_STATUS[2]),
         'projectStatusDate': new FormControl(),
-        'eacDecision': new FormControl(),
+        'eacDecision': new FormControl(this.EAC_DECISIONS[0]),
         'decisionDate': new FormControl(),
         'substantially': new FormControl(),
         'substantiallyDate': new FormControl(),
@@ -354,9 +354,9 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       'notes': new FormControl(formData.intake.investmentNotes),
       'eaStatus': new FormControl(formData.eaStatus),
       'eaStatusDate': new FormControl(),
-      'status': new FormControl(formData.status),
+      'status': new FormControl(formData.status || this.PROJECT_STATUS[2]),
       'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision),
+      'eacDecision': new FormControl(formData.eacDecision || this.EAC_DECISIONS[0]),
       'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(),
@@ -401,6 +401,11 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     }
   }
 
+  private getDecisionDate(value) {
+    // nb: isNaN(undefined) returns true, while isNaN(null) returns false
+    let date = value === null ? undefined : value.day;
+    return isNaN(date) ? null : new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(value))).toISOString();
+  }
   convertFormToProject(form) {
     return {
       'name': form.controls.name.value,
@@ -422,7 +427,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       'status': form.controls.status.value,
       // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
-      'decisionDate': !isNaN(form.get('decisionDate').value === null ? undefined : form.get('decisionDate').value.day) ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value))).toISOString() : null,
+      'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
       // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
