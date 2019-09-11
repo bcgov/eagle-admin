@@ -151,3 +151,118 @@
         }
     }
 }
+
+.search-area {
+  background-color: white;
+  border: 1px solid lightgray;
+}
+
+.main-search-field {
+  margin-left: 0px;
+  padding: 8px;
+}
+
+.show-advanced-search-button .btn {
+  float: right;
+  margin-right: 8px !important;
+  width: 200px;
+}
+
+.advanced-search {
+  position: relative;
+
+  hr {
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .project-filter {
+    margin-left: 15px;
+    margin-top: 10px;
+    margin-right: 15px;
+    margin-bottom: 10px;
+  }
+
+  .filter-border {
+    border: solid 1px lightgray;
+    padding: 15px;
+    min-width: 155px;
+  }
+
+  .type-filters {
+    margin-left: 8px;
+  }
+
+  .decision-filters {
+    margin-left: 172px;
+  }
+
+  .pcp-filters {
+    margin-left: 335px;
+
+    .filter-border {
+      min-width: 230px;
+    }
+  }
+
+  .more-filters {
+    margin-left: 8px;
+    margin-right: 8px;
+
+    .sub-filters {
+      margin-left: 0px;
+
+      hr {
+        margin-left: -1rem;
+      }
+    }
+  }
+
+  .btn {
+    margin: 8px 0px 8px 8px;
+  }
+
+  .type-btn {
+    width: 155px;
+  }
+
+  .decision-btn {
+    width: 155px;
+  }
+
+  .pcp-btn {
+    width: 230px;
+  }
+
+  .calendar {
+    margin: 0px;
+  }
+
+  .date {
+    margin-left: 0px;
+  }
+
+  .date-range {
+    margin-left: -15px;
+    margin-top: 15px;
+
+    .form-control {
+      z-index: 0px !important;
+    }
+  }
+
+  .form-check label {
+    padding-left: 0.25rem;
+    font-size: 1rem;
+  }
+
+  .search-button {
+    position: absolute;
+    right: 8px;
+    bottom: -8px;
+  }
+}
+
+.results {
+  color: black;
+}

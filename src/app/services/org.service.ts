@@ -21,4 +21,18 @@ export class OrgService {
     return this.api.addOrg(org)
       .catch(error => this.api.handleError(error));
   }
+
+  getByCompanyType(type: string): Observable<Org[]> {
+    return this.api.getOrgsByCompanyType(type)
+      .map((res: any) => {
+        if (res) {
+          const orgs = res;
+          orgs.forEach((org, index) => {
+            orgs[index] = new Org(org);
+          });
+          return orgs;
+        }
+      })
+      .catch(error => this.api.handleError(error));
+  }
 }
