@@ -1028,6 +1028,17 @@ export class ApiService {
     return this.http.post<User>(`${this.pathAPI}/${queryString}`, user, {});
   }
 
+  // Organizations
+
+  getOrgsByCompanyType(type: string): Observable<Org[]> {
+    const fields = [
+      'name'
+    ];
+
+    const queryString = `organization?companyType=${type}&sortBy=+name&fields=${this.buildValues(fields)}`;
+    return this.http.get<Org[]>(`${this.pathAPI}/${queryString}`, {});
+  }
+
   getOrgs(): Observable<Org[]> {
     const fields = [
       'displayName',

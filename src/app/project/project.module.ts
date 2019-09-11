@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule } from '@angular/core';
+import { TagInputModule } from 'ngx-chips';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { ProjectRoutingModule } from './project-routing.module';
 import { SharedModule } from 'app/shared/shared.module';
@@ -59,6 +60,7 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
     NgbModule.forRoot(),
     MatMenuModule,
     MatTabsModule,
+    TagInputModule,
     NgxPaginationModule,
     ProjectRoutingModule,
     ReactiveFormsModule,

@@ -39,6 +39,10 @@ export class SearchService {
     return searchResults;
   }
 
+  getFullList(schema: string): Observable<any> {
+    return this.api.getFullDataSet(schema);
+  }
+
   getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
     if (sortBy === '') {
       sortBy = null;
