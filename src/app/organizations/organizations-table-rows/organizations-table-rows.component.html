@@ -2,7 +2,7 @@
     class="clickable-row">
     <td scope="row" data-label="Name" class="col-4">{{organization.name || '-'}}</td>
     <td scope="row" data-label="Organization" class="col-3">{{organization.companyType || '-' }}</td>
-    <td scope="row" data-label="Organization" class="col-4">{{organization.companyLegal || '-' }}</td>
+    <td scope="row" data-label="Organization" id="legal" class="col-4">{{organization.companyLegal || '-' }}</td>
     <td class="col-1 clickable" data-label="Event" scope="row">
         <i (click)="editItem(organization)" class="material-icons">
             edit

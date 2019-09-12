@@ -44,7 +44,7 @@
         <div class="label-pair add-row">
           <label for="proponent">Proponent*</label>
           <div *ngIf="proponentName === '' || proponentName == null">
-            <button class="btn btn-primary" type="button" (click)="linkOrganization()">Link Organization</button>
+            <button class="btn btn-primary" id="orgLink" type="button" (click)="linkOrganization()">Link Organization</button>
           </div>
           <div *ngIf="proponentName !== '' && proponentName">
             <span class="cell icon">

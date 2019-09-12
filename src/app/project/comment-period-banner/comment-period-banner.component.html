@@ -7,11 +7,11 @@
             </div>
             <div class="col-md-6 text-right">
                 <div *ngIf="commentPeriod.commentPeriodStatus !== Open">
-                    <button type="button" class="btn btn-primary" (click)="goToViewComments()">
+                    <button type="button" id="viewComment" class="btn btn-primary" (click)="goToViewComments()">
                         View Comment Period
                     </button>
                     &nbsp;
-                    <button type="button" class="btn btn-primary" (click)="goToAddComment()">
+                    <button type="button" id="submitComment" class="btn btn-primary" (click)="goToAddComment()">
                         Submit a Comment
                     </button>
                 </div>

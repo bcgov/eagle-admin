@@ -32,7 +32,7 @@
       <h3>
         PUBLISHED STATE:&nbsp;
       </h3>
-      <p>
+      <p id="publish-state">
         {{commentPeriodPublishedStatus}}
       </p>
     </div>
@@ -40,7 +40,7 @@
       <h3>
           STATUS:&nbsp;
       </h3>
-      <p>
+      <p id="status">
         <i class="material-icons align-middle">
           question_answer
         </i>
@@ -49,13 +49,13 @@
     </div>
     <div class="col-md-4">
       <h3>MILESTONE(S):</h3>
-      <p>{{commentPeriod.milestone | listConverter}}</p>
+      <p id="milestone">{{commentPeriod.milestone | listConverter}}</p>
     </div>
   </div>
   <div class="row">
     <div class="col-md-8">
       <h3>DESCRIPTION</h3>
-      <p>{{commentPeriod.instructions}}</p>
+      <p id="instructions">{{commentPeriod.instructions}}</p>
       <p>{{commentPeriod.additionalText}}</p>
       <p>{{commentPeriod.informationLabel}}</p>
     </div>
