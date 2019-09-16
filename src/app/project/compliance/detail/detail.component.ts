@@ -7,6 +7,9 @@ import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { DocumentService } from 'app/services/document.service';
 import { MatSnackBar } from '@angular/material';
+import { TableObject } from 'app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
+import { ComplianceTableRowsComponent } from '../compliance-table-rows/compliance-table-rows.component';
 
 @Component({
   selector: 'app-compliance-detail',
@@ -17,8 +20,39 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public document: Compliance = null;
   public currentProject: Project = null;
+  public compliances: Compliance[] = null;
   public publishText: string;
-
+  public loading = true;
+  public tableParams: TableParamsObject = new TableParamsObject();
+  public tableData: TableObject;
+  public tableColumns: any[] = [
+    {
+      name: 'Title',
+      value: 'title',
+      width: 'col-2'
+    },
+    {
+      name: 'Requirement',
+      value: 'requirement',
+      width: 'col-3'
+    },
+    {
+      name: 'Description',
+      value: 'startDate',
+      width: 'col-4'
+    },
+    {
+      name: 'Assets',
+      value: 'endDate',
+      width: 'col-1'
+    },
+    {
+      name: 'Date Submitted',
+      value: 'actions',
+      width: 'col-2',
+      nosort: true
+    }
+  ];
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -37,38 +71,35 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         this.document = res.compliance.data;
-        let self = this;
-
-        // TODO
-        // Change this to download each item separately and then push the thumb into it's spot on the page
-        // appropriately
-        // this.api.downloadElementResource('5d5f6a5979348a3e48673537')
-        // .then(async function(item) {
-          self.document.elements.map(async z => {
-            // self._changeDetectionRef.detectChanges();
-            if (z.type === 'photo') {
-              // Show thumb
-              let resource = await self.api.downloadElementThumbnail(z._id);
-              const reader = new FileReader();
-              reader.readAsDataURL(resource);
-              reader.onloadend = function() {
-                // result includes identifier 'data:image/png;base64,' plus the base64 data
-                z.src = reader.result;
-                self._changeDetectionRef.detectChanges();
-              };
-            } else if (z.type === 'video') {
-              // Show it's type with a clickable event.
-            } else if (z.type === 'voice') {
-              // Show it's type with a clickable event.
-            } else if (z.type === 'text') {
-              // Show it's type with a clickable event.
-            }
-          });
-        });
-      // });
-
+        console.log('this.document:', this.document);
+      });
   }
 
+  setRowData() {
+    let documentList = [];
+    if (this.compliances && this.compliances.length > 0) {
+      this.compliances.forEach(item => {
+        documentList.push(
+          {
+            _id: item._id,
+            name: item.name,
+            startDate: item.startDate,
+            endDate: item.endDate,
+            project: item.project,
+            email: item.email,
+            case: item.case,
+            label: item.label,
+            elements: item.elements
+          }
+        );
+      });
+      this.tableData = new TableObject(
+        ComplianceTableRowsComponent,
+        documentList,
+        this.tableParams
+      );
+    }
+  }
   download(item) {
     // console.log('Package Download?:', item);
   }
