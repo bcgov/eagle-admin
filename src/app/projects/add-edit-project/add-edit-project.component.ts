@@ -524,7 +524,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
           () => { // onCompleted
             this.clearStorageService();
             this.loading = false;
-            // this.openSnackBar('This project was created successfuly.', 'Close');
+            this.openSnackBar('This project was created successfuly.', 'Close');
             this.router.navigate(['/p', this.projectId, 'project-details']);
           }
         );
@@ -540,7 +540,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
             this.clearStorageService();
             this.loading = false;
             this.router.navigated = false;
-            this.openSnackBar('This project was created successfully.', 'Close');
+            this.openSnackBar('This project was edited successfully.', 'Close');
             this.router.navigate(['/p', this.project._id, 'project-details']);
           },
           error => {
