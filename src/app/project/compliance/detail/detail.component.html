@@ -8,38 +8,30 @@
     </li>
     <li class="breadcrumb-item active" aria-current="page">
       <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id, 'compliance']">Compliance</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Compliance Details</li>
+    <li class="breadcrumb-item active" aria-current="page">Inspection Details</li>
   </ol>
 </nav>
 <main class="container-fluid-padding" *ngIf="document">
   <h1>
     <div class="row">
-      <div>Details</div>
-      <!-- <div class="ml-auto" ngbDropdown placement="bottom-right">
-        <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
-        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button class="dropdown-item" (click)="download(document)">Download</button>
-        </div>
-      </div> -->
+      <div>Inspection Details</div>
     </div>
   </h1>
   <section>
+    <label class="btn btn-outline-primary">{{document.startDate | date}} - {{document.endDate | date}}</label>
     <div class="label-pair">
-      <h3 for="displayName">Display Name: </h3>
-      <p id="displayName">{{document.name || '-'}}</p>
+      <h3 for="displayName">Inspection #: </h3>
+      <p id="displayName">{{document.case || '-'}}</p>
     </div>
     <div class="label-pair">
-      <h3 for="startDate">Start Date: </h3>
-      <p id="startDate" *ngIf="document.startDate !== '1900-01-01T08:00:00.000Z'">{{document.startDate | date}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="endDate">End Date: </h3>
-      <p id="endDate" *ngIf="document.endDate !== '1900-01-01T08:00:00.000Z'">{{document.endDate | date}}</p>
+      <h3 for="email">Inspector Email: </h3>
+      <p id="email">{{document.email}}</p>
     </div>
     <div *ngIf="document.elements" class="label-pair">
-      <h3 for="tags">Elements: </h3>
+      <h3 for="tags">Inspection Submissions: </h3>
       <div *ngFor="let element of document.elements">
-        <div *ngIf='element.type === "photo"' class="mr-2">
+        <p>{{element._id}}</p>
+        <!-- <div *ngIf='element.type === "photo"' class="mr-2">
           <img class="img-thumbnail" *ngIf="element.src" [src]="element.src" (click)='api.downloadElementResource(element)'/>
           <div>Coords: [{{element.geo.latitude}},{{element.geo.longitude}}]</div>
         </div>
@@ -61,22 +53,8 @@
             </div>
           </div>
           <div>Coords: [{{element.geo.latitude}},{{element.geo.longitude}}]</div>
-        </div>
+        </div> -->
       </div>
-    </div>
-  </section>
-  <section>
-    <div class="label-pair">
-      <h3 for="milestone">Email: </h3>
-      <p id="milestone"><a [href]="'mailto:' + document.email">{{document.email}}</a></p>
-    </div>
-    <div class="label-pair">
-      <h3 for="type">Case: </h3>
-      <p id="type">{{document.case}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="milestone">Label: </h3>
-      <p id="milestone">{{document.label}}</p>
     </div>
   </section>
 </main>

@@ -32,35 +32,30 @@ export class ComplianceComponent implements OnInit, OnDestroy {
   public documentTableData: TableObject;
   public documentTableColumns: any[] = [
     {
-      name: '',
-      value: 'check',
-      width: 'col-1',
-      nosort: true
-    },
-    {
-      name: 'Name',
+      name: 'Inspection #',
       value: 'name',
-      width: 'col-4'
+      width: 'col-2'
     },
     {
-      name: 'Start',
+      name: 'Inspector',
+      value: 'email',
+      width: 'col-3'
+    },
+    {
+      name: 'Start Date',
       value: 'startDate',
       width: 'col-2'
     },
     {
-      name: 'End',
+      name: 'End Date',
       value: 'endDate',
       width: 'col-2'
     },
     {
-      name: 'Label',
-      value: 'label',
-      width: 'col-2'
-    },
-    {
-      name: 'Elements',
-      value: 'elements',
-      width: 'col-1'
+      name: 'Actions',
+      value: 'actions',
+      width: 'col-3',
+      nosort: true
     }
   ];
 
@@ -191,9 +186,6 @@ export class ComplianceComponent implements OnInit, OnDestroy {
         }
         this.router.navigate(['p', this.currentProject._id, 'compliance', 'edit']);
         break;
-      case 'delete':
-        this.deleteDocument();
-        break;
       case 'download':
         // this.documentTableData.data.map((item) => {
         //   if (item.checkbox === true) {
@@ -209,37 +201,6 @@ export class ComplianceComponent implements OnInit, OnDestroy {
 
   navSearchHelp() {
     this.router.navigate(['/search-help']);
-  }
-
-  deleteDocument() {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Delete Document',
-        message: 'Click <strong>OK</strong> to delete this Document or <strong>Cancel</strong> to return to the list.'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.loading = true;
-            // Delete the Document(s)
-            let itemsToDelete = [];
-            this.documentTableData.data.map((item) => {
-              if (item.checkbox === true) {
-                itemsToDelete.push({ promise: this.documentService.delete(item).toPromise(), item: item });
-              }
-            });
-            this.loading = false;
-            return Promise.all(itemsToDelete).then(() => {
-              // Reload main page.
-              this.onSubmit();
-            });
-          }
-          this.loading = false;
-        }
-      );
   }
 
   public onNumItems(numItems) {

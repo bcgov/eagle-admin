@@ -38,6 +38,10 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
     this.selectedCount.emit(count);
   }
 
+  downloadItem(item) {
+    console.log('TODO:', item);
+  }
+
   goToItem(item) {
     this.router.navigate(['p', item.project._id, 'compliance', 'detail', item._id]);
   }

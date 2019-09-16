@@ -1,17 +1,21 @@
 <tr
   *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
   class="clickable-row">
-  <td data-label="Select" (click)="selectItem(item)" scope="row" class="col-1">
-    <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='item.checkbox'>
+  <td data-label="Inspection #" (click)="goToItem(item)" scope="row" class="col-2">{{item.case}}</td>
+  <td data-label="Inspector" (click)="goToItem(item)" scope="row" class="col-3">
+    <div>{{item.email}}</div>
   </td>
-  <td data-label="Name" (click)="goToItem(item)" scope="row" class="col-4">{{item.name}}</td>
   <td data-label="Start Date" (click)="goToItem(item)" scope="row" class="col-2">
-    <div *ngIf="item.datePosted !== '1900-01-01T08:00:00.000Z'">{{item.startDate | date:'longDate'}}</div>
+    <div *ngIf="item.startDate !== '1900-01-01T08:00:00.000Z'">{{item.startDate | date:'longDate'}}</div>
   </td>
   <td data-label="End Date" (click)="goToItem(item)" scope="row" class="col-2">
-    <div *ngIf="item.datePosted !== '1900-01-01T08:00:00.000Z'">{{item.endDate | date:'longDate'}}</div>
+    <div *ngIf="item.endDate !== '1900-01-01T08:00:00.000Z'">{{item.endDate | date:'longDate'}}</div>
   </td>
-  <td data-label="label" (click)="goToItem(item)" scope="row" class="col-2">{{item.label}}</td>
-  <td data-label="Elements" (click)="goToItem(item)" scope="row" class="col-1">
-    {{item.elements.length}}</td>
+  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-3">
+    <p class="card-text publish-state">
+      Download &nbsp;<i class="material-icons">
+        cloud_download
+      </i>
+    </p>
+  </td>
 </tr>
