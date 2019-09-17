@@ -8,35 +8,487 @@
     <h1>Search Environmental Assessment Projects</h1>
     <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
       <label class="form-check-inline">
-        <input class="form-check-input" type="radio" [checked]="this.terms.dataset === 'Document'"
+        <input class="form-check-input" type="radio" [checked]="terms.dataset === 'Document'"
           (click)='handleRadioChange("Document")'>Documents
       </label>
       <label class="form-check-inline">
-        <input class="form-check-input" type="radio" [checked]="this.terms.dataset === 'Project'"
+        <input class="form-check-input" type="radio" [checked]="terms.dataset === 'Project'"
           (click)='handleRadioChange("Project")'>Projects
       </label>
       <label class="form-check-inline">
-        <input class="form-check-input" type="radio" [checked]="this.terms.dataset === 'Vc'"
+        <input class="form-check-input" type="radio" [checked]="terms.dataset === 'Vc'"
           (click)='handleRadioChange("Vc")'>Valued Components
       </label>
-      <div class="input-group main-search-field">
-        <input class="form-control"
-                type="text"
-                name="keywordInput"
-                placeholder="Enter keywords to search..."
-                id="keywordInput"
-                [(ngModel)]="terms.keywords"
-                [disabled]="searching"
-                autofocus />
-        <div class="input-group-append">
-          <!-- prevent searching if input is empty or we're already searching -->
-          <button class="btn btn-primary" type="submit" [disabled]="!terms.keywords || searching">
+
+      <div class="search-area">
+        <div class="input-group main-search-field">
+          <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+            id="keywordInput" [(ngModel)]="terms.keywords" [disabled]="searching" autofocus />
+          <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
+            <!-- prevent searching if input is empty or we're already searching -->
+            <button class="btn btn-primary" type="submit" [disabled]="!(terms.keywords || hasFilter()) || searching">
+              <i class="material-icons"[hidden]="searching">search</i>
+              <i class="spinner rotating" [hidden]="!searching"></i>
+              <span>{{searching ? 'Searching...' : 'Search'}}</span>
+            </button>
+          </div>
+        </div>
+        <div *ngIf="!loading" class="advanced-search">
+          <div *ngIf="terms.dataset === 'Project'" class="row">
+            <div *ngIf="showAdvancedSearch" class="col-md-9">
+              <button type="button" (click)="toggleFilter('projectType');"
+                [ngClass]="{'btn': true, 'projectType-btn': true,
+                  'btn-dark': showFilters.projectType,
+                  'btn-secondary': !showFilters.projectType && numFilters.projectType > 0,
+                  'btn-outline-dark': !showFilters.projectType && numFilters.projectType == 0}">
+                Project Type<span *ngIf="numFilters.projectType > 0 && !showFilters.projectType">&nbsp;({{ numFilters.projectType }})</span>
+              </button>
+              <button type="button" (click)="toggleFilter('eacDecision');"
+                [ngClass]="{'btn': true, 'decision-btn': true,
+                  'btn-dark': showFilters.eacDecision,
+                  'btn-secondary': !showFilters.eacDecision && numFilters.eacDecision > 0,
+                  'btn-outline-dark': !showFilters.eacDecision && numFilters.eacDecision == 0}">
+                EA Decision<span *ngIf="numFilters.eacDecision > 0 && !showFilters.eacDecision">&nbsp;({{ numFilters.eacDecision }})</span>
+              </button>
+              <button type="button" (click)="toggleFilter('pcp');"
+                [ngClass]="{'btn': true, 'pcp-btn': true,
+                  'btn-dark': showFilters.pcp,
+                  'btn-secondary': !showFilters.pcp && numFilters.pcp > 0,
+                  'btn-outline-dark': !showFilters.pcp && numFilters.pcp == 0}">
+                Public Comment Period<span *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
+              </button>
+              <button type="button" (click)="toggleFilter('more');"
+                [ngClass]="{'btn': true, 'more-btn': true,
+                  'btn-dark': showFilters.more,
+                  'btn-secondary': !showFilters.more && numFilters.more > 0,
+                  'btn-outline-dark': !showFilters.more && numFilters.more == 0}">
+                More Filters&hellip;<span *ngIf="numFilters.more > 0 && !showFilters.more">&nbsp;({{ numFilters.more }})</span>
+              </button>
+              <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
+            </div>
+            <div [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+              <button class="btn btn-secondary" type="button" (click)="showAdvancedSearch = !showAdvancedSearch;">
+                <span *ngIf="showAdvancedSearch">Hide Advanced Search</span>
+                <span *ngIf="!showAdvancedSearch">Show Advanced Search</span>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="terms.dataset === 'Document'" class="row">
+            <div *ngIf="showAdvancedSearch" class="col-md-9">
+              <button type="button" (click)="toggleFilter('milestone');"
+                [ngClass]="{'btn': true, 'milestone-btn': true,
+                  'btn-dark': showFilters.milestone,
+                  'btn-secondary': !showFilters.milestone && numFilters.milestone > 0,
+                  'btn-outline-dark': !showFilters.milestone && numFilters.milestone == 0}">
+                Milestone<span *ngIf="numFilters.milestone > 0 && !showFilters.milestone">&nbsp;({{ numFilters.milestone }})</span>
+              </button>
+              <button type="button" (click)="toggleFilter('date');"
+                [ngClass]="{'btn': true, 'date-btn': true,
+                  'btn-dark': showFilters.date,
+                  'btn-secondary': !showFilters.date && numFilters.date > 0,
+                  'btn-outline-dark': !showFilters.date && numFilters.date == 0}">
+                Document Date<span *ngIf="numFilters.date > 0 && !showFilters.date">&nbsp;({{ numFilters.date }})</span>
+              </button>
+              <button type="button" (click)="toggleFilter('documentAuthorType');"
+                [ngClass]="{'btn': true, 'author-btn': true,
+                  'btn-dark': showFilters.documentAuthorType,
+                  'btn-secondary': !showFilters.documentAuthorType && numFilters.documentAuthorType > 0,
+                  'btn-outline-dark': !showFilters.documentAuthorType && numFilters.documentAuthorType == 0}">
+                Document Author<span *ngIf="numFilters.documentAuthorType > 0 && !showFilters.documentAuthorType">&nbsp;({{ numFilters.documentAuthorType }})</span>
+              </button>
+              <button type="button" (click)="toggleFilter('docType');"
+                [ngClass]="{'btn': true, 'docType-btn': true,
+                  'btn-dark': showFilters.docType,
+                  'btn-secondary': !showFilters.docType && numFilters.docType > 0,
+                  'btn-outline-dark': !showFilters.docType && numFilters.docType == 0}">
+                Document Type<span *ngIf="numFilters.docType > 0 && !showFilters.docType">&nbsp;({{ numFilters.docType }})</span>
+              </button>
+              <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
+            </div>
+            <div [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+              <button class="btn btn-secondary" type="button" (click)="showAdvancedSearch = !showAdvancedSearch;">
+                <span *ngIf="showAdvancedSearch">Hide Advanced Search</span>
+                <span *ngIf="!showAdvancedSearch">Show Advanced Search</span>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.projectType" class="projectType-filters project-filter row">
+            <div class="col-md-7 filter-border">
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="projectType_input" name="energyElectricity"
+                      [(ngModel)]="filterForUI.projectType.energyElectricity">
+                    <label class="form-check-label" for="projectType_input">Energy-Electricity</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="foodProcessing" name="foodProcessing"
+                      [(ngModel)]="filterForUI.projectType.foodProcessing">
+                    <label class="form-check-label" for="foodProcessing">Food Processing</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="mines" name="mines"
+                      [(ngModel)]="filterForUI.projectType.mines">
+                    <label class="form-check-label" for="mines">Mines</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="transportation" name="transportation"
+                      [(ngModel)]="filterForUI.projectType.transportation">
+                    <label class="form-check-label" for="transportation">Transportation</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="wasteDisposal" name="wasteDisposal"
+                      [(ngModel)]="filterForUI.projectType.wasteDisposal">
+                    <label class="form-check-label" for="wasteDisposal">Waste Disposal</label>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="energyPetroleum" name="energyPetroleum"
+                      [(ngModel)]="filterForUI.projectType.energyPetroleum">
+                    <label class="form-check-label" for="energyPetroleum">Energy-Petroleum &amp; Natural Gas</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="industrial" name="industrial"
+                      [(ngModel)]="filterForUI.projectType.industrial">
+                    <label class="form-check-label" for="industrial">Industrial</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="other" name="other"
+                      [(ngModel)]="filterForUI.projectType.other">
+                    <label class="form-check-label" for="other">Other</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="tourist" name="tourist"
+                      [(ngModel)]="filterForUI.projectType.tourist">
+                    <label class="form-check-label" for="tourist">Tourist Destination Resorts</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="waterManagement" name="waterManagement"
+                      [(ngModel)]="filterForUI.projectType.waterManagement">
+                    <label class="form-check-label" for="waterManagement">Water Management</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.eacDecision" class="decision-filters project-filter row">
+            <div class="col-md-9 filter-border">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="eacDecision_input" name="inProgress"
+                      [(ngModel)]="filterForUI.eacDecision.inProgress">
+                    <label class="form-check-label" for="eacDecision_input">In Progress</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="certificateRefused" name="certificateRefused"
+                      [(ngModel)]="filterForUI.eacDecision.certificateRefused">
+                    <label class="form-check-label" for="certificateRefused">Certificate Refused</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="certificateNotRequired" name="certificateNotRequired"
+                      [(ngModel)]="filterForUI.eacDecision.certificateNotRequired">
+                    <label class="form-check-label" for="certificateNotRequired">Certificate Not Required</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="withdrawn" name="withdrawn"
+                      [(ngModel)]="filterForUI.eacDecision.withdrawn">
+                    <label class="form-check-label" for="withdrawn">Withdrawn</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="preEA" name="preEA"
+                      [(ngModel)]="filterForUI.eacDecision.preEA">
+                    <label class="form-check-label" for="preEA">Pre-EA Act Approval</label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="certificateIssued" name="certificateIssued"
+                      [(ngModel)]="filterForUI.eacDecision.certificateIssued">
+                    <label class="form-check-label" for="certificateIssued">Certificate Issued</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="furtherAssessmentRequired" name="furtherAssessmentRequired"
+                      [(ngModel)]="filterForUI.eacDecision.furtherAssessmentRequired">
+                    <label class="form-check-label" for="furtherAssessmentRequired">Further Assessment Required</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="certificateExpired" name="certificateExpired"
+                      [(ngModel)]="filterForUI.eacDecision.certificateExpired">
+                    <label class="form-check-label" for="certificateExpired">Certificate Expired</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="terminated" name="terminated"
+                      [(ngModel)]="filterForUI.eacDecision.terminated">
+                    <label class="form-check-label" for="terminated">Terminated</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="notReviewable" name="notReviewable"
+                      [(ngModel)]="filterForUI.eacDecision.notReviewable">
+                    <label class="form-check-label" for="notReviewable">Not Designated Reviewable</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <hr />
+                </div>
+              </div>
+              <div>
+                <div class="row date">
+                  <b>Decision Date</b>
+                </div>
+                <div class="row date-range">
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDateStart"
+                        [(ngModel)]="filterForUI.decisionDateStart" ngbDatepicker
+                        #decisionDateStartPicker="ngbDatepicker">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary calendar" (click)="decisionDateStartPicker.toggle()" type="button">
+                          <i class="material-icons">date_range</i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDateEnd"
+                        [(ngModel)]="filterForUI.decisionDateEnd" ngbDatepicker
+                        #decisionDateEndPicker="ngbDatepicker">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary calendar" (click)="decisionDateEndPicker.toggle()" type="button">
+                          <i class="material-icons">date_range</i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.pcp" class="pcp-filters project-filter row">
+            <div class="col-md-3 filter-border">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="pcp_input" name="pending"
+                      [(ngModel)]="filterForUI.pcp.pending">
+                    <label class="form-check-label" for="pcp_input">Pending</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="open" name="open"
+                      [(ngModel)]="filterForUI.pcp.open">
+                    <label class="form-check-label" for="open">Open</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="closed" name="closed"
+                      [(ngModel)]="filterForUI.pcp.closed">
+                    <label class="form-check-label" for="closed">Closed</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.more" class="more-filters project-filter row">
+            <div class="col-md-12 filter-border">
+              <div class="row sub-filters">
+                <div class="col-md-12">
+                  <div class="row">
+                    <b>Proponent</b>
+                  </div>
+                  <div class="row">
+                    <div class="form-group">
+                      <tag-input id="proponent" name="proponent"
+                        [(ngModel)]="filterForUI.proponent" [identifyBy]="'_id'" [displayBy]="'name'"
+                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
+                        [clearOnBlur]="true" [inputId]="'more_input'"
+                        [placeholder]="'Type Proponent Name'" [secondaryPlaceholder]="'Type Proponent Name'"
+                      >
+                        <tag-input-dropdown [autocompleteItems]="proponents" [identifyBy]="'_id'" [displayBy]="'name'"
+                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
+                        >
+                        </tag-input-dropdown>
+                      </tag-input>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <hr />
+                    </div>
+                  </div>
+                  <div class="row">
+                    <b>Region</b>
+                  </div>
+                  <div class="row">
+                    <div class="form-group">
+                      <tag-input id="region" name="region"
+                        [(ngModel)]="filterForUI.region" [identifyBy]="'code'" [displayBy]="'name'"
+                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
+                        [clearOnBlur]="true"
+                        [placeholder]="'Type Region Name'" [secondaryPlaceholder]="'Type Region Name'"
+                      >
+                        <tag-input-dropdown [autocompleteItems]="regions" [identifyBy]="'code'" [displayBy]="'name'"
+                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
+                        >
+                        </tag-input-dropdown>
+                      </tag-input>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <hr />
+                    </div>
+                  </div>
+                  <div class="row">
+                    <b>CEAA Involvement</b>
+                  </div>
+                  <div class="row">
+                    <div class="form-group">
+                      <tag-input id="ceaaInvolvement" name="ceaaInvolvement"
+                        [(ngModel)]="filterForUI.CEAAInvolvement" [identifyBy]="'code'" [displayBy]="'name'"
+                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
+                        [clearOnBlur]="true"
+                        [placeholder]="'Type Involvement'" [secondaryPlaceholder]="'Type Involvement'"
+                      >
+                        <tag-input-dropdown [autocompleteItems]="ceaaInvolvements" [identifyBy]="'code'" [displayBy]="'name'"
+                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
+                        >
+                        </tag-input-dropdown>
+                      </tag-input>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.milestone" class="milestone-filters project-filter row">
+            <div class="col-md-12 filter-border">
+              <div class="row sub-filter">
+                <div class="col-md-12">
+                  <div class="row">
+                    <b>Milestone</b>
+                  </div>
+                  <div class="row">
+                    <div class="form-group">
+                      <tag-input id="milestone" name="milestone"
+                        [(ngModel)]="filterForUI.milestone" [identifyBy]="'_id'" [displayBy]="'name'"
+                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
+                        [clearOnBlur]="true" [inputId]="'milestone_input'"
+                        [placeholder]="'Type Milestone'" [secondaryPlaceholder]="'Type Milestone'"
+                      >
+                        <tag-input-dropdown [autocompleteItems]="milestones" [identifyBy]="'_id'" [displayBy]="'name'"
+                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
+                        >
+                        </tag-input-dropdown>
+                      </tag-input>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.date" class="date-filters project-filter row">
+            <div class="col-md-8 filter-border">
+              <div class="row">
+                <div class="col-md-6">
+                  <b>From</b>
+                </div>
+                <div class="col-md-6">
+                  <b>To</b>
+                </div>
+              </div>
+              <div class="row date-range">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="yyyy-mm-dd" id="date_input" name="datePostedStart"
+                      [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker
+                      #datePostedStartPicker="ngbDatepicker">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary calendar" (click)="datePostedStartPicker.toggle()" type="button">
+                        <i class="material-icons">date_range</i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePostedEnd"
+                      [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker
+                      #datePostedEndPicker="ngbDatepicker">
+                    <div class="input-group-append">
+                      <button class="btn btn-outline-secondary calendar" (click)="datePostedEndPicker.toggle()" type="button">
+                        <i class="material-icons">date_range</i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.documentAuthorType" class="author-filters project-filter row">
+            <div class="col-md-12 filter-border">
+              <div class="row sub-filter">
+                <div class="col-md-12">
+                  <div class="row">
+                    <b>Author</b>
+                  </div>
+                  <div class="row">
+                    <div class="form-group">
+                      <tag-input id="documentAuthorType" name="documentAuthorType"
+                        [(ngModel)]="filterForUI.documentAuthorType" [identifyBy]="'_id'" [displayBy]="'name'"
+                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
+                        [clearOnBlur]="true" [inputId]="'documentAuthorType_input'"
+                        [placeholder]="'Type Document Author'" [secondaryPlaceholder]="'Type Document Author'"
+                      >
+                        <tag-input-dropdown [autocompleteItems]="authors" [identifyBy]="'_id'" [displayBy]="'name'"
+                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
+                        >
+                        </tag-input-dropdown>
+                      </tag-input>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="showAdvancedSearch && showFilters.docType" class="docType-filters project-filter row">
+            <div class="col-md-12 filter-border">
+              <div class="row sub-filter">
+                <div class="col-md-12">
+                  <div class="row">
+                    <b>Type</b>
+                  </div>
+                  <div class="row">
+                    <div class="form-group">
+                      <tag-input id="docType" name="docType"
+                        [(ngModel)]="filterForUI.docType" [identifyBy]="'_id'" [displayBy]="'name'"
+                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
+                        [clearOnBlur]="true" [inputId]="'docType_input'"
+                        [placeholder]="'Type Document Type'" [secondaryPlaceholder]="'Type Document Type'"
+                      >
+                        <tag-input-dropdown [autocompleteItems]="docTypes" [identifyBy]="'_id'" [displayBy]="'name'"
+                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
+                        >
+                        </tag-input-dropdown>
+                      </tag-input>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button *ngIf="showAdvancedSearch && isShowingFilter()"
+            class="btn btn-primary search-button" type="submit" [disabled]="!(terms.keywords || hasFilter()) || searching"
+          >
             <i class="material-icons"[hidden]="searching">search</i>
             <i class="spinner rotating" [hidden]="!searching"></i>
             <span>{{searching ? 'Searching...' : 'Search'}}</span>
           </button>
         </div>
       </div>
+
       <div class="input-group-append">
             <a _ngcontent-c7 class="btn btn-primary btn-search-help"  [routerLink]="['/search-help']" target="_blank">
                 <i class="material-icons md-18">info</i>
@@ -45,17 +497,17 @@
       </div>
       <div>
         <p class="search-result" *ngIf="ranSearch && !searching && count == 0">
-          No result<span *ngIf="count != 1">s</span> found for "{{keywords}}"
+          No result<span *ngIf="count != 1">s</span> found for "{{keywords}}"<span *ngIf="hadFilter"> with advanced filters</span>
         </p>
         <p class="search-result" *ngIf="ranSearch && !searching && count > 0">
-          Showing {{ results.length }} of {{count}} result<span *ngIf="count != 1">s</span> for "{{keywords}}"
+          Showing {{ results.length }} of {{count}} result<span *ngIf="count != 1">s</span> for "{{keywords}}"<span *ngIf="hadFilter"> with advanced filters</span>
         </p>
       </div>
     </form>
 
     <div *ngIf="count > 0">
       <!-- NOT ALL -->
-      <div *ngIf="this.terms.dataset === 'Document'">
+      <div *ngIf="terms.dataset === 'Document'">
         <div class="app-details" *ngFor="let result of results | paginate: { id: 'table-template-pagination', itemsPerPage: pageSize, currentPage: currentPage, totalItems: count }">
           <div class="card">
             <header class="card-header">
@@ -99,7 +551,7 @@
           </div>
         </div>
       </div>
-      <div *ngIf="this.terms.dataset === 'Project'">
+      <div *ngIf="terms.dataset === 'Project'">
         <div class="app-details" *ngFor="let result of results | paginate: { id: 'table-template-pagination', itemsPerPage: pageSize, currentPage: currentPage, totalItems: count }">
           <div class="card">
             <header class="card-header">
@@ -119,7 +571,7 @@
           </div>
         </div>
       </div>
-      <div *ngIf="this.terms.dataset === 'Vc'">
+      <div *ngIf="terms.dataset === 'Vc'">
         <div class="app-details" *ngFor="let result of results | paginate: { id: 'table-template-pagination', itemsPerPage: pageSize, currentPage: currentPage, totalItems: count }">
           <div class="card">
             <header class="card-header">
