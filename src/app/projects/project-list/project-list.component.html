@@ -1,357 +1,484 @@
 <div class="action-container">
-  <ol class="breadcrumb" aria-label="breadcrumb">
-    <li class="breadcrumb-item active" aria-current="page">All Projects</li>
-  </ol>
-  <div>
-    <button class="btn btn-primary" (click)="addProject()">
-      <i class="material-icons">add</i>
-      Create New project
-    </button>
-  </div>
+    <ol class="breadcrumb" aria-label="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">All Projects</li>
+    </ol>
+    <div>
+        <button class="btn btn-primary" (click)="addProject()">
+            <i class="material-icons">add</i>
+            Create New project
+        </button>
+    </div>
 </div>
 <div class="search-container">
-  <div class="fb-container bg-faded">
-    <section class="container-fluid-padding" id="anchor-point">
-      <div class="spinner-container" *ngIf="loading">
-        <div class="spinner-new rotating"></div>
-      </div>
-      <main *ngIf="!loading">
-        <section>
-          <h2>Environmental Assessments in British Columbia</h2>
-          <p class="tab-intro">Use the list below to navigate to individual Projects. Click on any project to go
-            directly to its details page.</p>
+    <div class="fb-container bg-faded">
+        <section class="container-fluid-padding" id="anchor-point">
+            <div class="spinner-container" *ngIf="loading">
+                <div class="spinner-new rotating"></div>
+            </div>
+            <main *ngIf="!loading">
+                <section>
+                    <h2>Environmental Assessments in British Columbia</h2>
+                    <p class="tab-intro">Use the list below to navigate to individual Projects. Click on any project to
+                        go
+                        directly to its details page.</p>
 
-          <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
-            <div class="search-area">
-              <div class="input-group main-search-field">
-                <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-                  id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
-                <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
-                  <!-- prevent searching if input is empty or we're already searching -->
-                  <button class="btn btn-primary" type="submit">
-                    <span>Search</span>
-                  </button>
-                </div>
-              </div>
-              <div class="advanced-search">
-                <div class="row">
-                  <div *ngIf="showAdvancedSearch" class="col-md-9">
-                    <button type="button" (click)="toggleFilter('type');"
-                      [ngClass]="{'btn': true, 'type-btn': true,
+                    <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
+                        <div class="search-area">
+                            <div class="input-group main-search-field">
+                                <input class="form-control" type="text" name="keywordInput"
+                                    placeholder="Enter keywords to search..." id="keywordInput"
+                                    [(ngModel)]="tableParams.keywords" autofocus />
+                                <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
+                                    <!-- prevent searching if input is empty or we're already searching -->
+                                    <button class="btn btn-primary" type="submit">
+                                        <span>Search</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="advanced-search">
+                                <div class="row">
+                                    <div *ngIf="showAdvancedSearch" class="col-md-9">
+                                        <button type="button" (click)="toggleFilter('type');" [ngClass]="{'btn': true, 'type-btn': true,
                         'btn-dark': showFilters.type,
                         'btn-secondary': !showFilters.type && numFilters.type > 0,
                         'btn-outline-dark': !showFilters.type && numFilters.type == 0}">
-                      Project Type<span *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
-                    </button>
-                    <button type="button" (click)="toggleFilter('eacDecision');"
-                      [ngClass]="{'btn': true, 'decision-btn': true,
+                                            Project Type<span
+                                                *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
+                                        </button>
+                                        <button type="button" (click)="toggleFilter('eacDecision');" [ngClass]="{'btn': true, 'decision-btn': true,
                         'btn-dark': showFilters.eacDecision,
                         'btn-secondary': !showFilters.eacDecision && numFilters.eacDecision > 0,
                         'btn-outline-dark': !showFilters.eacDecision && numFilters.eacDecision == 0}">
-                      EA Decision<span *ngIf="numFilters.eacDecision > 0 && !showFilters.eacDecision">&nbsp;({{ numFilters.eacDecision }})</span>
-                    </button>
-                    <button type="button" (click)="toggleFilter('pcp');"
-                      [ngClass]="{'btn': true, 'pcp-btn': true,
+                                            EA Decision<span
+                                                *ngIf="numFilters.eacDecision > 0 && !showFilters.eacDecision">&nbsp;({{ numFilters.eacDecision }})</span>
+                                        </button>
+                                        <button type="button" (click)="toggleFilter('pcp');" [ngClass]="{'btn': true, 'pcp-btn': true,
                         'btn-dark': showFilters.pcp,
                         'btn-secondary': !showFilters.pcp && numFilters.pcp > 0,
                         'btn-outline-dark': !showFilters.pcp && numFilters.pcp == 0}">
-                      Public Comment Period<span *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
-                    </button>
-                    <button type="button" (click)="toggleFilter('more');"
-                      [ngClass]="{'btn': true, 'more-btn': true,
+                                            Public Comment Period<span
+                                                *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
+                                        </button>
+                                        <button type="button" (click)="toggleFilter('more');" [ngClass]="{'btn': true, 'more-btn': true,
                         'btn-dark': showFilters.more,
                         'btn-secondary': !showFilters.more && numFilters.more > 0,
                         'btn-outline-dark': !showFilters.more && numFilters.more == 0}">
-                      More Filters&hellip;<span *ngIf="numFilters.more > 0 && !showFilters.more">&nbsp;({{ numFilters.more }})</span>
-                    </button>
-                    <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
-                  </div>
-                  <div [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
-                    <button class="btn btn-secondary" type="button" (click)="showAdvancedSearch = !showAdvancedSearch;">
-                      <span *ngIf="showAdvancedSearch">Hide Advanced Search</span>
-                      <span *ngIf="!showAdvancedSearch">Show Advanced Search</span>
-                    </button>
-                  </div>
-                </div>
-                <div *ngIf="showAdvancedSearch && showFilters.type" class="type-filters project-filter row">
-                  <div class="col-md-6 filter-border">
-                    <div class="row">
-                      <div class="col-md-5">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="energyElectricity" name="energyElectricity"
-                            [(ngModel)]="filterForUI.type.energyElectricity">
-                          <label class="form-check-label" for="energyElectricity">Energy-Electricity</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="foodProcessing" name="foodProcessing"
-                            [(ngModel)]="filterForUI.type.foodProcessing">
-                          <label class="form-check-label" for="foodProcessing">Food Processing</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="mines" name="mines"
-                            [(ngModel)]="filterForUI.type.mines">
-                          <label class="form-check-label" for="mines">Mines</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="transportation" name="transportation"
-                            [(ngModel)]="filterForUI.type.transportation">
-                          <label class="form-check-label" for="transportation">Transportation</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="wasteDisposal" name="wasteDisposal"
-                            [(ngModel)]="filterForUI.type.wasteDisposal">
-                          <label class="form-check-label" for="wasteDisposal">Waste Disposal</label>
-                        </div>
-                      </div>
-                      <div class="col-md-7">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="energyPetroleum" name="energyPetroleum"
-                            [(ngModel)]="filterForUI.type.energyPetroleum">
-                          <label class="form-check-label" for="energyPetroleum">Energy-Petroleum &amp; Natural Gas</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="industrial" name="industrial"
-                            [(ngModel)]="filterForUI.type.industrial">
-                          <label class="form-check-label" for="industrial">Industrial</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="other" name="other"
-                            [(ngModel)]="filterForUI.type.other">
-                          <label class="form-check-label" for="other">Other</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="tourist" name="tourist"
-                            [(ngModel)]="filterForUI.type.tourist">
-                          <label class="form-check-label" for="tourist">Tourist Destination Resorts</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="waterManagement" name="waterManagement"
-                            [(ngModel)]="filterForUI.type.waterManagement">
-                          <label class="form-check-label" for="waterManagement">Water Management</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div *ngIf="showAdvancedSearch && showFilters.eacDecision" class="decision-filters project-filter row">
-                  <div class="col-md-8 filter-border">
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="inProgress" name="inProgress"
-                            [(ngModel)]="filterForUI.eacDecision.inProgress">
-                          <label class="form-check-label" for="inProgress">In Progress</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="certificateRefused" name="certificateRefused"
-                            [(ngModel)]="filterForUI.eacDecision.certificateRefused">
-                          <label class="form-check-label" for="certificateRefused">Certificate Refused</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="certificateNotRequired" name="certificateNotRequired"
-                            [(ngModel)]="filterForUI.eacDecision.certificateNotRequired">
-                          <label class="form-check-label" for="certificateNotRequired">Certificate Not Required</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="withdrawn" name="withdrawn"
-                            [(ngModel)]="filterForUI.eacDecision.withdrawn">
-                          <label class="form-check-label" for="withdrawn">Withdrawn</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="preEA" name="preEA"
-                            [(ngModel)]="filterForUI.eacDecision.preEA">
-                          <label class="form-check-label" for="preEA">Pre-EA Act Approval</label>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="certificateIssued" name="certificateIssued"
-                            [(ngModel)]="filterForUI.eacDecision.certificateIssued">
-                          <label class="form-check-label" for="certificateIssued">Certificate Issued</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="furtherAssessmentRequired" name="furtherAssessmentRequired"
-                            [(ngModel)]="filterForUI.eacDecision.furtherAssessmentRequired">
-                          <label class="form-check-label" for="furtherAssessmentRequired">Further Assessment Required</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="certificateExpired" name="certificateExpired"
-                            [(ngModel)]="filterForUI.eacDecision.certificateExpired">
-                          <label class="form-check-label" for="certificateExpired">Certificate Expired</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="terminated" name="terminated"
-                            [(ngModel)]="filterForUI.eacDecision.terminated">
-                          <label class="form-check-label" for="terminated">Terminated</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="notReviewable" name="notReviewable"
-                            [(ngModel)]="filterForUI.eacDecision.notReviewable">
-                          <label class="form-check-label" for="notReviewable">Not Designated Reviewable</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-12">
-                        <hr />
-                      </div>
-                    </div>
-                    <div>
-                      <div class="row date">
-                        <b>Decision Date</b>
-                      </div>
-                      <div class="row date-range">
-                        <div class="col-md-6">
-                          <div class="input-group">
-                            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDateStart"
-                              [(ngModel)]="filterForUI.decisionDateStart" ngbDatepicker
-                              #decisionDateStartPicker="ngbDatepicker">
-                            <div class="input-group-append">
-                              <button class="btn btn-outline-secondary calendar" (click)="decisionDateStartPicker.toggle()" type="button">
-                                <i class="material-icons">date_range</i>
-                              </button>
+                                            More Filters&hellip;<span
+                                                *ngIf="numFilters.more > 0 && !showFilters.more">&nbsp;({{ numFilters.more }})</span>
+                                        </button>
+                                        <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear
+                                            All</button>
+                                    </div>
+                                    <div
+                                        [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+                                        <button class="btn btn-secondary" type="button"
+                                            (click)="showAdvancedSearch = !showAdvancedSearch;">
+                                            <span *ngIf="showAdvancedSearch">Hide Advanced Search</span>
+                                            <span *ngIf="!showAdvancedSearch">Show Advanced Search</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div *ngIf="showAdvancedSearch && showFilters.type"
+                                    class="type-filters project-filter row">
+                                    <div class="col-md-6 filter-border">
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        id="energyElectricity" name="energyElectricity"
+                                                        [(ngModel)]="filterForUI.type.energyElectricity">
+                                                    <label class="form-check-label"
+                                                        for="energyElectricity">Energy-Electricity</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="foodProcessing" name="foodProcessing"
+                                                        [(ngModel)]="filterForUI.type.foodProcessing">
+                                                    <label class="form-check-label" for="foodProcessing">Food
+                                                        Processing</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="" id="mines"
+                                                        name="mines" [(ngModel)]="filterForUI.type.mines">
+                                                    <label class="form-check-label" for="mines">Mines</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="transportation" name="transportation"
+                                                        [(ngModel)]="filterForUI.type.transportation">
+                                                    <label class="form-check-label"
+                                                        for="transportation">Transportation</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="wasteDisposal" name="wasteDisposal"
+                                                        [(ngModel)]="filterForUI.type.wasteDisposal">
+                                                    <label class="form-check-label" for="wasteDisposal">Waste
+                                                        Disposal</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-7">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="energyPetroleum" name="energyPetroleum"
+                                                        [(ngModel)]="filterForUI.type.energyPetroleum">
+                                                    <label class="form-check-label"
+                                                        for="energyPetroleum">Energy-Petroleum &amp; Natural Gas</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="industrial" name="industrial"
+                                                        [(ngModel)]="filterForUI.type.industrial">
+                                                    <label class="form-check-label" for="industrial">Industrial</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="" id="other"
+                                                        name="other" [(ngModel)]="filterForUI.type.other">
+                                                    <label class="form-check-label" for="other">Other</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="tourist" name="tourist"
+                                                        [(ngModel)]="filterForUI.type.tourist">
+                                                    <label class="form-check-label" for="tourist">Tourist Destination
+                                                        Resorts</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="waterManagement" name="waterManagement"
+                                                        [(ngModel)]="filterForUI.type.waterManagement">
+                                                    <label class="form-check-label" for="waterManagement">Water
+                                                        Management</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="showAdvancedSearch && showFilters.eacDecision"
+                                    class="decision-filters project-filter row">
+                                    <div class="col-md-8 filter-border">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="inProgress" name="inProgress"
+                                                        [(ngModel)]="filterForUI.eacDecision.inProgress">
+                                                    <label class="form-check-label" for="inProgress">In Progress</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="certificateRefused" name="certificateRefused"
+                                                        [(ngModel)]="filterForUI.eacDecision.certificateRefused">
+                                                    <label class="form-check-label" for="certificateRefused">Certificate
+                                                        Refused</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="certificateNotRequired" name="certificateNotRequired"
+                                                        [(ngModel)]="filterForUI.eacDecision.certificateNotRequired">
+                                                    <label class="form-check-label"
+                                                        for="certificateNotRequired">Certificate Not Required</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="withdrawn" name="withdrawn"
+                                                        [(ngModel)]="filterForUI.eacDecision.withdrawn">
+                                                    <label class="form-check-label" for="withdrawn">Withdrawn</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="" id="preEA"
+                                                        name="preEA" [(ngModel)]="filterForUI.eacDecision.preEA">
+                                                    <label class="form-check-label" for="preEA">Pre-EA Act
+                                                        Approval</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="certificateIssued" name="certificateIssued"
+                                                        [(ngModel)]="filterForUI.eacDecision.certificateIssued">
+                                                    <label class="form-check-label" for="certificateIssued">Certificate
+                                                        Issued</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="furtherAssessmentRequired" name="furtherAssessmentRequired"
+                                                        [(ngModel)]="filterForUI.eacDecision.furtherAssessmentRequired">
+                                                    <label class="form-check-label"
+                                                        for="furtherAssessmentRequired">Further Assessment
+                                                        Required</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="certificateExpired" name="certificateExpired"
+                                                        [(ngModel)]="filterForUI.eacDecision.certificateExpired">
+                                                    <label class="form-check-label" for="certificateExpired">Certificate
+                                                        Expired</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="terminated" name="terminated"
+                                                        [(ngModel)]="filterForUI.eacDecision.terminated">
+                                                    <label class="form-check-label" for="terminated">Terminated</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="notReviewable" name="notReviewable"
+                                                        [(ngModel)]="filterForUI.eacDecision.notReviewable">
+                                                    <label class="form-check-label" for="notReviewable">Not Designated
+                                                        Reviewable</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <hr />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="row date">
+                                                <b>Decision Date</b>
+                                            </div>
+                                            <div class="row date-range">
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="yyyy-mm-dd"
+                                                            name="decisionDateStart"
+                                                            [(ngModel)]="filterForUI.decisionDateStart" ngbDatepicker
+                                                            #decisionDateStartPicker="ngbDatepicker">
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-outline-secondary calendar"
+                                                                (click)="decisionDateStartPicker.toggle()"
+                                                                type="button">
+                                                                <i class="material-icons">date_range</i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="yyyy-mm-dd"
+                                                            name="decisionDateEnd"
+                                                            [(ngModel)]="filterForUI.decisionDateEnd" ngbDatepicker
+                                                            #decisionDateEndPicker="ngbDatepicker">
+                                                        <div class="input-group-append">
+                                                            <button class="btn btn-outline-secondary calendar"
+                                                                (click)="decisionDateEndPicker.toggle()" type="button">
+                                                                <i class="material-icons">date_range</i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="showAdvancedSearch && showFilters.pcp"
+                                    class="pcp-filters project-filter row">
+                                    <div class="col-md-3 filter-border">
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value=""
+                                                        id="pending" name="pending"
+                                                        [(ngModel)]="filterForUI.pcp.pending">
+                                                    <label class="form-check-label" for="pending">Pending</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="" id="open"
+                                                        name="open" [(ngModel)]="filterForUI.pcp.open">
+                                                    <label class="form-check-label" for="open">Open</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="" id="closed"
+                                                        name="closed" [(ngModel)]="filterForUI.pcp.closed">
+                                                    <label class="form-check-label" for="closed">Closed</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="showAdvancedSearch && showFilters.more"
+                                    class="more-filters project-filter row">
+                                    <div class="col-md-11 filter-border">
+                                        <div class="row sub-filters">
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <b>Proponent</b>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="form-group">
+                                                        <tag-input id="proponent" name="proponent"
+                                                            [(ngModel)]="filterForUI.proponent" [identifyBy]="'_id'"
+                                                            [displayBy]="'name'" [onlyFromAutocomplete]="true"
+                                                            [onTextChangeDebounce]="250"
+                                                            [inputClass]="'tag-input-input'" [clearOnBlur]="true"
+                                                            [placeholder]="'Type Proponent Name'"
+                                                            [secondaryPlaceholder]="'Type Proponent Name'">
+                                                            <tag-input-dropdown [autocompleteItems]="proponents"
+                                                                [identifyBy]="'_id'" [displayBy]="'name'"
+                                                                [showDropdownIfEmpty]="true" [keepOpen]="false"
+                                                                [focusFirstElement]="true">
+                                                            </tag-input-dropdown>
+                                                        </tag-input>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <hr />
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <b>Region</b>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="form-group">
+                                                        <tag-input id="region" name="region"
+                                                            [(ngModel)]="filterForUI.region" [identifyBy]="'code'"
+                                                            [displayBy]="'name'" [onlyFromAutocomplete]="true"
+                                                            [onTextChangeDebounce]="250"
+                                                            [inputClass]="'tag-input-input'" [clearOnBlur]="true"
+                                                            [placeholder]="'Type Region Name'"
+                                                            [secondaryPlaceholder]="'Type Region Name'">
+                                                            <tag-input-dropdown [autocompleteItems]="regions"
+                                                                [identifyBy]="'code'" [displayBy]="'name'"
+                                                                [showDropdownIfEmpty]="true" [keepOpen]="false"
+                                                                [focusFirstElement]="true">
+                                                            </tag-input-dropdown>
+                                                        </tag-input>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <hr />
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <b>CEAA Involvement</b>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="form-group">
+                                                        <tag-input id="ceaaInvolvement" name="ceaaInvolvement"
+                                                            [(ngModel)]="filterForUI.CEAAInvolvement"
+                                                            [identifyBy]="'code'" [displayBy]="'name'"
+                                                            [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250"
+                                                            [inputClass]="'tag-input-input'" [clearOnBlur]="true"
+                                                            [placeholder]="'Type Involvement'"
+                                                            [secondaryPlaceholder]="'Type Involvement'">
+                                                            <tag-input-dropdown [autocompleteItems]="ceaaInvolvements"
+                                                                [identifyBy]="'code'" [displayBy]="'name'"
+                                                                [showDropdownIfEmpty]="true" [keepOpen]="false"
+                                                                [focusFirstElement]="true">
+                                                            </tag-input-dropdown>
+                                                        </tag-input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button *ngIf="showAdvancedSearch && isShowingFilter()"
+                                    class="btn btn-primary search-button" type="submit">
+                                    <span>Search</span>
+                                </button>
                             </div>
-                          </div>
                         </div>
-                        <div class="col-md-6">
-                          <div class="input-group">
-                            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDateEnd"
-                              [(ngModel)]="filterForUI.decisionDateEnd" ngbDatepicker
-                              #decisionDateEndPicker="ngbDatepicker">
-                            <div class="input-group-append">
-                              <button class="btn btn-outline-secondary calendar" (click)="decisionDateEndPicker.toggle()" type="button">
-                                <i class="material-icons">date_range</i>
-                              </button>
+                        <div>
+                            <div class="row align-items-end">
+                                <div class="col justify-content-start results ml-1 mb-1">
+                                    <p class="justify-content-start align-text-bottom" align="left"
+                                        *ngIf="!loading && tableParams.totalListItems === 0">
+                                        No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
+                                    </p>
+                                    <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
+                                        *ngIf="!loading && tableParams.totalListItems > 0">
+                                        {{tableParams.totalListItems}} result<span
+                                            *ngIf="tableParams.totalListItems != 1">s
+                                            found</span>
+                                    </div>
+                                </div>
+                                <div class="col mb-2">
+                                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                                        <p class="text-right m-2"><b>Items Per Page:</b></p>
+                                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
+                                            aria-label="Toolbar with button groups">
+                                            <div class="btn-group mr-2" role="group" aria-label="First group">
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=10; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 10"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
+                                                &nbsp;
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=25; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 25"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                                                &nbsp;
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=50; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 50"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                                                &nbsp;
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=100; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 100"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                                                &nbsp;
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                                                    All</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div *ngIf="showAdvancedSearch && showFilters.pcp" class="pcp-filters project-filter row">
-                  <div class="col-md-3 filter-border">
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="pending" name="pending"
-                            [(ngModel)]="filterForUI.pcp.pending">
-                          <label class="form-check-label" for="pending">Pending</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="open" name="open"
-                            [(ngModel)]="filterForUI.pcp.open">
-                          <label class="form-check-label" for="open">Open</label>
-                        </div>
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" value="" id="closed" name="closed"
-                            [(ngModel)]="filterForUI.pcp.closed">
-                          <label class="form-check-label" for="closed">Closed</label>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div *ngIf="showAdvancedSearch && showFilters.more" class="more-filters project-filter row">
-                  <div class="col-md-11 filter-border">
-                    <div class="row sub-filters">
-                      <div class="col-md-12">
-                        <div class="row">
-                          <b>Proponent</b>
-                        </div>
-                        <div class="row">
-                          <div class="form-group">
-                            <tag-input id="proponent" name="proponent"
-                              [(ngModel)]="filterForUI.proponent" [identifyBy]="'_id'" [displayBy]="'name'"
-                              [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                              [clearOnBlur]="true"
-                              [placeholder]="'Type Proponent Name'" [secondaryPlaceholder]="'Type Proponent Name'"
-                            >
-                              <tag-input-dropdown [autocompleteItems]="proponents" [identifyBy]="'_id'" [displayBy]="'name'"
-                                [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                              >
-                              </tag-input-dropdown>
-                            </tag-input>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-12">
-                            <hr />
-                          </div>
-                        </div>
-                        <div class="row">
-                          <b>Region</b>
-                        </div>
-                        <div class="row">
-                          <div class="form-group">
-                            <tag-input id="region" name="region"
-                              [(ngModel)]="filterForUI.region" [identifyBy]="'code'" [displayBy]="'name'"
-                              [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                              [clearOnBlur]="true"
-                              [placeholder]="'Type Region Name'" [secondaryPlaceholder]="'Type Region Name'"
-                            >
-                              <tag-input-dropdown [autocompleteItems]="regions" [identifyBy]="'code'" [displayBy]="'name'"
-                                [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                              >
-                              </tag-input-dropdown>
-                            </tag-input>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-12">
-                            <hr />
-                          </div>
-                        </div>
-                        <div class="row">
-                          <b>CEAA Involvement</b>
-                        </div>
-                        <div class="row">
-                          <div class="form-group">
-                            <tag-input id="ceaaInvolvement" name="ceaaInvolvement"
-                              [(ngModel)]="filterForUI.CEAAInvolvement" [identifyBy]="'code'" [displayBy]="'name'"
-                              [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                              [clearOnBlur]="true"
-                              [placeholder]="'Type Involvement'" [secondaryPlaceholder]="'Type Involvement'"
-                            >
-                              <tag-input-dropdown [autocompleteItems]="ceaaInvolvements" [identifyBy]="'code'" [displayBy]="'name'"
-                                [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                              >
-                              </tag-input-dropdown>
-                            </tag-input>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button *ngIf="showAdvancedSearch && isShowingFilter()" class="btn btn-primary search-button" type="submit">
-                  <span>Search</span>
-                </button>
-              </div>
-            </div>
-            <br>
-            <div class="results mt-1">
-              <p *ngIf="!loading && tableParams.totalListItems == 0">
-                No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
-              </p>
-              <div *ngIf="!loading && tableParams.totalListItems > 0">
-                {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
-              </div>
-            </div>
-          </form>
-          <br>
+                    </form>
 
-          <!-- <p>Total Projects: {{tableParams.totalListItems}}</p> -->
-          <div *ngIf="projects.length > 0">
-            <app-table-template
-              [columns]="projectTableColumns"
-              [data]="projectTableData"
-              (onColumnSort)='setColumnSort($event)'
-              (onPageNumUpdate)='getPaginatedProjects($event)'>
-            </app-table-template>
-          </div>
+                    <!-- <p>Total Projects: {{tableParams.totalListItems}}</p> -->
+                    <div *ngIf="projects.length > 0">
+                        <app-table-template [columns]="projectTableColumns" [data]="projectTableData"
+                            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='getPaginatedProjects($event)'>
+                        </app-table-template>
+                    </div>
+                    <div class="col mb-2">
+                        <div *ngIf="!loading && this.tableParams.pageSize > 50">
+                            <p class="text-right m-2"><b>Items Per Page:</b></p>
+                            <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
+                                aria-label="Toolbar with button groups">
+                                <div class="btn-group mr-2" role="group" aria-label="First group">
+                                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                        (click)="tableParams.pageSize=10; onSubmit();"
+                                        aria-pressed="tableParams.pageSize === 10"
+                                        [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                        (click)="tableParams.pageSize=25; onSubmit();"
+                                        aria-pressed="tableParams.pageSize === 25"
+                                        [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                        (click)="tableParams.pageSize=50; onSubmit();"
+                                        aria-pressed="tableParams.pageSize === 50"
+                                        [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                        (click)="tableParams.pageSize=100; onSubmit();"
+                                        aria-pressed="tableParams.pageSize === 100"
+                                        [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                                    &nbsp;
+                                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                        (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                        aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                                        [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                                        All</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
         </section>
-      </main>
-    </section>
-  </div>
+    </div>
 </div>
