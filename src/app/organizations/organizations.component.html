@@ -1,146 +1,208 @@
 <nav class="action-container" aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item active" aria-current="page">Organizations</li>
-  </ol>
-  <button type="button" class="btn btn-primary" (click)="addOrganization()">
-    <i class="material-icons">
-      add
-    </i>
-    Organization
-  </button>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Organizations</li>
+    </ol>
+    <button type="button" class="btn btn-primary" (click)="addOrganization()">
+        <i class="material-icons">
+            add
+        </i>
+        Organization
+    </button>
 </nav>
 
 <main class="container-fluid-padding">
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
-  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit(1)">
-    <div class="input-group main-search-field mb-2">
-      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-        id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
-      <div class="input-group-append">
-        <!-- prevent searching if input is empty or we're already searching -->
-        <button class="btn btn-primary" type="submit">
-          <span>Search</span>
-        </button>
-      </div>
+    <div class="spinner-container" *ngIf="loading">
+        <div class="spinner-new rotating"></div>
     </div>
-    <div class="mb-2">
-      <p *ngIf="tableParams.totalListItems == 0">
-        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
-      </p>
-      <div *ngIf="tableParams.totalListItems > 0">
-        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
-      </div>
-    </div>
-  </form>
+    <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit(1)">
+        <div class="input-group main-search-field mb-2">
+            <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+                id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+            <div class="input-group-append">
+                <!-- prevent searching if input is empty or we're already searching -->
+                <button class="btn btn-primary" type="submit">
+                    <span>Search</span>
+                </button>
+            </div>
+        </div>
+    </form>
 
-  <div class="mb-3">
-    <p><b>Organization Type Filters:</b></p>
-    <div class="btn-group">
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.indigenousGroup">
-          <input type="checkbox" (click)="orgTypeFilter.indigenousGroup = !orgTypeFilter.indigenousGroup; setFilter();"
-            [(ngModel)]="orgTypeFilter.indigenousGroup" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Indigenous Group
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.proponent">
-          <input type="checkbox" (click)="orgTypeFilter.proponent = !orgTypeFilter.proponent; setFilter();"
-            [(ngModel)]="orgTypeFilter.proponent" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Proponent/Certificate Holder
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.otherAgency">
-          <input type="checkbox" (click)="orgTypeFilter.otherAgency = !orgTypeFilter.otherAgency; setFilter();"
-            [(ngModel)]="orgTypeFilter.otherAgency" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Other Agency
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.localGovernment">
-          <input type="checkbox" (click)="orgTypeFilter.localGovernment = !orgTypeFilter.localGovernment; setFilter();"
-            [(ngModel)]="orgTypeFilter.localGovernment" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Local Government
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.municipality">
-          <input type="checkbox" (click)="orgTypeFilter.municipality = !orgTypeFilter.municipality; setFilter();"
-            [(ngModel)]="orgTypeFilter.municipality" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Municipality
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.consultant">
-          <input type="checkbox" (click)="orgTypeFilter.consultant = !orgTypeFilter.consultant; setFilter();"
-            [(ngModel)]="orgTypeFilter.consultant" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Consultant
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.otherGovernment">
-          <input type="checkbox" (click)="orgTypeFilter.otherGovernment = !orgTypeFilter.otherGovernment; setFilter();"
-            [(ngModel)]="orgTypeFilter.otherGovernment" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Other Government
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.communityGroup">
-          <input type="checkbox" (click)="orgTypeFilter.communityGroup = !orgTypeFilter.communityGroup; setFilter();"
-            [(ngModel)]="orgTypeFilter.communityGroup" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Community Group
-        </label>
-      </div>
-      &nbsp;
-      <div class="btn-group-toggle" data-toggle="buttons">
-        <label class="btn btn-primary" [class.active]="orgTypeFilter.other">
-          <input type="checkbox" (click)="orgTypeFilter.other = !orgTypeFilter.other; setFilter();"
-            [(ngModel)]="orgTypeFilter.other" autocomplete="off" [ngModelOptions]="{standalone: true}">
-          Other
-        </label>
-      </div>
+    <div class="mb-3">
+        <p><b>Organization Type Filters:</b></p>
+        <div class="btn-group">
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.indigenousGroup">
+                    <input type="checkbox"
+                        (click)="orgTypeFilter.indigenousGroup = !orgTypeFilter.indigenousGroup; setFilter();"
+                        [(ngModel)]="orgTypeFilter.indigenousGroup" autocomplete="off"
+                        [ngModelOptions]="{standalone: true}">
+                    Indigenous Group
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.proponent">
+                    <input type="checkbox" (click)="orgTypeFilter.proponent = !orgTypeFilter.proponent; setFilter();"
+                        [(ngModel)]="orgTypeFilter.proponent" autocomplete="off" [ngModelOptions]="{standalone: true}">
+                    Proponent/Certificate Holder
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.otherAgency">
+                    <input type="checkbox"
+                        (click)="orgTypeFilter.otherAgency = !orgTypeFilter.otherAgency; setFilter();"
+                        [(ngModel)]="orgTypeFilter.otherAgency" autocomplete="off"
+                        [ngModelOptions]="{standalone: true}">
+                    Other Agency
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.localGovernment">
+                    <input type="checkbox"
+                        (click)="orgTypeFilter.localGovernment = !orgTypeFilter.localGovernment; setFilter();"
+                        [(ngModel)]="orgTypeFilter.localGovernment" autocomplete="off"
+                        [ngModelOptions]="{standalone: true}">
+                    Local Government
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.municipality">
+                    <input type="checkbox"
+                        (click)="orgTypeFilter.municipality = !orgTypeFilter.municipality; setFilter();"
+                        [(ngModel)]="orgTypeFilter.municipality" autocomplete="off"
+                        [ngModelOptions]="{standalone: true}">
+                    Municipality
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.consultant">
+                    <input type="checkbox" (click)="orgTypeFilter.consultant = !orgTypeFilter.consultant; setFilter();"
+                        [(ngModel)]="orgTypeFilter.consultant" autocomplete="off" [ngModelOptions]="{standalone: true}">
+                    Consultant
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.otherGovernment">
+                    <input type="checkbox"
+                        (click)="orgTypeFilter.otherGovernment = !orgTypeFilter.otherGovernment; setFilter();"
+                        [(ngModel)]="orgTypeFilter.otherGovernment" autocomplete="off"
+                        [ngModelOptions]="{standalone: true}">
+                    Other Government
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.communityGroup">
+                    <input type="checkbox"
+                        (click)="orgTypeFilter.communityGroup = !orgTypeFilter.communityGroup; setFilter();"
+                        [(ngModel)]="orgTypeFilter.communityGroup" autocomplete="off"
+                        [ngModelOptions]="{standalone: true}">
+                    Community Group
+                </label>
+            </div>
+            &nbsp;
+            <div class="btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-primary" [class.active]="orgTypeFilter.other">
+                    <input type="checkbox" (click)="orgTypeFilter.other = !orgTypeFilter.other; setFilter();"
+                        [(ngModel)]="orgTypeFilter.other" autocomplete="off" [ngModelOptions]="{standalone: true}">
+                    Other
+                </label>
+            </div>
+        </div>
     </div>
-  </div>
-  <div *ngIf="!loading" class="mb-3">
-    <p><b>Items Per Page:</b></p>
-    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-      <div class="btn-group mr-2" role="group" aria-label="First group">
-        <a href="javascript:void(0);" role="button" class="btn btn-primary"
-          (click)="tableParams.pageSize=10; onSubmit();" aria-pressed="tableParams.pageSize === 10"
-          [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
-        &nbsp;
-        <a href="javascript:void(0);" role="button" class="btn btn-primary"
-          (click)="tableParams.pageSize=25; onSubmit();" aria-pressed="tableParams.pageSize === 25"
-          [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-        &nbsp;
-        <a href="javascript:void(0);" role="button" class="btn btn-primary"
-          (click)="tableParams.pageSize=50; onSubmit();" aria-pressed="tableParams.pageSize === 50"
-          [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-        &nbsp;
-        <a href="javascript:void(0);" role="button" class="btn btn-primary"
-          (click)="tableParams.pageSize=100; onSubmit();" aria-pressed="tableParams.pageSize === 100"
-          [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-      </div>
+    <div>
+        <div class="row align-items-end">
+            <div class="col justify-content-start results ml-1 mb-1">
+                <p class="justify-content-start align-text-bottom" align="left"
+                    *ngIf="!loading && tableParams.totalListItems === 0">
+                    No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
+                </p>
+                <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
+                    *ngIf="!loading && tableParams.totalListItems > 0">
+                    {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s
+                        found</span>
+                </div>
+            </div>
+            <div class="col mb-2">
+                <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                    <p class="text-right m-2"><b>Items Per Page:</b></p>
+                    <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
+                        aria-label="Toolbar with button groups">
+                        <div class="btn-group mr-2" role="group" aria-label="First group">
+                            <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                (click)="tableParams.pageSize=10; onSubmit();"
+                                aria-pressed="tableParams.pageSize === 10"
+                                [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
+                            &nbsp;
+                            <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                (click)="tableParams.pageSize=25; onSubmit();"
+                                aria-pressed="tableParams.pageSize === 25"
+                                [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                            &nbsp;
+                            <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                (click)="tableParams.pageSize=50; onSubmit();"
+                                aria-pressed="tableParams.pageSize === 50"
+                                [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                            &nbsp;
+                            <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                (click)="tableParams.pageSize=100; onSubmit();"
+                                aria-pressed="tableParams.pageSize === 100"
+                                [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                            &nbsp;
+                            <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                                [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                                All</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div *ngIf="tableParams.totalListItems > 0">
-    <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
-      [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-      (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
-    </app-table-template>
-  </div>
-  <div *ngIf="tableParams.totalListItems == 0">
-    There are no organizations.
-  </div>
+    <div *ngIf="tableParams.totalListItems > 0">
+        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+            [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+            (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
+        </app-table-template>
+    </div>
+    <div *ngIf="tableParams.totalListItems == 0">
+        There are no organizations.
+    </div>
+    <div class="col mb-2">
+        <div *ngIf="!loading && this.tableParams.pageSize > 50">
+            <p class="text-right m-2"><b>Items Per Page:</b></p>
+            <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="btn-group mr-2" role="group" aria-label="First group">
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=10; onSubmit();" aria-pressed="tableParams.pageSize === 10"
+                        [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=25; onSubmit();" aria-pressed="tableParams.pageSize === 25"
+                        [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=50; onSubmit();" aria-pressed="tableParams.pageSize === 50"
+                        [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=100; onSubmit();" aria-pressed="tableParams.pageSize === 100"
+                        [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                        aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                        [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                        All</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>

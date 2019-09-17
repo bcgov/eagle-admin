@@ -1,26 +1,27 @@
 <div class="action-container">
-  <ol aria-label="breadcrumb" class="breadcrumb">
-    <li class="breadcrumb-item active" aria-current="page">Activity Posts</li>
-  </ol>
-  <div class="dropdown">
-    <button (click)="selectAction('add')" class="btn btn-primary" type="button" id="button-d"><i
-        class="material-icons">add</i>Add Activity</button>
-  </div>
+    <ol aria-label="breadcrumb" class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">Activity Posts</li>
+    </ol>
+    <div class="dropdown">
+        <button (click)="selectAction('add')" class="btn btn-primary" type="button" id="button-d"><i
+                class="material-icons">add</i>Add Activity</button>
+    </div>
 </div>
 
 <main class="container-fluid-padding">
-  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
-    <p><b>Keyword Input:</b></p>
-    <div class="form-row">
-      <div class="form-group col-md-12">
-        <div class="input-group main-search-field">
-          <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-            id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+    <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
+        <p><b>Keyword Input:</b></p>
+        <div class="form-row">
+            <div class="form-group col-md-12">
+                <div class="input-group main-search-field">
+                    <input class="form-control" type="text" name="keywordInput"
+                        placeholder="Enter keywords to search..." id="keywordInput" [(ngModel)]="tableParams.keywords"
+                        autofocus />
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-    <!-- TODO: Implement Date Range Input -->
-    <!-- <p><b>Date Range Input:</b></p>
+        <!-- TODO: Implement Date Range Input -->
+        <!-- <p><b>Date Range Input:</b></p>
     <div class="form-row">
       <div class="form-group col-md-6">
         <div class="input-group">
@@ -45,51 +46,123 @@
         </div>
       </div>
     </div> -->
-    <p><b>Type Filters:</b></p>
-    <div class="form-row">
-      <div class="form-group col-md-8">
-        <div class="btn-group btn-group-toggle">
-          <div class="btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-primary" [class.active]="filterPublicCommentPeriod">
-              <input type="checkbox"
-                (click)="filterPublicCommentPeriod = !filterPublicCommentPeriod; toggleFilter('publicCommentPeriod');"
-                [(ngModel)]="filterPublicCommentPeriod" autocomplete="off" [ngModelOptions]="{standalone: true}">Public
-              Comment Period
-            </label>
-          </div>
-          &nbsp;
-          <div class="btn-group-toggle" data-toggle="buttons">
-            <label class="btn btn-primary" [class.active]="filterNews">
-              <input type="checkbox" (click)="filterNews = !filterNews; toggleFilter('news');" autocomplete="off"
-                [(ngModel)]="filterNews" [ngModelOptions]="{standalone: true}">News
-            </label>
-          </div>
+        <p class="mb-1"><b>Type Filters:</b></p>
+        <div class="form-row">
+            <div class="form-group col-md-8">
+                <div class="btn-group btn-group-toggle">
+                    <div class="btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-primary" [class.active]="filterPublicCommentPeriod">
+                            <input type="checkbox"
+                                (click)="filterPublicCommentPeriod = !filterPublicCommentPeriod; toggleFilter('publicCommentPeriod');"
+                                [(ngModel)]="filterPublicCommentPeriod" autocomplete="off"
+                                [ngModelOptions]="{standalone: true}">Public
+                            Comment Period
+                        </label>
+                    </div>
+                    &nbsp;
+                    <div class="btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-primary" [class.active]="filterNews">
+                            <input type="checkbox" (click)="filterNews = !filterNews; toggleFilter('news');"
+                                autocomplete="off" [(ngModel)]="filterNews" [ngModelOptions]="{standalone: true}">News
+                        </label>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+        <button class="btn btn-primary" type="submit">
+            <span>Search</span>
+        </button>
+        &nbsp;
+        <button class="btn btn-primary" (click)="onSubmit(1, true)" type="reset">
+            <span>Reset</span>
+        </button>
+        <div class="mb-0">
+            <div class="row align-items-end">
+                <div class="col justify-content-start results ml-1 mb-1">
+                    <p class="justify-content-start align-text-bottom" align="left"
+                        *ngIf="!loading && tableParams.totalListItems === 0">
+                        No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
+                    </p>
+                    <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
+                        *ngIf="!loading && tableParams.totalListItems > 0">
+                        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s
+                            found</span>
+                    </div>
+                </div>
+                <div class="col mb-2">
+                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                        <p class="text-right m-2"><b>Items Per Page:</b></p>
+                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
+                            aria-label="Toolbar with button groups">
+                            <div class="btn-group mr-2" role="group" aria-label="First group">
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                    (click)="tableParams.pageSize=10; onSubmit();"
+                                    aria-pressed="tableParams.pageSize === 10"
+                                    [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
+                                &nbsp;
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                    (click)="tableParams.pageSize=25; onSubmit();"
+                                    aria-pressed="tableParams.pageSize === 25"
+                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                                &nbsp;
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                    (click)="tableParams.pageSize=50; onSubmit();"
+                                    aria-pressed="tableParams.pageSize === 50"
+                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                                &nbsp;
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                    (click)="tableParams.pageSize=100; onSubmit();"
+                                    aria-pressed="tableParams.pageSize === 100"
+                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                                &nbsp;
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                                    All</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div *ngIf="tableParams.totalListItems > 0">
+        <app-table-template [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+            (onPageNumUpdate)='onSubmit($event)'>
+        </app-table-template>
     </div>
-    <button class="btn btn-primary" type="submit">
-      <span>Search</span>
-    </button>
-    &nbsp;
-    <button class="btn btn-primary" (click)="onSubmit(1, true)" type="reset">
-      <span>Reset</span>
-    </button>
-    <div class="results mt-1">
-      <p *ngIf="!loading && tableParams.totalListItems === 0">
-        No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
-      </p>
-      <div *ngIf="!loading && tableParams.totalListItems > 0">
-        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
-      </div>
+    <div *ngIf="tableParams.totalListItems === 0">
+        No Activities/Updates.
     </div>
-  </form>
-  <br>
-  <div *ngIf="tableParams.totalListItems > 0">
-    <app-table-template [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-      (onPageNumUpdate)='onSubmit($event)'>
-    </app-table-template>
-  </div>
-  <div *ngIf="tableParams.totalListItems === 0">
-    No Activities/Updates.
-  </div>
+    <div class="col mb-2">
+        <div *ngIf="!loading && this.tableParams.pageSize > 50">
+            <p class="text-right m-2"><b>Items Per Page:</b></p>
+            <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="btn-group mr-2" role="group" aria-label="First group">
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=10; onSubmit();" aria-pressed="tableParams.pageSize === 10"
+                        [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=25; onSubmit();" aria-pressed="tableParams.pageSize === 25"
+                        [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=50; onSubmit();" aria-pressed="tableParams.pageSize === 50"
+                        [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=100; onSubmit();" aria-pressed="tableParams.pageSize === 100"
+                        [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                    &nbsp;
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                        (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                        aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                        [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                        All</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>

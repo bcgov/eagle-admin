@@ -35,7 +35,7 @@ class ProjectFilterObject {
     public region: Array<string> = [],
     public CEAAInvolvement: Array<string> = [],
     public vc: Array<object> = []
-  ) { }
+  ) {}
 }
 
 @Component({
@@ -43,7 +43,6 @@ class ProjectFilterObject {
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.scss']
 })
-
 export class ProjectListComponent implements OnInit, OnDestroy {
   public projects: Array<Project> = [];
   public proponents: Array<Org> = [];
@@ -166,11 +165,23 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     { code: 'Screening', name: 'Screening' },
     { code: 'Screening - Confirmed', name: 'Screening - Confirmed' },
     { code: 'Substituted', name: 'Substituted' },
-    { code: 'Substituted (Provincial Lead)', name: 'Substituted (Provincial Lead)' },
+    {
+      code: 'Substituted (Provincial Lead)',
+      name: 'Substituted (Provincial Lead)'
+    },
     { code: 'Comprehensive Study', name: 'Comprehensive Study' },
-    { code: 'Comprehensive Study - Unconfirmed', name: 'Comprehensive Study - Unconfirmed' },
-    { code: 'Comprehensive Study - Confirmed', name: 'Comprehensive Study - Confirmed' },
-    { code: 'Comprehensive Study (Pre CEAA 2012)', name: 'Comprehensive Study (Pre CEAA 2012)' },
+    {
+      code: 'Comprehensive Study - Unconfirmed',
+      name: 'Comprehensive Study - Unconfirmed'
+    },
+    {
+      code: 'Comprehensive Study - Confirmed',
+      name: 'Comprehensive Study - Confirmed'
+    },
+    {
+      code: 'Comprehensive Study (Pre CEAA 2012)',
+      name: 'Comprehensive Study (Pre CEAA 2012)'
+    },
     { code: 'Comp Study', name: 'Comp Study' },
     { code: 'Comp Study - Unconfirmed', name: 'Comp Study - Unconfirmed' },
     { code: 'To be determined', name: 'To be determined' },
@@ -187,12 +198,13 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private storageService: StorageService,
     private _changeDetectionRef: ChangeDetectorRef
-  ) { }
+  ) {}
 
   ngOnInit() {
     // Fetch proponents and other collections
     // TODO: Put all of these into Lists
-    this.orgService.getByCompanyType('Proponent/Certificate Holder')
+    this.orgService
+      .getByCompanyType('Proponent/Certificate Holder')
       .switchMap((res: any) => {
         this.proponents = res || [];
 
@@ -208,11 +220,20 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
         this.updateCounts();
 
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, this.filterForURL);
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
+          params,
+          this.filterForURL
+        );
 
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+name';
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filterForURL, this.tableParams.keywords);
+          this.tableTemplateUtils.updateUrl(
+            this.tableParams.sortBy,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.filterForURL,
+            this.tableParams.keywords
+          );
         }
 
         return this.route.data;
@@ -221,7 +242,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res.projects[0].data) {
           if (res.projects[0].data.searchResults.length > 0) {
-            this.tableParams.totalListItems = res.projects[0].data.meta[0].searchResultsTotal;
+            this.tableParams.totalListItems =
+              res.projects[0].data.meta[0].searchResultsTotal;
             this.projects = res.projects[0].data.searchResults;
           } else {
             this.tableParams.totalListItems = 0;
@@ -279,7 +301,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = _.find(collection, [identifyBy, value]);
         if (record) {
           this.filterForUI[name].push(record);
           confirmedValues.push(value);
@@ -302,7 +324,11 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       this.filterForAPI[name] = params[name];
       // NGB Date
       const date = moment(params[name]).toDate();
-      this.filterForUI[name] = { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
+      this.filterForUI[name] = {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        day: date.getDate()
+      };
     }
   }
 
@@ -312,7 +338,12 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.paramsToCheckboxFilters(params, 'pcp', this.PCP_MAP);
 
     this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'code');
+    this.paramsToCollectionFilters(
+      params,
+      'CEAAInvolvement',
+      this.ceaaInvolvements,
+      'code'
+    );
     this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
     this.paramsToCollectionFilters(params, 'vc', null, '_id');
 
@@ -334,7 +365,9 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   collectionFilterToParams(params, name, identifyBy) {
     if (this.filterForUI[name].length) {
-      const values = this.filterForUI[name].map(record => { return record[identifyBy]; });
+      const values = this.filterForUI[name].map(record => {
+        return record[identifyBy];
+      });
       params[name] = values.join(',');
     }
   }
@@ -345,7 +378,11 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   dateFilterToParams(params, name) {
     if (this.isNGBDate(this.filterForUI[name])) {
-      const date = new Date(this.filterForUI[name].year, this.filterForUI[name].month - 1, this.filterForUI[name].day);
+      const date = new Date(
+        this.filterForUI[name].year,
+        this.filterForUI[name].month - 1,
+        this.filterForUI[name].day
+      );
       params[name] = moment(date).format('YYYY-MM-DD');
     }
   }
@@ -380,7 +417,9 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   isShowingFilter() {
-    return Object.keys(this.showFilters).some(key => { return this.showFilters[key]; });
+    return Object.keys(this.showFilters).some(key => {
+      return this.showFilters[key];
+    });
   }
 
   clearAll() {
@@ -399,11 +438,19 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   updateCount(name) {
-    const getCount = (n) => { return Object.keys(this.filterForUI[n]).filter(k => this.filterForUI[n][k]).length; };
+    const getCount = n => {
+      return Object.keys(this.filterForUI[n]).filter(
+        k => this.filterForUI[n][k]
+      ).length;
+    };
 
     let num = 0;
     if (name === 'more') {
-      num = getCount('region') + this.filterForUI.proponent.length + getCount('CEAAInvolvement') + this.filterForUI.vc.length;
+      num =
+        getCount('region') +
+        this.filterForUI.proponent.length +
+        getCount('CEAAInvolvement') +
+        this.filterForUI.vc.length;
     } else {
       num = getCount(name);
       if (name === 'eacDecision') {
@@ -425,17 +472,15 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     let projectList = [];
     if (this.projects && this.projects.length > 0) {
       this.projects.forEach(project => {
-        projectList.push(
-          {
-            _id: project._id,
-            name: project.name,
-            proponent: project.proponent,
-            type: project.type,
-            region: project.region,
-            currentPhaseName: project.currentPhaseName,
-            eacDecision: project.eacDecision
-          }
-        );
+        projectList.push({
+          _id: project._id,
+          name: project.name,
+          proponent: project.proponent,
+          type: project.type,
+          region: project.region,
+          currentPhaseName: project.currentPhaseName,
+          eacDecision: project.eacDecision
+        });
       });
       this.projectTableData = new TableObject(
         ProjectListTableRowsComponent,
@@ -444,7 +489,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       );
     }
   }
-
 
   setColumnSort(column) {
     if (this.tableParams.sortBy.charAt(0) === '+') {
@@ -460,25 +504,37 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     window.scrollTo(0, 0);
     this.loading = true;
 
-    this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
-
-    this.searchService.getSearchResults(
-      this.tableParams.keywords || '',
-      'Project',
-      null,
+    this.tableParams = this.tableTemplateUtils.updateTableParams(
+      this.tableParams,
       pageNumber,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      {},
-      true,
-      this.filterForAPI
-    )
+      this.tableParams.sortBy
+    );
+
+    this.searchService
+      .getSearchResults(
+        this.tableParams.keywords || '',
+        'Project',
+        null,
+        pageNumber,
+        this.tableParams.pageSize,
+        this.tableParams.sortBy,
+        {},
+        true,
+        this.filterForAPI
+      )
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res[0].data) {
-          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+          this.tableParams.totalListItems =
+            res[0].data.meta[0].searchResultsTotal;
           this.projects = res[0].data.searchResults;
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filterForURL, this.tableParams.keywords);
+          this.tableTemplateUtils.updateUrl(
+            this.tableParams.sortBy,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.filterForURL,
+            this.tableParams.keywords
+          );
           this.setRowData();
           this.loading = false;
           this._changeDetectionRef.detectChanges();
@@ -490,21 +546,22 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       });
   }
 
-  public onSubmit() {
+  public onSubmit(currentPage = 1) {
     // dismiss any open snackbar
     // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
 
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
+    this.loading = true;
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = 1;
+    params['currentPage'] = this.tableParams.currentPage = currentPage;
     params['sortBy'] = this.tableParams.sortBy = '';
     params['keywords'] = this.tableParams.keywords;
-    params['pageSize'] = this.tableParams.pageSize = 10;
+    params['pageSize'] = this.tableParams.pageSize;
 
     this.setParamsFromFilters(params);
 
