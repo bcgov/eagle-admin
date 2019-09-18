@@ -6,7 +6,7 @@
         Project Details
       </a>
       <a [ngClass]="{'active': currentMenu === 'comment-periods'}" class="project-menu" [routerLink]="['p', currentProjectId, 'comment-periods']"><i class="material-icons">comment</i>Comment Periods</a>
-      <!-- <a [ngClass]="{'active': currentMenu === 'compliance'}" class="project-menu" [routerLink]="['p', currentProjectId, 'compliance']"><i class="material-icons">event_note</i>Compliance</a> -->
+      <a *ngIf="isInspectorRole" [ngClass]="{'active': currentMenu === 'compliance'}" class="project-menu" [routerLink]="['p', currentProjectId, 'compliance']"><i class="material-icons">event_note</i>Compliance</a>
       <a [ngClass]="{'active': currentMenu === 'project-documents'}" class="project-menu" (click)="goToDocuments(currentProjectId)" [routerLink]="['p', currentProjectId, 'project-documents']"><i class="material-icons">event_note</i>Documents</a>
       <a [ngClass]="{'active': currentMenu === 'project-groups'}" class="project-menu" [routerLink]="['p', currentProjectId, 'project-groups']"><i class="material-icons">person</i>Project Groups</a>
       <a [ngClass]="{'active': currentMenu === 'project-updates'}" class="project-menu" [routerLink]="['p', currentProjectId, 'project-updates']"><i class="material-icons">fiber_new</i>Project Updates</a>
