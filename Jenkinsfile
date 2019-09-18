@@ -161,8 +161,8 @@ def nodejsSonarqube () {
                 echo "Scan Failed"
 
                 notifyRocketChat(
-                  "@all The latest build of eagle-admin seems to be broken. \n Error: \n Sonarqube scan failed",
-                  ROCKET_QA_WEBHOOK
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Sonarqube scan failed",
+                  ROCKET_DEPLOY_WEBHOOK
                 )
 
                 currentBuild.result = 'FAILURE'
@@ -173,8 +173,8 @@ def nodejsSonarqube () {
 
             } catch (error) {
               notifyRocketChat(
-                "@all The latest build of eagle-admin seems to be broken. \n Error: \n ${error}",
-                ROCKET_QA_WEBHOOK
+                "@all The latest build of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error.message}",
+                ROCKET_DEPLOY_WEBHOOK
               )
               throw error
             } finally {
@@ -229,7 +229,7 @@ pipeline {
                 echo ">> IMAGE_HASH: ${IMAGE_HASH}"
               } catch (error) {
                 notifyRocketChat(
-                  "@all The latest build of eagle-admin seems to be broken. \n Error: \n ${error}",
+                  "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
                   ROCKET_QA_WEBHOOK
                 )
                 throw error
@@ -279,17 +279,17 @@ pipeline {
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
-              "@all A new version of eagle-admin is now in Dev. \n Changes: \n ${CHANGELOG}",
+              "A new version of eagle-admin is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
               ROCKET_DEPLOY_WEBHOOK
             )
 
             notifyRocketChat(
-              "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
+              "A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
               ROCKET_QA_WEBHOOK
             )
           } catch (error) {
             notifyRocketChat(
-              "@all The latest deployment of eagle-admin to Dev seems to have failed\n'${error.message}'",
+              "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-public, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
