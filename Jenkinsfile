@@ -284,7 +284,7 @@ pipeline {
             )
 
             notifyRocketChat(
-              "A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
+              "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
               ROCKET_QA_WEBHOOK
             )
           } catch (error) {
