@@ -279,7 +279,7 @@ pipeline {
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
-              "A new version of eagle-admin is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+              "A new version of eagle-admin is now in Dev \n Changes: \n ${CHANGELOG}",
               ROCKET_DEPLOY_WEBHOOK
             )
 
@@ -289,7 +289,7 @@ pipeline {
             )
           } catch (error) {
             notifyRocketChat(
-              "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-public, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
