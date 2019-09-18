@@ -12,7 +12,7 @@ import { CommentPeriodsComponent } from './comment-periods/comment-periods.compo
 import { CommentPeriodsResolver } from './comment-periods/comment-periods-resolver.services';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
-import { ComplianceDetailComponent } from './compliance/detail/detail.component';
+import { InspectionDetailComponent } from './compliance/inspection-detail/inspection-detail.component';
 import { DocumentEditComponent } from './project-documents/document-edit/document-edit.component';
 import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectComponent } from './project.component';
@@ -27,7 +27,7 @@ import { ValuedComponentsComponent } from './valued-components/valued-components
 import { AddDocumentsResolver } from './comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
 import { CommentPeriodResolver } from './comment-period/comment-period-resolver.service';
 import { DocumentDetailResolver } from './project-documents/detail/document-detail-resolver.service';
-import { ComplianceDetailResolver } from './compliance/detail/compliance-detail-resolver.service';
+import { InspectionDetailResolver } from './compliance/inspection-detail/inspection-detail-resolver.service';
 import { DocumentsResolver } from './project-documents/project-document-resolver.services';
 import { ComplianceResolver } from './compliance/compliance-resolver.service';
 import { ProjectResolver } from './project-resolver.service';
@@ -47,6 +47,8 @@ import { ProjectContactsGroupResolver } from './project-groups/project-contact-g
 import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
 import { LinkOrganizationResolver } from 'app/shared/components/link-organization/link-organization-resolver.services';
 import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
+import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
+import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 
 const routes: Routes = [
   {
@@ -122,11 +124,28 @@ const routes: Routes = [
         }
       },
       {
-        path: 'compliance/detail/:docId',
-        component: ComplianceDetailComponent,
+        path: 'compliance/i/:inspectionId',
         resolve: {
-          compliance: ComplianceDetailResolver
-        }
+          compliance: InspectionDetailResolver
+        },
+        children: [
+          {
+            path: '',
+            redirectTo: 'inspection-details',
+            pathMatch: 'full'
+          },
+          {
+            path: 'inspection-details',
+            component: InspectionDetailComponent
+          },
+          {
+            path: 's/:submissionId',
+            component: SubmissionDetailComponent,
+            resolve: {
+              submission: SubmissionDetailResolver
+            }
+          }
+        ]
       },
       {
         path: 'valued-components',
@@ -275,14 +294,15 @@ const routes: Routes = [
     DocumentsResolver,
     ComplianceResolver,
     ProjectUpdatesResolver,
-    ComplianceDetailResolver,
+    InspectionDetailResolver,
     TopicResolver,
     ProjectResolver,
     ReviewCommentResolver,
     ValuedComponentsResolver,
     PinsComponentResolver,
     ProjectContactsResolver,
-    LinkOrganizationResolver
+    LinkOrganizationResolver,
+    SubmissionDetailResolver
   ]
 })
 

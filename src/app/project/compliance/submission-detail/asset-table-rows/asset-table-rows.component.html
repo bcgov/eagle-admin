@@ -1,0 +1,12 @@
+<tr
+  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+  <td scope="row" class="col-4" data-label="Assets" (click)="goToItem(item)">
+    <i class="material-icons">{{item.icon}}</i>
+  </td>
+  <td scope="row" class="col-4" data-label="Caption" (click)="goToItem(item)">
+    {{item.caption}}
+  </td>
+  <td scope="row" class="col-4" data-label="GPS Coordinates" (click)="goToItem(item)">
+    {{item.geo.latitude}}, {{item.geo.longitude}}
+  </td>
+</tr>

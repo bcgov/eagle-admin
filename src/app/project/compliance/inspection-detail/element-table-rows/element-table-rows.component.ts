@@ -6,12 +6,12 @@ import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 
 @Component({
-  selector: 'tbody[app-compliance-table-rows]',
-  templateUrl: './compliance-table-rows.component.html',
-  styleUrls: ['./compliance-table-rows.component.scss']
+  selector: 'tbody[app-element-table-rows]',
+  templateUrl: './element-table-rows.component.html',
+  styleUrls: ['./element-table-rows.component.scss']
 })
 
-export class ComplianceTableRowsComponent implements OnInit, TableComponent {
+export class ElementTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
@@ -19,13 +19,14 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   public paginationData: any;
 
   constructor(
-    private router: Router,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;
+
   }
 
   selectItem(item) {
@@ -45,7 +46,6 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   }
 
   goToItem(item) {
-    this.storageService.state.selectedInspection = item;
-    this.router.navigate(['p', item.project._id, 'compliance', 'i', item._id, 'inspection-details']);
+    this.router.navigate(['p', this.storageService.state.currentProject.data._id, 'compliance', 'i', this.storageService.state.selectedInspection._id, 's', item._id]);
   }
 }

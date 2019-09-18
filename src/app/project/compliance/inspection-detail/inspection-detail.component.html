@@ -1,0 +1,47 @@
+<nav class="action-container">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a [routerLink]="['/projects']">All Projects</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id, 'compliance']">Compliance</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Inspection Details</li>
+  </ol>
+</nav>
+<main class="container-fluid-padding" *ngIf="compliance">
+  <h1>
+    <div class="row">
+      <div>Inspection Details</div>
+    </div>
+  </h1>
+  <section>
+    <div class="row">
+      <div class="col-6">
+        <label class="btn btn-outline-primary mb-4">{{compliance.startDate | date}} - {{compliance.endDate | date}}</label>
+        <div class="label-pair">
+          <h3 for="displayName">Inspection #: </h3>
+          <p id="displayName">{{compliance.case || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="email">Inspector Email: </h3>
+          <p id="email">{{compliance.email}}</p>
+        </div>
+      </div>
+      <div class="col-6 text-right">
+        <button type="button" class="btn btn-primary" disabled (click)="download()">Download Inspection</button>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div *ngIf="elements.length > 0" class="label-pair">
+      <h3 for="tags">Inspection Submissions: </h3>
+      <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+        [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+        (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+      </app-table-template>
+    </div>
+  </section>
+</main>

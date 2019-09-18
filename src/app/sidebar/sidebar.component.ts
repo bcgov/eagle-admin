@@ -52,9 +52,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     urlArray.shift();
     if (urlArray[0] === 'p') {
       switch (urlArray[2]) {
-        case 'compliance': {
-          break;
-        }
+        // case 'compliance': {
+        //   break;
+        // }
         case 'valued-components': {
           break;
         }

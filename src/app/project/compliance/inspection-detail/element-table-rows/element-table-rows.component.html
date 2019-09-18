@@ -1,0 +1,13 @@
+<tr
+  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+  <td scope="row" class="col-3" data-label="Submission Title" (click)="goToItem(item)">
+    {{item.title}}</td>
+  <td scope="row" class="col-4" data-label="Requirements" (click)="goToItem(item)">
+    {{item.requirement}}</td>
+  <td scope="row" class="col-4" data-label="Description" (click)="goToItem(item)">
+    {{item.description}}
+  </td>
+  <td scope="row" class="col-1" data-label="Assets" (click)="goToItem(item)">
+    -
+  </td>
+</tr>
