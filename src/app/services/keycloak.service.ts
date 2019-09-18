@@ -160,6 +160,13 @@ export class KeycloakService {
     return this.keycloakAuth.token;
   }
 
+  getUserRoles() {
+    const jwt = new JwtUtil().decodeToken(this.keycloakAuth.token);
+    if (jwt) {
+      return jwt.realm_access.roles;
+    }
+  }
+
   /**
    * Returns an observable that emits when the auth token has been refreshed.
    * Call {@link KeycloakService#getToken} to fetch the updated token.

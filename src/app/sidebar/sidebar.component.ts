@@ -5,6 +5,7 @@ import { SideBarService } from 'app/services/sidebar.service';
 import { filter } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
 import { Subject } from 'rxjs/Subject';
+import { KeycloakService } from 'app/services/keycloak.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -17,6 +18,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   public isNavMenuOpen = false;
   public routerSnapshot = null;
+  public isInspectorRole = false;
   public showProjectDetails = false;
   public showProjectDetailsSubItems = false;
   public currentProjectId = '';
@@ -27,6 +29,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   constructor(private router: Router,
     private storageService: StorageService,
+    private keycloakService: KeycloakService,
     private sideBarService: SideBarService) {
 
     router.events.pipe(
@@ -44,6 +47,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
       .subscribe(isOpen => {
         this.isOpen = isOpen;
       });
+
+    const roles = this.keycloakService.getUserRoles();
+    if (roles.includes('inspector')) {
+      this.isInspectorRole = true;
+    }
   }
 
   SetActiveSidebarItem() {
