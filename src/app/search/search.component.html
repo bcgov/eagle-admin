@@ -33,7 +33,7 @@
             </button>
           </div>
         </div>
-        <div *ngIf="!loading" class="advanced-search">
+        <div hidden *ngIf="!loading" class="advanced-search">
           <div *ngIf="terms.dataset === 'Project'" class="row">
             <div *ngIf="showAdvancedSearch" class="col-md-9">
               <button type="button" (click)="toggleFilter('projectType');"
