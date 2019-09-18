@@ -3,29 +3,47 @@ import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { StorageService } from 'app/services/storage.service';
 
 @Component({
-  selector: 'tbody[app-compliance-table-rows]',
-  templateUrl: './compliance-table-rows.component.html',
-  styleUrls: ['./compliance-table-rows.component.scss']
+  selector: 'tbody[app-asset-table-rows]',
+  templateUrl: './asset-table-rows.component.html',
+  styleUrls: ['./asset-table-rows.component.scss']
 })
 
-export class ComplianceTableRowsComponent implements OnInit, TableComponent {
+export class AssetTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public items: any;
   public paginationData: any;
+  public icon: any;
 
   constructor(
-    private router: Router,
-    private storageService: StorageService
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.items.map(item => {
+      this.getAssetIcon(item);
+    });
+  }
+
+  getAssetIcon(item) {
+    switch (item.internalMime) {
+      case 'image/jpeg':
+        item['icon'] = 'photo';
+        break;
+      case 'video/mp4':
+        item['icon'] = 'videocam';
+        break;
+      case 'audio/mpeg':
+        item['icon'] = 'mic';
+        break;
+      default:
+        item['icon'] = 'insert_drive_file';
+    }
   }
 
   selectItem(item) {
@@ -45,7 +63,6 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   }
 
   goToItem(item) {
-    this.storageService.state.selectedInspection = item;
-    this.router.navigate(['p', item.project._id, 'compliance', 'i', item._id, 'inspection-details']);
+    this.router.navigate(['p', item.project._id, 'compliance', 'detail', item._id]);
   }
 }

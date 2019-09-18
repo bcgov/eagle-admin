@@ -1,57 +1,52 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute, ParamMap, Params } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Compliance } from 'app/models/compliance';
 import { Project } from 'app/models/project';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
-import { DocumentService } from 'app/services/document.service';
 import { MatSnackBar } from '@angular/material';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { ComplianceTableRowsComponent } from '../compliance-table-rows/compliance-table-rows.component';
+import { AssetTableRowsComponent } from './asset-table-rows/asset-table-rows.component';
 
 @Component({
-  selector: 'app-compliance-detail',
-  templateUrl: './detail.component.html',
-  styleUrls: ['./detail.component.scss']
+  selector: 'app-submission-detail-detail',
+  templateUrl: './submission-detail.component.html',
+  styleUrls: ['./submission-detail.component.scss']
 })
-export class ComplianceDetailComponent implements OnInit, OnDestroy {
+export class SubmissionDetailComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public document: Compliance = null;
+  public compliance: Compliance = null;
+  public submission: any = null;
+  public assets = [];
   public currentProject: Project = null;
-  public compliances: Compliance[] = null;
   public publishText: string;
   public loading = true;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public tableColumns: any[] = [
+    // TODO: this needs to be replaced with an icon.
     {
-      name: 'Title',
-      value: 'title',
-      width: 'col-2'
-    },
-    {
-      name: 'Requirement',
-      value: 'requirement',
-      width: 'col-3'
-    },
-    {
-      name: 'Description',
-      value: 'startDate',
+      name: 'Assets',
+      value: 'internalExt',
       width: 'col-4'
     },
     {
-      name: 'Assets',
-      value: 'endDate',
-      width: 'col-1'
+      name: 'Caption',
+      value: 'caption',
+      width: 'col-4'
     },
     {
-      name: 'Date Submitted',
-      value: 'actions',
-      width: 'col-2',
-      nosort: true
-    }
+      name: 'GPS Coordinates',
+      value: 'geo',
+      width: 'col-4'
+    },
+    // {
+    //   name: 'Date Submitted',
+    //   value: '',
+    //   width: 'col-3'
+    // }
   ];
   constructor(
     private route: ActivatedRoute,
@@ -60,48 +55,38 @@ export class ComplianceDetailComponent implements OnInit, OnDestroy {
     private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
     private snackBar: MatSnackBar,
-    private documentService: DocumentService,
   ) {
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
 
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.document = res.compliance.data;
-        console.log('this.document:', this.document);
+        this.compliance = res.compliance.data;
+        this.submission = res.submission.data;
+
+        this.assets = this.submission.items;
+        this.tableParams.totalListItems = this.assets.length;
+        this.tableParams.currentPage = 1;
+        this.tableParams.pageSize = 100000;
+        this.setRowData();
+        this.loading = false;
+        this._changeDetectionRef.detectChanges();
       });
   }
 
   setRowData() {
-    let documentList = [];
-    if (this.compliances && this.compliances.length > 0) {
-      this.compliances.forEach(item => {
-        documentList.push(
-          {
-            _id: item._id,
-            name: item.name,
-            startDate: item.startDate,
-            endDate: item.endDate,
-            project: item.project,
-            email: item.email,
-            case: item.case,
-            label: item.label,
-            elements: item.elements
-          }
-        );
-      });
+    if (this.assets && this.assets.length > 0) {
       this.tableData = new TableObject(
-        ComplianceTableRowsComponent,
-        documentList,
+        AssetTableRowsComponent,
+        this.assets,
         this.tableParams
       );
     }
   }
-  download(item) {
-    // console.log('Package Download?:', item);
+  download() {
   }
 
   public openSnackBar(message: string, action: string) {

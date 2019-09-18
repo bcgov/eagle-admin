@@ -17,7 +17,7 @@ import { CommentPeriodsComponent } from './comment-periods/comment-periods.compo
 import { CommentPeriodsTableRowsComponent } from './comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
-import { ComplianceDetailComponent } from './compliance/detail/detail.component';
+import { InspectionDetailComponent } from './compliance/inspection-detail/inspection-detail.component';
 import { DocumentTableRowsComponent } from './project-documents/project-document-table-rows/project-document-table-rows.component';
 import { ComplianceTableRowsComponent } from './compliance/compliance-table-rows/compliance-table-rows.component';
 import { IndigenousNationsComponent } from './indigenous-nations/indigenous-nations.component';
@@ -52,6 +52,9 @@ import { PinsListComponent } from './pins-list/pins-list.component';
 import { GroupsTableRowsComponent } from './project-groups/project-groups-table-rows/project-groups-table-rows.component';
 import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
 import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
+import { ElementTableRowsComponent } from './compliance/inspection-detail/element-table-rows/element-table-rows.component';
+import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
+import { AssetTableRowsComponent } from './compliance/submission-detail/asset-table-rows/asset-table-rows.component';
 
 @NgModule({
   imports: [
@@ -67,6 +70,7 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
     SharedModule
   ],
   declarations: [
+    AssetTableRowsComponent,
     AddCommentComponent,
     AddDocumentComponent,
     AddDocumentTableRowsComponent,
@@ -79,11 +83,12 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
     CommentPeriodsComponent,
     CommentPeriodsTableRowsComponent,
     ComplianceComponent,
+    InspectionDetailComponent,
+    ComplianceTableRowsComponent,
     DocumentDetailComponent,
-    ComplianceDetailComponent,
     DocumentEditComponent,
     DocumentTableRowsComponent,
-    ComplianceTableRowsComponent,
+    ElementTableRowsComponent,
     GetValuedComponentsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactComponent,
@@ -99,18 +104,21 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
     ReviewCommentComponent,
     ReviewCommentsTabComponent,
     ReviewCommentsTabTableRowsComponent,
+    SubmissionDetailComponent,
     TopicTableRowsComponent,
     UploadComponent,
     ValuedComponentsComponent,
     ValuedComponentTableRowsComponent
   ],
   entryComponents: [
+    AssetTableRowsComponent,
     AddDocumentTableRowsComponent,
     CommentPeriodComponent,
     CommentPeriodsComponent,
     CommentPeriodsTableRowsComponent,
-    DocumentTableRowsComponent,
     ComplianceTableRowsComponent,
+    DocumentTableRowsComponent,
+    ElementTableRowsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,
