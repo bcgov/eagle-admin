@@ -395,23 +395,10 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
-
-    this.searchService.getSearchResults(null,
-      'User',
-      null,
-      pageNumber,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      {})
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.users = res[0].data.searchResults;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, null || '');
-        this.setRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+    this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, null || '');
+    this.setRowData();
+    this.loading = false;
+    this._changeDetectionRef.detectChanges();
   }
 
   async saveName() {
