@@ -154,7 +154,7 @@
     </div>
     <div class="form-row">
       <div class="form-group col-md-6">
-        <label for="inputAddDate"><b>Date Added*</b></label>
+        <label for="inputAddDate"><b>Date Submitted*</b></label>
         <div class="input-group">
           <input required id="inputAddDate" container='body' type="text" class="form-control"
             placeholder="Select an add date" name="dateAdded" formControlName="dateAdded" ngbDatepicker
@@ -165,10 +165,10 @@
         </div>
       </div>
       <div class="form-group col-md-6">
-        <label for="inputPostDate"><b>Date Posted*</b></label>
+        <label for="inputPostDate"><b>Date Published</b></label>
         <div class="input-group">
           <input required id="inputPostDate" container='body' type="text" class="form-control"
-            placeholder="Select a post date" name="datePosted" formControlName="datePosted" ngbDatepicker
+            placeholder="Not Published" name="datePosted" formControlName="datePosted" ngbDatepicker
             #postDatePicker="ngbDatepicker">
           <div class="input-group-append">
             <button class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()" type="button"></button>

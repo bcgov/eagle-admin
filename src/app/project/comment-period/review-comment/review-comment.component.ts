@@ -96,9 +96,9 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
     });
 
     this.setEaoStatus(this.comment.eaoStatus);
-
+    this.commentReviewForm.controls.datePosted.setValue(
+      this.comment.datePosted ? this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);
     this.commentReviewForm.controls.dateAdded.setValue(this.utils.convertJSDateToNGBDate(new Date(this.comment.dateAdded)));
-    this.commentReviewForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)));
     this.commentReviewForm.controls.deferralNotesText.setValue(this.comment.eaoNotes);
     this.commentReviewForm.controls.isNamePublic.setValue(!this.comment.isAnonymous);
     this.commentReviewForm.controls.proponentResponseText.setValue(this.comment.proponentNotes);
@@ -112,12 +112,12 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
     this.comment.isAnonymous = !this.commentReviewForm.get('isNamePublic').value;
 
     this.comment.dateAdded = this.utils.convertFormGroupNGBDateToJSDate(this.commentReviewForm.get('dateAdded').value);
-    this.comment.datePosted = this.utils.convertFormGroupNGBDateToJSDate(this.commentReviewForm.get('datePosted').value);
 
     // TODO: Validation
     if (this.commentReviewForm.get('isPublished').value) {
       this.comment.publishedNotes = this.commentReviewForm.get('publishedNotesText').value;
       this.comment.eaoStatus = 'Published';
+      this.comment.datePosted = new Date();
     } else if (this.commentReviewForm.get('isDeferred').value) {
       this.comment.eaoNotes = this.commentReviewForm.get('deferralNotesText').value;
       this.comment.eaoStatus = 'Deferred';

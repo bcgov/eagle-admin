@@ -71,7 +71,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       'authorText': new FormControl(),
       'commentText': new FormControl(),
       'dateAdded': new FormControl(),
-      'datePosted': new FormControl(),
+      'datePosted': new FormControl({ value: '', disabled: true }),
       'deferralNotesText': new FormControl(),
       'isNamePublic': new FormControl(),
       'isDeferred': new FormControl(),
@@ -84,8 +84,8 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     });
     this.addCommentForm.controls.isNamePublic.setValue(false);
     this.addCommentForm.controls.dateAdded.setValue(this.utils.convertJSDateToNGBDate(new Date()));
-    this.addCommentForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date()));
-  }
+    this.addCommentForm.controls.datePosted.setValue(
+      this.comment.datePosted ? this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);  }
 
   public onSubmit() {
     this.loading = true;
@@ -93,7 +93,6 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.comment.author = this.addCommentForm.get('authorText').value;
     this.comment.comment = this.addCommentForm.get('commentText').value;
     this.comment.dateAdded = this.utils.convertFormGroupNGBDateToJSDate(this.addCommentForm.get('dateAdded').value);
-    this.comment.datePosted = this.utils.convertFormGroupNGBDateToJSDate(this.addCommentForm.get('datePosted').value);
     this.comment.isAnonymous = !this.addCommentForm.get('isNamePublic').value;
     this.comment.location = this.addCommentForm.get('locationText').value;
 
@@ -101,6 +100,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     if (this.addCommentForm.get('isPublished').value) {
       this.comment.publishedNotes = this.addCommentForm.get('publishedNotesText').value;
       this.comment.eaoStatus = 'Published';
+      this.comment.datePosted = new Date();
     } else if (this.addCommentForm.get('isDeferred').value) {
       this.comment.eaoNotes = this.addCommentForm.get('deferralNotesText').value;
       this.comment.eaoStatus = 'Deferred';
