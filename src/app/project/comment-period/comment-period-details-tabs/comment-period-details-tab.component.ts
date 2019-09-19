@@ -25,6 +25,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   public commentPeriodPublishedStatus: string;
   public publishAction: string;
   public projectId: string;
+  public projectName: string;
   public loading = true;
   public commentPeriodDocs = [];
   public canDeleteCommentPeriod = false;
@@ -41,6 +42,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.setPublishStatus();
     this.projectId = this.storageService.state.currentProject.data._id;
+    this.projectName = this.storageService.state.currentProject.data.name;
 
     if (this.commentPeriod.relatedDocuments.length > 0) {
       this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
@@ -128,12 +130,12 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   public exportCommentsForStaff() {
     // Export comments with fields relevant to staff to CSV
     this.openSnackBar('Download Initiated', 'Close');
-    this.api.exportComments(this.commentPeriod._id, 'staff');
+    this.api.exportComments(this.commentPeriod._id, this.projectName, 'staff');
   }
   public   exportCommentsForProponents() {
     // Export comments with fields relevant to proponents to CSV
     this.openSnackBar('Download Initiated', 'Close');
-    this.api.exportComments(this.commentPeriod._id, 'proponent');
+    this.api.exportComments(this.commentPeriod._id, this.projectName, 'proponent');
   }
 
   public downloadDocument(document) {
