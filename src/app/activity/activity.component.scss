@@ -303,3 +303,20 @@ $cl-arrow-font-color: #fff;
   border-radius: 5px;
   font-size: .8rem;
 }
+
+.btn-group-pagination > .btn {
+    margin-bottom: 0;
+    background: none;
+    color: #13477b;
+    border: 1px solid #858b99;
+    font-weight: 600;
+
+    &:hover {
+      background: #fcb118;
+    }
+
+    &.active {
+        background: #235383;
+        color: #fff;
+    }
+  }
