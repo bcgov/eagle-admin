@@ -35,30 +35,25 @@
                 </div>
                 <div class="col mb-2">
                     <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <p class="text-right m-2"><b>Items Per Page:</b></p>
+                        <p class="text-right m-2"><b>Show Items Per Page:</b></p>
                         <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
                             aria-label="Toolbar with button groups">
-                            <div class="btn-group mr-2" role="group" aria-label="First group">
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                                    (click)="tableParams.pageSize=10; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 10"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
-                                &nbsp;
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
                                     (click)="tableParams.pageSize=25; onSubmit();"
                                     aria-pressed="tableParams.pageSize === 25"
                                     [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                                &nbsp;
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                <!-- &nbsp; -->
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
                                     (click)="tableParams.pageSize=50; onSubmit();"
                                     aria-pressed="tableParams.pageSize === 50"
                                     [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                                &nbsp;
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                <!-- &nbsp; -->
+                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
                                     (click)="tableParams.pageSize=100; onSubmit();"
                                     aria-pressed="tableParams.pageSize === 100"
                                     [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                                &nbsp;
+                                <!-- &nbsp; -->
                                 <a href="javascript:void(0);" role="button" class="btn btn-primary"
                                     (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
                                     aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
@@ -81,26 +76,19 @@
         There are no contacts.
     </div>
     <div class="col mb-2">
-        <div *ngIf="!loading && this.tableParams.pageSize > 50">
-            <p class="text-right m-2"><b>Items Per Page:</b></p>
+        <div *ngIf="!loading && this.tableParams.pageSize >= 50">
+            <p class="text-right m-2"><b>Show Items Per Page:</b></p>
             <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
-                <div class="btn-group mr-2" role="group" aria-label="First group">
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                        (click)="tableParams.pageSize=10; onSubmit();" aria-pressed="tableParams.pageSize === 10"
-                        [ngClass]="{'active': this.tableParams.pageSize === 10}">10</a>
-                    &nbsp;
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
                         (click)="tableParams.pageSize=25; onSubmit();" aria-pressed="tableParams.pageSize === 25"
                         [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                    &nbsp;
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                    <a href="javascript:void(0);" role="button" class="btn btn-primar mr-1"
                         (click)="tableParams.pageSize=50; onSubmit();" aria-pressed="tableParams.pageSize === 50"
                         [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                    &nbsp;
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                    <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
                         (click)="tableParams.pageSize=100; onSubmit();" aria-pressed="tableParams.pageSize === 100"
                         [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                    &nbsp;
                     <a href="javascript:void(0);" role="button" class="btn btn-primary"
                         (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
                         aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
