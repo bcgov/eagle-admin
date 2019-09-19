@@ -279,7 +279,7 @@ pipeline {
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
-              "A new version of eagle-admin is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+              "A new version of eagle-admin is now in Dev. \n Changes: \n ${CHANGELOG}",
               ROCKET_DEPLOY_WEBHOOK
             )
 
