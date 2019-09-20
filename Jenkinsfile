@@ -113,7 +113,7 @@ def nodejsLinter () {
               npm run lint
             '''
           } finally {
-            echo "Linting Passed"
+            echo "Linting Done"
           }
         }
       }
