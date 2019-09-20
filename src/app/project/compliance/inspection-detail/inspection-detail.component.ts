@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { ElementTableRowsComponent } from './element-table-rows/element-table-rows.component';
+import { SearchTerms } from 'app/models/search';
 
 @Component({
   selector: 'app-inspection-detail',
@@ -17,6 +18,7 @@ import { ElementTableRowsComponent } from './element-table-rows/element-table-ro
 })
 export class InspectionDetailComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  public terms = new SearchTerms();
   public compliance: Compliance = null;
   public currentProject: Project = null;
   public elements: any[] = [];
@@ -57,9 +59,6 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    if (this.storageService.state.selectedInspection == null) {
-      this.router.navigate(['/']);
-    }
     this.currentProject = this.storageService.state.currentProject.data;
 
     this.route.data
@@ -81,11 +80,45 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
       this.tableData = new TableObject(
         ElementTableRowsComponent,
         this.elements,
-        this.tableParams
+        this.tableParams,
+        {
+          inspectionId: this.compliance._id
+        }
       );
     }
   }
-  download() {
+
+  public onSubmit(currentPage = 1) {
+    // dismiss any open snackbar
+    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
+
+    // NOTE: Angular Router doesn't reload page on same URL
+    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
+    // WORKAROUND: add timestamp to force URL to be different than last time
+    this.loading = true;
+
+    // Reset page.
+    const params = this.terms.getParams();
+    params['ms'] = new Date().getMilliseconds();
+    params['dataset'] = this.terms.dataset;
+    params['currentPage'] = this.tableParams.currentPage = currentPage;
+    params['pageSize'] = this.tableParams.pageSize;
+    params['sortBy'] = this.tableParams.sortBy;
+
+    this.router.navigate(['p', this.currentProject._id, 'compliance', 'i', this.compliance._id, params]);
+  }
+
+  setColumnSort(column) {
+    if (this.tableParams.sortBy.charAt(0) === '+') {
+      this.tableParams.sortBy = '-' + column;
+    } else {
+      this.tableParams.sortBy = '+' + column;
+    }
+    this.onSubmit(this.tableParams.currentPage);
+  }
+
+  async download() {
+    let x = await this.api.downloadInspection(this.compliance);
   }
 
   public openSnackBar(message: string, action: string) {

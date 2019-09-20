@@ -1,12 +1,19 @@
 <tr
   *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
-  <td scope="row" class="col-4" data-label="Assets" (click)="goToItem(item)">
+  <td scope="row" class="col-2" data-label="Assets">
     <i class="material-icons">{{item.icon}}</i>
   </td>
-  <td scope="row" class="col-4" data-label="Caption" (click)="goToItem(item)">
+  <td scope="row" class="col-4" data-label="Caption">
     {{item.caption}}
   </td>
-  <td scope="row" class="col-4" data-label="GPS Coordinates" (click)="goToItem(item)">
+  <td scope="row" class="col-3" data-label="GPS Coordinates">
     {{item.geo.latitude}}, {{item.geo.longitude}}
+  </td>
+  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-3 clickable">
+    <p class="card-text publish-state">
+      Download &nbsp;<i class="material-icons">
+        cloud_download
+      </i>
+    </p>
   </td>
 </tr>

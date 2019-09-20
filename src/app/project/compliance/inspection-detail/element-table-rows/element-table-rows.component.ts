@@ -41,11 +41,7 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
     this.selectedCount.emit(count);
   }
 
-  downloadItem(item) {
-    console.log('TODO:', item);
-  }
-
   goToItem(item) {
-    this.router.navigate(['p', this.storageService.state.currentProject.data._id, 'compliance', 'i', this.storageService.state.selectedInspection._id, 's', item._id]);
+    this.router.navigate(['p', this.storageService.state.currentProject.data._id, 'compliance', 'i', this.data.extraData.inspectionId, 's', item._id]);
   }
 }

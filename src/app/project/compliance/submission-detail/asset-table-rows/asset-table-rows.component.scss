@@ -1,8 +1,11 @@
 @import "assets/styles/base/base.scss";
 
 tr:hover {
-    cursor: pointer;
     background-color: #e2f1ff;
+}
+
+.clickable:hover {
+  cursor: pointer;
 }
 
 .inputCheckBox {

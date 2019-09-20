@@ -7,6 +7,7 @@ import 'rxjs/add/observable/throw';
 import { throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
+import * as JSZip from 'jszip';
 
 import { KeycloakService } from 'app/services/keycloak.service';
 
@@ -872,9 +873,9 @@ export class ApiService {
     window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
   }
 
-  public async downloadElementResource(element: any): Promise<void> {
-    let filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
-    const queryString = `inspection/element/${element._id}?filename=${filename}`;
+  public async downloadInspectionItem(inspectionId, elementId, item: any): Promise<void> {
+    let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
+    const queryString = `inspection/${inspectionId}/${elementId}/${item._id}?filename=${filename}`;
     let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
@@ -885,6 +886,78 @@ export class ApiService {
       a.setAttribute('style', 'display: none');
       a.href = url;
       a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    }
+  }
+
+  public async downloadInspection(inspection: any): Promise<void> {
+    // inspectionA
+    // - Element1
+    //   - element.txt
+    //   - photo.jpg
+    //   - photo.jpg
+    //   - photo.video.... etc
+    // - Element2
+    //   - element.txt
+    //   -voice.rec
+    // - Element3
+
+    let zip = new JSZip();
+    zip.file(
+      `inspection.txt`,
+      `
+      Name: ${inspection.name}\n
+      Inspection Number: ${inspection.case}\n
+      Inspector email: ${inspection.email}\n
+      Start Date: ${inspection.startDate}\n
+      End Date: ${inspection.endDate}\n
+      Project: ${inspection.project.name}\n
+      `
+    );
+
+    for (let i = 0; i < inspection.elements.length; i++) {
+      let element = inspection.elements[i];
+      let elementFolder = zip.folder(element.title);
+      elementFolder.file(
+        `element.txt`,
+        `
+        Description: ${element.description}\n
+        Requirement: ${element.requirement}\n
+        Timestamp: ${element.timestamp}\n
+        `
+      );
+
+      for (let j = 0; j < element.items.length; j++) {
+        const itemQueryString = `search?dataset=Item&_id=${element.items[j]}&_schemaName=${'InspectionItem'}`;
+        let itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
+
+        let item = itemSearchResults[0];
+        let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
+        const queryString = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
+        let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+
+        elementFolder.file(
+          `${filename}_caption.txt`,
+          `
+          ${item.caption}
+          `
+        );
+        elementFolder.file(filename, blob, { base64: true });
+      }
+    }
+
+    let content = await zip.generateAsync({ type: 'blob' });
+    if (this.isMS) {
+      window.navigator.msSaveBlob(content, 'example.zip');
+    } else {
+      const url = window.URL.createObjectURL(content);
+      const a = window.document.createElement('a');
+      window.document.body.appendChild(a);
+      a.setAttribute('style', 'display: none');
+      a.href = url;
+      a.download = 'example.zip';
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();

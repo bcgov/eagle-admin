@@ -3,7 +3,7 @@ import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { StorageService } from 'app/services/storage.service';
+import { ApiService } from 'app/services/api';
 
 @Component({
   selector: 'tbody[app-compliance-table-rows]',
@@ -19,8 +19,8 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   public paginationData: any;
 
   constructor(
+    private api: ApiService,
     private router: Router,
-    private storageService: StorageService
   ) { }
 
   ngOnInit() {
@@ -40,12 +40,11 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
     this.selectedCount.emit(count);
   }
 
-  downloadItem(item) {
-    console.log('TODO:', item);
+  async downloadItem(item) {
+    let x = await this.api.downloadInspection(item);
   }
 
   goToItem(item) {
-    this.storageService.state.selectedInspection = item;
     this.router.navigate(['p', item.project._id, 'compliance', 'i', item._id, 'inspection-details']);
   }
 }

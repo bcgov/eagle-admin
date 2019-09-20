@@ -20,7 +20,8 @@
   <section>
     <div class="row">
       <div class="col-6">
-        <label class="btn btn-outline-primary mb-4">{{compliance.startDate | date}} - {{compliance.endDate | date}}</label>
+        <label class="btn btn-outline-primary mb-4">{{compliance.startDate | date}} -
+          {{compliance.endDate | date}}</label>
         <div class="label-pair">
           <h3 for="displayName">Inspection #: </h3>
           <p id="displayName">{{compliance.case || '-'}}</p>
@@ -31,7 +32,7 @@
         </div>
       </div>
       <div class="col-6 text-right">
-        <button type="button" class="btn btn-primary" disabled (click)="download()">Download Inspection</button>
+        <button type="button" class="btn btn-primary" (click)="download()">Download Inspection</button>
       </div>
     </div>
   </section>
