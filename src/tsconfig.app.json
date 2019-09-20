@@ -6,7 +6,12 @@
     "baseUrl": "",
     "types": [
       "arcgis-js-api"
-    ]
+    ],
+    "paths": {
+      "stream": [
+        "../node_modules/readable-stream/readable.js"
+      ]
+    }
   },
   "exclude": [
     "test.ts",

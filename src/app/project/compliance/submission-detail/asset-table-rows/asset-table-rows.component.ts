@@ -3,6 +3,7 @@ import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
+import { ApiService } from 'app/services/api';
 
 @Component({
   selector: 'tbody[app-asset-table-rows]',
@@ -19,6 +20,7 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   public icon: any;
 
   constructor(
+    private api: ApiService,
     private router: Router
   ) { }
 
@@ -31,14 +33,14 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   }
 
   getAssetIcon(item) {
-    switch (item.internalMime) {
-      case 'image/jpeg':
+    switch (item.type) {
+      case 'photo':
         item['icon'] = 'photo';
         break;
-      case 'video/mp4':
+      case 'video':
         item['icon'] = 'videocam';
         break;
-      case 'audio/mpeg':
+      case 'voice':
         item['icon'] = 'mic';
         break;
       default:
@@ -58,8 +60,8 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
     this.selectedCount.emit(count);
   }
 
-  downloadItem(item) {
-    console.log('TODO:', item);
+  async downloadItem(item) {
+    let res = await this.api.downloadInspectionItem(this.data.extraData.inspectionId, this.data.extraData.elementId, item);
   }
 
   goToItem(item) {

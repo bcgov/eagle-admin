@@ -26,27 +26,30 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public tableColumns: any[] = [
-    // TODO: this needs to be replaced with an icon.
     {
       name: 'Assets',
       value: 'internalExt',
-      width: 'col-4'
+      width: 'col-2',
+      nosort: true
     },
     {
       name: 'Caption',
       value: 'caption',
-      width: 'col-4'
+      width: 'col-4',
+      nosort: true
     },
     {
       name: 'GPS Coordinates',
       value: 'geo',
-      width: 'col-4'
+      width: 'col-3',
+      nosort: true
     },
-    // {
-    //   name: 'Date Submitted',
-    //   value: '',
-    //   width: 'col-3'
-    // }
+    {
+      name: 'Actions',
+      value: 'actions',
+      width: 'col-3',
+      nosort: true
+    }
   ];
   constructor(
     private route: ActivatedRoute,
@@ -82,11 +85,13 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
       this.tableData = new TableObject(
         AssetTableRowsComponent,
         this.assets,
-        this.tableParams
+        this.tableParams,
+        {
+          inspectionId: this.compliance._id,
+          elementId: this.submission._id
+        }
       );
     }
-  }
-  download() {
   }
 
   public openSnackBar(message: string, action: string) {
