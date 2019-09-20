@@ -28,6 +28,7 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;
     this.items.map(item => {
+      item.caption = item.caption.replace(new RegExp('\n', 'g'), '<br />');
       this.getAssetIcon(item);
     });
   }
