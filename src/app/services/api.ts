@@ -820,10 +820,21 @@ export class ApiService {
     }
   }
 
-  public async exportComments(period: String, format: String) {
+  public async exportComments(period: String, projectName: String, format: String) {
     const queryString = `comment/export/${period}?format=${format}`;
     const blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
-    let filename = 'export.csv';
+
+    projectName = projectName.split(' ').join('_');
+    let currentDate = this.utils.formatDate(new Date());
+    let filename = '';
+    if (format === 'staff') {
+      filename = projectName + '-eao-' + currentDate;
+    } else if (format === 'proponent') {
+      filename = projectName + '-proponent-' + currentDate;
+    } else {
+      filename = 'export.csv';
+    }
+
     filename = filename.replace(/\\/g, '_').replace(/\//g, '_');
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
