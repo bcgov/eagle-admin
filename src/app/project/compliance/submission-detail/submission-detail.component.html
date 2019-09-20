@@ -34,7 +34,8 @@
     </div>
     <div class="label-pair">
       <h3 for="description">Description: </h3>
-      <p id="description">{{submission.description}}</p>
+      <br />
+      <div [innerHTML]="submission.description" id="description"></div>
     </div>
   </section>
   <section>

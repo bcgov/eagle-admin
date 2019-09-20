@@ -69,6 +69,7 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         this.compliance = res.compliance.data;
         this.submission = res.submission.data;
+        this.submission.description = this.submission.description.replace(new RegExp('\n', 'g'), '<br />');
 
         this.assets = this.submission.items;
         this.tableParams.totalListItems = this.assets.length;
