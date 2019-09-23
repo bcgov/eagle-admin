@@ -836,7 +836,7 @@ export class ApiService {
       filename = 'export.csv';
     }
 
-    filename = filename.replace(/\\/g, '_').replace(/\//g, '_');
+    filename = this.utils.encodeFilename(filename, true);
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
