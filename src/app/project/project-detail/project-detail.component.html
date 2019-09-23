@@ -34,11 +34,11 @@
     </div>
     <div class="label-pair">
       <h3 for="type">Type: </h3>
-      <p class="type">{{project.type || '-'}}</p>
+      <p class="type" id="type">{{project.type || '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="type">Sub-Type: </h3>
-      <p class="type">{{project.sector || '-'}}</p>
+      <p class="type" id="subtype">{{project.sector || '-'}}</p>
     </div>
     <div class="label-pair full">
       <h3 for="description">Description: </h3>
@@ -60,8 +60,8 @@
       <p id="lat">{{project.centroid[1]}}</p>
     </div>
     <div class="label-pair">
-      <h3 for="lat">Long: </h3>
-      <p id="lat">{{project.centroid[0]}}</p>
+      <h3 for="lon">Long: </h3>
+      <p id="lon">{{project.centroid[0]}}</p>
     </div>
   </section>
   <section>
@@ -80,7 +80,7 @@
     </div>
     <div class="label-pair">
       <h3 for="ea">Capital Investment: </h3>
-      <p id="ea">{{project.intake.investment || '-'}}</p>
+      <p id="capital">{{project.intake.investment || '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="notes">Notes: </h3>

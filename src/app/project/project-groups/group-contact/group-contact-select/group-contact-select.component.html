@@ -37,7 +37,7 @@
         <div class="input-group main-search-field">
           <input class="form-control" type="text" name="keywordInput" placeholder="Enter a name to filter..."
             id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
-          <button class="btn btn-primary" type="submit">
+          <button class="btn btn-primary" id="search" type="submit">
             <span>Search</span>
           </button>
         </div>
@@ -46,7 +46,7 @@
   </form>
 
   <div class="input-group-prepend">
-    <button (click)="selectAction('createContact')" class="btn btn-outline-primary mr-1" type="button" id="button-sa">
+    <button (click)="selectAction('createContact')" class="btn btn-outline-primary mr-1" type="button" id="button-cc">
       Create New Contact
     </button>
     <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
@@ -68,7 +68,7 @@
           class="material-icons">arrow_back</i>Back</button>
     </div>
     <div class="input-group-prepend">
-      <button (click)="save()" class="btn btn-outline-primary mr-1" type="submit" id="button-cl"><i
+      <button (click)="save()" class="btn btn-outline-primary mr-1" type="submit" id="button-s"><i
           class="material-icons">save</i>Save</button>
     </div>
   </div>

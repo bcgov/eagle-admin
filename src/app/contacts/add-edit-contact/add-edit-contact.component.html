@@ -79,7 +79,7 @@
       <div class="label-pair">
         <label for="organizations">Organization* </label>
         <div *ngIf="contactOrganizationName === '' || contactOrganizationName == null">
-          <button class="btn btn-primary" type="button" (click)="linkOrganization()">Link Organization</button>
+          <button class="btn btn-primary" id="link-org" type="button" (click)="linkOrganization()">Link Organization</button>
         </div>
         <div *ngIf="contactOrganizationName !== '' && contactOrganizationName">
           <span class="cell icon">

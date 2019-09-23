@@ -2,7 +2,7 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item active" aria-current="page">All Contacts</li>
     </ol>
-    <button type="button" class="btn btn-primary" (click)="addContact()">Add New Contact</button>
+    <button type="button" id="add-contact" class="btn btn-primary" (click)="addContact()">Add New Contact</button>
 </nav>
 
 <main class="container-fluid-padding">
@@ -15,7 +15,7 @@
                 id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
             <div class="input-group-append">
                 <!-- prevent searching if input is empty or we're already searching -->
-                <button class="btn btn-primary" type="submit">
+                <button class="btn btn-primary" type="submit" id="search">
                     <span>Search</span>
                 </button>
             </div>

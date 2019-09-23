@@ -36,7 +36,7 @@
   </div>
   <form [formGroup]="orgForm" novalidate>
     <div class="text-right">
-      <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
+      <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
       &nbsp;
       <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
     </div>
@@ -58,7 +58,7 @@
       <div class="label-pair">
         <label for="description">Parent Company</label>
         <div *ngIf="parentOrganizationName === '' || parentOrganizationName == null">
-          <button class="btn btn-primary" type="button" (click)="linkOrganization()">Link Parent Company</button>
+          <button class="btn btn-primary" id="link-parent" type="button" (click)="linkOrganization()">Link Parent Company</button>
         </div>
         <div *ngIf="parentOrganizationName !== '' && parentOrganizationName">
           <span class="cell icon">

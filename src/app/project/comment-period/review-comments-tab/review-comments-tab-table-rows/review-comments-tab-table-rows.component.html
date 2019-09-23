@@ -1,7 +1,7 @@
 <tr
   *ngFor="let comment of comments | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
   class="clickable-row">
-  <td (click)="goToItem(comment)" data-label="Author" scope="row" class="col-1">{{comment.commentId}}</td>
+  <td (click)="goToItem(comment)" data-label="Id" scope="row" class="col-1">{{comment.commentId}}</td>
   <td (click)="goToItem(comment)" data-label="Author" scope="row" class="col-2">{{comment.author}}</td>
   <td (click)="goToItem(comment)" data-label="Date" scope="row" class="col-3">{{comment.dateAdded | date:'longDate'}}
   </td>

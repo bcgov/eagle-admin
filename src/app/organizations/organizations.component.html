@@ -2,7 +2,7 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item active" aria-current="page">Organizations</li>
     </ol>
-    <button type="button" class="btn btn-primary" (click)="addOrganization()">
+    <button type="button" class="btn btn-primary" id="add-org" (click)="addOrganization()">
         <i class="material-icons">
             add
         </i>
@@ -20,7 +20,7 @@
                 id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
             <div class="input-group-append">
                 <!-- prevent searching if input is empty or we're already searching -->
-                <button class="btn btn-primary" type="submit">
+                <button class="btn btn-primary" id="search" type="submit">
                     <span>Search</span>
                 </button>
             </div>
