@@ -9,8 +9,12 @@ Usage
 =====
 * Analyze the project with SonarQube using Gradle:
 
-        ./gradlew sonarqube [-Dsonar.host.url=... -Dsonar.jdbc.url=... -Dsonar.jdbc.username=... -Dsonar.jdbc.password=...]
-        
+        ../gradlew sonarqube -Dsonar.host.url=... -Dsonar.verbose=true --stacktrace --info
+
+You can run this scan using the SonarQube server on OpenShift or by hosting your own SonarQube server locally.
+
+For SonarQube setup instructions on OpenShift see: https://github.com/BCDevOps/sonarqube
+
 Local Install
 =============
 To install SonarQube locally do the following:
