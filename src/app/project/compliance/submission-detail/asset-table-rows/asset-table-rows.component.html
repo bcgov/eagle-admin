@@ -1,5 +1,8 @@
 <tr
   *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
   <td scope="row" class="col-2" data-label="Assets">
     <i class="material-icons">{{item.icon}}</i>
   </td>

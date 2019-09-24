@@ -876,7 +876,13 @@ export class ApiService {
   public async downloadInspectionItem(inspectionId, elementId, item: any): Promise<void> {
     let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
     const queryString = `inspection/${inspectionId}/${elementId}/${item._id}?filename=${filename}`;
-    let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    let blob = null;
+    try {
+      blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    } catch {
+      alert('An error has occured.');
+      throw Error('Unable to download item');
+    }
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -931,12 +937,25 @@ export class ApiService {
 
       for (let j = 0; j < element.items.length; j++) {
         const itemQueryString = `search?dataset=Item&_id=${element.items[j]}&_schemaName=${'InspectionItem'}`;
-        let itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
+        let itemSearchResults = null;
+        try {
+          itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
+          console.log('SEARCH RES', itemSearchResults);
+        } catch {
+          alert('An error has occured.');
+          throw Error('Unable to find inspection item.');
+        }
 
         let item = itemSearchResults[0];
         let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
         const queryString = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
-        let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+        let blob = null;
+        try {
+          blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+        } catch {
+          alert('An error has occured.');
+          throw Error('Unable to get asset.');
+        }
 
         elementFolder.file(
           `${filename}_caption.txt`,
@@ -947,8 +966,15 @@ export class ApiService {
         elementFolder.file(filename, blob, { base64: true });
       }
     }
+    let content = null;
 
-    let content = await zip.generateAsync({ type: 'blob' });
+    try {
+      content = await zip.generateAsync({ type: 'blob' });
+    } catch {
+      alert('An error has occured.');
+      throw Error('Unable to generate zip file.');
+
+    }
     if (this.isMS) {
       window.navigator.msSaveBlob(content, 'example.zip');
     } else {

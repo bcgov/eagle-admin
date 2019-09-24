@@ -18,6 +18,7 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   public items: any;
   public paginationData: any;
   public icon: any;
+  public loading = false;
 
   constructor(
     private api: ApiService,
@@ -62,7 +63,13 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   }
 
   async downloadItem(item) {
-    let res = await this.api.downloadInspectionItem(this.data.extraData.inspectionId, this.data.extraData.elementId, item);
+    this.loading = true;
+    try {
+      await this.api.downloadInspectionItem(this.data.extraData.inspectionId, this.data.extraData.elementId, item);
+    } catch (err) {
+      console.log(err);
+    }
+    this.loading = false;
   }
 
   goToItem(item) {

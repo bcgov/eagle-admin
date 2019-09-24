@@ -17,6 +17,7 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
 
   public items: any;
   public paginationData: any;
+  public loading = false;
 
   constructor(
     private api: ApiService,
@@ -41,7 +42,13 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   }
 
   async downloadItem(item) {
-    let x = await this.api.downloadInspection(item);
+    this.loading = true;
+    try {
+      await this.api.downloadInspection(item);
+    } catch (err) {
+      console.log(err);
+    }
+    this.loading = false;
   }
 
   goToItem(item) {
