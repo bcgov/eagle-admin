@@ -118,7 +118,13 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   }
 
   async download() {
-    let x = await this.api.downloadInspection(this.compliance);
+    this.loading = true;
+    try {
+      await this.api.downloadInspection(this.compliance);
+    } catch (err) {
+      console.log(err);
+    }
+    this.loading = false;
   }
 
   public openSnackBar(message: string, action: string) {
