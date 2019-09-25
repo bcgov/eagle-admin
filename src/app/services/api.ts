@@ -828,9 +828,9 @@ export class ApiService {
     let currentDate = this.utils.formatDate(new Date());
     let filename = '';
     if (format === 'staff') {
-      filename = projectName + '-eao-' + currentDate;
+      filename = projectName + '-eao-' + currentDate + '.csv';
     } else if (format === 'proponent') {
-      filename = projectName + '-proponent-' + currentDate;
+      filename = projectName + '-proponent-' + currentDate + '.csv';
     } else {
       filename = 'export.csv';
     }
