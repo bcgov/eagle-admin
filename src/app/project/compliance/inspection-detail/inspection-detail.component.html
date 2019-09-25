@@ -11,6 +11,9 @@
     <li class="breadcrumb-item active" aria-current="page">Inspection Details</li>
   </ol>
 </nav>
+<div class="spinner-container" *ngIf="loading">
+  <div class="spinner-new rotating"></div>
+</div>
 <main class="container-fluid-padding" *ngIf="compliance">
   <h1>
     <div class="row">
