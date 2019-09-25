@@ -27,7 +27,7 @@ export class ComplianceComponent implements OnInit, OnDestroy {
   public documentTableData: TableObject;
   public documentTableColumns: any[] = [
     {
-      name: 'Inspection #',
+      name: 'Inspection Name',
       value: 'name',
       width: 'col-2'
     },

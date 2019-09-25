@@ -23,8 +23,12 @@
         <label class="btn btn-outline-primary mb-4">{{compliance.startDate | date}} -
           {{compliance.endDate | date}}</label>
         <div class="label-pair">
-          <h3 for="displayName">Inspection #: </h3>
-          <p id="displayName">{{compliance.case || '-'}}</p>
+          <h3 for="name">Inspection Name: </h3>
+          <p id="name">{{compliance.name || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="inspectionNumber">Inspection #: </h3>
+          <p id="inspectionNumber">{{compliance.case || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="email">Inspector Email: </h3>
