@@ -70,21 +70,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Get data related to current project
-    this.currentProject = this.storageService.state.currentProject.data;
-
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'doctype':
-          break;
-        case 'author':
-          break;
-        case 'label':
-          this.milestones.push(Object.assign({}, item));
-          break;
-      }
-    });
-
     // Check if we're editing
     this.route.url.subscribe(segments => {
       segments.map(segment => {
