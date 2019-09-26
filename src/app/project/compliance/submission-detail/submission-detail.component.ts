@@ -78,7 +78,30 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
         this.setRowData();
         this.loading = false;
         this._changeDetectionRef.detectChanges();
+
+        let self = this;
+
+        self.assets.map(async z => {
+          if (z.type === 'photo') {
+            // Show thumb
+            let resource = await self.api.downloadElementThumbnail(self.compliance._id, self.submission._id, z._id);
+            const reader = new FileReader();
+            reader.readAsDataURL(resource);
+            reader.onloadend = function () {
+              // result includes identifier 'data:image/png;base64,' plus the base64 data
+              z.src = reader.result;
+              self._changeDetectionRef.detectChanges();
+            };
+          } else if (z.type === 'video') {
+            // Show it's type with a clickable event.
+          } else if (z.type === 'voice') {
+            // Show it's type with a clickable event.
+          } else if (z.type === 'text') {
+            // Show it's type with a clickable event.
+          }
+        });
       });
+
   }
 
   setRowData() {

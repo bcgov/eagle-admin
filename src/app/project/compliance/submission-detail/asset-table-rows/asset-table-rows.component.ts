@@ -30,24 +30,7 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
     this.paginationData = this.data.paginationData;
     this.items.map(item => {
       item.caption = item.caption.replace(new RegExp('\n', 'g'), '<br />');
-      this.getAssetIcon(item);
     });
-  }
-
-  getAssetIcon(item) {
-    switch (item.type) {
-      case 'photo':
-        item['icon'] = 'photo';
-        break;
-      case 'video':
-        item['icon'] = 'videocam';
-        break;
-      case 'voice':
-        item['icon'] = 'mic';
-        break;
-      default:
-        item['icon'] = 'insert_drive_file';
-    }
   }
 
   selectItem(item) {

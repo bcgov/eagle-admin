@@ -4,7 +4,20 @@
     <div class="spinner-new rotating"></div>
   </div>
   <td scope="row" class="col-2" data-label="Assets">
-    <i class="material-icons">{{item.icon}}</i>
+    <div *ngIf="item.type === 'photo'">
+      <div *ngIf="item.src">
+        <img class="thumbnail" [src]="item.src" />
+      </div>
+      <div class="thumbnail" *ngIf="!item.src">
+        <div class="spinner-new rotating"></div>
+      </div>
+    </div>
+    <div *ngIf="item.type === 'video'">
+      <i class="material-icons">videocam</i>
+    </div>
+    <div *ngIf="item.type === 'voice'">
+      <i class="material-icons">mic</i>
+    </div>
   </td>
   <td scope="row" class="col-4" data-label="Caption">
     <div [innerHTML]="item.caption" id="description"></div>

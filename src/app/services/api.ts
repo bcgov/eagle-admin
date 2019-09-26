@@ -863,8 +863,8 @@ export class ApiService {
     window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
   }
 
-  public downloadElementThumbnail(id: string): Promise<Blob> {
-    const queryString = `inspection/element/${id}?thumbnail=true`;
+  public downloadElementThumbnail(inspectionId: string, elementId: string, itemId: string): Promise<Blob> {
+    const queryString = `inspection/${inspectionId}/${elementId}/${itemId}?thumbnail=true`;
     return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
   }
 
