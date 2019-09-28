@@ -146,8 +146,8 @@ export class ComplianceComponent implements OnInit, OnDestroy {
           {
             _id: item._id,
             name: item.name,
-            startDate: item.startDate,
-            endDate: item.endDate,
+            startDate: new Date(item.startDate),
+            endDate: new Date(item.endDate),
             project: item.project,
             email: item.email,
             case: item.case,
