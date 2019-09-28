@@ -64,7 +64,7 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.compliance = res.compliance.data;
+        this.compliance = new Compliance(res.compliance.data);
         this.elements = this.compliance.elements;
         this.tableParams.totalListItems = this.elements.length;
         this.tableParams.currentPage = 1;

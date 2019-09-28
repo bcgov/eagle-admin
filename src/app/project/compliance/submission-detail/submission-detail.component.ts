@@ -67,11 +67,16 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.compliance = res.compliance.data;
+        this.compliance = new Compliance(res.compliance.data);
         this.submission = res.submission.data;
         this.submission.description = this.submission.description.replace(new RegExp('\n', 'g'), '<br />');
 
         this.assets = this.submission.items;
+        // This is to make sure we are using the browsers timezone.
+        for (let i = 0; i < this.assets.length; i++) {
+          this.assets[i].timestamp = new Date(this.assets[i].timestamp);
+        }
+
         this.tableParams.totalListItems = this.assets.length;
         this.tableParams.currentPage = 1;
         this.tableParams.pageSize = 100000;
