@@ -37,6 +37,11 @@
           <h3 for="email">Inspector Email: </h3>
           <p id="email">{{compliance.email}}</p>
         </div>
+        <div class="label-pair">
+          <h3 for="notes">Notes: </h3>
+          <div *ngIf="compliance.label" [innerHTML]="compliance.label" id="notes"></div>
+          <p *ngIf="compliance.label == null">-</p>
+        </div>
       </div>
       <div class="col-6 text-right">
         <button type="button" class="btn btn-primary" (click)="download()">Download Inspection</button>
