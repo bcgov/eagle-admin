@@ -8,7 +8,7 @@ export class Compliance {
   endDate: Date;
   email: boolean;
   case: string;
-  label: Number;
+  label: string;
   elements: any[];
 
   constructor(obj?: any) {
