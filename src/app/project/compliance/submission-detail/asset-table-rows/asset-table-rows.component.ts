@@ -48,7 +48,7 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   async downloadItem(item) {
     this.loading = true;
     try {
-      await this.api.downloadInspectionItem(this.data.extraData.inspectionId, this.data.extraData.elementId, item);
+      await this.api.downloadInspectionItem(this.data.extraData.inspection, this.data.extraData.elementId, item);
     } catch (err) {
       console.log(err);
     }

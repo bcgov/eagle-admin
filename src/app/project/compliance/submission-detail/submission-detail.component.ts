@@ -116,7 +116,7 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
         this.assets,
         this.tableParams,
         {
-          inspectionId: this.compliance._id,
+          inspection: this.compliance,
           elementId: this.submission._id
         }
       );

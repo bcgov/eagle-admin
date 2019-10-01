@@ -873,9 +873,11 @@ export class ApiService {
     window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
   }
 
-  public async downloadInspectionItem(inspectionId, elementId, item: any): Promise<void> {
-    let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
-    const queryString = `inspection/${inspectionId}/${elementId}/${item._id}?filename=${filename}`;
+  public async downloadInspectionItem(inspection, elementId, item: any): Promise<void> {
+    let tempDate = new Date(item.timestamp);
+    let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}`;
+    filename = filename.replace('.', '-');
+    const queryString = `inspection/${inspection._id}/${elementId}/${item._id}?filename=${filename}`;
     let blob = null;
     try {
       blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
@@ -947,7 +949,8 @@ export class ApiService {
         }
 
         let item = itemSearchResults[0];
-        let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
+        let tempDate = new Date(item.timestamp);
+        let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}.${item.internalExt}`;
         const queryString = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
         let blob = null;
         try {

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 const encode = encodeURIComponent;
 window['encodeURIComponent'] = (component: string) => {
   return encode(component).replace(/[!'()*]/g, (c) => {
-  // Also encode !, ', (, ), and *
+    // Also encode !, ', (, ), and *
     return '%' + c.charCodeAt(0).toString(16);
   });
 };
@@ -74,10 +74,21 @@ export class Utils {
   public encodeFilename(filename: string, isUrl: boolean) {
     let safeName;
     if (isUrl) {
-        return safeName = encode(filename).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_').replace(/\%2F/g, '_').replace(/ /g, '_');
+      return safeName = encode(filename).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_').replace(/\%2F/g, '_').replace(/ /g, '_');
     } else {
-        return safeName = filename.replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_');
+      return safeName = filename.replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_');
     }
 
+  }
+
+  public getFormattedTime(date) {
+    let y = date.getFullYear();
+    // JavaScript months are 0-based.
+    let m = date.getMonth() + 1;
+    let d = date.getDate();
+    let h = date.getHours();
+    let mi = date.getMinutes();
+    let s = date.getSeconds();
+    return y + '-' + m + '-' + d + '-' + h + '-' + mi + '-' + s;
   }
 }
