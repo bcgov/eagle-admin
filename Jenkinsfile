@@ -414,9 +414,15 @@ def postZapToSonar () {
           // url for the sonarqube report
           def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
 
-          // get old sonar report date
-          def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-          def OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
+          boolean firstScan = false
+
+          try {
+            // get old sonar report date
+            def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+            def OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
+          } catch {
+            firstScan = true
+          }
 
           echo "Checking out the sonar-runner folder ..."
           checkout scm
@@ -441,36 +447,13 @@ def postZapToSonar () {
                 -Dsonar.exclusions=**/*.xml"
             )
 
-            // wiat for report to be updated
-            if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
-              echo "Zap report failed to complete, or timed out"
-
-              notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
-                ROCKET_DEPLOY_WEBHOOK
-              )
-
-              currentBuild.result = "FAILURE"
-              exit 1
-            }
-
-            // check if zap passed
-            ZAP_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-            ZAP_STATUS = sonarGetStatus (ZAP_STATUS_JSON)
-
-            if ( "${ZAP_STATUS}" == "ERROR" ) {
-              echo "ZAP scan failed"
-
-              // revert dev from backup
-              echo "Reverting dev image form backup..."
-              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
-
-              // wait for revert to complete
-              if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
-                echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+            if (!firstScan) {
+              // wiat for report to be updated
+              if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
+                echo "Zap report failed to complete, or timed out"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
@@ -478,17 +461,42 @@ def postZapToSonar () {
                 exit 1
               }
 
-              notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
-                ROCKET_DEPLOY_WEBHOOK
-              )
+              // check if zap passed
+              ZAP_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+              ZAP_STATUS = sonarGetStatus (ZAP_STATUS_JSON)
 
-              echo "Zap scan Failed"
-              echo "Reverted dev deployment from backup"
-              currentBuild.result = 'FAILURE'
-              exit 1
-            } else {
-              echo "ZAP Scan Passed"
+              if ( "${ZAP_STATUS}" == "ERROR" ) {
+                echo "ZAP scan failed"
+
+                // revert dev from backup
+                echo "Reverting dev image form backup..."
+                openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
+
+                // wait for revert to complete
+                if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
+                  echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+
+                  notifyRocketChat(
+                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                    ROCKET_DEPLOY_WEBHOOK
+                  )
+
+                  currentBuild.result = "FAILURE"
+                  exit 1
+                }
+
+                notifyRocketChat(
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+                  ROCKET_DEPLOY_WEBHOOK
+                )
+
+                echo "Zap scan Failed"
+                echo "Reverted dev deployment from backup"
+                currentBuild.result = 'FAILURE'
+                exit 1
+              } else {
+                echo "ZAP Scan Passed"
+              }
             }
           }
         }
