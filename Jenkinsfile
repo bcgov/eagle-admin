@@ -60,24 +60,13 @@ boolean imageTaggingComplete ( String sourceTag, String destinationTag, String a
   for (int i=0; i<iterations; i++){
     echo "waiting to ${action}, iterator is: ${i}, the max iterator is: ${iterations} \n ${sourceTag}: ${sourceImageName} ${destinationTag}: ${destinationImageName}"
 
-    if (action == 'deploy') {
-      if(sourceImageName != destinationImageName){
-        echo "${action} complete"
-        return true
-      } else {
-        delay = (1<<i) // exponential backoff
-        sleep(delay)
-        destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
-      }
+    if(sourceImageName == destinationImageName){
+      echo "${action} complete"
+      return true
     } else {
-      if(sourceImageName == destinationImageName){
-        echo "${action} complete"
-        return true
-      } else {
-        delay = (1<<i) // exponential backoff
-        sleep(delay)
-        destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
-      }
+      delay = (1<<i) // exponential backoff
+      sleep(delay)
+      destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
     }
   }
   return false
@@ -605,7 +594,7 @@ pipeline {
             openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev-backup', srcStream: 'eagle-admin', srcTag: 'dev'
 
             // wait for backup to complete
-            if(!imageTaggingComplete ('dev', 'dev-backup', 'backup')) {
+            if( !imageTaggingComplete ('dev', 'dev-backup', 'backup')) {
               echo "Dev image backup failed"
 
               notifyRocketChat(
@@ -622,7 +611,7 @@ pipeline {
             openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: "${IMAGE_HASH}"
 
             // wait for deployment to complete
-            if(!imageTaggingComplete ("${IMAGE_HASH}", 'dev-backup', 'deploy')) {
+            if ( CHANGELOG && CHANGELOG != "No new changes" && !imageTaggingComplete ('latest', 'dev', 'deploy')) {
               echo "Dev image deployment failed"
 
               notifyRocketChat(
@@ -632,20 +621,13 @@ pipeline {
 
               currentBuild.result = "FAILURE"
               exit 1
+            } else {
+              sleep (5)
             }
 
             openshiftVerifyDeployment depCfg: 'eagle-admin', namespace: 'esm-dev', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
             echo ">>>> Deployment Complete"
 
-            notifyRocketChat(
-              "A new version of eagle-admin is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
-              ROCKET_DEPLOY_WEBHOOK
-            )
-
-            notifyRocketChat(
-              "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
-              ROCKET_QA_WEBHOOK
-            )
           } catch (error) {
             notifyRocketChat(
               "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: ${error.message}",
@@ -687,5 +669,21 @@ pipeline {
     //     // todo determine how to call improved BDD Stack
     //   }
     // }
+
+    stage('Success Notifications') {
+      steps {
+        script {
+          notifyRocketChat(
+            "A new version of eagle-admin is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+            ROCKET_DEPLOY_WEBHOOK
+          )
+
+          notifyRocketChat(
+            "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
+            ROCKET_QA_WEBHOOK
+          )
+        }
+      }
+    }
   }
 }
