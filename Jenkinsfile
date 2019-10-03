@@ -420,7 +420,7 @@ def postZapToSonar () {
             // get old sonar report date
             def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
             def OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
-          } catch {
+          } catch (error) {
             firstScan = true
           }
 
@@ -447,7 +447,8 @@ def postZapToSonar () {
                 -Dsonar.exclusions=**/*.xml"
             )
 
-            if (!firstScan) {
+            if ( !firstScan ) {
+
               // wiat for report to be updated
               if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
                 echo "Zap report failed to complete, or timed out"
