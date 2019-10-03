@@ -65,7 +65,7 @@ boolean imageTaggingComplete ( String sourceTag, String destinationTag, String a
         echo "${action} complete"
         return true
       } else {
-        delay = (1<<i)
+        delay = (1<<i) // exponential backoff
         sleep(delay)
         destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
       }
@@ -74,7 +74,7 @@ boolean imageTaggingComplete ( String sourceTag, String destinationTag, String a
         echo "${action} complete"
         return true
       } else {
-        delay = (1<<i)
+        delay = (1<<i) // exponential backoff
         sleep(delay)
         destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
       }
@@ -94,7 +94,7 @@ boolean sonarqubeReportComplete ( String oldDate, String sonarqubeStatusUrl, def
       echo "sonarqube report complete"
       return true
     } else {
-      delay = (1<<i)
+      delay = (1<<i) // exponential backoff
       sleep(delay)
       newSonarqubeReportDate = sonarGetDate ( sh ( returnStdout: true, script: "curl -w '%{http_code}' '${sonarqubeStatusUrl}'" ) )
     }
@@ -226,15 +226,15 @@ def nodejsSonarqube () {
               def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin"
 
               // get old sonar report date
-              def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-              def OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
+              def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+              def OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
 
               // run scan
               sh "npm install typescript"
               sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
 
               // wiat for report to be updated
-              if ( !sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL ) ) {
+              if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
                 echo "sonarqube report failed to complete, or timed out"
 
                 notifyRocketChat(
@@ -318,35 +318,58 @@ def zapScanner () {
           def ZAP_REPORT_STASH = "zap-report"
 
           // Dynamicaly determine the target URL for the ZAP scan ...
-          def TARGET_URL = getUrlFromRoute('eagle-admin', 'esm').trim()
-          def API_TARGET_URL="${TARGET_URL}/api/"
+          def TARGET_URL = getUrlFromRoute('eagle-admin', 'esm-dev').trim()
 
           echo "Target URL: ${TARGET_URL}"
-          echo "API Target URL: ${API_TARGET_URL}"
 
           dir('zap') {
+            try {
+              // The ZAP scripts are installed on the root of the jenkins-slave-zap image.
+              // When running ZAP from there the reports will be created in /zap/wrk/ by default.
+              // ZAP has problems with creating the reports directly in the Jenkins
+              // working directory, so they have to be copied over after the fact.
+              def retVal = sh (
+                returnStatus: true,
+                script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}"
+              )
+              echo "Return value is: ${retVal}"
 
-            // The ZAP scripts are installed on the root of the jenkins-slave-zap image.
-            // When running ZAP from there the reports will be created in /zap/wrk/ by default.
-            // ZAP has problems with creating the reports directly in the Jenkins
-            // working directory, so they have to be copied over after the fact.
-            def retVal = sh (
-              returnStatus: true,
-              script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}"
-            )
-            echo "Return value is: ${retVal}"
+              // Copy the ZAP report into the Jenkins working directory so the Jenkins tools can access it.
+              sh (
+                returnStdout: true,
+                script: "mkdir -p ./wrk/ && cp /zap/wrk/${ZAP_REPORT_NAME} ./wrk/"
+              )
+            } catch (error) {
+              // revert dev from backup
+              echo "Reverting dev image form backup..."
+              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
 
-            // Copy the ZAP report into the Jenkins working directory so the Jenkins tools can access it.
-            sh (
-              returnStdout: true,
-              script: "mkdir -p ./wrk/ && cp /zap/wrk/${ZAP_REPORT_NAME} ./wrk/"
-            )
+              // wait for revert to complete
+              if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
+                echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+
+                notifyRocketChat(
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                  ROCKET_DEPLOY_WEBHOOK
+                )
+
+                currentBuild.result = "FAILURE"
+                exit 1
+              }
+
+              notifyRocketChat(
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              currentBuild.result = "FAILURE"
+              exit 1
+            }
+
+            // Stash the ZAP report for publishing in a different stage (which will run on a different pod).
+            echo "Stash the report for the publishing stage ..."
+            stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
           }
-
-          // Stash the ZAP report for publishing in a different stage (which will run on a different pod).
-          echo "Stash the report for the publishing stage ..."
-          stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
-
         }
       }
     }
@@ -457,7 +480,7 @@ def postZapToSonar () {
               }
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL}",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
