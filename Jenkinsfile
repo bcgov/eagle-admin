@@ -216,10 +216,12 @@ def nodejsSonarqube () {
 
               boolean firstScan = false;
 
+              def OLD_SONAR_DATE
+
               try {
                 // get old sonar report date
                 def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-                def OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
+                OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
               } catch (error) {
                 firstScan = true
               }
@@ -415,10 +417,12 @@ def postZapToSonar () {
 
           boolean firstScan = false
 
+          def OLD_ZAP_DATE
+
           try {
             // get old sonar report date
             def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-            def OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
+            OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
           } catch (error) {
             firstScan = true
           }
