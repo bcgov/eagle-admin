@@ -225,25 +225,35 @@ def nodejsSonarqube () {
               // sonarqube report link
               def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin"
 
-              // get old sonar report date
-              def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-              def OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
+              boolean firstScan = false;
+
+              try {
+                // get old sonar report date
+                def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+                def OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
+              } catch (error) {
+                firstScan = true
+              }
 
               // run scan
               sh "npm install typescript"
               sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
 
-              // wiat for report to be updated
-              if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
-                echo "sonarqube report failed to complete, or timed out"
+              if ( !firstScan ) {
+                // wiat for report to be updated
+                if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
+                  echo "sonarqube report failed to complete, or timed out"
 
-                notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
-                  ROCKET_DEPLOY_WEBHOOK
-                )
+                  notifyRocketChat(
+                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
+                    ROCKET_DEPLOY_WEBHOOK
+                  )
 
-                currentBuild.result = "FAILURE"
-                exit 1
+                  currentBuild.result = "FAILURE"
+                  exit 1
+                }
+              } else {
+                sleep (30)
               }
 
               // check if sonarqube passed
@@ -448,7 +458,6 @@ def postZapToSonar () {
             )
 
             if ( !firstScan ) {
-
               // wiat for report to be updated
               if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
                 echo "Zap report failed to complete, or timed out"
@@ -461,43 +470,45 @@ def postZapToSonar () {
                 currentBuild.result = "FAILURE"
                 exit 1
               }
+            } else {
+              sleep(30)
+            }
 
-              // check if zap passed
-              ZAP_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-              ZAP_STATUS = sonarGetStatus (ZAP_STATUS_JSON)
+            // check if zap passed
+            ZAP_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+            ZAP_STATUS = sonarGetStatus (ZAP_STATUS_JSON)
 
-              if ( "${ZAP_STATUS}" == "ERROR" ) {
-                echo "ZAP scan failed"
+            if ( "${ZAP_STATUS}" == "ERROR" ) {
+              echo "ZAP scan failed"
 
-                // revert dev from backup
-                echo "Reverting dev image form backup..."
-                openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
+              // revert dev from backup
+              echo "Reverting dev image form backup..."
+              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
 
-                // wait for revert to complete
-                if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
-                  echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
-
-                  notifyRocketChat(
-                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
-                    ROCKET_DEPLOY_WEBHOOK
-                  )
-
-                  currentBuild.result = "FAILURE"
-                  exit 1
-                }
+              // wait for revert to complete
+              if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
+                echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
-                echo "Zap scan Failed"
-                echo "Reverted dev deployment from backup"
-                currentBuild.result = 'FAILURE'
+                currentBuild.result = "FAILURE"
                 exit 1
-              } else {
-                echo "ZAP Scan Passed"
               }
+
+              notifyRocketChat(
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              echo "Zap scan Failed"
+              echo "Reverted dev deployment from backup"
+              currentBuild.result = 'FAILURE'
+              exit 1
+            } else {
+              echo "ZAP Scan Passed"
             }
           }
         }
