@@ -49,6 +49,7 @@ import { LinkOrganizationResolver } from 'app/shared/components/link-organizatio
 import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
+import { ProjectsRoutes } from 'app/projects/projects-routes';
 
 const routes: Routes = [
   {
@@ -65,14 +66,14 @@ const routes: Routes = [
         pathMatch: 'full'
       },
       {
-        path: 'edit/link-org',
+        path: 'edit/:formTab/link-org',
         component: LinkOrganizationComponent,
         resolve: {
           organizations: LinkOrganizationResolver
         }
       },
       {
-        path: 'edit/link-contact',
+        path: 'edit/:formTab/link-contact',
         component: ContactSelectComponent,
         resolve: {
           contacts: ContactsResolver
@@ -80,7 +81,8 @@ const routes: Routes = [
       },
       {
         path: 'edit',
-        component: AddEditProjectComponent
+        component: AddEditProjectComponent,
+        children: ProjectsRoutes
       },
       {
         path: 'project-details',
