@@ -578,14 +578,14 @@ pipeline {
           }
         }
 
-        stage('Sonarqube') {
-          steps {
-            script {
-              echo "Running Sonarqube"
-              def result = nodejsSonarqube()
-            }
-          }
-        }
+        // stage('Sonarqube') {
+        //   steps {
+        //     script {
+        //       echo "Running Sonarqube"
+        //       def result = nodejsSonarqube()
+        //     }
+        //   }
+        // }
       }
     }
 
@@ -629,7 +629,7 @@ pipeline {
               sleep (5)
             }
 
-            openshiftVerifyDeployment depCfg: 'eagle-admin', namespace: 'esm-dev', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
+            openshiftVerifyDeployment depCfg: 'eagle-admin', namespace: 'mem-mmti-prod', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
             echo ">>>> Deployment Complete"
 
           } catch (error) {
@@ -644,24 +644,24 @@ pipeline {
       }
     }
 
-    stage('Zap') {
-      steps {
-        script {
-          echo "Running Zap Scan"
-          def result = zapScanner()
-        }
-      }
-    }
+    // stage('Zap') {
+    //   steps {
+    //     script {
+    //       echo "Running Zap Scan"
+    //       def result = zapScanner()
+    //     }
+    //   }
+    // }
 
 
-    stage('Zap to Sonarqube') {
-      steps {
-        script {
-          echo "Posting Zap Scan to Sonarqube Report"
-          def result = postZapToSonar()
-        }
-      }
-    }
+    // stage('Zap to Sonarqube') {
+    //   steps {
+    //     script {
+    //       echo "Posting Zap Scan to Sonarqube Report"
+    //       def result = postZapToSonar()
+    //     }
+    //   }
+    // }
 
 
     // stage('BDD Tests') {
