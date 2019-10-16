@@ -64,41 +64,24 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
           break;
       }
     });
-    // placeholder until I figure out how to get this value
-    // this.isEditing = this.route.url._value[0].path === 'edit';
+    //
     this.route.url
       .subscribe(urls => {
-        // this.isEditing = urls[0].path === 'edit';
         this.isEditing = urls.some(url => url.path === 'edit');
       });
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
-        // this.isEditing = Object.keys(data).length === 0 && data.constructor === Object ? false : true;
-
-
-        // if (this.storageService.state.selectedOrganization) {
-        //   this.proponentName = this.storageService.state.selectedOrganization.name;
-        //   this.proponentId = this.storageService.state.selectedOrganization._id;
-        // } else if (this.isEditing && data.project.proponent._id && data.project.proponent._id !== '') {
-        //   this.proponentName = data.project.proponent.name;
-        //   this.proponentId = data.project.proponent._id;
-        // }
         this.project = data.project;
         this.loading = false;
-        // try {
-        //   this._changeDetectorRef.detectChanges();
-        // } catch (e) {
-        //   // console.log('e:', e);
-        // }
       });
 
-    // // hide tabs corresponding to old legislations on new projects
-    // if (!this.isEditing) {
-    //   this.tabLinks = [this.tabLinks[this.tabLinks.length - 1]];
-    // }
-    // this.loading = false;
+    // hide tabs corresponding to old legislations on new projects
+    if (!this.isEditing) {
+      this.tabLinks = [this.tabLinks[this.tabLinks.length - 1]];
+    }
+    this.loading = false;
     this.back = this.storageService.state.back;
   }
 
