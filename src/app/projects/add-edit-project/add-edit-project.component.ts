@@ -65,7 +65,12 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       }
     });
     // placeholder until I figure out how to get this value
-    this.isEditing = this.route.url._value[0].path === 'edit';
+    // this.isEditing = this.route.url._value[0].path === 'edit';
+    this.route.url
+      .subscribe(urls => {
+        // this.isEditing = urls[0].path === 'edit';
+        this.isEditing = urls.some(url => url.path === 'edit');
+      });
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
