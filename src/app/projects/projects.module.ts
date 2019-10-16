@@ -12,7 +12,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProjectListComponent } from './project-list/project-list.component';
 import { ProjectListTableRowsComponent } from './project-list/project-list-table-rows/project-list-table-rows.component';
 import { AddEditProjectComponent } from './add-edit-project/add-edit-project.component';
-
+import { FormTab2002Component } from './add-edit-project/form-tab-2002/form-tab-2002.component';
+import { FormTab2018Component } from './add-edit-project/form-tab-2018/form-tab-2018.component';
 @NgModule({
   imports: [
     CommonModule,
@@ -27,7 +28,9 @@ import { AddEditProjectComponent } from './add-edit-project/add-edit-project.com
   declarations: [
     AddEditProjectComponent,
     ProjectListComponent,
-    ProjectListTableRowsComponent
+    ProjectListTableRowsComponent,
+    FormTab2002Component,
+    FormTab2018Component
   ],
   entryComponents: [
     ProjectListTableRowsComponent
