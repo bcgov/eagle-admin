@@ -25,6 +25,7 @@ import { MatTabsModule, MatMenuModule } from '@angular/material';
 import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectGroupsComponent } from './project-groups/project-groups.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
+import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
 import { ReviewCommentsTabComponent } from './comment-period/review-comments-tab/review-comments-tab.component';
@@ -98,6 +99,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     MilestonesComponent,
     PinsListComponent,
     ProjectDetailComponent,
+    ProjectArchivedDetailComponent,
     ProjectDocumentsComponent,
     ProjectGroupsComponent,
     ProjectUpdatesComponent,
@@ -133,6 +135,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     MilestonesComponent,
     ProjectGroupsComponent,
     ProjectDetailComponent,
+    ProjectArchivedDetailComponent,
     ProjectUpdatesComponent,
     ValuedComponentsComponent,
     PinsListComponent
