@@ -52,6 +52,12 @@ export class SearchService {
         let allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
+          // on Project schemaName return the project data instead of the whole project which has changed based on ear changes
+          r.data.searchResults = r.data.searchResults.map( value => {
+            if (value._schemaName === 'Project') {
+              return value.currentProjectData;
+            }
+          });
           allResults.push(r);
         });
         return allResults;
