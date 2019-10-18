@@ -18,6 +18,7 @@ import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectComponent } from './project.component';
 import { ProjectGroupsComponent } from './project-groups/project-groups.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
+import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
 import { ReviewCommentComponent } from './comment-period/review-comment/review-comment.component';
@@ -87,6 +88,10 @@ const routes: Routes = [
       {
         path: 'project-details',
         component: ProjectDetailComponent,
+      },
+      {
+        path: 'project-archived-detail',
+        component: ProjectArchivedDetailComponent,
       },
       {
         path: 'project-documents',

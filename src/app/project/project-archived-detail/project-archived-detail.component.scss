@@ -19,8 +19,19 @@
         font-size: 1rem;
         display: inline-block;
         margin-left: 10px;
+        color:  #fff;
     }
 }
+
+.header i {
+    float: left;
+  }
+
+  .header h2 {
+    position: relative;
+    top: 18px;
+    left: 10px;
+  }
 
 .project {
     background: #fff;
@@ -95,6 +106,8 @@
       }
     }
 }
+
+
 button {
     float: right;
 }
