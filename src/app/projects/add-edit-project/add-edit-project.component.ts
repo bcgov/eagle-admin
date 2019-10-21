@@ -12,6 +12,7 @@ import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { SearchService } from 'app/services/search.service';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -45,13 +46,9 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private router: Router,
     private config: ConfigService,
-    private _changeDetectorRef: ChangeDetectorRef,
-    private utils: Utils,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private searchService: SearchService
   ) {
   }
 
@@ -73,7 +70,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
-        this.project = data.project;
+        this.project = this.searchService.extractFromResults(data.project);
         this.loading = false;
       });
 

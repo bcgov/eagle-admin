@@ -75,7 +75,7 @@ export class SearchService {
   // otherwise it returns the single element in the array
   extractFromResults(results: any[]) {
     const data = results[0].data.searchResults;
-    if (!data) { return null; }
+    if (!data) { return false; }
     return data.length > 1 ? data : data[0];
   }
 }
