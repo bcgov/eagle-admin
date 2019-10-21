@@ -15,6 +15,7 @@ import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
+import { SearchService } from 'app/services/search.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -43,6 +44,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
+    private searchService: SearchService
   ) {
   }
 
@@ -50,9 +52,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data: { project: Project }) => {
+        (data) => {
           if (data.project) {
-            this.project = data.project;
+            this.project = this.searchService.extractFromResults(data.project);
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();

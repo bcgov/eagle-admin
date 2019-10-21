@@ -69,4 +69,13 @@ export class SearchService {
       });
     return searchResults;
   }
+
+  // extract the real object from the results object
+  // this will return an array if the searchResults array has more than 1 element
+  // otherwise it returns the single element in the array
+  extractFromResults(results: any[]) {
+    const data = results[0].data.searchResults;
+    if (!data) { return null; }
+    return data.length > 1 ? data : data[0];
+  }
 }
