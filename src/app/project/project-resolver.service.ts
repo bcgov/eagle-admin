@@ -32,6 +32,5 @@ export class ProjectResolver implements Resolve<Object> {
       true,
       {}
     );
-    // return this.projectService.getById(projId, start.toISOString(), end.toISOString());
   }
 }
