@@ -6,7 +6,7 @@ export const ProjectsRoutes: Routes = [
   {
     path: '',
     redirectTo: 'form-2002',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'form-2002',

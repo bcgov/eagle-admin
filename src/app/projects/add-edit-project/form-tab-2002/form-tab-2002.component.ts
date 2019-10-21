@@ -219,18 +219,15 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   buildForm(resolverData) {
     // using multiple forms now one per legislation
     if (this.storageService.state.form2002) {
-      console.log('form from ss');
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2002;
       this.onChangeType(null);
     } else if (!(Object.keys(resolverData).length === 0 && resolverData.constructor === Object)) {
       // First entry on resolver
-      console.log('form from rs', resolverData);
       this.projectId = resolverData.project._id;
       this.myForm = this.buildFormFromData(resolverData.project);
       this.onChangeType(null);
     } else {
-      console.log('form from blank');
       this.myForm = new FormGroup({
         'name': new FormControl(),
         'proponent': new FormControl(),

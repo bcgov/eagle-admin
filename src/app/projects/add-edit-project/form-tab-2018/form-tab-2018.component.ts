@@ -166,7 +166,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
         this.isEditing = Object.keys(data).length === 0 && data.constructor === Object ? false : true;
-        console.log(this.isEditing);
         if (this.storageService.state.selectedOrganization2018) {
           // tab specific state set
           this.proponentName = this.storageService.state.selectedOrganization2018.name;
@@ -218,18 +217,15 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   buildForm(resolverData) {
     if (this.storageService.state.form2018) {
-      console.log('form from ss');
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2018;
       this.onChangeType(null);
     } else if (!(Object.keys(resolverData).length === 0 && resolverData.constructor === Object)) {
       // First entry on resolver
-      console.log('form from rs', resolverData);
       this.projectId = resolverData.project._id;
       this.myForm = this.buildFormFromData(resolverData.project);
       this.onChangeType(null);
     } else {
-      console.log('form from blank');
       this.myForm = new FormGroup({
         'name': new FormControl(),
         'proponent': new FormControl(),
