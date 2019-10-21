@@ -4,20 +4,34 @@ import { Observable } from 'rxjs/Observable';
 
 import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
+import { SearchService } from 'app/services/search.service';
 
 @Injectable()
-export class ProjectResolver implements Resolve<Project> {
+export class ProjectResolver implements Resolve<Object> {
 
   constructor(
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private searchService: SearchService
   ) { }
 
-  resolve(route: ActivatedRouteSnapshot): Observable<Project> {
+  resolve(route: ActivatedRouteSnapshot): Observable<Object> {
     const projId = route.paramMap.get('projId');
     let start = new Date();
     let end = new Date();
     start.setDate(start.getDate() - 7);
     end.setDate(end.getDate() + 7);
-    return this.projectService.getById(projId, start.toISOString(), end.toISOString());
+    return this.searchService.getSearchResults(
+      '',
+      'Project',
+      [],
+      1,
+      1,
+      '',
+      '',
+      {_id: projId},
+      true,
+      {}
+    );
+    // return this.projectService.getById(projId, start.toISOString(), end.toISOString());
   }
 }
