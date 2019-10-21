@@ -43,11 +43,11 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, projectLegislation: string = '', sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
     if (sortBy === '') {
       sortBy = null;
     }
-    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, sortBy, queryModifier, populate, filter)
+    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter)
       .map(res => {
         let allResults = <any>[];
         res.forEach(item => {

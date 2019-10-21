@@ -21,6 +21,7 @@ export class ProjectGroupResolver implements Resolve<Observable<object>> {
       1,
       1,
       null,
+      '',
       { _id: groupId },
       false,
       {});

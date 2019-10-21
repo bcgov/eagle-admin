@@ -773,6 +773,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         [{ name: 'project', value: this.currentProject._id }],
         pageNumber,
         this.tableParams.pageSize,
+        '',
         this.tableParams.sortBy,
         { documentSource: 'PROJECT' },
         true,

@@ -118,6 +118,7 @@ export class ProjectListResolver implements Resolve<Object> {
           null,
           tableParams.currentPage,
           tableParams.pageSize,
+          '',
           tableParams.sortBy,
           {},
           true,

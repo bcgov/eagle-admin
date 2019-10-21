@@ -29,6 +29,7 @@ export class AddDocumentsResolver implements Resolve<Observable<object>> {
       [{ 'name': 'project', 'value': projectId }],
       pageNum,
       pageSize,
+      '',
       sortBy,
       { documentSource: 'PROJECT' },
       );

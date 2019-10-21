@@ -24,6 +24,7 @@ export class ProjectContactsResolver implements Resolve<Observable<object>> {
       [],
       pageNum,
       pageSize,
+      '',
       sortBy,
       { project: projectId },
       false);
