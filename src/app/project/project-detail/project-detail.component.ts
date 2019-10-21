@@ -52,7 +52,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data: { project: any }) => {
+        (data) => {
           if (data.project) {
             this.project = this.searchService.extractFromResults(data.project);
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
