@@ -15,15 +15,14 @@ import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-import { SearchService } from 'app/services/search.service';
 
 @Component({
-  selector: 'app-project-detail',
-  templateUrl: './project-detail.component.html',
-  styleUrls: ['./project-detail.component.scss']
+  selector: 'app-project-archived-detail',
+  templateUrl: './project-archived-detail.component.html',
+  styleUrls: ['./project-archived-detail.component.scss']
 })
 
-export class ProjectDetailComponent implements OnInit, OnDestroy {
+export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
 
   public isPublishing = false;
   public isUnpublishing = false;
@@ -44,7 +43,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
-    private searchService: SearchService
   ) {
   }
 
@@ -52,9 +50,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data) => {
+        (data: { project: Project }) => {
           if (data.project) {
-            this.project = this.searchService.extractFromResults(data.project);
+            this.project = data.project;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();
@@ -65,18 +63,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           }
         }
       );
-
-    // this.project = this.projectComponent.project;
-    // Handles when we come back to this page.
-
-    // // TODO fix
-    // if (this.project && this.project.intake === null) {
-    //   this.project.intake = { investment: '', investmentNotes: '' };
-    // }
-
-    // if (this.project && this.project.intake.investment !== '' && this.project.intake.investment[0] !== '$') {
-    //   this.project.intake.investment = this.cp.transform(this.project.intake.investment, '', true, '1.0-0');
-    // }
   }
 
   editProject() {
@@ -105,19 +91,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // if (this.project.isPublished) {
-    //   this.dialogService.addDialog(ConfirmComponent,
-    //     {
-    //       title: 'Cannot Delete Project',
-    //       message: 'Please unpublish project first.',
-    //       okOnly: true
-    //     }, {
-    //       backdropColor: 'rgba(0, 0, 0, 0.5)'
-    //     })
-    //     .takeUntil(this.ngUnsubscribe);
-    //   return;
-    // }
-
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Confirm Deletion',
@@ -139,37 +112,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.isDeleting = true;
 
     let observables = of(null);
-
-    // // delete comment period
-    // if (this.project.currentPeriods) {
-    //   observables = observables.concat(this.commentPeriodService.delete(this.project.currentPeriods));
-    // }
-
-    // // delete decision documents
-    // if (this.project.decision && this.project.decision.documents) {
-    //   for (const doc of this.project.decision.documents) {
-    //     observables = observables.concat(this.documentService.delete(doc));
-    //   }
-    // }
-
-    // // delete decision
-    // if (this.project.decision) {
-    //   observables = observables.concat(this.decisionService.delete(this.project.decision));
-    // }
-
-    // // delete project documents
-    // if (this.project.documents) {
-    //   for (const doc of this.project.documents) {
-    //     observables = observables.concat(this.documentService.delete(doc));
-    //   }
-    // }
-
-    // // delete features
-    // observables = observables.concat(this.featureService.deleteByProjectId(this.project._id));
-
-    // // delete project
-    // // do this last in case of prior failures
-    // observables = observables.concat(this.projectService.delete(this.project));
 
     observables
       .takeUntil(this.ngUnsubscribe)

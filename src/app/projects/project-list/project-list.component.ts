@@ -517,6 +517,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         null,
         pageNumber,
         this.tableParams.pageSize,
+        '',
         this.tableParams.sortBy,
         {},
         true,

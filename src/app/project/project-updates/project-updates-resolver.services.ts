@@ -22,6 +22,7 @@ export class ProjectUpdatesResolver implements Resolve<Observable<object>> {
       [{ 'name': 'project', 'value': projectId }],
       pageNum,
       pageSize,
+      '',
       sortBy,
       {},
       true);

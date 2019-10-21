@@ -22,8 +22,15 @@
   <section>
     <app-comment-period-banner></app-comment-period-banner>
   </section>
+  <div>
+    <button [routerLink]="['/p',  project._id, 'project-archived-detail']" class="btn btn-archived mr-1 pb-1" type="button" id="button-sa"> <i class="material-icons mb-1">access_time</i> View Archived Project Details</button>
+  </div>
   <section>
     <h2>Basic Information</h2>
+    <div class="label-pair">
+        <h3 for="legislation">Legislation: </h3>
+        <p id="legislation">{{project.legislation || '-'}}</p>
+    </div>
     <div class="label-pair">
       <h3 for="proponent">Proponent: </h3>
       <p id="proponent">{{project.proponent.name || '-'}}</p>
@@ -67,11 +74,11 @@
   <section>
     <h2>Supplementary Information</h2>
     <div class="label-pair">
-      <h3 for="ceaa">CEAA Involvement: </h3>
+      <h3 for="ceaa">IAAC Involvement: </h3>
       <p id="ceaa">{{project.CEAAInvolvement || '-'}}</p>
     </div>
     <div class="label-pair">
-      <h3 for="ceaa-url">CEAA URL: </h3>
+      <h3 for="ceaa-url">IAAC URL: </h3>
       <p id="ceaa-url"><a href="{{project.CEAALink}}">{{project.CEAALink || '-'}}</a></p>
     </div>
     <div class="label-pair">

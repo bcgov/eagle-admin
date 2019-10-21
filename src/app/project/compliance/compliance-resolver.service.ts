@@ -27,6 +27,7 @@ export class ComplianceResolver implements Resolve<Observable<object>> {
       [{ 'name': 'project', 'value': projectId }],
       tableParams.currentPage,
       tableParams.pageSize,
+      '',
       tableParams.sortBy,
       {},
       true);

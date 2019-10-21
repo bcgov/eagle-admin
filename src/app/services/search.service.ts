@@ -43,15 +43,21 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, projectLegislation: string = '', sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
     if (sortBy === '') {
       sortBy = null;
     }
-    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, sortBy, queryModifier, populate, filter)
+    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter)
       .map(res => {
         let allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
+          // on Project schemaName return the project data instead of the whole project which has changed based on ear changes
+          r.data.searchResults = r.data.searchResults.map( value => {
+            if (value._schemaName === 'Project') {
+              return value.currentProjectData;
+            }
+          });
           allResults.push(r);
         });
         return allResults;
@@ -62,5 +68,14 @@ export class SearchService {
         return of(null as SearchResults);
       });
     return searchResults;
+  }
+
+  // extract the real object from the results object
+  // this will return an array if the searchResults array has more than 1 element
+  // otherwise it returns the single element in the array
+  extractFromResults(results: any[]) {
+    const data = results[0].data.searchResults;
+    if (!data) { return null; }
+    return data.length > 1 ? data : data[0];
   }
 }

@@ -26,6 +26,7 @@ export class ContactsResolver implements Resolve<object> {
       null,
       tableParams.currentPage,
       tableParams.pageSize,
+      '',
       tableParams.sortBy,
       {});
   }
