@@ -16,6 +16,9 @@ import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 import { SearchService } from 'app/services/search.service';
+import { ISearchResults } from 'app/models/search';
+import { Utils } from 'app/shared/utils/utils';
+
 
 @Component({
   selector: 'app-project-detail',
@@ -28,7 +31,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public isPublishing = false;
   public isUnpublishing = false;
   public isDeleting = false;
-  public project: Project = null;
+  public project: Project;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -44,7 +47,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
-    private searchService: SearchService
+    private searchService: SearchService,
+    private utils: Utils
+
   ) {
   }
 
@@ -52,9 +57,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data) => {
+        (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
-            this.project = this.searchService.extractFromResults(data.project);
+            this.project = this.utils.extractFromSearchResults(data.project) && this.utils.extractFromSearchResults(data.project)[0] || null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();
