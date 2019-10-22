@@ -12,7 +12,8 @@ import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
-import { SearchService } from 'app/services/search.service';
+import { ISearchResults } from 'app/models/search';
+
 
 @Component({
   selector: 'form-tab-2018',
@@ -149,7 +150,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
-    private searchService: SearchService
   ) {
   }
 
@@ -166,10 +166,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     // Get data related to current project
     this.route.parent.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(data => {
-        this.project = this.searchService.extractFromResults(data.project);
+      .subscribe((data: { project: ISearchResults<Project>[] }) => {
+        const projectSearchData = this.utils.extractFromSearchResults(data.project);
+        this.project = projectSearchData ? projectSearchData[0] : null;
         this.isEditing = this.project ? true : false;
-        // this.isEditing = Object.keys(data).length === 0 && data.constructor === Object ? false : true;
         if (this.storageService.state.selectedOrganization2018) {
           // tab specific state set
           this.proponentName = this.storageService.state.selectedOrganization2018.name;
