@@ -59,7 +59,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       .subscribe(
         (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
-            this.project = this.utils.extractFromSearchResults(data.project) && this.utils.extractFromSearchResults(data.project)[0] || null;
+            const results = this.utils.extractFromSearchResults(data.project);
+            this.project = results ? results[results.length - 1] :  null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();

@@ -48,7 +48,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private config: ConfigService,
     private storageService: StorageService,
-    private searchService: SearchService
+    private utils: Utils
   ) {
   }
 
@@ -70,7 +70,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
-        this.project = this.searchService.extractFromResults(data.project);
+        const projectSearchData = this.utils.extractFromSearchResults(data.project);
+        this.project = projectSearchData ? projectSearchData[0] : null;
         this.loading = false;
       });
 
