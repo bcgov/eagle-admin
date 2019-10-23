@@ -12,6 +12,7 @@ import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { ISearchResults } from 'app/models/search';
 
 @Component({
   selector: 'form-tab-2002',
@@ -132,11 +133,12 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
   public projectName;
   public projectId;
-  public project;
+  public project: Project;
 
   public isEditing = false;
 
   public loading = true;
+  searchService: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -147,7 +149,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     private utils: Utils,
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
-    private storageService: StorageService
+    private storageService: StorageService,
   ) {
   }
 
@@ -164,8 +166,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     // Get data related to current project
     this.route.parent.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(data => {
-        this.isEditing = Object.keys(data).length === 0 && data.constructor === Object ? false : true;
+      .subscribe((data: { project: ISearchResults<Project>[] }) => {
+        this.project = this.utils.extractFromSearchResults(data.project) && this.utils.extractFromSearchResults(data.project)[0] || null;
+        this.isEditing = this.project ? true : false;
         // selectedOrganization is the default, we need legislation-tab specific keys
         if (this.storageService.state.selectedOrganization2002) {
           // tab specific state set
@@ -177,13 +180,11 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.storageService.state.selectedOrganization = null;
           this.proponentName = this.storageService.state.selectedOrganization2002.name;
           this.proponentId = this.storageService.state.selectedOrganization2002._id;
-        } else if (this.isEditing && data.project.proponent._id && data.project.proponent._id !== '') {
-          // load from data
-          this.proponentName = data.project.proponent.name;
-          this.proponentId = data.project.proponent._id;
+        } else if (this.isEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+          this.proponentName = this.project.proponent.name;
+          this.proponentId = this.project.proponent._id;
         }
-        this.project = data.project;
-        this.buildForm(data);
+        this.buildForm(this.project);
 
         if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
           switch (this.storageService.state.selectedContactType) {
@@ -216,18 +217,17 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.back = this.storageService.state.back;
   }
 
-  buildForm(resolverData) {
+  buildForm(project: Project) {
     // using multiple forms now one per legislation
     if (this.storageService.state.form2002) {
       console.log('form from ss');
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2002;
       this.onChangeType(null);
-    } else if (!(Object.keys(resolverData).length === 0 && resolverData.constructor === Object)) {
+    } else if (!project) {
       // First entry on resolver
-      console.log('form from rs', resolverData);
-      this.projectId = resolverData.project._id;
-      this.myForm = this.buildFormFromData(resolverData.project);
+      this.projectId = project._id;
+      this.myForm = this.buildFormFromData(project);
       this.onChangeType(null);
     } else {
       console.log('form from blank');
