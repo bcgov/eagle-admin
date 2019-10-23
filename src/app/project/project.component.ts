@@ -4,6 +4,8 @@ import { Project } from 'app/models/project';
 import { Subject } from 'rxjs';
 import { SideBarService } from 'app/services/sidebar.service';
 import { StorageService } from 'app/services/storage.service';
+import { Utils } from 'app/shared/utils/utils';
+import { ISearchResult, ISearchResults } from 'app/models/search';
 
 @Component({
   selector: 'app-project',
@@ -22,6 +24,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private router: Router,
     private _changeDetectorRef: ChangeDetectorRef,
     private sidebarService: SideBarService,
+    private utils: Utils,
     private storageService: StorageService
   ) {
   }
@@ -36,9 +39,10 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data: { project: Project }) => {
+        (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
-            this.project = data.project;
+            const projectSearchData = this.utils.extractFromSearchResults(data.project);
+            this.project = projectSearchData ? projectSearchData[0] : null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             this.loading = false;
             this._changeDetectorRef.detectChanges();
