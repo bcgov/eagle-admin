@@ -18,6 +18,8 @@ export class ProjectComponent implements OnInit, OnDestroy {
   public project: Project = null;
   public loading = true;
   public classApplied = false;
+  public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded.
+
 
   constructor(
     private route: ActivatedRoute,
@@ -42,7 +44,7 @@ export class ProjectComponent implements OnInit, OnDestroy {
         (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
             const projectSearchData = this.utils.extractFromSearchResults(data.project);
-            this.project = projectSearchData ? projectSearchData[0] : null;
+            this.project = projectSearchData ? projectSearchData[0][this.publishedLegislation] : null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             this.loading = false;
             this._changeDetectorRef.detectChanges();
