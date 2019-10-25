@@ -1,9 +1,4 @@
 <form *ngIf="myForm && !loading" [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
-    <div class="text-right">
-      <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
-      &nbsp;
-      <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
-    </div>
 
     <section>
       <h2>Basic Information</h2>
@@ -266,4 +261,11 @@
         </div>
       </div>
     </section>
+    <div class="text-right">
+      <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+      &nbsp;
+      <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
+      &nbsp;
+      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()">Publish</button>
+    </div>
   </form>

@@ -12,6 +12,8 @@ import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { ISearchResults } from 'app/models/search';
+
 
 @Component({
   selector: 'form-tab-2018',
@@ -147,7 +149,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private utils: Utils,
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
-    private storageService: StorageService
+    private storageService: StorageService,
   ) {
   }
 
@@ -164,9 +166,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     // Get data related to current project
     this.route.parent.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(data => {
-        this.isEditing = Object.keys(data).length === 0 && data.constructor === Object ? false : true;
-        console.log(this.isEditing);
+      .subscribe((data: { project: ISearchResults<Project>[] }) => {
+        const projectSearchData = this.utils.extractFromSearchResults(data.project);
+        this.project = projectSearchData ? projectSearchData[0]['2018'] : null;
+        this.isEditing = this.project ? true : false;
         if (this.storageService.state.selectedOrganization2018) {
           // tab specific state set
           this.proponentName = this.storageService.state.selectedOrganization2018.name;
@@ -177,13 +180,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           this.storageService.state.selectedOrganization = null;
           this.proponentName = this.storageService.state.selectedOrganization2018.name;
           this.proponentId = this.storageService.state.selectedOrganization2018._id;
-        } else if (this.isEditing && data.project.proponent._id && data.project.proponent._id !== '') {
+        } else if (this.isEditing && this.project.proponent._id && this.project.proponent._id !== '') {
           // load from data
-          this.proponentName = data.project.proponent.name;
-          this.proponentId = data.project.proponent._id;
+          this.proponentName = this.project.proponent.name;
+          this.proponentId = this.project.proponent._id;
         }
-        this.project = data.project;
-        this.buildForm(data);
+        this.buildForm();
 
         if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
           switch (this.storageService.state.selectedContactType) {
@@ -216,20 +218,17 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     this.back = this.storageService.state.back;
   }
 
-  buildForm(resolverData) {
+  buildForm() {
     if (this.storageService.state.form2018) {
-      console.log('form from ss');
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2018;
       this.onChangeType(null);
-    } else if (!(Object.keys(resolverData).length === 0 && resolverData.constructor === Object)) {
+    } else if (this.isEditing) {
       // First entry on resolver
-      console.log('form from rs', resolverData);
-      this.projectId = resolverData.project._id;
-      this.myForm = this.buildFormFromData(resolverData.project);
+      this.projectId = this.project._id;
+      this.myForm = this.buildFormFromData(this.project);
       this.onChangeType(null);
     } else {
-      console.log('form from blank');
       this.myForm = new FormGroup({
         'name': new FormControl(),
         'proponent': new FormControl(),

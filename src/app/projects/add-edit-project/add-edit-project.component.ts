@@ -12,6 +12,7 @@ import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { SearchService } from 'app/services/search.service';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -23,8 +24,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   // order of items in this tabLinks array is important.
   public tabLinks = [
     // { label: '1996 Environmental Assessment Act', link: 'form-1996' },
-    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002' },
-    { label: '2018 Environmental Assessment Act', link: 'form-2018' },
+    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['1996', '2002'] },
+    { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['2018'] },
   ];
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public documents: any[] = [];
@@ -37,6 +38,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public projectName;
   public projectId;
   public project;
+  public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded
 
   public isEditing = false;
 
@@ -45,13 +47,9 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
-    private router: Router,
     private config: ConfigService,
-    private _changeDetectorRef: ChangeDetectorRef,
-    private utils: Utils,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private utils: Utils
   ) {
   }
 
@@ -73,7 +71,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
-        this.project = data.project;
+        const projectSearchData = this.utils.extractFromSearchResults(data.project);
+        this.project = projectSearchData ? projectSearchData[0][this.publishedLegislation] : null;
         this.loading = false;
       });
 

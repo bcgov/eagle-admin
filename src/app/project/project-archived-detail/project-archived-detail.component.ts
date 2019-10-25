@@ -15,6 +15,8 @@ import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
+import { Utils } from 'app/shared/utils/utils';
+import { ISearchResults } from 'app/models/search';
 
 @Component({
   selector: 'app-project-archived-detail',
@@ -43,6 +45,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
+    private utils: Utils
   ) {
   }
 
@@ -50,9 +53,10 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data: { project: Project }) => {
+        (data: {  project: ISearchResults<Project>[] }) => {
           if (data.project) {
-            this.project = data.project;
+            const projectSearchData = this.utils.extractFromSearchResults(data.project);
+            this.project = projectSearchData ? projectSearchData[0] : null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();

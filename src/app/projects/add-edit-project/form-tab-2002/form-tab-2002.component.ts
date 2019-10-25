@@ -135,10 +135,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public projectId;
   public project: Project;
 
-  public isEditing = false;
+  public isEditing: Boolean = false;
 
   public loading = true;
-  searchService: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -167,7 +166,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.route.parent.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { project: ISearchResults<Project>[] }) => {
-        this.project = this.utils.extractFromSearchResults(data.project) && this.utils.extractFromSearchResults(data.project)[0] || null;
+        const projectSearchData = this.utils.extractFromSearchResults(data.project);
+        this.project = projectSearchData ? projectSearchData[0]['2002'] : null; // todo: this might need more logic to be inclusive of 1996 legslation
         this.isEditing = this.project ? true : false;
         // selectedOrganization is the default, we need legislation-tab specific keys
         if (this.storageService.state.selectedOrganization2002) {
@@ -181,10 +181,11 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.proponentName = this.storageService.state.selectedOrganization2002.name;
           this.proponentId = this.storageService.state.selectedOrganization2002._id;
         } else if (this.isEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+          // load from data
           this.proponentName = this.project.proponent.name;
           this.proponentId = this.project.proponent._id;
         }
-        this.buildForm(this.project);
+        this.buildForm();
 
         if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
           switch (this.storageService.state.selectedContactType) {
@@ -217,20 +218,18 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.back = this.storageService.state.back;
   }
 
-  buildForm(project: Project) {
+  buildForm() {
     // using multiple forms now one per legislation
     if (this.storageService.state.form2002) {
-      console.log('form from ss');
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2002;
       this.onChangeType(null);
-    } else if (!project) {
+    } else if (this.isEditing) {
       // First entry on resolver
-      this.projectId = project._id;
-      this.myForm = this.buildFormFromData(project);
+      this.projectId = this.project._id;
+      this.myForm = this.buildFormFromData(this.project);
       this.onChangeType(null);
     } else {
-      console.log('form from blank');
       this.myForm = new FormGroup({
         'name': new FormControl(),
         'proponent': new FormControl(),
