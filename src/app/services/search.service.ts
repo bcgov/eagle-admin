@@ -60,6 +60,8 @@ export class SearchService {
                 _id: value._id,
                 _legislationId: value.currentProjectData._id
               };
+            } else {
+              return value;
             }
           });
           allResults.push(r);
