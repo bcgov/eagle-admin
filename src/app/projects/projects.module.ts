@@ -14,7 +14,6 @@ import { ProjectListTableRowsComponent } from './project-list/project-list-table
 import { AddEditProjectComponent } from './add-edit-project/add-edit-project.component';
 import { FormTab2002Component } from './add-edit-project/form-tab-2002/form-tab-2002.component';
 import { FormTab2018Component } from './add-edit-project/form-tab-2018/form-tab-2018.component';
-import { ActiveTabGuard } from './add-edit-project/active-tab-guard';
 @NgModule({
   imports: [
     CommonModule,
@@ -40,7 +39,6 @@ import { ActiveTabGuard } from './add-edit-project/active-tab-guard';
     ProjectListComponent
   ],
   providers: [
-    ActiveTabGuard
   ]
 })
 
