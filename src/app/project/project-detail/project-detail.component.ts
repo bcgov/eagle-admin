@@ -32,6 +32,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public isUnpublishing = false;
   public isDeleting = false;
   public project: Project;
+  public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded.
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -60,7 +61,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
-            this.project = results ? results[results.length - 1] :  null;
+            this.project = results ? results[0][this.publishedLegislation] :  null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();

@@ -6,10 +6,18 @@
 }
 
 .badge-published{
-    padding: 9px;
+    padding-left: 9px;
+    padding-right: 9px;
+    padding-top: 5px;
+    padding-bottom: 5px;
     color: white;
     letter-spacing: 0.5px;
     margin-left: 10px;
+}
+
+.btn-publish{
+    background-color: #28a745;
+    border-color: #28a745;
 }
 // .nav-tabs {
 //     background: none;

@@ -168,7 +168,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { project: ISearchResults<Project>[] }) => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
-        this.project = projectSearchData ? projectSearchData[0] : null;
+        this.project = projectSearchData ? projectSearchData[0]['2018'] : null;
         this.isEditing = this.project ? true : false;
         if (this.storageService.state.selectedOrganization2018) {
           // tab specific state set

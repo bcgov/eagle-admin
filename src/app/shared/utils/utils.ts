@@ -94,6 +94,7 @@ export class Utils {
   }
     // This function will take in a ISearchResults of some type and return an array of that same type
     public extractFromSearchResults<T>(results: ISearchResults<T>[]): T[] {
+      if (!results) {return null;}
       const data = results[0].data;
       if (!data) { return null; }
       return <T[]>data.searchResults;

@@ -167,7 +167,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { project: ISearchResults<Project>[] }) => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
-        this.project = projectSearchData ? projectSearchData[0] : null;
+        this.project = projectSearchData ? projectSearchData[0]['2002'] : null; // todo: this might need more logic to be inclusive of 1996 legslation
         this.isEditing = this.project ? true : false;
         // selectedOrganization is the default, we need legislation-tab specific keys
         if (this.storageService.state.selectedOrganization2002) {

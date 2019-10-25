@@ -24,8 +24,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   // order of items in this tabLinks array is important.
   public tabLinks = [
     // { label: '1996 Environmental Assessment Act', link: 'form-1996' },
-    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002' },
-    { label: '2018 Environmental Assessment Act', link: 'form-2018' },
+    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['1996', '2002'] },
+    { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['2018'] },
   ];
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public documents: any[] = [];
@@ -38,6 +38,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public projectName;
   public projectId;
   public project;
+  public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded
 
   public isEditing = false;
 
@@ -71,7 +72,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
-        this.project = projectSearchData ? projectSearchData[0] : null;
+        this.project = projectSearchData ? projectSearchData[0][this.publishedLegislation] : null;
         this.loading = false;
       });
 
