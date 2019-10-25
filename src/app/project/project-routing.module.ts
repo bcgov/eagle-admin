@@ -51,7 +51,6 @@ import { LinkOrganizationComponent } from 'app/shared/components/link-organizati
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 import { ProjectsRoutes } from 'app/projects/projects-routes';
-import { ActiveTabGuard } from 'app/projects/add-edit-project/active-tab-guard';
 
 const routes: Routes = [
   {
@@ -83,7 +82,6 @@ const routes: Routes = [
       },
       {
         path: 'edit',
-        canActivate: [ActiveTabGuard],
         component: AddEditProjectComponent,
         children: ProjectsRoutes
       },
