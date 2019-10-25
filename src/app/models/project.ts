@@ -26,6 +26,8 @@ export class Project {
   responsibleEPDEmail: String;
   responsibleEPDPhone: String;
   type: String;
+  // Array of objects containing legislation data
+  allProjectDataByLegislation: Array<Object>[];
 
   // Everything else
   addedBy: String;

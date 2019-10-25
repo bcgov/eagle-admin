@@ -58,6 +58,7 @@ export class SearchService {
 
     // };
 
+    // This is being used for every project detail page to fake the legistlation specific data (hard coded 2002)
 
     const searchResults = this.api.searchKeywords(keys, 'Project', fields, pageNum, pageSize, '', sortBy, queryModifier, populate, filter)
       .map(res => {
@@ -68,6 +69,7 @@ export class SearchService {
             if (value._schemaName === 'Project') {
               const project = {
                 '2002': {
+                  ...value,
                   ...value.currentProjectData,
                   _id: value._id,
                   _legislationId: value.currentProjectData._id,
@@ -105,6 +107,7 @@ export class SearchService {
           r.data.searchResults = r.data.searchResults.map( value => {
             if (value._schemaName === 'Project') {
               return {
+                ...value,
                 ...value.currentProjectData,
                 _id: value._id,
                 _legislationId: value.currentProjectData._id
