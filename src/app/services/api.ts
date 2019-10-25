@@ -752,6 +752,7 @@ export class ApiService {
       'documentAuthor',
       'documentAuthorType',
       'projectPhase',
+      'legislation',
       'milestone',
       'description',
       'isPublished'
