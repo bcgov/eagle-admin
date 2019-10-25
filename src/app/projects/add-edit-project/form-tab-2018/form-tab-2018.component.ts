@@ -172,8 +172,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         this.project = projectSearchData ? projectSearchData[0]['2018'] : null;
         this.tabIsEditing = this.project ? true : false;
         this.pageIsEditing = this.storageService.state.pageIsEditing;
-        this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectId;
-        this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectName;
+        this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
+        this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
         if (this.storageService.state.selectedOrganization2018) {
           // tab specific state set
           this.proponentName = this.storageService.state.selectedOrganization2018.name;

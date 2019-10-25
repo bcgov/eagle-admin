@@ -75,8 +75,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
         this.project = projectSearchData ? projectSearchData[0][this.publishedLegislation] : null;
         if (this.project) {
-          this.storageService.state.projectId = this.project._id;
-          this.storageService.state.projectName = this.project.name;
+          this.storageService.state.projectDetailId = this.project._id;
+          this.storageService.state.projectDetailName = this.project.name;
         }
         this.loading = false;
       });
