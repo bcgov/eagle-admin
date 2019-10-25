@@ -21,6 +21,7 @@ export class Document {
   datePosted: Date;
   dateUpdated: Date;
   projectPhase: string;
+  legislation: number;
 
   checkbox: boolean;
   upfile: File;
@@ -52,6 +53,7 @@ export class Document {
     this.documentAuthorType = obj && obj.documentAuthorType || null;
     this.eaoStatus = obj && obj.eaoStatus || null;
     this.projectPhase = obj && obj.projectPhase || null;
+    this.legislation = obj && obj.legislation || null;
 
     this.checkbox = obj && obj.checkbox || null;
     this.upfile = obj && obj.upfile || null;
