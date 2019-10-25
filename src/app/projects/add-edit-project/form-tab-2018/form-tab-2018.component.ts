@@ -132,11 +132,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     'Not Designated Reviewable'
   ];
 
-  public projectName;
-  public projectId;
+  public projectName: string;
+  public projectId: string;
   public project;
 
-  public isEditing = false;
+  public tabIsEditing = false;
+  public pageIsEditing = false;
 
   public loading = true;
 
@@ -169,7 +170,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       .subscribe((data: { project: ISearchResults<Project>[] }) => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
         this.project = projectSearchData ? projectSearchData[0]['2018'] : null;
-        this.isEditing = this.project ? true : false;
+        this.tabIsEditing = this.project ? true : false;
+        this.pageIsEditing = this.storageService.state.pageIsEditing;
+        this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
+        this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
         if (this.storageService.state.selectedOrganization2018) {
           // tab specific state set
           this.proponentName = this.storageService.state.selectedOrganization2018.name;
@@ -180,7 +184,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           this.storageService.state.selectedOrganization = null;
           this.proponentName = this.storageService.state.selectedOrganization2018.name;
           this.proponentId = this.storageService.state.selectedOrganization2018._id;
-        } else if (this.isEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+        } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
           // load from data
           this.proponentName = this.project.proponent.name;
           this.proponentId = this.project.proponent._id;
@@ -223,7 +227,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2018;
       this.onChangeType(null);
-    } else if (this.isEditing) {
+    } else if (this.tabIsEditing) {
       // First entry on resolver
       this.projectId = this.project._id;
       this.myForm = this.buildFormFromData(this.project);
@@ -265,7 +269,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   private setNavigation() {
-    if (!this.isEditing) {
+    if (!this.pageIsEditing) {
       this.navigationStackUtils.pushNavigationStack(
         ['/projects', 'add', 'form-2018'],
         [
@@ -281,18 +285,18 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       );
     } else {
       this.navigationStackUtils.pushNavigationStack(
-        ['/p', this.project._id, 'edit', 'form-2018'],
+        ['/p', this.projectId, 'edit', 'form-2018'],
         [
           {
             route: ['/projects'],
             label: 'All Projects'
           },
           {
-            route: ['/p', this.project._id],
-            label: this.project.name
+            route: ['/p', this.projectId],
+            label: this.projectName
           },
           {
-            route: ['/p', this.project._id, 'edit', 'form-2018'],
+            route: ['/p', this.projectId, 'edit', 'form-2018'],
             label: 'Edit'
           }
         ]
@@ -454,10 +458,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public linkOrganization() {
     this.storageService.state.form2018 = this.myForm;
     this.setNavigation();
-    if (!this.isEditing) {
+    if (!this.pageIsEditing) {
       this.router.navigate(['/projects', 'add', 'form-2018', 'link-org']);
     } else {
-      this.router.navigate(['/p', this.project._id, 'edit', 'form-2018', 'link-org']);
+      this.router.navigate(['/p', this.projectId, 'edit', 'form-2018', 'link-org']);
     }
   }
 
@@ -513,7 +517,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     if (!this.validateForm()) {
       return;
     }
-    if (!this.isEditing) {
+    if (!this.tabIsEditing) {
       // POST
       let project = new Project(
         this.convertFormToProject(this.myForm)
@@ -587,7 +591,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
     this.storageService.state.componentModel = 'User';
     this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
-    if (this.isEditing) {
+    if (this.tabIsEditing) {
       this.router.navigate(['/p', this.storageService.state.currentProject.data._id, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
     } else {
       this.router.navigate(['/projects', 'add', 'form-2018', 'link-contact', { pageSize: 25 }]);

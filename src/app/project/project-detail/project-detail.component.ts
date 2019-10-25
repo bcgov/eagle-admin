@@ -95,7 +95,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
     this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
-    this.router.navigate(['p', this.project._id, 'edit']);
+    this.router.navigate(['p', this.project._id, 'edit', {'1996': 'form-2002', '2002': 'form-2002', '2018': 'form-2018'}[this.publishedLegislation]]);
   }
 
   public deleteProject() {

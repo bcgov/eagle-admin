@@ -40,7 +40,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public project;
   public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded
 
-  public isEditing = false;
+  public pageIsEditing = false;
 
   public loading = true;
 
@@ -65,7 +65,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     //
     this.route.url
       .subscribe(urls => {
-        this.isEditing = urls.some(url => url.path === 'edit');
+        this.pageIsEditing = urls.some(url => url.path === 'edit');
+        this.storageService.state.pageIsEditing = this.pageIsEditing;
       });
     // Get data related to current project
     this.route.parent.data
@@ -73,11 +74,15 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       .subscribe(data => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
         this.project = projectSearchData ? projectSearchData[0][this.publishedLegislation] : null;
+        if (this.project) {
+          this.storageService.state.projectDetailId = this.project._id;
+          this.storageService.state.projectDetailName = this.project.name;
+        }
         this.loading = false;
       });
 
     // hide tabs corresponding to old legislations on new projects
-    if (!this.isEditing) {
+    if (!this.pageIsEditing) {
       this.tabLinks = [this.tabLinks[this.tabLinks.length - 1]];
     }
     this.loading = false;

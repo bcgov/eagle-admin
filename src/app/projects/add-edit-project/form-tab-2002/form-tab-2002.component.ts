@@ -131,11 +131,12 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     'Not Designated Reviewable'
   ];
 
-  public projectName;
-  public projectId;
-  public project: Project;
+  public projectName: string;
+  public projectId: string;
 
-  public isEditing: Boolean = false;
+  public tabIsEditing = false;
+  public pageIsEditing = false;
+  public project: Project;
 
   public loading = true;
 
@@ -168,7 +169,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       .subscribe((data: { project: ISearchResults<Project>[] }) => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
         this.project = projectSearchData ? projectSearchData[0]['2002'] : null; // todo: this might need more logic to be inclusive of 1996 legslation
-        this.isEditing = this.project ? true : false;
+        this.tabIsEditing = this.project ? true : false;
+        this.pageIsEditing = this.storageService.state.pageIsEditing;
+        this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
+        this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
         // selectedOrganization is the default, we need legislation-tab specific keys
         if (this.storageService.state.selectedOrganization2002) {
           // tab specific state set
@@ -180,7 +184,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.storageService.state.selectedOrganization = null;
           this.proponentName = this.storageService.state.selectedOrganization2002.name;
           this.proponentId = this.storageService.state.selectedOrganization2002._id;
-        } else if (this.isEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+        } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
           // load from data
           this.proponentName = this.project.proponent.name;
           this.proponentId = this.project.proponent._id;
@@ -224,7 +228,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2002;
       this.onChangeType(null);
-    } else if (this.isEditing) {
+    } else if (this.tabIsEditing) {
       // First entry on resolver
       this.projectId = this.project._id;
       this.myForm = this.buildFormFromData(this.project);
@@ -266,7 +270,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   private setNavigation() {
-    if (!this.isEditing) {
+    if (!this.pageIsEditing) {
       this.navigationStackUtils.pushNavigationStack(
         ['/projects', 'add', 'form-2002'],
         [
@@ -282,18 +286,18 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       );
     } else {
       this.navigationStackUtils.pushNavigationStack(
-        ['/p', this.project._id, 'edit', 'form-2002'],
+        ['/p', this.projectId, 'edit', 'form-2002'],
         [
           {
             route: ['/projects'],
             label: 'All Projects'
           },
           {
-            route: ['/p', this.project._id],
-            label: this.project.name
+            route: ['/p', this.projectId],
+            label: this.projectName
           },
           {
-            route: ['/p', this.project._id, 'edit', 'form-2002'],
+            route: ['/p', this.projectId, 'edit', 'form-2002'],
             label: 'Edit'
           }
         ]
@@ -456,10 +460,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public linkOrganization() {
     this.storageService.state.form2002 = this.myForm;
     this.setNavigation();
-    if (!this.isEditing) {
+    if (!this.pageIsEditing) {
       this.router.navigate(['/projects', 'add', 'form-2002' , 'link-org']);
     } else {
-      this.router.navigate(['/p', this.project._id, 'edit', 'form-2002', 'link-org']);
+      this.router.navigate(['/p', this.projectId, 'edit', 'form-2002', 'link-org']);
     }
   }
 
@@ -515,7 +519,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     if (!this.validateForm()) {
       return;
     }
-    if (!this.isEditing) {
+    if (!this.tabIsEditing) {
       // POST
       let project = new Project(
         this.convertFormToProject(this.myForm)
@@ -589,7 +593,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     this.storageService.state.componentModel = 'User';
     this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
-    if (this.isEditing) {
+    if (this.tabIsEditing) {
       this.router.navigate(['/p', this.storageService.state.currentProject.data._id, 'edit', 'form-2002' , 'link-contact', { pageSize: 25 }]);
     } else {
       this.router.navigate(['/projects', 'add', 'form-2002', 'link-contact', { pageSize: 25 }]);
