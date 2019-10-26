@@ -58,16 +58,18 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // BUG: Go to add docs. refresh. it will redirect and have errors.
     this.currentProject = this.storageService.state.currentProject.data;
 
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'doctype':
-          break;
-        case 'author':
-          break;
-        case 'label':
-          this.milestones.push(Object.assign({}, item));
-          break;
-      }
+    this.config.getLists().subscribe(lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'doctype':
+            break;
+          case 'author':
+            break;
+          case 'label':
+            this.milestones.push(Object.assign({}, item));
+            break;
+        }
+      });
     });
 
     // Check if we're editing
