@@ -216,6 +216,10 @@ export class ApiService {
       'projLead',
       'execProjectDirector',
       'complianceLead',
+      'review180Start',
+      'review45Start',
+      'reviewSuspensions',
+      'reviewExtensions',
       'pins',
       'read',
       'write',
@@ -257,6 +261,24 @@ export class ApiService {
   deleteProject(proj: Project): Observable<Project> {
     const queryString = `project/${proj._id}`;
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  addExtension(proj: Project, extension: any): Observable<any> {
+    const queryString = `project/${proj._id}/extension`;
+    return this.http.post<any>(`${this.pathAPI}/${queryString}`, extension, {});
+  }
+
+  editExtension(proj: Project, extension: any): Observable<any> {
+    const queryString = `project/${proj._id}/extension`;
+    return this.http.put<any>(`${this.pathAPI}/${queryString}`, extension, {});
+  }
+
+  deleteExtension(proj: Project, extension: any): Observable<any> {
+    let queryString = `project/${proj._id}/extension`;
+    // We need this because DELETE in angular doesn't allow body, even though RFC 7231
+    // explicitly permits it.
+    queryString += '?item=' + encodeURIComponent(JSON.stringify(extension));
+    return this.http.delete<any>(`${this.pathAPI}/${queryString}`, {});
   }
 
   addPinsToProject(proj: Project, pins: any): Observable<Project> {

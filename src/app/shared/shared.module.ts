@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { MatSlideToggleModule, MatMenuModule } from '@angular/material';
 import { MatSnackBarModule } from '@angular/material';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { OrderByPipe } from 'app/shared/pipes/order-by.pipe';
 import { NewlinesPipe } from 'app/shared/pipes/newlines.pipe';
@@ -26,6 +27,7 @@ import { LinkOrganizationComponent } from './components/link-organization/link-o
 import { LinkOrganizationTableRowsComponent } from './components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
+import { ExtensionComponent } from './components/extension/extension.component';
 
 @NgModule({
   imports: [
@@ -36,7 +38,8 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
     NgxPaginationModule,
     FormsModule,
     ReactiveFormsModule,
-    MatMenuModule
+    MatMenuModule,
+    NgbModule
   ],
   declarations: [
     CommentStatsComponent,
@@ -54,7 +57,8 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
     PublishedPipe,
     TableDirective,
     TableTemplateComponent,
-    VarDirective
+    VarDirective,
+    ExtensionComponent
   ],
   entryComponents: [
     ContactSelectTableRowsComponent
