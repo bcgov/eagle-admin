@@ -64,16 +64,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       }
     });
 
-    // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-    let copy_doctype = this.doctypes;
-    this.doctypes = [];
-    // This order was created by mapping the doctype items from the database with the EAO defined ordered list
-    let docList_order = [0, 1, 2, 6, 10, 11, 14, 4, 3, 5, 13, 16, 15, 17, 18, 19, 7, 8, 9, 12];
-    // We map the doctypes to put in the correct order as defined in doclist_order
-    docList_order.map((item, i) => {
-      this.doctypes[item] = copy_doctype[i];
-    });
-
     // Check if documents are null (nav straight to this page)
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
@@ -82,6 +72,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         this.myForm = this.storageService.state.form;
       } else {
         if (this.documents.length === 1) {
+          this.filterByLegislationYear(this.documents[0].legislation);
           this.isPublished = this.documents[0].read.includes('public');
           // Set the old data in there if it exists.
           this.myForm = new FormGroup({
@@ -130,6 +121,21 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     } else {
       this.docNameInvalid = false;
     }
+  }
+
+  filterByLegislationYear(docYear) {
+    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
+    let legislationYear;
+    if (docYear === 1996) {
+      legislationYear = 2002;
+    } else {
+      legislationYear = docYear;
+    }
+    // filter and sort to ensure proper order of lists defined by EAO
+    this.doctypes = this.doctypes.filter(item => item.legislation === legislationYear);
+    this.doctypes.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.authors = this.authors.filter(item => item.legislation === legislationYear);
+    this.projectPhases = this.projectPhases.filter(item => item.legislation === legislationYear);
   }
 
   // on multi edit save, check if form fields have a value
