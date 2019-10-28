@@ -268,7 +268,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
-    this.router.navigate(['/projects', 'add']);
+    this.router.navigate(['/projects', 'add', 'form-2018']);
   }
 
   paramsToCheckboxFilters(params, name, map) {
