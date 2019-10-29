@@ -1,33 +1,17 @@
 <form *ngIf="myForm && !loading" [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
 
     <section>
-      <h2>Basic Information</h2>
+      <h2>Basic Information
+        &nbsp;
+        <button class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
+      </h2>
+
       <div class="flex-container">
           <div class="label-pair">
           <label for="name">Project Name* </label>
           <input name="name" id="name" formControlName="name" type="text" class="form-control" />
         </div>
-        <div class="label-pair add-row">
-          <label for="proponent">Proponent*</label>
-          <div *ngIf="proponentName === '' || proponentName == null">
-            <button class="btn btn-primary" id="orgLink" type="button" (click)="linkOrganization()">Link Organization</button>
-          </div>
-          <div *ngIf="proponentName !== '' && proponentName">
-            <span class="cell icon">
-              <i class="material-icons">business</i>
-            </span>
-            &nbsp;
-            <span class="cell name" [title]="proponentName || ''">
-              <span class="cell__txt-content">{{proponentName}}</span>
-            </span>
-            <span class="cell actions">
-              <button class="btn btn-icon" type="button" title="Delete this organization"
-                (click)="removeSelectedOrganization()">
-                <i class="material-icons">delete</i>
-              </button>
-            </span>
-          </div>
-        </div>
+
         <div class="label-pair">
           <label for="build">Project Nature*</label>
           <select name="build" id="build" formControlName="build" class="form-control">
@@ -36,6 +20,27 @@
             <option [selected]='isSelected("dismantling")' value="dismantling">Dismantling or Abandonment</option>
           </select>
         </div>
+        <div class="label-pair add-row">
+            <label for="proponent">Proponent*</label>
+            <div *ngIf="proponentName === '' || proponentName == null">
+              <button class="btn btn-primary" id="orgLink" type="button" (click)="linkOrganization()">Link Organization</button>
+            </div>
+            <div *ngIf="proponentName !== '' && proponentName">
+              <span class="cell icon">
+                <i class="material-icons">business</i>
+              </span>
+              &nbsp;
+              <span class="cell name" [title]="proponentName || ''">
+                <span class="cell__txt-content">{{proponentName}}</span>
+              </span>
+              <span class="cell actions">
+                <button class="btn btn-icon" type="button" title="Delete this organization"
+                  (click)="removeSelectedOrganization()">
+                  <i class="material-icons">delete</i>
+                </button>
+              </span>
+            </div>
+          </div>
         <div class="label-pair">
           <label for="type">Type* </label>
           <select name="type" id="type" formControlName="type" class="form-control" (change)="onChangeType($event)">
