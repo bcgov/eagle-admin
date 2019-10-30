@@ -134,7 +134,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public projectName: string;
   public projectId: string;
-  public project;
+  public project: Project;
+  public oldProject: Project;
 
   public tabIsEditing = false;
   public pageIsEditing = false;
@@ -170,6 +171,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       .subscribe((data: { project: ISearchResults<Project>[] }) => {
         const projectSearchData = this.utils.extractFromSearchResults(data.project);
         this.project = projectSearchData ? projectSearchData[0]['2018'] : null;
+        this.oldProject = projectSearchData ? projectSearchData[0]['2002'] : null;
         this.tabIsEditing = this.project ? true : false;
         this.pageIsEditing = this.storageService.state.pageIsEditing;
         this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
@@ -220,6 +222,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       });
 
     this.back = this.storageService.state.back;
+  }
+
+  autofill() {
+    this.myForm = this.buildFormFromData(this.oldProject);
   }
 
   buildForm() {
@@ -389,11 +395,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   onCancel() {
     this.clearStorageService();
-    if (this.back && this.back.url) {
-      this.router.navigate(this.back.url);
-    } else {
-      this.router.navigate(['/projects']);
-    }
+    this.buildForm();
+    // if (this.back && this.back.url) {
+    //   this.router.navigate(this.back.url);
+    // } else {
+    //   this.router.navigate(['/projects']);
+    // }
   }
 
   isSelected(val) {
@@ -451,8 +458,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   private clearStorageService() {
     this.storageService.state.form2018 = null;
     this.storageService.state.selectedOrganization2018 = null;
-    this.storageService.state.selectedOrganization = null;
-    this.navigationStackUtils.popNavigationStack();
+    // this.storageService.state.selectedOrganization = null;
+    // this.navigationStackUtils.popNavigationStack();
   }
 
   public linkOrganization() {
