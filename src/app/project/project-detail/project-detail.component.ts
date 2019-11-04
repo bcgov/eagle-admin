@@ -32,7 +32,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public isUnpublishing = false;
   public isDeleting = false;
   public project: Project;
-  public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded.
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -61,7 +60,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
-            this.project = results ? results[0][this.publishedLegislation] :  null;
+            this.project = results ? results[0] :  null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();
@@ -95,7 +94,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
     this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
-    this.router.navigate(['p', this.project._id, 'edit', {'1996': 'form-2002', '2002': 'form-2002', '2018': 'form-2018'}[this.publishedLegislation]]);
+    this.router.navigate(['p', this.project._id, 'edit', {1996: 'form-2002', 2002: 'form-2002', 2018: 'form-2018'}[this.project.legislationYear]]);
   }
 
   public deleteProject() {

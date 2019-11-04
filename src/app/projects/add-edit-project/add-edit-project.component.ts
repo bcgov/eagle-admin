@@ -35,10 +35,11 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public proponentName = '';
   public proponentId = '';
 
-  public projectName;
-  public projectId;
-  public project;
-  public publishedLegislation = '2002'; // todo: this shouldn't be hardcoded
+  public projectName: string;
+  public projectId: string;
+  public project: Project;
+  public fullProject;
+  public publishedLegislation: number;
 
   public pageIsEditing = false;
 
@@ -69,11 +70,14 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         this.storageService.state.pageIsEditing = this.pageIsEditing;
       });
     // Get data related to current project
-    this.route.parent.data
+    this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(data => {
-        const projectSearchData = this.utils.extractFromSearchResults(data.project);
-        this.project = projectSearchData ? projectSearchData[0][this.publishedLegislation] : null;
+        const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+        this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+        this.publishedLegislation = this.fullProject.currentLegislationYear;
+        const legislationKey = 'legislation_' + this.publishedLegislation.toString();
+        this.project = this.fullProject[legislationKey];
         if (this.project) {
           this.storageService.state.projectDetailId = this.project._id;
           this.storageService.state.projectDetailName = this.project.name;

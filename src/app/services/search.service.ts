@@ -46,53 +46,7 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  // TODO: remove this function once api is working
-  getAllLegislationSpecificDataForProject(keys: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
-
-    // const getDataForYear = (year: string) => {
-    //   let data: Project = null;
-    //   this.getSearchResults(keys, 'Project', fields, pageNum, pageSize, year, sortBy, queryModifier, populate, filter)
-    //     .subscribe((project: ISearchResults<Project>[]) => {
-    //       data = this.utils.extractFromSearchResults(project)[0];
-    //     });
-
-    // };
-
-
-    const searchResults = this.api.searchKeywords(keys, 'Project', fields, pageNum, pageSize, '', sortBy, queryModifier, populate, filter)
-      .map(res => {
-        let allResults = <any>[];
-        res.forEach(item => {
-          const r = new SearchResults({ type: item._schemaName, data: item });
-          r.data.searchResults = r.data.searchResults.map( value => {
-            if (value._schemaName === 'Project') {
-              const project = {
-                '2002': {
-                  ...value.currentProjectData,
-                  _id: value._id,
-                  _legislationId: value.currentProjectData._id,
-                }
-              };
-              return project;
-            } else { return value; }
-          });
-          allResults.push(r);
-        });
-        return allResults;
-      })
-      .catch(() => {
-        this.isError = true;
-        // if call fails, return null results
-        return of(null as SearchResults);
-      });
-    return searchResults;
-  }
-
   getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, projectLegislation: string = '', sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
-    // this is temporary until the 'all' value works for projectLegislation parameter on api
-    if (projectLegislation === 'all') {
-      return this.getAllLegislationSpecificDataForProject(keys, fields, pageNum, pageSize, sortBy, queryModifier, populate, filter);
-    }
     if (sortBy === '') {
       sortBy = null;
     }
@@ -101,16 +55,22 @@ export class SearchService {
         let allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
-          // on Project schemaName return the project data instead of the whole project which has changed based on ear changes
-          r.data.searchResults = r.data.searchResults.map( value => {
-            if (value._schemaName === 'Project') {
-              return {
-                ...value.currentProjectData,
-                _id: value._id,
-                _legislationId: value.currentProjectData._id
-              };
-            } else { return value; }
-          });
+          // // on Project schemaName return the project data instead of the whole project which has changed based on ear changes
+          // r.data.searchResults = r.data.searchResults.map( value => {
+          //   if (value._schemaName === 'Project') {
+          //     return {
+          //       legislationData: (() => {
+          //         let data = {};
+          //         value.legislationYearList.forEach((year: number) => {
+          //           data[year] = value['legislation_' + year.toString()];
+          //         });
+          //         return data;
+          //       })(),
+          //       _id: value._id,
+          //       currentLegislationYear: value.currentLegislationYear
+          //     };
+          //   } else { return value; }
+          // });
           allResults.push(r);
         });
         return allResults;

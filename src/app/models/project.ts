@@ -12,6 +12,8 @@ export class Project {
   description: String;
   eacDecision: String;
   location: String;
+  legislation: string;
+  legislationYear: number;
   name: String;
   projectLeadObj: any;
   projectLeadId: String;
