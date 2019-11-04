@@ -13,6 +13,7 @@ import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
+import { FullProject } from 'app/models/fullProject';
 
 @Component({
   selector: 'form-tab-2002',
@@ -137,6 +138,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public tabIsEditing = false;
   public pageIsEditing = false;
   public project: Project;
+  public fullProject: FullProject;
+  public publishedLegislation: string;
 
   public loading = true;
 
@@ -164,52 +167,13 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     });
 
     // Get data related to current project
-    this.route.parent.parent.data
+    this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: { project: ISearchResults<Project>[] }) => {
-        const projectSearchData = this.utils.extractFromSearchResults(data.project);
-        this.project = projectSearchData ? projectSearchData[0]['2002'] : null; // todo: this might need more logic to be inclusive of 1996 legslation
-        this.tabIsEditing = this.project ? true : false;
-        this.pageIsEditing = this.storageService.state.pageIsEditing;
-        this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
-        this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
-        // selectedOrganization is the default, we need legislation-tab specific keys
-        if (this.storageService.state.selectedOrganization2002) {
-          // tab specific state set
-          this.proponentName = this.storageService.state.selectedOrganization2002.name;
-          this.proponentId = this.storageService.state.selectedOrganization2002._id;
-        } else if (this.storageService.state.selectedOrganization) {
-          // new organization linked, set tab-specific state
-          this.storageService.state.selectedOrganization2002 = this.storageService.state.selectedOrganization;
-          this.storageService.state.selectedOrganization = null;
-          this.proponentName = this.storageService.state.selectedOrganization2002.name;
-          this.proponentId = this.storageService.state.selectedOrganization2002._id;
-        } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
-          // load from data
-          this.proponentName = this.project.proponent.name;
-          this.proponentId = this.project.proponent._id;
-        }
+      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+        this.initProject(data);
+        this.initOrg();
         this.buildForm();
-
-        if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
-          switch (this.storageService.state.selectedContactType) {
-            case 'epd': {
-              this.myForm.controls.responsibleEPDId.setValue(this.storageService.state.selectedContact._id);
-              this.myForm.controls.responsibleEPD.setValue(this.storageService.state.selectedContact.displayName);
-              break;
-            }
-            case 'lead': {
-              this.myForm.controls.projectLeadId.setValue(this.storageService.state.selectedContact._id);
-              this.myForm.controls.projectLead.setValue(this.storageService.state.selectedContact.displayName);
-              break;
-            }
-            default: {
-              return;
-            }
-          }
-          this.storageService.state.selectedContactType = null;
-          this.storageService.state.selectedContact = null;
-        }
+        this.initContacts();
 
         this.loading = false;
         try {
@@ -220,6 +184,57 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       });
 
     this.back = this.storageService.state.back;
+  }
+  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
+    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+    this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+    this.publishedLegislation = 'legislation_' + this.fullProject.currentLegislationYear.toString();
+
+    this.tabIsEditing = this.project ? true : false;
+    this.pageIsEditing = this.storageService.state.pageIsEditing;
+    this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
+    this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+  }
+  initContacts() {
+    if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
+      switch (this.storageService.state.selectedContactType) {
+        case 'epd': {
+          this.myForm.controls.responsibleEPDId.setValue(this.storageService.state.selectedContact._id);
+          this.myForm.controls.responsibleEPD.setValue(this.storageService.state.selectedContact.displayName);
+          break;
+        }
+        case 'lead': {
+          this.myForm.controls.projectLeadId.setValue(this.storageService.state.selectedContact._id);
+          this.myForm.controls.projectLead.setValue(this.storageService.state.selectedContact.displayName);
+          break;
+        }
+        default: {
+          return;
+        }
+      }
+      this.storageService.state.selectedContactType = null;
+      this.storageService.state.selectedContact = null;
+    }
+  }
+
+  initOrg() {
+    // selectedOrganization is the default, we need legislation-tab specific keys
+    if (this.storageService.state.selectedOrganization2002) {
+      // tab specific state set
+      this.proponentName = this.storageService.state.selectedOrganization2002.name;
+      this.proponentId = this.storageService.state.selectedOrganization2002._id;
+    } else if (this.storageService.state.selectedOrganization) {
+      // new organization linked, set tab-specific state
+      this.storageService.state.selectedOrganization2002 = this.storageService.state.selectedOrganization;
+      this.storageService.state.selectedOrganization = null;
+      this.proponentName = this.storageService.state.selectedOrganization2002.name;
+      this.proponentId = this.storageService.state.selectedOrganization2002._id;
+    } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+      // load from data
+      this.proponentName = this.project.proponent.name;
+      this.proponentId = this.project.proponent._id;
+    }
   }
 
   buildForm() {
