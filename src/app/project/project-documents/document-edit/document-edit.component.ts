@@ -202,11 +202,13 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       observables.push(this.documentService.update(formData, doc._id));
     });
 
-    this.multiEdit = false;
+    // multi edit should not be set to false
+    // it caused a bug where extra fields show up after saving, and could null out document names
+    // this.multiEdit = false;
+
     this.storageService.state = { type: 'form', data: null };
     this.storageService.state = { type: 'documents', data: null };
     this.storageService.state = { type: 'labels', data: null };
-
 
     forkJoin(observables)
       .takeUntil(this.ngUnsubscribe)
@@ -225,7 +227,9 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
           this.storageService.state = { type: 'documents', data: this.storageService.state.selectedDocs };
           // Clear out the document state that was stored previously.
           this.goBack();
-          this.loading = false;
+          // this.loading should not be turned off at all in this function.
+          // its important that the spinner stays on until we navigate away from this page
+          // this.loading = false;
         }
       );
   }
