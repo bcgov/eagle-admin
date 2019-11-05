@@ -55,22 +55,6 @@ export class SearchService {
         let allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
-          // // on Project schemaName return the project data instead of the whole project which has changed based on ear changes
-          // r.data.searchResults = r.data.searchResults.map( value => {
-          //   if (value._schemaName === 'Project') {
-          //     return {
-          //       legislationData: (() => {
-          //         let data = {};
-          //         value.legislationYearList.forEach((year: number) => {
-          //           data[year] = value['legislation_' + year.toString()];
-          //         });
-          //         return data;
-          //       })(),
-          //       _id: value._id,
-          //       currentLegislationYear: value.currentLegislationYear
-          //     };
-          //   } else { return value; }
-          // });
           allResults.push(r);
         });
         return allResults;
