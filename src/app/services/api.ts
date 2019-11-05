@@ -71,6 +71,7 @@ export class ApiService {
         break;
 
       case 'test.projects.eao.gov.bc.ca':
+      case 'eagle-test.pathfinder.gov.bc.ca':
       case 'esm-test.pathfinder.gov.bc.ca':
         // Test
         this.pathAPI = 'https://eagle-test.pathfinder.gov.bc.ca/api';
@@ -78,6 +79,7 @@ export class ApiService {
         break;
 
       case 'www.projects.eao.gov.bc.ca':
+      case 'eagle-prod.pathfinder.gov.bc.ca':
       case 'projects.eao.gov.bc.ca':
         // Test
         this.pathAPI = 'https://eagle-prod.pathfinder.gov.bc.ca/api';
