@@ -13,6 +13,7 @@ import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
+import { FullProject } from 'app/models/fullProject';
 
 
 @Component({
@@ -140,6 +141,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public tabIsEditing = false;
   public pageIsEditing = false;
 
+  public fullProject: FullProject;
+  public publishedLegislation: string;
+
   public loading = true;
 
   constructor(
@@ -166,52 +170,15 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     });
 
     // Get data related to current project
-    this.route.parent.parent.data
+    this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: { project: ISearchResults<Project>[] }) => {
-        const projectSearchData = this.utils.extractFromSearchResults(data.project);
-        this.project = projectSearchData ? projectSearchData[0]['2018'] : null;
-        this.oldProject = projectSearchData ? projectSearchData[0]['2002'] : null;
-        this.tabIsEditing = this.project ? true : false;
-        this.pageIsEditing = this.storageService.state.pageIsEditing;
-        this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
-        this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
-        if (this.storageService.state.selectedOrganization2018) {
-          // tab specific state set
-          this.proponentName = this.storageService.state.selectedOrganization2018.name;
-          this.proponentId = this.storageService.state.selectedOrganization2018._id;
-        } else if (this.storageService.state.selectedOrganization) {
-          // new organization linked, set tab-specific state
-          this.storageService.state.selectedOrganization2018 = this.storageService.state.selectedOrganization;
-          this.storageService.state.selectedOrganization = null;
-          this.proponentName = this.storageService.state.selectedOrganization2018.name;
-          this.proponentId = this.storageService.state.selectedOrganization2018._id;
-        } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
-          // load from data
-          this.proponentName = this.project.proponent.name;
-          this.proponentId = this.project.proponent._id;
-        }
-        this.buildForm();
+      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+        this.initProject(data);
+        this.initOrg();
 
-        if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
-          switch (this.storageService.state.selectedContactType) {
-            case 'epd': {
-              this.myForm.controls.responsibleEPDId.setValue(this.storageService.state.selectedContact._id);
-              this.myForm.controls.responsibleEPD.setValue(this.storageService.state.selectedContact.displayName);
-              break;
-            }
-            case 'lead': {
-              this.myForm.controls.projectLeadId.setValue(this.storageService.state.selectedContact._id);
-              this.myForm.controls.projectLead.setValue(this.storageService.state.selectedContact.displayName);
-              break;
-            }
-            default: {
-              return;
-            }
-          }
-          this.storageService.state.selectedContactType = null;
-          this.storageService.state.selectedContact = null;
-        }
+
+        this.buildForm();
+        this.initContacts();
 
         this.loading = false;
         try {
@@ -222,6 +189,65 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       });
 
     this.back = this.storageService.state.back;
+  }
+
+  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
+    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+    if (this.fullProject) {
+      this.oldProject = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+      this.project = this.fullProject['legislation_2018'];
+      this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
+      this.tabIsEditing = !this.utils.isEmptyObject(this.project);
+      this.pageIsEditing = this.storageService.state.pageIsEditing;
+      this.projectId = this.fullProject._id;
+      this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+    } else {
+      this.pageIsEditing = false;
+      this.tabIsEditing = false;
+    }
+
+
+  }
+
+  initOrg() {
+    if (this.storageService.state.selectedOrganization2018) {
+      // tab specific state set
+      this.proponentName = this.storageService.state.selectedOrganization2018.name;
+      this.proponentId = this.storageService.state.selectedOrganization2018._id;
+    } else if (this.storageService.state.selectedOrganization) {
+      // new organization linked, set tab-specific state
+      this.storageService.state.selectedOrganization2018 = this.storageService.state.selectedOrganization;
+      this.storageService.state.selectedOrganization = null;
+      this.proponentName = this.storageService.state.selectedOrganization2018.name;
+      this.proponentId = this.storageService.state.selectedOrganization2018._id;
+    } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+      // load from data
+      this.proponentName = this.project.proponent.name;
+      this.proponentId = this.project.proponent._id;
+    }
+  }
+
+  initContacts() {
+    if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
+      switch (this.storageService.state.selectedContactType) {
+        case 'epd': {
+          this.myForm.controls.responsibleEPDId.setValue(this.storageService.state.selectedContact._id);
+          this.myForm.controls.responsibleEPD.setValue(this.storageService.state.selectedContact.displayName);
+          break;
+        }
+        case 'lead': {
+          this.myForm.controls.projectLeadId.setValue(this.storageService.state.selectedContact._id);
+          this.myForm.controls.projectLead.setValue(this.storageService.state.selectedContact.displayName);
+          break;
+        }
+        default: {
+          return;
+        }
+      }
+      this.storageService.state.selectedContactType = null;
+      this.storageService.state.selectedContact = null;
+    }
   }
 
   autofill() {

@@ -15,7 +15,7 @@
         <a [routerLink]="['/projects']">All Projects</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/p', project._id]">{{project.name}}</a>
+        <a [routerLink]="['/p', fullProject._id]">{{project.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Edit
@@ -36,7 +36,7 @@
             <li class="nav-item" role="presentation" *ngFor="let tabLink of tabLinks">
               <a class="nav-link" role="tab" [routerLink]="tabLink.link" [replaceUrl]="true"
                 routerLinkActive="active">{{tabLink.label}}
-                  <span class="badge bg-success badge-published" *ngIf="tabLink.years.includes(publishedLegislation)"> Published</span>
+                  <span class="badge bg-success badge-published" *ngIf="fullProject && tabLink.years.includes(fullProject.currentLegislationYear)"> Published</span>
               </a>
             </li>
           </ul>
