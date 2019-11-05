@@ -101,7 +101,6 @@ export class Utils {
     }
 
     public isEmptyObject(object: Object): boolean {
-      console.log('HERERE');
       for (let i in object) {
         if (object.hasOwnProperty(i)) { return false; }
       }
