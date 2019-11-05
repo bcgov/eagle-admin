@@ -193,7 +193,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     this.tabIsEditing = this.project ? true : false;
     this.pageIsEditing = this.storageService.state.pageIsEditing;
-    this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
+    this.projectId = this.fullProject._id;
     this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
   }
   initContacts() {

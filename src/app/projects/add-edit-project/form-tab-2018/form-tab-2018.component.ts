@@ -200,7 +200,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
       this.tabIsEditing = !this.utils.isEmptyObject(this.project);
       this.pageIsEditing = this.storageService.state.pageIsEditing;
-      this.projectId = this.tabIsEditing ? this.project._id : this.storageService.state.projectDetailId;
+      this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
     } else {
       this.pageIsEditing = false;

@@ -89,7 +89,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
             this.project = this.fullProject[this.publishedLegislation];
           }
           if (this.project) {
-            this.storageService.state.projectDetailId = this.project._id;
+            // we don't have ids on project here, have to use id from fullProject
+            this.storageService.state.projectDetailId = this.fullProject._id;
             this.storageService.state.projectDetailName = this.project.name;
           }
         }
