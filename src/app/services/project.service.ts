@@ -54,18 +54,20 @@ export class ProjectService {
   }
 
   getById(projId: string, cpStart: string = null, cpEnd: string = null): Observable<Project> {
-    return this.searchService.getSearchResults('_id=' + projId, 'Project', null, 0, 0, '', '', {}, true, {})
-      .map(projects => {
+    return this.searchService.getSearchResults('', 'Project', null, null, 1, '', '', {_id: projId}, true, {})
+      .map((projects: ISearchResults<Project>[]) => {
+        let results;
         // get upcoming comment period if there is one and convert it into a comment period object.
         if (projects.length > 0) {
-          if (projects[0].commentPeriodForBanner && projects[0].commentPeriodForBanner.length > 0) {
-            projects[0].commentPeriodForBanner = new CommentPeriod(projects[0].commentPeriodForBanner[0]);
+          results = this.utils.extractFromSearchResults(projects);
+          if (results[0].commentPeriodForBanner && results[0].commentPeriodForBanner.length > 0) {
+            results[0].commentPeriodForBanner = new CommentPeriod(results[0].commentPeriodForBanner[0]);
           } else {
-            projects[0].commentPeriodForBanner = null;
+            results[0].commentPeriodForBanner = null;
           }
         }
         // return the first (only) project
-        return projects.length > 0 ? new Project(projects[0]) : null;
+        return results.length > 0 ? new Project(results[0]) : null;
       })
       .pipe(
         flatMap(res => {
