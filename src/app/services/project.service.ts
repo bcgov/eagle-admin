@@ -12,6 +12,8 @@ import { Project } from 'app/models/project';
 import { CommentPeriod } from 'app/models/commentPeriod';
 import { Org } from 'app/models/org';
 import { SearchService } from './search.service';
+import { ISearchResults } from 'app/models/search';
+import { Utils } from 'app/shared/utils/utils';
 
 interface GetParameters {
   getresponsibleEPD?: boolean;
@@ -23,7 +25,8 @@ export class ProjectService {
   private projectList: Project[] = [];
   constructor(
     private api: ApiService,
-    private searchService: SearchService
+    private searchService: SearchService,
+    private utils: Utils
   ) { }
 
   // get count of projects
@@ -34,15 +37,16 @@ export class ProjectService {
 
   // get all projects
   getAll(pageNum: number = 1, pageSize: number = 20, sortBy: string = null): Observable<Object> {
-    return this.api.getProjects(pageNum, pageSize, sortBy)
-      .map((res: any) => {
+    return this.searchService.getSearchResults('', 'Project', null, pageNum, pageSize, '', sortBy, {}, true,  {})
+      .map((res: ISearchResults<Project>[]) => {
         if (res) {
+          const results = this.utils.extractFromSearchResults(res);
           // let projects: Array<Project> = [];
           this.projectList = [];
-          res[0].results.forEach(project => {
+          results.forEach(project => {
             this.projectList.push(new Project(project));
           });
-          return { totalCount: res[0].total_items, data: this.projectList };
+          return { totalCount: res[0].data.meta[0].searchResultsTotal, data: this.projectList };
         }
         return {};
       })
@@ -50,7 +54,7 @@ export class ProjectService {
   }
 
   getById(projId: string, cpStart: string = null, cpEnd: string = null): Observable<Project> {
-    return this.api.getProject(projId, cpStart, cpEnd)
+    return this.searchService.getSearchResults('_id=' + projId, 'Project', null, 0, 0, '', '', {}, true, {})
       .map(projects => {
         // get upcoming comment period if there is one and convert it into a comment period object.
         if (projects.length > 0) {
