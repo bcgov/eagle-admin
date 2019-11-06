@@ -11,6 +11,7 @@ import { Project } from 'app/models/project';
 import { FullProject } from 'app/models/fullProject';
 
 import { ISearchResults } from 'app/models/search';
+import { IAddEditTab } from 'app/models/ProjectDetails';
 @Component({
   selector: 'app-add-edit-project',
   templateUrl: './add-edit-project.component.html',
@@ -18,11 +19,12 @@ import { ISearchResults } from 'app/models/search';
 })
 export class AddEditProjectComponent implements OnInit, OnDestroy {
 
-  // order of items in this tabLinks array is important.
-  public tabLinks = [
-    // { label: '1996 Environmental Assessment Act', link: 'form-1996' },
-    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: [1996, 2002] },
-    { label: '2018 Environmental Assessment Act', link: 'form-2018', years: [2018] },
+  // order of items in this tabLinks array is important because it orders the tabs and for the add page we are only adding information to the newest legislations
+  public tabLinks: IAddEditTab[] = [
+    // If we ever need the 1996 tab this would be the logic needed
+    // { label: '1996 Environmental Assessment Act', link: 'form-1996', years: ['legislation_1996']  },
+    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
+    { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
   ];
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public documents: any[] = [];
