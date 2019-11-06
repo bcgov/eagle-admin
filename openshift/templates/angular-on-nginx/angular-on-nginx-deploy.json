@@ -172,6 +172,7 @@
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
+        "path": "/admin/",
         "port": {
           "targetPort": "8080-tcp"
         },
@@ -244,7 +245,7 @@
       "description": "The exposed hostname that will route to the service, e.g., myappname.pathfinder.gov.bc.ca, if left blank a value will be defaulted.",
       "displayName": "Application Hostname",
       "name": "APPLICATION_DOMAIN",
-      "value": "eagle-dev.pathfinder.gov.bc.ca/admin/"
+      "value": "eagle-dev.pathfinder.gov.bc.ca"
     },
     {
       "description": "The TAG name for this environment, e.g., dev, test, prod",
