@@ -612,7 +612,7 @@ pipeline {
 
             // deploy
             echo "Deploying to test demo..."
-            openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'demo', srcStream: 'eagle-admin-demo', srcTag: "${IMAGE_HASH}"
+            openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin-demo', srcTag: "${IMAGE_HASH}"
 
             // wait for deployment to complete
             if ( CHANGELOG && CHANGELOG != "No new changes" && !imageTaggingComplete ('latest', 'dev', 'deploy')) {
