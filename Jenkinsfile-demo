@@ -595,7 +595,7 @@ pipeline {
           try {
             // backup
             echo "Backing up dev image..."
-            openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev-backup', srcStream: 'eagle-admin-demo', srcTag: 'dev'
+            openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin-demo', srcTag: 'latest'
 
             // wait for backup to complete
             if( !imageTaggingComplete ('dev', 'dev-backup', 'backup')) {
