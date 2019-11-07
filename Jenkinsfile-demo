@@ -53,8 +53,8 @@ def sonarGetDate (jsonPayload) {
 }
 
 boolean imageTaggingComplete ( String sourceTag, String destinationTag, String action, def iterations = 6 ) {
-  def sourceImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${sourceTag} | head -n 1".trim()
-  def destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
+  def sourceImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin-demo:${sourceTag} | head -n 1".trim()
+  def destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin-demo:${destinationTag} | head -n 1".trim()
   int delay = 0
 
   for (int i=0; i<iterations; i++){
@@ -66,7 +66,7 @@ boolean imageTaggingComplete ( String sourceTag, String destinationTag, String a
     } else {
       delay = (1<<i) // exponential backoff
       sleep(delay)
-      destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
+      destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin-demo:${destinationTag} | head -n 1".trim()
     }
   }
   return false
@@ -212,7 +212,7 @@ def nodejsSonarqube () {
               echo "${SONARQUBE_URL}"
 
               // sonarqube report link
-              def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin"
+              def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-demo"
 
               boolean firstScan = false;
 
@@ -236,7 +236,7 @@ def nodejsSonarqube () {
                   echo "sonarqube report failed to complete, or timed out"
 
                   notifyRocketChat(
-                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
+                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
                     ROCKET_DEPLOY_WEBHOOK
                   )
 
@@ -257,7 +257,7 @@ def nodejsSonarqube () {
                 echo "Scan Failed"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Sonarqube scan failed: : ${SONARQUBE_URL}",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n Sonarqube scan failed: : ${SONARQUBE_URL}",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
@@ -270,7 +270,7 @@ def nodejsSonarqube () {
 
             } catch (error) {
               notifyRocketChat(
-                "@all The latest build of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error.message}",
+                "@all The latest build of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error.message}",
                 ROCKET_DEPLOY_WEBHOOK
               )
               throw error
@@ -319,7 +319,7 @@ def zapScanner () {
           def ZAP_REPORT_STASH = "zap-report"
 
           // Dynamicaly determine the target URL for the ZAP scan ...
-          def TARGET_URL = getUrlFromRoute('eagle-admin', 'esm-dev').trim()
+          def TARGET_URL = getUrlFromRoute('eagle-admin-demo', 'esm-dev').trim()
 
           echo "Target URL: ${TARGET_URL}"
 
@@ -343,14 +343,14 @@ def zapScanner () {
             } catch (error) {
               // revert dev from backup
               echo "Reverting dev image form backup..."
-              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
+              openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin-demo', srcTag: 'dev-backup'
 
               // wait for revert to complete
               if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
                 echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
@@ -359,7 +359,7 @@ def zapScanner () {
               }
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -413,7 +413,7 @@ def postZapToSonar () {
           def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
 
           // url for the sonarqube report
-          def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
+          def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-demo-zap-scan"
 
           boolean firstScan = false
 
@@ -442,8 +442,8 @@ def postZapToSonar () {
               script: "./gradlew sonarqube --stacktrace --info \
                 -Dsonar.verbose=true \
                 -Dsonar.host.url=${SONARQUBE_URL} \
-                -Dsonar.projectName='eagle-admin-zap-scan'\
-                -Dsonar.projectKey='org.sonarqube:eagle-admin-zap-scan' \
+                -Dsonar.projectName='eagle-admin-demo-zap-scan'\
+                -Dsonar.projectKey='org.sonarqube:eagle-admin-demo-zap-scan' \
                 -Dsonar.projectBaseDir='../' \
                 -Dsonar.sources='./src/app' \
                 -Dsonar.zaproxy.reportPath=${WORKSPACE}${ZAP_REPORT_PATH} \
@@ -456,7 +456,7 @@ def postZapToSonar () {
                 echo "Zap report failed to complete, or timed out"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
@@ -476,14 +476,14 @@ def postZapToSonar () {
 
               // revert dev from backup
               echo "Reverting dev image form backup..."
-              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
+              openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin-demo', srcTag: 'dev-backup'
 
               // wait for revert to complete
               if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
                 echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
@@ -492,7 +492,7 @@ def postZapToSonar () {
               }
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin-demo seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -537,8 +537,8 @@ pipeline {
                 ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
                 ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
 
-                echo "Building eagle-admin develop branch"
-                openshiftBuild bldCfg: 'eagle-admin-angular', showBuildLogs: 'true'
+                echo "Building eagle-admin-demo develop branch"
+                openshiftBuild bldCfg: 'eagle-admin-demo-angular', showBuildLogs: 'true'
                 openshiftBuild bldCfg: 'eagle-admin-demo-build', showBuildLogs: 'true'
                 echo "Build done"
 
@@ -595,7 +595,7 @@ pipeline {
           try {
             // backup
             echo "Backing up dev image..."
-            openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev-backup', srcStream: 'eagle-admin', srcTag: 'dev'
+            openshiftTag destStream: 'eagle-admin-demo', verbose: 'false', destTag: 'dev-backup', srcStream: 'eagle-admin-demo', srcTag: 'dev'
 
             // wait for backup to complete
             if( !imageTaggingComplete ('dev', 'dev-backup', 'backup')) {
@@ -678,12 +678,12 @@ pipeline {
       steps {
         script {
           notifyRocketChat(
-            "A new version of eagle-admin is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+            "A new version of eagle-admin-demo is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
             ROCKET_DEPLOY_WEBHOOK
           )
 
           notifyRocketChat(
-            "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
+            "@all A new version of eagle-admin-demo is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
             ROCKET_QA_WEBHOOK
           )
         }
