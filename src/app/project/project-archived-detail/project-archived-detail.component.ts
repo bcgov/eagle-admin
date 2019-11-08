@@ -173,7 +173,6 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
         () => { // onCompleted
           this.snackBarRef = this.snackBar.open('Project published...', null, { duration: 2000 });
           // reload all data
-          // TODO: Check to see if this works
           this.projectService.getById(this.project._id)
             .takeUntil(this.ngUnsubscribe)
             .subscribe(
@@ -209,7 +208,6 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
         () => { // onCompleted
           this.snackBarRef = this.snackBar.open('Project un-published...', null, { duration: 2000 });
           // reload all data
-          // TODO: Check to see if this works
           this.projectService.getById(this.project._id)
             .takeUntil(this.ngUnsubscribe)
             .subscribe(
