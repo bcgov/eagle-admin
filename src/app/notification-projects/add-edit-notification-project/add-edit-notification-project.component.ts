@@ -149,9 +149,14 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
           })
         )
         .takeUntil(this.ngUnsubscribe)
-        .subscribe(() => {
-          this.router.navigate(['/notification-projects']);
-        });
+        .subscribe(
+          () => { },
+          error => {
+            console.log('Error: ', error);
+            alert('An error has occured.');
+          },
+          () => { this.router.navigate(['/notification-projects']); }
+        );
     } else {
       notificationProject._id = this.notificationProjectId;
       let documentForms = this.setDocumentForm(this.notificationProjectId);
@@ -187,7 +192,10 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
-          error => console.log('Error: ', error),
+          error => {
+            console.log('Error: ', error);
+            alert('An error has occured.');
+          },
           () => {
             this.router.navigate(['/np', this.notificationProjectId, 'notification-project-details']);
           }
@@ -296,11 +304,11 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
     } else if (this.myForm.controls.description.value === '') {
       alert('Description cannot be empty.');
       return false;
-    } else if (this.myForm.controls.longitude.value === '') {
-      alert('Longitude cannot be empty.');
-      return false;
     } else if (this.myForm.controls.latitude.value === '') {
       alert('Latitude cannot be empty.');
+      return false;
+    } else if (this.myForm.controls.longitude.value === '') {
+      alert('Longitude cannot be empty.');
       return false;
     }
 
@@ -309,13 +317,13 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.myForm.controls.longitude.value >= -114.01 || this.myForm.controls.longitude.value <= -139.06) {
-      alert('Longitude must be between -114.01 and -139.06');
+    if (this.myForm.controls.latitude.value >= 60.01 || this.myForm.controls.latitude.value <= 48.20) {
+      alert('Latitude must be between 48.20 and 60.01');
       return false;
     }
 
-    if (this.myForm.controls.latitude.value >= 60.01 || this.myForm.controls.latitude.value <= 48.20) {
-      alert('Latitude must be between 48.20 and 60.01');
+    if (this.myForm.controls.longitude.value >= -114.01 || this.myForm.controls.longitude.value <= -139.06) {
+      alert('Longitude must be between -114.01 and -139.06');
       return false;
     }
 

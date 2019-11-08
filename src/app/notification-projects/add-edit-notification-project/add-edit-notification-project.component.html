@@ -95,17 +95,19 @@
         <input name="notificationDecision" id="notificationDecision" formControlName="notificationDecision" type="text"
           class="form-control" />
       </div>
+    </div>
 
-      <div class="label-pair">
-        <label for="longitude">Longitude*</label>
-        <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
-      </div>
-
+    <div class="flex-container">
       <div class="label-pair">
         <label for="latitude">Latitude*</label>
         <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
       </div>
+      <div class="label-pair">
+        <label for="longitude">Longitude*</label>
+        <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
+      </div>
     </div>
+
     <div class="flex-container">
       <div class="label-pair med">
         <label for="description">Description*</label>
@@ -138,7 +140,8 @@
             <span class="cell__txt-content">{{doc.documentFileName}}</span>
           </span>
           <span class="cell actions">
-            <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc, false)">
+            <button class="btn btn-icon" type="button" title="Delete this document"
+              (click)="deleteDocument(doc, false)">
               <i class="material-icons">delete</i>
             </button>
           </span>
