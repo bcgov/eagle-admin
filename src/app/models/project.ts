@@ -77,6 +77,12 @@ export class Project {
   execProjectDirector: any;
   complianceLead: any;
 
+  // Tracking
+  review180Start: any;
+  review45Start: any;
+  reviewSuspensions: any;
+  reviewExtensions: any;
+
   // Permissions
   read: Array<String> = [];
   write: Array<String> = [];
@@ -154,6 +160,12 @@ export class Project {
     this.status              = obj && obj.status              || undefined;
     this.substitution        = obj && obj.substitution        || undefined;
     this.updatedBy           = obj && obj.updatedBy           || undefined;
+
+    this.review180Start      = obj && obj.review180Start      || undefined;
+    this.review45Start       = obj && obj.review45Start       || undefined;
+    this.reviewSuspensions   = obj && obj.reviewSuspensions   || undefined;
+    this.reviewExtensions    = obj && obj.reviewExtensions    || undefined;
+
     this.read                = obj && obj.read                || undefined;
     this.write               = obj && obj.write               || undefined;
     this.delete              = obj && obj.delete              || undefined;

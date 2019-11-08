@@ -47,6 +47,7 @@ import { ProjectContactsGroupResolver } from './project-groups/project-contact-g
 import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
 import { LinkOrganizationResolver } from 'app/shared/components/link-organization/link-organization-resolver.services';
 import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
+import { ExtensionComponent } from 'app/shared/components/extension/extension.component';
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 
@@ -63,6 +64,22 @@ const routes: Routes = [
         path: '',
         redirectTo: 'project-details',
         pathMatch: 'full'
+      },
+      {
+        path: 'edit/add-extension',
+        component: ExtensionComponent
+      },
+      {
+        path: 'edit/add-suspension',
+        component: ExtensionComponent
+      },
+      {
+        path: 'edit/edit-extension',
+        component: ExtensionComponent
+      },
+      {
+        path: 'edit/edit-suspension',
+        component: ExtensionComponent
       },
       {
         path: 'edit/link-org',
