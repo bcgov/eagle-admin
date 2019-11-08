@@ -12,6 +12,7 @@ import { ProjectService } from 'app/services/project.service';
 import { Project } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { Constants } from 'app/shared/utils/constants';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -28,107 +29,11 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public proponentName = '';
   public proponentId = '';
 
-  public PROJECT_SUBTYPES: Object = {
-    'Mines': [
-      'Coal Mines',
-      'Construction Stone and Industrial Mineral Quarries',
-      'Mineral Mines',
-      'Off-shore Mines',
-      'Placer Mineral Mines',
-      'Sand and Gravel Pits'
-    ],
-    'Energy-Electricity': [
-      'Electric Transmission Lines',
-      'Power Plants'
-    ],
-    'Energy-Petroleum & Natural Gas': [
-      'Energy Storage Facilities',
-      'Natural Gas Processing Plants',
-      'Off-shore Oil or Gas Facilities',
-      'Transmission Pipelines'
-    ],
-    'Transportation': [
-      'Airports',
-      'Ferry Terminals',
-      'Marine Port Facilities',
-      'Public Highways',
-      'Railways'
-    ],
-    'Water Management': [
-      'Dams',
-      'Dykes',
-      'Groundwater Extraction',
-      'Shoreline Modification',
-      'Water Diversion'
-    ],
-    'Industrial': [
-      'Forest Products Industries',
-      'Non-metallic Mineral Products Industries',
-      'Organic and Inorganic Chemical Industry',
-      'Other Industries',
-      'Primary Metals Industry'
-    ],
-    'Waste Disposal': [
-      'Hazardous Waste Facilities',
-      'Local Government Liquid Waste Management Facilities',
-      'Local Government Solid Waste Management Facilities'
-    ],
-    'Food Processing': [
-      'Fish Products Industry',
-      'Meat and Meat Products Industry',
-      'Poultry Products Industry'
-    ],
-    'Tourist Destination Resorts': [
-      'Golf Resorts',
-      'Marina Resorts',
-      'Resort Developments',
-      'Ski Resorts'
-    ],
-    'Other': [
-      'Other'
-    ]
-  };
-
-  public PROJECT_TYPES: Array<Object> = [
-    'Energy-Electricity',
-    'Energy-Petroleum & Natural Gas',
-    'Food Processing',
-    'Industrial',
-    'Mines',
-    'Other',
-    'Tourist Destination Resorts',
-    'Transportation',
-    'Waste Disposal',
-    'Water Management'
-  ];
-
-  public PROJECT_STATUS: Array<Object> = [
-    'Initiated',
-    'Submitted',
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certified',
-    'Not Certified',
-    'Decommissioned'
-  ];
-
-  public PROJECT_NATURE: Array<Object> = [
-    'New Construction',
-    'Modification of Existing',
-    'Dismantling or Abandonment'
-  ];
-
-  public EAC_DECISIONS: Array<Object> = [
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certificate Issued',
-    'Certificate Refused',
-    'Further Assessment Required',
-    'Certificate Not Required',
-    'Certificate Expired',
-    'Withdrawn',
-    'Terminated',
-    'Pre-EA Act Approval',
-    'Not Designated Reviewable'
-  ];
+  public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES;
+  public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES;
+  public PROJECT_STATUS: Array<Object> = Constants.PROJECT_STATUS;
+  public PROJECT_NATURE: Array<Object> = Constants.PROJECT_NATURE;
+  public EAC_DECISIONS: Array<Object> = Constants.EAC_DECISIONS;
 
   public projectName;
   public projectId;
@@ -153,13 +58,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'region':
-          this.regions.push(item.name);
-          break;
-      }
-    });
+    this.config.getRegions()
+      .subscribe(regions => {
+        this.regions = regions;
+      });
 
     // Get data related to current project
     this.route.parent.data
@@ -489,10 +391,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
       alert('Longitude must be between -114.01 and -139.06');
-      return;
+      return false;
     } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
       alert('You must select an EPD');
-      return;
+      return false;
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
       alert('You must select a project lead');
       return;

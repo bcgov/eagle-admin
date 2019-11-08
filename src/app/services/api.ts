@@ -25,6 +25,7 @@ import { RecentActivity } from 'app/models/recentActivity';
 import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
 import { Utils } from 'app/shared/utils/utils';
+import { NotificationProject } from 'app/models/notificationProject';
 
 interface LocalLoginResponse {
   _id: string;
@@ -782,7 +783,7 @@ export class ApiService {
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
-  uploadDocument(formData: FormData): Observable<Document> {
+  uploadDocument(formData: FormData, publish: Boolean): Observable<Document> {
     const fields = [
       'documentFileName',
       'internalOriginalName',
@@ -790,7 +791,8 @@ export class ApiService {
       'internalURL',
       'internalMime'
     ];
-    const queryString = `document?fields=${this.buildValues(fields)}`;
+    let queryString = `document?fields=${this.buildValues(fields)}`;
+    if (publish) { queryString += `&publish=${publish}`; }
     return this.http.post<Document>(`${this.pathAPI}/${queryString}`, formData, {});
   }
 
@@ -1179,6 +1181,23 @@ export class ApiService {
     const queryString = `organization/`;
     return this.http.post<Org>(`${this.pathAPI}/${queryString}`, org, {});
   }
+
+  //
+  // Notification Projects
+  //
+  saveNotificationProject(notificationProject: NotificationProject, publish: boolean): Observable<NotificationProject> {
+    let queryString = `notificationProject/${notificationProject._id}`;
+    if (publish !== null) {
+      queryString += `?publish=${publish}`;
+    }
+    return this.http.put<NotificationProject>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+  }
+
+  addNotificationProject(notificationProject: NotificationProject, publish: boolean): Observable<NotificationProject> {
+    const queryString = `notificationProject?publish=${publish}`;
+    return this.http.post<NotificationProject>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+  }
+
 
   //
   // Local helpers

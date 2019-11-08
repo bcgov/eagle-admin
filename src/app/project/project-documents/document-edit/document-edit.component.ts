@@ -47,21 +47,23 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.documents = this.storageService.state.selectedDocs;
     this.currentProject = this.storageService.state.currentProject.data;
 
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'doctype':
-          this.doctypes.push(Object.assign({}, item));
-          break;
-        case 'author':
-          this.authors.push(Object.assign({}, item));
-          break;
-        case 'label':
-          this.labels.push(Object.assign({}, item));
-          break;
-        case 'projectPhase':
-          this.projectPhases.push(Object.assign({}, item));
-          break;
-      }
+    this.config.getLists().subscribe(lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'doctype':
+            this.doctypes.push(Object.assign({}, item));
+            break;
+          case 'author':
+            this.authors.push(Object.assign({}, item));
+            break;
+          case 'label':
+            this.labels.push(Object.assign({}, item));
+            break;
+          case 'projectPhase':
+            this.projectPhases.push(Object.assign({}, item));
+            break;
+        }
+      });
     });
 
     // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)

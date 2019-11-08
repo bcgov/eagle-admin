@@ -73,6 +73,11 @@ import { OrganizationsTableRowsComponent } from './organizations/organizations-t
 import { AddEditOrganizationComponent } from './organizations/add-edit-organization/add-edit-organization.component';
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
 import { LinkOrganizationTableRowsComponent } from './shared/components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
+import { NotificationProjectsComponent } from './notification-projects/notification-projects.component';
+import { AddEditNotificationProjectComponent } from './notification-projects/add-edit-notification-project/add-edit-notification-project.component';
+import { NotificationProjectService } from './services/notification-project.service';
+import { NotificationProjectTableRowsComponent } from './notification-projects/notification-projects-table-rows/notification-project-table-rows.component';
+import { NotificationProjectComponent } from './notification-project/notification-project.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -85,6 +90,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ActivityTableRowsComponent,
     AddEditActivityComponent,
     AddEditContactComponent,
+    AddEditNotificationProjectComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
     AdministrationComponent,
@@ -101,6 +107,9 @@ export function kcFactory(keycloakService: KeycloakService) {
     MapComponent,
     MetricsComponent,
     NotAuthorizedComponent,
+    NotificationProjectComponent,
+    NotificationProjectsComponent,
+    NotificationProjectTableRowsComponent,
     OrganizationsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
@@ -111,17 +120,6 @@ export function kcFactory(keycloakService: KeycloakService) {
     ToggleButtonComponent,
     TopicsComponent,
     TopicTableRowsComponent,
-    MapComponent,
-    MetricsComponent,
-    ActivityComponent,
-    ContactsComponent,
-    GroupTableRowsComponent,
-    UserTableRowsComponent,
-    PinsTableRowsComponent,
-    ActivityTableRowsComponent,
-    ActivityDetailTableRowsComponent,
-    AddEditActivityComponent,
-    SearchHelpComponent,
     UserTableRowsComponent
   ],
   imports: [
@@ -155,6 +153,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     },
     AuthenticationService,
     CanDeactivateGuard,
+
     CommentPeriodService,
     CommentService,
     ConfigService,
@@ -162,6 +161,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     CurrencyPipe,
     DecisionService,
     DocumentService,
+    NotificationProjectService,
     ProjectService,
     RecentActivityService,
     SearchService,
@@ -177,19 +177,16 @@ export function kcFactory(keycloakService: KeycloakService) {
     AddEditContactComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
-    AddEditTopicComponent,
-    LinkOrganizationComponent,
-    TopicTableRowsComponent,
     ConfirmComponent,
     DayCalculatorModalComponent,
     GroupsTableRowsComponent,
     GroupTableRowsComponent,
     InputModalComponent,
+    LinkOrganizationComponent,
+    LinkOrganizationTableRowsComponent,
+    NotificationProjectTableRowsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
-    ActivityTableRowsComponent,
-    ActivityDetailTableRowsComponent,
-    LinkOrganizationTableRowsComponent,
     TopicTableRowsComponent,
     UserTableRowsComponent
   ],

@@ -12,6 +12,7 @@
       <a [ngClass]="{'active': currentMenu === 'project-updates'}" class="project-menu" id="updates" [routerLink]="['p', currentProjectId, 'project-updates']"><i class="material-icons">fiber_new</i>Project Updates</a>
       <a [ngClass]="{'active': currentMenu === 'valued-components'}" class="project-menu" id="value-components" [routerLink]="['p', currentProjectId, 'valued-components']"><i class="material-icons">view_list</i>Valued Components</a>
     </section>
+    <a *ngIf="showNotificationProjects" [ngClass]="{'active': currentProjectId === 'notification-projects' || currentProjectId === 'np'}" id="notificationProjects" [routerLink]="['/notification-projects']"><i class="material-icons mr-3">view_module</i>Notification Projects</a>
     <a [ngClass]="{'active': currentProjectId === 'activity'}" id="activityPosts" [routerLink]="['/activity']"><i class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>
     <a [ngClass]="{'active': currentProjectId.includes('contacts') || currentProjectId === 'c'}" id="contacts" [routerLink]="['/contacts']"><i class="material-icons mr-3 ">contacts</i>Contacts</a>
     <a [ngClass]="{'active': currentProjectId.includes('orgs') || currentProjectId === 'o'}" id="orgs" [routerLink]="['/orgs']"><i class="material-icons mr-3 ">business</i>Organizations</a>
