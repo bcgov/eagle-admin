@@ -37,7 +37,7 @@ export class ProjectService {
 
   // get all projects
   getAll(pageNum: number = 1, pageSize: number = 20, sortBy: string = null): Observable<Object> {
-    return this.searchService.getSearchResults('', 'Project', null, pageNum, pageSize, '', sortBy, {}, true,  {})
+    return this.searchService.getSearchResults('', 'Project', null, pageNum, pageSize, sortBy, {}, true,  {}, '')
       .map((res: ISearchResults<Project>[]) => {
         if (res) {
           const results = this.utils.extractFromSearchResults(res);
@@ -54,7 +54,7 @@ export class ProjectService {
   }
 
   getById(projId: string, cpStart: string = null, cpEnd: string = null): Observable<Project> {
-    return this.searchService.getSearchResults('', 'Project', null, null, 1, '', '', {_id: projId}, true, {})
+    return this.searchService.getSearchResults('', 'Project', null, null, 1, '',  {_id: projId}, true, {}, '')
       .map((projects: ISearchResults<Project>[]) => {
         let results;
         // get upcoming comment period if there is one and convert it into a comment period object.

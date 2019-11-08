@@ -253,10 +253,10 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
           this.currentPage,
           this.pageSize,
           null,
-          '',
           {},
           true,
-          this.filterForAPI
+          this.filterForAPI,
+          ''
         );
       })
       .takeUntil(this.ngUnsubscribe)

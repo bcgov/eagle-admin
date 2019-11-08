@@ -24,10 +24,10 @@ export class FullProjectResolver implements Resolve<Object> {
       1,
       1,
       'all',
-      '',
       {_id: projId},
       true,
-      {}
+      {},
+      '',
     );
   }
 }
