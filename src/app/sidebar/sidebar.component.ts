@@ -20,7 +20,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public isNavMenuOpen = false;
   public routerSnapshot = null;
   public isInspectorRole = false;
-  public showNotificationProjects = true;
+  public showNotificationProjects = false;
   public showProjectDetails = false;
   public showProjectDetailsSubItems = false;
   public currentProjectId = '';
@@ -59,8 +59,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     // Remove this when notification projects are ready.
-    if (this.apiService.env === 'prod') {
-      this.showNotificationProjects = false;
+    if (this.apiService.env === 'demo') {
+      this.showNotificationProjects = true;
     }
   }
 
