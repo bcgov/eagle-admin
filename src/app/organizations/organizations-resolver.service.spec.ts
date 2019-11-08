@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { OrganizationsResolver } from './organizations-resolver.service';
 
-describe('ContactsResolverService', () => {
+describe('OrganizationsResolverService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   it('should be created', () => {
