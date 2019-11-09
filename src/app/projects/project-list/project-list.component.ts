@@ -517,11 +517,11 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         null,
         pageNumber,
         this.tableParams.pageSize,
-        '',
         this.tableParams.sortBy,
         {},
         true,
-        this.filterForAPI
+        this.filterForAPI,
+        ''
       )
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {

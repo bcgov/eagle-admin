@@ -286,9 +286,8 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
       [{ 'name': 'project', 'value': this.currentProject._id }],
       pageNumber,
       this.tableParams.pageSize,
-      '',
       this.tableParams.sortBy,
-      { documentSource: 'PROJECT' })
+      { documentSource: 'PROJECT' }, false, {},  '')
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
