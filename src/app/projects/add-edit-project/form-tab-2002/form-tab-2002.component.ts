@@ -215,6 +215,13 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       }
       this.storageService.state.selectedContactType = null;
       this.storageService.state.selectedContact = null;
+      // In this case we need to make sure we null out these values
+      // Clear out the values in the form if the storage service is null
+    } else {
+      this.myForm.controls.projectLeadId.setValue(null);
+      this.myForm.controls.projectLead.setValue(null);
+      this.myForm.controls.responsibleEPDId.setValue(null);
+      this.myForm.controls.responsibleEPD.setValue(null);
     }
   }
 
@@ -245,7 +252,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.onChangeType(null);
     } else if (this.tabIsEditing) {
       // First entry on resolver
-      this.projectId = this.project._id;
+      this.projectId = this.fullProject._id;
       this.myForm = this.buildFormFromData(this.project);
       this.onChangeType(null);
     } else {

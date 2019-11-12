@@ -247,6 +247,11 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       }
       this.storageService.state.selectedContactType = null;
       this.storageService.state.selectedContact = null;
+    } else {
+      this.myForm.controls.projectLeadId.setValue(null);
+      this.myForm.controls.projectLead.setValue(null);
+      this.myForm.controls.responsibleEPDId.setValue(null);
+      this.myForm.controls.responsibleEPD.setValue(null);
     }
   }
 
@@ -261,7 +266,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.onChangeType(null);
     } else if (this.tabIsEditing) {
       // First entry on resolver
-      this.projectId = this.project._id;
+      this.projectId = this.fullProject._id;
       this.myForm = this.buildFormFromData(this.project);
       this.onChangeType(null);
     } else {
