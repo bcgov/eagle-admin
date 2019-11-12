@@ -125,18 +125,110 @@ export class ApiService {
   }
 
   //
-  // Using Search Service Instead
+  // Projects
   //
-  // getProjects(pageNum: number, pageSize: number, sortBy: string, populate: Boolean = true):
+  getProjects(pageNum: number, pageSize: number, sortBy: string, populate: Boolean = true): Observable<Object> {
+    const fields = [
+      'eacDecision',
+      'name',
+      'proponent',
+      'region',
+      'type',
+      'code',
+      'currentPhaseName',
+      'epicProjectID',
+      'decisionDate'
+    ];
+
+    let queryString = `project?`;
+    if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
+    if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
+    if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
+    if (populate !== null) { queryString += `populate=${populate}&`; }
+    queryString += `fields=${this.buildValues(fields)}`;
+
+    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+  }
 
   getFullDataSet(dataSet: string): Observable<any> {
     return this.http.get<any>(`${this.pathAPI}/search?pageSize=1000&dataset=${dataSet}`, {});
   }
 
- //
-  // Using Search Service Instead
-  //
-  // getProject(id: string, cpStart: string, cpEnd: string): Observable<Project[]>
+  // NB: returns array with 1 element
+  getProject(id: string, cpStart: string, cpEnd: string): Observable<Project[]> {
+    const fields = [
+      'CEAAInvolvement',
+      'CELead',
+      'CELeadEmail',
+      'CELeadPhone',
+      'centroid',
+      'description',
+      'eacDecision',
+      'activeStatus',
+      'location',
+      'name',
+      'projectLeadId',
+      'projectLead',
+      'projectLeadEmail',
+      'projectLeadPhone',
+      'proponent',
+      'region',
+      'responsibleEPDId',
+      'responsibleEPD',
+      'responsibleEPDEmail',
+      'responsibleEPDPhone',
+      'subtype',
+      'type',
+      'addedBy',
+      'build',
+      'intake',
+      'CEAALink',
+      'code',
+      'eaDecision',
+      'operational',
+      'substantiallyStarted',
+      'nature',
+      'commodity',
+      'currentPhaseName',
+      'dateAdded',
+      'dateCommentsClosed',
+      'dateCommentsOpen',
+      'dateUpdated',
+      'decisionDate',
+      'duration',
+      'eaoMember',
+      'epicProjectID',
+      'fedElecDist',
+      'isTermsAgreed',
+      'overallProgress',
+      'primaryContact',
+      'proMember',
+      'provElecDist',
+      'sector',
+      'shortName',
+      'status',
+      'substantiallyDate',
+      'substantially',
+      'substitution',
+      'eaStatus',
+      'eaStatusDate',
+      'projectStatusDate',
+      'activeDate',
+      'updatedBy',
+      'projLead',
+      'execProjectDirector',
+      'complianceLead',
+      'pins',
+      'read',
+      'write',
+      'delete'
+    ];
+    let queryString = `project/${id}?populate=true`;
+    if (cpStart !== null) { queryString += `&cpStart[since]=${cpStart}`; }
+    if (cpEnd !== null) { queryString += `&cpEnd[until]=${cpEnd}`; }
+    queryString += `&fields=${this.buildValues(fields)}`;
+    return this.http.get<Project[]>(`${this.pathAPI}/${queryString}`, {});
+  }
 
   getCountProjects(): Observable<number> {
     const queryString = `project`;
