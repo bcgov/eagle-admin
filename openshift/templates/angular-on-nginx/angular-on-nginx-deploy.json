@@ -190,48 +190,48 @@
   ],
   "parameters": [
     {
-      "description": "The name assigned to all of the openshift objects defined in this template. It is also the name of runtime image you want.",
-      "displayName": "Name",
       "name": "NAME",
+      "displayName": "Name",
+      "description": "The name assigned to all of the openshift objects defined in this template. It is also the name of runtime image you want.",
       "required": true,
       "value": "eagle-admin"
     },
     {
-      "description": "The namespace where to get the above image name",
-      "displayName": "Image Namespace",
       "name": "IMAGE_NAMESPACE",
+      "displayName": "Image Namespace",
+      "description": "The namespace where to get the above image name. Eg: esm",
       "required": true,
-      "value": "esm"
+      "value": "your-tools-namespace"
     },
     {
-      "description": "OpenShift cluster private IP range in CIDR notation, used by Nginx ngx_http_realip_module.",
-      "displayName": "OpenShift Cluster IP Range",
       "name": "REAL_IP_FROM",
+      "displayName": "OpenShift Cluster IP Range",
+      "description": "OpenShift cluster private IP range in CIDR notation, used by Nginx ngx_http_realip_module.",
       "required": true,
       "value": "172.51.0.0/16"
     },
     {
-      "description": "Additional known and trusted reverse proxy ips conforming to nginx set_real_ip_from directive syntax. Multiple directives are allowed, separated by semicolon.",
+      "name": "AdditionalRealIpFromRules",
       "displayName": "Additional real_ip_from Rules",
-      "name": "AdditionalRealIpFromRules"
+      "description": "Additional known and trusted reverse proxy ips conforming to nginx set_real_ip_from directive syntax. Multiple directives are allowed, separated by semicolon."
     },
     {
-      "description": "Nginx ngx_http_access_module ip filter rules",
-      "displayName": "Ip Filter Rules",
       "name": "IpFilterRules",
+      "displayName": "Ip Filter Rules",
+      "description": "Nginx ngx_http_access_module ip filter rules",
       "value": "#allow all; deny all;"
     },
     {
-      "description": "The exposed hostname that will route to the service, e.g., myappname.pathfinder.gov.bc.ca, if left blank a value will be defaulted.",
-      "displayName": "Application Hostname",
       "name": "APPLICATION_DOMAIN",
-      "value": "eagle-dev.pathfinder.gov.bc.ca"
+      "displayName": "Application Hostname",
+      "description": "The exposed hostname that will route to the service.  Recall that both admin and public share the same domain, just use different paths (public uses '/' and admin uses '/admin/'.",
+      "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca"
     },
     {
-      "description": "The TAG name for this environment, e.g., dev, test, prod",
-      "displayName": "Env TAG name",
       "name": "TAG_NAME",
-      "value": "dev"
+      "displayName": "Env TAG name",
+      "description": "The TAG name for this environment, e.g., dev, test, prod",
+      "value": "your-openshift-tag"
     }
   ]
 }
