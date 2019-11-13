@@ -34,11 +34,11 @@ export class OrganizationsResolver implements Resolve<object> {
       null,
       tableParams.currentPage,
       tableParams.pageSize,
-      '',
       tableParams.sortBy,
       {},
       false,
-      filterObj
+      filterObj,
+      ''
     );
   }
 

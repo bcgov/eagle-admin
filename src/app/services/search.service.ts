@@ -46,7 +46,7 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, projectLegislation: string = '', sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = ''): Observable<any[]> {
     if (sortBy === '') {
       sortBy = null;
     }

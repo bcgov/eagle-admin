@@ -19,17 +19,17 @@
 </nav>
 <main class="container-fluid-padding">
   <h1 id="name">{{project.name}}
-    <span ngbDropdown>
+    <!-- <span ngbDropdown>
       <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
       <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-        <!-- Replace click events -->
+
         <button class="dropdown-item" [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
           Document</button>
         <button class="dropdown-item" (click)="editProject()">Edit</button>
         <button class="dropdown-item" *ngIf="!isPublished" (click)="publishProject()">Publish</button>
         <button class="dropdown-item" *ngIf="isPublished" (click)="unPublishProject()">Un-Publish</button>
       </div>
-    </span>
+    </span> -->
   </h1>
   <section>
     <app-comment-period-banner></app-comment-period-banner>

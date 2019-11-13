@@ -24,9 +24,10 @@ export class LinkOrganizationResolver implements Resolve<Observable<object>> {
       null,
       tableParams.currentPage,
       tableParams.pageSize,
-      '',
       tableParams.sortBy,
       {},
-      false);
+      false,
+      {},
+      '');
   }
 }

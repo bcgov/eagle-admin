@@ -12,6 +12,7 @@ import { FullProject } from 'app/models/fullProject';
 
 import { ISearchResults } from 'app/models/search';
 import { IAddEditTab } from 'app/models/ProjectDetails';
+import { ProjectService } from 'app/services/project.service';
 @Component({
   selector: 'app-add-edit-project',
   templateUrl: './add-edit-project.component.html',
@@ -48,6 +49,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private config: ConfigService,
+    public projectService: ProjectService,
     private storageService: StorageService,
     private utils: Utils
   ) {
