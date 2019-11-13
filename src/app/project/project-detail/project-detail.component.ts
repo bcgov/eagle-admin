@@ -34,6 +34,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public project: Project;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  public isPublished: boolean;
 
   constructor(
     private router: Router,
@@ -61,6 +62,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
             this.project = results ? results[0] :  null;
+            this.isPublished = this.project.read.includes('public');
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();
@@ -239,6 +241,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
               project => {
                 this.isPublishing = false;
                 this.project = project;
+                this.isPublished = true;
               },
               error => {
                 this.isPublishing = false;
@@ -274,6 +277,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
               project => {
                 this.isPublishing = false;
                 this.project = project;
+                this.isPublished = false;
               },
               error => {
                 this.isPublishing = false;

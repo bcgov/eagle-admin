@@ -215,6 +215,13 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       }
       this.storageService.state.selectedContactType = null;
       this.storageService.state.selectedContact = null;
+      // In this case we need to make sure we null out these values
+      // Clear out the values in the form if the storage service is null
+    } else {
+      this.myForm.controls.projectLeadId.setValue(null);
+      this.myForm.controls.projectLead.setValue(null);
+      this.myForm.controls.responsibleEPDId.setValue(null);
+      this.myForm.controls.responsibleEPD.setValue(null);
     }
   }
 
@@ -245,7 +252,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.onChangeType(null);
     } else if (this.tabIsEditing) {
       // First entry on resolver
-      this.projectId = this.project._id;
       this.myForm = this.buildFormFromData(this.project);
       this.onChangeType(null);
     } else {
@@ -461,7 +467,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
       'projectLeadId': form.controls.projectLeadId.value,
-      'legislation': form.controls.legislation.value
     };
   }
 
@@ -561,7 +566,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       // PUT
       let project = new Project(this.convertFormToProject(this.myForm));
       console.log('PUTing', project);
-      project._id = this.project._id;
+      project._id = this.projectId;
       this.projectService.save(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -570,7 +575,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
             this.loading = false;
             this.router.navigated = false;
             this.openSnackBar('This project was edited successfully.', 'Close');
-            this.router.navigate(['/p', this.project._id, 'project-details']);
+            // this.router.navigate(['/p', this.project._id, 'project-details']);
           },
           error => {
             console.log('error =', error);

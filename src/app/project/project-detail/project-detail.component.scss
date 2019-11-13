@@ -1,5 +1,15 @@
 @import "assets/styles/components/details.scss";
 
+.badge-wrapper{
+    position: relative;
+}
+
+.badge-published{
+    color: white;
+    font-size: large;
+    margin-bottom: 11px;
+}
+
 .btn-archived {
     float: right;
     background-color: #003367;
