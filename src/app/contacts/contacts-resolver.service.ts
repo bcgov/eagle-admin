@@ -28,6 +28,6 @@ export class ContactsResolver implements Resolve<object> {
       tableParams.pageSize,
       tableParams.sortBy,
       {},
-      false,{}, '');
+      false, {}, '');
   }
 }
