@@ -106,11 +106,13 @@ export class ProjectService {
       });
   }
 
-  public getPeopleObjs(data, projectKey: string[]): Observable<any> {
-    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+  public getPeopleObjs(data, projectKey?: string[]): Observable<any> {
+    const projectSearchData = (projectKey) ? this.utils.extractFromSearchResults(data.fullProject) : this.utils.extractFromSearchResults(data.project);
     let project;
-    if (fullProjectSearchData) {
-      project = fullProjectSearchData[0][projectKey[0]] || fullProjectSearchData[0][projectKey[1]];
+    if (projectSearchData && projectKey) {
+      project = (projectKey.length > 1) ?  projectSearchData[0][projectKey[0]] || projectSearchData[0][projectKey[1]] : projectSearchData[0][projectKey[0]] ;
+    } else {
+      project = projectSearchData[0];
     }
     if (!project) {
       return of(data);

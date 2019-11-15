@@ -1,4 +1,4 @@
-<nav class="action-container">
+<nav class="action-container" *ngIf="project && project._id">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
       <a [routerLink]="['/projects']">All Projects</a>
@@ -17,7 +17,7 @@
     </div>
   </div>
 </nav>
-<main class="container-fluid-padding">
+<main class="container-fluid-padding" *ngIf="project && project._id">
   <h1 id="name">{{project.name}}
     <!-- <span ngbDropdown>
       <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>

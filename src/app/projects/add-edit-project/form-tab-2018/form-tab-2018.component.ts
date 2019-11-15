@@ -14,7 +14,7 @@ import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
-
+import { flatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'form-tab-2018',

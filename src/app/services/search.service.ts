@@ -55,7 +55,6 @@ export class SearchService {
       .map(res => {
         let allResults = <any>[];
         res.forEach(item => {
-
           const r = new SearchResults({ type: item._schemaName, data: item });
           allResults.push(r);
         });

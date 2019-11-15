@@ -433,7 +433,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     if (formData.projectLeadId == null || formData.projectLeadId === '') {
       formData.projectLead = null;
     }
-    // The reason why this object is null is because the _getExtraAppData function is adding in this object to the payload by using the ids to get the actual name
     if (formData.responsibleEPDObj == null) {
       formData.responsibleEPDObj = {
         _id: null,
