@@ -29,6 +29,12 @@ import { AddEditOrganizationComponent } from './organizations/add-edit-organizat
 import { EditOrganizationResolver } from './organizations/add-edit-organization/edit-organization-resolver.services';
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
 import { LinkOrganizationResolver } from './shared/components/link-organization/link-organization-resolver.services';
+import { NotificationProjectsComponent } from './notification-projects/notification-projects.component';
+import { NotificationProjectsResolver } from './notification-projects/notification-projects-resolver.service';
+import { AddEditNotificationProjectComponent } from './notification-projects/add-edit-notification-project/add-edit-notification-project.component';
+import { NotificationProjectComponent } from './notification-project/notification-project.component';
+import { NotificationProjectResolver } from './notification-project/notification-project-resolver.service';
+import { NotificationProjectDocumentsResolver } from './notification-project/notification-project-documents-resolver.service';
 
 const routes: Routes = [
   {
@@ -93,6 +99,40 @@ const routes: Routes = [
   {
     path: 'metrics',
     component: MetricsComponent
+  },
+  {
+    path: 'notification-projects',
+    component: NotificationProjectsComponent,
+    resolve: {
+      notificationProjects: NotificationProjectsResolver
+    }
+  },
+  {
+    path: 'np/:notificationProjectId',
+    resolve: {
+      notificationProject: NotificationProjectResolver,
+      documents: NotificationProjectDocumentsResolver
+    },
+    children: [
+      {
+        path: '',
+        redirectTo: 'notification-project-details',
+        pathMatch: 'full',
+      },
+      {
+        path: 'notification-project-details',
+        component: NotificationProjectComponent,
+      },
+      {
+        path: 'edit',
+        component: AddEditNotificationProjectComponent,
+      }
+    ],
+    runGuardsAndResolvers: 'always',
+  },
+  {
+    path: 'notification-projects/add',
+    component: AddEditNotificationProjectComponent,
   },
   {
     path: 'c/:contactId/edit/link-org',
@@ -175,11 +215,14 @@ const routes: Routes = [
     EditContactResolver,
     EditOrganizationResolver,
     LinkOrganizationResolver,
+    NotificationProjectsResolver,
+    NotificationProjectResolver,
     OrganizationsResolver,
     PinsGlobalComponentResolver,
     ProjectContactsGroupResolver,
     ProjectGroupResolver,
-    TopicsResolver
+    TopicsResolver,
+    NotificationProjectDocumentsResolver
   ]
 })
 
