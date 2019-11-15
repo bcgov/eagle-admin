@@ -29,7 +29,7 @@
         "nodeSelector": null,
         "postCommit": {},
         "source": {
-          "dockerfile": "FROM ${ANGULAR_BUILDER_IMAGE}:latest\nCOPY * /tmp/app/dist/\nCMD  /usr/libexec/s2i/run",
+          "dockerfile": "FROM ${ANGULAR_BUILDER_IMAGE}:latest\nCOPY * /tmp/app/dist/admin/\nCMD  /usr/libexec/s2i/run",
           "images": [
               {
                   "as": null,
