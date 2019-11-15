@@ -28,7 +28,6 @@
         "completionDeadlineSeconds": 1800,
         "nodeSelector": null,
         "postCommit": {},
-        "triggers": [],
         "source": {
           "dockerfile": "FROM ${ANGULAR_BUILDER_IMAGE}:latest\nCOPY * /tmp/app/dist/\nCMD  /usr/libexec/s2i/run",
           "images": [
@@ -63,6 +62,14 @@
             "name": "${NAME}:latest"
           }
         },
+        "triggers": [
+          {
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
         "resources": {
           "requests": {
             "cpu": "100m",
@@ -100,13 +107,6 @@
       "description": "The NGINX image with our settings applied to.",
       "required": true,
       "value": "eagle-admin-nginx-runtime"
-    },
-    {
-      "name": "GIT_SOURCE_URL",
-      "displayName": "GIT Source Repo URL",
-      "description": "A GIT URL to your source code.",
-      "required": true,
-      "value": "https://github.com/bcgov/eagle-admin"
     }
   ]
 }

@@ -48,6 +48,14 @@
             "name": "${NAME}:latest"
           }
         },
+        "triggers": [
+          {
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
         "resources": {
           "requests": {
             "cpu": "100m",

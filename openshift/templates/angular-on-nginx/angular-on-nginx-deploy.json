@@ -6,7 +6,10 @@
       "description": "Deployment template for a angular on nginx",
       "tags": "angular,nginx"
     },
-    "name": "eagle-admin"
+    "labels": {
+      "app": "${GROUP_NAME}"
+    },
+    "name": "${NAME}"
   },
   "objects": [
     {
@@ -15,14 +18,14 @@
       "metadata": {
         "creationTimestamp": null,
         "labels": {
-          "app": "${NAME}"
+          "app": "${GROUP_NAME}"
         },
         "name": "${NAME}"
       },
       "spec": {
         "replicas": 2,
         "selector": {
-          "app": "${NAME}",
+          "app": "${GROUP_NAME}",
           "deploymentconfig": "${NAME}"
         },
         "strategy": {
@@ -39,7 +42,7 @@
           "metadata": {
             "creationTimestamp": null,
             "labels": {
-              "app": "${NAME}",
+              "app": "${GROUP_NAME}",
               "deploymentconfig": "${NAME}"
             }
           },
@@ -140,7 +143,7 @@
       "metadata": {
         "creationTimestamp": null,
         "labels": {
-          "app": "${NAME}"
+          "app": "${GROUP_NAME}"
         },
         "name": "${NAME}"
       },
@@ -154,7 +157,7 @@
           }
         ],
         "selector": {
-          "app": "${NAME}",
+          "app": "${GROUP_NAME}",
           "deploymentconfig": "${NAME}"
         },
         "sessionAffinity": "None",
@@ -166,7 +169,7 @@
       "kind": "Route",
       "metadata": {
         "labels": {
-          "app": "${NAME}"
+          "app": "${GROUP_NAME}"
         },
         "name": "${NAME}"
       },
@@ -195,6 +198,13 @@
       "description": "The name assigned to all of the openshift objects defined in this template. It is also the name of runtime image you want.",
       "required": true,
       "value": "eagle-admin"
+    },
+    {
+      "name": "GROUP_NAME",
+      "displayName": "Group Name",
+      "description": "The name to group all of the frontend objects defined in this template.",
+      "required": true,
+      "value": "eagle-api"
     },
     {
       "name": "IMAGE_NAMESPACE",
