@@ -18,7 +18,7 @@ import { StorageService } from 'app/services/storage.service';
 import { SearchService } from 'app/services/search.service';
 import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
-
+import { flatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-project-detail',
@@ -57,6 +57,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
+      // Mapping the get People object observable here to fill out the epd and lead objects
+      .flatMap(data => this.projectService.getPeopleObjs(data))
       .subscribe(
         (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
@@ -91,7 +93,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.storageService.state.project = this.project;
     this.storageService.state.tableColumns = null;
     this.storageService.state.sortBy = null;
-    this.storageService.state.form = null;
+    this.storageService.state.form2002 = null;
+    this.storageService.state.form2018 = null;
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
