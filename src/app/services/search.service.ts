@@ -20,6 +20,7 @@ export class SearchService {
     private utils: Utils
   ) { }
 
+
   getItem(_id: string, schema: string): Observable<any> {
     const searchResults = this.api.getItem(_id, schema)
       .map(res => {
@@ -46,7 +47,7 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = ''): Observable<any[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = '', getPeopleData = false): Observable<SearchResults[]> {
     if (sortBy === '') {
       sortBy = null;
     }
@@ -54,6 +55,7 @@ export class SearchService {
       .map(res => {
         let allResults = <any>[];
         res.forEach(item => {
+
           const r = new SearchResults({ type: item._schemaName, data: item });
           allResults.push(r);
         });
@@ -66,5 +68,4 @@ export class SearchService {
       });
     return searchResults;
   }
-
 }

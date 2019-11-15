@@ -22,6 +22,7 @@ import { TableParamsObject } from 'app/shared/components/table-template/table-pa
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 // import { ModificationsListTableRowsComponent } from '../modifications-list-table-rows/modifications-list-table-rows.component';
 import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
+import { flatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'form-tab-2002',
@@ -205,9 +206,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     // Get data related to current project
     this.route.parent.data
+      // Mapping the get People object observable here to fill out the epd and lead objects
+      .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2002', 'legislation_1996']))
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-        this.initProject(data);
+        const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+        this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+        this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+        this.initProject(this.fullProject);
         this.initOrg();
         this.buildForm();
         this.initContacts();
@@ -222,10 +228,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     this.back = this.storageService.state.back;
   }
-  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
-    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
-    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-    this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+  initProject(fullProject: FullProject) {
     this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
 
     this.tabIsEditing = this.project ? true : false;
@@ -252,13 +255,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       }
       this.storageService.state.selectedContactType = null;
       this.storageService.state.selectedContact = null;
-      // In this case we need to make sure we null out these values
-      // Clear out the values in the form if the storage service is null
-    } else {
-      this.myForm.controls.projectLeadId.setValue(null);
-      this.myForm.controls.projectLead.setValue(null);
-      this.myForm.controls.responsibleEPDId.setValue(null);
-      this.myForm.controls.responsibleEPD.setValue(null);
     }
   }
 
@@ -437,6 +433,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     if (formData.projectLeadId == null || formData.projectLeadId === '') {
       formData.projectLead = null;
     }
+    // The reason why this object is null is because the _getExtraAppData function is adding in this object to the payload by using the ids to get the actual name
     if (formData.responsibleEPDObj == null) {
       formData.responsibleEPDObj = {
         _id: null,
