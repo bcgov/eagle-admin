@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
 import { Subject } from 'rxjs/Subject';
 import { KeycloakService } from 'app/services/keycloak.service';
+import { ApiService } from 'app/services/api';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,6 +20,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public isNavMenuOpen = false;
   public routerSnapshot = null;
   public isInspectorRole = false;
+  public showNotificationProjects = false;
   public showProjectDetails = false;
   public showProjectDetailsSubItems = false;
   public currentProjectId = '';
@@ -27,10 +29,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
   @HostBinding('class.is-toggled')
   isOpen = false;
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private storageService: StorageService,
     private keycloakService: KeycloakService,
-    private sideBarService: SideBarService) {
+    private sideBarService: SideBarService,
+    private apiService: ApiService
+  ) {
 
     router.events.pipe(
       filter(event => event instanceof NavigationEnd))
@@ -51,6 +56,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     const roles = this.keycloakService.getUserRoles();
     if (roles.includes('inspector')) {
       this.isInspectorRole = true;
+    }
+
+    // Remove this when notification projects are ready.
+    if (this.apiService.env === 'demo') {
+      this.showNotificationProjects = true;
     }
   }
 

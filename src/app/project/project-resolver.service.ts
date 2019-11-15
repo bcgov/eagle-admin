@@ -17,6 +17,7 @@ export class ProjectResolver implements Resolve<Object> {
     let end = new Date();
     start.setDate(start.getDate() - 7);
     end.setDate(end.getDate() + 7);
+    // We to update getSearchResults to also grab the ExtraAppData to populate the responsibleEPD
     return this.searchService.getSearchResults(
       '',
       'Project',
@@ -28,6 +29,7 @@ export class ProjectResolver implements Resolve<Object> {
       true,
       {},
       '',
-    );
+      true
+    )
   }
 }

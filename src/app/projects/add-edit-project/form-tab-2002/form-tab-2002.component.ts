@@ -15,6 +15,15 @@ import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-s
 import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
 
+import { Constants } from 'app/shared/utils/constants';
+
+import { TableObject } from 'app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+// import { ModificationsListTableRowsComponent } from '../modifications-list-table-rows/modifications-list-table-rows.component';
+import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
+import { flatMap } from 'rxjs/operators';
+
 @Component({
   selector: 'form-tab-2002',
   templateUrl: './form-tab-2002.component.html',
@@ -131,6 +140,35 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     'Pre-EA Act Approval',
     'Not Designated Reviewable'
   ];
+  // these are for extensions
+  // public modifications = [];
+  // public modificationsTableData: TableObject;
+  // public modificationsTableColumns: any[] = [
+  //   {
+  //     name: 'Type',
+  //     value: 'type',
+  //     width: 'col-2',
+  //     nosort: true
+  //   },
+  //   {
+  //     name: 'Applied To',
+  //     value: 'appliedTo',
+  //     width: 'col-4',
+  //     nosort: true
+  //   },
+  //   {
+  //     name: 'Start',
+  //     value: 'start',
+  //     width: 'col-3',
+  //     nosort: true
+  //   },
+  //   {
+  //     name: 'End',
+  //     value: 'end',
+  //     width: 'col-3',
+  //     nosort: true
+  //   }
+  // ];
 
   public projectName: string;
   public projectId: string;
@@ -168,9 +206,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     // Get data related to current project
     this.route.parent.data
+      // Mapping the get People object observable here to fill out the epd and lead objects
+      .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2002', 'legislation_1996']))
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-        this.initProject(data);
+        const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+        this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+        this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+        this.initProject(this.fullProject);
         this.initOrg();
         this.buildForm();
         this.initContacts();
@@ -185,10 +228,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     this.back = this.storageService.state.back;
   }
-  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
-    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
-    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-    this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+  initProject(fullProject: FullProject) {
     this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
 
     this.tabIsEditing = this.project ? true : false;
@@ -215,13 +255,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       }
       this.storageService.state.selectedContactType = null;
       this.storageService.state.selectedContact = null;
-      // In this case we need to make sure we null out these values
-      // Clear out the values in the form if the storage service is null
-    } else {
-      this.myForm.controls.projectLeadId.setValue(null);
-      this.myForm.controls.projectLead.setValue(null);
-      this.myForm.controls.responsibleEPDId.setValue(null);
-      this.myForm.controls.responsibleEPD.setValue(null);
     }
   }
 
@@ -286,9 +319,54 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         'responsibleEPD': new FormControl(),
         'projectLeadId': new FormControl(),
         'projectLead': new FormControl(),
+        // this stuff is for extensions will be moved somewhere appropriate sometime soon
+        // 'review180Start': new FormControl(),
+        // 'review45Start': new FormControl()
       });
     }
-  }
+    // extension stuff
+    // if (this.project.reviewExtensions) {
+    //   this.project.reviewExtensions.forEach( item => {
+    //     this.modifications.push(item);
+    //   });
+    // }
+    // if (this.project.reviewSuspensions) {
+    //   this.project.reviewSuspensions.forEach( item => {
+    //     this.modifications.push(item);
+    //   });
+    // }
+    // this.modificationsTableData = new TableObject(
+    //   ModificationsListTableRowsComponent,
+    //   this.modifications,
+    //   []
+    // );
+    }
+  // these 3 functions are also for extensions
+  // public addExtension() {
+  //   this.storageService.state.form = this.myForm;
+  //   this.storageService.state.extensionType = 'add-extension';
+  //   this.setNavigation();
+  //   this.router.navigate(['/p', this.project._id, 'edit', 'add-extension']);
+  // }
+
+  // public addSuspension() {
+  //   this.storageService.state.extensionType = 'add-suspension';
+  //   this.storageService.state.form = this.myForm;
+  //   this.setNavigation();
+  //   this.router.navigate(['/p', this.project._id, 'edit', 'add-suspension']);
+  // }
+
+  // public onItemClicked(item) {
+  //   if (item.type === 'Extension') {
+  //     this.storageService.state.extensionType = 'edit-extension';
+  //   } else {
+  //     this.storageService.state.extensionType = 'edit-suspension';
+  //   }
+  //   this.storageService.state.extension = item;
+  //   this.storageService.state.form = this.myForm;
+  //   this.setNavigation();
+  //   this.router.navigate(['/p', this.project._id, 'edit', this.storageService.state.extensionType]);
+  // }
 
   private setNavigation() {
     if (!this.pageIsEditing) {
@@ -399,6 +477,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'responsibleEPD': new FormControl(formData.responsibleEPDObj.displayName),
       'projectLeadId': new FormControl(formData.projectLeadObj._id),
       'projectLead': new FormControl(formData.projectLeadObj.displayName),
+      // 'review180Start': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.review180Start))),
+      // 'review45Start': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.review45Start)))
     });
     this.sectorsSelected = this.PROJECT_SUBTYPES[formData.type];
     return theForm;
@@ -467,10 +547,15 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
       'projectLeadId': form.controls.projectLeadId.value,
+      // extension stuff
+      // 'review180Start': this.getDate(form.get('review180Start').value),
+      // 'review45Start': this.getDate(form.get('review45Start').value)
     };
   }
 
   private clearStorageService() {
+    // this.storageService.state.extension = null;
+    // this.storageService.state.extensionType = null;
     this.storageService.state.form2002 = null;
     this.storageService.state.selectedOrganization2002 = null;
     this.storageService.state.selectedOrganization = null;

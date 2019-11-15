@@ -14,6 +14,8 @@ import { ProjectListTableRowsComponent } from './project-list/project-list-table
 import { AddEditProjectComponent } from './add-edit-project/add-edit-project.component';
 import { FormTab2002Component } from './add-edit-project/form-tab-2002/form-tab-2002.component';
 import { FormTab2018Component } from './add-edit-project/form-tab-2018/form-tab-2018.component';
+import { ModificationsListTableRowsComponent } from './add-edit-project/modifications-list-table-rows/modifications-list-table-rows.component';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -30,10 +32,12 @@ import { FormTab2018Component } from './add-edit-project/form-tab-2018/form-tab-
     ProjectListComponent,
     ProjectListTableRowsComponent,
     FormTab2002Component,
-    FormTab2018Component
+    FormTab2018Component,
+    ModificationsListTableRowsComponent
   ],
   entryComponents: [
-    ProjectListTableRowsComponent
+    ProjectListTableRowsComponent,
+    ModificationsListTableRowsComponent
   ],
   exports: [
     ProjectListComponent

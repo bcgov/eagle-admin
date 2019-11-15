@@ -47,21 +47,23 @@ export class UploadComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
 
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'doctype':
-          this.doctypes.push(Object.assign({}, item));
-          break;
-        case 'author':
-          this.authors.push(Object.assign({}, item));
-          break;
-        case 'label':
-          this.labels.push(Object.assign({}, item));
-          break;
-        case 'projectPhase':
-          this.projectPhases.push(Object.assign({}, item));
-          break;
-      }
+    this.config.getLists().subscribe(lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'doctype':
+            this.doctypes.push(Object.assign({}, item));
+            break;
+          case 'author':
+            this.authors.push(Object.assign({}, item));
+            break;
+          case 'label':
+            this.labels.push(Object.assign({}, item));
+            break;
+          case 'projectPhase':
+            this.projectPhases.push(Object.assign({}, item));
+            break;
+        }
+      });
     });
 
     if (this.storageService.state.form) {
