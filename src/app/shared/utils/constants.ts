@@ -6,390 +6,105 @@ export class Constants {
     DEFAULT_KEYWORDS: ''
   };
 
-  public static readonly types = [
-    'CERTIFICATE OF PURCHASE',
-    'CROWN GRANT',
-    'DEVELOPMENT AGREEMENT',
-    'DOMINION PATENTS',
-    'INCLUSION',
-    'INVENTORY',
-    'LEASE',
-    'LICENCE',
-    'OIC ECOLOGICAL RESERVE ACT',
-    'PERMIT',
-    'PRE-TANTALIS',
-    'PROVINCIAL PARK',
-    'RESERVE/NOTATION',
-    'REVENUE SHARING AGREEMENT',
-    'RIGHT-OF-WAY',
-    'TRANSFER OF ADMINISTRATION/CONTROL'
+  public static readonly EAC_DECISIONS = [
+    'In Progress', // default, set in BuildForm() and BuildFormFromData()
+    'Certificate Issued',
+    'Certificate Refused',
+    'Further Assessment Required',
+    'Certificate Not Required',
+    'Certificate Expired',
+    'Withdrawn',
+    'Terminated',
+    'Pre-EA Act Approval',
+    'Not Designated Reviewable'
   ];
 
-  public static readonly subtypes = {
-    'CERTIFICATE OF PURCHASE': [
-      'DIRECT SALE',
-      'FROM LEASE-PURCHASE OPTION',
-      'PRE-TANTALIS CERTIFICATE OF PURCHASE',
-      'TEMPORARY CODE'
-    ],
-    'CROWN GRANT': [
-      'DIRECT SALE',
-      'FREE CROWN GRANT',
-      'FROM LEASE-PURCHASE OPTION',
-      'HISTORIC',
-      'HISTORIC CROWN GRANT',
-      'LAND EXCHANGE',
-      'PRE-EMPTION',
-      'PRE-TANTALIS CROWN GRANT',
-      'TEMPORARY CODE'
-    ],
-    'DEVELOPMENT AGREEMENT': [
-      'ALPINE SKI DEVELOPMENT',
-      'PRE-TANTALIS DEVELOPMENTAL AGREEMENT'
-    ],
-    'DOMINION PATENTS': [
-      'PRE-TANTALIS DOMINION PATENTS'
-    ],
-    'INCLUSION': [
-      'ACCESS',
-      'AGREEMENT',
-      'INCLUSION',
-      'LAND TITLE ACT ACCRETION',
-      'LAND TITLE ACT BOUNDARY ADJUSTMENT',
-      'PRE-TANTALIS INCLUSION'
-    ],
-    'INVENTORY': [
-      'BCAL INVENTORY'
-    ],
-    'LEASE': [
-      'HEAD LEASE',
-      'LEASE - PURCHASE OPTION',
-      'PRE-TANTALIS LEASE',
-      'STANDARD LEASE'
-    ],
-    'LICENCE': [
-      'LICENCE OF OCCUPATION',
-      'PRE-TANTALIS LICENCE'
-    ],
-    'OIC ECOLOGICAL RESERVE ACT': [
-      'OIC ECOLOGICAL RESERVES',
-      'PRE-TANTALIS OIC ECO RESERVE'
-    ],
-    'PERMIT': [
-      'INVESTIGATIVE PERMIT',
-      'PRE-TANTALIS PERMIT',
-      'ROADS & BRIDGES',
-      'TEMPORARY CODE',
-      'TEMPORARY PERMIT'
-    ],
-    'PRE-TANTALIS': [
-      'PRE-TANTALIS'
-    ],
-    'PROVINCIAL PARK': [
-      'PARKS',
-      'PRE-TANTALIS PARKS',
-      'PRE-TANTALIS PARKS (00 ON TAS/CLR)'
-    ],
-    'RESERVE/NOTATION': [
-      'DESIGNATED USE AREA',
-      'MAP RESERVE',
-      'NOTATION OF INTEREST',
-      'OIC RESERVE',
-      'PRE-TANTALIS RESERVE/NOTATION',
-      'PROHIBITED USE AREA',
-      'TEMPORARY CODE'
-    ],
-    'REVENUE SHARING AGREEMENT': [
-      'REVENUE SHARING AGREEMENT'
-    ],
-    'RIGHT-OF-WAY': [
-      'INTERIM LICENCE',
-      'STATUTORY RIGHT OF WAY OR EASEMENT',
-      'PRE-TANTALIS RIGHT-OF-WAY'
-    ],
-    'TRANSFER OF ADMINISTRATION/CONTROL': [
-      'FED TRANSFER OF ADMIN, CONTROL & BEN',
-      'PRE-TANTALIS TRANSFER OF ADMIN/CONT',
-      'PROVINCIAL TRANSFER OF ADMIN'
-    ]
-  };
-
-  public static readonly statuses = [
-    'ACCEPTED',
-    'ACTIVE',
-    'ALLOWED',
-    'CANCELLED',
-    'COMPLETED',
-    'DISALLOWED',
-    'DISPOSITION IN GOOD STANDING',
-    'EXPIRED',
-    'HISTORIC',
-    'OFFER ACCEPTED',
-    'OFFER RESCINDED',
-    'OFFERED',
-    'PENDING',
-    'PRE-TANTALIS',
-    'RECEIVED',
-    'REVERTED',
-    'SOLD',
-    'SUSPENDED',
-    'WITHDRAWN'
+  public static readonly PROJECT_NATURE = [
+    'New Construction',
+    'Modification of Existing',
+    'Dismantling or Abandonment'
   ];
 
-  public static readonly purposes = [
-    'AGRICULTURE',
-    'ALL SEASONS RESORT',
-    'ALPINE SKIING',
-    'AQUACULTURE',
-    'COMMERCIAL',
-    'COMMERCIAL RECREATION',
-    'COMMUNICATION',
-    'COMMUNITY',
-    'ENERGY PRODUCTION',
-    'ENVIRONMENT, CONSERVATION, & RECREATION',
-    'FIRST NATIONS',
-    'INDUSTRIAL',
-    'INSTITUTIONAL',
-    'MISCELLANEOUS LAND USES',
-    'OCEAN ENERGY',
-    'PRE-TANTALIS',
-    'QUARRYING',
-    'RESIDENTIAL',
-    'SOLAR POWER',
-    'TRANSPORTATION',
-    'UTILITY',
-    'WATERPOWER',
-    'WINDPOWER'
+  public static readonly PROJECT_STATUS = [
+    'Initiated',
+    'Submitted',
+    'In Progress', // default, set in BuildForm() and BuildFormFromData()
+    'Certified',
+    'Not Certified',
+    'Decommissioned'
   ];
 
-  public static readonly subpurposes = {
-    'AGRICULTURE': [
-      'EXTENSIVE',
-      'GRAZING',
-      'INTENSIVE'
+  public static readonly PROJECT_TYPES = [
+    'Energy-Electricity',
+    'Energy-Petroleum & Natural Gas',
+    'Food Processing',
+    'Industrial',
+    'Mines',
+    'Other',
+    'Tourist Destination Resorts',
+    'Transportation',
+    'Waste Disposal',
+    'Water Management'
+  ];
+
+  public static readonly PROJECT_SUBTYPES = {
+    'Mines': [
+      'Coal Mines',
+      'Construction Stone and Industrial Mineral Quarries',
+      'Mineral Mines',
+      'Off-shore Mines',
+      'Placer Mineral Mines',
+      'Sand and Gravel Pits'
     ],
-    'ALL SEASONS RESORT': [
-      'MISCELLANEOUS'
+    'Energy-Electricity': [
+      'Electric Transmission Lines',
+      'Power Plants'
     ],
-    'ALPINE SKIING': [
-      'COMMERCIAL RESIDENTIAL',
-      'CONTROLLED RECREATION AREA',
-      'DAY SKIER FACILITY',
-      'GENERAL',
-      'INDEPENDENT RECREATION FACILITY',
-      'LIFTS',
-      'MAINTENANCE FACILITY',
-      'MISCELLANEOUS',
-      'PARKING FACILITY',
-      'RUNS/TRAILS',
-      'SUPPORT UTILITY'
+    'Energy-Petroleum & Natural Gas': [
+      'Energy Storage Facilities',
+      'Natural Gas Processing Plants',
+      'Off-shore Oil or Gas Facilities',
+      'Transmission Pipelines'
     ],
-    'AQUACULTURE': [
-      'CRUSTACEANS',
-      'FIN FISH',
-      'PLANTS',
-      'SHELL FISH'
+    'Transportation': [
+      'Airports',
+      'Ferry Terminals',
+      'Marine Port Facilities',
+      'Public Highways',
+      'Railways'
     ],
-    'COMMERCIAL': [
-      'BACK-COUNTRY RECREATION',
-      'COMMERCIAL A',
-      'COMMERCIAL B',
-      'COMMERCIAL RECREATION DOCK',
-      'COMMERCIAL WHARF',
-      'FILM PRODUCTION',
-      'GENERAL',
-      'GOLF COURSE',
-      'HUNTING/FISHING CAMP',
-      'MARINA',
-      'MECHANIZED SKI GUIDING',
-      'MISCELLANEOUS',
-      'PRIVATE YACHT CLUB',
-      'RESORT HUNT/FISH CAMPS & WHARVES',
-      'TRAPLINE CABIN'
+    'Water Management': [
+      'Dams',
+      'Dykes',
+      'Groundwater Extraction',
+      'Shoreline Modification',
+      'Water Diversion'
     ],
-    'COMMERCIAL RECREATION': [
-      'CAT SKI',
-      'COMMUNITY OUTDOOR RECREATION',
-      'ECO TOURIST LODGE/RESORT',
-      'FISH CAMPS',
-      'GUIDED CAVING',
-      'GUIDED FRESHWATER RECREATION',
-      'GUIDED MOUNTAINEERING/ROCK CLIMBING',
-      'GUIDED NATURE VIEWING',
-      'GUIDED SALTWATER RECREATION',
-      'HELI HIKING',
-      'HELI SKI',
-      'HUNT CAMPS',
-      'MISCELLANEOUS',
-      'MULTIPLE USE',
-      'NORDIC SKI (X COUNTRY SKIING)',
-      'PRIVATE CAMPS',
-      'SNOWMOBILING',
-      'SPECIAL ACTIVITIES',
-      'TIDAL SPORTS FISHING CAMPS',
-      'TRAIL RIDING'
+    'Industrial': [
+      'Forest Products Industries',
+      'Non-metallic Mineral Products Industries',
+      'Organic and Inorganic Chemical Industry',
+      'Other Industries',
+      'Primary Metals Industry'
     ],
-    'COMMUNICATION': [
-      'COMBINED USES',
-      'COMMUNICATION SITES'
+    'Waste Disposal': [
+      'Hazardous Waste Facilities',
+      'Local Government Liquid Waste Management Facilities',
+      'Local Government Solid Waste Management Facilities'
     ],
-    'COMMUNITY': [
-      'COMMUNITY FACILITY',
-      'MISCELLANEOUS',
-      'TRAIL MAINTENANCE'
+    'Food Processing': [
+      'Fish Products Industry',
+      'Meat and Meat Products Industry',
+      'Poultry Products Industry'
     ],
-    'ENERGY PRODUCTION': [
-      'BATTERY SITE',
-      'CAMPSITE',
-      'COMPRESSOR SITE',
-      'DEHYDRATOR SITE',
-      'DRILLSITE/WELLSITE',
-      'FLARESITE',
-      'GAS PROCESSING PLANT',
-      'GENERAL',
-      'INLET SITE',
-      'LAND FARMS',
-      'MAJOR COMPRESSION FACILITY',
-      'METER SITE',
-      'NON-FIELD TANK FARMS',
-      'REFINERY',
-      'WATER ANALYZER'
+    'Tourist Destination Resorts': [
+      'Golf Resorts',
+      'Marina Resorts',
+      'Resort Developments',
+      'Ski Resorts'
     ],
-    'ENVIRONMENT, CONSERVATION, & RECREATION': [
-      'BOAT HAVEN',
-      'BUFFER ZONE',
-      'ECOLOGICAL RESERVE',
-      'ENVIRONMENT PROTECTION/CONSERVATION',
-      'FISH AND WILDLIFE MANAGEMENT',
-      'FISHERY FACILITY',
-      'FLOODING RESERVE',
-      'FOREST MANAGEMENT RESEARCH',
-      'GREENBELT',
-      'HERITAGE/ARCHEOLOGICAL SITE',
-      'PROTECTED AREA STRATEGY',
-      'PUBLIC ACCESS/PUBLIC TRAILS',
-      'SCIENCE MEASUREMENT/RESEARCH',
-      'SNOW SURVEY',
-      'UREP/RECREATION RESERVE',
-      'WATERSHED RESERVE'
-    ],
-    'FIRST NATIONS': [
-      'COMMUNITY FACILITY',
-      'CULTURAL SIGNIFICANCE',
-      'INDIAN CUT-OFF',
-      'INTERIM MEASURES',
-      'LAND CLAIM SETTLEMENT',
-      'RESERVE EXPANSION',
-      'ROADS',
-      'SPECIFIC CLAIMS',
-      'TRADITIONAL USE',
-      'TREATY AREA'
-    ],
-    'INDUSTRIAL': [
-      'GENERAL',
-      'HEAVY INDUSTRIAL',
-      'INDUSTRIAL CAMPS',
-      'LIGHT INDUSTRIAL',
-      'LOG HANDLING/STORAGE',
-      'MINERAL PRODUCTION',
-      'MISCELLANEOUS'
-    ],
-    'INSTITUTIONAL': [
-      'CEMETERY',
-      'CORRECTIONS FACILITY',
-      'FIRE HALL',
-      'HOSPITAL/HEALTH FACILITY',
-      'INDOOR RECREATION FACILITY',
-      'LOCAL/REGIONAL PARK',
-      'MILITARY SITE',
-      'MISCELLANEOUS',
-      'POLICE FACILITY',
-      'PUBLIC WORKS',
-      'SCHOOL/OUTDOOR EDUCATION FACILITY',
-      'WASTE DISPOSAL SITE'
-    ],
-    'MISCELLANEOUS LAND USES': [
-      'LAND EXCHANGE',
-      'LAND USE PLAN INTERIM AGREEMENT',
-      'OTHER',
-      'PLANNING/MARKETING/DEVELOP PROJECTS'
-    ],
-    'OCEAN ENERGY': [
-      'GENERAL AREA',
-      'INVESTIGATIVE AND MONITORING PHASE'
-    ],
-    'PRE-TANTALIS': [
-      'PRE-TANTALIS'
-    ],
-    'QUARRYING': [
-      'CONSTRUCTION STONE',
-      'LIMESTONE AND DOLOMITE',
-      'MISCELLANEOUS',
-      'PEAT AND SOIL',
-      'POZZOLAN, CLAY, DIATOMACEOUS EARTH',
-      'PUBLIC SAFETY - FLOOD MITIGATION',
-      'RIP RAP',
-      'ROCK FOR CRUSHING',
-      'SAND AND GRAVEL'
-    ],
-    'RESIDENTIAL': [
-      'APPLICATION ONLY - PRIVATE MOORAGE',
-      'FLOATING CABIN',
-      'FLOATING COMMUNITY',
-      'MISCELLANEOUS',
-      'PRIVATE MOORAGE',
-      'RECREATIONAL RESIDENTIAL',
-      'REMOTE RESIDENTIAL',
-      'RURAL RESIDENTIAL',
-      'STRATA MOORAGE',
-      'THERMAL LOOPS',
-      'URBAN RESIDENTIAL'
-    ],
-    'SOLAR POWER': [
-      'INVESTIGATIVE PHASE'
-    ],
-    'TRANSPORTATION': [
-      'AIRPORT/AIRSTRIP',
-      'BRIDGES',
-      'FERRY TERMINAL',
-      'NAVIGATION AID',
-      'PUBLIC WHARF',
-      'RAILWAY',
-      'ROADWAY'
-    ],
-    'UTILITY': [
-      'CATHODIC SITE/ANODE BEDS',
-      'ELECTRIC POWER LINE',
-      'GAS AND OIL PIPELINE',
-      'MISCELLANEOUS',
-      'SEWER/EFFLUENT LINE',
-      'TELECOMMUNICATION LINE',
-      'WATER LINE'
-    ],
-    'WATERPOWER': [
-      'CAMP',
-      'COMMUNICATION SITE',
-      'GENERAL AREA',
-      'INTAKE',
-      'INVESTIGATIVE PHASE',
-      'NON-COMMERCIAL',
-      'PENSTOCK',
-      'POWERHOUSE SITE',
-      'QUARRY',
-      'ROAD',
-      'TRANSMISSION LINE'
-    ],
-    'WINDPOWER': [
-      'COMMUNICATION SITE',
-      'DEVELOPMENT PHASE',
-      'GENERAL AREA',
-      'INTENSIVE',
-      'INVESTIGATIVE AND MONITORING PHASE',
-      'INVESTIGATIVE PHASE',
-      'OPERATING PHASE',
-      'QUARRY',
-      'ROAD',
-      'TRANSMISSION LINE'
+    'Other': [
+      'Other'
     ]
   };
 }
