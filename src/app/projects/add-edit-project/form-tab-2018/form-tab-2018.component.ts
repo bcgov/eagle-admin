@@ -221,7 +221,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.storageService.state.selectedOrganization = null;
       this.proponentName = this.storageService.state.selectedOrganization2018.name;
       this.proponentId = this.storageService.state.selectedOrganization2018._id;
-    } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+    } else if (this.tabIsEditing && this.project.proponent && this.project.proponent !== '') {
       // load from data
       this.proponentName = this.project.proponent.name;
       this.proponentId = this.project.proponent._id;
@@ -256,7 +256,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   autofill() {
-    this.myForm = this.buildFormFromData(this.oldProject);
+    this.myForm = this.buildFormFromData(
+      {
+        ...this.oldProject,
+        legislationYear : 2018,
+        legislation: '2018 Environmental Assessment Act'
+      }
+    );
   }
 
   buildForm() {
@@ -590,7 +596,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
             this.loading = false;
             this.router.navigated = false;
             this.openSnackBar('This project was edited successfully.', 'Close');
-            this.router.navigate(['/p', this.project._id, 'project-details']);
           },
           error => {
             console.log('error =', error);
