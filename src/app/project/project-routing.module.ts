@@ -96,6 +96,9 @@ const routes: Routes = [
       {
         path: 'project-archived-detail',
         component: ProjectArchivedDetailComponent,
+        resolve: {
+          fullProject: FullProjectResolver
+        }
       },
       {
         path: 'project-documents',

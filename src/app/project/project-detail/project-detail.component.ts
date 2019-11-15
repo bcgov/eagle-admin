@@ -19,6 +19,11 @@ import { SearchService } from 'app/services/search.service';
 import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
 
+import { FullProject } from 'app/models/fullProject';
+import { yearsPerPage } from '@angular/material/datepicker/typings/multi-year-view';
+import { TransitiveCompileNgModuleMetadata } from '@angular/compiler';
+import { endianness } from 'os';
+
 
 @Component({
   selector: 'app-project-detail',
@@ -35,6 +40,13 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public isPublished: boolean;
+
+  public projectName: string;
+  public projectId: string;
+  public oldProject: Project;
+  public fullProject: FullProject;
+  public publishedLegislation: string;
+  public showArchivedButton = false;
 
   constructor(
     private router: Router,
@@ -66,6 +78,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();
+
+            console.log(this.fullProject);
           } else {
             alert('Uh-oh, couldn\'t load project');
             // project not found --> navigate back to search
@@ -73,18 +87,21 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           }
         }
       );
+  }
 
-    // this.project = this.projectComponent.project;
-    // Handles when we come back to this page.
+  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
+    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+    if (this.fullProject) {
+      this.oldProject = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+      this.project = this.fullProject['legislation_2018'];
+      this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
+      this.projectId = this.fullProject._id;
+      // this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+    } else {
+      console.log("fullProject DNE");
+    }
 
-    // // TODO fix
-    // if (this.project && this.project.intake === null) {
-    //   this.project.intake = { investment: '', investmentNotes: '' };
-    // }
-
-    // if (this.project && this.project.intake.investment !== '' && this.project.intake.investment[0] !== '$') {
-    //   this.project.intake.investment = this.cp.transform(this.project.intake.investment, '', true, '1.0-0');
-    // }
   }
 
   editProject() {
