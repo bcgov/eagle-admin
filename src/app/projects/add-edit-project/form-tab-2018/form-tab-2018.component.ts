@@ -582,9 +582,15 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         );
     } else {
       // PUT
-      let project = new Project(this.convertFormToProject(this.myForm));
+      // need to add on legislation year so that we can know where to put it on the root object
+      let project = (new Project({
+        ...this.convertFormToProject(this.myForm),
+        legislation: this.project.legislation,
+        legislationYear: this.project.legislationYear,
+        _id: this.projectId
+      }));
+
       console.log('PUTing', project);
-      project._id = this.projectId;
       this.projectService.save(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
