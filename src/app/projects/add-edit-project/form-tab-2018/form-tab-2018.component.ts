@@ -142,6 +142,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public pageIsEditing = false;
 
   public fullProject: FullProject;
+  public legislationYear: Number = 2018;
   public publishedLegislation: string;
 
   public loading = true;
@@ -253,13 +254,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   autofill() {
-    this.myForm = this.buildFormFromData(
-      {
-        ...this.oldProject,
-        legislationYear : 2018,
-        legislation: '2018 Environmental Assessment Act'
-      }
-    );
+    this.myForm = this.buildFormFromData(this.oldProject);
   }
 
   buildForm() {
@@ -269,7 +264,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.onChangeType(null);
     } else if (this.tabIsEditing) {
       // First entry on resolver
-      this.myForm = this.buildFormFromData(this.project);
+      this.myForm = this.buildFormFromData({...this.project});
       this.onChangeType(null);
     } else {
       this.myForm = new FormGroup({
@@ -585,8 +580,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       // need to add on legislation year so that we can know where to put it on the root object
       let project = (new Project({
         ...this.convertFormToProject(this.myForm),
-        legislation: this.project.legislation,
-        legislationYear: this.project.legislationYear,
+        legislationYear: this.legislationYear,
         _id: this.projectId
       }));
 
