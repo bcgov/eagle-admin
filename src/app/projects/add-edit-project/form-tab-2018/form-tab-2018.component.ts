@@ -264,7 +264,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.onChangeType(null);
     } else if (this.tabIsEditing) {
       // First entry on resolver
-      this.myForm = this.buildFormFromData({...this.project});
+      this.myForm = this.buildFormFromData(this.project);
       this.onChangeType(null);
     } else {
       this.myForm = new FormGroup({
