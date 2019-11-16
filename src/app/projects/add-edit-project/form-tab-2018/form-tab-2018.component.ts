@@ -253,7 +253,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   autofill() {
-    this.myForm = this.buildFormFromData(this.oldProject);
+    this.myForm = this.buildFormFromData(
+      {
+        ...this.oldProject,
+        legislationYear : 2018,
+        legislation: '2018 Environmental Assessment Act'
+      }
+    );
   }
 
   buildForm() {
@@ -587,7 +593,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
             this.loading = false;
             this.router.navigated = false;
             this.openSnackBar('This project was edited successfully.', 'Close');
-            this.router.navigate(['/p', this.project._id, 'project-details']);
           },
           error => {
             console.log('error =', error);
