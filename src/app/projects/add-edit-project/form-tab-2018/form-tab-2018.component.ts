@@ -142,6 +142,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public pageIsEditing = false;
 
   public fullProject: FullProject;
+  public legislationYear: Number = 2018;
   public publishedLegislation: string;
 
   public loading = true;
