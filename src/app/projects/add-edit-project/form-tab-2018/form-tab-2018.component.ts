@@ -580,8 +580,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       // need to add on legislation year so that we can know where to put it on the root object
       let project = (new Project({
         ...this.convertFormToProject(this.myForm),
-        legislation: this.project.legislation,
-        legislationYear: this.project.legislationYear,
+        legislationYear: this.legislationYear,
         _id: this.projectId
       }));
 
