@@ -79,9 +79,9 @@ export class ApiService {
         this.env = 'test';
         break;
 
-      case 'eagle-test-demo.pathfinder.gov.bc.ca/api':
+      case 'demo-eagle-test.pathfinder.gov.bc.ca':
         // Demo
-        this.pathAPI = 'https://eagle-test-demo.pathfinder.gov.bc.ca/api';
+        this.pathAPI = 'https://demo-eagle-test.pathfinder.gov.bc.ca/api';
         this.env = 'demo';
         break;
 
