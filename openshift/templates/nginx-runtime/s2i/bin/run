@@ -2,10 +2,6 @@
 echo run script starting...
 sed "s~%RealIpFrom%~${RealIpFrom:-172.51.0.0/16}~g; s~%IpFilterRules%~${IpFilterRules}~g; s~%AdditionalRealIpFromRules%~${AdditionalRealIpFromRules}~g" /tmp/nginx.conf.template > /etc/nginx/nginx.conf
 
-mkdir -p /tmp/app/dist/admin;
-echo "var remote_api_path = '${REMOTE_API_PATH:-set-in-project-nginx-runtime}';" >> /tmp/app/dist/admin/remotes.js;
-echo "var deployment_env = '${DEPLOYMENT_ENVIRONMENT:-set-in-project-nginx-runtime}';" >> /tmp/app/dist/admin/remotes.js;
-
 if [ -n "$HTTP_BASIC_USERNAME" ] && [ -n "$HTTP_BASIC_PASSWORD" ]; then
     echo "---> Generating .htpasswd file"
     `echo "$HTTP_BASIC_USERNAME:$(openssl passwd -crypt $HTTP_BASIC_PASSWORD)" > /tmp/.htpasswd`
