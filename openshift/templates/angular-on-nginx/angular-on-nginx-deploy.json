@@ -70,6 +70,14 @@
                   {
                     "name": "IpFilterRules",
                     "value": "${IpFilterRules}"
+                  },
+                  {
+                    "name": "DEPLOYMENT_ENVIRONMENT",
+                    "value": "${TAG_NAME}"
+                  },
+                  {
+                    "name": "REMOTE_API_PATH",
+                    "value": "${REMOTE_API_PATH}"
                   }
                 ],
                 "resources": {
@@ -238,6 +246,12 @@
       "displayName": "Env TAG name",
       "description": "The TAG name for this environment, e.g., dev, test, prod",
       "value": "your-openshift-tag"
+    },
+    {
+      "name": "REMOTE_API_PATH",
+      "displayName": "URL path to API",
+      "description": "The URL path to the API the public Angular app will make calls to",
+      "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca/api"
     }
   ]
 }
