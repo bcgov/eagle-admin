@@ -548,7 +548,28 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     }
   }
 
-  onSubmit() {
+  onPublish(): void {
+    this.saveProject(
+      // POST
+      (project: Project) => {
+        this.clearStorageService();
+        this.projectService.publish(project).subscribe(
+
+        );
+        this.loading = false;
+        this.openSnackBar('This project was created and published successfuly.', 'Close');
+        this.router.navigate(['/p', this.projectId, 'project-details']);
+      },
+      // PUT
+      () => {
+
+      }
+    );
+
+  }
+
+  saveProject(postFunction: (Project) => void, putFunction: (Project) => void): void {
+
     if (!this.validateForm()) {
       return;
     }
@@ -563,16 +584,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         .subscribe(
           (data) => {
             this.projectId = data._id;
+            project._id = data._id;
+            postFunction(project);
           },
           error => {
             console.log('error =', error);
             alert('Uh-oh, couldn\'t create project');
-          },
-          () => { // onCompleted
-            this.clearStorageService();
-            this.loading = false;
-            this.openSnackBar('This project was created successfuly.', 'Close');
-            this.router.navigate(['/p', this.projectId, 'project-details']);
           }
         );
     } else {
@@ -588,11 +605,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.projectService.save(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
-          () => { // onCompleted
-            this.clearStorageService();
-            this.loading = false;
-            this.router.navigated = false;
-            this.openSnackBar('This project was edited successfully.', 'Close');
+          (data) => {
+            putFunction(project);
           },
           error => {
             console.log('error =', error);
@@ -600,6 +614,25 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           },
         );
     }
+  }
+
+  onSubmit(): void {
+    this.saveProject(
+      // POST
+      (_) => {
+        this.clearStorageService();
+        this.loading = false;
+        this.openSnackBar('This project was created successfuly.', 'Close');
+        this.router.navigate(['/p', this.projectId, 'project-details']);
+      },
+      // PUT
+      (_) => {
+        this.clearStorageService();
+        this.loading = false;
+        this.router.navigated = false;
+        this.openSnackBar('This project was edited successfully.', 'Close');
+      }
+    );
   }
 
   public removeSelectedOrganization() {
