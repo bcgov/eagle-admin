@@ -267,6 +267,7 @@
       &nbsp;
       <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
       &nbsp;
-      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()">Publish</button>
+      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()" *ngIf="!this.published">Publish</button>
+      <button class="btn btn-unpublish" type="publish" (click)="onUnpublish()" *ngIf="this.published">Unpublish</button>
     </div>
   </form>

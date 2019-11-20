@@ -146,6 +146,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public publishedLegislation: string;
 
   public loading = true;
+  public published: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -205,7 +206,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.pageIsEditing = this.storageService.state.pageIsEditing;
       this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+      this.published = this.fullProject.currentLegislationYear === 'legislation_2018';
     } else {
+      this.published = false;
       this.pageIsEditing = false;
       this.tabIsEditing = false;
     }
@@ -548,6 +551,23 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     }
   }
 
+  onUnpublish(): void {
+    this.projectService.unPublish(this.project)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        () => { // onNext
+          // do nothing here - see onCompleted() function below
+        },
+        error => {
+          console.log('error =', error);
+          this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
+        },
+        () => { // onCompleted
+          this.snackBar.open('Project un-published...', null, { duration: 2000 });
+        }
+      );
+  }
+
   onPublish(): void {
     this.saveProject(
       // POST
@@ -557,6 +577,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           (data) => {
           }
         );
+        this.published = true;
         this.loading = false;
         this.openSnackBar('This project was created and published successfuly.', 'Close');
         this.router.navigate(['/p', this.projectId, 'project-details']);
@@ -568,9 +589,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           (data) => {
           }
         );
+        this.published = true;
         this.loading = false;
-        this.openSnackBar('This project was created and published successfuly.', 'Close');
-        this.router.navigate(['/p', this.projectId, 'project-details']);
+        this.router.navigated = false;
+        this.openSnackBar('This project was edited and published successfuly.', 'Close');
       },
     );
 
