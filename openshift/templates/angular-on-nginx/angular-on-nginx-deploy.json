@@ -224,19 +224,19 @@
     {
       "name": "REAL_IP_FROM",
       "displayName": "OpenShift Cluster IP Range",
-      "description": "OpenShift cluster private IP range in CIDR notation, used by Nginx ngx_http_realip_module.",
+      "description": "OpenShift cluster private IP range in CIDR notation, used by Nginx ngx_http_realip_module. Requires rebuild of nginx-runtime to take effect.",
       "required": true,
       "value": "172.51.0.0/16"
     },
     {
       "name": "AdditionalRealIpFromRules",
       "displayName": "Additional real_ip_from Rules",
-      "description": "Additional known and trusted reverse proxy ips conforming to nginx set_real_ip_from directive syntax. Multiple directives are allowed, separated by semicolon."
+      "description": "Additional known and trusted reverse proxy ips conforming to nginx set_real_ip_from directive syntax. Multiple directives are allowed, separated by semicolon. Requires rebuild of nginx-runtime to take effect."
     },
     {
       "name": "IpFilterRules",
       "displayName": "Ip Filter Rules",
-      "description": "Nginx ngx_http_access_module ip filter rules",
+      "description": "Nginx ngx_http_access_module ip filter rules. Requires rebuild of nginx-runtime to take effect.",
       "value": "#allow all; deny all;"
     },
     {
@@ -248,20 +248,20 @@
     {
       "name": "TAG_NAME",
       "displayName": "Env TAG name",
-      "description": "The TAG name for this environment, e.g., dev, test, prod",
+      "description": "The TAG name for this environment, e.g., dev, test, prod. Requires rebuild of nginx-runtime to take effect.",
       "value": "your-openshift-tag"
     },
     {
       "name": "REMOTE_API_PATH",
       "displayName": "URL path to API",
-      "description": "The URL path to the API the public Angular app will make calls to",
-      "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca/api"
+      "description": "The 'https://' prefixed URL path to the API the public Angular app will make calls to. Requires rebuild of nginx-runtime to take effect.",
+      "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/api"
     },
     {
       "name": "REMOTE_PUBLIC_PATH",
       "displayName": "URL path to Public",
-      "description": "[Currently Unused] The URL path to the Public app that the admin Angular app will link back to.",
-      "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
+      "description": "[Currently Unused] The 'https://' prefixed URL path to the Public app that the admin Angular app will link back to. Requires rebuild of nginx-runtime to take effect.",
+      "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
     }
   ]
 }
