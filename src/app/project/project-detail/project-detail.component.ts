@@ -150,12 +150,6 @@ export class FullProject {
       // If there is any legislation earlier than the currentLegYear
       this.showArchivedButton = true;
     }
-
-    // legislationList = ;
-
-    //if length > 1
-    //check is anything is greater than current year
-
   }
 
   editProject() {

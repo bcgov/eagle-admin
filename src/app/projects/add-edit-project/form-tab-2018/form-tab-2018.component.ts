@@ -14,7 +14,7 @@ import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
-
+import { flatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'form-tab-2018',
@@ -142,6 +142,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public pageIsEditing = false;
 
   public fullProject: FullProject;
+  public legislationYear: Number = 2018;
   public publishedLegislation: string;
 
   public loading = true;
@@ -172,6 +173,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
+      // Mapping the get People object observable here to fill out the epd and lead objects
+      .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2018']))
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.initProject(data);
         this.initOrg();
@@ -221,7 +224,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.storageService.state.selectedOrganization = null;
       this.proponentName = this.storageService.state.selectedOrganization2018.name;
       this.proponentId = this.storageService.state.selectedOrganization2018._id;
-    } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+    } else if (this.tabIsEditing && this.project.proponent && this.project.proponent._id !== '') {
       // load from data
       this.proponentName = this.project.proponent.name;
       this.proponentId = this.project.proponent._id;
@@ -247,11 +250,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       }
       this.storageService.state.selectedContactType = null;
       this.storageService.state.selectedContact = null;
-    } else {
-      this.myForm.controls.projectLeadId.setValue(null);
-      this.myForm.controls.projectLead.setValue(null);
-      this.myForm.controls.responsibleEPDId.setValue(null);
-      this.myForm.controls.responsibleEPD.setValue(null);
     }
   }
 
@@ -579,9 +577,14 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         );
     } else {
       // PUT
-      let project = new Project(this.convertFormToProject(this.myForm));
+      // need to add on legislation year so that we can know where to put it on the root object
+      let project = (new Project({
+        ...this.convertFormToProject(this.myForm),
+        legislationYear: this.legislationYear,
+        _id: this.projectId
+      }));
+
       console.log('PUTing', project);
-      project._id = this.projectId;
       this.projectService.save(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -590,7 +593,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
             this.loading = false;
             this.router.navigated = false;
             this.openSnackBar('This project was edited successfully.', 'Close');
-            this.router.navigate(['/p', this.project._id, 'project-details']);
           },
           error => {
             console.log('error =', error);

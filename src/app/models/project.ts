@@ -178,6 +178,8 @@ export class Project {
     this.projLead            = obj && obj.projLead              || undefined;
     this.execProjectDirector = obj && obj.execProjectDirector   || undefined;
     this.complianceLead      = obj && obj.complianceLead        || undefined;
+    this.legislation         = obj && obj.legislation         || undefined;
+    this.legislationYear     = obj && obj.legislationYear     || undefined;
 
     // if (obj && obj.publishDate) {
     //   this.publishDate = new Date(obj.publishDate);
