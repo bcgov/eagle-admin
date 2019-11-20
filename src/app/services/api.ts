@@ -59,9 +59,9 @@ export class ApiService {
 
     // The following items are loaded by a file that is only present on cluster builds.
     // Locally, this will be empty and local defaults will be used.
-    const remote_api_path = window.localStorage.getItem('remote_api_path');
-    const remote_public_path = window.localStorage.getItem('remote_public_path');  // available in case its ever needed
-    const deployment_env = window.localStorage.getItem('deployment_env');
+    const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
+    const remote_public_path = window.localStorage.getItem('from_admin_server--remote_public_path');  // available in case its ever needed
+    const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
     this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api/public' : remote_api_path;
     this.env = (_.isEmpty(deployment_env)) ? 'local' : deployment_env;
