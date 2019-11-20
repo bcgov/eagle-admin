@@ -43,9 +43,9 @@ export class ApiService {
   public token: string;
   public isMS: boolean; // IE, Edge, etc
   // private jwtHelper: JwtHelperService;
-  pathAPI: string;
-  params: Params;
-  env: 'local' | 'dev' | 'test' | 'demo' | 'scale' | 'beta' | 'master' | 'prod';
+  public pathAPI: string;
+  public params: Params;
+  public env: string;  // Could be anything per Openshift settings but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo'
 
   constructor(
     private http: HttpClient,
@@ -57,47 +57,14 @@ export class ApiService {
     this.token = currentUser && currentUser.token;
     this.isMS = window.navigator.msSaveOrOpenBlob ? true : false;
 
-    const { hostname } = window.location;
-    switch (hostname) {
-      case 'localhost':
-        // Local
-        this.pathAPI = 'http://localhost:3000/api';
-        this.env = 'local';
-        break;
+    // The following items are loaded by a file that is only present on cluster builds.
+    // Locally, this will be empty and local defaults will be used.
+    const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
+    const remote_public_path = window.localStorage.getItem('from_admin_server--remote_public_path');  // available in case its ever needed
+    const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
-      case 'eagle-dev.pathfinder.gov.bc.ca':
-        // Prod
-        this.pathAPI = 'https://eagle-dev.pathfinder.gov.bc.ca/api';
-        this.env = 'dev';
-        break;
-
-      case 'test.projects.eao.gov.bc.ca':
-      case 'eagle-test.pathfinder.gov.bc.ca':
-      case 'esm-test.pathfinder.gov.bc.ca':
-        // Test
-        this.pathAPI = 'https://eagle-test.pathfinder.gov.bc.ca/api';
-        this.env = 'test';
-        break;
-
-      case 'eagle-test-demo.pathfinder.gov.bc.ca/api':
-        // Demo
-        this.pathAPI = 'https://eagle-test-demo.pathfinder.gov.bc.ca/api';
-        this.env = 'demo';
-        break;
-
-      case 'www.projects.eao.gov.bc.ca':
-      case 'eagle-prod.pathfinder.gov.bc.ca':
-      case 'projects.eao.gov.bc.ca':
-        // Test
-        this.pathAPI = 'https://eagle-prod.pathfinder.gov.bc.ca/api';
-        this.env = 'prod';
-        break;
-
-      default:
-        // test
-        this.pathAPI = 'https://eagle-test.pathfinder.gov.bc.ca/api';
-        this.env = 'test';
-    }
+    this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api/public' : remote_api_path;
+    this.env = (_.isEmpty(deployment_env)) ? 'local' : deployment_env;
   }
 
   handleError(error: any): Observable<never> {
