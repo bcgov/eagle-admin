@@ -554,16 +554,24 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       (project: Project) => {
         this.clearStorageService();
         this.projectService.publish(project).subscribe(
-
+          (data) => {
+          }
         );
         this.loading = false;
         this.openSnackBar('This project was created and published successfuly.', 'Close');
         this.router.navigate(['/p', this.projectId, 'project-details']);
       },
       // PUT
-      () => {
-
-      }
+      (project: Project) => {
+        this.clearStorageService();
+        this.projectService.publish(project).subscribe(
+          (data) => {
+          }
+        );
+        this.loading = false;
+        this.openSnackBar('This project was created and published successfuly.', 'Close');
+        this.router.navigate(['/p', this.projectId, 'project-details']);
+      },
     );
 
   }
