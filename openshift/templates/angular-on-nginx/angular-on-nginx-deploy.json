@@ -78,6 +78,10 @@
                   {
                     "name": "REMOTE_API_PATH",
                     "value": "${REMOTE_API_PATH}"
+                  },
+                  {
+                    "name": "REMOTE_PUBLIC_PATH",
+                    "value": "${REMOTE_PUBLIC_PATH}"
                   }
                 ],
                 "resources": {
@@ -252,6 +256,12 @@
       "displayName": "URL path to API",
       "description": "The URL path to the API the public Angular app will make calls to",
       "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca/api"
+    },
+    {
+      "name": "REMOTE_PUBLIC_PATH",
+      "displayName": "URL path to Public",
+      "description": "[Currently Unused] The URL path to the Public app that the admin Angular app will link back to.",
+      "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
     }
   ]
 }
