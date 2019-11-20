@@ -36,7 +36,7 @@
   </section>
 
   <div>
-    <button [routerLink]="['/p',  project._id, 'project-archived-detail']" class="btn btn-archived mr-1 pb-1" type="button" id="button-sa"> <i class="material-icons mb-1">access_time</i> View Archived Project Details</button>
+    <button *ngIf="showArchivedButton" [routerLink]="['/p',  project._id, 'project-archived-detail']" class="btn btn-archived mr-1 pb-1" type="button" id="button-sa"> <i class="material-icons mb-1">access_time</i> View Archived Project Details</button>
   </div>
   <section>
     <h2 class="row">

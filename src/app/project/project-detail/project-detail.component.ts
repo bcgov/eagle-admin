@@ -41,12 +41,11 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public isPublished: boolean;
 
-  public projectName: string;
-  public projectId: string;
   public oldProject: Project;
   public fullProject: FullProject;
-  public publishedLegislation: string;
+  public currentLegYear: number;
   public showArchivedButton = false;
+  public legislationYearList;
 
   constructor(
     private router: Router,
@@ -67,6 +66,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // This is to get Region information from List (db) and put into a list(regions)
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
@@ -74,12 +74,13 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
             this.project = results ? results[0] :  null;
+            this.currentLegYear = this.project.legislationYear;
             this.isPublished = this.project.read.includes('public');
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();
-
-            console.log(this.fullProject);
+            console.log("Project - this.project")
+            console.log(this.project);
           } else {
             alert('Uh-oh, couldn\'t load project');
             // project not found --> navigate back to search
@@ -87,20 +88,73 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           }
         }
       );
+
+/*
+export class FullProject {
+  _id: string;
+  currentLegislationYear: string;
+  legislationYearList: number[];
+  legislation_1996: Project;
+  legislation_2002: Project;
+  legislation_2018: Project;
+}
+
+
+*/
+
+    // Get data related to current project
+    this.route.data
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+        this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
+        console.log(this.legislationYearList);
+        console.log("Full Project")
+        console.log(data.fullProject[0].data.searchResults[0].currentLegislationYear);
+        console.log(data.fullProject[0].data.searchResults[0]);
+        // console.log("Legislation array list length")
+        // console.log(this.legislationYearList.length);
+        try {
+          this._changeDetectorRef.detectChanges();
+        } catch (e) {
+          // console.log('e:', e);
+        }
+      });
+
+      this.checkShowButton();
   }
 
-  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
-    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
-    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-    if (this.fullProject) {
-      this.oldProject = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
-      this.project = this.fullProject['legislation_2018'];
-      this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
-      this.projectId = this.fullProject._id;
-      // this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
-    } else {
-      console.log("fullProject DNE");
+  // initFull(data: { fullProject: ISearchResults<FullProject>[] }) {
+  //   const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+  //   this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+  //   if (this.fullProject) {
+  //     this.oldProject = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+  //     this.project = this.fullProject['legislation_2018'];
+  //     this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
+  //     this.projectId = this.fullProject._id;
+  //     this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+  //   } else {
+  //     this.pageIsEditing = false;
+  //     this.tabIsEditing = false;
+  //   }
+
+  // }
+
+  checkShowButton() {
+    // if length = 1, showArchivedButton = false
+
+    this.showArchivedButton = false;
+
+    if ( this.legislationYearList.length === 1){
+      this.showArchivedButton = false;
+    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) ) {
+      // If there is any legislation earlier than the currentLegYear
+      this.showArchivedButton = true;
     }
+
+    // legislationList = ;
+
+    //if length > 1
+    //check is anything is greater than current year
 
   }
 
@@ -108,7 +162,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.storageService.state.project = this.project;
     this.storageService.state.tableColumns = null;
     this.storageService.state.sortBy = null;
-    this.storageService.state.form = null;
+    this.storageService.state.form2002 = null;
+    this.storageService.state.form2018 = null;
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
