@@ -17,6 +17,7 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
 import { ISearchResults } from 'app/models/search';
+import { FullProject } from 'app/models/fullProject';
 
 @Component({
   selector: 'app-project-archived-detail',
@@ -32,6 +33,8 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public project: Project = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  public oldProject: Project;
+  public fullProject: FullProject;
 
   constructor(
     private router: Router,
@@ -52,21 +55,9 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        (data: {  project: ISearchResults<Project>[] }) => {
-          if (data.project) {
-            const projectSearchData = this.utils.extractFromSearchResults(data.project);
-            this.project = projectSearchData ? projectSearchData[0] : null;
-            this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-            // this.loading = false;
-            this._changeDetectorRef.detectChanges();
-          } else {
-            alert('Uh-oh, couldn\'t load project');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
-        }
-      );
+      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+        this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+      });
   }
 
   editProject() {

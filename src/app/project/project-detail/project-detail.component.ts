@@ -41,8 +41,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public isPublished: boolean;
 
-  public oldProject: Project;
-  public fullProject: FullProject;
   public currentLegYear: number;
   public showArchivedButton = false;
   public legislationYearList;
