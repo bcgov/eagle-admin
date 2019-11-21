@@ -603,7 +603,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     if (!this.validateForm()) {
       return;
     }
-    if (!this.tabIsEditing) {
+    if (!this.pageIsEditing) {
       // POST
       let project = new Project(
         this.convertFormToProject(this.myForm)
