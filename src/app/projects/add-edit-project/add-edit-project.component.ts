@@ -193,12 +193,12 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
         'review45Start': new FormControl()
       });
     }
-    if (this.project.reviewExtensions) {
+    if (this.project && this.project.reviewExtensions) {
       this.project.reviewExtensions.forEach( item => {
         this.modifications.push(item);
       });
     }
-    if (this.project.reviewSuspensions) {
+    if (this.project && this.project.reviewSuspensions) {
       this.project.reviewSuspensions.forEach( item => {
         this.modifications.push(item);
       });
