@@ -43,9 +43,9 @@ export class ApiService {
   public token: string;
   public isMS: boolean; // IE, Edge, etc
   // private jwtHelper: JwtHelperService;
-  pathAPI: string;
-  params: Params;
-  env: 'local' | 'dev' | 'test' | 'demo' | 'scale' | 'beta' | 'master' | 'prod';
+  public pathAPI: string;
+  public params: Params;
+  public env: string;  // Could be anything per Openshift settings but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo'
 
   constructor(
     private http: HttpClient,
