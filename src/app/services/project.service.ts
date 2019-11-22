@@ -108,10 +108,13 @@ export class ProjectService {
 
   public getPeopleObjs(data, projectKey?: string[]): Observable<any> {
     const projectSearchData = (projectKey) ? this.utils.extractFromSearchResults(data.fullProject) : this.utils.extractFromSearchResults(data.project);
+    if (!projectSearchData) {
+      return of(data)
+    }
     let project;
     if (projectSearchData && projectKey) {
       project = (projectKey.length > 1) ?  projectSearchData[0][projectKey[0]] || projectSearchData[0][projectKey[1]] : projectSearchData[0][projectKey[0]] ;
-    } else {
+    } else{
       project = projectSearchData[0];
     }
     if (!project) {

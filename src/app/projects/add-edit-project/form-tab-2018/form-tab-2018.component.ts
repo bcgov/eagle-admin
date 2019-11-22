@@ -554,8 +554,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     }
     if (!this.pageIsEditing) {
       // POST
+      // Make sure to add the legislationYear to the project
       let project = new Project(
-        this.convertFormToProject(this.myForm)
+        {
+          ...this.convertFormToProject(this.myForm),
+          legislationYear: this.legislationYear
+        }
       );
       console.log('POSTing', project);
       this.projectService.add(project)

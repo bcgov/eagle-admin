@@ -3,7 +3,7 @@
     <section>
       <h2>Basic Information
         &nbsp;
-        <button class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
+        <button *ngIf="pageIsEditing" class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
       </h2>
 
       <div class="flex-container">
@@ -271,6 +271,6 @@
       &nbsp;
       <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
       &nbsp;
-      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()">Publish</button>
+      <button *ngIf="pageIsEditing" class="btn btn-primary btn-publish" type="publish" (click)="onPublish()">Publish</button>
     </div>
   </form>
