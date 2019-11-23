@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
 
@@ -636,8 +636,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       _id: this.fullProject._id
     }).takeUntil(this.ngUnsubscribe)
       .subscribe(
-        () => { // onNext
-          // do nothing here - see onCompleted() function below
+        (data) => { // onNext
         },
         error => {
           console.log('error =', error);
@@ -646,6 +645,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         () => { // onCompleted
           this.published = false;
           this.snackBar.open('Project un-published...', null, { duration: 2000 });
+          this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       );
   }
@@ -653,32 +653,51 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   onPublish(): void {
     this.saveProject(
       // POST
-      (project: Project) => {
+      (project: Project): Observable<Project> => {
         this.clearStorageService();
-        this.projectService.publish(project).subscribe(
-          (data) => {
-          }
-        );
-        this.loading = false;
-        this.openSnackBar('This project was created and published successfuly.', 'Close');
-        this.router.navigate(['/p', this.projectId, 'project-details']);
+        return this.projectService.publish(project);
       },
       // PUT
-      (project: Project) => {
+      (project: Project): Observable<Project> => {
         this.clearStorageService();
-        this.projectService.publish(project).subscribe(
-          (data) => {
-          }
-        );
-        this.loading = false;
-        this.router.navigated = false;
-        this.openSnackBar('This project was edited and published successfuly.', 'Close');
+        return this.projectService.publish(project);
+
       },
+      // POST SUBSCRIBE
+      [
+        (data) => {
+          this.projectId = data._id;
+        },
+        (error) => {
+        },
+        () => {
+          this.published = true;
+          this.loading = false;
+          this.openSnackBar('This project was created and published successfuly.', 'Close');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      ],
+      // PUT SUBSCRIBE
+      [
+        (data) => {
+        },
+        (error) => {
+        },
+        () => {
+          this.published = true;
+          this.loading = false;
+          this.router.navigated = false;
+          this.openSnackBar('This project was edited and published successfuly.', 'Close');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      ]
     );
 
   }
+  // TODO: don't lose this
 
-  saveProject(postFunction: (Project) => void, putFunction: (Project) => void): void {
+  saveProject(postFunction: (_: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
+    postSubscribe: ((_: any) => void)[], putSubscribe: ((_: any) => void)[]): void {
 
     if (!this.validateForm()) {
       return;
@@ -692,15 +711,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
-          (data) => {
-            this.projectId = data._id;
-            project._id = data._id;
-            postFunction(project);
-          },
-          error => {
-            console.log('error =', error);
-            alert('Uh-oh, couldn\'t create project');
-          }
+          ...postSubscribe
         );
     } else {
       // PUT
@@ -713,35 +724,44 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
       console.log('PUTing', project);
       this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe)
+        .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
         .subscribe(
-          (data) => {
-            putFunction(project);
-          },
-          error => {
-            console.log('error =', error);
-            alert('Uh-oh, couldn\'t edit project');
-          },
+          ...putSubscribe
         );
     }
   }
 
   onSubmit(): void {
     this.saveProject(
-      // POST
-      (_) => {
-        this.clearStorageService();
-        this.loading = false;
-        this.openSnackBar('This project was created successfuly.', 'Close');
-        this.router.navigate(['/p', this.projectId, 'project-details']);
-      },
-      // PUT
-      (_) => {
-        this.clearStorageService();
-        this.loading = false;
-        this.router.navigated = false;
-        this.openSnackBar('This project was edited successfully.', 'Close');
-      }
+      null,
+      null,
+      // POST SUBSCRIBE
+      [
+        (data) => {
+          this.projectId = data._id;
+        },
+        (error) => {
+        },
+        () => {
+          this.clearStorageService();
+          this.loading = false;
+          this.openSnackBar('This project was created successfuly.', 'Close');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      ],
+      // PUT SUBSCRIBE
+      [
+        (data) => {
+        },
+        (error) => {
+        },
+        () => {
+          this.clearStorageService();
+          this.loading = false;
+          this.router.navigated = false;
+          this.openSnackBar('This project was edited successfully.', 'Close');
+        }
+      ]
     );
   }
 
