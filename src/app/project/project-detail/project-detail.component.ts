@@ -20,9 +20,11 @@ import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
 
 import { FullProject } from 'app/models/fullProject';
+import { Injectable } from '@angular/core';
 import { yearsPerPage } from '@angular/material/datepicker/typings/multi-year-view';
 import { TransitiveCompileNgModuleMetadata } from '@angular/compiler';
 import { endianness } from 'os';
+import { stream } from 'xlsx/types';
 
 
 @Component({
@@ -30,6 +32,11 @@ import { endianness } from 'os';
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss']
 })
+
+@Injectable()
+export class ArchiveButtonComponent {
+  showArchivedButton: boolean;
+}
 
 export class ProjectDetailComponent implements OnInit, OnDestroy {
 
@@ -40,7 +47,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public isPublished: boolean;
-
+  public currentLeg: String;
   public currentLegYear: number;
   public showArchivedButton = false;
   public legislationYearList;
@@ -75,10 +82,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
             this.currentLegYear = this.project.legislationYear;
             this.isPublished = this.project.read.includes('public');
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-            // this.loading = false;
             this._changeDetectorRef.detectChanges();
-            console.log("Project - this.project")
-            console.log(this.project);
           } else {
             alert('Uh-oh, couldn\'t load project');
             // project not found --> navigate back to search
@@ -87,30 +91,13 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       );
 
-/*
-export class FullProject {
-  _id: string;
-  currentLegislationYear: string;
-  legislationYearList: number[];
-  legislation_1996: Project;
-  legislation_2002: Project;
-  legislation_2018: Project;
-}
-
-
-*/
-
     // Get data related to current project
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
-        console.log(this.legislationYearList);
-        console.log("Full Project")
-        console.log(data.fullProject[0].data.searchResults[0].currentLegislationYear);
-        console.log(data.fullProject[0].data.searchResults[0]);
-        // console.log("Legislation array list length")
-        // console.log(this.legislationYearList.length);
+        this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
+        this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length));
         try {
           this._changeDetectorRef.detectChanges();
         } catch (e) {
@@ -121,27 +108,7 @@ export class FullProject {
       this.checkShowButton();
   }
 
-  // initFull(data: { fullProject: ISearchResults<FullProject>[] }) {
-  //   const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
-  //   this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-  //   if (this.fullProject) {
-  //     this.oldProject = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
-  //     this.project = this.fullProject['legislation_2018'];
-  //     this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
-  //     this.projectId = this.fullProject._id;
-  //     this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
-  //   } else {
-  //     this.pageIsEditing = false;
-  //     this.tabIsEditing = false;
-  //   }
-
-  // }
-
   checkShowButton() {
-    // if length = 1, showArchivedButton = false
-
-    this.showArchivedButton = false;
-
     if ( this.legislationYearList.length === 1){
       this.showArchivedButton = false;
     } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) ) {
@@ -177,19 +144,6 @@ export class FullProject {
       return;
     }
 
-    // if (this.project.isPublished) {
-    //   this.dialogService.addDialog(ConfirmComponent,
-    //     {
-    //       title: 'Cannot Delete Project',
-    //       message: 'Please unpublish project first.',
-    //       okOnly: true
-    //     }, {
-    //       backdropColor: 'rgba(0, 0, 0, 0.5)'
-    //     })
-    //     .takeUntil(this.ngUnsubscribe);
-    //   return;
-    // }
-
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Confirm Deletion',
@@ -211,37 +165,6 @@ export class FullProject {
     this.isDeleting = true;
 
     let observables = of(null);
-
-    // // delete comment period
-    // if (this.project.currentPeriods) {
-    //   observables = observables.concat(this.commentPeriodService.delete(this.project.currentPeriods));
-    // }
-
-    // // delete decision documents
-    // if (this.project.decision && this.project.decision.documents) {
-    //   for (const doc of this.project.decision.documents) {
-    //     observables = observables.concat(this.documentService.delete(doc));
-    //   }
-    // }
-
-    // // delete decision
-    // if (this.project.decision) {
-    //   observables = observables.concat(this.decisionService.delete(this.project.decision));
-    // }
-
-    // // delete project documents
-    // if (this.project.documents) {
-    //   for (const doc of this.project.documents) {
-    //     observables = observables.concat(this.documentService.delete(doc));
-    //   }
-    // }
-
-    // // delete features
-    // observables = observables.concat(this.featureService.deleteByProjectId(this.project._id));
-
-    // // delete project
-    // // do this last in case of prior failures
-    // observables = observables.concat(this.projectService.delete(this.project));
 
     observables
       .takeUntil(this.ngUnsubscribe)

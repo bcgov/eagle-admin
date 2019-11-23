@@ -20,7 +20,7 @@
             <a class="btn btn-dark legislation-button no-click">
                 <label display="inline-block" class="mb-0">Legislation</label>
                 <!-- <p class="mb-0">{{project?.legislation || "-" }}</p> -->
-                <p class="mb-0">2002 Environmental Assessment Act</p>
+                <p class="mb-0">{{project.legislation}}</p>
             </a>
         </div>
         <div class="label-pair mt-3">
@@ -66,11 +66,11 @@
     <section>
         <h2>Supplementary Information</h2>
         <div class="label-pair">
-            <h3 for="ceaa">CEAA Involvement: </h3>
+            <h3 for="ceaa">IAAC Involvement: </h3>
             <p id="ceaa">{{project.CEAAInvolvement || '-'}}</p>
         </div>
         <div class="label-pair">
-            <h3 for="ceaa-url">CEAA URL: </h3>
+            <h3 for="ceaa-url">IAAC URL: </h3>
             <p id="ceaa-url"><a href="{{project.CEAALink}}">{{project.CEAALink || '-'}}</a></p>
         </div>
         <div class="label-pair">

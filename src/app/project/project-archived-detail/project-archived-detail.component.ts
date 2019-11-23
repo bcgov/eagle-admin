@@ -33,8 +33,11 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public project: Project = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public oldProject: Project;
-  public fullProject: FullProject;
+  public currentLeg: String;
+  public currentLegYear: number;
+  public showArchivedButton = false;
+  public legislationYearList;
+
 
   constructor(
     private router: Router,
@@ -55,9 +58,40 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-        this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
-      });
+      .subscribe(
+        (data: {  project: ISearchResults<Project>[] }) => {
+          if (data.project) {
+            const projectSearchData = this.utils.extractFromSearchResults(data.project);
+            this.project = projectSearchData ? projectSearchData[0] : null;
+            this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
+            // this.loading = false;
+            this._changeDetectorRef.detectChanges();
+          } else {
+            alert('Uh-oh, couldn\'t load project');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
+          }
+        }
+      );
+
+    this.route.data
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+      console.log("Full project")
+      console.log(data.fullProject[0].data.searchResults[0].legislation_2002);
+      this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
+
+      if ( (this.legislationYearList ).includes(2002)){
+        this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
+      } else{
+        this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
+      }
+      try {
+        this._changeDetectorRef.detectChanges();
+      } catch (e) {
+        // console.log('e:', e);
+      }
+    });
   }
 
   editProject() {
