@@ -70,6 +70,18 @@
                   {
                     "name": "IpFilterRules",
                     "value": "${IpFilterRules}"
+                  },
+                  {
+                    "name": "DEPLOYMENT_ENVIRONMENT",
+                    "value": "${TAG_NAME}"
+                  },
+                  {
+                    "name": "REMOTE_API_PATH",
+                    "value": "${REMOTE_API_PATH}"
+                  },
+                  {
+                    "name": "REMOTE_PUBLIC_PATH",
+                    "value": "${REMOTE_PUBLIC_PATH}"
                   }
                 ],
                 "resources": {
@@ -83,28 +95,24 @@
                   }
                 },
                 "livenessProbe": {
-                  "httpGet": {
-                    "path": "/",
-                    "port": 8080,
-                    "scheme": "HTTP"
-                  },
+                  "failureThreshold": 3,
                   "initialDelaySeconds": 30,
-                  "timeoutSeconds": 60,
                   "periodSeconds": 10,
                   "successThreshold": 1,
-                  "failureThreshold": 3
+                  "tcpSocket": {
+                      "port": 8080
+                  },
+                  "timeoutSeconds": 60
                 },
                 "readinessProbe": {
-                  "httpGet": {
-                    "path": "/",
-                    "port": 8080,
-                    "scheme": "HTTP"
-                  },
+                  "failureThreshold": 3,
                   "initialDelaySeconds": 10,
-                  "timeoutSeconds": 60,
                   "periodSeconds": 10,
                   "successThreshold": 1,
-                  "failureThreshold": 3
+                  "tcpSocket": {
+                      "port": 8080
+                  },
+                  "timeoutSeconds": 60
                 }
               }
             ],
@@ -228,7 +236,7 @@
     {
       "name": "IpFilterRules",
       "displayName": "Ip Filter Rules",
-      "description": "Nginx ngx_http_access_module ip filter rules",
+      "description": "Nginx ngx_http_access_module ip filter rules.",
       "value": "#allow all; deny all;"
     },
     {
@@ -240,8 +248,20 @@
     {
       "name": "TAG_NAME",
       "displayName": "Env TAG name",
-      "description": "The TAG name for this environment, e.g., dev, test, prod",
+      "description": "The TAG name for this environment, e.g., dev, test, prod.",
       "value": "your-openshift-tag"
+    },
+    {
+      "name": "REMOTE_API_PATH",
+      "displayName": "URL path to API",
+      "description": "The 'https://' prefixed URL path to the API the public Angular app will make calls to.",
+      "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/api"
+    },
+    {
+      "name": "REMOTE_PUBLIC_PATH",
+      "displayName": "URL path to Public",
+      "description": "[Currently Unused] The 'https://' prefixed URL path to the Public app that the admin Angular app will link back to.",
+      "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
     }
   ]
 }

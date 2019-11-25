@@ -30,6 +30,6 @@ export class ProjectResolver implements Resolve<Object> {
       {},
       '',
       true
-    )
+    );
   }
 }
