@@ -265,6 +265,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.storageService.state.tableColumns = null;
     this.storageService.state.sortBy = null;
     this.storageService.state.form2018 = null;
+    this.storageService.state.form2002 = null;
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
