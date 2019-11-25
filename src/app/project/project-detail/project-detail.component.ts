@@ -64,7 +64,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
             this.project = results ? results[0] :  null;
-            this.isPublished = this.project.read.includes('public');
+            this.isPublished = this.project && this.project.read.includes('public');
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             // this.loading = false;
             this._changeDetectorRef.detectChanges();

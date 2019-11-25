@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
 
@@ -38,6 +38,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public sectorsSelected = [];
   public proponentName = '';
   public proponentId = '';
+  public legislationYear: Number = 2002;
 
   public PROJECT_SUBTYPES: Object = {
     'Mines': [
@@ -180,6 +181,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public publishedLegislation: string;
 
   public loading = true;
+  public published: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -210,10 +212,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2002', 'legislation_1996']))
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-        const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
-        this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-        this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
-        this.initProject(this.fullProject);
+
+        this.initProject(data);
         this.initOrg();
         this.buildForm();
         this.initContacts();
@@ -228,13 +228,22 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     this.back = this.storageService.state.back;
   }
-  initProject(fullProject: FullProject) {
-    this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
-
-    this.tabIsEditing = this.project ? true : false;
-    this.pageIsEditing = this.storageService.state.pageIsEditing;
-    this.projectId = this.fullProject._id;
-    this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+  initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
+    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+    this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+    if (this.fullProject) {
+      this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+      this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
+      this.tabIsEditing = !this.utils.isEmptyObject(this.project);
+      this.pageIsEditing = this.storageService.state.pageIsEditing;
+      this.projectId = this.fullProject._id;
+      this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
+      this.published = this.fullProject.read.includes('public') && ['legislation_1996', 'legislation_2002'].includes(this.fullProject.currentLegislationYear);
+    } else {
+      this.published = false;
+      this.pageIsEditing = false;
+      this.tabIsEditing = false;
+    }
   }
   initContacts() {
     if (this.storageService.state.selectedContactType && this.storageService.state.selectedContact) {
@@ -489,6 +498,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this._changeDetectorRef.detectChanges();
   }
 
+
   onCancel() {
     this.clearStorageService();
     if (this.back && this.back.url) {
@@ -620,7 +630,75 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
-  onSubmit() {
+  onUnpublish(): void {
+    this.projectService.unPublish({
+      ...this.project,
+      _id: this.fullProject._id
+    }).takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        (data) => { // onNext
+        },
+        error => {
+          console.log('error =', error);
+          this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
+        },
+        () => { // onCompleted
+          this.published = false;
+          this.snackBar.open('Project un-published...', null, { duration: 2000 });
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      );
+  }
+
+  onPublish(): void {
+    this.saveProject(
+      // POST
+      (project: Project): Observable<Project> => {
+        this.clearStorageService();
+        return this.projectService.publish(project);
+      },
+      // PUT
+      (project: Project): Observable<Project> => {
+        this.clearStorageService();
+        return this.projectService.publish(project);
+
+      },
+      // POST SUBSCRIBE
+      [
+        (data) => {
+          this.projectId = data._id;
+        },
+        (error) => {
+        },
+        () => {
+          this.published = true;
+          this.loading = false;
+          this.openSnackBar('This project was created and published successfuly.', 'Close');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      ],
+      // PUT SUBSCRIBE
+      [
+        (data) => {
+        },
+        (error) => {
+        },
+        () => {
+          this.published = true;
+          this.loading = false;
+          this.router.navigated = false;
+          this.openSnackBar('This project was edited and published successfuly.', 'Close');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      ]
+    );
+
+  }
+  // TODO: don't lose this
+
+  saveProject(postFunction: (_: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
+    postSubscribe: ((_: any) => void)[], putSubscribe: ((_: any) => void)[]): void {
+
     if (!this.validateForm()) {
       return;
     }
@@ -633,41 +711,58 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
-          (data) => {
-            this.projectId = data._id;
-          },
-          error => {
-            console.log('error =', error);
-            alert('Uh-oh, couldn\'t create project');
-          },
-          () => { // onCompleted
-            this.clearStorageService();
-            this.loading = false;
-            this.openSnackBar('This project was created successfuly.', 'Close');
-            this.router.navigate(['/p', this.projectId, 'project-details']);
-          }
+          ...postSubscribe
         );
     } else {
       // PUT
-      let project = new Project(this.convertFormToProject(this.myForm));
+      // need to add on legislation year so that we can know where to put it on the root object
+      let project = (new Project({
+        ...this.convertFormToProject(this.myForm),
+        legislationYear: this.legislationYear,
+        _id: this.projectId
+      }));
+
       console.log('PUTing', project);
-      project._id = this.projectId;
       this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe)
+        .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
         .subscribe(
-          () => { // onCompleted
-            this.clearStorageService();
-            this.loading = false;
-            this.router.navigated = false;
-            this.openSnackBar('This project was edited successfully.', 'Close');
-            // this.router.navigate(['/p', this.project._id, 'project-details']);
-          },
-          error => {
-            console.log('error =', error);
-            alert('Uh-oh, couldn\'t edit project');
-          },
+          ...putSubscribe
         );
     }
+  }
+
+  onSubmit(): void {
+    this.saveProject(
+      null,
+      null,
+      // POST SUBSCRIBE
+      [
+        (data) => {
+          this.projectId = data._id;
+        },
+        (error) => {
+        },
+        () => {
+          this.clearStorageService();
+          this.loading = false;
+          this.openSnackBar('This project was created successfuly.', 'Close');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
+        }
+      ],
+      // PUT SUBSCRIBE
+      [
+        (data) => {
+        },
+        (error) => {
+        },
+        () => {
+          this.clearStorageService();
+          this.loading = false;
+          this.router.navigated = false;
+          this.openSnackBar('This project was edited successfully.', 'Close');
+        }
+      ]
+    );
   }
 
   public removeSelectedOrganization() {
