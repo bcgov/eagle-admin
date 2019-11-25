@@ -36,7 +36,7 @@
             <li class="nav-item" role="presentation" *ngFor="let tabLink of tabLinks">
               <a class="nav-link" role="tab" [routerLink]="tabLink.link" [replaceUrl]="true"
                 routerLinkActive="active">{{tabLink.label}}
-                  <span class="badge bg-success badge-published" *ngIf="fullProject && tabLink.years.includes(fullProject.currentLegislationYear)"> Published</span>
+                  <span class="badge bg-success badge-published" *ngIf="fullProject && fullProject.read.includes('public') && tabLink.years.includes(fullProject.currentLegislationYear)"> Published</span>
               </a>
             </li>
           </ul>
