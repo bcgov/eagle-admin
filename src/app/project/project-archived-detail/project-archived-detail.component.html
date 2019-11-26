@@ -4,7 +4,7 @@
             <a [routerLink]="['/projects']">All Projects</a>
         </li>
         <li class="breadcrumb-item">
-            <a [routerLink]="['/p', project._id]">{{project.name}}</a>
+            <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">Archived Project Details</li>
     </ol>
@@ -15,12 +15,14 @@
         <app-comment-period-banner></app-comment-period-banner>
     </section>
     <section>
-        <h2> <i class="material-icons mb0" vertical-align="bottom">access_time</i> Archived Project Information</h2>
+        <i class="material-icons mr-2 md-36 float-left" display="inline-block">access_time</i>
+        <h2 class="mb-1" display="inline">Archived Project Information </h2>
+        <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
         <div>
-            <a class="btn btn-dark legislation-button no-click">
+            <a class="btn mt-2 btn-dark legislation-button no-click">
                 <label display="inline-block" class="mb-0">Legislation</label>
                 <!-- <p class="mb-0">{{project?.legislation || "-" }}</p> -->
-                <p class="mb-0">2002 Environmental Assessment Act</p>
+                <p class="mb-0">{{project.legislationYear}} Environmental Assessment Act</p>
             </a>
         </div>
         <div class="label-pair mt-3">
@@ -66,11 +68,11 @@
     <section>
         <h2>Supplementary Information</h2>
         <div class="label-pair">
-            <h3 for="ceaa">CEAA Involvement: </h3>
+            <h3 for="ceaa">IAAC Involvement: </h3>
             <p id="ceaa">{{project.CEAAInvolvement || '-'}}</p>
         </div>
         <div class="label-pair">
-            <h3 for="ceaa-url">CEAA URL: </h3>
+            <h3 for="ceaa-url">IAAC URL: </h3>
             <p id="ceaa-url"><a href="{{project.CEAALink}}">{{project.CEAALink || '-'}}</a></p>
         </div>
         <div class="label-pair">

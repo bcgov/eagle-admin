@@ -18,13 +18,16 @@ import { StorageService } from 'app/services/storage.service';
 import { SearchService } from 'app/services/search.service';
 import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
-import { flatMap } from 'rxjs/operators';
+import { SideBarService } from 'app/services/sidebar.service';
+import { FullProject } from 'app/models/fullProject';
+
 
 @Component({
   selector: 'app-project-detail',
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss']
 })
+
 
 export class ProjectDetailComponent implements OnInit, OnDestroy {
 
@@ -35,6 +38,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public isPublished: boolean;
+  public currentLeg: String;
+  public currentLegYear: number;
+  public showArchivedButton = false;
+  public legislationYearList;
 
   constructor(
     private router: Router,
@@ -45,6 +52,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     private dialogService: DialogService,
     public projectService: ProjectService, // also used in template
     public commentPeriodService: CommentPeriodService,
+    public sidebarService: SideBarService,
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
@@ -55,18 +63,18 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // This is to get Region information from List (db) and put into a list(regions)
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      // Mapping the get People object observable here to fill out the epd and lead objects
-      .flatMap(data => this.projectService.getPeopleObjs(data))
       .subscribe(
         (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
             this.project = results ? results[0] :  null;
+            this.currentLegYear = this.project.legislationYear;
+            // this.isPublished = this.project.read.includes('public');
             this.isPublished = this.project && this.project.read.includes('public');
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-            // this.loading = false;
             this._changeDetectorRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load project');
@@ -76,17 +84,31 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       );
 
-    // this.project = this.projectComponent.project;
-    // Handles when we come back to this page.
+    // Get data related to current project
+    this.route.data
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+        this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
+        this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
+        this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length));
+      });
 
-    // // TODO fix
-    // if (this.project && this.project.intake === null) {
-    //   this.project.intake = { investment: '', investmentNotes: '' };
-    // }
+      this.checkShowButton();
 
-    // if (this.project && this.project.intake.investment !== '' && this.project.intake.investment[0] !== '$') {
-    //   this.project.intake.investment = this.cp.transform(this.project.intake.investment, '', true, '1.0-0');
-    // }
+  }
+
+  checkShowButton() {
+    if ( this.legislationYearList.length === 1) {
+      this.showArchivedButton = false;
+      this.sidebarService.hideArchive();
+    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) && this.currentLegYear === Math.max(...(this.legislationYearList))) {
+      // If there is any legislation earlier than the currentLegYear
+      this.showArchivedButton = true;
+      this.sidebarService.showArchive();
+    } else {
+      this.showArchivedButton = false;
+      this.sidebarService.hideArchive();
+    }
   }
 
   editProject() {
@@ -116,19 +138,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // if (this.project.isPublished) {
-    //   this.dialogService.addDialog(ConfirmComponent,
-    //     {
-    //       title: 'Cannot Delete Project',
-    //       message: 'Please unpublish project first.',
-    //       okOnly: true
-    //     }, {
-    //       backdropColor: 'rgba(0, 0, 0, 0.5)'
-    //     })
-    //     .takeUntil(this.ngUnsubscribe);
-    //   return;
-    // }
-
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Confirm Deletion',
@@ -150,37 +159,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.isDeleting = true;
 
     let observables = of(null);
-
-    // // delete comment period
-    // if (this.project.currentPeriods) {
-    //   observables = observables.concat(this.commentPeriodService.delete(this.project.currentPeriods));
-    // }
-
-    // // delete decision documents
-    // if (this.project.decision && this.project.decision.documents) {
-    //   for (const doc of this.project.decision.documents) {
-    //     observables = observables.concat(this.documentService.delete(doc));
-    //   }
-    // }
-
-    // // delete decision
-    // if (this.project.decision) {
-    //   observables = observables.concat(this.decisionService.delete(this.project.decision));
-    // }
-
-    // // delete project documents
-    // if (this.project.documents) {
-    //   for (const doc of this.project.documents) {
-    //     observables = observables.concat(this.documentService.delete(doc));
-    //   }
-    // }
-
-    // // delete features
-    // observables = observables.concat(this.featureService.deleteByProjectId(this.project._id));
-
-    // // delete project
-    // // do this last in case of prior failures
-    // observables = observables.concat(this.projectService.delete(this.project));
 
     observables
       .takeUntil(this.ngUnsubscribe)

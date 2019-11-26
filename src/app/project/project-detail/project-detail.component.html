@@ -23,17 +23,21 @@
     <app-comment-period-banner></app-comment-period-banner>
   </section>
 
-  <div>
-    <button [routerLink]="['/p',  project._id, 'project-archived-detail']" class="btn btn-archived mr-1 pb-1" type="button" id="button-sa"> <i class="material-icons mb-1">access_time</i> View Archived Project Details</button>
-  </div>
   <section>
     <h2 class="row">
       <span class="col-4">Basic Information</span>
+      <div>
+          <button *ngIf="showArchivedButton" [routerLink]="['/p',  project._id, 'project-archived-detail']"
+            class="btn btn-archived mr-2 pb-1" type="button" id="button-sa" style="position: absolute; right: 0;">
+            <i class="material-icons mb-1">access_time</i> View Archived Project Details
+          </button>
+      </div>
     </h2>
     <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
     <div class="label-pair">
         <h3 for="legislation">Legislation: </h3>
-        <p id="legislation">{{project.legislation || '-'}}</p>
+        <!-- <p id="legislation">{{project.legislation || '-'}}</p> -->
+        <p id="legislation">{{currentLegYear}} Environmental Assessment Act</p>
     </div>
     <div class="label-pair">
       <h3 for="proponent">Proponent: </h3>
