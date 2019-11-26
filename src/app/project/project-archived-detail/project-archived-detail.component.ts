@@ -80,9 +80,9 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
     .takeUntil(this.ngUnsubscribe)
     .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
       this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
-      if ( (this.legislationYearList ).includes(2002)){
+      if ( (this.legislationYearList ).includes(2002)) {
         this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
-      } else{
+      } else {
         this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
       }
       this.isPublished = this.project && this.project.read && this.project.read.includes('public');
