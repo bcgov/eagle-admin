@@ -25,9 +25,11 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public currentProject;
   public myForm: FormGroup;
   public doctypes: any[] = [];
-  public filteredDoctypes: any[] = [];
+  public filteredDoctypes2002: any[] = [];
+  public filteredDoctypes2018: any[] = [];
   public authors: any[] = [];
-  public filteredAuthors: any[] = [];
+  public filteredAuthors2002: any[] = [];
+  public filteredAuthors2018: any[] = [];
   public labels: any[] = [];
   public datePosted: NgbDateStruct = null;
   public isPublished = false;
@@ -35,7 +37,8 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public multiEdit = false;
   public docNameInvalid = false;
   public projectPhases: any[] = [];
-  public filteredProjectPhases: any[] = [];
+  public filteredProjectPhases2002: any[] = [];
+  public filteredProjectPhases2018: any[] = [];
 
   public legislationYear: Number;
 
@@ -50,7 +53,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    // todo: move these into the if
     this.documents = this.storageService.state.selectedDocs;
     this.currentProject = this.storageService.state.currentProject.data;
 
@@ -58,97 +60,89 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
     } else {
-
-      if (this.documents[0].legislation) {
-        this.legislationYear = this.documents[0].legislation;
-      } else {
-        // todo remove this, all docs should have legislation now
-        this.legislationYear = 2002;
-      }
-
-      // todo: check if the lists are cashed here, if the are don't subscribe
-      this.config.getLists().subscribe (lists => {
-        lists.map(item => {
-          switch (item.type) {
-            case 'doctype':
-              this.doctypes.push(Object.assign({}, item));
-              break;
-            case 'author':
-              this.authors.push(Object.assign({}, item));
-              break;
-            case 'label':
-              this.labels.push(Object.assign({}, item));
-              break;
-            case 'projectPhase':
-              this.projectPhases.push(Object.assign({}, item));
-              break;
-          }
-        });
-
-        // todo: cache these lists here
-
-        this.buildForm();
-      });
+      this.legislationYear = this.documents[0].legislation;
+      this.buildForm();
+      this.getLists();
     }
   }
 
   buildForm() {
-    this.filterByLegislationYear(this.legislationYear, true);
-
-    // todo: remove test fields
-    let testvar1 = this.documents[0].type;
-    let testvar2 = this.documents[0].documentAuthorType;
-    let testvar3 = this.documents[0].projectPhase;
-
-    let testvar4 = this.filteredDoctypes;
-    let testvar5 = this.filteredAuthors;
-    let testvar6 = this.filteredProjectPhases;
-
-    let testvar7 = this.doctypes;
-    let testvar8 = this.authors;
-    let testvar9 = this.projectPhases;
 
     if (this.storageService.state.form) {
       this.myForm = this.storageService.state.form;
     } else {
-      let radioButtonValue;
 
-      if (this.legislationYear === 2018) {
-        radioButtonValue = '2018';
-      } else {
-        radioButtonValue = '1996-2002';
-      }
+      // let radioButtonValue;
 
-      if (this.documents.length === 1) {
+      // if (this.legislationYear === 2018) {
+      //   radioButtonValue = '2018';
+      // } else {
+      //   radioButtonValue = '1996-2002';
+      // }
 
-        // todo: figure out publish see barakas code
-        this.isPublished = this.documents[0].read.includes('public');
-
-        // Set the old data in there if it exists.
-        this.myForm = new FormGroup({
-          'docLegislationRadio': new FormControl(radioButtonValue),
-          'doctypesel': new FormControl(this.documents[0].type),
-          'authorsel': new FormControl(this.documents[0].documentAuthorType),
-          'labelsel': new FormControl(this.documents[0].milestone),
-          'datePosted': new FormControl(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))),
-          'displayName': new FormControl(this.documents[0].displayName),
-          'description': new FormControl(this.documents[0].description),
-          'projectphasesel': new FormControl(this.documents[0].projectPhase)
-        });
-      } else {
-        this.multiEdit = true;
-        this.myForm = new FormGroup({
-          'docLegislationRadio': new FormControl(radioButtonValue),
-          'doctypesel': new FormControl(),
-          'authorsel': new FormControl(),
-          'labelsel': new FormControl(),
-          'datePosted': new FormControl(),
-          'displayName': new FormControl(),
-          'description': new FormControl(),
-          'projectphasesel': new FormControl()
-        });
-      }
+      this.myForm = new FormGroup({
+        'docLegislationRadio': new FormControl(this.legislationYear.toString()),
+        'doctypesel': new FormControl(),
+        'authorsel': new FormControl(),
+        'labelsel': new FormControl(),
+        'datePosted': new FormControl(),
+        'displayName': new FormControl(),
+        'description': new FormControl(),
+        'projectphasesel': new FormControl()
+      });
     }
+  }
+
+  getLists() {
+    // todo: check if the lists are cashed here, if the are don't subscribe
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'doctype':
+            this.doctypes.push(Object.assign({}, item));
+            break;
+          case 'author':
+            this.authors.push(Object.assign({}, item));
+            break;
+          case 'label':
+            this.labels.push(Object.assign({}, item));
+            break;
+          case 'projectPhase':
+            this.projectPhases.push(Object.assign({}, item));
+            break;
+        }
+      });
+
+      // todo: cache these lists here
+
+      if (!this.storageService.state.form) {
+        this.populateForm();
+      }
+    });
+  }
+
+  populateForm() {
+    this.filterByLegislationYear();
+
+    if (this.documents.length === 1) {
+      // todo: figure out publish see barakas code
+      this.isPublished = this.documents[0].read.includes('public');
+
+      // Set the old data in there if it exists.
+      if (this.documents[0].type) {this.myForm.controls.doctypesel.setValue(this.documents[0].type); }
+      if (this.documents[0].documentAuthorType) {this.myForm.controls.authorsel.setValue(this.documents[0].documentAuthorType); }
+      if (this.documents[0].milestone) {this.myForm.controls.labelsel.setValue(this.documents[0].milestone); }
+      if (this.documents[0].datePosted) {this.myForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))); }
+      if (this.documents[0].displayName) {this.myForm.controls.displayName.setValue(this.documents[0].displayName); }
+      if (this.documents[0].description) {this.myForm.controls.description.setValue(this.documents[0].description); }
+      if (this.documents[0].projectPhase) {this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
+
+      // init docNameInvalid
+      this.validateChars();
+    } else {
+      this.multiEdit = true;
+    }
+
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
@@ -164,45 +158,58 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   public validateChars() {
-    if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
+    if (this.myForm.value.displayName && this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
       this.docNameInvalid = true;
     } else {
       this.docNameInvalid = false;
     }
   }
 
-  filterByLegislationYear(docYear, init = false) {
+  filterByLegislationYear() {
 
-    console.log('called this: ' + docYear);
     // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
-    let legislationYear;
-    if (docYear === 1996) {
-      legislationYear = 2002;
-    } else {
-      legislationYear = docYear;
-    }
-    // filter and sort to ensure proper order of lists defined by EAO
-    this.filteredDoctypes = [
-      ...this.doctypes.filter(item => item.legislation === legislationYear)
-    ];
-    this.filteredDoctypes.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors = this.authors.filter(item => item.legislation === legislationYear);
-    this.filteredProjectPhases = this.projectPhases.filter(item => item.legislation === legislationYear);
-
-    // if (!init) {
-      // this._changeDetectionRef.detectChanges();
+    // let legislationYear;
+    // if (docYear === 1996) {
+    //   legislationYear = 2002;
+    // } else {
+    //   legislationYear = docYear;
     // }
+    // filter and sort to ensure proper order of lists defined by EAO
+    // this.filteredDoctypes = [
+    //   ...this.doctypes.filter(item => item.legislation === docYear)
+    // ];
+    // this.filteredDoctypes.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    // this.filteredAuthors = this.authors.filter(item => item.legislation === docYear);
+    // this.filteredProjectPhases = this.projectPhases.filter(item => item.legislation === docYear);
+
+    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
+    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
+    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
+
+    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
+    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
+    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
+
   }
 
   public changeLegislation (event) {
-    let docYear;
-    if (event.target.value === '1996-2002') {
-      docYear = '2002';
-    } else {
-      docYear = '2018';
-    }
-    this.filterByLegislationYear(docYear);
+    // let docYear;
+    console.log(event.target.id);
+    this.legislationYear = event.target.id;
+
+    // if (event.target.value === '1996-2002') {
+    //   docYear = '2002';
+    //   // TODO: need to flip between legislation lists here use some
+    // } else {
+    //   docYear = '2018';
+    // }
+    // this.filterByLegislationYear(docYear);
+
+    this._changeDetectionRef.reattach();
     this._changeDetectionRef.detectChanges();
+    this._changeDetectionRef.detach();
 
   }
   // on multi edit save, check if form fields have a value
