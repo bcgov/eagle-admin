@@ -85,11 +85,6 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
       } else{
         this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
       }
-      try {
-        this._changeDetectorRef.detectChanges();
-      } catch (e) {
-        // console.log('e:', e);
-      }
       this.isPublished = this.project && this.project.read && this.project.read.includes('public');
     });
   }

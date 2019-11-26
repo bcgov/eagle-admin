@@ -91,11 +91,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
         this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
         this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length));
-        try {
-          this._changeDetectorRef.detectChanges();
-        } catch (e) {
-          // console.log('e:', e);
-        }
       });
 
       this.checkShowButton();
@@ -110,6 +105,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       // If there is any legislation earlier than the currentLegYear
       this.showArchivedButton = true;
       this.sidebarService.showArchive();
+    } else {
+      this.showArchivedButton = false;
+      this.sidebarService.hideArchive();
     }
   }
 
