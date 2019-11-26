@@ -55,7 +55,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    // todo: move these into the if
     this.documents = this.storageService.state.selectedDocs;
     this.currentProject = this.storageService.state.currentProject.data;
 
@@ -133,6 +132,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
+
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
