@@ -76,11 +76,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Local Government Liquid Waste Management Facilities',
       'Local Government Solid Waste Management Facilities'
     ],
-    'Food Processing': [
-      'Fish Products Industry',
-      'Meat and Meat Products Industry',
-      'Poultry Products Industry'
-    ],
     'Tourist Destination Resorts': [
       'Golf Resorts',
       'Marina Resorts',
@@ -95,7 +90,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public PROJECT_TYPES: Array<Object> = [
     'Energy-Electricity',
     'Energy-Petroleum & Natural Gas',
-    'Food Processing',
     'Industrial',
     'Mines',
     'Other',
