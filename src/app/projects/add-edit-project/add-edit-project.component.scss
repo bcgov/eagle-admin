@@ -15,9 +15,23 @@
     margin-left: 10px;
 }
 
+.btn-unpublish{
+    background-color: white;
+    color: #D8292F;
+    border-color: #D8292F;
+    border-width: 1px;
+}
+
 .btn-publish{
     background-color: #28a745;
     border-color: #28a745;
+}
+
+.btn-cancel{
+    background-color: white;
+    color: #007bff;
+    border-color: #007bff;
+    border-width: 1px;
 }
 
 .btn-autofill{

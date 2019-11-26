@@ -3,7 +3,7 @@
     <section>
       <h2>Basic Information
         &nbsp;
-        <button class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
+        <button *ngIf="pageIsEditing" class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
       </h2>
 
       <div class="flex-container">
@@ -267,10 +267,11 @@
       </div>
     </section>
     <div class="text-right">
-      <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+      <button class="btn btn-cancel" type="cancel" (click)="onCancel()">Cancel</button>
       &nbsp;
       <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
       &nbsp;
-      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()">Publish</button>
+      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()" *ngIf="!this.published && this.pageIsEditing">Publish</button>
+      <button class="btn btn-unpublish" type="publish" (click)="onUnpublish()" *ngIf="this.published">Unpublish</button>
     </div>
   </form>

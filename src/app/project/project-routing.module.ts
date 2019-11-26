@@ -111,7 +111,8 @@ const routes: Routes = [
         component: ProjectDetailComponent,
         resolve: {
           fullProject: FullProjectResolver
-        }
+        },
+        runGuardsAndResolvers: 'always',
       },
       {
         path: 'project-archived-detail',
@@ -315,7 +316,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes, {onSameUrlNavigation: 'reload'})
   ],
   exports: [
     RouterModule

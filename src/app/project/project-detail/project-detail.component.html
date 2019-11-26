@@ -5,31 +5,19 @@
     </li>
     <li class="breadcrumb-item active">{{project && project.name}}</li>
   </ol>
-  <div ngbDropdown placement="bottom-right" class="d-inline-block">
-    <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
-    <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-      <!-- Replace click events -->
-      <button class="dropdown-item" [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
-        Document</button>
-      <button class="dropdown-item" (click)="editProject()">Edit</button>
-      <button class="dropdown-item" *ngIf="!isPublished" (click)="publishProject()">Publish</button>
-      <button class="dropdown-item" *ngIf="isPublished" (click)="unPublishProject()">Un-Publish</button>
-    </div>
-  </div>
+
 </nav>
 <main class="container-fluid-padding" *ngIf="project && project._id">
   <h1 id="name">{{project.name}}
-    <!-- <span ngbDropdown>
-      <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
+    <span ngbDropdown>
+      <button class="btn btn-primary action-drop-button" id="actionDropdown" ngbDropdownToggle>Actions</button>
       <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
 
         <button class="dropdown-item" [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
           Document</button>
         <button class="dropdown-item" (click)="editProject()">Edit</button>
-        <button class="dropdown-item" *ngIf="!isPublished" (click)="publishProject()">Publish</button>
-        <button class="dropdown-item" *ngIf="isPublished" (click)="unPublishProject()">Un-Publish</button>
       </div>
-    </span> -->
+    </span>
   </h1>
   <section>
     <app-comment-period-banner></app-comment-period-banner>
