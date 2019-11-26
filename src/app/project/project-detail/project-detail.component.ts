@@ -106,7 +106,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if ( this.legislationYearList.length === 1) {
       this.showArchivedButton = false;
       this.sidebarService.hideArchive();
-    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) && this.currentLegYear === Math.max(...(this.legislationYearList)) {
+    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) && this.currentLegYear === Math.max(...(this.legislationYearList))) {
       // If there is any legislation earlier than the currentLegYear
       this.showArchivedButton = true;
       this.sidebarService.showArchive();
