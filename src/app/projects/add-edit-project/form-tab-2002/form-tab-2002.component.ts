@@ -701,7 +701,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       let project = new Project(
         this.convertFormToProject(this.myForm)
       );
-      console.log('POSTing', project);
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -715,13 +714,19 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         legislationYear: this.legislationYear,
         _id: this.projectId
       }));
-
-      console.log('PUTing', project);
-      this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
-        .subscribe(
-          ...putSubscribe
-        );
+      if (putFunction) {
+        this.projectService.save(project)
+          .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
+          .subscribe(
+            ...putSubscribe
+          );
+      } else {
+        this.projectService.save(project)
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe(
+            ...putSubscribe
+          );
+      }
     }
   }
 
