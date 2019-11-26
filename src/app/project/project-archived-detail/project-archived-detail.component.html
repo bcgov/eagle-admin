@@ -15,15 +15,14 @@
         <app-comment-period-banner></app-comment-period-banner>
     </section>
     <section>
-        <h2 class="mb-1">
-          <i class="material-icons mb0" vertical-align="bottom">access_time</i>
-          Archived Project Information
-        </h2>
+        <i class="material-icons mr-2 md-36 float-left" display="inline-block">access_time</i>
+        <h2 class="mb-1" display="inline">Archived Project Information </h2>
+        <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
         <div>
             <a class="btn mt-2 btn-dark legislation-button no-click">
                 <label display="inline-block" class="mb-0">Legislation</label>
                 <!-- <p class="mb-0">{{project?.legislation || "-" }}</p> -->
-                <p class="mb-0">{{project.legislation}}</p>
+                <p class="mb-0">{{project.legislationYear}} Environmental Assessment Act</p>
             </a>
         </div>
         <div class="label-pair mt-3">

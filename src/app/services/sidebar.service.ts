@@ -14,7 +14,6 @@ export class SideBarService {
 
   toggle() {
     this.isOpen = !this.isOpen;
-    // console.log("Toggle hit");
     this.toggleChange.emit(this.isOpen);
   }
 

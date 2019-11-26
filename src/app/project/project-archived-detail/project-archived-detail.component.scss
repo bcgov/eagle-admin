@@ -23,12 +23,18 @@
     }
 }
 
+.badge-published{
+    color: white;
+    font-size: large;
+    margin-bottom: 11px;
+}
+
 .header i {
     float: left;
   }
 
   .header h2 {
-    position: relative;
+    // position: relative;
     top: 18px;
     left: 10px;
   }

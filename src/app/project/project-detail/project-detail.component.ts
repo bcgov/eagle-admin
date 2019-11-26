@@ -98,19 +98,15 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       });
 
-      // this.sidebarService.hideArchive();
       this.checkShowButton();
-      // this.storageService.state.showArchivedInfo = this.showArchivedButton;
-      console.log("Printing archive flag project detail");
-      console.log(this.showArchivedButton);
 
   }
 
   checkShowButton() {
-    if ( this.legislationYearList.length === 1){
+    if ( this.legislationYearList.length === 1) {
       this.showArchivedButton = false;
       this.sidebarService.hideArchive();
-    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) ) {
+    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) && this.currentLegYear === Math.max(...(this.legislationYearList)) {
       // If there is any legislation earlier than the currentLegYear
       this.showArchivedButton = true;
       this.sidebarService.showArchive();

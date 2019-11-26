@@ -36,7 +36,8 @@
     <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
     <div class="label-pair">
         <h3 for="legislation">Legislation: </h3>
-        <p id="legislation">{{project.legislation || '-'}}</p>
+        <!-- <p id="legislation">{{project.legislation || '-'}}</p> -->
+        <p id="legislation">{{currentLegYear}} Environmental Assessment Act</p>
     </div>
     <div class="label-pair">
       <h3 for="proponent">Proponent: </h3>

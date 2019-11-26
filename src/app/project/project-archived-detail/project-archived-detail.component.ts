@@ -38,6 +38,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public showArchivedButton = false;
   public legislationYearList;
   public currentProject;
+  public isPublished;
 
 
   constructor(
@@ -66,7 +67,6 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
             const projectSearchData = this.utils.extractFromSearchResults(data.project);
             this.project = projectSearchData ? projectSearchData[0] : null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-            // this.loading = false;
             this._changeDetectorRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load project');
@@ -79,10 +79,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
     this.route.data
     .takeUntil(this.ngUnsubscribe)
     .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-      console.log("Full project")
-      console.log(data.fullProject[0].data.searchResults[0].legislation_2002);
       this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
-
       if ( (this.legislationYearList ).includes(2002)){
         this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
       } else{
@@ -93,6 +90,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
       } catch (e) {
         // console.log('e:', e);
       }
+      this.isPublished = this.project && this.project.read && this.project.read.includes('public');
     });
   }
 

@@ -53,11 +53,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     .takeUntil(this.ngUnsubscribe)
     .subscribe(isArchive => {
       this.isArchive = isArchive;
-      console.log("Printing isArchive");
-      console.log(isArchive);
     });
 
-    this.sideBarService.change
+    this.sideBarService.toggleChange
       .takeUntil(this.ngUnsubscribe)
       .subscribe(isOpen => {
         this.isOpen = isOpen;
