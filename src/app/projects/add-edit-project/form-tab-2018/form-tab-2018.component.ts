@@ -76,11 +76,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Local Government Liquid Waste Management Facilities',
       'Local Government Solid Waste Management Facilities'
     ],
-    'Food Processing': [
-      'Fish Products Industry',
-      'Meat and Meat Products Industry',
-      'Poultry Products Industry'
-    ],
     'Tourist Destination Resorts': [
       'Golf Resorts',
       'Marina Resorts',
@@ -95,7 +90,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public PROJECT_TYPES: Array<Object> = [
     'Energy-Electricity',
     'Energy-Petroleum & Natural Gas',
-    'Food Processing',
     'Industrial',
     'Mines',
     'Other',
@@ -163,13 +157,11 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'region':
-          this.regions.push(item.name);
-          break;
+    this.config.getRegions().takeUntil(this.ngUnsubscribe).subscribe(
+      (data) => {
+        this.regions = data;
       }
-    });
+    );
 
     // Get data related to current project
     this.route.parent.data
@@ -632,7 +624,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           legislationYear: this.legislationYear
         }
       );
-      console.log('POSTing', project);
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -647,12 +638,20 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         _id: this.projectId
       }));
 
-      console.log('PUTing', project);
-      this.projectService.save(project)
+      if (putFunction) {
+        this.projectService.save(project)
         .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
         .subscribe(
           ...putSubscribe
         );
+      } else {
+        this.projectService.save(project)
+        .takeUntil(this.ngUnsubscribe)
+        .subscribe(
+          ...putSubscribe
+        );
+      }
+
     }
   }
 
