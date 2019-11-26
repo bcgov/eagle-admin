@@ -40,7 +40,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public filteredProjectPhases2002: any[] = [];
   public filteredProjectPhases2018: any[] = [];
 
-  public legislationYear: Number;
+  public legislationYear = '1996';
 
   constructor(
     private config: ConfigService,
@@ -60,37 +60,23 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
     } else {
-      this.legislationYear = this.documents[0].legislation;
+      this.legislationYear = this.documents[0].legislation.toString();
       this.buildForm();
       this.getLists();
     }
   }
 
   buildForm() {
-
-    if (this.storageService.state.form) {
-      this.myForm = this.storageService.state.form;
-    } else {
-
-      // let radioButtonValue;
-
-      // if (this.legislationYear === 2018) {
-      //   radioButtonValue = '2018';
-      // } else {
-      //   radioButtonValue = '1996-2002';
-      // }
-
-      this.myForm = new FormGroup({
-        'docLegislationRadio': new FormControl(this.legislationYear.toString()),
-        'doctypesel': new FormControl(),
-        'authorsel': new FormControl(),
-        'labelsel': new FormControl(),
-        'datePosted': new FormControl(),
-        'displayName': new FormControl(),
-        'description': new FormControl(),
-        'projectphasesel': new FormControl()
-      });
-    }
+    this.myForm = new FormGroup({
+      'docLegislationRadio': new FormControl(this.legislationYear),
+      'doctypesel': new FormControl(),
+      'authorsel': new FormControl(),
+      'labelsel': new FormControl(),
+      'datePosted': new FormControl(),
+      'displayName': new FormControl(),
+      'description': new FormControl(),
+      'projectphasesel': new FormControl()
+    });
   }
 
   getLists() {
@@ -115,9 +101,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
 
       // todo: cache these lists here
 
-      if (!this.storageService.state.form) {
-        this.populateForm();
-      }
+      this.populateForm();
     });
   }
 
@@ -168,19 +152,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   filterByLegislationYear() {
 
     // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
-    // let legislationYear;
-    // if (docYear === 1996) {
-    //   legislationYear = 2002;
-    // } else {
-    //   legislationYear = docYear;
-    // }
-    // filter and sort to ensure proper order of lists defined by EAO
-    // this.filteredDoctypes = [
-    //   ...this.doctypes.filter(item => item.legislation === docYear)
-    // ];
-    // this.filteredDoctypes.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    // this.filteredAuthors = this.authors.filter(item => item.legislation === docYear);
-    // this.filteredProjectPhases = this.projectPhases.filter(item => item.legislation === docYear);
 
     this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
     this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
@@ -195,22 +166,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   public changeLegislation (event) {
-    // let docYear;
-    console.log(event.target.id);
-    this.legislationYear = event.target.id;
-
-    // if (event.target.value === '1996-2002') {
-    //   docYear = '2002';
-    //   // TODO: need to flip between legislation lists here use some
-    // } else {
-    //   docYear = '2018';
-    // }
-    // this.filterByLegislationYear(docYear);
-
-    this._changeDetectionRef.reattach();
-    this._changeDetectionRef.detectChanges();
-    this._changeDetectionRef.detach();
-
+    this.legislationYear = event.target.value;
   }
   // on multi edit save, check if form fields have a value
   multiEditGetUpdatedValue(formValue, docValue, isDate = false) {
