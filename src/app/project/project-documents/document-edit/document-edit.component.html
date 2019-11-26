@@ -63,11 +63,11 @@
           <label *ngIf="!multiEdit" for="doctypesel">Document Type*</label>
           <label *ngIf="multiEdit" for="labelsel">Document Type</label>
 
-          <select *ngIf="legislationYear === 1996 || legislationYear === 2002" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
+          <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
             <option *ngFor="let type of filteredDoctypes2002" [ngValue]="type._id">{{type.name}}</option>
           </select>
 
-          <select *ngIf="legislationYear === 2018" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
+          <select [hidden]="!(this.legislationYear === '2018')" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
             <option *ngFor="let type of filteredDoctypes2018" [ngValue]="type._id">{{type.name}}</option>
           </select>
         </div>
@@ -75,11 +75,11 @@
           <label *ngIf="!multiEdit" for="authorsel">Author*</label>
           <label *ngIf="multiEdit" for="labelsel">Author</label>
 
-          <select *ngIf="legislationYear === 1996 || legislationYear === 2002" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
+          <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
             <option *ngFor="let author of filteredAuthors2002" [ngValue]="author._id">{{author.name}}</option>
           </select>
 
-          <select *ngIf="legislationYear === 2018" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
+          <select [hidden]="!(this.legislationYear === '2018')" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
             <option *ngFor="let author of filteredAuthors2018" [ngValue]="author._id">{{author.name}}</option>
           </select>
 
@@ -102,11 +102,11 @@
           <label *ngIf="!multiEdit" for="projectphasesel">Project Phase*</label>
           <label *ngIf="multiEdit" for="labelsel">Project Phase</label>
 
-          <select *ngIf="legislationYear === 1996 || legislationYear === 2002" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
+          <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
             <option *ngFor="let projectPhase of filteredProjectPhases2002" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
           </select>
 
-          <select *ngIf="legislationYear === 2018" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
+          <select [hidden]="!(this.legislationYear === '2018')" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
             <option *ngFor="let projectPhase of filteredProjectPhases2018" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
           </select>
         </div>
