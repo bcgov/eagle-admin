@@ -37,6 +37,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public currentLegYear: number;
   public showArchivedButton = false;
   public legislationYearList;
+  public currentProject;
 
 
   constructor(
@@ -56,6 +57,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.currentProject = this.storageService.state.currentProject.data;
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(

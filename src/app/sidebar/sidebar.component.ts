@@ -25,9 +25,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public showProjectDetailsSubItems = false;
   public currentProjectId = '';
   public currentMenu = '';
+  public showArchiveButton = false;
 
   @HostBinding('class.is-toggled')
   isOpen = false;
+  isArchive = false;
 
   constructor(
     private router: Router,
@@ -47,6 +49,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.sideBarService.archiveChange
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe(isArchive => {
+      this.isArchive = isArchive;
+      console.log("Printing isArchive");
+      console.log(isArchive);
+    });
+
     this.sideBarService.change
       .takeUntil(this.ngUnsubscribe)
       .subscribe(isOpen => {
@@ -92,6 +102,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
           break;
         }
         case 'milestones': {
+          break;
+        }
+        case 'project-archived-detail': {
           break;
         }
         default: {

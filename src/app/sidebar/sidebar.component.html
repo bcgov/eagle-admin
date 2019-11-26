@@ -11,7 +11,7 @@
       <a [ngClass]="{'active': currentMenu === 'project-groups'}" class="project-menu" id="groups" [routerLink]="['p', currentProjectId, 'project-groups']"><i class="material-icons">person</i>Project Groups</a>
       <a [ngClass]="{'active': currentMenu === 'project-updates'}" class="project-menu" id="updates" [routerLink]="['p', currentProjectId, 'project-updates']"><i class="material-icons">fiber_new</i>Project Updates</a>
       <a [ngClass]="{'active': currentMenu === 'valued-components'}" class="project-menu" id="value-components" [routerLink]="['p', currentProjectId, 'valued-components']"><i class="material-icons">view_list</i>Valued Components</a>
-      <a [ngClass]="{'active': currentMenu === 'project-archived-detail'}" class="project-menu" id="project-archived-detail" [routerLink]="['p', currentProjectId, 'project-archived-detail']"><i class="material-icons">access_time</i>Archived Project Details</a>
+      <a *ngIf="isArchive" [ngClass]="{'active': currentMenu === 'project-archived-detail'}" class="project-menu" id="project-archived-detail" [routerLink]="['p', currentProjectId, 'project-archived-detail']"><i class="material-icons">access_time</i>Archived Project Details</a>
     </section>
     <a *ngIf="showNotificationProjects" [ngClass]="{'active': currentProjectId === 'notification-projects' || currentProjectId === 'np'}" id="notificationProjects" [routerLink]="['/notification-projects']"><i class="material-icons mr-3">view_module</i>Notification Projects</a>
     <a [ngClass]="{'active': currentProjectId === 'activity'}" id="activityPosts" [routerLink]="['/activity']"><i class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>

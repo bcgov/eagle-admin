@@ -4,7 +4,7 @@
             <a [routerLink]="['/projects']">All Projects</a>
         </li>
         <li class="breadcrumb-item">
-            <a [routerLink]="['/p', project._id]">{{project.name}}</a>
+            <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">Archived Project Details</li>
     </ol>
@@ -15,9 +15,12 @@
         <app-comment-period-banner></app-comment-period-banner>
     </section>
     <section>
-        <h2> <i class="material-icons mb0" vertical-align="bottom">access_time</i> Archived Project Information</h2>
+        <h2 class="mb-1">
+          <i class="material-icons mb0" vertical-align="bottom">access_time</i>
+          Archived Project Information
+        </h2>
         <div>
-            <a class="btn btn-dark legislation-button no-click">
+            <a class="btn mt-2 btn-dark legislation-button no-click">
                 <label display="inline-block" class="mb-0">Legislation</label>
                 <!-- <p class="mb-0">{{project?.legislation || "-" }}</p> -->
                 <p class="mb-0">{{project.legislation}}</p>

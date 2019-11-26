@@ -18,13 +18,8 @@ import { StorageService } from 'app/services/storage.service';
 import { SearchService } from 'app/services/search.service';
 import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
-
+import { SideBarService } from 'app/services/sidebar.service';
 import { FullProject } from 'app/models/fullProject';
-import { Injectable } from '@angular/core';
-import { yearsPerPage } from '@angular/material/datepicker/typings/multi-year-view';
-import { TransitiveCompileNgModuleMetadata } from '@angular/compiler';
-import { endianness } from 'os';
-import { stream } from 'xlsx/types';
 
 
 @Component({
@@ -33,10 +28,6 @@ import { stream } from 'xlsx/types';
   styleUrls: ['./project-detail.component.scss']
 })
 
-@Injectable()
-export class ArchiveButtonComponent {
-  showArchivedButton: boolean;
-}
 
 export class ProjectDetailComponent implements OnInit, OnDestroy {
 
@@ -61,6 +52,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     private dialogService: DialogService,
     public projectService: ProjectService, // also used in template
     public commentPeriodService: CommentPeriodService,
+    public sidebarService: SideBarService,
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
@@ -105,15 +97,22 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       });
 
+      // this.sidebarService.hideArchive();
       this.checkShowButton();
+      // this.storageService.state.showArchivedInfo = this.showArchivedButton;
+      console.log("Printing archive flag project detail");
+      console.log(this.showArchivedButton);
+
   }
 
   checkShowButton() {
     if ( this.legislationYearList.length === 1){
       this.showArchivedButton = false;
+      this.sidebarService.hideArchive();
     } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) ) {
       // If there is any legislation earlier than the currentLegYear
       this.showArchivedButton = true;
+      this.sidebarService.showArchive();
     }
   }
 
