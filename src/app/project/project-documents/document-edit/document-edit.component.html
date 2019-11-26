@@ -11,7 +11,7 @@
     <li class="breadcrumb-item">Edit Document(s)</li>
   </ol>
 </nav>
-<main class="container-fluid-padding">
+<main *ngIf="documents" class="container-fluid-padding">
   <label *ngIf="documents && documents.length > 1">You are editing the following files:</label>
   <div class="spinner-container" *ngIf="loading">
     <div class="spinner-new rotating"></div>
@@ -36,8 +36,12 @@
             <label for="docLegislationRadio">Legislation Type*</label>
             <div name="docLegislationRadio" class="radio-group">
               <div class="radio">
-                <input type="radio" id="1996-2002" value="1996-2002" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
-                <label for="1996-2002" class="legislation-label">1996/2002 Environmental Assessment Act</label>
+                <input type="radio" id="1996" value="1996" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
+                <label for="1996" class="legislation-label">1996 Environmental Assessment Act</label>
+              </div>
+              <div class="radio">
+                <input type="radio" id="2002" value="2002" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
+                <label for="2002" class="legislation-label">2002 Environmental Assessment Act</label>
               </div>
               <div class="radio">
                 <input type="radio" id="2018" value="2018" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
@@ -59,33 +63,52 @@
           <label *ngIf="!multiEdit" for="doctypesel">Document Type*</label>
           <label *ngIf="multiEdit" for="labelsel">Document Type</label>
 
-          <select [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
-            <option *ngFor="let type of filteredDoctypes" [ngValue]="type._id">{{type.name}}</option>
+          <select *ngIf="legislationYear === 1996 || legislationYear === 2002" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
+            <option *ngFor="let type of filteredDoctypes2002" [ngValue]="type._id">{{type.name}}</option>
+          </select>
+
+          <select *ngIf="legislationYear === 2018" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
+            <option *ngFor="let type of filteredDoctypes2018" [ngValue]="type._id">{{type.name}}</option>
           </select>
         </div>
         <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="authorsel">Author*</label>
           <label *ngIf="multiEdit" for="labelsel">Author</label>
 
-          <select [required]="!multiEdit"  class="form-control" formControlName="authorsel">
-            <option *ngFor="let author of filteredAuthors" [ngValue]="author._id">{{author.name}}</option>
+          <select *ngIf="legislationYear === 1996 || legislationYear === 2002" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
+            <option *ngFor="let author of filteredAuthors2002" [ngValue]="author._id">{{author.name}}</option>
           </select>
+
+          <select *ngIf="legislationYear === 2018" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
+            <option *ngFor="let author of filteredAuthors2018" [ngValue]="author._id">{{author.name}}</option>
+          </select>
+
         </div>
         <div class="form-group col-md-4">
         <label *ngIf="!multiEdit" for="labelsel">Milestone*</label>
         <label *ngIf="multiEdit" for="labelsel">Milestone</label>
-          <select [required]="!multiEdit"  class="form-control" formControlName="labelsel">
-            <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
-          </select>
+
+        <!-- <select [required]="!multiEdit"  class="form-control" formControlName="labelsel">
+          <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
+        </select> -->
+
+        <select [required]="!multiEdit"  class="form-control" formControlName="labelsel">
+          <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
+        </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">
-            <label *ngIf="!multiEdit" for="projectphasesel">Project Phase*</label>
-            <label *ngIf="multiEdit" for="labelsel">Project Phase</label>
-            <select [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
-                <option *ngFor="let projectPhase of filteredProjectPhases" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
-            </select>
+          <label *ngIf="!multiEdit" for="projectphasesel">Project Phase*</label>
+          <label *ngIf="multiEdit" for="labelsel">Project Phase</label>
+
+          <select *ngIf="legislationYear === 1996 || legislationYear === 2002" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
+            <option *ngFor="let projectPhase of filteredProjectPhases2002" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
+          </select>
+
+          <select *ngIf="legislationYear === 2018" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
+            <option *ngFor="let projectPhase of filteredProjectPhases2018" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
+          </select>
         </div>
         <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="inputAddress">Document Date*</label>
