@@ -48,12 +48,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Energy Storage Facilities',
       'Natural Gas Processing Plants',
       'Off-shore Oil or Gas Facilities',
+      'Oil Refineries',
       'Transmission Pipelines'
     ],
     'Transportation': [
       'Airports',
       'Ferry Terminals',
-      'Marine Port Facilities',
+      'Marine Port Projects',
       'Public Highways',
       'Railways'
     ],
@@ -71,10 +72,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Other Industries',
       'Primary Metals Industry'
     ],
-    'Waste Disposal': [
+    'Hazardous Waste Management': [
       'Hazardous Waste Facilities',
       'Local Government Liquid Waste Management Facilities',
-      'Local Government Solid Waste Management Facilities'
+      'Solid Waste Management'
     ],
     'Tourist Destination Resorts': [
       'Golf Resorts',
@@ -95,7 +96,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     'Other',
     'Tourist Destination Resorts',
     'Transportation',
-    'Waste Disposal',
+    'Hazardous Waste Management',
     'Water Management'
   ];
 
