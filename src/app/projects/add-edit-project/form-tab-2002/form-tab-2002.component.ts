@@ -636,7 +636,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         () => { // onCompleted
           this.published = false;
           this.snackBar.open('Project un-published...', null, { duration: 2000 });
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+          // HACK: Adding a set timeout to see if this fixes the project details page from loading bad data
+          window.setTimeout(() => this.router.navigate(['/p', this.projectId, 'project-details']), 100);
         }
       );
   }
@@ -665,7 +666,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.published = true;
           this.loading = false;
           this.openSnackBar('This project was created and published successfuly.', 'Close');
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+          // HACK: Adding a set timeout to see if this fixes the project details page from loading bad data
+          window.setTimeout(() => this.router.navigate(['/p', this.projectId, 'project-details']), 100); ;
         }
       ],
       // PUT SUBSCRIBE
@@ -679,7 +681,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.loading = false;
           this.router.navigated = false;
           this.openSnackBar('This project was edited and published successfuly.', 'Close');
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+          // HACK: Adding a set timeout to see if this fixes the project details page from loading bad data
+          window.setTimeout(() => this.router.navigate(['/p', this.projectId, 'project-details']), 100);
+
         }
       ]
     );
