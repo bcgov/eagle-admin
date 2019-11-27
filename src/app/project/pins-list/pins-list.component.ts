@@ -15,6 +15,7 @@ import { Org } from 'app/models/org';
 import { ProjectService } from 'app/services/project.service';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-pins-list',
@@ -58,6 +59,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private storageService: StorageService,
     private dialogService: DialogService,
+    private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
@@ -68,6 +70,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
+    this.storageService.state.selectedUsers = null;
 
     this.route.params
     .takeUntil(this.ngUnsubscribe)
@@ -217,7 +220,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
   }
 
   setBackURL() {
-    this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-pins'], label: 'Participating Indigenous Nations' };
+    // this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-pins'], label: 'Participating Indigenous Nations' };
     this.storageService.state.add = this.add;
     this.storageService.state.component = this;
     this.storageService.state.componentModel = 'Org';
@@ -225,6 +228,29 @@ export class PinsListComponent implements OnInit, OnDestroy {
     this.storageService.state.tableColumns = this.tableColumns;
     this.storageService.state.rowComponent = PinsTableRowsComponent;
     this.storageService.state.sortBy = this.tableParams.sortBy;
+    this.storageService.state.isCreateEnabled = false;
+    this.storageService.state.selectedUsers = [...this.entries];
+
+    // this.storageService.state.update = this.update;
+    // this.storageService.state.selectedUsers = [...this.users];
+    this.navigationStackUtils.pushNavigationStack(
+      ['/p', this.currentProject._id, 'project-pins'],
+      [
+        {
+          route: ['/projects'],
+          label: 'All Projects'
+        },
+        {
+          route: ['/p', this.currentProject._id],
+          label: this.currentProject.name
+        },
+        {
+          route: ['/p', this.currentProject._id, 'project-pins'],
+          label: 'Participating Indigenous Nations'
+        }
+      ]
+    );
+    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 25 }]);
   }
 
   public onSubmit(pageNumber = 1, reset = false) {

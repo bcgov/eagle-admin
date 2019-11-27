@@ -23,6 +23,7 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   public typeFilters = [];
   public selectedCount = 0;
   public navigationObject;
+  public isCreateEnabled = true;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -63,6 +64,10 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     } else {
       // TODO: determine where to boot out.
       this.router.navigate(['/']);
+    }
+
+    if (this.storageService.state.isCreateEnabled === false) {
+      this.isCreateEnabled = false;
     }
 
     this.route.params
@@ -111,6 +116,13 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     }
   }
 
+  save() {
+    // Save the pins to the project.
+    console.log('NEED TO GET THE LIST OF SELECTED:', this.storageService.state.selectedContact);
+
+    // this.storageService.state.update(items, this.storageService.state.component);
+  }
+
   goBack() {
     let url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
@@ -152,7 +164,7 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
     let arr = [...this.navigationObject.backUrl];
-    arr.push('link-contact');
+    arr.push('select');
     arr.push(params);
     this.router.navigate(arr);
   }
