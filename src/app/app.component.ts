@@ -20,7 +20,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.configService.init();
-    this.sideBarService.change.subscribe(isOpen => {
+    this.sideBarService.toggleChange.subscribe(isOpen => {
       this.isOpen = isOpen;
     });
   }
