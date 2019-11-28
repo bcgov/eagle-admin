@@ -234,9 +234,9 @@ const routes: Routes = [
       },
       {
         path: 'project-pins/select',
-        component: ContactSelectComponent,
+        component: LinkOrganizationComponent,
         resolve: {
-          contacts: PinsGlobalComponentResolver
+          organizations: PinsGlobalComponentResolver
         }
       },
       {

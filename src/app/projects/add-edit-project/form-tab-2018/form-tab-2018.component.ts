@@ -511,6 +511,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    // Safe way to clear out .add
+    this.storageService.state.add = null;
     this.storageService.state.form2018 = this.myForm;
     this.setNavigation();
     if (!this.pageIsEditing) {
