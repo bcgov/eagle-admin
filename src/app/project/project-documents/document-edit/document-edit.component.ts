@@ -31,6 +31,8 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public filteredAuthors2002: any[] = [];
   public filteredAuthors2018: any[] = [];
   public labels: any[] = [];
+  public filteredLabels2002: any[] = [];
+  public filteredLabels2018: any[] = [];
   public datePosted: NgbDateStruct = null;
   public isPublished = false;
   public loading = true;
@@ -133,6 +135,30 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.loading = false;
   }
 
+  filterByLegislationYear() {
+    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
+    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
+    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
+    this.filteredLabels2002 = this.labels.filter(item => item.legislation === 2002);
+    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
+
+    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
+    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
+    this.filteredLabels2018 = this.labels.filter(item => item.legislation === 2018);
+    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
+  }
+
+  public changeLegislation (event) {
+    this.legislationYear = event.target.value;
+
+    this.myForm.controls.doctypesel.setValue(null);
+    this.myForm.controls.authorsel.setValue(null);
+    this.myForm.controls.labelsel.setValue(null);
+    this.myForm.controls.projectphasesel.setValue(null);
+  }
+
   goBack() {
     if (this.storageService.state.back && this.storageService.state.back.url) {
       this.router.navigate(this.storageService.state.back.url);
@@ -149,25 +175,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  filterByLegislationYear() {
-
-    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
-
-    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
-    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
-    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
-
-    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
-    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
-    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
-
-  }
-
-  public changeLegislation (event) {
-    this.legislationYear = event.target.value;
-  }
   // on multi edit save, check if form fields have a value
   multiEditGetUpdatedValue(formValue, docValue, isDate = false) {
     if (formValue !== null) {
@@ -235,6 +242,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
 
       // TODO
       formData.append('labels', JSON.stringify(theLabels));
+      formData.append('legislation', this.legislationYear);
       observables.push(this.documentService.update(formData, doc._id));
     });
 

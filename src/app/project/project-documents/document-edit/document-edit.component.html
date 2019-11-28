@@ -61,7 +61,7 @@
       <div class="form-row">
         <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="doctypesel">Document Type*</label>
-          <label *ngIf="multiEdit" for="labelsel">Document Type</label>
+          <label *ngIf="multiEdit" for="doctypesel">Document Type</label>
 
           <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="doctypesel">
             <option *ngFor="let type of filteredDoctypes2002" [ngValue]="type._id">{{type.name}}</option>
@@ -73,14 +73,14 @@
         </div>
         <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="authorsel">Author*</label>
-          <label *ngIf="multiEdit" for="labelsel">Author</label>
+          <label *ngIf="multiEdit" for="authorsel">Author</label>
 
           <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
-            <option *ngFor="let author of filteredAuthors2002" [ngValue]="author._id">{{author.name}}</option>
+            <option *ngFor="let author2002 of filteredAuthors2002" [ngValue]="author2002._id">{{author2002.name}}</option>
           </select>
 
           <select [hidden]="!(this.legislationYear === '2018')" [required]="!multiEdit"  class="form-control" formControlName="authorsel">
-            <option *ngFor="let author of filteredAuthors2018" [ngValue]="author._id">{{author.name}}</option>
+            <option *ngFor="let author2018 of filteredAuthors2018" [ngValue]="author2018._id">{{author2018.name}}</option>
           </select>
 
         </div>
@@ -88,19 +88,19 @@
         <label *ngIf="!multiEdit" for="labelsel">Milestone*</label>
         <label *ngIf="multiEdit" for="labelsel">Milestone</label>
 
-        <!-- <select [required]="!multiEdit"  class="form-control" formControlName="labelsel">
-          <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
-        </select> -->
+        <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="labelsel">
+          <option *ngFor="let label of filteredLabels2002" [ngValue]="label._id">{{label.name}}</option>
+        </select>
 
-        <select [required]="!multiEdit"  class="form-control" formControlName="labelsel">
-          <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
+        <select [hidden]="!(this.legislationYear === '2018')" [required]="!multiEdit"  class="form-control" formControlName="labelsel">
+          <option *ngFor="let label of filteredLabels2018" [ngValue]="label._id">{{label.name}}</option>
         </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="projectphasesel">Project Phase*</label>
-          <label *ngIf="multiEdit" for="labelsel">Project Phase</label>
+          <label *ngIf="multiEdit" for="projectphasesel">Project Phase</label>
 
           <select [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" [required]="!multiEdit"  class="form-control" formControlName="projectphasesel">
             <option *ngFor="let projectPhase of filteredProjectPhases2002" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
