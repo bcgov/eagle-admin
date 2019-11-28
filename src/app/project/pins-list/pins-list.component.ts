@@ -88,7 +88,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res) {
           this.entries = [];
-          if (res.contacts && res.contacts[0].length > 0) {
+          if (res.contacts && res.contacts.length > 0) {
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
@@ -220,7 +220,6 @@ export class PinsListComponent implements OnInit, OnDestroy {
   }
 
   setBackURL() {
-    // this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-pins'], label: 'Participating Indigenous Nations' };
     this.storageService.state.add = this.add;
     this.storageService.state.component = this;
     this.storageService.state.componentModel = 'Org';
@@ -228,11 +227,8 @@ export class PinsListComponent implements OnInit, OnDestroy {
     this.storageService.state.tableColumns = this.tableColumns;
     this.storageService.state.rowComponent = PinsTableRowsComponent;
     this.storageService.state.sortBy = this.tableParams.sortBy;
-    this.storageService.state.isCreateEnabled = false;
     this.storageService.state.selectedUsers = [...this.entries];
 
-    // this.storageService.state.update = this.update;
-    // this.storageService.state.selectedUsers = [...this.users];
     this.navigationStackUtils.pushNavigationStack(
       ['/p', this.currentProject._id, 'project-pins'],
       [
