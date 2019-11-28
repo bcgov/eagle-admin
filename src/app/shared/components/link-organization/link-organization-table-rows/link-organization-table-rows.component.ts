@@ -32,6 +32,14 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
 
   selectItem(item) {
     this.storageService.state.selectedOrganization = item;
+
+    if (this.storageService.state.add) {
+      let arr = [];
+      arr.push(item);
+      this.storageService.state.add(arr, this.storageService.state.component);
+      this.storageService.state.selectedOrganization = null;
+    }
+
     let url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
     this.router.navigate(url);

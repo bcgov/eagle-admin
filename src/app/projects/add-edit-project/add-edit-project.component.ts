@@ -430,6 +430,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    // Safe way to clear out .add
+    this.storageService.state.add = null;
     this.storageService.state.form = this.myForm;
     this.setNavigation();
     if (!this.isEditing) {

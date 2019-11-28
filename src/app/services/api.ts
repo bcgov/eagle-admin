@@ -63,7 +63,7 @@ export class ApiService {
     const remote_public_path = window.localStorage.getItem('from_admin_server--remote_public_path');  // available in case its ever needed
     const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
-    this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api/public' : remote_api_path;
+    this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
     this.env = (_.isEmpty(deployment_env)) ? 'local' : deployment_env;
   }
 
