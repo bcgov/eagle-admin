@@ -88,11 +88,11 @@ export class PinsListComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res) {
           this.entries = [];
-          if (res.contacts && res.contacts[0].total_items > 0) {
+          if (res.contacts && res.contacts[0].length > 0) {
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
-            this.tableParams.totalListItems = res.contacts[0].total_items;
+            this.tableParams.totalListItems = res.contacts[0].length;
           } else {
             this.tableParams.totalListItems = 0;
           }
