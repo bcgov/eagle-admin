@@ -29,7 +29,7 @@ export class PinsGlobalComponentResolver implements Resolve<Observable<object>> 
       sortBy,
       {},
       false,
-      {},
+      { companyType: 'Indigenous Group' },
       '',
     );
   }
