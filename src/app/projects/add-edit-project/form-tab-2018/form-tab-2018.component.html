@@ -3,7 +3,8 @@
     <section>
       <h2>Basic Information
         &nbsp;
-        <button *ngIf="pageIsEditing && (fullProject.legislationYearList.length > 1)" class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
+        <!-- <button *ngIf="pageIsEditing && fullProject.legislationYearList[0] !== 2018 && fullProject.legislationYearList.length === 1" class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button> -->
+        <button *ngIf="pageIsEditing && !only2018" class="btn btn-primary btn-autofill" type="publish" (click)="autofill()">Autofill</button>
       </h2>
 
       <div class="flex-container">
@@ -138,10 +139,9 @@
           <div class="label-pair">
             <label for="eaStatus">EA Readiness Determination </label>
             <select name="eaStatus" id="eaStatus" formControlName="eaStatus" class="form-control">
-              <option [ngValue]="null"> No Determination </option>
-              <option [selected]="isEACSelected('Does not require EAC')" value='Does not require EAC'>Does not require
-                EAC</option>
-              <option [selected]="isEACSelected('Requires EAC')" value='Requires EAC'>Requires EAC</option>
+                <option [selected]="isEACSelected('Exempt')" value='Exempt'>Exempt</option>
+              <option [selected]="isEACSelected('Terminate')" value='Terminate'>Terminate</option>
+              <option [selected]="isEACSelected('Proceed with Assessment')" value='Proceed with Assessment'>Proceed with Assessment</option>
             </select>
           </div>
           <div class="label-pair">
