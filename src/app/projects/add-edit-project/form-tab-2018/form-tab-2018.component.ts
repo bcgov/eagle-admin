@@ -48,12 +48,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Energy Storage Facilities',
       'Natural Gas Processing Plants',
       'Off-shore Oil or Gas Facilities',
+      'Oil Refineries',
       'Transmission Pipelines'
     ],
     'Transportation': [
       'Airports',
       'Ferry Terminals',
-      'Marine Port Facilities',
+      'Marine Port Projects',
       'Public Highways',
       'Railways'
     ],
@@ -71,10 +72,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Other Industries',
       'Primary Metals Industry'
     ],
-    'Waste Disposal': [
+    'Hazardous Waste Management': [
       'Hazardous Waste Facilities',
       'Local Government Liquid Waste Management Facilities',
-      'Local Government Solid Waste Management Facilities'
+      'Solid Waste Management'
     ],
     'Tourist Destination Resorts': [
       'Golf Resorts',
@@ -95,17 +96,30 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     'Other',
     'Tourist Destination Resorts',
     'Transportation',
-    'Waste Disposal',
+    'Hazardous Waste Management',
     'Water Management'
   ];
 
   public PROJECT_STATUS: Array<Object> = [
-    'Initiated',
-    'Submitted',
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certified',
-    'Not Certified',
-    'Decommissioned'
+    'Minister\'s Designation',
+    'Early Engagement',
+    'EA Readiness Decision',
+    'Process Planning',
+    'Application Development & Review',
+    'Effects Assessment',
+    'Referral',
+    'Dispute Resolution',
+    'Post Decision - Pre-Construction',
+    'Post Decision - Construction',
+    'Post Decision - Operation',
+    'Post Decision - Care & Maintenance',
+    'Post Decision - Decommission',
+    'Post Decision - Amendment',
+    'Post Decision - Substantial Start',
+    'Post Decision - EAC Extension',
+    'Post Decision - Suspension',
+    'Complete',
+    'Other'
   ];
 
   public PROJECT_NATURE: Array<Object> = [
@@ -115,16 +129,19 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   ];
 
   public EAC_DECISIONS: Array<Object> = [
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
+    'Project Designated Non-Reviewable',
+    'Exemption Order',
+    'Readiness Termination',
+    'In Progress',
+    'Assessment Terminated',
+    'Application Withdrawn',
     'Certificate Issued',
     'Certificate Refused',
-    'Further Assessment Required',
-    'Certificate Not Required',
     'Certificate Expired',
-    'Withdrawn',
-    'Terminated',
-    'Pre-EA Act Approval',
-    'Not Designated Reviewable'
+    'Certificate Cancelled',
+    'Exemption Order Rescinded',
+    'Certificate Reinstated',
+    'Certificate End of Life'
   ];
 
   public projectName: string;
@@ -141,6 +158,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public loading = true;
   public published: boolean;
+  public only2018: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -204,8 +222,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.pageIsEditing = false;
       this.tabIsEditing = false;
     }
-
-
+    this.check2018();
   }
 
   initOrg() {
@@ -281,9 +298,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         'notes': new FormControl(),
         'eaStatus': new FormControl(),
         'eaStatusDate': new FormControl(),
-        'status': new FormControl(this.PROJECT_STATUS[2]),
+        'status': new FormControl(),
         'projectStatusDate': new FormControl(),
-        'eacDecision': new FormControl(this.EAC_DECISIONS[0]),
+        'eacDecision': new FormControl(),
         'decisionDate': new FormControl(),
         'substantially': new FormControl(),
         'substantiallyDate': new FormControl(),
@@ -394,9 +411,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'notes': new FormControl(formData.intake.investmentNotes),
       'eaStatus': new FormControl(formData.eaStatus),
       'eaStatusDate': new FormControl(),
-      'status': new FormControl(formData.status || this.PROJECT_STATUS[2]),
+      'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision || this.EAC_DECISIONS[0]),
+      'eacDecision': new FormControl(formData.eacDecision),
       'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(),
@@ -431,6 +448,14 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       return true;
     } else {
       return false;
+    }
+  }
+
+  check2018() {
+    if (this.fullProject && this.fullProject.legislationYearList && this.fullProject.legislationYearList.length === 1 && this.fullProject.legislationYearList[0] === 2018) {
+      this.only2018 = true;
+    } else {
+      this.only2018 = false;
     }
   }
 
@@ -486,6 +511,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    // Safe way to clear out .add
+    this.storageService.state.add = null;
     this.storageService.state.form2018 = this.myForm;
     this.setNavigation();
     if (!this.pageIsEditing) {
