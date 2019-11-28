@@ -158,6 +158,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public loading = true;
   public published: boolean;
+  public only2018: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -221,8 +222,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.pageIsEditing = false;
       this.tabIsEditing = false;
     }
-
-
+    this.check2018();
   }
 
   initOrg() {
@@ -448,6 +448,14 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       return true;
     } else {
       return false;
+    }
+  }
+
+  check2018() {
+    if (this.fullProject.legislationYearList.length === 1 && this.fullProject.legislationYearList[0] === 2018) {
+      this.only2018 = true;
+    } else {
+      this.only2018 = false;
     }
   }
 
