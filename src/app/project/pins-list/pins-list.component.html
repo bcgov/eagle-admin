@@ -20,14 +20,14 @@
     <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
       [routerLink]="['/p', currentProject._id, 'project-pins', 'select']">
       <button (click)="setBackURL('pins')" class="btn btn-outline-secondary mr-1" type="button" id="button-d">
-        <i class="material-icons">add</i>Add Contact(s)
+        <i class="material-icons">add</i>Add PIN(s)
       </button>
     </a>
   </div>
   <br>
 
   <div *ngIf="!loading && tableParams.totalListItems === 0">
-    No project groups found.
+    No Participating Indigenous Nations found.
   </div>
 
   <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
