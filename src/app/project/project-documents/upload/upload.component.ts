@@ -54,62 +54,6 @@ export class UploadComponent implements OnInit, OnDestroy {
     private config: ConfigService
   ) { }
 
-  // ngOnInit() {
-  //   this.currentProject = this.storageService.state.currentProject.data;
-
-  //   this.config.getLists().subscribe(lists => {
-  //     lists.map(item => {
-  //       switch (item.type) {
-  //         case 'doctype':
-  //           this.doctypes.push(Object.assign({}, item));
-  //           break;
-  //         case 'author':
-  //           this.authors.push(Object.assign({}, item));
-  //           break;
-  //         case 'label':
-  //           this.labels.push(Object.assign({}, item));
-  //           break;
-  //         case 'projectPhase':
-  //           this.projectPhases.push(Object.assign({}, item));
-  //           break;
-  //       }
-  //     });
-  //   });
-
-  //   if (this.storageService.state.form) {
-  //     this.myForm = this.storageService.state.form;
-  //   } else {
-  //     this.myForm = new FormGroup({
-  //       'doctypesel': new FormControl(),
-  //       'authorsel': new FormControl(),
-  //       'labelsel': new FormControl(),
-  //       'datePosted': new FormControl(),
-  //       'dateUploaded': new FormControl(),
-  //       'displayName': new FormControl(),
-  //       'description': new FormControl(),
-  //       'projectphasesel': new FormControl()
-  //     });
-  //     let today = new Date();
-  //     let todayObj = {
-  //       year: today.getFullYear(),
-  //       month: today.getMonth() + 1,
-  //       day: today.getDate()
-  //     };
-  //     this.myForm.controls.datePosted.setValue(todayObj);
-  //     this.myForm.controls.dateUploaded.setValue(todayObj);
-  //   }
-
-  //   if (this.storageService.state.documents) {
-  //     this.documents = this.storageService.state.documents;
-  //   }
-
-  //   if (this.storageService.state.labels) {
-  //     this.labels = this.storageService.state.labels;
-  //   }
-  //   this.loading = false;
-  //   this._changeDetectionRef.detectChanges();
-  // }
-
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
     this.buildForm();
