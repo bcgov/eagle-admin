@@ -106,17 +106,18 @@ export class ProjectService {
       });
   }
 
-  public getPeopleObjs(data, projectKey?: string[]): Observable<any> {
-    const projectSearchData = (projectKey) ? this.utils.extractFromSearchResults(data.fullProject) : this.utils.extractFromSearchResults(data.project);
+  public getPeopleObjs(data): Observable<any> {
+    // Used in Full Project Resolver using current legislation as our key
+    const projectSearchData = this.utils.extractFromSearchResults<FullProject>(data);
     if (!projectSearchData) {
       return of(data);
     }
-    let project;
-    if (projectSearchData && projectKey) {
-      project = (projectKey.length > 1) ?  projectSearchData[0][projectKey[0]] || projectSearchData[0][projectKey[1]] : projectSearchData[0][projectKey[0]] ;
-    } else {
-      project = projectSearchData[0];
+    const fullProject = projectSearchData[0];
+    if (!fullProject) {
+      return of(data);
     }
+    const projectKey = fullProject.currentLegislationYear;
+    const project = fullProject[projectKey];
     if (!project) {
       return of(data);
     }

@@ -184,8 +184,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      // Mapping the get People object observable here to fill out the epd and lead objects
-      .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2018']))
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.initProject(data);
         this.initOrg();
