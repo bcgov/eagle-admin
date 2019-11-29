@@ -103,7 +103,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
         this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
         // Set published state
-        const projectPublishState = this.storageService.state['projectPublishState_' + this.projectID];
+        const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id ];
         if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
           this.currentLegYear = projectPublishState;
         } else {this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length)); }
@@ -137,8 +137,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
-    this.storageService.state.back = { url: ['/p', this.projectID, 'project-details'], label: 'Edit Project' };
-    this.router.navigate(['p', this.projectID, 'edit', {1996: 'form-2002', 2002: 'form-2002', 2018: 'form-2018'}[this.project.legislationYear]]);
+    this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
+    this.router.navigate(['p', this.project._id , 'edit', {1996: 'form-2002', 2002: 'form-2002', 2018: 'form-2018'}[this.project.legislationYear]]);
   }
 
   public deleteProject() {
@@ -233,7 +233,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         () => { // onCompleted
           this.snackBarRef = this.snackBar.open('Project published...', null, { duration: 2000 });
           // reload all data
-          this.projectService.getById(this.projectID)
+          this.projectService.getById(this.project._id )
             .takeUntil(this.ngUnsubscribe)
             .subscribe(
               project => {
@@ -269,7 +269,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         () => { // onCompleted
           this.snackBarRef = this.snackBar.open('Project un-published...', null, { duration: 2000 });
           // reload all data
-          this.projectService.getById(this.projectID)
+          this.projectService.getById(this.project._id )
             .takeUntil(this.ngUnsubscribe)
             .subscribe(
               project => {
