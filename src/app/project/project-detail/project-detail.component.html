@@ -116,7 +116,7 @@
     </div>
     <div class="label-pair" *ngIf="project.eacDecision">
       <h3 for="eac-status">EAC Status: </h3>
-      <p id="eac-status">{{project.eacDecision || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
+      <p id="eac-status">{{project.status || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
     </div>
     <div class="label-pair" *ngIf="project.substantiallyDate">
       <h3 for="substantially">Substantially Started: </h3>
