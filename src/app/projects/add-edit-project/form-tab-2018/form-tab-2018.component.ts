@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material';
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
-import { Project } from 'app/models/project';
+import { Project, ProjectPublishState } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
@@ -48,12 +48,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Energy Storage Facilities',
       'Natural Gas Processing Plants',
       'Off-shore Oil or Gas Facilities',
+      'Oil Refineries',
       'Transmission Pipelines'
     ],
     'Transportation': [
       'Airports',
       'Ferry Terminals',
-      'Marine Port Facilities',
+      'Marine Port Projects',
       'Public Highways',
       'Railways'
     ],
@@ -71,15 +72,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'Other Industries',
       'Primary Metals Industry'
     ],
-    'Waste Disposal': [
+    'Hazardous Waste Management': [
       'Hazardous Waste Facilities',
       'Local Government Liquid Waste Management Facilities',
-      'Local Government Solid Waste Management Facilities'
-    ],
-    'Food Processing': [
-      'Fish Products Industry',
-      'Meat and Meat Products Industry',
-      'Poultry Products Industry'
+      'Solid Waste Management'
     ],
     'Tourist Destination Resorts': [
       'Golf Resorts',
@@ -95,23 +91,35 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public PROJECT_TYPES: Array<Object> = [
     'Energy-Electricity',
     'Energy-Petroleum & Natural Gas',
-    'Food Processing',
     'Industrial',
     'Mines',
     'Other',
     'Tourist Destination Resorts',
     'Transportation',
-    'Waste Disposal',
+    'Hazardous Waste Management',
     'Water Management'
   ];
 
   public PROJECT_STATUS: Array<Object> = [
-    'Initiated',
-    'Submitted',
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certified',
-    'Not Certified',
-    'Decommissioned'
+    'Minister\'s Designation',
+    'Early Engagement',
+    'EA Readiness Decision',
+    'Process Planning',
+    'Application Development & Review',
+    'Effects Assessment',
+    'Referral',
+    'Dispute Resolution',
+    'Post Decision - Pre-Construction',
+    'Post Decision - Construction',
+    'Post Decision - Operation',
+    'Post Decision - Care & Maintenance',
+    'Post Decision - Decommission',
+    'Post Decision - Amendment',
+    'Post Decision - Substantial Start',
+    'Post Decision - EAC Extension',
+    'Post Decision - Suspension',
+    'Complete',
+    'Other'
   ];
 
   public PROJECT_NATURE: Array<Object> = [
@@ -121,16 +129,19 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   ];
 
   public EAC_DECISIONS: Array<Object> = [
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
+    'Project Designated Non-Reviewable',
+    'Exemption Order',
+    'Readiness Termination',
+    'In Progress',
+    'Assessment Terminated',
+    'Application Withdrawn',
     'Certificate Issued',
     'Certificate Refused',
-    'Further Assessment Required',
-    'Certificate Not Required',
     'Certificate Expired',
-    'Withdrawn',
-    'Terminated',
-    'Pre-EA Act Approval',
-    'Not Designated Reviewable'
+    'Certificate Cancelled',
+    'Exemption Order Rescinded',
+    'Certificate Reinstated',
+    'Certificate End of Life'
   ];
 
   public projectName: string;
@@ -147,6 +158,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public loading = true;
   public published: boolean;
+  public only2018: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -163,19 +175,15 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'region':
-          this.regions.push(item.name);
-          break;
+    this.config.getRegions().takeUntil(this.ngUnsubscribe).subscribe(
+      (data) => {
+        this.regions = data;
       }
-    });
+    );
 
     // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
-      // Mapping the get People object observable here to fill out the epd and lead objects
-      .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2018']))
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.initProject(data);
         this.initOrg();
@@ -212,8 +220,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.pageIsEditing = false;
       this.tabIsEditing = false;
     }
-
-
+    this.check2018();
   }
 
   initOrg() {
@@ -289,9 +296,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         'notes': new FormControl(),
         'eaStatus': new FormControl(),
         'eaStatusDate': new FormControl(),
-        'status': new FormControl(this.PROJECT_STATUS[2]),
+        'status': new FormControl(),
         'projectStatusDate': new FormControl(),
-        'eacDecision': new FormControl(this.EAC_DECISIONS[0]),
+        'eacDecision': new FormControl(),
         'decisionDate': new FormControl(),
         'substantially': new FormControl(),
         'substantiallyDate': new FormControl(),
@@ -402,9 +409,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'notes': new FormControl(formData.intake.investmentNotes),
       'eaStatus': new FormControl(formData.eaStatus),
       'eaStatusDate': new FormControl(),
-      'status': new FormControl(formData.status || this.PROJECT_STATUS[2]),
+      'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision || this.EAC_DECISIONS[0]),
+      'eacDecision': new FormControl(formData.eacDecision),
       'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(),
@@ -440,6 +447,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     } else {
       return false;
     }
+  }
+
+  check2018() {
+    this.only2018 = this.fullProject && this.fullProject.legislationYearList && this.fullProject.legislationYearList.length === 1 && this.fullProject.legislationYearList[0] === 2018;
   }
 
   isEACSelected(val) {
@@ -494,6 +505,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    // Safe way to clear out .add
+    this.storageService.state.add = null;
     this.storageService.state.form2018 = this.myForm;
     this.setNavigation();
     if (!this.pageIsEditing) {
@@ -551,6 +564,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     }
   }
 
+  setGlobalProjectPublishFlag(state: ProjectPublishState) {
+    this.storageService.state['projectPublishState_' + this.projectId] = state;
+  }
+
   onUnpublish(): void {
     this.projectService.unPublish({
       ...this.project,
@@ -566,6 +583,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         () => { // onCompleted
           this.published = false;
           this.snackBar.open('Project un-published...', null, { duration: 2000 });
+          this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       );
@@ -595,6 +613,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           this.published = true;
           this.loading = false;
           this.openSnackBar('This project was created and published successfuly.', 'Close');
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ],
@@ -609,6 +628,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           this.loading = false;
           this.router.navigated = false;
           this.openSnackBar('This project was edited and published successfuly.', 'Close');
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ]
@@ -632,7 +652,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           legislationYear: this.legislationYear
         }
       );
-      console.log('POSTing', project);
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -647,12 +666,20 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         _id: this.projectId
       }));
 
-      console.log('PUTing', project);
-      this.projectService.save(project)
+      if (putFunction) {
+        this.projectService.save(project)
         .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
         .subscribe(
           ...putSubscribe
         );
+      } else {
+        this.projectService.save(project)
+        .takeUntil(this.ngUnsubscribe)
+        .subscribe(
+          ...putSubscribe
+        );
+      }
+
     }
   }
 

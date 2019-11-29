@@ -17,6 +17,7 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
 import { ISearchResults } from 'app/models/search';
+import { FullProject } from 'app/models/fullProject';
 
 @Component({
   selector: 'app-project-archived-detail',
@@ -32,6 +33,13 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public project: Project = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  public currentLeg: String;
+  public currentLegYear: number;
+  public showArchivedButton = false;
+  public legislationYearList;
+  public currentProject;
+  public isPublished;
+
 
   constructor(
     private router: Router,
@@ -50,6 +58,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.currentProject = this.storageService.state.currentProject.data;
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
@@ -58,7 +67,6 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
             const projectSearchData = this.utils.extractFromSearchResults(data.project);
             this.project = projectSearchData ? projectSearchData[0] : null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-            // this.loading = false;
             this._changeDetectorRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load project');
@@ -67,6 +75,18 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
           }
         }
       );
+
+    this.route.data
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+      this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
+      if ( (this.legislationYearList ).includes(2002)) {
+        this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
+      } else {
+        this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
+      }
+      this.isPublished = this.project && this.project.read && this.project.read.includes('public');
+    });
   }
 
   editProject() {

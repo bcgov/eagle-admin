@@ -62,7 +62,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
     } else {
-      this.legislationYear = this.documents[0].legislation.toString();
+      this.legislationYear = this.documents[0].legislation ? this.documents[0].legislation.toString() : this.legislationYear;
       this.buildForm();
       this.getLists();
     }

@@ -109,11 +109,17 @@ const routes: Routes = [
       {
         path: 'project-details',
         component: ProjectDetailComponent,
+        resolve: {
+          fullProject: FullProjectResolver
+        },
         runGuardsAndResolvers: 'always',
       },
       {
         path: 'project-archived-detail',
         component: ProjectArchivedDetailComponent,
+        resolve: {
+          fullProject: FullProjectResolver
+        }
       },
       {
         path: 'project-documents',
@@ -228,9 +234,9 @@ const routes: Routes = [
       },
       {
         path: 'project-pins/select',
-        component: ContactSelectComponent,
+        component: LinkOrganizationComponent,
         resolve: {
-          contacts: PinsGlobalComponentResolver
+          organizations: PinsGlobalComponentResolver
         }
       },
       {

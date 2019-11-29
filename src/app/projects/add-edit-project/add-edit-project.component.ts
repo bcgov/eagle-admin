@@ -73,12 +73,33 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
 
     this.initProject();
 
-    // hide tabs corresponding to old legislations on new projects
+    // hide tabs corresponding to old legislations on new project creation
     if (!this.pageIsEditing) {
       this.tabLinks = [this.tabLinks[this.tabLinks.length - 1]];
     }
     this.loading = false;
     this.back = this.storageService.state.back;
+  }
+
+  // get list of years corresponding to older legislations that are empty
+  getEmptyOldYears() {
+    // get list all possible years from this.tabLinks
+    const years = this.tabLinks.reduce((arr: string[], value: IAddEditTab) => arr.concat(value.years), []);
+    // return list of years that are both old and have no data
+    return years.filter((year: string) => {
+      const yearIsOld = year < this.fullProject.currentLegislationYear;
+      const yearHasData = this.fullProject.legislationYearList.includes(parseInt(year.split('_')[1], 10));
+      return yearIsOld && !yearHasData;
+    });
+  }
+
+  initTabs() {
+    const emptyOldYears = this.getEmptyOldYears();
+    // hide tabs corresponding to old legislations on new project edit
+    this.tabLinks = this.tabLinks.filter((tab: IAddEditTab) => {
+      // keep tab if at least one if its years is not in emptyOldYears
+      return tab.years.reduce((res: Boolean, year: string) => Boolean(res || !emptyOldYears.includes(year)), false);
+    });
   }
 
   initProject() {
@@ -96,9 +117,10 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
             // we don't have ids on project here, have to use id from fullProject
             this.storageService.state.projectDetailId = this.fullProject._id;
             this.storageService.state.projectDetailName = this.project.name;
+
+            this.initTabs();
           }
         }
-
         this.loading = false;
       });
   }

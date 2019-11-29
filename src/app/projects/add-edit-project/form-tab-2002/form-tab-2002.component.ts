@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material';
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
-import { Project } from 'app/models/project';
+import { Project, ProjectPublishState } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
@@ -85,11 +85,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'Local Government Liquid Waste Management Facilities',
       'Local Government Solid Waste Management Facilities'
     ],
-    'Food Processing': [
-      'Fish Products Industry',
-      'Meat and Meat Products Industry',
-      'Poultry Products Industry'
-    ],
     'Tourist Destination Resorts': [
       'Golf Resorts',
       'Marina Resorts',
@@ -104,7 +99,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public PROJECT_TYPES: Array<Object> = [
     'Energy-Electricity',
     'Energy-Petroleum & Natural Gas',
-    'Food Processing',
     'Industrial',
     'Mines',
     'Other',
@@ -197,19 +191,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // This is to get Region information from List (db) and put into a list(regions)
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'region':
-          this.regions.push(item.name);
-          break;
+    this.config.getRegions().takeUntil(this.ngUnsubscribe).subscribe(
+      (data) => {
+        this.regions = data;
       }
-    });
+    );
 
     // Get data related to current project
     this.route.parent.data
-      // Mapping the get People object observable here to fill out the epd and lead objects
-      .flatMap(data => this.projectService.getPeopleObjs(data, ['legislation_2002', 'legislation_1996']))
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
 
@@ -573,6 +562,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    // Safe way to clear out .add
+    this.storageService.state.add = null;
     this.storageService.state.form2002 = this.myForm;
     this.setNavigation();
     if (!this.pageIsEditing) {
@@ -630,6 +621,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
+  setGlobalProjectPublishFlag(state: ProjectPublishState) {
+    this.storageService.state['projectPublishState_' + this.projectId] = state;
+  }
+
   onUnpublish(): void {
     this.projectService.unPublish({
       ...this.project,
@@ -645,6 +640,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         () => { // onCompleted
           this.published = false;
           this.snackBar.open('Project un-published...', null, { duration: 2000 });
+          this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       );
@@ -674,6 +670,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.published = true;
           this.loading = false;
           this.openSnackBar('This project was created and published successfuly.', 'Close');
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ],
@@ -688,6 +685,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.loading = false;
           this.router.navigated = false;
           this.openSnackBar('This project was edited and published successfuly.', 'Close');
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ]
@@ -707,7 +705,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       let project = new Project(
         this.convertFormToProject(this.myForm)
       );
-      console.log('POSTing', project);
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -721,13 +718,19 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         legislationYear: this.legislationYear,
         _id: this.projectId
       }));
-
-      console.log('PUTing', project);
-      this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
-        .subscribe(
-          ...putSubscribe
-        );
+      if (putFunction) {
+        this.projectService.save(project)
+          .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
+          .subscribe(
+            ...putSubscribe
+          );
+      } else {
+        this.projectService.save(project)
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe(
+            ...putSubscribe
+          );
+      }
     }
   }
 

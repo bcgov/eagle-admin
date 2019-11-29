@@ -238,3 +238,9 @@ export class Project {
     // }
   }
 }
+
+export enum ProjectPublishState {
+  published2002 = 2002,
+  published2018 = 2018,
+  unpublished = 1 // non-falsey value that won't be mistaken for a year
+}

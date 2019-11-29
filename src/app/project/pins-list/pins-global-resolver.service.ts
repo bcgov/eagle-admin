@@ -17,6 +17,9 @@ export class PinsGlobalComponentResolver implements Resolve<Observable<object>> 
     const sortBy = route.params.sortBy ? route.params.sortBy : '+name';
     const keywords = route.params.keywords || '';
 
+    // Currently there are none with the attribute companyType: 'Aboriginal Group'
+    // TODO to make the select org smaller.
+
     // force-reload so we always have latest data
     return this.searchService.getSearchResults(keywords,
       'Organization',
@@ -24,7 +27,7 @@ export class PinsGlobalComponentResolver implements Resolve<Observable<object>> 
       pageNum,
       pageSize,
       sortBy,
-      { companyType: 'Aboriginal Group' },
+      {},
       false,
       {},
       '',
