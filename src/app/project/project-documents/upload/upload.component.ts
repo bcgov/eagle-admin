@@ -24,16 +24,26 @@ export class UploadComponent implements OnInit, OnDestroy {
   public currentProject;
   public projectFiles: Array<File> = [];
   public documents: Document[] = [];
+  public filteredDoctypes2002: any[] = [];
+  public filteredDoctypes2018: any[] = [];
+  public authors: any[] = [];
+  public filteredAuthors2002: any[] = [];
+  public filteredAuthors2018: any[] = [];
+  public labels: any[] = [];
+  public filteredLabels2002: any[] = [];
+  public filteredLabels2018: any[] = [];
   public datePosted: NgbDateStruct = null;
   public dateUploaded: NgbDateStruct = null;
   public doctypes: any[] = [];
-  public authors: any[] = [];
-  public labels: any[] = [];
   public milestones: any[] = [];  // Get this from the project's data.
   public myForm: FormGroup;
   public loading = true;
   public docNameInvalid = false;
   public projectPhases: any[] = [];
+  public filteredProjectPhases2002: any[] = [];
+  public filteredProjectPhases2018: any[] = [];
+  public legislationYear = '2018';
+  public publishDoc = false;
 
   constructor(
     private router: Router,
@@ -44,10 +54,93 @@ export class UploadComponent implements OnInit, OnDestroy {
     private config: ConfigService
   ) { }
 
+  // ngOnInit() {
+  //   this.currentProject = this.storageService.state.currentProject.data;
+
+  //   this.config.getLists().subscribe(lists => {
+  //     lists.map(item => {
+  //       switch (item.type) {
+  //         case 'doctype':
+  //           this.doctypes.push(Object.assign({}, item));
+  //           break;
+  //         case 'author':
+  //           this.authors.push(Object.assign({}, item));
+  //           break;
+  //         case 'label':
+  //           this.labels.push(Object.assign({}, item));
+  //           break;
+  //         case 'projectPhase':
+  //           this.projectPhases.push(Object.assign({}, item));
+  //           break;
+  //       }
+  //     });
+  //   });
+
+  //   if (this.storageService.state.form) {
+  //     this.myForm = this.storageService.state.form;
+  //   } else {
+  //     this.myForm = new FormGroup({
+  //       'doctypesel': new FormControl(),
+  //       'authorsel': new FormControl(),
+  //       'labelsel': new FormControl(),
+  //       'datePosted': new FormControl(),
+  //       'dateUploaded': new FormControl(),
+  //       'displayName': new FormControl(),
+  //       'description': new FormControl(),
+  //       'projectphasesel': new FormControl()
+  //     });
+  //     let today = new Date();
+  //     let todayObj = {
+  //       year: today.getFullYear(),
+  //       month: today.getMonth() + 1,
+  //       day: today.getDate()
+  //     };
+  //     this.myForm.controls.datePosted.setValue(todayObj);
+  //     this.myForm.controls.dateUploaded.setValue(todayObj);
+  //   }
+
+  //   if (this.storageService.state.documents) {
+  //     this.documents = this.storageService.state.documents;
+  //   }
+
+  //   if (this.storageService.state.labels) {
+  //     this.labels = this.storageService.state.labels;
+  //   }
+  //   this.loading = false;
+  //   this._changeDetectionRef.detectChanges();
+  // }
+
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
+    this.buildForm();
+    this.getLists();
+  }
 
-    this.config.getLists().subscribe(lists => {
+  buildForm() {
+    this.myForm = new FormGroup({
+      'docLegislationRadio': new FormControl(this.legislationYear),
+      'doctypesel': new FormControl(),
+      'authorsel': new FormControl(),
+      'labelsel': new FormControl(),
+      'datePosted': new FormControl(),
+      'dateUploaded': new FormControl(),
+      'displayName': new FormControl(),
+      'description': new FormControl(),
+      'projectphasesel': new FormControl()
+    });
+    let today = new Date();
+    let todayObj = {
+      year: today.getFullYear(),
+      month: today.getMonth() + 1,
+      day: today.getDate()
+    };
+    this.myForm.controls.datePosted.setValue(todayObj);
+    this.myForm.controls.dateUploaded.setValue(todayObj);
+  }
+
+  getLists() {
+    // todo: check if the lists are cashed here, if the are don't subscribe
+    this.config.getLists().subscribe (lists => {
       lists.map(item => {
         switch (item.type) {
           case 'doctype':
@@ -64,40 +157,38 @@ export class UploadComponent implements OnInit, OnDestroy {
             break;
         }
       });
+
+      this.populateForm();
     });
+  }
 
-    if (this.storageService.state.form) {
-      this.myForm = this.storageService.state.form;
-    } else {
-      this.myForm = new FormGroup({
-        'doctypesel': new FormControl(),
-        'authorsel': new FormControl(),
-        'labelsel': new FormControl(),
-        'datePosted': new FormControl(),
-        'dateUploaded': new FormControl(),
-        'displayName': new FormControl(),
-        'description': new FormControl(),
-        'projectphasesel': new FormControl()
-      });
-      let today = new Date();
-      let todayObj = {
-        year: today.getFullYear(),
-        month: today.getMonth() + 1,
-        day: today.getDate()
-      };
-      this.myForm.controls.datePosted.setValue(todayObj);
-      this.myForm.controls.dateUploaded.setValue(todayObj);
-    }
-
-    if (this.storageService.state.documents) {
-      this.documents = this.storageService.state.documents;
-    }
-
-    if (this.storageService.state.labels) {
-      this.labels = this.storageService.state.labels;
-    }
+  populateForm() {
+    this.filterByLegislationYear();
     this.loading = false;
-    this._changeDetectionRef.detectChanges();
+  }
+
+  filterByLegislationYear() {
+    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
+    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
+    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
+    this.filteredLabels2002 = this.labels.filter(item => item.legislation === 2002);
+    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
+
+    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
+    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
+    this.filteredLabels2018 = this.labels.filter(item => item.legislation === 2018);
+    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
+  }
+
+  public changeLegislation (event) {
+    this.legislationYear = event.target.value;
+
+    this.myForm.controls.doctypesel.setValue(null);
+    this.myForm.controls.authorsel.setValue(null);
+    this.myForm.controls.labelsel.setValue(null);
+    this.myForm.controls.projectphasesel.setValue(null);
   }
 
   addLabels() {
@@ -111,6 +202,11 @@ export class UploadComponent implements OnInit, OnDestroy {
   register(myForm: FormGroup) {
     console.log('Successful registration');
     console.log(myForm);
+  }
+
+  public uploadAndPublish() {
+    this.publishDoc = true;
+    this.uploadDocuments();
   }
 
   public uploadDocuments() {
@@ -138,7 +234,8 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', this.myForm.value.authorsel);
       formData.append('projectPhase', this.myForm.value.projectphasesel);
-      observables.push(this.documentService.add(formData));
+      formData.append('legislation', this.legislationYear);
+      observables.push(this.documentService.add(formData, this.publishDoc));
     });
 
     this.storageService.state = { type: 'form', data: null };
@@ -196,6 +293,14 @@ export class UploadComponent implements OnInit, OnDestroy {
       }
     }
     this._changeDetectionRef.detectChanges();
+  }
+
+  goBack() {
+    if (this.storageService.state.back && this.storageService.state.back.url) {
+      this.router.navigate(this.storageService.state.back.url);
+    } else {
+      this.router.navigate(['/p', this.currentProject._id, 'project-documents']);
+    }
   }
 
   public deleteDocument(doc: Document) {
