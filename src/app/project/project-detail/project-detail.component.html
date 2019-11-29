@@ -34,6 +34,7 @@
       </div>
     </h2>
     <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
+    <span class="badge badge-unpublished" *ngIf="!isPublished">Not Published</span>
     <div class="label-pair">
         <h3 for="legislation">Legislation: </h3>
         <!-- <p id="legislation">{{project.legislation || '-'}}</p> -->

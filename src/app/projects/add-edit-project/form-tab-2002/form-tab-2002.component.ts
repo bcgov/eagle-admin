@@ -9,7 +9,7 @@ import { MatSnackBar } from '@angular/material';
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
-import { Project } from 'app/models/project';
+import { Project, ProjectPublishState } from 'app/models/project';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { ISearchResults } from 'app/models/search';
@@ -623,6 +623,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
+  setGlobalProjectPublishFlag(state: ProjectPublishState) {
+    this.storageService.state['projectPublishState_' + this.projectId] = state;
+  }
+
   onUnpublish(): void {
     this.projectService.unPublish({
       ...this.project,
@@ -638,6 +642,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         () => { // onCompleted
           this.published = false;
           this.snackBar.open('Project un-published...', null, { duration: 2000 });
+          this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       );
@@ -667,6 +672,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.published = true;
           this.loading = false;
           this.openSnackBar('This project was created and published successfuly.', 'Close');
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ],
@@ -681,6 +687,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.loading = false;
           this.router.navigated = false;
           this.openSnackBar('This project was edited and published successfuly.', 'Close');
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ]

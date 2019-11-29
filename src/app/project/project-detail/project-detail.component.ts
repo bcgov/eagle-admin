@@ -8,7 +8,7 @@ import 'rxjs/add/operator/concat';
 import { of } from 'rxjs';
 
 import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { Project } from 'app/models/project';
+import { Project, ProjectPublishState } from 'app/models/project';
 import { ApiService } from 'app/services/api';
 import { ProjectService } from 'app/services/project.service';
 import { CommentPeriodService } from 'app/services/commentperiod.service';
@@ -71,9 +71,17 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           if (data.project) {
             const results = this.utils.extractFromSearchResults(data.project);
             this.project = results ? results[0] :  null;
-            this.currentLegYear = this.project.legislationYear;
+            const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
+            if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
+              this.currentLegYear = projectPublishState;
+              this.isPublished = true;
+            } else {
+              this.currentLegYear = this.project.legislationYear;
+              this.isPublished = projectPublishState === ProjectPublishState.unpublished ?
+               false : this.project && this.project.read.includes('public');
+            }
             // this.isPublished = this.project.read.includes('public');
-            this.isPublished = this.project && this.project.read.includes('public');
+
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             this._changeDetectorRef.detectChanges();
           } else {
@@ -90,7 +98,11 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
         this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
-        this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length));
+        const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
+        if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
+          this.currentLegYear = projectPublishState;
+        } else {this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length)); }
+        this._changeDetectorRef.detectChanges();
       });
 
       this.checkShowButton();
