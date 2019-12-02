@@ -16,6 +16,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
 
   public documents: any;
   public paginationData: any;
+  public activeLegislationYear: number;
 
   constructor(
     private router: Router
@@ -27,18 +28,28 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   }
 
   selectItem(item) {
+    if (this.activeLegislationYear && item && this.activeLegislationYear !== item.legislation) {
+      alert('To use multi-edit, please select documents with the same legislation year.');
+      return;
+    }
     item.checkbox = !item.checkbox;
-
     let count = 0;
     this.documents.map(doc => {
       if (doc.checkbox === true) {
         count++;
+        if (!this.activeLegislationYear) {
+          this.activeLegislationYear = doc.legislation;
+        }
       }
     });
+    if (count === 0) {
+      this.activeLegislationYear = 0;
+    }
     this.selectedCount.emit(count);
   }
 
   goToItem(item) {
+    this.activeLegislationYear = 0;
     this.router.navigate(['p', item.project._id, 'project-documents', 'detail', item._id]);
   }
 }

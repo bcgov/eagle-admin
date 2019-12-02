@@ -1,8 +1,14 @@
 @import "assets/styles/base/base.scss";
 
 tr:hover {
-    cursor: pointer;
-    background-color: #e2f1ff;
+
+    .inactive {
+        cursor: none;
+    }
+    .active {
+        cursor: pointer;
+        background-color: #e2f1ff;
+    }
 }
 
 .inputCheckBox {
@@ -23,4 +29,7 @@ tr:hover {
   font-size: .85rem;
   font-weight: 600;
   text-transform: uppercase;
+}
+.inactive {
+    opacity: 40%;
 }
