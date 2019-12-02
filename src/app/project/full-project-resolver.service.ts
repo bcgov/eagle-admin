@@ -3,12 +3,14 @@ import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/r
 import { Observable } from 'rxjs/Observable';
 
 import { SearchService } from 'app/services/search.service';
+import { ProjectService } from 'app/services/project.service';
 
 @Injectable()
 export class FullProjectResolver implements Resolve<Object> {
 
   constructor(
-    private searchService: SearchService
+    private searchService: SearchService,
+    private projectService: ProjectService
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
@@ -28,6 +30,7 @@ export class FullProjectResolver implements Resolve<Object> {
       true,
       {},
       'all',
-    );
+    ).flatMap(data => this.projectService.getPeopleObjs(data));
+    // Mapping the get People object observable here to fill out the epd and lead objects
   }
 }

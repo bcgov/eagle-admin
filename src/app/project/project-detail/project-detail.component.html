@@ -34,6 +34,7 @@
       </div>
     </h2>
     <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
+    <span class="badge badge-unpublished" *ngIf="!isPublished">Not Published</span>
     <div class="label-pair">
         <h3 for="legislation">Legislation: </h3>
         <!-- <p id="legislation">{{project.legislation || '-'}}</p> -->
@@ -115,7 +116,7 @@
     </div>
     <div class="label-pair" *ngIf="project.eacDecision">
       <h3 for="eac-status">EAC Status: </h3>
-      <p id="eac-status">{{project.eacDecision || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
+      <p id="eac-status">{{project.status || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
     </div>
     <div class="label-pair" *ngIf="project.substantiallyDate">
       <h3 for="substantially">Substantially Started: </h3>
