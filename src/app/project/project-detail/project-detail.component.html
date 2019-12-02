@@ -1,29 +1,45 @@
-<nav class="action-container">
+<nav class="action-container" *ngIf="project && project._id">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <li class="breadcrumb-item active">{{project && project.name}}</li>
   </ol>
-  <div ngbDropdown placement="bottom-right" class="d-inline-block">
-    <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
-    <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-      <!-- Replace click events -->
-      <button class="dropdown-item" [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
-        Document</button>
-      <button class="dropdown-item" (click)="editProject()">Edit</button>
-      <button class="dropdown-item" (click)="publishProject()">Publish</button>
-      <button class="dropdown-item" (click)="unPublishProject()">Un-Publish</button>
-    </div>
-  </div>
+
 </nav>
-<main class="container-fluid-padding">
-  <h1 id="name">{{project.name}}</h1>
+<main class="container-fluid-padding" *ngIf="project && project._id">
+  <h1 id="name">{{project.name}}
+    <span ngbDropdown>
+      <button class="btn btn-primary action-drop-button" id="actionDropdown" ngbDropdownToggle>Actions</button>
+      <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+
+        <button class="dropdown-item" [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
+          Document</button>
+        <button class="dropdown-item" (click)="editProject()">Edit</button>
+      </div>
+    </span>
+  </h1>
   <section>
     <app-comment-period-banner></app-comment-period-banner>
   </section>
+
   <section>
-    <h2>Basic Information</h2>
+    <h2 class="row">
+      <span class="col-4">Basic Information</span>
+      <div>
+          <button *ngIf="showArchivedButton" [routerLink]="['/p',  project._id, 'project-archived-detail']"
+            class="btn btn-archived mr-2 pb-1" type="button" id="button-sa" style="position: absolute; right: 0;">
+            <i class="material-icons mb-1">access_time</i> View Archived Project Details
+          </button>
+      </div>
+    </h2>
+    <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
+    <span class="badge badge-unpublished" *ngIf="!isPublished">Not Published</span>
+    <div class="label-pair">
+        <h3 for="legislation">Legislation: </h3>
+        <!-- <p id="legislation">{{project.legislation || '-'}}</p> -->
+        <p id="legislation">{{currentLegYear}} Environmental Assessment Act</p>
+    </div>
     <div class="label-pair">
       <h3 for="proponent">Proponent: </h3>
       <p id="proponent">{{project.proponent.name || '-'}}</p>
@@ -100,7 +116,7 @@
     </div>
     <div class="label-pair" *ngIf="project.eacDecision">
       <h3 for="eac-status">EAC Status: </h3>
-      <p id="eac-status">{{project.eacDecision || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
+      <p id="eac-status">{{project.status || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
     </div>
     <div class="label-pair" *ngIf="project.substantiallyDate">
       <h3 for="substantially">Substantially Started: </h3>

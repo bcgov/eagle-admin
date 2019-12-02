@@ -3,6 +3,9 @@ import * as moment from 'moment';
 
 export class Project {
   // the following are retrieved from the API
+
+  // even though _id is not saved in the db anymore (its on rootlevel project, represented as fullProject on the frontend)
+  // this field is still used for saving the project
   _id: string;
   CEAAInvolvement: String;
   CELead: String;
@@ -12,6 +15,8 @@ export class Project {
   description: String;
   eacDecision: String;
   location: String;
+  legislation: string;
+  legislationYear: number;
   name: String;
   projectLeadObj: any;
   projectLeadId: String;
@@ -173,6 +178,8 @@ export class Project {
     this.projLead            = obj && obj.projLead              || undefined;
     this.execProjectDirector = obj && obj.execProjectDirector   || undefined;
     this.complianceLead      = obj && obj.complianceLead        || undefined;
+    this.legislation         = obj && obj.legislation         || undefined;
+    this.legislationYear     = obj && obj.legislationYear     || undefined;
 
     // if (obj && obj.publishDate) {
     //   this.publishDate = new Date(obj.publishDate);
@@ -230,4 +237,10 @@ export class Project {
     //   }
     // }
   }
+}
+
+export enum ProjectPublishState {
+  published2002 = 2002,
+  published2018 = 2018,
+  unpublished = 1 // non-falsey value that won't be mistaken for a year
 }

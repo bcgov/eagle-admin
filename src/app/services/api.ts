@@ -750,6 +750,7 @@ export class ApiService {
       'documentAuthor',
       'documentAuthorType',
       'projectPhase',
+      'legislation',
       'milestone',
       'description',
       'isPublished'
@@ -1054,8 +1055,9 @@ export class ApiService {
   //
   // Searching
   //
-  searchKeywords(keys: string, dataset: string, fields: any[], pageNum: number, pageSize: number, sortBy: string = null, queryModifier: object = {}, populate = false, filter = {}): Observable<SearchResults[]> {
-    let queryString = `search?dataset=${dataset}`;
+  searchKeywords(keys: string, schemaName: string, fields: any[], pageNum: number, pageSize: number, projectLegislation: string = null, sortBy: string = null, queryModifier: object = {}, populate = false, filter = {}): Observable<SearchResults[]> {
+    projectLegislation = (projectLegislation === '') ? 'default' : projectLegislation;
+    let queryString = `search?dataset=${schemaName}`;
     if (fields && fields.length > 0) {
       fields.map(item => {
         queryString += `&${item.name}=${item.value}`;
@@ -1066,6 +1068,7 @@ export class ApiService {
     }
     if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
+    if (projectLegislation !== '') { queryString += `&projectLegislation=${projectLegislation}`; }
     if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
     if (populate !== null) { queryString += `&populate=${populate}`; }
     if (queryModifier !== {}) {

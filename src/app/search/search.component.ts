@@ -206,14 +206,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         }
 
         // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-        let copy_doctype = this.docTypes;
-        this.docTypes = [];
-        // This order was created by mapping the doctype items from the database with the EAO defined ordered list
-        let docList_order = [0, 1, 2, 6, 10, 11, 14, 4, 3, 5, 13, 16, 15, 17, 18, 19, 7, 8, 9, 12];
-        // We map the doctypes to put in the correct order as defined in doclist_order
-        docList_order.map((item, i) => {
-          this.docTypes[item] = copy_doctype[i];
-        });
+        // todo how are we handling these lists with legislation year in advanced search? EE-406
+        // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
+        this.docTypes.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
 
         // Fetch proponents and other collections
         // TODO: Put all of these into Lists
@@ -260,7 +255,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
           null,
           {},
           true,
-          this.filterForAPI
+          this.filterForAPI,
+          ''
         );
       })
       .takeUntil(this.ngUnsubscribe)

@@ -264,11 +264,12 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.navigationStackUtils.clearNavigationStack();
     this.storageService.state.tableColumns = null;
     this.storageService.state.sortBy = null;
-    this.storageService.state.form = null;
+    this.storageService.state.form2018 = null;
+    this.storageService.state.form2002 = null;
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
-    this.router.navigate(['/projects', 'add']);
+    this.router.navigate(['/projects', 'add', 'form-2018']);
   }
 
   paramsToCheckboxFilters(params, name, map) {
@@ -520,7 +521,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         this.tableParams.sortBy,
         {},
         true,
-        this.filterForAPI
+        this.filterForAPI,
+        ''
       )
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {

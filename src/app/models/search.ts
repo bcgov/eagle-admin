@@ -14,6 +14,14 @@ export class SearchResults {
   }
 }
 
+export interface ISearchResults<T> {
+  data: ISearchResult<T>;
+}
+// TODO: Flesh out these interfaces
+export interface ISearchResult<T> {
+  meta: any;
+  searchResults: Array<T>;
+}
 // export class SearchArray {
 //   items: Array<SearchResults> = [];
 

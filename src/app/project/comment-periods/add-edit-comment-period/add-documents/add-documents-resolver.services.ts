@@ -31,6 +31,8 @@ export class AddDocumentsResolver implements Resolve<Observable<object>> {
       pageSize,
       sortBy,
       { documentSource: 'PROJECT' },
-      );
+      false,
+      {},
+      '');
   }
 }

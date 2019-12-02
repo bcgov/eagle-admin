@@ -45,7 +45,7 @@ export class ActivityComponentResolver implements Resolve<Observable<object>> {
         tableParams.sortBy,
         {},
         true,
-        filterForApi);
+        filterForApi, '');
     }
   }
 }

@@ -18,6 +18,7 @@ import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectComponent } from './project.component';
 import { ProjectGroupsComponent } from './project-groups/project-groups.component';
 import { ProjectDetailComponent } from './project-detail/project-detail.component';
+import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
 import { ReviewCommentComponent } from './comment-period/review-comment/review-comment.component';
@@ -50,6 +51,8 @@ import { LinkOrganizationComponent } from 'app/shared/components/link-organizati
 import { ExtensionComponent } from 'app/shared/components/extension/extension.component';
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
+import { ProjectsRoutes } from 'app/projects/projects-routes';
+import { FullProjectResolver } from './full-project-resolver.service';
 
 const routes: Routes = [
   {
@@ -82,14 +85,14 @@ const routes: Routes = [
         component: ExtensionComponent
       },
       {
-        path: 'edit/link-org',
+        path: 'edit/:formTab/link-org',
         component: LinkOrganizationComponent,
         resolve: {
           organizations: LinkOrganizationResolver
         }
       },
       {
-        path: 'edit/link-contact',
+        path: 'edit/:formTab/link-contact',
         component: ContactSelectComponent,
         resolve: {
           contacts: ContactsResolver
@@ -97,11 +100,26 @@ const routes: Routes = [
       },
       {
         path: 'edit',
-        component: AddEditProjectComponent
+        component: AddEditProjectComponent,
+        children: ProjectsRoutes,
+        resolve: {
+          fullProject: FullProjectResolver
+        }
       },
       {
         path: 'project-details',
         component: ProjectDetailComponent,
+        resolve: {
+          fullProject: FullProjectResolver
+        },
+        runGuardsAndResolvers: 'always',
+      },
+      {
+        path: 'project-archived-detail',
+        component: ProjectArchivedDetailComponent,
+        resolve: {
+          fullProject: FullProjectResolver
+        }
       },
       {
         path: 'project-documents',
@@ -298,7 +316,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes)
+    RouterModule.forRoot(routes, {onSameUrlNavigation: 'reload'})
   ],
   exports: [
     RouterModule
@@ -314,6 +332,7 @@ const routes: Routes = [
     InspectionDetailResolver,
     TopicResolver,
     ProjectResolver,
+    FullProjectResolver,
     ReviewCommentResolver,
     ValuedComponentsResolver,
     PinsComponentResolver,

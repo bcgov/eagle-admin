@@ -26,6 +26,8 @@ export class ProjectContactsResolver implements Resolve<Observable<object>> {
       pageSize,
       sortBy,
       { project: projectId },
-      false);
+      false,
+      {},
+      '');
   }
 }

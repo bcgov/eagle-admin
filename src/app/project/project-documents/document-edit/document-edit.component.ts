@@ -12,6 +12,7 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 
 import { Utils } from 'app/shared/utils/utils';
+import { DomRendererFactory2 } from '@angular/platform-browser/src/dom/dom_renderer';
 
 @Component({
   selector: 'app-document-edit',
@@ -24,14 +25,24 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public currentProject;
   public myForm: FormGroup;
   public doctypes: any[] = [];
+  public filteredDoctypes2002: any[] = [];
+  public filteredDoctypes2018: any[] = [];
   public authors: any[] = [];
+  public filteredAuthors2002: any[] = [];
+  public filteredAuthors2018: any[] = [];
   public labels: any[] = [];
+  public filteredLabels2002: any[] = [];
+  public filteredLabels2018: any[] = [];
   public datePosted: NgbDateStruct = null;
   public isPublished = false;
   public loading = true;
   public multiEdit = false;
   public docNameInvalid = false;
   public projectPhases: any[] = [];
+  public filteredProjectPhases2002: any[] = [];
+  public filteredProjectPhases2018: any[] = [];
+
+  public legislationYear = '1996';
 
   constructor(
     private config: ConfigService,
@@ -47,7 +58,32 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.documents = this.storageService.state.selectedDocs;
     this.currentProject = this.storageService.state.currentProject.data;
 
-    this.config.getLists().subscribe(lists => {
+    // Check if documents are null (nav straight to this page)
+    if (!this.documents || this.documents.length === 0) {
+      this.router.navigate(['p', this.currentProject._id, 'project-documents']);
+    } else {
+      this.legislationYear = this.documents[0].legislation ? this.documents[0].legislation.toString() : this.legislationYear;
+      this.buildForm();
+      this.getLists();
+    }
+  }
+
+  buildForm() {
+    this.myForm = new FormGroup({
+      'docLegislationRadio': new FormControl(this.legislationYear),
+      'doctypesel': new FormControl(),
+      'authorsel': new FormControl(),
+      'labelsel': new FormControl(),
+      'datePosted': new FormControl(),
+      'displayName': new FormControl(),
+      'description': new FormControl(),
+      'projectphasesel': new FormControl()
+    });
+  }
+
+  getLists() {
+    // todo: check if the lists are cashed here, if the are don't subscribe
+    this.config.getLists().subscribe (lists => {
       lists.map(item => {
         switch (item.type) {
           case 'doctype':
@@ -64,58 +100,63 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
             break;
         }
       });
-    });
 
-    // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-    let copy_doctype = this.doctypes;
-    this.doctypes = [];
-    // This order was created by mapping the doctype items from the database with the EAO defined ordered list
-    let docList_order = [0, 1, 2, 6, 10, 11, 14, 4, 3, 5, 13, 16, 15, 17, 18, 19, 7, 8, 9, 12];
-    // We map the doctypes to put in the correct order as defined in doclist_order
-    docList_order.map((item, i) => {
-      this.doctypes[item] = copy_doctype[i];
-    });
+      // todo: cache these lists here
 
-    // Check if documents are null (nav straight to this page)
-    if (!this.documents || this.documents.length === 0) {
-      this.router.navigate(['p', this.currentProject._id, 'project-documents']);
+      this.populateForm();
+    });
+  }
+
+  populateForm() {
+    this.filterByLegislationYear();
+
+    if (this.documents.length === 1) {
+      // todo: figure out publish see barakas code
+      this.isPublished = this.documents[0].read.includes('public');
+
+      // Set the old data in there if it exists.
+      if (this.documents[0].type) {this.myForm.controls.doctypesel.setValue(this.documents[0].type); }
+      if (this.documents[0].documentAuthorType) {this.myForm.controls.authorsel.setValue(this.documents[0].documentAuthorType); }
+      if (this.documents[0].milestone) {this.myForm.controls.labelsel.setValue(this.documents[0].milestone); }
+      if (this.documents[0].datePosted) {this.myForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))); }
+      if (this.documents[0].displayName) {this.myForm.controls.displayName.setValue(this.documents[0].displayName); }
+      if (this.documents[0].description) {this.myForm.controls.description.setValue(this.documents[0].description); }
+      if (this.documents[0].projectPhase) {this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
+
+      // init docNameInvalid
+      this.validateChars();
     } else {
-      if (this.storageService.state.form) {
-        this.myForm = this.storageService.state.form;
-      } else {
-        if (this.documents.length === 1) {
-          this.isPublished = this.documents[0].read.includes('public');
-          // Set the old data in there if it exists.
-          this.myForm = new FormGroup({
-            'doctypesel': new FormControl(this.documents[0].type),
-            'authorsel': new FormControl(this.documents[0].documentAuthorType),
-            'labelsel': new FormControl(this.documents[0].milestone),
-            'datePosted': new FormControl(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))),
-            'displayName': new FormControl(this.documents[0].displayName),
-            'description': new FormControl(this.documents[0].description),
-            'projectphasesel': new FormControl(this.documents[0].projectPhase)
-          });
-        } else {
-          this.multiEdit = true;
-          this.myForm = new FormGroup({
-            'doctypesel': new FormControl(),
-            'authorsel': new FormControl(),
-            'labelsel': new FormControl(),
-            'datePosted': new FormControl(),
-            'displayName': new FormControl(),
-            'description': new FormControl(),
-            'projectphasesel': new FormControl()
-          });
-        }
-      }
+      this.multiEdit = true;
+    }
 
-      this._changeDetectionRef.detectChanges();
-
-      if (this.storageService.state.labels) {
-        // this.labels = this.storageService.state.labels;
-      }
+    if (this.storageService.state.labels) {
+      // this.labels = this.storageService.state.labels;
     }
     this.loading = false;
+  }
+
+  filterByLegislationYear() {
+    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
+    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
+    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
+    this.filteredLabels2002 = this.labels.filter(item => item.legislation === 2002);
+    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
+
+    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
+    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
+    this.filteredLabels2018 = this.labels.filter(item => item.legislation === 2018);
+    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
+  }
+
+  public changeLegislation (event) {
+    this.legislationYear = event.target.value;
+
+    this.myForm.controls.doctypesel.setValue(null);
+    this.myForm.controls.authorsel.setValue(null);
+    this.myForm.controls.labelsel.setValue(null);
+    this.myForm.controls.projectphasesel.setValue(null);
   }
 
   goBack() {
@@ -127,7 +168,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   public validateChars() {
-    if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
+    if (this.myForm.value.displayName && this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
       this.docNameInvalid = true;
     } else {
       this.docNameInvalid = false;
@@ -201,6 +242,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
 
       // TODO
       formData.append('labels', JSON.stringify(theLabels));
+      formData.append('legislation', this.legislationYear);
       observables.push(this.documentService.update(formData, doc._id));
     });
 

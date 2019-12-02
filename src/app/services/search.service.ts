@@ -6,7 +6,9 @@ import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { SearchResults } from 'app/models/search';
+import { SearchResults, ISearchResults, ISearchResult } from 'app/models/search';
+import { Project } from 'app/models/project';
+import { Utils } from 'app/shared/utils/utils';
 
 @Injectable()
 export class SearchService {
@@ -15,7 +17,9 @@ export class SearchService {
 
   constructor(
     private api: ApiService,
+    private utils: Utils
   ) { }
+
 
   getItem(_id: string, schema: string): Observable<any> {
     const searchResults = this.api.getItem(_id, schema)
@@ -43,11 +47,11 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}): Observable<any[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = '', getPeopleData = false): Observable<SearchResults[]> {
     if (sortBy === '') {
       sortBy = null;
     }
-    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, sortBy, queryModifier, populate, filter)
+    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter)
       .map(res => {
         let allResults = <any>[];
         res.forEach(item => {

@@ -27,8 +27,10 @@ export class PinsGlobalComponentResolver implements Resolve<Observable<object>> 
       pageNum,
       pageSize,
       sortBy,
-      {}
-      // { companyType: 'Aboriginal Group' }
+      {},
+      false,
+      {},
+      '',
     );
   }
 }

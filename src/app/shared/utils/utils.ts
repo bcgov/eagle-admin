@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ISearchResults } from 'app/models/search';
 
 const encode = encodeURIComponent;
 window['encodeURIComponent'] = (component: string) => {
@@ -91,4 +92,18 @@ export class Utils {
     let s = date.getSeconds();
     return y + '-' + m + '-' + d + '-' + h + '-' + mi + '-' + s;
   }
+    // This function will take in a ISearchResults of some type and return an array of that same type
+    public extractFromSearchResults<T>(results: ISearchResults<T>[]): T[] {
+      if (!results) {return null; }
+      const data = results[0].data;
+      if (!data) { return null; }
+      return <T[]>data.searchResults;
+    }
+
+    public isEmptyObject(object: Object): boolean {
+      for (let i in object) {
+        if (object.hasOwnProperty(i)) { return false; }
+      }
+      return true ;
+    }
 }

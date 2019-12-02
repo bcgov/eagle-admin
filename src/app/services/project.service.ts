@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { flatMap } from 'rxjs/operators';
-import { of, forkJoin } from 'rxjs';
+import { of, forkJoin, empty } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
@@ -12,6 +12,9 @@ import { Project } from 'app/models/project';
 import { CommentPeriod } from 'app/models/commentPeriod';
 import { Org } from 'app/models/org';
 import { SearchService } from './search.service';
+import { FullProject } from 'app/models/fullProject';
+import { ISearchResult } from 'app/models/search';
+import { Utils } from 'app/shared/utils/utils';
 
 interface GetParameters {
   getresponsibleEPD?: boolean;
@@ -23,6 +26,7 @@ export class ProjectService {
   private projectList: Project[] = [];
   constructor(
     private api: ApiService,
+    private utils: Utils,
     private searchService: SearchService
   ) { }
 
@@ -99,6 +103,40 @@ export class ProjectService {
         }
         // finally update the object and return
         return project;
+      });
+  }
+
+  public getPeopleObjs(data): Observable<any> {
+    // Used in Full Project Resolver using current legislation as our key
+    const projectSearchData = this.utils.extractFromSearchResults<FullProject>(data);
+    if (!projectSearchData) {
+      return of(data);
+    }
+    const fullProject = projectSearchData[0];
+    if (!fullProject) {
+      return of(data);
+    }
+    const projectKey = fullProject.currentLegislationYear;
+    const project = fullProject[projectKey];
+    if (!project) {
+      return of(data);
+    }
+    const epdId = (project.responsibleEPDId) ? project.responsibleEPDId.toString() : '';
+    const leadId = (project.projectLeadId) ? project.projectLeadId.toString() : '';
+    if (!epdId && !leadId) {
+      return of(data);
+    }
+    return forkJoin(
+      this.searchService.getItem(epdId, 'User'),
+      this.searchService.getItem(leadId, 'User')
+    )
+      .map(payloads => {
+        if (payloads) {
+          project.responsibleEPDObj = payloads[0].data;
+          project.projectLeadObj = payloads[1].data;
+          // finally update the object and return
+        }
+        return data;
       });
   }
 
