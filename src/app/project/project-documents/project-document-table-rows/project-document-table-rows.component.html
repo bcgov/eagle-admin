@@ -1,5 +1,5 @@
 <tr
-  *ngFor="let document of documents | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let document of documents | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems, legislation: paginationData.legislation }"
   class="clickable-row">
   <td data-label="Select" (click)="selectItem(document)" scope="row" class="col-1">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox'>
@@ -19,4 +19,6 @@
   <td data-label="Type" (click)="goToItem(document)" scope="row" class="col-1">{{document.type | listConverter}}</td>
   <td data-label="Milestone" (click)="goToItem(document)" scope="row" class="col-2">
     {{document.milestone | listConverter}}</td>
+  <td data-label="Legislation" (click)="goToItem(document)" scope="row" class="col-1">
+    {{document.legislation}}</td>
 </tr>
