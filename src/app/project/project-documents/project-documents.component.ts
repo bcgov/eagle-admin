@@ -776,7 +776,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this.tableParams.sortBy,
         { documentSource: 'PROJECT' },
         true,
-        this.filterForAPI
+        this.filterForAPI,
+        ''
       )
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {

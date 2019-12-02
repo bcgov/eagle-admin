@@ -8,42 +8,38 @@ import 'rxjs/add/operator/concat';
 import { of } from 'rxjs';
 
 import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { Project, ProjectPublishState } from 'app/models/project';
+import { Project } from 'app/models/project';
 import { ApiService } from 'app/services/api';
 import { ProjectService } from 'app/services/project.service';
 import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-import { SearchService } from 'app/services/search.service';
-import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
-import { SideBarService } from 'app/services/sidebar.service';
+import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
 
-
 @Component({
-  selector: 'app-project-detail',
-  templateUrl: './project-detail.component.html',
-  styleUrls: ['./project-detail.component.scss']
+  selector: 'app-project-archived-detail',
+  templateUrl: './project-archived-detail.component.html',
+  styleUrls: ['./project-archived-detail.component.scss']
 })
 
-
-export class ProjectDetailComponent implements OnInit, OnDestroy {
+export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
 
   public isPublishing = false;
   public isUnpublishing = false;
   public isDeleting = false;
-  public project: Project;
+  public project: Project = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public isPublished: boolean;
   public currentLeg: String;
   public currentLegYear: number;
   public showArchivedButton = false;
   public legislationYearList;
-  public currentProject: Project;
-  public projectID: string;
+  public currentProject;
+  public isPublished;
+
 
   constructor(
     private router: Router,
@@ -54,35 +50,22 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     private dialogService: DialogService,
     public projectService: ProjectService, // also used in template
     public commentPeriodService: CommentPeriodService,
-    public sidebarService: SideBarService,
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
-    private searchService: SearchService,
     private utils: Utils
-
   ) {
   }
 
   ngOnInit() {
-    // This is to get Region information from List (db) and put into a list(regions)
+    this.currentProject = this.storageService.state.currentProject.data;
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data: { project: ISearchResults<Project>[] }) => {
+        (data: {  project: ISearchResults<Project>[] }) => {
           if (data.project) {
-            const results = this.utils.extractFromSearchResults(data.project);
-            this.project = results ? results[0] :  null;
-            this.projectID = this.project._id;
-            const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
-            if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
-              this.currentLegYear = projectPublishState;
-              this.isPublished = true;
-            } else {
-              this.currentLegYear = this.project.legislationYear;
-              this.isPublished = projectPublishState === ProjectPublishState.unpublished ?
-               false : this.project && this.project.read.includes('public');
-            }
+            const projectSearchData = this.utils.extractFromSearchResults(data.project);
+            this.project = projectSearchData ? projectSearchData[0] : null;
             this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
             this._changeDetectorRef.detectChanges();
           } else {
@@ -93,52 +76,29 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       );
 
-    // Get data related to current project
     this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-        const projectKey = data.fullProject[0].data.searchResults[0].currentLegislationYear;
-        this.project = data.fullProject[0].data.searchResults[0][projectKey];
-        this.project._id = this.projectID;
-        this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
-        this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
-        // Set published state
-        const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id ];
-        if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
-          this.currentLegYear = projectPublishState;
-        } else {this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length)); }
-        this._changeDetectorRef.detectChanges();
-      });
-
-      this.checkShowButton();
-
-  }
-
-  checkShowButton() {
-    if ( this.legislationYearList.length === 1) {
-      this.showArchivedButton = false;
-      this.sidebarService.hideArchive();
-    } else if ( this.legislationYearList.some( (el) => el < this.currentLegYear) && this.currentLegYear === Math.max(...(this.legislationYearList))) {
-      // If there is any legislation earlier than the currentLegYear
-      this.showArchivedButton = true;
-      this.sidebarService.showArchive();
-    } else {
-      this.showArchivedButton = false;
-      this.sidebarService.hideArchive();
-    }
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+      this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
+      if ( (this.legislationYearList ).includes(2002)) {
+        this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
+      } else {
+        this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
+      }
+      this.isPublished = this.project && this.project.read && this.project.read.includes('public');
+    });
   }
 
   editProject() {
     this.storageService.state.project = this.project;
     this.storageService.state.tableColumns = null;
     this.storageService.state.sortBy = null;
-    this.storageService.state.form2002 = null;
-    this.storageService.state.form2018 = null;
+    this.storageService.state.form = null;
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
     this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
-    this.router.navigate(['p', this.project._id , 'edit', {1996: 'form-2002', 2002: 'form-2002', 2018: 'form-2018'}[this.project.legislationYear]]);
+    this.router.navigate(['p', this.project._id, 'edit']);
   }
 
   public deleteProject() {
@@ -233,13 +193,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         () => { // onCompleted
           this.snackBarRef = this.snackBar.open('Project published...', null, { duration: 2000 });
           // reload all data
-          this.projectService.getById(this.project._id )
+          this.projectService.getById(this.project._id)
             .takeUntil(this.ngUnsubscribe)
             .subscribe(
               project => {
                 this.isPublishing = false;
                 this.project = project;
-                this.isPublished = true;
               },
               error => {
                 this.isPublishing = false;
@@ -269,13 +228,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         () => { // onCompleted
           this.snackBarRef = this.snackBar.open('Project un-published...', null, { duration: 2000 });
           // reload all data
-          this.projectService.getById(this.project._id )
+          this.projectService.getById(this.project._id)
             .takeUntil(this.ngUnsubscribe)
             .subscribe(
               project => {
                 this.isPublishing = false;
                 this.project = project;
-                this.isPublished = false;
               },
               error => {
                 this.isPublishing = false;

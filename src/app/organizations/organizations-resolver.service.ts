@@ -37,7 +37,8 @@ export class OrganizationsResolver implements Resolve<object> {
       tableParams.sortBy,
       {},
       false,
-      filterObj
+      filterObj,
+      ''
     );
   }
 

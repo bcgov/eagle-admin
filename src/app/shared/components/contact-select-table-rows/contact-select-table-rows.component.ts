@@ -31,8 +31,10 @@ export class ContactSelectTableRowsComponent implements OnInit {
 
   selectItem(item) {
     this.storageService.state.selectedContact = item;
-    let url = this.navigationStackUtils.getLastBackUrl();
-    this.navigationStackUtils.popNavigationStack();
-    this.router.navigate(url);
+    if (this.navigationStackUtils.getNavigationStack()) {
+      const url = this.navigationStackUtils.getLastBackUrl();
+      this.navigationStackUtils.popNavigationStack();
+      this.router.navigate(url);
+    }
   }
 }

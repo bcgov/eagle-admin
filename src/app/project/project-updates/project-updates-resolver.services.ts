@@ -24,6 +24,8 @@ export class ProjectUpdatesResolver implements Resolve<Observable<object>> {
       pageSize,
       sortBy,
       {},
-      true);
+      true,
+      {},
+      '');
   }
 }

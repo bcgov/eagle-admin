@@ -65,7 +65,8 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
           sortBy,
           { documentSource: 'PROJECT' },
           true,
-          this.filterForAPI);
+          this.filterForAPI,
+          '');
       });
   }
 
