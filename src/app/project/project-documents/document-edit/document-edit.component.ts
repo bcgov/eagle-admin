@@ -128,11 +128,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     } else {
       this.multiEdit = true;
     }
-
-    if (this.storageService.state.labels) {
-      // this.labels = this.storageService.state.labels;
-    }
-
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
