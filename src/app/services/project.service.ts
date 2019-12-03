@@ -142,7 +142,7 @@ export class ProjectService {
         })
       );
     });
-    return merge(...peopleObjs);
+    return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
   }
 
   // create new project
