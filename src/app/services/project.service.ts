@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { flatMap } from 'rxjs/operators';
-import { of, forkJoin, empty } from 'rxjs';
+import { of, forkJoin, empty, merge } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
@@ -116,28 +116,33 @@ export class ProjectService {
     if (!fullProject) {
       return of(data);
     }
-    const projectKey = fullProject.currentLegislationYear;
-    const project = fullProject[projectKey];
-    if (!project) {
-      return of(data);
-    }
-    const epdId = (project.responsibleEPDId) ? project.responsibleEPDId.toString() : '';
-    const leadId = (project.projectLeadId) ? project.projectLeadId.toString() : '';
-    if (!epdId && !leadId) {
-      return of(data);
-    }
-    return forkJoin(
-      this.searchService.getItem(epdId, 'User'),
-      this.searchService.getItem(leadId, 'User')
-    )
-      .map(payloads => {
-        if (payloads) {
-          project.responsibleEPDObj = payloads[0].data;
-          project.projectLeadObj = payloads[1].data;
-          // finally update the object and return
-        }
-        return data;
-      });
+    const projectKeys: Number[] = fullProject.legislationYearList;
+    let peopleObjs: Observable<any>[] = [];
+    projectKeys.forEach(key => {
+      const project = fullProject[`legislation_${key.toString()}`];
+      if (!project) {
+        return of(data);
+      }
+      const epdId = (project.responsibleEPDId) ? project.responsibleEPDId.toString() : '';
+      const leadId = (project.projectLeadId) ? project.projectLeadId.toString() : '';
+      if (!epdId && !leadId) {
+        return of(data);
+      }
+      peopleObjs.push(forkJoin(
+        this.searchService.getItem(epdId, 'User'),
+        this.searchService.getItem(leadId, 'User')
+      )
+        .map(payloads => {
+          if (payloads) {
+            project.responsibleEPDObj = payloads[0].data;
+            project.projectLeadObj = payloads[1].data;
+            // finally update the object and return
+          }
+          return data;
+        })
+      );
+    });
+    return merge(...peopleObjs);
   }
 
   // create new project
