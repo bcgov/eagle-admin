@@ -6,14 +6,14 @@
     "ng": "ng",
     "prestart": "",
     "start": "ng serve -o --base-href /admin/ --deploy-url /admin/",
-    "build": "ng build --prod=false --deploy-url /admin/ --base-href /admin/",
+    "build": "ng build --prod --deploy-url /admin/ --base-href /admin/",
     "pretest": "",
     "test": "echo 'Test suite should be run with \"`npm run tests` or npm `run tests-ci`\"'",
     "tests": "ng test",
     "tests-ci": "ng test --watch=false",
     "lint": "ng lint --format=stylish",
     "e2e": "ng e2e",
-    "postinstall": "ng build --prod=false --deploy-url /admin/ --base-href /admin/"
+    "postinstall": "ng build --prod --deploy-url /admin/ --base-href /admin/"
   },
   "private": true,
   "dependencies": {
