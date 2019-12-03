@@ -146,11 +146,11 @@
           </div>
           <div class="label-pair">
             <label for="eaStatusDate">Determination Date </label>
-            <div disabled class="input-group">
-              <input [readonly]='true' type="text" class="form-control" placeholder="yyyy-mm-dd" name="eaStatusDate"
+            <div  class="input-group">
+              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="eaStatusDate"
                 formControlName="eaStatusDate" ngbDatepicker #eaStatusDatePicker="ngbDatepicker" />
               <div class="input-group-append">
-                <button disabled class="btn btn-outline-secondary calendar" (click)="eaStatusDatePicker.toggle()"
+                <button class="btn btn-outline-secondary calendar" (click)="eaStatusDatePicker.toggle()"
                   type="button"></button>
               </div>
             </div>
@@ -162,18 +162,6 @@
             <select name="status" id="status" formControlName="status" class="form-control">
               <option *ngFor="let status of PROJECT_STATUS" [ngValue]="status">{{status}}</option>
             </select>
-          </div>
-          <div class="label-pair">
-            <label for="projectStatusDate">Project Effective Date </label>
-            <div disabled class="input-group">
-              <input [readonly]='true' type="text" class="form-control" placeholder="yyyy-mm-dd"
-                name="projectStatusDate" formControlName="projectStatusDate" ngbDatepicker
-                #projectStatusDatePicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button disabled class="btn btn-outline-secondary calendar" (click)="projectStatusDatePicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
           </div>
         </fieldset>
         <fieldset class="form-group">
@@ -211,35 +199,12 @@
           </div>
           <div class="label-pair">
             <label for="substantiallyDate">Substantially Started Date </label>
-            <div disabled class="input-group">
-              <input [readonly]='true' type="text" class="form-control" placeholder="yyyy-mm-dd"
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="yyyy-mm-dd"
                 name="substantiallyDate" formControlName="substantiallyDate" ngbDatepicker
                 #substantiallyDatePicker="ngbDatepicker" />
               <div class="input-group-append">
-                <button disabled class="btn btn-outline-secondary calendar" (click)="substantiallyDatePicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="activeStatus">Active Phase </label>
-            <select disabled name="activeStatus" id="activeStatus" formControlName="activeStatus" type="text"
-              class="form-control">
-              <option>Pre-Construction</option>
-              <option>Construction</option>
-              <option>Operations</option>
-              <option>Decommissioning</option>
-            </select>
-          </div>
-          <div class="label-pair">
-            <label for="activeDate">Phase Effective Date </label>
-            <div disabled class="input-group">
-              <input [readonly]='true' type="text" class="form-control" placeholder="yyyy-mm-dd" name="activeDate"
-                formControlName="activeDate" ngbDatepicker #activeDatePicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button disabled class="btn btn-outline-secondary calendar" (click)="activeDatePicker.toggle()"
+                <button class="btn btn-outline-secondary calendar" (click)="substantiallyDatePicker.toggle()"
                   type="button"></button>
               </div>
             </div>
