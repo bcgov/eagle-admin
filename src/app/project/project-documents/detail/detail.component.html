@@ -68,6 +68,10 @@
       <p id="datePosted" *ngIf="document.datePosted !== '1900-01-01T08:00:00.000Z'">{{document.datePosted | date}}</p>
     </div>
     <div class="label-pair">
+      <h3 for="legislation">Legislation:</h3>
+      <p id="legislation">{{document.legislation}}</p>
+    </div>
+    <div class="label-pair">
       <h3 for="documentAuthor">Author: </h3>
       <p id="documentAuthor">{{document.documentAuthorType | listConverter}}</p>
     </div>
