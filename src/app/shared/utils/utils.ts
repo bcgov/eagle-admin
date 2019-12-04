@@ -9,6 +9,13 @@ window['encodeURIComponent'] = (component: string) => {
   });
 };
 
+const buildToNature = {
+  new: 'New Construction',
+  modification: 'Modification of Existing',
+  dismantling: 'Dismantling or Abandonment',
+  unknown: 'Unknown nature value',
+};
+
 @Injectable()
 export class Utils {
   constructor() { }
@@ -105,5 +112,13 @@ export class Utils {
         if (object.hasOwnProperty(i)) { return false; }
       }
       return true ;
+    }
+
+    // Mapping the build database field to the human readable nature field
+    public natureBuildMapper(key: string, reverseMapping?: false): string {
+      if (!key) {
+        return '';
+      }
+      return (reverseMapping) ? Object.keys(buildToNature).find(aKey => buildToNature[aKey] === key) : buildToNature[key];
     }
 }
