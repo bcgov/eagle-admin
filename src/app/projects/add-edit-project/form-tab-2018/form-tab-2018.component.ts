@@ -17,6 +17,7 @@ import { FullProject } from 'app/models/fullProject';
 import { flatMap } from 'rxjs/operators';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { Constants } from 'app/shared/utils/constants';
 
 @Component({
   selector: 'form-tab-2018',
@@ -33,118 +34,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public proponentName = '';
   public proponentId = '';
 
-  public PROJECT_SUBTYPES: Object = {
-    'Mines': [
-      'Coal Mines',
-      'Construction Stone and Industrial Mineral Quarries',
-      'Mineral Mines',
-      'Off-shore Mines',
-      'Placer Mineral Mines',
-      'Sand and Gravel Pits'
-    ],
-    'Energy-Electricity': [
-      'Electric Transmission Lines',
-      'Power Plants'
-    ],
-    'Energy-Petroleum & Natural Gas': [
-      'Energy Storage Facilities',
-      'Natural Gas Processing Plants',
-      'Off-shore Oil or Gas Facilities',
-      'Oil Refineries',
-      'Transmission Pipelines'
-    ],
-    'Transportation': [
-      'Airports',
-      'Ferry Terminals',
-      'Marine Port Projects',
-      'Public Highways',
-      'Railways'
-    ],
-    'Water Management': [
-      'Dams',
-      'Dykes',
-      'Groundwater Extraction',
-      'Shoreline Modification',
-      'Water Diversion'
-    ],
-    'Industrial': [
-      'Forest Products Industries',
-      'Non-metallic Mineral Products Industries',
-      'Organic and Inorganic Chemical Industry',
-      'Other Industries',
-      'Primary Metals Industry'
-    ],
-    'Hazardous Waste Management': [
-      'Hazardous Waste Facilities',
-      'Local Government Liquid Waste Management Facilities',
-      'Solid Waste Management'
-    ],
-    'Tourist Destination Resorts': [
-      'Golf Resorts',
-      'Marina Resorts',
-      'Resort Developments',
-      'Ski Resorts'
-    ],
-    'Other': [
-      'Other'
-    ]
-  };
-
-  public PROJECT_TYPES: Array<Object> = [
-    'Energy-Electricity',
-    'Energy-Petroleum & Natural Gas',
-    'Industrial',
-    'Mines',
-    'Other',
-    'Tourist Destination Resorts',
-    'Transportation',
-    'Hazardous Waste Management',
-    'Water Management'
-  ];
-
-  public PROJECT_STATUS: Array<Object> = [
-    'Minister\'s Designation',
-    'Early Engagement',
-    'EA Readiness Decision',
-    'Process Planning',
-    'Application Development & Review',
-    'Effects Assessment',
-    'Referral',
-    'Dispute Resolution',
-    'Post Decision - Pre-Construction',
-    'Post Decision - Construction',
-    'Post Decision - Operation',
-    'Post Decision - Care & Maintenance',
-    'Post Decision - Decommission',
-    'Post Decision - Amendment',
-    'Post Decision - Substantial Start',
-    'Post Decision - EAC Extension',
-    'Post Decision - Suspension',
-    'Complete',
-    'Other'
-  ];
-
-  public PROJECT_NATURE: Array<Object> = [
-    'New Construction',
-    'Modification of Existing',
-    'Dismantling or Abandonment'
-  ];
-
-  public EAC_DECISIONS: Array<Object> = [
-    'Project Designated Non-Reviewable',
-    'Exemption Order',
-    'Readiness Termination',
-    'In Progress',
-    'Assessment Terminated',
-    'Application Withdrawn',
-    'Certificate Issued',
-    'Certificate Refused',
-    'Certificate Expired',
-    'Certificate Cancelled',
-    'Exemption Order Rescinded',
-    'Certificate Reinstated',
-    'Certificate End of Life'
-  ];
 
   public projectName: string;
   public projectId: string;
@@ -157,6 +46,16 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public fullProject: FullProject;
   public legislationYear: Number = 2018;
   public publishedLegislation: string;
+
+  public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
+
+  public PROJECT_TYPES = Constants.PROJECT_TYPES(this.legislationYear);
+
+  public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
+
+  public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
+
+  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
 
   public loading = true;
   public published: boolean;

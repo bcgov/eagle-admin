@@ -42,101 +42,15 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public proponentId = '';
   public legislationYear: Number = 2002;
 
-  public PROJECT_SUBTYPES: Object = {
-    'Mines': [
-      'Coal Mines',
-      'Construction Stone and Industrial Mineral Quarries',
-      'Mineral Mines',
-      'Off-shore Mines',
-      'Placer Mineral Mines',
-      'Sand and Gravel Pits'
-    ],
-    'Energy-Electricity': [
-      'Electric Transmission Lines',
-      'Power Plants'
-    ],
-    'Energy-Petroleum & Natural Gas': [
-      'Energy Storage Facilities',
-      'Natural Gas Processing Plants',
-      'Off-shore Oil or Gas Facilities',
-      'Transmission Pipelines'
-    ],
-    'Transportation': [
-      'Airports',
-      'Ferry Terminals',
-      'Marine Port Facilities',
-      'Public Highways',
-      'Railways'
-    ],
-    'Water Management': [
-      'Dams',
-      'Dykes',
-      'Groundwater Extraction',
-      'Shoreline Modification',
-      'Water Diversion'
-    ],
-    'Industrial': [
-      'Forest Products Industries',
-      'Non-metallic Mineral Products Industries',
-      'Organic and Inorganic Chemical Industry',
-      'Other Industries',
-      'Primary Metals Industry'
-    ],
-    'Waste Disposal': [
-      'Hazardous Waste Facilities',
-      'Local Government Liquid Waste Management Facilities',
-      'Local Government Solid Waste Management Facilities'
-    ],
-    'Tourist Destination Resorts': [
-      'Golf Resorts',
-      'Marina Resorts',
-      'Resort Developments',
-      'Ski Resorts'
-    ],
-    'Other': [
-      'Other'
-    ]
-  };
+  public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
 
-  public PROJECT_TYPES: Array<Object> = [
-    'Energy-Electricity',
-    'Energy-Petroleum & Natural Gas',
-    'Industrial',
-    'Mines',
-    'Other',
-    'Tourist Destination Resorts',
-    'Transportation',
-    'Waste Disposal',
-    'Water Management'
-  ];
+  public PROJECT_TYPES = Constants.PROJECT_TYPES(this.legislationYear);
 
-  public PROJECT_STATUS: Array<Object> = [
-    'Initiated',
-    'Submitted',
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certified',
-    'Not Certified',
-    'Decommissioned'
-  ];
+  public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
 
-  public PROJECT_NATURE: Array<Object> = [
-    'New Construction',
-    'Modification of Existing',
-    'Dismantling or Abandonment'
-  ];
+  public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
 
-  public EAC_DECISIONS: Array<Object> = [
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certificate Issued',
-    'Certificate Refused',
-    'Further Assessment Required',
-    'Certificate Not Required',
-    'Certificate Expired',
-    'Withdrawn',
-    'Terminated',
-    'Pre-EA Act Approval',
-    'Not Designated Reviewable'
-  ];
+  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
   // these are for extensions
   // public modifications = [];
   // public modificationsTableData: TableObject;
