@@ -44,6 +44,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public legislationYearList;
   public currentProject: Project;
   public projectID: string;
+  public substantiallyStarted: string;
 
   constructor(
     private router: Router,
@@ -102,6 +103,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         this.project._id = this.projectID;
         this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
         this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
+        this.substantiallyStarted = (this.project.substantially === true ) ? 'Yes' : 'No';
+
         // Set published state
         const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id ];
         if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {

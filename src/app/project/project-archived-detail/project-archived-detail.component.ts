@@ -39,6 +39,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public legislationYearList;
   public currentProject;
   public isPublished;
+  public substantiallyStarted;
 
 
   constructor(
@@ -86,6 +87,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
         this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
       }
       this.isPublished = this.project && this.project.read && this.project.read.includes('public');
+      this.substantiallyStarted = (this.project.substantially === true ) ? 'Yes' : 'No';
     });
   }
 

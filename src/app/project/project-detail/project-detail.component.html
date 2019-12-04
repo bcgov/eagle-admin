@@ -92,7 +92,7 @@
     </div>
     <div class="label-pair">
       <h3 for="ea">EA Decision: </h3>
-      <p id="ea">{{project.eacDecision || '-'}}</p>
+      <p id="ea">{{project.eacDecision || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="ea">Capital Investment: </h3>
@@ -105,23 +105,19 @@
   </section>
   <section>
     <h2>Project Status</h2>
-    <div class="label-pair" *ngIf="project.eaDecision">
-      <h3 for="ea">EA Readiness Status: </h3>
-      <p id="ea">{{project.eaDecision.label || '-'}} | {{project.eaDecision.date | date: 'longDate' || '-'}}</p>
+    <div class="label-pair">
+      <h3 for="eac-status">Project Status: </h3>
+      <p id="eac-status">{{project.status || '-'}}</p>
     </div>
-    <div class="label-pair" *ngIf="project.operational">
-      <h3 for="active-status">Active Status: </h3>
-      <p id="active-status">{{project.operational.label || '-'}} |
-        {{project.operational.date | date: 'longDate' || '-'}}</p>
-    </div>
-    <div class="label-pair" *ngIf="project.eacDecision">
-      <h3 for="eac-status">EAC Status: </h3>
-      <p id="eac-status">{{project.status || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
-    </div>
-    <div class="label-pair" *ngIf="project.substantiallyDate">
+    <div class="label-pair">
       <h3 for="substantially">Substantially Started: </h3>
-      <p id="substantially">{{project.substantiallyDate || '-'}} |
+      <p id="substantially">{{substantiallyStarted || '-'}} |
         {{project.substantiallyDate | date: 'longDate' || '-'}}</p>
+    </div>
+    <div class="label-pair">
+      <h3 for="ea">EA Readiness Determination: </h3>
+      <p id="ea">{{project.eaStatus || '-'}} |
+        {{project.eaStatusDate| date: 'longDate' || '-'}}</p>
     </div>
   </section>
   <section class="people">
