@@ -23,16 +23,10 @@
 
   <div class="form-group mb-0 mt-4">
     <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
-      <!-- <div *ngIf="!multiEdit" class="form-row">
-        <div class="form-group col-md-12">
-          Publish?&nbsp;
-          <input type="checkbox" [checked]="isPublished" (click)="togglePublish()">
-        </div>
-      </div> -->
       <div class="form-row">
         <div class="col-md-12">
         <div class="flex-container">
-          <div class="label-pair">
+          <div *ngIf="!multiEdit" class="label-pair">
             <label for="docLegislationRadio">Legislation Type*</label>
             <div name="docLegislationRadio" class="radio-group">
               <div class="radio">
@@ -112,7 +106,7 @@
         </div>
         <div class="form-group col-md-4">
           <label *ngIf="!multiEdit" for="inputAddress">Document Date*</label>
-          <label *ngIf="multiEdit" for="labelsel">Document Date</label>
+          <label *ngIf="multiEdit" for="inputAddress">Document Date</label>
           <div class="input-group">
             <input [required]="!multiEdit" type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePosted"
               formControlName="datePosted" ngbDatepicker #datePostedPicker="ngbDatepicker" />
@@ -140,16 +134,12 @@
       </div>
     </form>
   </div>
-
-
-  <div class="btn-group" role="group" aria-label="Action Buttons">
-    <div class="input-group-prepend">
-      <button class="btn btn-outline-primary mr-1" type="button" id="button-cl" (click)="goBack()"><i
-          class="material-icons">arrow_back</i>Back</button>
-    </div>
-    <div class="input-group-prepend">
-      <button [disabled]="!myForm.valid || docNameInvalid" (click)="save()" class="btn btn-outline-primary mr-1" type="submit"
-        id="button-cl"><i class="material-icons">save</i>Save</button>
-    </div>
+  <div class="text-right" >
+    <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
+    &nbsp;
+    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid || docNameInvalid"  type="submit" (click)="save()">Save</button>
+    &nbsp;
+    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid" type="publish" (click)="togglePublish()" *ngIf="!this.isPublished && !this.multiEdit">Save & Publish</button>
+    <button class="btn btn-unpublish" [disabled]="!myForm.valid || docNameInvalid" type="publish" (click)="togglePublish()" *ngIf="this.isPublished && !this.multiEdit">Save & Unpublish</button>
   </div>
 </main>

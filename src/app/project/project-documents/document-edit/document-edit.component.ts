@@ -128,7 +128,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     } else {
       this.multiEdit = true;
     }
-
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
@@ -219,14 +218,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         doc.displayName !== null ? formData.append('displayName', doc.displayName) : Function.prototype;
         doc.description !== null ? formData.append('description', doc.description) : Function.prototype;
 
-        // apply changes to milestone if any
-        let milestone = this.multiEditGetUpdatedValue(this.myForm.value.labelsel, doc.milestone);
-        milestone !== undefined && milestone !== null ? formData.append('milestone', milestone) : Function.prototype;
-
-        // apply changes to datePosted if any
-        let datePosted = this.multiEditGetUpdatedValue(this.myForm.value.datePosted, doc.datePosted, true);
-        datePosted !== undefined && datePosted !== null ? formData.append('datePosted', datePosted) : Function.prototype;
-
         // apply changes to type if any
         let type = this.multiEditGetUpdatedValue(this.myForm.value.doctypesel, doc.type);
         type !== undefined && type !== null ? formData.append('type', type) : Function.prototype;
@@ -235,9 +226,17 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         let documentAuthorType = this.multiEditGetUpdatedValue(this.myForm.value.authorsel, doc.documentAuthorType);
         documentAuthorType !== undefined && documentAuthorType !== null ? formData.append('documentAuthorType', documentAuthorType) : Function.prototype;
 
+        // apply changes to milestone if any
+        let milestone = this.multiEditGetUpdatedValue(this.myForm.value.labelsel, doc.milestone);
+        milestone !== undefined && milestone !== null ? formData.append('milestone', milestone) : Function.prototype;
+
         // apply changes to projectPhase if any
         let projectPhase = this.multiEditGetUpdatedValue(this.myForm.value.projectphasesel, doc.projectPhase);
         projectPhase !== undefined && projectPhase !== null ? formData.append('projectPhase', projectPhase) : Function.prototype;
+
+        // apply changes to datePosted if any
+        let datePosted = this.multiEditGetUpdatedValue(this.myForm.value.datePosted, doc.datePosted, true);
+        datePosted !== undefined && datePosted !== null ? formData.append('datePosted', datePosted) : Function.prototype;
       }
 
       // TODO
@@ -307,6 +306,9 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
             // TODO: should fully reload project here so we have latest non-deleted objects
           },
           () => { // onCompleted
+
+            this.save();
+
             if (this.isPublished) {
               this.openSnackBar('This document has been published.', 'Close');
             } else {

@@ -23,6 +23,8 @@ import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 // import { ModificationsListTableRowsComponent } from '../modifications-list-table-rows/modifications-list-table-rows.component';
 import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { flatMap } from 'rxjs/operators';
+import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { DialogService } from 'ng2-bootstrap-modal';
 
 @Component({
   selector: 'form-tab-2002',
@@ -40,101 +42,15 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public proponentId = '';
   public legislationYear: Number = 2002;
 
-  public PROJECT_SUBTYPES: Object = {
-    'Mines': [
-      'Coal Mines',
-      'Construction Stone and Industrial Mineral Quarries',
-      'Mineral Mines',
-      'Off-shore Mines',
-      'Placer Mineral Mines',
-      'Sand and Gravel Pits'
-    ],
-    'Energy-Electricity': [
-      'Electric Transmission Lines',
-      'Power Plants'
-    ],
-    'Energy-Petroleum & Natural Gas': [
-      'Energy Storage Facilities',
-      'Natural Gas Processing Plants',
-      'Off-shore Oil or Gas Facilities',
-      'Transmission Pipelines'
-    ],
-    'Transportation': [
-      'Airports',
-      'Ferry Terminals',
-      'Marine Port Facilities',
-      'Public Highways',
-      'Railways'
-    ],
-    'Water Management': [
-      'Dams',
-      'Dykes',
-      'Groundwater Extraction',
-      'Shoreline Modification',
-      'Water Diversion'
-    ],
-    'Industrial': [
-      'Forest Products Industries',
-      'Non-metallic Mineral Products Industries',
-      'Organic and Inorganic Chemical Industry',
-      'Other Industries',
-      'Primary Metals Industry'
-    ],
-    'Waste Disposal': [
-      'Hazardous Waste Facilities',
-      'Local Government Liquid Waste Management Facilities',
-      'Local Government Solid Waste Management Facilities'
-    ],
-    'Tourist Destination Resorts': [
-      'Golf Resorts',
-      'Marina Resorts',
-      'Resort Developments',
-      'Ski Resorts'
-    ],
-    'Other': [
-      'Other'
-    ]
-  };
+  public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
 
-  public PROJECT_TYPES: Array<Object> = [
-    'Energy-Electricity',
-    'Energy-Petroleum & Natural Gas',
-    'Industrial',
-    'Mines',
-    'Other',
-    'Tourist Destination Resorts',
-    'Transportation',
-    'Waste Disposal',
-    'Water Management'
-  ];
+  public PROJECT_TYPES = Constants.PROJECT_TYPES(this.legislationYear);
 
-  public PROJECT_STATUS: Array<Object> = [
-    'Initiated',
-    'Submitted',
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certified',
-    'Not Certified',
-    'Decommissioned'
-  ];
+  public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
 
-  public PROJECT_NATURE: Array<Object> = [
-    'New Construction',
-    'Modification of Existing',
-    'Dismantling or Abandonment'
-  ];
+  public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
 
-  public EAC_DECISIONS: Array<Object> = [
-    'In Progress', // default, set in BuildForm() and BuildFormFromData()
-    'Certificate Issued',
-    'Certificate Refused',
-    'Further Assessment Required',
-    'Certificate Not Required',
-    'Certificate Expired',
-    'Withdrawn',
-    'Terminated',
-    'Pre-EA Act Approval',
-    'Not Designated Reviewable'
-  ];
+  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
   // these are for extensions
   // public modifications = [];
   // public modificationsTableData: TableObject;
@@ -187,6 +103,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
+    private dialogService: DialogService
   ) {
   }
 
@@ -625,72 +542,99 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
+  confirmGuard(message: string): Observable<boolean> {
+    return this.dialogService.addDialog(ConfirmComponent,
+      {
+        title: 'Confirm Action',
+        message: message,
+        okOnly: false
+      }, {
+        backdropColor: 'rgba(0, 0, 0, 0.5)'
+      });
+  }
+
   onUnpublish(): void {
-    this.projectService.unPublish({
-      ...this.project,
-      _id: this.fullProject._id
-    }).takeUntil(this.ngUnsubscribe)
+    this.confirmGuard(`Are you sure you want to <strong>Un-Publish</strong> this project entirely?`)
+      .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data) => { // onNext
-        },
-        error => {
-          console.log('error =', error);
-          this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
-        },
-        () => { // onCompleted
-          this.published = false;
-          this.snackBar.open('Project un-published...', null, { duration: 2000 });
-          this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+        (confirmation: boolean) => {
+          if (confirmation) {
+            this.projectService.unPublish({
+              ...this.project,
+              _id: this.fullProject._id
+            }).takeUntil(this.ngUnsubscribe)
+              .subscribe(
+                (data) => { // onNext
+                },
+                error => {
+                  console.log('error =', error);
+                  this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
+                },
+                () => { // onCompleted
+                  this.published = false;
+                  this.snackBar.open('Project un-published...', null, { duration: 2000 });
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              );
+          }
         }
       );
+
   }
 
   onPublish(): void {
-    this.saveProject(
-      // POST
-      (project: Project): Observable<Project> => {
-        this.clearStorageService();
-        return this.projectService.publish(project);
-      },
-      // PUT
-      (project: Project): Observable<Project> => {
-        this.clearStorageService();
-        return this.projectService.publish(project);
+    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation}</strong>?`)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        (confirmation: boolean) => {
+          if (confirmation) {
+            this.saveProject(
+              // POST
+              (project: Project): Observable<Project> => {
+                this.clearStorageService();
+                return this.projectService.publish(project);
+              },
+              // PUT
+              (project: Project): Observable<Project> => {
+                this.clearStorageService();
+                return this.projectService.publish(project);
 
-      },
-      // POST SUBSCRIBE
-      [
-        (data) => {
-          this.projectId = data._id;
-        },
-        (error) => {
-        },
-        () => {
-          this.published = true;
-          this.loading = false;
-          this.openSnackBar('This project was created and published successfuly.', 'Close');
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+              },
+              // POST SUBSCRIBE
+              [
+                (data) => {
+                  this.projectId = data._id;
+                },
+                (error) => {
+                },
+                () => {
+                  this.published = true;
+                  this.loading = false;
+                  this.openSnackBar('This project was created and published successfuly.', 'Close');
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              ],
+              // PUT SUBSCRIBE
+              [
+                (data) => {
+                },
+                (error) => {
+                },
+                () => {
+                  this.published = true;
+                  this.loading = false;
+                  this.router.navigated = false;
+                  this.openSnackBar('This project was edited and published successfuly.', 'Close');
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              ]
+            );
+          }
         }
-      ],
-      // PUT SUBSCRIBE
-      [
-        (data) => {
-        },
-        (error) => {
-        },
-        () => {
-          this.published = true;
-          this.loading = false;
-          this.router.navigated = false;
-          this.openSnackBar('This project was edited and published successfuly.', 'Close');
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
-        }
-      ]
-    );
-
+      );
   }
   // TODO: don't lose this
 

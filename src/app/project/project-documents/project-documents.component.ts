@@ -24,6 +24,7 @@ import { TableParamsObject } from 'app/shared/components/table-template/table-pa
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
 import { Utils } from 'app/shared/utils/utils';
+import { ConfigService } from 'app/services/config.service';
 
 class DocumentFilterObject {
   constructor(
@@ -45,6 +46,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   public milestones: any[] = [];
   public authors: any[] = [];
   public types: any[] = [];
+  public legislations: any[] = [];
 
   public loading = true;
 
@@ -104,7 +106,13 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       name: 'Milestone',
       value: 'milestone',
       width: 'col-2'
-    }
+    },
+    {
+      name: 'Legislation',
+      value: 'legislation',
+      width: 'col-1'
+    },
+
   ];
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
@@ -123,7 +131,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private searchService: SearchService,
-    private storageService: StorageService,
+    private configService:  ConfigService,
+    private storageService:  StorageService,
     private tableTemplateUtils: TableTemplateUtils,
     private utils: Utils
   ) {}
@@ -131,9 +140,10 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // Fetch the Lists
     this.searchService
-      .getFullList('List')
+    .getFullList('List')
       .switchMap((res: any) => {
         if (res.length > 0) {
+          this.configService.addLists(res[0].searchResults);
           res[0].searchResults.map(item => {
             switch (item.type) {
               case 'label':
@@ -545,6 +555,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             : 'Not Published',
           type: document.type,
           milestone: document.milestone,
+          legislation: document.legislation,
           _id: document._id,
           project: document.project,
           read: document.read

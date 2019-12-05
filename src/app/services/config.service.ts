@@ -49,6 +49,13 @@ export class ConfigService implements OnDestroy {
     }
   }
 
+  // Manual cache of the list without using the getLists() function
+  public addLists(list) {
+    if (this._lists.length === 0 && list) {
+      this._lists = [...list];
+    }
+  }
+
   public getRegions(): Observable<any> {
     if (this._lists.length === 0) {
       return this.api.getFullDataSet('List')
