@@ -15,6 +15,9 @@ import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-s
 import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
 import { flatMap } from 'rxjs/operators';
+import { DialogService } from 'ng2-bootstrap-modal';
+import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { Constants } from 'app/shared/utils/constants';
 
 @Component({
   selector: 'form-tab-2018',
@@ -31,118 +34,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public proponentName = '';
   public proponentId = '';
 
-  public PROJECT_SUBTYPES: Object = {
-    'Mines': [
-      'Coal Mines',
-      'Construction Stone and Industrial Mineral Quarries',
-      'Mineral Mines',
-      'Off-shore Mines',
-      'Placer Mineral Mines',
-      'Sand and Gravel Pits'
-    ],
-    'Energy-Electricity': [
-      'Electric Transmission Lines',
-      'Power Plants'
-    ],
-    'Energy-Petroleum & Natural Gas': [
-      'Energy Storage Facilities',
-      'Natural Gas Processing Plants',
-      'Off-shore Oil or Gas Facilities',
-      'Oil Refineries',
-      'Transmission Pipelines'
-    ],
-    'Transportation': [
-      'Airports',
-      'Ferry Terminals',
-      'Marine Port Projects',
-      'Public Highways',
-      'Railways'
-    ],
-    'Water Management': [
-      'Dams',
-      'Dykes',
-      'Groundwater Extraction',
-      'Shoreline Modification',
-      'Water Diversion'
-    ],
-    'Industrial': [
-      'Forest Products Industries',
-      'Non-metallic Mineral Products Industries',
-      'Organic and Inorganic Chemical Industry',
-      'Other Industries',
-      'Primary Metals Industry'
-    ],
-    'Hazardous Waste Management': [
-      'Hazardous Waste Facilities',
-      'Local Government Liquid Waste Management Facilities',
-      'Solid Waste Management'
-    ],
-    'Tourist Destination Resorts': [
-      'Golf Resorts',
-      'Marina Resorts',
-      'Resort Developments',
-      'Ski Resorts'
-    ],
-    'Other': [
-      'Other'
-    ]
-  };
-
-  public PROJECT_TYPES: Array<Object> = [
-    'Energy-Electricity',
-    'Energy-Petroleum & Natural Gas',
-    'Industrial',
-    'Mines',
-    'Other',
-    'Tourist Destination Resorts',
-    'Transportation',
-    'Hazardous Waste Management',
-    'Water Management'
-  ];
-
-  public PROJECT_STATUS: Array<Object> = [
-    'Minister\'s Designation',
-    'Early Engagement',
-    'EA Readiness Decision',
-    'Process Planning',
-    'Application Development & Review',
-    'Effects Assessment',
-    'Referral',
-    'Dispute Resolution',
-    'Post Decision - Pre-Construction',
-    'Post Decision - Construction',
-    'Post Decision - Operation',
-    'Post Decision - Care & Maintenance',
-    'Post Decision - Decommission',
-    'Post Decision - Amendment',
-    'Post Decision - Substantial Start',
-    'Post Decision - EAC Extension',
-    'Post Decision - Suspension',
-    'Complete',
-    'Other'
-  ];
-
-  public PROJECT_NATURE: Array<Object> = [
-    'New Construction',
-    'Modification of Existing',
-    'Dismantling or Abandonment'
-  ];
-
-  public EAC_DECISIONS: Array<Object> = [
-    'Project Designated Non-Reviewable',
-    'Exemption Order',
-    'Readiness Termination',
-    'In Progress',
-    'Assessment Terminated',
-    'Application Withdrawn',
-    'Certificate Issued',
-    'Certificate Refused',
-    'Certificate Expired',
-    'Certificate Cancelled',
-    'Exemption Order Rescinded',
-    'Certificate Reinstated',
-    'Certificate End of Life'
-  ];
 
   public projectName: string;
   public projectId: string;
@@ -155,6 +46,16 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public fullProject: FullProject;
   public legislationYear: Number = 2018;
   public publishedLegislation: string;
+
+  public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
+
+  public PROJECT_TYPES = Constants.PROJECT_TYPES(this.legislationYear);
+
+  public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
+
+  public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
+
+  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
 
   public loading = true;
   public published: boolean;
@@ -170,6 +71,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
+    private dialogService: DialogService
   ) {
   }
 
@@ -408,13 +310,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'capital': new FormControl(formData.intake.investment),
       'notes': new FormControl(formData.intake.investmentNotes),
       'eaStatus': new FormControl(formData.eaStatus),
-      'eaStatusDate': new FormControl(),
+      'eaStatusDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate))),
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
       'eacDecision': new FormControl(formData.eacDecision),
       'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
       'substantially': new FormControl(formData.substantially),
-      'substantiallyDate': new FormControl(),
+      'substantiallyDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.substantiallyDate))),
       'activeStatus': new FormControl(formData.activeStatus),
       'activeDate': new FormControl(),
       'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
@@ -483,13 +385,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'ea': form.controls.ea.value,
       'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
       'eaStatus': form.controls.eaStatus.value,
-      // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
+      'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
       'status': form.controls.status.value,
       // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
       'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
-      // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
+      'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
       // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
@@ -568,72 +470,99 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
+  confirmGuard(message: string): Observable<boolean> {
+    return this.dialogService.addDialog(ConfirmComponent,
+      {
+        title: 'Confirm Action',
+        message: message,
+        okOnly: false
+      }, {
+        backdropColor: 'rgba(0, 0, 0, 0.5)'
+      });
+  }
+
   onUnpublish(): void {
-    this.projectService.unPublish({
-      ...this.project,
-      _id: this.fullProject._id
-    }).takeUntil(this.ngUnsubscribe)
+    this.confirmGuard(`Are you sure you want to <strong>Un-Publish</strong> this project entirely?`)
+      .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data) => { // onNext
-        },
-        error => {
-          console.log('error =', error);
-          this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
-        },
-        () => { // onCompleted
-          this.published = false;
-          this.snackBar.open('Project un-published...', null, { duration: 2000 });
-          this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+        (confirmation: boolean) => {
+          if (confirmation) {
+            this.projectService.unPublish({
+              ...this.project,
+              _id: this.fullProject._id
+            }).takeUntil(this.ngUnsubscribe)
+              .subscribe(
+                (data) => { // onNext
+                },
+                error => {
+                  console.log('error =', error);
+                  this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
+                },
+                () => { // onCompleted
+                  this.published = false;
+                  this.snackBar.open('Project un-published...', null, { duration: 2000 });
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              );
+          }
         }
       );
+
   }
 
   onPublish(): void {
-    this.saveProject(
-      // POST
-      (project: Project): Observable<Project> => {
-        this.clearStorageService();
-        return this.projectService.publish(project);
-      },
-      // PUT
-      (project: Project): Observable<Project> => {
-        this.clearStorageService();
-        return this.projectService.publish(project);
+    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation ||  '2018 Environmental Assessment Act'}</strong>?`)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        (confirmation: boolean) => {
+          if (confirmation) {
+            this.saveProject(
+              // POST
+              (project: Project): Observable<Project> => {
+                this.clearStorageService();
+                return this.projectService.publish(project);
+              },
+              // PUT
+              (project: Project): Observable<Project> => {
+                this.clearStorageService();
+                return this.projectService.publish(project);
 
-      },
-      // POST SUBSCRIBE
-      [
-        (data) => {
-          this.projectId = data._id;
-        },
-        (error) => {
-        },
-        () => {
-          this.published = true;
-          this.loading = false;
-          this.openSnackBar('This project was created and published successfuly.', 'Close');
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+              },
+              // POST SUBSCRIBE
+              [
+                (data) => {
+                  this.projectId = data._id;
+                },
+                (error) => {
+                },
+                () => {
+                  this.published = true;
+                  this.loading = false;
+                  this.openSnackBar('This project was created and published successfuly.', 'Close');
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              ],
+              // PUT SUBSCRIBE
+              [
+                (data) => {
+                },
+                (error) => {
+                },
+                () => {
+                  this.published = true;
+                  this.loading = false;
+                  this.router.navigated = false;
+                  this.openSnackBar('This project was edited and published successfuly.', 'Close');
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              ]
+            );
+          }
         }
-      ],
-      // PUT SUBSCRIBE
-      [
-        (data) => {
-        },
-        (error) => {
-        },
-        () => {
-          this.published = true;
-          this.loading = false;
-          this.router.navigated = false;
-          this.openSnackBar('This project was edited and published successfuly.', 'Close');
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
-        }
-      ]
-    );
-
+      );
   }
   // TODO: don't lose this
 
@@ -682,6 +611,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
     }
   }
+
+
 
   onSubmit(): void {
     this.saveProject(

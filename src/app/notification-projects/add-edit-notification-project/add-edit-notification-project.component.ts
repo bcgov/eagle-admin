@@ -45,8 +45,8 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
   // On an edit, these are the documents we are going to delete
   public documentsToDelete = [];
 
-  public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES;
-  public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES;
+  public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
+  public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
 
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
