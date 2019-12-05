@@ -512,7 +512,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
-    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation}</strong>?`)
+    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation ||  '2018 Environmental Assessment Act'}</strong>?`)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
         (confirmation: boolean) => {
