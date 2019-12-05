@@ -171,9 +171,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   buildForm() {
     if (this.storageService.state.form2018) {
-      // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2018;
       this.onChangeType(null);
+    } else if (!this.tabIsEditing && !this.only2018) {
+      this.autofill();
     } else if (this.tabIsEditing) {
       // First entry on resolver
       this.myForm = this.buildFormFromData(this.project);
