@@ -15,6 +15,8 @@ import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-s
 import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
 import { flatMap } from 'rxjs/operators';
+import { DialogService } from 'ng2-bootstrap-modal';
+import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { Constants } from 'app/shared/utils/constants';
 
 @Component({
@@ -69,6 +71,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
+    private dialogService: DialogService
   ) {
   }
 
@@ -467,72 +470,99 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
+  confirmGuard(message: string): Observable<boolean> {
+    return this.dialogService.addDialog(ConfirmComponent,
+      {
+        title: 'Confirm Action',
+        message: message,
+        okOnly: false
+      }, {
+        backdropColor: 'rgba(0, 0, 0, 0.5)'
+      });
+  }
+
   onUnpublish(): void {
-    this.projectService.unPublish({
-      ...this.project,
-      _id: this.fullProject._id
-    }).takeUntil(this.ngUnsubscribe)
+    this.confirmGuard(`Are you sure you want to <strong>Un-Publish</strong> this project entirely?`)
+      .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data) => { // onNext
-        },
-        error => {
-          console.log('error =', error);
-          this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
-        },
-        () => { // onCompleted
-          this.published = false;
-          this.snackBar.open('Project un-published...', null, { duration: 2000 });
-          this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+        (confirmation: boolean) => {
+          if (confirmation) {
+            this.projectService.unPublish({
+              ...this.project,
+              _id: this.fullProject._id
+            }).takeUntil(this.ngUnsubscribe)
+              .subscribe(
+                (data) => { // onNext
+                },
+                error => {
+                  console.log('error =', error);
+                  this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
+                },
+                () => { // onCompleted
+                  this.published = false;
+                  this.snackBar.open('Project un-published...', null, { duration: 2000 });
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              );
+          }
         }
       );
+
   }
 
   onPublish(): void {
-    this.saveProject(
-      // POST
-      (project: Project): Observable<Project> => {
-        this.clearStorageService();
-        return this.projectService.publish(project);
-      },
-      // PUT
-      (project: Project): Observable<Project> => {
-        this.clearStorageService();
-        return this.projectService.publish(project);
+    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation ||  '2018 Environmental Assessment Act'}</strong>?`)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(
+        (confirmation: boolean) => {
+          if (confirmation) {
+            this.saveProject(
+              // POST
+              (project: Project): Observable<Project> => {
+                this.clearStorageService();
+                return this.projectService.publish(project);
+              },
+              // PUT
+              (project: Project): Observable<Project> => {
+                this.clearStorageService();
+                return this.projectService.publish(project);
 
-      },
-      // POST SUBSCRIBE
-      [
-        (data) => {
-          this.projectId = data._id;
-        },
-        (error) => {
-        },
-        () => {
-          this.published = true;
-          this.loading = false;
-          this.openSnackBar('This project was created and published successfuly.', 'Close');
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
+              },
+              // POST SUBSCRIBE
+              [
+                (data) => {
+                  this.projectId = data._id;
+                },
+                (error) => {
+                },
+                () => {
+                  this.published = true;
+                  this.loading = false;
+                  this.openSnackBar('This project was created and published successfuly.', 'Close');
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              ],
+              // PUT SUBSCRIBE
+              [
+                (data) => {
+                },
+                (error) => {
+                },
+                () => {
+                  this.published = true;
+                  this.loading = false;
+                  this.router.navigated = false;
+                  this.openSnackBar('This project was edited and published successfuly.', 'Close');
+                  this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
+                  this.router.navigate(['/p', this.projectId, 'project-details']);
+                }
+              ]
+            );
+          }
         }
-      ],
-      // PUT SUBSCRIBE
-      [
-        (data) => {
-        },
-        (error) => {
-        },
-        () => {
-          this.published = true;
-          this.loading = false;
-          this.router.navigated = false;
-          this.openSnackBar('This project was edited and published successfuly.', 'Close');
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
-          this.router.navigate(['/p', this.projectId, 'project-details']);
-        }
-      ]
-    );
-
+      );
   }
   // TODO: don't lose this
 
@@ -581,6 +611,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
     }
   }
+
+
 
   onSubmit(): void {
     this.saveProject(
