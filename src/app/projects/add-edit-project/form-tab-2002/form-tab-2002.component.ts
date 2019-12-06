@@ -49,7 +49,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
 
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
-
+  public PROJECT_CEAA_INVOLVEMENT = Constants.CEAA_INVOLVEMENT(this.legislationYear);
+  public PROJECT_NATURE_OBJECT = Constants.buildToNature;
+  public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
   public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
   // these are for extensions
   // public modifications = [];
@@ -414,16 +416,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
-  isSelected(val) {
+  isNatureSelected(val) {
     if (this.myForm.controls.build.value === val) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  isEACSelected(val) {
-    if (this.myForm.controls.eaStatus.value === val) {
       return true;
     } else {
       return false;

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ISearchResults } from 'app/models/search';
+import {Constants} from './constants';
 
 const encode = encodeURIComponent;
 window['encodeURIComponent'] = (component: string) => {
@@ -9,12 +10,6 @@ window['encodeURIComponent'] = (component: string) => {
   });
 };
 
-const buildToNature = {
-  new: 'New Construction',
-  modification: 'Modification of Existing',
-  dismantling: 'Dismantling or Abandonment',
-  unknown: 'Unknown nature value',
-};
 
 @Injectable()
 export class Utils {
@@ -115,10 +110,11 @@ export class Utils {
     }
 
     // Mapping the build database field to the human readable nature field
-    public natureBuildMapper(key: string, reverseMapping?: false): string {
+    public natureBuildMapper(key: string): string {
       if (!key) {
         return '';
       }
-      return (reverseMapping) ? Object.keys(buildToNature).find(aKey => buildToNature[aKey] === key) : buildToNature[key];
+      const natureObj = Constants.buildToNature.find(obj => obj.build === key);
+      return (natureObj) ? natureObj.nature : key;
     }
 }

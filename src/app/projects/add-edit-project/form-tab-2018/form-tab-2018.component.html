@@ -14,10 +14,8 @@
         <div class="label-pair">
           <label for="build">Project Nature*</label>
           <select name="build" id="build" formControlName="build" class="form-control">
-            <option [selected]='isSelected("new")' value="new">New Construction</option>
-            <option [selected]='isSelected("modification")' value="modification">Modification of Existing</option>
-            <option [selected]='isSelected("dismantling")' value="dismantling">Dismantling or Abandonment</option>
-          </select>
+              <option *ngFor="let natureObj of PROJECT_NATURE_OBJECT" [ngValue]="natureObj.build" [selected]='isNatureSelected(natureObj.build)'>{{natureObj.nature}}</option>
+            </select>
         </div>
         <div class="label-pair add-row">
             <label for="proponent">Proponent*</label>
@@ -80,13 +78,6 @@
           <label for="lon">Long* </label>
           <input name="lon" id="lon" formControlName="lon" type="text" class="form-control" />
         </div>
-        <!-- <div class="label-pair file">
-          <label for="addFile">Add Shape File </label>
-          <div class="input-group">
-            <i class="material-icons" role="presentation">attach_file</i>
-            <input name="addFile" id="addFile" formControlName="addFile" type="file" class="form-control" />
-          </div>
-        </div> -->
       </div>
     </section>
     <section>
@@ -95,23 +86,9 @@
         <div class="label-pair">
           <label for="CEAAInvolvement">CEAA Involvement </label>
           <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
-            <option>None</option>
-            <option>Panel</option>
-            <option>Panel (CEAA 2012)</option>
-            <option>Coordinated</option>
-            <option>Screening</option>
-            <option>Screening - Confirmed</option>
-            <option>Substituted</option>
-            <option>Substituted (Provincial Lead)</option>
-            <option>Comprehensive Study</option>
-            <option>Comprehensive Study - Unconfirmed</option>
-            <option>Comprehensive Study - Confirmed</option>
-            <option>Comprehensive Study (Pre CEAA 2012)</option>
-            <option>Comp Study</option>
-            <option>Comp Study - Unconfirmed</option>
-            <option>To be determined</option>
-            <option>Equivalent - NEB</option>
-          </select>
+              <option value='null'>---Select---</option>
+              <option *ngFor="let involvement of PROJECT_CEAA_INVOLVEMENT" [ngValue]="involvement">{{involvement}}</option>
+            </select>
         </div>
         <div class="label-pair med">
           <label for="CEAALink">CEAA URL </label>
@@ -137,9 +114,8 @@
           <div class="label-pair">
             <label for="eaStatus">EA Readiness Determination </label>
             <select name="eaStatus" id="eaStatus" formControlName="eaStatus" class="form-control">
-                <option [selected]="isEACSelected('Exempt')" value='Exempt'>Exempt</option>
-              <option [selected]="isEACSelected('Terminate')" value='Terminate'>Terminate</option>
-              <option [selected]="isEACSelected('Proceed with Assessment')" value='Proceed with Assessment'>Proceed with Assessment</option>
+              <option value='null'>---Select---</option>
+              <option *ngFor="let ea of EA_READINESS_TYPES" [ngValue]="ea">{{ea}}</option>
             </select>
           </div>
           <div class="label-pair">
@@ -166,6 +142,7 @@
           <div class="label-pair">
             <label for="eacDecision">EA Decision </label>
             <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
+              <option value='null'>---Select---</option>
               <option *ngFor="let eacDecision of EAC_DECISIONS" [ngValue]="eacDecision">{{eacDecision}}</option>
             </select>
           </div>
