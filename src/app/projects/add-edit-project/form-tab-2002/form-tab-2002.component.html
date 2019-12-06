@@ -83,6 +83,7 @@
         <div class="label-pair">
           <label for="CEAAInvolvement">CEAA Involvement </label>
           <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
+              <option value='null'>---Select---</option>
               <option *ngFor="let involvement of PROJECT_CEAA_INVOLVEMENT" [ngValue]="involvement">{{involvement}}</option>
           </select>
         </div>
@@ -132,6 +133,7 @@
           <div class="label-pair">
             <label for="status">Project Status </label>
             <select name="status" id="status" formControlName="status" class="form-control">
+              <option value='null'>---Select---</option>
               <option *ngFor="let status of PROJECT_STATUS" [ngValue]="status">{{status}}</option>
             </select>
           </div>
@@ -140,6 +142,7 @@
           <div class="label-pair">
             <label for="eacDecision">EA Decision </label>
             <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
+              <option value='null'>---Select---</option>
               <option *ngFor="let eacDecision of EAC_DECISIONS" [ngValue]="eacDecision">{{eacDecision}}</option>
             </select>
           </div>
