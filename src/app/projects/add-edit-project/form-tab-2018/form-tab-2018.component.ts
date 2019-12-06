@@ -55,7 +55,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
 
+ public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
+
   public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
+  public PROJECT_CEAA_INVOLVEMENT = Constants.CEAA_INVOLVEMENT(this.legislationYear);
   public PROJECT_NATURE_OBJECT = Constants.buildToNature;
   public loading = true;
   public published: boolean;
@@ -354,14 +357,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   check2018() {
     this.only2018 = this.fullProject && this.fullProject.legislationYearList && this.fullProject.legislationYearList.length === 1 && this.fullProject.legislationYearList[0] === 2018;
-  }
-
-  isEACSelected(val) {
-    if (this.myForm.controls.eaStatus.value === val) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   private getDecisionDate(value) {

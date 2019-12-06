@@ -22,6 +22,65 @@ export class Constants {
       nature: 'Dismantling or Abandonment'
     },
   ];
+  public static readonly EA_READINESS_TYPES = (legislationYear: Number): Array<string> => {
+    switch (legislationYear) {
+      case 2002:
+        return [
+          'No Determination',
+          'Does not require EAC',
+          'Proceed with Assessment',
+          'Requires EAC'
+      ];
+      case 2018:
+        return [
+          'Exempt',
+          'Terminate',
+          'Proceed with Assessment',
+      ];
+    }
+  }
+  public static readonly CEAA_INVOLVEMENT = (legislationYear: Number): Array<string> => {
+    switch (legislationYear) {
+      case 2002:
+        return [
+          'None',
+          'Panel',
+          'Panel (CEAA 2012)',
+          'Coordinated',
+          'Screening',
+          'Screening - Confirmed',
+          'Substituted',
+          'Substituted (Provincial Lead)',
+          'Comprehensive Study',
+          'Comprehensive Study - Unconfirmed',
+          'Comprehensive Study - Confirmed',
+          'Comprehensive Study (Pre CEAA 2012)',
+          'Comp Study',
+          'Comp Study - Unconfirmed',
+          'To be determined',
+          'Equivalent - NEB',
+      ];
+      case 2018:
+        return [
+          'None',
+          'Panel',
+          'Panel (CEAA 2012)',
+          'Coordinated',
+          'Screening',
+          'Screening - Confirmed',
+          'Substituted',
+          'Substituted (Provincial Lead)',
+          'Comprehensive Study',
+          'Comprehensive Study - Unconfirmed',
+          'Comprehensive Study - Confirmed',
+          'Comprehensive Study (Pre CEAA 2012)',
+          'Comp Study',
+          'Comp Study - Unconfirmed',
+          'To be determined',
+          'Equivalent - NEB',
+      ];
+    }
+  }
   public static readonly EAC_DECISIONS = (legislationYear: Number): Array<string> => {
     switch (legislationYear) {
       case 2002:

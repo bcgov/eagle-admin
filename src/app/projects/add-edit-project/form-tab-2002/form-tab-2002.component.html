@@ -83,22 +83,7 @@
         <div class="label-pair">
           <label for="CEAAInvolvement">CEAA Involvement </label>
           <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
-            <option>None</option>
-            <option>Panel</option>
-            <option>Panel (CEAA 2012)</option>
-            <option>Coordinated</option>
-            <option>Screening</option>
-            <option>Screening - Confirmed</option>
-            <option>Substituted</option>
-            <option>Substituted (Provincial Lead)</option>
-            <option>Comprehensive Study</option>
-            <option>Comprehensive Study - Unconfirmed</option>
-            <option>Comprehensive Study - Confirmed</option>
-            <option>Comprehensive Study (Pre CEAA 2012)</option>
-            <option>Comp Study</option>
-            <option>Comp Study - Unconfirmed</option>
-            <option>To be determined</option>
-            <option>Equivalent - NEB</option>
+              <option *ngFor="let involvement of PROJECT_CEAA_INVOLVEMENT" [ngValue]="involvement">{{involvement}}</option>
           </select>
         </div>
         <div class="label-pair med">
@@ -125,10 +110,8 @@
           <div class="label-pair">
             <label for="eaStatus">EA Readiness Determination </label>
             <select name="eaStatus" id="eaStatus" formControlName="eaStatus" class="form-control">
-              <option [ngValue]="null"> No Determination </option>
-              <option [selected]="isEACSelected('Does not require EAC')" value='Does not require EAC'>Does not require
-                EAC</option>
-              <option [selected]="isEACSelected('Requires EAC')" value='Requires EAC'>Requires EAC</option>
+              <option value='null'>---Select---</option>
+              <option *ngFor="let ea of EA_READINESS_TYPES" [ngValue]="ea">{{ea}}</option>
             </select>
           </div>
           <div class="label-pair">
