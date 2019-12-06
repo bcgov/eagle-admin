@@ -337,11 +337,11 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   onCancel() {
     this.clearStorageService();
     this.buildForm();
-    // if (this.back && this.back.url) {
-    //   this.router.navigate(this.back.url);
-    // } else {
-    //   this.router.navigate(['/projects']);
-    // }
+    if (this.back && this.back.url) {
+      this.router.navigate(this.back.url);
+    } else {
+      this.router.navigate(['/projects']);
+    }
   }
 
   isSelected(val) {
