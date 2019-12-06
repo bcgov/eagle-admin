@@ -513,15 +513,16 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
-    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation ||  '2018 Environmental Assessment Act'}</strong>?`)
+    this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>2018 Environmental Assessment Act</strong>?`)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
         (confirmation: boolean) => {
           if (confirmation) {
             this.saveProject(
               // POST
-              (project: Project): Observable<Project> => {
+              (project: Project, apiRes: Project): Observable<Project> => {
                 this.clearStorageService();
+                project = {...project, _id: apiRes._id};
                 return this.projectService.publish(project);
               },
               // PUT
@@ -567,7 +568,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
   // TODO: don't lose this
 
-  saveProject(postFunction: (_: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
+  saveProject(postFunction: (_: Project, apiRes: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
     postSubscribe: ((_: any) => void)[], putSubscribe: ((_: any) => void)[]): void {
 
     if (!this.validateForm()) {
@@ -582,11 +583,21 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           legislationYear: this.legislationYear
         }
       );
-      this.projectService.add(project)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          ...postSubscribe
-        );
+      if (postFunction) {
+        this.projectService.add(project)
+        .takeUntil(this.ngUnsubscribe).pipe(flatMap(apiRes => postFunction(project, apiRes) ))
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe(
+            ...postSubscribe
+          );
+      } else {
+        this.projectService.add(project)
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe(
+            ...postSubscribe
+          );
+      }
+
     } else {
       // PUT
       // need to add on legislation year so that we can know where to put it on the root object
