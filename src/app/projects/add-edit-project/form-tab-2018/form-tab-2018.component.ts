@@ -353,7 +353,11 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   check2018() {
-    this.only2018 = this.fullProject && this.fullProject.legislationYearList && this.fullProject.legislationYearList.length === 1 && this.fullProject.legislationYearList[0] === 2018;
+    this.only2018 =
+      this.fullProject ?
+      this.fullProject.legislationYearList.length === 1
+      && this.fullProject.legislationYearList[0] === 2018
+      : true;
   }
 
   isEACSelected(val) {
