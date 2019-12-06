@@ -56,7 +56,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
 
   public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
-
+  public PROJECT_NATURE_OBJECT = Constants.buildToNature;
   public loading = true;
   public published: boolean;
   public only2018: boolean;
@@ -344,7 +344,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     // }
   }
 
-  isSelected(val) {
+  isNatureSelected(val) {
     if (this.myForm.controls.build.value === val) {
       return true;
     } else {

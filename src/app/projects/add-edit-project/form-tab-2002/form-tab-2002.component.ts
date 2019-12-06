@@ -49,6 +49,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
 
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
+  public PROJECT_NATURE_OBJECT = Constants.buildToNature;
 
   public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
   // these are for extensions
@@ -414,7 +415,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
-  isSelected(val) {
+  isNatureSelected(val) {
     if (this.myForm.controls.build.value === val) {
       return true;
     } else {

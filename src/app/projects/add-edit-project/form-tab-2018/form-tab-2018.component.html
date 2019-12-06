@@ -14,10 +14,8 @@
         <div class="label-pair">
           <label for="build">Project Nature*</label>
           <select name="build" id="build" formControlName="build" class="form-control">
-            <option [selected]='isSelected("new")' value="new">New Construction</option>
-            <option [selected]='isSelected("modification")' value="modification">Modification of Existing</option>
-            <option [selected]='isSelected("dismantling")' value="dismantling">Dismantling or Abandonment</option>
-          </select>
+              <option *ngFor="let natureObj of PROJECT_NATURE_OBJECT" [ngValue]="natureObj.build" [selected]='isNatureSelected(natureObj.build)'>{{natureObj.nature}}</option>
+            </select>
         </div>
         <div class="label-pair add-row">
             <label for="proponent">Proponent*</label>

@@ -11,9 +11,7 @@
         <div class="label-pair">
           <label for="build">Project Nature*</label>
           <select name="build" id="build" formControlName="build" class="form-control">
-            <option [selected]='isSelected("new")' value="new">New Construction</option>
-            <option [selected]='isSelected("modification")' value="modification">Modification of Existing</option>
-            <option [selected]='isSelected("dismantling")' value="dismantling">Dismantling or Abandonment</option>
+            <option *ngFor="let natureObj of PROJECT_NATURE_OBJECT" [ngValue]="natureObj.build" [selected]='isNatureSelected(natureObj.build)'>{{natureObj.nature}}</option>
           </select>
         </div>
         <div class="label-pair add-row">
@@ -77,13 +75,6 @@
           <label for="lon">Long* </label>
           <input name="lon" id="lon" formControlName="lon" type="text" class="form-control" />
         </div>
-        <!-- <div class="label-pair file">
-          <label for="addFile">Add Shape File </label>
-          <div class="input-group">
-            <i class="material-icons" role="presentation">attach_file</i>
-            <input name="addFile" id="addFile" formControlName="addFile" type="file" class="form-control" />
-          </div>
-        </div> -->
       </div>
     </section>
     <section>

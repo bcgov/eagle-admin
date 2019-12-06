@@ -1,3 +1,8 @@
+export interface BuildNature {
+  build: string;
+  nature: string;
+}
+
 export class Constants {
   public static readonly tableDefaults = {
     DEFAULT_CURRENT_PAGE: 1,
@@ -6,6 +11,17 @@ export class Constants {
     DEFAULT_KEYWORDS: ''
   };
 
+  public static readonly buildToNature: BuildNature[] = [
+    { build: 'new',
+      nature: 'New Construction'
+    },
+    { build: 'modification',
+      nature: 'Modification of Existing'
+    },
+    { build: 'dismantling',
+      nature: 'Dismantling or Abandonment'
+    },
+  ];
   public static readonly EAC_DECISIONS = (legislationYear: Number): Array<string> => {
     switch (legislationYear) {
       case 2002:
