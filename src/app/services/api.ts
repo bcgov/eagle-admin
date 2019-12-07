@@ -1081,7 +1081,8 @@ export class ApiService {
     if (filter !== {}) {
       Object.keys(filter).map(key => {
         filter[key].split(',').map(item => {
-          queryString += `&or[${key}]=${item}`;
+          let safeItem = this.utils.encodeFilename(item, true);
+          queryString += `&or[${key}]=${safeItem}`;
         });
       });
     }
