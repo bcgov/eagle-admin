@@ -119,12 +119,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     params['sortBy'] = this.tableParams.sortBy;
     params['keywords'] = this.tableParams.keywords;
     params['pageSize'] = this.tableParams.pageSize;
-
-    if (this.isEditing) {
-      this.router.navigate(['c', this.contactId, 'edit', 'link-org', params]);
-    } else {
-      this.router.navigate(['contacts', 'add', 'link-org', params]);
-    }
+    this.router.navigate([...this.router.url.split(';')[0].split('/'), params]);
   }
 
   setRowData() {
