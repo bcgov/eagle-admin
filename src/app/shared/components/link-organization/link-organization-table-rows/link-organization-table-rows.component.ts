@@ -38,6 +38,7 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
       arr.push(item);
       this.storageService.state.add(arr, this.storageService.state.component);
       this.storageService.state.selectedOrganization = null;
+      this.storageService.state.add = null;
     }
 
     let url = this.navigationStackUtils.getLastBackUrl();

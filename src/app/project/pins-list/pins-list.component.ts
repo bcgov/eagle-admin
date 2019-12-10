@@ -204,7 +204,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
     });
     // Add all the filtered new items.
     component.projectService.addPins(component.currentProject, filteredPins)
-    // .takeUntil(component.ngUnsubscribe)
+    .takeUntil(component.ngUnsubscribe)
     .subscribe(
       () => { // onCompleted
         // this.loading = false;
