@@ -36,6 +36,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
   public filterPublicCommentPeriod = false;
   public filterNews = false;
   public selectedCount = 0;
+  public pinsPublished = false;
 
   public tableColumns: any[] = [
     {
@@ -89,6 +90,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
         if (res) {
           this.entries = [];
           if (res.contacts && res.contacts.length > 0 && res.contacts[0].results) {
+
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
@@ -163,7 +165,12 @@ export class PinsListComponent implements OnInit, OnDestroy {
   isEnabled(button) {
     return this.selectedCount > 0;
   }
-
+  publishPins() {
+    // TODO: Publish all pins in list logic
+  }
+  unpublishPins() {
+    // TODO: UnPublish all pins in list logic
+  }
   setRowData() {
     let list = [];
     if (this.entries && this.entries.length > 0) {
