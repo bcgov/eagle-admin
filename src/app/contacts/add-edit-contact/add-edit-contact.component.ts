@@ -242,6 +242,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    this.storageService.state.add = null;
     this.storageService.state.contactForm = this.contactForm;
     this.setBreadcrumbs();
     if (!this.isEditing) {
