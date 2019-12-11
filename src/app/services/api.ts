@@ -271,6 +271,14 @@ export class ApiService {
     const queryString = `project/${projId}/pin/${pinId}`;
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
   }
+  publishPins(projId: string): Observable<Project> {
+    const queryString = `project/${projId}/pin/publish`;
+    return this.http.get<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+  unpublishPins(projId: string): Observable<Project> {
+    const queryString = `project/${projId}/pin/unpublish`;
+    return this.http.get<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
 
   getProjectPins(id: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
     let queryString = `project/${id}/pin`;

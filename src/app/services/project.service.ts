@@ -214,6 +214,14 @@ export class ProjectService {
     return this.api.deletePin(projId, pin)
       .catch(error => this.api.handleError(error));
   }
+  publishPins(projId: string): Observable<Project> {
+    return this.api.publishPins(projId)
+      .catch(error => this.api.handleError(error));
+  }
+  unpublishPins(projId: string): Observable<Project> {
+    return this.api.unpublishPins(projId)
+      .catch(error => this.api.handleError(error));
+  }
 
   getPins(proj: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
     return this.api.getProjectPins(proj, pageNum, pageSize, sortBy)

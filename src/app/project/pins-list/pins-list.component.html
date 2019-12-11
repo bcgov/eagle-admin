@@ -35,9 +35,9 @@
   (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event, null, null)'>
 </app-table-template>
   <div *ngIf="this.entries" class="text-right">
-    <button *ngIf="this.pinsPublished" (click)="publishPins()" class="btn btn-publish" type="button"
+    <button *ngIf="!this.pinsPublished" (click)="publishPins()" class="btn btn-publish btn-primary" type="button"
       id="button-sa">Publish All Pins</button>
-    <button *ngIf="!this.pinsPublished" (click)="unpublishPins()" class="btn btn-unpublish" type="button"
+    <button *ngIf="this.pinsPublished" (click)="unpublishPins()" class="btn btn-unpublish btn-primary" type="button"
     id="button-sa">UnPublish All Pins</button>
   </div>
 </div>

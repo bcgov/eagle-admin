@@ -90,7 +90,9 @@ export class PinsListComponent implements OnInit, OnDestroy {
         if (res) {
           this.entries = [];
           if (res.contacts && res.contacts.length > 0 && res.contacts[0].results) {
-
+            if (res.contacts[0].read.includes('public')) {
+              this.pinsPublished = true;
+            }
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
@@ -166,10 +168,18 @@ export class PinsListComponent implements OnInit, OnDestroy {
     return this.selectedCount > 0;
   }
   publishPins() {
-    // TODO: Publish all pins in list logic
+    if (this.currentProject && this.currentProject._id) {
+      this.projectService.publishPins(this.currentProject._id);
+    } else {
+      // Error
+    }
   }
   unpublishPins() {
-    // TODO: UnPublish all pins in list logic
+    if (this.currentProject && this.currentProject._id) {
+      this.projectService.unpublishPins(this.currentProject._id);
+    } else {
+      // Error
+    }
   }
   setRowData() {
     let list = [];
