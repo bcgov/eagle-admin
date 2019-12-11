@@ -273,6 +273,18 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       formData.substantially = 'yes';
     }
 
+    if (!formData.substantiallyDate) {
+      formData.substantiallyDate = '';
+    } else {
+      formData.substantiallyDate = this.utils.convertJSDateToNGBDate(new Date(formData.substantiallyDate));
+    }
+
+    if (!formData.eaStatusDate) {
+      formData.eaStatusDate = '';
+    } else {
+      formData.eaStatusDate = this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate));
+    }
+
     if (!formData.centroid) {
       formData.centroid = [-123.3656, 48.4284];
     }
@@ -314,13 +326,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'capital': new FormControl(formData.intake.investment),
       'notes': new FormControl(formData.intake.investmentNotes),
       'eaStatus': new FormControl(formData.eaStatus),
-      'eaStatusDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate))),
+      'eaStatusDate': new FormControl(formData.eaStatusDate),
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
       'eacDecision': new FormControl(formData.eacDecision),
       'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
       'substantially': new FormControl(formData.substantially),
-      'substantiallyDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.substantiallyDate))),
+      'substantiallyDate': new FormControl(formData.substantiallyDate),
       'activeStatus': new FormControl(formData.activeStatus),
       'activeDate': new FormControl(),
       'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
