@@ -74,7 +74,7 @@ export class Utils {
     return encode(inputParam).replace(/\(/g, '%28').replace(/\)/g, '%29');
   }
 
-  public encodeFilename(filename: string, isUrl: boolean) {
+  public encodeString(filename: string, isUrl: boolean) {
     let safeName;
     if (isUrl) {
       return safeName = encode(filename).replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_').replace(/\%2F/g, '_').replace(/ /g, '_');
