@@ -1,8 +1,10 @@
 <tr
   *ngFor="let item of contacts | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
-  <td data-label="Select" (click)="selectItem(item)" scope="row" class="col-1">
-    <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='item.checkbox'>
-  </td>
   <td scope="row" data-label="Name" class="col-8">{{item.name || '-'}}</td>
   <td scope="row" data-label="Province" class="col-4">{{item.province || '-' }}</td>
+  <td data-label="Select" (click)="deleteActivity(item)" scope="row" class="col-1 cursor-pointer">
+    <i class="material-icons">
+      delete
+    </i>
+  </td>
 </tr>

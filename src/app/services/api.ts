@@ -273,11 +273,11 @@ export class ApiService {
   }
   publishPins(projId: string): Observable<Project> {
     const queryString = `project/${projId}/pin/publish`;
-    return this.http.get<Project>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
   }
   unpublishPins(projId: string): Observable<Project> {
     const queryString = `project/${projId}/pin/unpublish`;
-    return this.http.get<Project>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
   getProjectPins(id: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
