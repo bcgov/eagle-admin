@@ -39,8 +39,9 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   deleteActivity(activity) {
     this.dialogService.addDialog(ConfirmComponent,
       {
-        title: 'Delete Activity',
-        message: 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.'
+        title: 'Delete Participating Indigenous Nation',
+        message: 'Click <strong>OK</strong> to delete this Participating Indigenous Nation or <strong>Cancel</strong> to return to the list.',
+        okOnly: false
       }, {
         backdropColor: 'rgba(0, 0, 0, 0.5)'
       })
