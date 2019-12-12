@@ -273,6 +273,24 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       formData.substantially = 'yes';
     }
 
+    if (!formData.substantiallyDate) {
+      formData.substantiallyDate = '';
+    } else {
+      formData.substantiallyDate = this.utils.convertJSDateToNGBDate(new Date(formData.substantiallyDate));
+    }
+
+    if (!formData.eaStatusDate) {
+      formData.eaStatusDate = '';
+    } else {
+      formData.eaStatusDate = this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate));
+    }
+
+    if (!formData.decisionDate) {
+      formData.decisionDate = '';
+    } else {
+      formData.decisionDate = this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate));
+    }
+
     if (!formData.centroid) {
       formData.centroid = [-123.3656, 48.4284];
     }
@@ -314,13 +332,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'capital': new FormControl(formData.intake.investment),
       'notes': new FormControl(formData.intake.investmentNotes),
       'eaStatus': new FormControl(formData.eaStatus),
-      'eaStatusDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate))),
+      'eaStatusDate': new FormControl(formData.eaStatusDate),
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
       'eacDecision': new FormControl(formData.eacDecision),
-      'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
+      'decisionDate': new FormControl(formData.decisionDate),
       'substantially': new FormControl(formData.substantially),
-      'substantiallyDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.substantiallyDate))),
+      'substantiallyDate': new FormControl(formData.substantiallyDate),
       'activeStatus': new FormControl(formData.activeStatus),
       'activeDate': new FormControl(),
       'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
@@ -363,11 +381,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       : true;
   }
 
-  private getDecisionDate(value) {
-    // nb: isNaN(undefined) returns true, while isNaN(null) returns false
-    let date = value === null ? undefined : value.day;
-    return isNaN(date) ? null : new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(value))).toISOString();
-  }
   convertFormToProject(form) {
     return {
       'name': form.controls.name.value,
@@ -389,7 +402,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'status': form.controls.status.value,
       // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
-      'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
+      'decisionDate': form.get('decisionDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value))).toISOString() : null,
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
       'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,

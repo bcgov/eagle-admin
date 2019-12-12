@@ -813,7 +813,7 @@ export class ApiService {
     } else {
       filename = document.documentFileName;
     }
-    filename = this.utils.encodeFilename(filename, false);
+    filename = this.utils.encodeString(filename, false);
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -844,7 +844,7 @@ export class ApiService {
       filename = 'export.csv';
     }
 
-    filename = this.utils.encodeFilename(filename, true);
+    filename = this.utils.encodeString(filename, true);
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -867,7 +867,7 @@ export class ApiService {
     } else {
       filename = document.documentFileName;
     }
-    filename = this.utils.encodeFilename(filename, true);
+    filename = this.utils.encodeString(filename, true);
     window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
   }
 
@@ -1089,7 +1089,8 @@ export class ApiService {
     if (filter !== {}) {
       Object.keys(filter).map(key => {
         filter[key].split(',').map(item => {
-          queryString += `&or[${key}]=${item}`;
+          let safeItem = this.utils.encodeString(item, true);
+          queryString += `&or[${key}]=${safeItem}`;
         });
       });
     }
