@@ -192,7 +192,7 @@ export class Constants {
         'Other',
         'Tourist Destination Resorts',
         'Transportation',
-        'Hazardous Waste Management',
+        'Waste Disposal',
         'Water Management'
       ];
     }
