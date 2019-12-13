@@ -1087,9 +1087,14 @@ export class ApiService {
       });
     }
     if (filter !== {}) {
+      let safeItem;
       Object.keys(filter).map(key => {
         filter[key].split(',').map(item => {
-          let safeItem = this.utils.encodeString(item, true);
+          if (item.includes('&')) {
+            safeItem = this.utils.encodeString(item, true);
+          } else {
+            safeItem = item;
+          }
           queryString += `&or[${key}]=${safeItem}`;
         });
       });
