@@ -208,8 +208,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         'decisionDate': new FormControl(),
         'substantially': new FormControl(),
         'substantiallyDate': new FormControl(),
-        'disputeResolution': new FormControl(),
-        'disputeResolutionDate:': new FormControl(),
+        'dispute': new FormControl(),
+        'disputeDate': new FormControl(),
         'activeStatus': new FormControl(),
         'activeDate': new FormControl(),
         'responsibleEPDId': new FormControl(),
@@ -281,6 +281,18 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       formData.substantiallyDate = this.utils.convertJSDateToNGBDate(new Date(formData.substantiallyDate));
     }
 
+    if (!formData.dispute) {
+      formData.dispute = 'no';
+    } else {
+      formData.dispute = 'yes';
+    }
+
+    if (!formData.disputeDate) {
+      formData.disputeDate = '';
+    } else {
+      formData.disputeDate = this.utils.convertJSDateToNGBDate(new Date(formData.disputeDate));
+    }
+
     if (!formData.eaStatusDate) {
       formData.eaStatusDate = '';
     } else {
@@ -341,6 +353,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'decisionDate': new FormControl(formData.decisionDate),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(formData.substantiallyDate),
+      'dispute': new FormControl(formData.dispute),
+      'disputeDate': new FormControl(formData.disputeDate),
       'activeStatus': new FormControl(formData.activeStatus),
       'activeDate': new FormControl(),
       'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
@@ -407,6 +421,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'decisionDate': form.get('decisionDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value))).toISOString() : null,
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
       'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
+      'dispute': form.controls.dispute.value === 'yes' ? true : false,
+      'disputeDate': form.get('disputeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('disputeDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
       // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
