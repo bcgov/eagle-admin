@@ -152,7 +152,6 @@ export class Constants {
           'Application Development & Review',
           'Effects Assessment',
           'Referral',
-          'Dispute Resolution',
           'Post Decision - Pre-Construction',
           'Post Decision - Construction',
           'Post Decision - Operation',

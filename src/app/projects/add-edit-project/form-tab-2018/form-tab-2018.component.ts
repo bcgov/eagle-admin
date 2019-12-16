@@ -208,6 +208,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         'decisionDate': new FormControl(),
         'substantially': new FormControl(),
         'substantiallyDate': new FormControl(),
+        'disputeResolution': new FormControl(),
+        'disputeResolutionDate:': new FormControl(),
         'activeStatus': new FormControl(),
         'activeDate': new FormControl(),
         'responsibleEPDId': new FormControl(),
