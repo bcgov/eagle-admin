@@ -85,31 +85,31 @@ export class Constants {
     switch (legislationYear) {
       case 2002:
         return [
-          'In Progress', // default, set in BuildForm() and BuildFormFromData()
+          'In Progress',
+          'Certificate Not Required',
+          'Terminated',
+          'Withdrawn',
+          'Pre-EA Act Approval',
           'Certificate Issued',
           'Certificate Refused',
-          'Further Assessment Required',
-          'Certificate Not Required',
           'Certificate Expired',
-          'Withdrawn',
-          'Terminated',
-          'Pre-EA Act Approval',
-          'Not Designated Reviewable'
+          'Not Designated Reviewable',
+          'Further Assessment Required'
       ];
       case 2018:
         return [
-          'Project Designated Non-Reviewable',
-          'Exemption Order',
-          'Readiness Termination',
           'In Progress',
+          'Exemption Order',
           'Assessment Terminated',
           'Application Withdrawn',
           'Certificate Issued',
           'Certificate Refused',
-          'Certificate Expired',
           'Certificate Cancelled',
+          'Certificate Expired',
           'Exemption Order Rescinded',
           'Certificate Reinstated',
+          'Readiness Termination',
+          'Project Designated Non-Reviewable',
           'Certificate End of Life'
       ];
     }
