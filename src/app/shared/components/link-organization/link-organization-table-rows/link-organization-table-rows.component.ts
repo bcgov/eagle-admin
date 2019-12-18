@@ -65,6 +65,10 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
       this.storageService.state.selectedOrganization = null;
       this.storageService.state.add = null;
     }
+
+    let url = this.navigationStackUtils.getLastBackUrl();
+    this.navigationStackUtils.popNavigationStack();
+    this.router.navigate(url);
   }
 
 
