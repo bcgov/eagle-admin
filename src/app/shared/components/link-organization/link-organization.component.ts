@@ -57,6 +57,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.storageService.state.selectedOrgs = [];
     if (this.navigationStackUtils.getNavigationStack()) {
       this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
       if (this.navigationObject.breadcrumbs[0].label === 'Organizations' || this.navigationObject.breadcrumbs[this.navigationObject.breadcrumbs.length - 1].label === 'Add Organization') {
@@ -102,6 +103,33 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           this.router.navigate(['/search']);
         }
       });
+  }
+
+  save() {
+    this.storageService.state.selectedOrgs.forEach((org: Org) => {
+      let arr: Org[] = [];
+      arr.push(org);
+      this.storageService.state.add(arr, this.storageService.state.component);
+    });
+    this.storageService.state.selectedOrganization = null;
+    this.storageService.state.add = null;
+    let url = this.navigationStackUtils.getLastBackUrl();
+    this.navigationStackUtils.popNavigationStack();
+    this.router.navigate(url);
+  }
+  updateSelectedRow(count) {
+    this.selectedCount = count;
+  }
+  removeSelectedOrg(user) {
+    this.storageService.state.selectedOrgs = this.storageService.state.selectedOrgs.filter(function (element) {
+      return element._id !== user._id;
+    });
+    this.tableData.data.map(item => {
+      if (user._id === item._id) {
+        item.checkbox = false;
+      }
+    });
+    this._changeDetectionRef.detectChanges();
   }
 
   public onSubmit(currentPage = 1) {
@@ -181,6 +209,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.storageService.state.showOrgTableCheckboxes = false;
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }

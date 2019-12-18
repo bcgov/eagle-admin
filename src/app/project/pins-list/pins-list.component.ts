@@ -217,7 +217,10 @@ export class PinsListComponent implements OnInit, OnDestroy {
     this.storageService.state.tableColumns = this.tableColumns;
     this.storageService.state.rowComponent = PinsTableRowsComponent;
     this.storageService.state.sortBy = this.tableParams.sortBy;
+    // todo: fix storage service goofiness below, orgs being stored in key for users
     this.storageService.state.selectedUsers = [...this.entries];
+    // setting this key turns on checkboxes on the link-org component
+    this.storageService.state.showOrgTableCheckboxes = true;
 
     this.navigationStackUtils.pushNavigationStack(
       ['/p', this.currentProject._id, 'project-pins'],
