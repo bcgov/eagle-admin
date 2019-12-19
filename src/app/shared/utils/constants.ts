@@ -62,22 +62,10 @@ export class Constants {
       ];
       case 2018:
         return [
-          'None',
-          'Panel',
-          'Panel (CEAA 2012)',
-          'Coordinated',
-          'Screening',
-          'Screening - Confirmed',
-          'Substituted',
-          'Substituted (Provincial Lead)',
-          'Comprehensive Study',
-          'Comprehensive Study - Unconfirmed',
-          'Comprehensive Study - Confirmed',
-          'Comprehensive Study (Pre CEAA 2012)',
-          'Comp Study',
-          'Comp Study - Unconfirmed',
-          'To be determined',
-          'Equivalent - NEB',
+          'Substitution',
+          'Coordination',
+          'Joint Review Panel',
+          'Substituted to CER'
       ];
     }
   }
