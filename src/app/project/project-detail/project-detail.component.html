@@ -115,6 +115,11 @@
         {{project.substantiallyDate | date: 'longDate' || '-'}}</p>
     </div>
     <div class="label-pair">
+      <h3 for="dispute">Dispute Resolution: </h3>
+      <p id="dispute">{{disputeResolution || '-'}} |
+        {{project.disputeDate | date: 'longDate' || '-'}}</p>
+    </div>
+    <div class="label-pair">
       <h3 for="ea">EA Readiness Determination: </h3>
       <p id="ea">{{project.eaStatus || '-'}} |
         {{project.eaStatusDate| date: 'longDate' || '-'}}</p>

@@ -74,6 +74,8 @@ export class Project {
   projectStatusDate: String;
   substantiallyDate: String;
   substantially: any;
+  dispute: any;
+  disputeDate: String;
   activeDate: String;
   activeStatus: any;
 
@@ -141,6 +143,8 @@ export class Project {
     this.projectStatusDate               = obj && obj.projectStatusDate               || undefined;
     this.substantiallyDate               = obj && obj.substantiallyDate               || undefined;
     this.substantially               = obj && obj.substantially               || undefined;
+    this.disputeDate               = obj && obj.disputeDate               || undefined;
+    this.dispute               = obj && obj.dispute               || undefined;
     this.activeDate               = obj && obj.activeDate               || undefined;
 
 

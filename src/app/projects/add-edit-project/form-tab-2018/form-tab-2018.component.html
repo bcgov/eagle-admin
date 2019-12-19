@@ -186,6 +186,33 @@
             </div>
           </div>
         </fieldset>
+        <fieldset class="form-group">
+          <div class="label-pair">
+            <label for="dispute">Dispute Resolution </label>
+            <div name="dispute" class="radio-group">
+              <div class="radio">
+                <input type="radio" id="yes" value="yes" formControlName="dispute" name="dispute" />
+                <label for="yes">Yes</label>
+              </div>
+              <div class="radio">
+                <input type="radio" id="no" value="no" formControlName="dispute" name="dispute" />
+                <label for="no">No</label>
+              </div>
+            </div>
+          </div>
+          <div class="label-pair">
+            <label for="disputeDate">Dispute Resolution Date </label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="yyyy-mm-dd"
+                name="disputeDate" formControlName="disputeDate" ngbDatepicker
+                #disputeDatePicker="ngbDatepicker" />
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary calendar" (click)="disputeDatePicker.toggle()"
+                  type="button"></button>
+              </div>
+            </div>
+          </div>
+        </fieldset>
       </div>
     </section>
     <section class="people">
