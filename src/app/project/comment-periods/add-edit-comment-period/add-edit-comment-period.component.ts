@@ -60,9 +60,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.currentProject = this.storageService.state.currentProject.data;
 
     this.config.getLists().subscribe((lists) => {
-      lists.forEach(element => {
-        if (element && element.type === 'label' && element.legislation === this.currentProject.legislationYear) {
-          this.milestones.push(Object.assign({}, element));
+      lists.forEach(listItem => {
+        if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.legislationYear) {
+          this.milestones.push(Object.assign({}, listItem));
         }
       });
     });
