@@ -13,6 +13,7 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 
 import { Utils } from 'app/shared/utils/utils';
+import { Project } from 'app/models/project';
 
 @Component({
   selector: 'app-add-edit-comment-period',
@@ -23,7 +24,7 @@ import { Utils } from 'app/shared/utils/utils';
 export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public currentProject;
+  public currentProject: Project;
   public commentPeriod = new CommentPeriod;
   public milestones: any[] = [];
 
@@ -58,18 +59,13 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // BUG: Go to add docs. refresh. it will redirect and have errors.
     this.currentProject = this.storageService.state.currentProject.data;
 
-    this.config.getLists().subscribe(lists => {
-      lists.map(item => {
-        switch (item.type) {
-          case 'doctype':
-            break;
-          case 'author':
-            break;
-          case 'label':
-            this.milestones.push(Object.assign({}, item));
-            break;
+    this.config.getLists().subscribe((lists) => {
+      lists.forEach(listItem => {
+        if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.legislationYear) {
+          this.milestones.push(Object.assign({}, listItem));
         }
       });
+      this.milestones.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
     });
 
     // Check if we're editing
