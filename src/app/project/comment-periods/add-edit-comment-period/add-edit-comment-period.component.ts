@@ -65,6 +65,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
           this.milestones.push(Object.assign({}, listItem));
         }
       });
+      this.milestones.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
     });
 
     // Check if we're editing
