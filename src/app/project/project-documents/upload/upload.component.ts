@@ -117,6 +117,7 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
     this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
     this.filteredLabels2002 = this.labels.filter(item => item.legislation === 2002);
+    this.filteredLabels2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
     this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
     this.filteredProjectPhases2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
 
@@ -124,6 +125,7 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
     this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
     this.filteredLabels2018 = this.labels.filter(item => item.legislation === 2018);
+    this.filteredLabels2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
     this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
     this.filteredProjectPhases2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
   }
