@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
-import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateStruct, NgbDate } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -179,7 +179,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   // on multi edit save, check if form fields have a value
-  multiEditGetUpdatedValue(formValue, docValue, isDate = false) {
+  multiEditGetUpdatedValue(formValue: string | NgbDate, docValue, isDate = false) {
     if (formValue !== null) {
       if (isDate) {
         return new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(formValue))).toISOString();
@@ -188,6 +188,13 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       }
     } else {
       return docValue;
+    }
+  }
+
+  applyChangesIfAny(formData: FormData, fieldName: string, formValue: string | NgbDate, docValue, isDate: boolean = false): void {
+    const value = this.multiEditGetUpdatedValue(formValue, docValue, isDate);
+    if (value) {
+      formData.append(fieldName, value);
     }
   }
 
@@ -209,38 +216,24 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       formData.append('documentSource', 'PROJECT');
 
       if (!this.multiEdit) {
-        doc.documentFileName !== null ? formData.append('documentFileName', doc.documentFileName) : Function.prototype;
-        this.myForm.value.description !== null ? formData.append('description', this.myForm.value.description) : Function.prototype;
-        this.myForm.value.displayName !== null ? formData.append('displayName', this.myForm.value.displayName) : Function.prototype;
+        if (doc.documentFileName) {formData.append('documentFileName', doc.documentFileName); }
+        if (this.myForm.value.description) {formData.append('description', this.myForm.value.description); }
+        if (this.myForm.value.displayName) {formData.append('displayName', this.myForm.value.displayName); }
+
         formData.append('milestone', this.myForm.value.labelsel);
         formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value))).toISOString());
         formData.append('type', this.myForm.value.doctypesel);
         formData.append('documentAuthorType', this.myForm.value.authorsel);
         formData.append('projectPhase', this.myForm.value.projectphasesel);
       } else {
-        doc.documentFileName !== null ? formData.append('documentFileName', doc.documentFileName) : Function.prototype;
-        doc.displayName !== null ? formData.append('displayName', doc.displayName) : Function.prototype;
-        doc.description !== null ? formData.append('description', doc.description) : Function.prototype;
-
-        // apply changes to type if any
-        let type = this.multiEditGetUpdatedValue(this.myForm.value.doctypesel, doc.type);
-        type !== undefined && type !== null ? formData.append('type', type) : Function.prototype;
-
-        // apply changes to documentAuthor if any
-        let documentAuthorType = this.multiEditGetUpdatedValue(this.myForm.value.authorsel, doc.documentAuthorType);
-        documentAuthorType !== undefined && documentAuthorType !== null ? formData.append('documentAuthorType', documentAuthorType) : Function.prototype;
-
-        // apply changes to milestone if any
-        let milestone = this.multiEditGetUpdatedValue(this.myForm.value.labelsel, doc.milestone);
-        milestone !== undefined && milestone !== null ? formData.append('milestone', milestone) : Function.prototype;
-
-        // apply changes to projectPhase if any
-        let projectPhase = this.multiEditGetUpdatedValue(this.myForm.value.projectphasesel, doc.projectPhase);
-        projectPhase !== undefined && projectPhase !== null ? formData.append('projectPhase', projectPhase) : Function.prototype;
-
-        // apply changes to datePosted if any
-        let datePosted = this.multiEditGetUpdatedValue(this.myForm.value.datePosted, doc.datePosted, true);
-        datePosted !== undefined && datePosted !== null ? formData.append('datePosted', datePosted) : Function.prototype;
+        this.applyChangesIfAny(formData, 'documentFileName', null, doc.documentFileName);
+        this.applyChangesIfAny(formData, 'displayName', null, doc.displayName);
+        this.applyChangesIfAny(formData, 'description', null, doc.description);
+        this.applyChangesIfAny(formData, 'type', this.myForm.value.doctypesel, doc.type);
+        this.applyChangesIfAny(formData, 'documentAuthorType', this.myForm.value.authorsel, doc.documentAuthorType);
+        this.applyChangesIfAny(formData, 'milestone', this.myForm.value.labelsel, doc.milestone);
+        this.applyChangesIfAny(formData, 'projectPhase', this.myForm.value.projectphasesel, doc.projectPhase);
+        this.applyChangesIfAny(formData, 'datePosted', this.myForm.value.datePosted, doc.datePosted, true);
       }
 
       // TODO
