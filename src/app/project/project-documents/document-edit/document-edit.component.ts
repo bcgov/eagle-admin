@@ -226,17 +226,14 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         formData.append('documentAuthorType', this.myForm.value.authorsel);
         formData.append('projectPhase', this.myForm.value.projectphasesel);
       } else {
-
-        [
-          ['documentFileName', null, doc.documentFileName, false],
-          ['displayName', null, doc.displayName, false],
-          ['description', null, doc.description, false],
-          ['type', this.myForm.value.doctypesel, doc.type, false],
-          ['documentAuthorType', this.myForm.value.authorsel, doc.documentAuthorType, false],
-          ['milestone', this.myForm.value.labelsel, doc.milestone, false],
-          ['projectPhase', this.myForm.value.projectphasesel, doc.projectPhase, false],
-          ['datePosted', this.myForm.value.datePosted, doc.datePosted, true]
-        ].forEach((field: [string, string | NgbDate, any, boolean]) => this.applyChangesIfAny(formData, ...field));
+        this.applyChangesIfAny(formData, 'documentFileName', null, doc.documentFileName);
+        this.applyChangesIfAny(formData, 'displayName', null, doc.displayName);
+        this.applyChangesIfAny(formData, 'description', null, doc.description);
+        this.applyChangesIfAny(formData, 'type', this.myForm.value.doctypesel, doc.type);
+        this.applyChangesIfAny(formData, 'documentAuthorType', this.myForm.value.authorsel, doc.documentAuthorType);
+        this.applyChangesIfAny(formData, 'milestone', this.myForm.value.labelsel, doc.milestone);
+        this.applyChangesIfAny(formData, 'projectPhase', this.myForm.value.projectphasesel, doc.projectPhase);
+        this.applyChangesIfAny(formData, 'datePosted', this.myForm.value.datePosted, doc.datePosted, true);
       }
 
       // TODO
