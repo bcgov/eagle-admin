@@ -161,6 +161,7 @@ export class Constants {
         return [
           'Energy-Electricity',
           'Energy-Petroleum & Natural Gas',
+          'Food Processing',
           'Industrial',
           'Mines',
           'Other',
@@ -206,6 +207,11 @@ export class Constants {
           'Natural Gas Processing Plants',
           'Off-shore Oil or Gas Facilities',
           'Transmission Pipelines'
+        ],
+        'Food Processing': [
+          'Fish Products Industry',
+          'Meat and Meat Products Industry',
+          'Poultry Products Industry'
         ],
         'Transportation': [
           'Airports',
