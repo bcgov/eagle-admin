@@ -151,24 +151,34 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     { code: 'Vancouver Island', name: 'Vancouver Island' }
   ];
 
+  // TODO: Confirm legislation label and proper grouping.
+  private readonly LEG_TAG_2018 = '2018 Legislation';
+  private readonly LEG_TAG_2002 = '2002 Legislation';
   private CEAA_INVOLVEMENTS_COLLECTION: Array<object> = [
-    { code: 'None', name: 'None' },
-    { code: 'Panel', name: 'Panel' },
-    { code: 'Panel (CEAA 2012)', name: 'Panel (CEAA 2012)' },
-    { code: 'Coordinated', name: 'Coordinated' },
-    { code: 'Screening', name: 'Screening' },
-    { code: 'Screening - Confirmed', name: 'Screening - Confirmed' },
-    { code: 'Substituted', name: 'Substituted' },
-    { code: 'Substituted (Provincial Lead)', name: 'Substituted (Provincial Lead)' },
-    { code: 'Comprehensive Study', name: 'Comprehensive Study' },
-    { code: 'Comprehensive Study - Unconfirmed', name: 'Comprehensive Study - Unconfirmed' },
-    { code: 'Comprehensive Study - Confirmed', name: 'Comprehensive Study - Confirmed' },
-    { code: 'Comprehensive Study (Pre CEAA 2012)', name: 'Comprehensive Study (Pre CEAA 2012)' },
-    { code: 'Comp Study', name: 'Comp Study' },
-    { code: 'Comp Study - Unconfirmed', name: 'Comp Study - Unconfirmed' },
-    { code: 'To be determined', name: 'To be determined' },
-    { code: 'Equivalent - NEB', name: 'Equivalent - NEB' },
-    { code: 'Yes', name: 'Yes' }
+    { code: 'None', name: 'None', legislation: this.LEG_TAG_2018 },
+    { code: 'Panel', name: 'Panel', legislation: this.LEG_TAG_2018 },
+    { code: 'Panel (CEAA 2012)', name: 'Panel (CEAA 2012)', legislation: this.LEG_TAG_2018 },
+    { code: 'Coordinated', name: 'Coordinated', legislation: this.LEG_TAG_2018 },
+    { code: 'Screening', name: 'Screening', legislation: this.LEG_TAG_2018 },
+    { code: 'Screening - Confirmed', name: 'Screening - Confirmed', legislation: this.LEG_TAG_2018 },
+    { code: 'Substituted', name: 'Substituted', legislation: this.LEG_TAG_2018 },
+    { code: 'Substituted (Provincial Lead)', name: 'Substituted (Provincial Lead)', legislation: this.LEG_TAG_2018 },
+    { code: 'Comprehensive Study', name: 'Comprehensive Study', legislation: this.LEG_TAG_2018 },
+    { code: 'Comprehensive Study - Unconfirmed', name: 'Comprehensive Study - Unconfirmed', legislation: this.LEG_TAG_2018 },
+    { code: 'Comprehensive Study - Confirmed', name: 'Comprehensive Study - Confirmed', legislation: this.LEG_TAG_2018 },
+    { code: 'Comprehensive Study (Pre CEAA 2012)', name: 'Comprehensive Study (Pre CEAA 2012)', legislation: this.LEG_TAG_2018 },
+    { code: 'Comp Study', name: 'Comp Study', legislation: this.LEG_TAG_2018 },
+    { code: 'Comp Study - Unconfirmed', name: 'Comp Study - Unconfirmed', legislation: this.LEG_TAG_2018 },
+    { code: 'To be determined', name: 'To be determined', legislation: this.LEG_TAG_2018 },
+    { code: 'Equivalent - NEB', name: 'Equivalent - NEB', legislation: this.LEG_TAG_2018 },
+    { code: 'Yes', name: 'Yes', legislation: this.LEG_TAG_2018 },
+
+    { code: 'None', name: 'None', legislation: this.LEG_TAG_2002 },
+    { code: 'Panel', name: 'Panel', legislation: this.LEG_TAG_2002 },
+    { code: 'Panel (CEAA 2012)', name: 'Panel (CEAA 2012)', legislation: this.LEG_TAG_2002 },
+    { code: 'Coordinated', name: 'Coordinated', legislation: this.LEG_TAG_2002 },
+    { code: 'Screening', name: 'Screening', legislation: this.LEG_TAG_2002 },
+    { code: 'Screening - Confirmed', name: 'Screening - Confirmed', legislation: this.LEG_TAG_2002 },
   ];
 
   constructor(

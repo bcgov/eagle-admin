@@ -346,17 +346,19 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="ceaaInvolvement" name="ceaaInvolvement"
-                        [(ngModel)]="filterForUI.CEAAInvolvement" [identifyBy]="'code'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true"
-                        [placeholder]="'Type Involvement'" [secondaryPlaceholder]="'Type Involvement'"
+                      <ng-select 
+                        id="ceaaInvolvement" 
+                        name="ceaaInvolvement"
+                        [items]="ceaaInvolvements"
+                        [closeOnSelect]="false"
+                        [markFirst]="false"
+                        groupBy="legislation"
+                        multiple="true"
+                        bindLabel="name"
+                        placeholder="Type Involvement"
+                        [(ngModel)]="filterForUI.CEAAInvolvement"
                       >
-                        <tag-input-dropdown [autocompleteItems]="ceaaInvolvements" [identifyBy]="'code'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                 </div>
