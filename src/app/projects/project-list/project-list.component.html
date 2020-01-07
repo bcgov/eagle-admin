@@ -81,77 +81,26 @@
                                 <div *ngIf="showAdvancedSearch && showFilters.type"
                                     class="type-filters project-filter row">
                                     <div class="col-md-6 filter-border">
-                                        <div class="row">
-                                            <div class="col-md-5">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox"
-                                                        id="energyElectricity" name="energyElectricity"
-                                                        [(ngModel)]="filterForUI.type.energyElectricity">
-                                                    <label class="form-check-label"
-                                                        for="energyElectricity">Energy-Electricity</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="foodProcessing" name="foodProcessing"
-                                                        [(ngModel)]="filterForUI.type.foodProcessing">
-                                                    <label class="form-check-label" for="foodProcessing">Food
-                                                        Processing</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="" id="mines"
-                                                        name="mines" [(ngModel)]="filterForUI.type.mines">
-                                                    <label class="form-check-label" for="mines">Mines</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="transportation" name="transportation"
-                                                        [(ngModel)]="filterForUI.type.transportation">
-                                                    <label class="form-check-label"
-                                                        for="transportation">Transportation</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="wasteDisposal" name="wasteDisposal"
-                                                        [(ngModel)]="filterForUI.type.wasteDisposal">
-                                                    <label class="form-check-label" for="wasteDisposal">Waste
-                                                        Disposal</label>
-                                                </div>
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                              <b>Project Type</b>
                                             </div>
-                                            <div class="col-md-7">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="energyPetroleum" name="energyPetroleum"
-                                                        [(ngModel)]="filterForUI.type.energyPetroleum">
-                                                    <label class="form-check-label"
-                                                        for="energyPetroleum">Energy-Petroleum &amp; Natural Gas</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="industrial" name="industrial"
-                                                        [(ngModel)]="filterForUI.type.industrial">
-                                                    <label class="form-check-label" for="industrial">Industrial</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="" id="other"
-                                                        name="other" [(ngModel)]="filterForUI.type.other">
-                                                    <label class="form-check-label" for="other">Other</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="tourist" name="tourist"
-                                                        [(ngModel)]="filterForUI.type.tourist">
-                                                    <label class="form-check-label" for="tourist">Tourist Destination
-                                                        Resorts</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value=""
-                                                        id="waterManagement" name="waterManagement"
-                                                        [(ngModel)]="filterForUI.type.waterManagement">
-                                                    <label class="form-check-label" for="waterManagement">Water
-                                                        Management</label>
-                                                </div>
+                                          </div>
+                                          <div class="row">
+                                            <div class="col-md-12">
+                                              <ng-select 
+                                                id="type" 
+                                                name="type"
+                                                multiple="true"
+                                                bindLabel="name"
+                                                placeholder="Type Project Type"
+                                                [items]="projectTypes"
+                                                [closeOnSelect]="false"
+                                                [(ngModel)]="filterForUI.type"
+                                              >
+                                              </ng-select>
                                             </div>
-                                        </div>
+                                          </div>
                                     </div>
                                 </div>
                                 <div *ngIf="showAdvancedSearch && showFilters.eacDecision"

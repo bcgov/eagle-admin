@@ -51,6 +51,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   public ceaaInvolvements: Array<object> = [];
   public eacDecisions: Array<object> = [];
   public commentPeriods: Array<object> = [];
+  public projectTypes: Array<object> = [];
 
   public loading = true;
 
@@ -115,20 +116,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   // These values should be moved into Lists instead of being hard-coded all over the place
-
-  private TYPE_MAP: object = {
-    energyElectricity: 'Energy-Electricity',
-    energyPetroleum: 'Energy-Petroleum & Natural Gas',
-    foodProcessing: 'Food Processing',
-    industrial: 'Industrial',
-    mines: 'Mines',
-    other: 'Other',
-    tourist: 'Tourist Destination Resorts',
-    transportation: 'Transportation',
-    wasteDisposal: 'Waste Disposal',
-    waterManagement: 'Water Management'
-  };
-
   private REGIONS_COLLECTION: Array<object> = [
     { code: 'Cariboo', name: 'Cariboo' },
     { code: 'Kootenay', name: 'Kootenay' },
@@ -164,6 +151,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         this.ceaaInvolvements = Constants.CEAA_INVOLVEMENTS_COLLECTION;
         this.eacDecisions = Constants.EAC_DECISIONS_COLLECTION;
         this.commentPeriods = Constants.PCP_COLLECTION;
+        this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
         return this.route.params;
       })
@@ -288,8 +276,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   setFiltersFromParams(params) {
-    this.paramsToCheckboxFilters(params, 'type', this.TYPE_MAP);
-
     this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
     this.paramsToCollectionFilters(
       params,
@@ -301,6 +287,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.paramsToCollectionFilters(params, 'vc', null, '_id');
     this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'name');
     this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
+    this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -343,7 +330,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   setParamsFromFilters(params) {
-    this.checkboxFilterToParams(params, 'type');
     this.checkboxFilterToParams(params, 'pcp');
 
     this.collectionFilterToParams(params, 'region', 'code');
@@ -352,6 +338,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.collectionFilterToParams(params, 'vc', '_id');
     this.collectionFilterToParams(params, 'eacDecision', 'name');
     this.collectionFilterToParams(params, 'pcp', 'code');
+    this.collectionFilterToParams(params, 'type', 'name');
 
     this.dateFilterToParams(params, 'decisionDateStart');
     this.dateFilterToParams(params, 'decisionDateEnd');

@@ -304,7 +304,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   paramsToCollectionFilters(params, name, collection, identifyBy) {
-    const paramname = name === 'docType' ? 'type' : name;
+    const paramname = (name === 'docType' || name === 'projectType') ? 'type' : name;
 
     this.filterForUI[name] = [];
     delete this.filterForURL[paramname];
@@ -379,7 +379,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   collectionFilterToParams(params, name, identifyBy) {
     if (this.filterForUI[name].length) {
       const values = this.filterForUI[name].map(record => { return record[identifyBy]; });
-      params[name === 'docType' ? 'type' : name] = values.join(',');
+      params[(name === 'docType' || name === 'projectType') ? 'type' : name] = values.join(',');
     }
   }
 
