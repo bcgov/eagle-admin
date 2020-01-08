@@ -141,15 +141,33 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Fetch proponents and other collections
-    // TODO: Put all of these into Lists
-    this.orgService
-      .getByCompanyType('Proponent/Certificate Holder')
+    // TODO: Fetch on the lists that are needed for the page.
+    this.searchService.getFullList('List')
+      .switchMap((res: any) => {
+        if (res.length > 0) {
+          res[0].searchResults.map(item => {
+            switch (item.type) {
+              case 'eaDecisions':
+                this.eacDecisions.push({ ...item });
+                break;
+              case 'ceaaInvolvements':
+                this.ceaaInvolvements.push({ ...item });
+                break;
+              default:
+                break;
+            }
+          });
+        }
+
+        this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+
+        return this.orgService.getByCompanyType('Proponent/Certificate Holder');
+      })
       .switchMap((res: any) => {
         this.proponents = res || [];
 
         this.regions = this.REGIONS_COLLECTION;
-        this.ceaaInvolvements = Constants.CEAA_INVOLVEMENTS_COLLECTION;
-        this.eacDecisions = Constants.EAC_DECISIONS_COLLECTION;
         this.commentPeriods = Constants.PCP_COLLECTION;
         this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
@@ -277,15 +295,10 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   setFiltersFromParams(params) {
     this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-    this.paramsToCollectionFilters(
-      params,
-      'CEAAInvolvement',
-      this.ceaaInvolvements,
-      'code'
-    );
+    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, '_id');
     this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
     this.paramsToCollectionFilters(params, 'vc', null, '_id');
-    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'name');
+    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
     this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
     this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
 
@@ -333,10 +346,10 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.checkboxFilterToParams(params, 'pcp');
 
     this.collectionFilterToParams(params, 'region', 'code');
-    this.collectionFilterToParams(params, 'CEAAInvolvement', 'code');
+    this.collectionFilterToParams(params, 'CEAAInvolvement', '_id');
     this.collectionFilterToParams(params, 'proponent', '_id');
     this.collectionFilterToParams(params, 'vc', '_id');
-    this.collectionFilterToParams(params, 'eacDecision', 'name');
+    this.collectionFilterToParams(params, 'eacDecision', '_id');
     this.collectionFilterToParams(params, 'pcp', 'code');
     this.collectionFilterToParams(params, 'type', 'name');
 
