@@ -140,9 +140,17 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
     this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
     if (this.fullProject) {
-      this.project = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+      // Need to also check if these keys are non empty. Not just if the key is null. For 96 the 2002 case is being hit which is causing
+      if (this.fullProject['legislation_2002'] && Object.keys(this.fullProject['legislation_2002']).length > 0 && this.fullProject['legislation_2002'].name) {
+
+        this.project = this.fullProject['legislation_2002'];
+      } else {
+        // 1996 so update legislation year aswell
+        this.legislationYear = 1996;
+        this.project = this.fullProject['legislation_1996'];
+      }
       this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
-      this.tabIsEditing = !this.utils.isEmptyObject(this.project);
+      this.tabIsEditing =  !this.utils.isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
       this.pageIsEditing = this.storageService.state.pageIsEditing;
       this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;

@@ -120,7 +120,7 @@ export class ProjectService {
     let peopleObjs: Observable<any>[] = [];
     projectKeys.forEach(key => {
       const project = fullProject[`legislation_${key.toString()}`];
-      if (!project) {
+      if (!project || Object.keys(project).length === 0 || !project.name) {
         return of(data);
       }
       project.nature = this.utils.natureBuildMapper(project.build);
