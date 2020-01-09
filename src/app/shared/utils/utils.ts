@@ -104,12 +104,12 @@ export class Utils {
 
     public isEmptyObject(object: Object): boolean {
       if (!object) {
-        return false;
+        return true;
       }
       for (let i in object) {
         if (object.hasOwnProperty(i)) { return false; }
       }
-      return true ;
+      return true;
     }
 
     // Mapping the build database field to the human readable nature field
