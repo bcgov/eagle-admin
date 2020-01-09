@@ -2,7 +2,6 @@ import { BootstrapModalModule } from 'ng2-bootstrap-modal';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { CookieService } from 'ngx-cookie-service';
-import { TagInputModule } from 'ngx-chips';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule, APP_INITIALIZER, ApplicationRef } from '@angular/core';
@@ -129,7 +128,6 @@ export function kcFactory(keycloakService: KeycloakService) {
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    TagInputModule,
     ProjectModule,
     ProjectsModule,
     SharedModule,

@@ -2,7 +2,6 @@
 import { CommonModule } from '@angular/common';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule } from '@angular/core';
-import { TagInputModule } from 'ngx-chips';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { ProjectsRoutingModule } from './projects-routing.module';
 import { SharedModule } from 'app/shared/shared.module';
@@ -22,7 +21,6 @@ import { ModificationsListTableRowsComponent } from './add-edit-project/modifica
     CommonModule,
     FormsModule,
     NgbModule.forRoot(),
-    TagInputModule,
     NgxPaginationModule,
     ProjectsRoutingModule,
     SharedModule,
