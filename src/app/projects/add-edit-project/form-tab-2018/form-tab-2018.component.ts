@@ -7,6 +7,7 @@ import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
 
 import { StorageService } from 'app/services/storage.service';
+import { SearchService } from 'app/services/search.service';
 import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
 import { Project, ProjectPublishState } from 'app/models/project';
@@ -33,7 +34,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public sectorsSelected = [];
   public proponentName = '';
   public proponentId = '';
-
+  public ceaaInvolvements: Array<any> = [];
+  public eacDecisions: Array<any> = [];
 
   public projectName: string;
   public projectId: string;
@@ -55,10 +57,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
 
- public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
+  public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
 
-  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
-  public PROJECT_CEAA_INVOLVEMENT = Constants.CEAA_INVOLVEMENT(this.legislationYear);
   public PROJECT_NATURE_OBJECT = Constants.buildToNature;
   public loading = true;
   public published: boolean;
@@ -74,7 +74,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private searchService: SearchService
   ) {
   }
 
@@ -86,8 +87,28 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       }
     );
 
-    // Get data related to current project
-    this.route.parent.data
+    this.searchService.getFullList('List')
+      .switchMap((res: any) => {
+        if (res.length > 0) {
+          res[0].searchResults.map(item => {
+            switch (item.type) {
+              case 'eaDecisions':
+                this.eacDecisions.push({ ...item });
+                break;
+              case 'ceaaInvolvements':
+                this.ceaaInvolvements.push({ ...item });
+                break;
+              default:
+                break;
+            }
+          });
+        }
+
+        this.eacDecisions = this.eacDecisions.filter(decision => decision.legislation === this.legislationYear);
+        this.ceaaInvolvements = this.ceaaInvolvements.filter(decision => decision.legislation === this.legislationYear);
+
+        return this.route.parent.data;
+      })
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.initProject(data);
@@ -340,7 +361,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'lat': new FormControl(formData.centroid[1]),
       'lon': new FormControl(formData.centroid[0]),
       'addFile': new FormControl(formData.addFile),
-      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement),
+      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
       'CEAALink': new FormControl(formData.CEAALink),
       'ea': new FormControl(formData.ea),
       'capital': new FormControl(formData.intake.investment),
@@ -349,7 +370,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'eaStatusDate': new FormControl(formData.eaStatusDate),
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision),
+      'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || null),
       'decisionDate': new FormControl(formData.decisionDate),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(formData.substantiallyDate),
