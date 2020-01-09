@@ -112,10 +112,16 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
     this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
     if (this.fullProject) {
-      this.oldProject = this.fullProject['legislation_2002'] || this.fullProject['legislation_1996'];
+      if (this.fullProject['legislation_2002'] && Object.keys(this.fullProject['legislation_2002']).length > 0 && this.fullProject['legislation_2002'].name) {
+        this.oldProject = this.fullProject['legislation_2002'];
+      } else {
+        this.oldProject = this.fullProject['legislation_1996'];
+      }
       this.project = this.fullProject['legislation_2018'];
       this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
-      this.tabIsEditing = !this.utils.isEmptyObject(this.project);
+      // When we save the project legislation_2018 is saved to the database with no values in each key. So our isEditing logic is not working properly. Need to check the name key on project aswell
+      // tslint:disable-next-line: triple-equals
+      this.tabIsEditing = !this.utils.isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
       this.pageIsEditing = this.storageService.state.pageIsEditing;
       this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
@@ -736,7 +742,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     // save state before destructing, helps with switching tabs
-    this.storageService.state.form2018 = this.myForm;
+    // Only set the state if the form has info in it.
+    if (this.myForm && this.myForm.value.name) {
+      this.storageService.state.form2018 = this.myForm;
+    } else {
+      this.storageService.state.form2018 = null;
+    }
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
