@@ -33,6 +33,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   public loading = true;
 
   public addCommentForm: FormGroup;
+  public anonymousName = 'Anonymous';
 
   constructor(
     private api: ApiService,
@@ -68,7 +69,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
   private initForm() {
     this.addCommentForm = new FormGroup({
-      'authorText': new FormControl(),
+      'authorText': new FormControl({value: this.anonymousName, disabled: true}),
       'commentText': new FormControl(),
       'dateAdded': new FormControl(),
       'datePosted': new FormControl({ value: '', disabled: true }),
@@ -85,11 +86,24 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.addCommentForm.controls.isNamePublic.setValue(false);
     this.addCommentForm.controls.dateAdded.setValue(this.utils.convertJSDateToNGBDate(new Date()));
     this.addCommentForm.controls.datePosted.setValue(
-      this.comment.datePosted ? this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);  }
+      this.comment.datePosted ? this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);
+    this.addCommentForm.get('isNamePublic').valueChanges
+      .subscribe(isPublic => {
+        if (!isPublic) {
+          // User has un-checked the public box so name will not be anonymous
+          this.addCommentForm.get('authorText').disable();
+          this.addCommentForm.get('authorText').setValue(this.anonymousName);
+        } else {
+          this.addCommentForm.get('authorText').enable();
+          this.addCommentForm.get('authorText').setValue('');
+        }
+      }
+
+      );
+    }
 
   public onSubmit() {
     this.loading = true;
-
     this.comment.author = this.addCommentForm.get('authorText').value;
     this.comment.comment = this.addCommentForm.get('commentText').value;
     this.comment.dateAdded = this.utils.convertFormGroupNGBDateToJSDate(this.addCommentForm.get('dateAdded').value);
