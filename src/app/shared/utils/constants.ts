@@ -137,6 +137,7 @@ export class Constants {
           'Post Decision - Amendment',
           'Post Decision - Substantial Start',
           'Post Decision - EAC Extension',
+          'Post Decision - Suspension',
           'Complete',
           'Other'
         ];
