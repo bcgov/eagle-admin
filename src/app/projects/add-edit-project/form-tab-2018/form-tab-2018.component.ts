@@ -5,9 +5,9 @@ import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
+import * as _ from 'lodash';
 
 import { StorageService } from 'app/services/storage.service';
-import { SearchService } from 'app/services/search.service';
 import { ConfigService } from 'app/services/config.service';
 import { ProjectService } from 'app/services/project.service';
 import { Project, ProjectPublishState } from 'app/models/project';
@@ -75,7 +75,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private storageService: StorageService,
     private dialogService: DialogService,
-    private searchService: SearchService
   ) {
   }
 
@@ -87,33 +86,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       }
     );
 
-    this.searchService.getFullList('List')
-      .switchMap((res: any) => {
-        if (res.length > 0) {
-          res[0].searchResults.map(item => {
-            switch (item.type) {
-              case 'eaDecisions':
-                this.eacDecisions.push({ ...item });
-                break;
-              case 'ceaaInvolvements':
-                this.ceaaInvolvements.push({ ...item });
-                break;
-              default:
-                break;
-            }
-          });
-        }
-
-        this.eacDecisions = this.eacDecisions.filter(decision => decision.legislation === this.legislationYear);
-        this.ceaaInvolvements = this.ceaaInvolvements.filter(decision => decision.legislation === this.legislationYear);
-
-        return this.route.parent.data;
-      })
+    this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.initProject(data);
         this.initOrg();
-
+        this.getLists();
 
         this.buildForm();
         this.initContacts();
@@ -754,6 +732,26 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   register(myForm: FormGroup) { }
+
+  getLists() {
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'eaDecisions':
+            this.eacDecisions.push({ ...item });
+            break;
+          case 'ceaaInvolvements':
+            this.ceaaInvolvements.push({ ...item });
+            break;
+          default:
+            break;
+        }
+      });
+    });
+
+    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+  }
 
   ngOnDestroy() {
     // save state before destructing, helps with switching tabs

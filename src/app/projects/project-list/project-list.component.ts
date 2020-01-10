@@ -18,6 +18,7 @@ import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 
+import { ConfigService } from 'app/services/config.service';
 import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 import { StorageService } from 'app/services/storage.service';
@@ -136,40 +137,20 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     private orgService: OrgService,
     private searchService: SearchService,
     private storageService: StorageService,
+    private config: ConfigService,
     private _changeDetectionRef: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    // Fetch proponents and other collections
-    // TODO: Fetch on the lists that are needed for the page.
-    this.searchService.getFullList('List')
-      .switchMap((res: any) => {
-        if (res.length > 0) {
-          res[0].searchResults.map(item => {
-            switch (item.type) {
-              case 'eaDecisions':
-                this.eacDecisions.push({ ...item });
-                break;
-              case 'ceaaInvolvements':
-                this.ceaaInvolvements.push({ ...item });
-                break;
-              default:
-                break;
-            }
-          });
-        }
-
-        this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-
-        return this.orgService.getByCompanyType('Proponent/Certificate Holder');
-      })
+    this.orgService.getByCompanyType('Proponent/Certificate Holder')
       .switchMap((res: any) => {
         this.proponents = res || [];
 
         this.regions = this.REGIONS_COLLECTION;
         this.commentPeriods = Constants.PCP_COLLECTION;
         this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
+
+        this.getLists();
 
         return this.route.params;
       })
@@ -523,6 +504,26 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.setParamsFromFilters(params);
 
     this.router.navigate(['projects', params]);
+  }
+
+  getLists() {
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'eaDecisions':
+            this.eacDecisions.push({ ...item });
+            break;
+          case 'ceaaInvolvements':
+            this.ceaaInvolvements.push({ ...item });
+            break;
+          default:
+            break;
+        }
+      });
+    });
+
+    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
   }
 
   ngOnDestroy() {
