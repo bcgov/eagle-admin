@@ -124,12 +124,22 @@ export class Constants {
     switch (legislationYear) {
       case 2002:
         return [
-          'Initiated',
-          'Submitted',
-          'In Progress', // default, set in BuildForm() and BuildFormFromData()
-          'Certified',
-          'Not Certified',
-          'Decommissioned'
+          'Scope',
+          'Evaluation',
+          'Application Review',
+          'Referral',
+          'Further Assessment',
+          'Post Decision - Pre-Construction',
+          'Post Decision - Construction',
+          'Post Decision - Operation',
+          'Post Decision - Care & Maintenance',
+          'Post Decision - Decommission',
+          'Post Decision - Amendment',
+          'Post Decision - Substantial Start',
+          'Post Decision - EAC Extension',
+          'Post Decision - Suspension',
+          'Complete',
+          'Other'
         ];
         case 2018:
         return [
