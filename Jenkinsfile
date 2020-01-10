@@ -147,6 +147,7 @@ def nodejsTester () {
         node("node-tester") {
           checkout scm
           try {
+            sh 'npm i'
             sh 'npm run tests-ci'
           } finally {
             echo "Unit Tests Passed"
