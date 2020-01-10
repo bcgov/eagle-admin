@@ -767,6 +767,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       });
     });
 
+    // Sorts by legislation first and then listOrder for each legislation group.
     this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
     this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
   }
