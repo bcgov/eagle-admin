@@ -147,7 +147,7 @@ def nodejsTester () {
         node("node-tester") {
           checkout scm
           try {
-            sh 'npm run tests'
+            sh 'npm run tests-ci'
           } finally {
             echo "Unit Tests Passed"
           }
@@ -583,14 +583,14 @@ pipeline {
           }
         }
 
-        //  stage('Unit Tests') {
-        //   steps {
-        //     script {
-        //       echo "Running unit tests"
-        //       def results = nodejsTester()
-        //     }
-        //   }
-        // }
+         stage('Unit Tests') {
+          steps {
+            script {
+              echo "Running unit tests"
+              def results = nodejsTester()
+            }
+          }
+        }
 
         stage('Linting') {
           steps {
