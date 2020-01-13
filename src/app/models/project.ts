@@ -7,13 +7,13 @@ export class Project {
   // even though _id is not saved in the db anymore (its on rootlevel project, represented as fullProject on the frontend)
   // this field is still used for saving the project
   _id: string;
-  CEAAInvolvement: String;
+  CEAAInvolvement: any;
   CELead: String;
   CELeadEmail: String;
   CELeadPhone: String;
   centroid: any[] = [];
   description: String;
-  eacDecision: String;
+  eacDecision: any;
   location: String;
   legislation: string;
   legislationYear: number;

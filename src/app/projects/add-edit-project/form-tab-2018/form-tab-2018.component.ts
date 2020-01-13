@@ -5,6 +5,7 @@ import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
+import * as _ from 'lodash';
 
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
@@ -33,7 +34,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public sectorsSelected = [];
   public proponentName = '';
   public proponentId = '';
-
+  public ceaaInvolvements: Array<any> = [];
+  public eacDecisions: Array<any> = [];
 
   public projectName: string;
   public projectId: string;
@@ -55,10 +57,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
 
- public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
+  public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
 
-  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
-  public PROJECT_CEAA_INVOLVEMENT = Constants.CEAA_INVOLVEMENT(this.legislationYear);
   public PROJECT_NATURE_OBJECT = Constants.buildToNature;
   public loading = true;
   public published: boolean;
@@ -74,7 +74,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
   ) {
   }
 
@@ -86,13 +86,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       }
     );
 
-    // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
         this.initProject(data);
         this.initOrg();
-
+        this.getLists();
 
         this.buildForm();
         this.initContacts();
@@ -346,7 +345,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'lat': new FormControl(formData.centroid[1]),
       'lon': new FormControl(formData.centroid[0]),
       'addFile': new FormControl(formData.addFile),
-      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement),
+      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
       'CEAALink': new FormControl(formData.CEAALink),
       'ea': new FormControl(formData.ea),
       'capital': new FormControl(formData.intake.investment),
@@ -355,7 +354,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'eaStatusDate': new FormControl(formData.eaStatusDate),
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision),
+      'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || null),
       'decisionDate': new FormControl(formData.decisionDate),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(formData.substantiallyDate),
@@ -660,8 +659,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     }
   }
 
-
-
   onSubmit(): void {
     this.saveProject(
       null,
@@ -739,6 +736,27 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   register(myForm: FormGroup) { }
+
+  getLists() {
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'eaDecisions':
+            this.eacDecisions.push({ ...item });
+            break;
+          case 'ceaaInvolvements':
+            this.ceaaInvolvements.push({ ...item });
+            break;
+          default:
+            break;
+        }
+      });
+    });
+
+    // Sorts by legislation first and then listOrder for each legislation group.
+    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+  }
 
   ngOnDestroy() {
     // save state before destructing, helps with switching tabs

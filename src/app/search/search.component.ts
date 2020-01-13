@@ -19,6 +19,8 @@ import { ApiService } from 'app/services/api';
 import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
+import { Constants } from 'app/shared/utils/constants';
+
 // TODO: Project and Document filters should be made into components
 // What a mess otherwise!
 class SearchFilterObject {
@@ -54,6 +56,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
+  public eacDecisions: Array<object> = [];
+  public commentPeriods: Array<object> = [];
+  public projectTypes: Array<object> = [];
 
   public milestones: any[] = [];
   public authors: any[] = [];
@@ -107,38 +112,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   // These values should be moved into Lists instead of being hard-coded all over the place
 
-  private TYPE_MAP: object = {
-    energyElectricity: 'Energy-Electricity',
-    energyPetroleum: 'Energy-Petroleum & Natural Gas',
-    foodProcessing: 'Food Processing',
-    industrial: 'Industrial',
-    mines: 'Mines',
-    other: 'Other',
-    tourist: 'Tourist Destination Resorts',
-    transportation: 'Transportation',
-    wasteDisposal: 'Waste Disposal',
-    waterManagement: 'Water Management'
-  };
-
-  private EAC_DECISIONS_MAP: object = {
-    inProgress: 'In Progress',
-    certificateIssued: 'Certificate Issued',
-    certificateRefused: 'Certificate Refused',
-    furtherAssessmentRequired: 'Further Assessment Required',
-    certificateNotRequired: 'Certificate Not Required',
-    certificateExpired: 'Certificate Expired',
-    withdrawn: 'Withdrawn',
-    terminated: 'Terminated',
-    preEA: 'Pre-EA Act Approval',
-    notReviewable: 'Not Designated Reviewable'
-  };
-
-  private PCP_MAP: object = {
-    pending: 'pending',
-    open: 'open',
-    closed: 'closed'
-  };
-
   private REGIONS_COLLECTION: Array<object> = [
     { code: 'Cariboo', name: 'Cariboo' },
     { code: 'Kootenay', name: 'Kootenay' },
@@ -149,26 +122,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     { code: 'Skeena', name: 'Skeena' },
     { code: 'Thompson-Nicola', name: 'Thompson-Nicola' },
     { code: 'Vancouver Island', name: 'Vancouver Island' }
-  ];
-
-  private CEAA_INVOLVEMENTS_COLLECTION: Array<object> = [
-    { code: 'None', name: 'None' },
-    { code: 'Panel', name: 'Panel' },
-    { code: 'Panel (CEAA 2012)', name: 'Panel (CEAA 2012)' },
-    { code: 'Coordinated', name: 'Coordinated' },
-    { code: 'Screening', name: 'Screening' },
-    { code: 'Screening - Confirmed', name: 'Screening - Confirmed' },
-    { code: 'Substituted', name: 'Substituted' },
-    { code: 'Substituted (Provincial Lead)', name: 'Substituted (Provincial Lead)' },
-    { code: 'Comprehensive Study', name: 'Comprehensive Study' },
-    { code: 'Comprehensive Study - Unconfirmed', name: 'Comprehensive Study - Unconfirmed' },
-    { code: 'Comprehensive Study - Confirmed', name: 'Comprehensive Study - Confirmed' },
-    { code: 'Comprehensive Study (Pre CEAA 2012)', name: 'Comprehensive Study (Pre CEAA 2012)' },
-    { code: 'Comp Study', name: 'Comp Study' },
-    { code: 'Comp Study - Unconfirmed', name: 'Comp Study - Unconfirmed' },
-    { code: 'To be determined', name: 'To be determined' },
-    { code: 'Equivalent - NEB', name: 'Equivalent - NEB' },
-    { code: 'Yes', name: 'Yes' }
   ];
 
   constructor(
@@ -199,6 +152,12 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               case 'doctype':
                 this.docTypes.push({ ...item });
                 break;
+              case 'eaDecisions':
+                this.eacDecisions.push({ ...item });
+                break;
+              case 'ceaaInvolvements':
+                this.ceaaInvolvements.push({ ...item });
+                break;
               default:
                 break;
             }
@@ -208,7 +167,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
         // todo how are we handling these lists with legislation year in advanced search? EE-406
         // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
-        this.docTypes.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+        this.docTypes = _.sortBy(this.docTypes, ['legislation', 'listOrder']);
+
+        // Sort by legislation.
+        this.milestones = _.sortBy(this.milestones, ['legislation']);
+        this.authors = _.sortBy(this.authors, ['legislation']);
+        this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legistlation', 'listOrder']);
 
         // Fetch proponents and other collections
         // TODO: Put all of these into Lists
@@ -218,7 +183,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.proponents = res || [];
 
         this.regions = this.REGIONS_COLLECTION;
-        this.ceaaInvolvements = this.CEAA_INVOLVEMENTS_COLLECTION;
+        this.commentPeriods = Constants.PCP_COLLECTION;
+        this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
         return this.route.params;
       })
@@ -344,7 +310,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   paramsToCollectionFilters(params, name, collection, identifyBy) {
-    const paramname = name === 'docType' ? 'type' : name;
+    const paramname = (name === 'docType' || name === 'projectType') ? 'type' : name;
 
     this.filterForUI[name] = [];
     delete this.filterForURL[paramname];
@@ -384,14 +350,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   setFiltersFromParams(params) {
     if (this.terms.dataset === 'Project') {
-      this.paramsToCheckboxFilters(params, 'projectType', this.TYPE_MAP);
-      this.paramsToCheckboxFilters(params, 'eacDecision', this.EAC_DECISIONS_MAP);
-      this.paramsToCheckboxFilters(params, 'pcp', this.PCP_MAP);
-
       this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'code');
+      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, '_id');
       this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
       this.paramsToCollectionFilters(params, 'vc', null, '_id');
+      this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
+      this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
+      this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -420,7 +385,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   collectionFilterToParams(params, name, identifyBy) {
     if (this.filterForUI[name].length) {
       const values = this.filterForUI[name].map(record => { return record[identifyBy]; });
-      params[name === 'docType' ? 'type' : name] = values.join(',');
+      params[(name === 'docType' || name === 'projectType') ? 'type' : name] = values.join(',');
     }
   }
 
@@ -437,14 +402,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   setParamsFromFilters(params) {
     if (this.terms.dataset === 'Project') {
-      this.checkboxFilterToParams(params, 'projectType');
-      this.checkboxFilterToParams(params, 'eacDecision');
-      this.checkboxFilterToParams(params, 'pcp');
-
       this.collectionFilterToParams(params, 'region', 'code');
-      this.collectionFilterToParams(params, 'CEAAInvolvement', 'code');
+      this.collectionFilterToParams(params, 'CEAAInvolvement', '_id');
+      this.collectionFilterToParams(params, 'eacDecision', '_id');
+      this.collectionFilterToParams(params, 'pcp', 'code');
       this.collectionFilterToParams(params, 'proponent', '_id');
       this.collectionFilterToParams(params, 'vc', '_id');
+      this.collectionFilterToParams(params, 'projectType', 'name');
 
       this.dateFilterToParams(params, 'decisionDateStart');
       this.dateFilterToParams(params, 'decisionDateEnd');

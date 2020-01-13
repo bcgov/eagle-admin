@@ -87,7 +87,7 @@
           <label for="CEAAInvolvement">IAAC Involvement </label>
           <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
               <option value=''>---Select---</option>
-              <option *ngFor="let involvement of PROJECT_CEAA_INVOLVEMENT" [ngValue]="involvement">{{involvement}}</option>
+              <option *ngFor="let involvement of ceaaInvolvements" [ngValue]="involvement._id">{{involvement.name}}</option>
             </select>
         </div>
         <div class="label-pair med">
@@ -144,7 +144,7 @@
             <label for="eacDecision">EA Decision </label>
             <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
               <option value=''>---Select---</option>
-              <option *ngFor="let eacDecision of EAC_DECISIONS" [ngValue]="eacDecision">{{eacDecision}}</option>
+              <option *ngFor="let eacDecision of eacDecisions" [ngValue]="eacDecision._id">{{eacDecision.name}}</option>
             </select>
           </div>
           <div class="label-pair">

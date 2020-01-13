@@ -114,125 +114,50 @@
           </div>
           <div *ngIf="showAdvancedSearch && showFilters.projectType" class="projectType-filters project-filter row">
             <div class="col-md-7 filter-border">
-              <div class="row">
-                <div class="col-md-5">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="projectType_input" name="energyElectricity"
-                      [(ngModel)]="filterForUI.projectType.energyElectricity">
-                    <label class="form-check-label" for="projectType_input">Energy-Electricity</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="foodProcessing" name="foodProcessing"
-                      [(ngModel)]="filterForUI.projectType.foodProcessing">
-                    <label class="form-check-label" for="foodProcessing">Food Processing</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="mines" name="mines"
-                      [(ngModel)]="filterForUI.projectType.mines">
-                    <label class="form-check-label" for="mines">Mines</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="transportation" name="transportation"
-                      [(ngModel)]="filterForUI.projectType.transportation">
-                    <label class="form-check-label" for="transportation">Transportation</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="wasteDisposal" name="wasteDisposal"
-                      [(ngModel)]="filterForUI.projectType.wasteDisposal">
-                    <label class="form-check-label" for="wasteDisposal">Waste Disposal</label>
-                  </div>
+              <div class="col-md-12">
+                <div class="row">
+                  <b>Project Type</b>
                 </div>
-                <div class="col-md-7">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="energyPetroleum" name="energyPetroleum"
-                      [(ngModel)]="filterForUI.projectType.energyPetroleum">
-                    <label class="form-check-label" for="energyPetroleum">Energy-Petroleum &amp; Natural Gas</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="industrial" name="industrial"
-                      [(ngModel)]="filterForUI.projectType.industrial">
-                    <label class="form-check-label" for="industrial">Industrial</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="other" name="other"
-                      [(ngModel)]="filterForUI.projectType.other">
-                    <label class="form-check-label" for="other">Other</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="tourist" name="tourist"
-                      [(ngModel)]="filterForUI.projectType.tourist">
-                    <label class="form-check-label" for="tourist">Tourist Destination Resorts</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="waterManagement" name="waterManagement"
-                      [(ngModel)]="filterForUI.projectType.waterManagement">
-                    <label class="form-check-label" for="waterManagement">Water Management</label>
-                  </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <ng-select 
+                    id="projectType" 
+                    name="projectType"
+                    multiple="true"
+                    bindLabel="name"
+                    placeholder="Type Project Type"
+                    [items]="projectTypes"
+                    [closeOnSelect]="false"
+                    [(ngModel)]="filterForUI.projectType"
+                  >
+                  </ng-select>
                 </div>
               </div>
             </div>
           </div>
           <div *ngIf="showAdvancedSearch && showFilters.eacDecision" class="decision-filters project-filter row">
             <div class="col-md-9 filter-border">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="eacDecision_input" name="inProgress"
-                      [(ngModel)]="filterForUI.eacDecision.inProgress">
-                    <label class="form-check-label" for="eacDecision_input">In Progress</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="certificateRefused" name="certificateRefused"
-                      [(ngModel)]="filterForUI.eacDecision.certificateRefused">
-                    <label class="form-check-label" for="certificateRefused">Certificate Refused</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="certificateNotRequired" name="certificateNotRequired"
-                      [(ngModel)]="filterForUI.eacDecision.certificateNotRequired">
-                    <label class="form-check-label" for="certificateNotRequired">Certificate Not Required</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="withdrawn" name="withdrawn"
-                      [(ngModel)]="filterForUI.eacDecision.withdrawn">
-                    <label class="form-check-label" for="withdrawn">Withdrawn</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="preEA" name="preEA"
-                      [(ngModel)]="filterForUI.eacDecision.preEA">
-                    <label class="form-check-label" for="preEA">Pre-EA Act Approval</label>
-                  </div>
+              <div class="col-md-12">
+                <div class="row">
+                  <b>EA Decision</b>
                 </div>
-                <div class="col-md-6">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="certificateIssued" name="certificateIssued"
-                      [(ngModel)]="filterForUI.eacDecision.certificateIssued">
-                    <label class="form-check-label" for="certificateIssued">Certificate Issued</label>
+                <div class="row">
+                  <div class="form-group">
+                    <ng-select 
+                      id="eacDecision" 
+                      name="eacDecision"
+                      multiple="true"
+                      groupBy="legislation"
+                      bindLabel="name"
+                      placeholder="Type EA Decision"
+                      [items]="eacDecisions"
+                      [closeOnSelect]="false"
+                      [markFirst]="false"
+                      [(ngModel)]="filterForUI.eacDecision"
+                    >
+                    </ng-select>
                   </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="furtherAssessmentRequired" name="furtherAssessmentRequired"
-                      [(ngModel)]="filterForUI.eacDecision.furtherAssessmentRequired">
-                    <label class="form-check-label" for="furtherAssessmentRequired">Further Assessment Required</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="certificateExpired" name="certificateExpired"
-                      [(ngModel)]="filterForUI.eacDecision.certificateExpired">
-                    <label class="form-check-label" for="certificateExpired">Certificate Expired</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="terminated" name="terminated"
-                      [(ngModel)]="filterForUI.eacDecision.terminated">
-                    <label class="form-check-label" for="terminated">Terminated</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="notReviewable" name="notReviewable"
-                      [(ngModel)]="filterForUI.eacDecision.notReviewable">
-                    <label class="form-check-label" for="notReviewable">Not Designated Reviewable</label>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-12">
-                  <hr />
                 </div>
               </div>
               <div>
@@ -270,23 +195,24 @@
           </div>
           <div *ngIf="showAdvancedSearch && showFilters.pcp" class="pcp-filters project-filter row">
             <div class="col-md-3 filter-border">
+              <div class="col-md-12">
+                <div class="row">
+                  <b>Public Comment Period</b>
+                </div>
+              </div>
               <div class="row">
                 <div class="col-md-12">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="pcp_input" name="pending"
-                      [(ngModel)]="filterForUI.pcp.pending">
-                    <label class="form-check-label" for="pcp_input">Pending</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="open" name="open"
-                      [(ngModel)]="filterForUI.pcp.open">
-                    <label class="form-check-label" for="open">Open</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="closed" name="closed"
-                      [(ngModel)]="filterForUI.pcp.closed">
-                    <label class="form-check-label" for="closed">Closed</label>
-                  </div>
+                  <ng-select 
+                    id="pcp" 
+                    name="pcp"
+                    multiple="true"
+                    bindLabel="name"
+                    placeholder="Type Comment Period"
+                    [items]="commentPeriods"
+                    [closeOnSelect]="false"
+                    [(ngModel)]="filterForUI.pcp"
+                  >
+                  </ng-select>
                 </div>
               </div>
             </div>
@@ -300,17 +226,17 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="proponent" name="proponent"
-                        [(ngModel)]="filterForUI.proponent" [identifyBy]="'_id'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true" [inputId]="'more_input'"
-                        [placeholder]="'Type Proponent Name'" [secondaryPlaceholder]="'Type Proponent Name'"
+                      <ng-select 
+                        id="proponent" 
+                        name="proponent"
+                        multiple="true"
+                        bindLabel="name"
+                        placeholder="Type Proponent Name"
+                        [items]="proponents"
+                        [closeOnSelect]="false"
+                        [(ngModel)]="filterForUI.proponent"
                       >
-                        <tag-input-dropdown [autocompleteItems]="proponents" [identifyBy]="'_id'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                   <div class="row">
@@ -323,17 +249,17 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="region" name="region"
-                        [(ngModel)]="filterForUI.region" [identifyBy]="'code'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true"
-                        [placeholder]="'Type Region Name'" [secondaryPlaceholder]="'Type Region Name'"
+                      <ng-select 
+                        id="region" 
+                        name="region"
+                        multiple="true"
+                        bindLabel="name"
+                        placeholder="Type Region Name"
+                        [items]="regions"
+                        [closeOnSelect]="false"
+                        [(ngModel)]="filterForUI.region"
                       >
-                        <tag-input-dropdown [autocompleteItems]="regions" [identifyBy]="'code'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                   <div class="row">
@@ -346,17 +272,19 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="ceaaInvolvement" name="ceaaInvolvement"
-                        [(ngModel)]="filterForUI.CEAAInvolvement" [identifyBy]="'code'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true"
-                        [placeholder]="'Type Involvement'" [secondaryPlaceholder]="'Type Involvement'"
+                      <ng-select 
+                        id="ceaaInvolvement" 
+                        name="ceaaInvolvement"
+                        groupBy="legislation"
+                        multiple="true"
+                        bindLabel="name"
+                        placeholder="Type Involvement"
+                        [items]="ceaaInvolvements"
+                        [closeOnSelect]="false"
+                        [markFirst]="false"
+                        [(ngModel)]="filterForUI.CEAAInvolvement"
                       >
-                        <tag-input-dropdown [autocompleteItems]="ceaaInvolvements" [identifyBy]="'code'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                 </div>
@@ -372,17 +300,19 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="milestone" name="milestone"
-                        [(ngModel)]="filterForUI.milestone" [identifyBy]="'_id'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true" [inputId]="'milestone_input'"
-                        [placeholder]="'Type Milestone'" [secondaryPlaceholder]="'Type Milestone'"
+                      <ng-select 
+                        id="milestone" 
+                        name="milestone"
+                        multiple="true"
+                        bindLabel="name"
+                        groupBy="legislation"
+                        placeholder="Type Milestone"
+                        [items]="milestones"
+                        [markFirst]="false"
+                        [closeOnSelect]="false"
+                        [(ngModel)]="filterForUI.milestone"
                       >
-                        <tag-input-dropdown [autocompleteItems]="milestones" [identifyBy]="'_id'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                 </div>
@@ -436,17 +366,19 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="documentAuthorType" name="documentAuthorType"
-                        [(ngModel)]="filterForUI.documentAuthorType" [identifyBy]="'_id'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true" [inputId]="'documentAuthorType_input'"
-                        [placeholder]="'Type Document Author'" [secondaryPlaceholder]="'Type Document Author'"
+                      <ng-select 
+                        id="documentAuthorType" 
+                        name="documentAuthorType"
+                        multiple="true"
+                        bindLabel="name"
+                        groupBy="legislation"
+                        placeholder="Type Document Author"
+                        [items]="authors"
+                        [markFirst]="false"
+                        [closeOnSelect]="false"
+                        [(ngModel)]="filterForUI.documentAuthorType"
                       >
-                        <tag-input-dropdown [autocompleteItems]="authors" [identifyBy]="'_id'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                 </div>
@@ -462,17 +394,19 @@
                   </div>
                   <div class="row">
                     <div class="form-group">
-                      <tag-input id="docType" name="docType"
-                        [(ngModel)]="filterForUI.docType" [identifyBy]="'_id'" [displayBy]="'name'"
-                        [onlyFromAutocomplete]="true" [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                        [clearOnBlur]="true" [inputId]="'docType_input'"
-                        [placeholder]="'Type Document Type'" [secondaryPlaceholder]="'Type Document Type'"
+                      <ng-select 
+                        id="docType" 
+                        name="docType"
+                        multiple="true"
+                        bindLabel="name"
+                        groupBy="legislation"
+                        placeholder="Type Document Type"
+                        [items]="docTypes"
+                        [markFirst]="false"
+                        [closeOnSelect]="false"
+                        [(ngModel)]="filterForUI.docType"
                       >
-                        <tag-input-dropdown [autocompleteItems]="docTypes" [identifyBy]="'_id'" [displayBy]="'name'"
-                          [showDropdownIfEmpty]="true" [keepOpen]="false" [focusFirstElement]="true"
-                        >
-                        </tag-input-dropdown>
-                      </tag-input>
+                      </ng-select>
                     </div>
                   </div>
                 </div>

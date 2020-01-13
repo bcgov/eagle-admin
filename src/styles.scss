@@ -32,6 +32,7 @@
 @import "assets/styles/components/lists.scss";
 @import "assets/styles/components/material.scss";
 @import "assets/styles/components/modal.scss";
+@import "assets/styles/components/multi-select.scss";
 @import "assets/styles/components/pagination.scss";
 @import "assets/styles/components/spinner.scss";
 @import "assets/styles/components/tab-nav.scss";
@@ -42,3 +43,6 @@
 // Third-party Components
 // Required for Angular Material styling: (ref: https://material.angular.io/guide/theming)
 @import "~@angular/material/prebuilt-themes/deeppurple-amber.css";
+
+// For the ng-select multiselect component.
+@import "~@ng-select/ng-select/themes/default.theme.css";

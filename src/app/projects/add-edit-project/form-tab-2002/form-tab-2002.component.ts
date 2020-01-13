@@ -5,6 +5,7 @@ import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
+import * as _ from 'lodash';
 
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
@@ -41,6 +42,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public proponentName = '';
   public proponentId = '';
   public legislationYear: Number = 2002;
+  public ceaaInvolvements: Array<any> = [];
+  public eacDecisions: Array<any> = [];
 
   public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
 
@@ -49,10 +52,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public PROJECT_STATUS = Constants.PROJECT_STATUS(this.legislationYear);
 
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
-  public PROJECT_CEAA_INVOLVEMENT = Constants.CEAA_INVOLVEMENT(this.legislationYear);
   public PROJECT_NATURE_OBJECT = Constants.buildToNature;
   public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
-  public EAC_DECISIONS = Constants.EAC_DECISIONS(this.legislationYear);
   // these are for extensions
   // public modifications = [];
   // public modificationsTableData: TableObject;
@@ -105,7 +106,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private storageService: StorageService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
   ) {
   }
 
@@ -116,7 +117,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       }
     );
 
-    // Get data related to current project
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
@@ -125,6 +125,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         this.initOrg();
         this.buildForm();
         this.initContacts();
+        this.getLists();
 
         this.loading = false;
         try {
@@ -136,6 +137,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
     this.back = this.storageService.state.back;
   }
+
   initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
     const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
     this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
@@ -234,7 +236,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         'eaStatusDate': new FormControl(),
         'status': new FormControl(this.PROJECT_STATUS[2]),
         'projectStatusDate': new FormControl(),
-        'eacDecision': new FormControl(this.EAC_DECISIONS[0]),
+        'eacDecision': new FormControl(this.eacDecisions[0]),
         'decisionDate': new FormControl(),
         'substantially': new FormControl(),
         'substantiallyDate': new FormControl(),
@@ -383,7 +385,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'lat': new FormControl(formData.centroid[1]),
       'lon': new FormControl(formData.centroid[0]),
       'addFile': new FormControl(formData.addFile),
-      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement),
+      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
       'CEAALink': new FormControl(formData.CEAALink),
       'ea': new FormControl(formData.ea),
       'capital': new FormControl(formData.intake.investment),
@@ -392,7 +394,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'eaStatusDate': new FormControl(),
       'status': new FormControl(formData.status || this.PROJECT_STATUS[2]),
       'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision || this.EAC_DECISIONS[0]),
+      'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
       'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(),
@@ -756,6 +758,27 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   register(myForm: FormGroup) { }
+
+  getLists() {
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.type) {
+          case 'eaDecisions':
+            this.eacDecisions.push({ ...item });
+            break;
+          case 'ceaaInvolvements':
+            this.ceaaInvolvements.push({ ...item });
+            break;
+          default:
+            break;
+        }
+      });
+    });
+
+    // Sorts by legislation first and then listOrder for each legislation group.
+    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+  }
 
   ngOnDestroy() {
     // save state before destructing, helps with switching tabs

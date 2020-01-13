@@ -73,16 +73,19 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <tag-input id="milestone" name="milestone" [(ngModel)]="filterForUI.milestone"
-                                            [identifyBy]="'_id'" [displayBy]="'name'" [onlyFromAutocomplete]="true"
-                                            [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                                            [clearOnBlur]="true" [placeholder]="'Type Milestone'"
-                                            [secondaryPlaceholder]="'Type Milestone'">
-                                            <tag-input-dropdown [autocompleteItems]="milestones" [identifyBy]="'_id'"
-                                                [displayBy]="'name'" [showDropdownIfEmpty]="true" [keepOpen]="false"
-                                                [focusFirstElement]="true">
-                                            </tag-input-dropdown>
-                                        </tag-input>
+                                        <ng-select 
+                                            id="milestone" 
+                                            name="milestone"
+                                            multiple="true"
+                                            bindLabel="name"
+                                            groupBy="legislation"
+                                            placeholder="Type Milestone"
+                                            [items]="milestones"
+                                            [markFirst]="false"
+                                            [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.milestone"
+                                        >
+                                        </ng-select>
                                     </div>
                                 </div>
                             </div>
@@ -139,17 +142,19 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <tag-input id="documentAuthorType" name="documentAuthorType"
-                                            [(ngModel)]="filterForUI.documentAuthorType" [identifyBy]="'_id'"
-                                            [displayBy]="'name'" [onlyFromAutocomplete]="true"
-                                            [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                                            [clearOnBlur]="true" [placeholder]="'Type Document Author'"
-                                            [secondaryPlaceholder]="'Type Document Author'">
-                                            <tag-input-dropdown [autocompleteItems]="authors" [identifyBy]="'_id'"
-                                                [displayBy]="'name'" [showDropdownIfEmpty]="true" [keepOpen]="false"
-                                                [focusFirstElement]="true">
-                                            </tag-input-dropdown>
-                                        </tag-input>
+                                        <ng-select 
+                                            id="documentAuthorType" 
+                                            name="documentAuthorType"
+                                            multiple="true"
+                                            bindLabel="name"
+                                            groupBy="legislation"
+                                            placeholder="Type Document Author"
+                                            [items]="authors"
+                                            [markFirst]="false"
+                                            [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.documentAuthorType"
+                                        >
+                                        </ng-select>
                                     </div>
                                 </div>
                             </div>
@@ -165,16 +170,19 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <tag-input id="type" name="type" [(ngModel)]="filterForUI.type"
-                                            [identifyBy]="'_id'" [displayBy]="'name'" [onlyFromAutocomplete]="true"
-                                            [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                                            [clearOnBlur]="true" [placeholder]="'Type Document Type'"
-                                            [secondaryPlaceholder]="'Type Document Type'">
-                                            <tag-input-dropdown [autocompleteItems]="types" [identifyBy]="'_id'"
-                                                [displayBy]="'name'" [showDropdownIfEmpty]="true" [keepOpen]="false"
-                                                [focusFirstElement]="true">
-                                            </tag-input-dropdown>
-                                        </tag-input>
+                                        <ng-select 
+                                            id="type" 
+                                            name="type"
+                                            multiple="true"
+                                            bindLabel="name"
+                                            groupBy="legislation"
+                                            placeholder="Type Document Type"
+                                            [items]="types"
+                                            [markFirst]="false"
+                                            [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.type"
+                                        >
+                                        </ng-select>
                                     </div>
                                 </div>
                             </div>

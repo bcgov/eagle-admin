@@ -22,6 +22,26 @@ export class Constants {
       nature: 'Dismantling or Abandonment'
     },
   ];
+
+  public static readonly PCP_COLLECTION: object[] = [
+    { code: 'pending', name: 'Pending' },
+    { code: 'open', name: 'Open' },
+    { code: 'closed', name: 'Closed' }
+  ];
+
+  public static readonly PROJECT_TYPE_COLLECTION: object[] = [
+    { code: 'energyElectricity', name: 'Energy-Electricity' },
+    { code: 'energyPetroleum', name: 'Energy-Petroleum & Natural Gas' },
+    { code: 'foodProcessing', name: 'Food Processing' },
+    { code: 'industrial', name: 'Industrial' },
+    { code: 'mines', name: 'Mines' },
+    { code: 'other', name: 'Other' },
+    { code: 'tourist', name: 'Tourist Destination Resorts' },
+    { code: 'transportation', name: 'Transportation' },
+    { code: 'wasteDisposal', name: 'Waste Disposal' },
+    { code: 'waterManagement', name: 'Water Management' }
+  ];
+
   public static readonly EA_READINESS_TYPES = (legislationYear: Number): Array<string> => {
     switch (legislationYear) {
       case 2002:
