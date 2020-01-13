@@ -645,7 +645,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
       if (putFunction) {
         this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe).pipe(flatMap(_ => putFunction(project) ))
+        .takeUntil(this.ngUnsubscribe).pipe(flatMap(__ => putFunction(project) ))
         .subscribe(
           ...putSubscribe
         );
