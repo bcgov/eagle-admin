@@ -173,7 +173,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.milestones = _.sortBy(this.milestones, ['legislation']);
         this.authors = _.sortBy(this.authors, ['legislation']);
         this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legistlation', 'listOrder']);
+        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
 
         // Fetch proponents and other collections
         // TODO: Put all of these into Lists
@@ -519,6 +519,19 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.setParamsFromFilters(params);
 
     this.router.navigate(['search', params]);
+  }
+
+  // Compares selected options when a dropdown is grouped by legislation.
+  compareDropdownOptions(optionA: any, optionB: any) {
+    if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  clearSelectedItem(filter: string, item: any) {
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
   }
 
   ngOnDestroy() {

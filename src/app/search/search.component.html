@@ -156,6 +156,13 @@
                       [markFirst]="false"
                       [(ngModel)]="filterForUI.eacDecision"
                     >
+                      <ng-template ng-label-tmp let-item="item">
+                        <span class="ng-value-icon left" (click)="clearSelectedItem('eacDecision', item)" aria-hidden="true">×</span>
+                        <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                      </ng-template>
+                      <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                        {{item.legislation}} Act Terms
+                      </ng-template>
                     </ng-select>
                   </div>
                 </div>
@@ -284,6 +291,13 @@
                         [markFirst]="false"
                         [(ngModel)]="filterForUI.CEAAInvolvement"
                       >
+                        <ng-template ng-label-tmp let-item="item">
+                          <span class="ng-value-icon left" (click)="clearSelectedItem('CEAAInvolvement', item)" aria-hidden="true">×</span>
+                          <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                        </ng-template>
+                        <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                          {{item.legislation}} Act Terms
+                        </ng-template>
                       </ng-select>
                     </div>
                   </div>
@@ -312,6 +326,13 @@
                         [closeOnSelect]="false"
                         [(ngModel)]="filterForUI.milestone"
                       >
+                        <ng-template ng-label-tmp let-item="item">
+                          <span class="ng-value-icon left" (click)="clearSelectedItem('milestone', item)" aria-hidden="true">×</span>
+                          <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                        </ng-template>
+                        <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                          {{item.legislation}} Act Terms
+                        </ng-template>
                       </ng-select>
                     </div>
                   </div>
@@ -405,7 +426,15 @@
                         [markFirst]="false"
                         [closeOnSelect]="false"
                         [(ngModel)]="filterForUI.docType"
+                        [compareWith]="compareDropdownOptions"
                       >
+                        <ng-template ng-label-tmp let-item="item">
+                          <span class="ng-value-icon left" (click)="clearSelectedItem('docType', item)" aria-hidden="true">×</span>
+                          <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                        </ng-template>
+                        <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                          {{item.legislation}} Act Terms
+                      </ng-template>
                       </ng-select>
                     </div>
                   </div>
