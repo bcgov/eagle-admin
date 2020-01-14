@@ -84,7 +84,7 @@
     <h2>Supplementary Information</h2>
     <div class="label-pair">
       <h3 for="ceaa">IAAC Involvement: </h3>
-      <p id="ceaa">{{project.CEAAInvolvement.name || '-'}}</p>
+      <p id="ceaa">{{project.CEAAInvolvement?.name || '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="ceaa-url">IAAC URL: </h3>
@@ -92,7 +92,7 @@
     </div>
     <div class="label-pair">
       <h3 for="ea">EA Decision: </h3>
-      <p id="ea">{{project.eacDecision.name || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
+      <p id="ea">{{project.eacDecision?.name || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="ea">Capital Investment: </h3>
