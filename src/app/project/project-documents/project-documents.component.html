@@ -85,6 +85,13 @@
                                             [closeOnSelect]="false"
                                             [(ngModel)]="filterForUI.milestone"
                                         >
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <span class="ng-value-icon left" (click)="clearSelectedItem('milestone', item)" aria-hidden="true">×</span>
+                                                <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                            </ng-template>
+                                            <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                {{item.legislation}} Act Terms
+                                            </ng-template>
                                         </ng-select>
                                     </div>
                                 </div>
@@ -182,6 +189,13 @@
                                             [closeOnSelect]="false"
                                             [(ngModel)]="filterForUI.type"
                                         >
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <span class="ng-value-icon left" (click)="clearSelectedItem('type', item)" aria-hidden="true">×</span>
+                                                <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                            </ng-template>
+                                            <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                {{item.legislation}} Act Terms
+                                            </ng-template>
                                         </ng-select>
                                     </div>
                                 </div>

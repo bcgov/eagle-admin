@@ -532,10 +532,10 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
         return true;
       }
-  
+
       return false;
     }
-  
+
     clearSelectedItem(filter: string, item: any) {
       this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
     }
