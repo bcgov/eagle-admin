@@ -537,6 +537,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
       alert('You must select a project lead');
       return;
+    }  else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
+      alert('You must select an EA Decision');
+      return;
     } else {
       return true;
     }
