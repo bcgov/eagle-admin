@@ -60,6 +60,10 @@
       <h3 for="description">Description: </h3>
       <p id="description">{{project.description || 'No project description available'}}</p>
     </div>
+    <div class="label-pair">
+      <h3 for="phase">Project Phase: </h3>
+      <p id="phase">{{project.currentPhaseName || '-'}}</p>
+    </div>
   </section>
   <section>
     <h2>Location</h2>
