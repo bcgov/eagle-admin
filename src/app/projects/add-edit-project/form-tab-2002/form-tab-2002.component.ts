@@ -494,7 +494,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
-  private validateForm() {
+  public validateForm() {
     if (this.myForm.controls.name.value === '' || this.myForm.controls.name.value == null) {
       alert('Name cannot be empty.');
       return false;
