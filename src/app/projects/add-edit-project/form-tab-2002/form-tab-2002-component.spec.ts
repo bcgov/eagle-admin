@@ -111,7 +111,7 @@ describe('FormTab2002', () => {
     expect(component.validateForm()).toBeFalsy();
   });
   it('should display alert on empty EA Decision', () => {
-    console.log(projectAjaxData);
+    // Getting region of undefined :(
     const form = component.buildFormFromData(projectAjaxData);
     expect(component.validateForm()).toBeFalsy();
   });
