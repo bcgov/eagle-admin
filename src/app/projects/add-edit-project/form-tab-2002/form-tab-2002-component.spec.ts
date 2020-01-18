@@ -89,7 +89,7 @@ describe('FormTab2002', () => {
   beforeEach(() => {
     // This calls ngoninit but has no data so proponent is not pre populated
     fixture = TestBed.createComponent(FormTab2002Component);
-    component = fixture.debugElement.componentInstance;
+    component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
