@@ -141,7 +141,7 @@
         </fieldset>
         <fieldset class="form-group">
           <div class="label-pair">
-            <label for="eacDecision">EA Decision </label>
+            <label for="eacDecision">EA Decision* </label>
             <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
               <option value=''>---Select---</option>
               <option *ngFor="let eacDecision of eacDecisions" [ngValue]="eacDecision._id">{{eacDecision.name}}</option>

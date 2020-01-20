@@ -120,7 +120,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-
         this.initProject(data);
         this.initOrg();
         this.buildForm();
@@ -494,7 +493,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
   }
 
-  private validateForm() {
+  public validateForm() {
     if (this.myForm.controls.name.value === '' || this.myForm.controls.name.value == null) {
       alert('Name cannot be empty.');
       return false;
@@ -530,13 +529,16 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
       alert('Longitude must be between -114.01 and -139.06');
-      return;
+      return false;
     } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
       alert('You must select an EPD');
-      return;
+      return false;
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
       alert('You must select a project lead');
-      return;
+      return false;
+    }  else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
+      alert('You must select an EA Decision');
+      return false;
     } else {
       return true;
     }
