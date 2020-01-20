@@ -120,7 +120,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-
         this.initProject(data);
         this.initOrg();
         this.buildForm();

@@ -23,13 +23,13 @@ describe('FormTab2002', () => {
     'downloadDocument'
   ]);
   const utils = new Utils();
-  const projectAjaxData = utils.extractFromSearchResults(AjaxData.fullProject)[0]['legislation_2002'];
+  const projectAjaxData = utils.extractFromSearchResults(AjaxData)[0]['legislation_2002'];
   const mockConfigService = {
     getRegions: () => {
       return Observable.of(regionsData);
     },
     getLists: () => {
-      return { subscribe: () => AjaxData.fullProject};
+      return Observable.of(AjaxData);
     },
   };
 
@@ -59,12 +59,6 @@ describe('FormTab2002', () => {
     data: AjaxData
   };
 
-  const mockUtils = jasmine.createSpyObj('Utils', [
-    'convertJSDateToNGBDate',
-    'convertFormGroupNGBDateToJSDate',
-    'extractFromSearchResults',
-  ]);
-
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
@@ -86,7 +80,7 @@ describe('FormTab2002', () => {
         { provide: DialogService, useValue: mockDialogService},
         { provide: ActivatedRoute, useValue: mockActivatedRoute},
         { provide: NavigationStackUtils, useValue: mockNavigationStackUtils},
-        { provide: Utils, useValue: mockUtils}
+        { provide: Utils, useValue: utils}
       ],
       schemas: [ NO_ERRORS_SCHEMA ]
     })
