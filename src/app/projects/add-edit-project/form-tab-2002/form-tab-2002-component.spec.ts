@@ -107,7 +107,7 @@ describe('FormTab2002', () => {
     component.myForm = component.buildFormFromData(projectAjaxData);
     // Check to see that the alert box popped up
     spyOn(window, 'alert');
-    component.validateForm();
+    component.onSubmit();
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
   });
 });
