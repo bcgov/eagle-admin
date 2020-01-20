@@ -98,7 +98,7 @@ describe('FormTab2002', () => {
   });
   it('form invalid when empty', () => {
     component.buildForm();
-    expect(component.onSubmit()).toBeFalsy();
+    expect(component.validateForm()).toBeFalsy();
   });
   it('should display alert on empty EA Decision', () => {
     // Getting region of undefined :(
@@ -107,7 +107,7 @@ describe('FormTab2002', () => {
     component.myForm = component.buildFormFromData(projectAjaxData);
     // Check to see that the alert box popped up
     spyOn(window, 'alert');
-    component.onSubmit();
+    component.validateForm();
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
   });
 });
