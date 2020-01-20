@@ -14,7 +14,7 @@ import { ConfigService } from 'app/services/config.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'app/services/project.service';
 import { DialogService } from 'ng2-bootstrap-modal';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 describe('FormTab2002', () => {
   let component: FormTab2002Component;
@@ -23,19 +23,13 @@ describe('FormTab2002', () => {
     'downloadDocument'
   ]);
   const utils = new Utils();
-  const projectAjaxData = utils.extractFromSearchResults(AjaxData.fullProject)['legislation_2002'];
-  // Null out the eacDecision for testing
-  console.log(projectAjaxData);
-  // projectAjaxData.eacDecision = '';
+  const projectAjaxData = utils.extractFromSearchResults(AjaxData.fullProject)[0]['legislation_2002'];
   const mockConfigService = {
     getRegions: () => {
-      return { takeUntil: () => {
-        return {
-          subscribe: () => regionsData};
-      }};
+      return Observable.of(regionsData);
     },
     getLists: () => {
-      return { subscribe: () => AjaxData};
+      return { subscribe: () => AjaxData.fullProject};
     },
   };
 
@@ -67,7 +61,8 @@ describe('FormTab2002', () => {
 
   const mockUtils = jasmine.createSpyObj('Utils', [
     'convertJSDateToNGBDate',
-    'convertFormGroupNGBDateToJSDate'
+    'convertFormGroupNGBDateToJSDate',
+    'extractFromSearchResults',
   ]);
 
   beforeEach(async(() => {
@@ -98,6 +93,7 @@ describe('FormTab2002', () => {
       .compileComponents();
   }));
   beforeEach(() => {
+    // This calls ngoninit but has no data so proponent is not pre populated
     fixture = TestBed.createComponent(FormTab2002Component);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -108,11 +104,16 @@ describe('FormTab2002', () => {
   });
   it('form invalid when empty', () => {
     component.buildForm();
-    expect(component.validateForm()).toBeFalsy();
+    expect(component.onSubmit()).toBeFalsy();
   });
   it('should display alert on empty EA Decision', () => {
     // Getting region of undefined :(
-    const form = component.buildFormFromData(projectAjaxData);
-    expect(component.validateForm()).toBeFalsy();
+    projectAjaxData.eacDecision = null;
+    // component.ngOnInit();
+    component.myForm = component.buildFormFromData(projectAjaxData);
+    // Check to see that the alert box popped up
+    spyOn(window, 'alert');
+    component.onSubmit();
+    expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
   });
 });

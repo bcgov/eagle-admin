@@ -530,16 +530,16 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
       alert('Longitude must be between -114.01 and -139.06');
-      return;
+      return false;
     } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
       alert('You must select an EPD');
-      return;
+      return false;
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
       alert('You must select a project lead');
-      return;
+      return false;
     }  else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
       alert('You must select an EA Decision');
-      return;
+      return false;
     } else {
       return true;
     }
