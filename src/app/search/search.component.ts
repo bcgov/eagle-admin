@@ -534,6 +534,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
   }
 
+  public filterCompareWith(filter: any, filterToCompare: any)
+  {
+    return filter && filterToCompare
+            ? filter._id === filterToCompare._id
+            : filter === filterToCompare;
+  }
+
   ngOnDestroy() {
     // dismiss any open snackbar
     if (this.snackBarRef) { this.snackBarRef.dismiss(); }

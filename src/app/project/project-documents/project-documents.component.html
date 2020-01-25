@@ -73,8 +73,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <ng-select 
-                                            id="milestone" 
+                                        <ng-select
+                                            id="milestone"
                                             name="milestone"
                                             multiple="true"
                                             bindLabel="name"
@@ -84,6 +84,7 @@
                                             [markFirst]="false"
                                             [closeOnSelect]="false"
                                             [(ngModel)]="filterForUI.milestone"
+                                            [compareWith]="filterCompareWith"
                                         >
                                             <ng-template ng-label-tmp let-item="item">
                                                 <span class="ng-value-icon left" (click)="clearSelectedItem('milestone', item)" aria-hidden="true">×</span>
@@ -149,8 +150,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <ng-select 
-                                            id="documentAuthorType" 
+                                        <ng-select
+                                            id="documentAuthorType"
                                             name="documentAuthorType"
                                             multiple="true"
                                             bindLabel="name"
@@ -160,6 +161,7 @@
                                             [markFirst]="false"
                                             [closeOnSelect]="false"
                                             [(ngModel)]="filterForUI.documentAuthorType"
+                                            [compareWith]="filterCompareWith"
                                         >
                                         </ng-select>
                                     </div>
@@ -177,8 +179,8 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <ng-select 
-                                            id="type" 
+                                        <ng-select
+                                            id="type"
                                             name="type"
                                             multiple="true"
                                             bindLabel="name"
@@ -188,6 +190,7 @@
                                             [markFirst]="false"
                                             [closeOnSelect]="false"
                                             [(ngModel)]="filterForUI.type"
+                                            [compareWith]="filterCompareWith"
                                         >
                                             <ng-template ng-label-tmp let-item="item">
                                                 <span class="ng-value-icon left" (click)="clearSelectedItem('type', item)" aria-hidden="true">×</span>
