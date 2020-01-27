@@ -21,6 +21,8 @@ import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
 
+import { Utils } from 'app/shared/utils/utils';
+
 // TODO: Project and Document filters should be made into components
 // What a mess otherwise!
 class SearchFilterObject {
@@ -131,7 +133,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     private orgService: OrgService,
     public searchService: SearchService, // also used in template
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private utils: Utils
   ) { }
 
   // TODO: when clicking on radio buttons, url must change to reflect dataset.
@@ -536,9 +539,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   public filterCompareWith(filter: any, filterToCompare: any)
   {
-    return filter && filterToCompare
-            ? filter._id === filterToCompare._id
-            : filter === filterToCompare;
+    return this.utils.filterCompareWith(filter, filterToCompare);
   }
 
   ngOnDestroy() {

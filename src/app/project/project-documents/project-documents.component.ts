@@ -795,12 +795,10 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
     }
 
-    public filterCompareWith(filter: any, filterToCompare: any)
-    {
-      return filter && filterToCompare
-             ? filter._id === filterToCompare._id
-             : filter === filterToCompare;
-    }
+  public filterCompareWith(filter: any, filterToCompare: any)
+  {
+    return this.utils.filterCompareWith(filter, filterToCompare);
+  }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();

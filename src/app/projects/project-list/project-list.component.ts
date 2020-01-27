@@ -26,6 +26,7 @@ import { StorageService } from 'app/services/storage.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { Constants } from 'app/shared/utils/constants';
 
+import { Utils } from 'app/shared/utils/utils';
 class ProjectFilterObject {
   constructor(
     public type: object = {},
@@ -138,7 +139,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private storageService: StorageService,
     private config: ConfigService,
-    private _changeDetectionRef: ChangeDetectorRef
+    private _changeDetectionRef: ChangeDetectorRef,
+    private utils: Utils
   ) {}
 
   ngOnInit() {
@@ -540,12 +542,10 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
     }
 
-    public filterCompareWith(filter: any, filterToCompare: any)
-    {
-      return filter && filterToCompare
-             ? filter._id === filterToCompare._id
-             : filter === filterToCompare;
-    }
+  public filterCompareWith(filter: any, filterToCompare: any)
+  {
+    return this.utils.filterCompareWith(filter, filterToCompare);
+  }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();

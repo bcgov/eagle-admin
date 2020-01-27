@@ -120,4 +120,12 @@ export class Utils {
       const natureObj = Constants.buildToNature.find(obj => obj.build === key);
       return (natureObj) ? natureObj.nature : key;
     }
+
+    // comparator for advanced search filters
+    public filterCompareWith(filter: any, filterToCompare: any)
+    {
+      return filter && filterToCompare
+              ? filter._id === filterToCompare._id
+              : filter === filterToCompare;
+    }
 }
