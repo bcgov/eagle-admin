@@ -180,7 +180,6 @@ export class ProjectService {
   }
 
   publish(proj: Project): Observable<Project> {
-    console.log('publishgin');
     return this.api.publishProject(proj)
       .catch(error => this.api.handleError(error));
   }
