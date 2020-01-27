@@ -1,5 +1,8 @@
-export const AjaxData = [{
-         _schemaName: 0,
+import { ISearchResults, SearchResults } from 'app/models/search';
+import { FullProject } from 'app/models/fullProject';
+
+export const AjaxData: SearchResults[] = [{
+         _schemaName: '0',
          data: {
            searchResults: [
              {
@@ -220,7 +223,7 @@ export const AjaxData = [{
                  duration: '',
                  eaoMember: '',
                  fedElecDist: '',
-                 intake: '',
+                 intake:  {},
                  isTermsAgreed: false,
                  primaryContact: '',
                  proMember: '',

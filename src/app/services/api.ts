@@ -1101,6 +1101,7 @@ export class ApiService {
       });
     }
     queryString += `&fields=${this.buildValues(fields)}`;
+    queryString = encodeURI(queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
