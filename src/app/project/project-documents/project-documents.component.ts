@@ -592,36 +592,28 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  paramsToCollectionFilters(params, name, collection, identifyBy)
-  {
+  paramsToCollectionFilters(params, name, collection, identifyBy) {
     delete this.filterForURL[name];
     delete this.filterForAPI[name];
 
-    if (params[name] && collection)
-    {
+    if (params[name] && collection) {
       let confirmedValues = [];
       const values = params[name].split(',');
-      for(let valueIdx in values)
-      {
-        if (values.hasOwnProperty(valueIdx))
-        {
+      for(let valueIdx in values) {
+        if (values.hasOwnProperty(valueIdx)) {
           let value = values[valueIdx];
           const record = _.find(collection, [ identifyBy, value ]);
-          if (record)
-          {
+          if (record) {
             let optionArray = this.filterForUI[name];
             let recordExists = false;
-            for(let optionIdx in optionArray)
-            {
-              if(optionArray[optionIdx]._id === record['_id'])
-              {
+            for(let optionIdx in optionArray) {
+              if(optionArray[optionIdx]._id === record['_id']) {
                 recordExists = true;
                 break;
               }
             }
 
-            if(!recordExists)
-            {
+            if(!recordExists) {
               optionArray.push(record);
               confirmedValues.push(value);
             }
@@ -815,8 +807,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
     }
 
-    public filterCompareWith(filter: any, filterToCompare: any)
-    {
+    public filterCompareWith(filter: any, filterToCompare: any) {
       console.log('comparing ' + filter._id + ' to ' + filterToCompare._id)
       return filter && filterToCompare
               ? filter._id === filterToCompare._id
