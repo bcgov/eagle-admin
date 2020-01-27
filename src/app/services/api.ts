@@ -1073,7 +1073,7 @@ export class ApiService {
       });
     }
     if (keys) {
-      queryString += `&keywords=${keys}`;
+      queryString += `&keywords=${encodeURIComponent(keys)}`;
     }
     if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
@@ -1100,7 +1100,8 @@ export class ApiService {
         });
       });
     }
-    queryString += `&fields=${this.buildValues(fields)}`;
+    // This step is already done in the ifabove
+    // queryString += `&fields=${this.buildValues(fields)}`;
     queryString = encodeURI(queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
