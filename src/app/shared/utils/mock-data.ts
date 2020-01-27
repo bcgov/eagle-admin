@@ -1,3 +1,4 @@
+
 import { ISearchResults, SearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
 
@@ -436,14 +437,188 @@ export const AjaxData: SearchResults[] = [{
          }
        }];
 
+export const AjaxDefaultData = {
+  CEAAInvolvement: {
+    _id: '5e22061d50d1b9ca776bc690',
+    _schemaName: 'List',
+    type: 'ceaaInvolvements',
+    legislation: 2002,
+    name: 'Coordinated',
+    listOrder: 30,
+    read: [
+      'public',
+      'staff',
+      'sysadmin'
+    ],
+    write: [
+      'staff',
+      'sysadmin'
+    ]
+  },
+  CELead: 'Compliance & Enforcement Branch',
+  CELeadEmail: 'eao.compliance@gov.bc.ca',
+  CELeadPhone: '250-387-0131',
+  centroid: [
+    -120.4667,
+    50.6333
+  ],
+  description: 'KGHM Ajax Mining Inc.  proposes to develop a new open-pit copper and gold mine with a production capacity of up to 24 million tonnes of ore per year. The mine\'s life expectancy is 23 years.',
+  eacDecision: {
+    _id: '5e22061d50d1b9ca776bc6a3',
+    _schemaName: 'List',
+    type: 'eaDecisions',
+    legislation: 2002,
+    name: 'Certificate Refused',
+    listOrder: 20,
+    read: [
+      'public',
+      'staff',
+      'sysadmin'
+    ],
+    write: [
+      'staff',
+      'sysadmin'
+    ]
+  },
+  location: 'Southern Interior BC',
+  name: 'Ajax Mine',
+  projectLeadId: null,
+  projectLead: 'Nathan Braun',
+  projectLeadEmail: 'Nathan.Braun@gov.bc.ca',
+  projectLeadPhone: '778-698-9280',
+  proponent: {
+    _id: '58850f69aaecd9001b8085cd',
+    _schemaName: 'Organization',
+    description: '',
+    name: 'KGHM Ajax Mining Incorporated',
+    updatedBy: '58850f2faaecd9001b8083b6',
+    addedBy: '58850f2faaecd9001b8083b6',
+    dateUpdated: '2017-01-22T20:00:41.558Z',
+    dateAdded: '2017-01-22T20:00:41.558Z',
+    country: '',
+    postal: '',
+    province: '',
+    city: '',
+    address2: '',
+    address1: '',
+    companyType: 'Proponent/Certificate Holder',
+    parentCompany: '',
+    companyLegal: '',
+    company: 'KGHM Ajax Mining Incorporated',
+    __v: 0
+  },
+  region: 'Thompson-Nicola',
+  responsibleEPDId: null,
+  responsibleEPD: 'Nathan Braun',
+  responsibleEPDEmail: 'Nathan.Braun@gov.bc.ca',
+  responsibleEPDPhone: '778-698-9280',
+  type: 'Mines',
+  legislation: '2002 Environmental Assessment Act',
+  legislationYear: 2002,
+  addedBy: '58850f2faaecd9001b8083b6',
+  build: 'new',
+  CEAALink: 'http://www.ceaa-acee.gc.ca/050/details-eng.cfm?evaluation=62225',
+  code: 'ajax-mine',
+  commodity: '',
+  currentPhaseName: {
+    _id: '5df79dd77b5abbf7da6f51e7',
+    type: 'projectPhase',
+    _schemaName: 'List',
+    legislation: 2018,
+    name: 'Complete',
+    read: [
+      'public',
+      'staff',
+      'sysadmin'
+    ],
+    write: [
+      'staff',
+      'sysadmin'
+    ],
+    'listOrder': 16
+  },
+  dateAdded: '2017-01-22T20:10:00.521Z',
+  dateCommentsClosed: null,
+  dateCommentsOpen: null,
+  dateUpdated: '2019-01-10T21:03:15.945Z',
+  decisionDate: '2017-12-13T08:00:00.000Z',
+  duration: 90,
+  eaoMember: 'project-eao-staff',
+  epicProjectID: null,
+  fedElecDist: '',
+  intake: {
+    section7optin: '',
+    operatingjobsNotes: '',
+    operatingjobs: '',
+    meetsrprcriteria: '',
+    meetsCEAACriteria: '',
+    lifespan: '',
+    investmentNotes: '',
+    investment: '795000000',
+    contactedFirstNations: '',
+    contactedCEAA: '',
+    constructionjobsNotes: '',
+    constructionjobs: '',
+    affectedFirstNations: ''
+  },
+  isTermsAgreed: false,
+  overallProgress: 0,
+  primaryContact: null,
+  proMember: 'proponent-team',
+  provElecDist: 'FRN; KAS',
+  sector: 'Mineral Mines',
+  shortName: 'ajax-mine',
+  status: 'In Progress',
+  substitution: false,
+  eaStatusDate: null,
+  eaStatus: null,
+  projectStatusDate: null,
+  substantiallyDate: null,
+  substantially: null,
+  activeDate: null,
+  activeStatus: null,
+  projLead: null,
+  execProjectDirector: null,
+  complianceLead: null,
+  groups: null,
+  phaseHistory: [
+    '5d3f6c7eda7a38421829602f',
+    '5d3f6c7eda7a384218296031'
+  ],
+  nameSearchTerms: [
+    'Aj',
+    'Aja',
+    'Ajax',
+    'Mi',
+    'Min',
+    'Mine'
+  ],
+  _id: '58851197aaecd9001b8227cc',
+  read: [
+    'project-proponent',
+    'project-admin',
+    'system-eao',
+    'project-intake',
+    'project-team',
+    'project-system-admin',
+    'public'
+  ],
+  pins: [],
+  pinsHistory: null,
+  pinsRead: [
+    'sysadmin',
+    'staff'
+  ]
+};
+
 export const regionsData = [
-         'Cariboo',
-         'Kootenay',
-         'Okanagan',
-         'Lower Mainland',
-         'Omineca',
-         'Peace',
-         'Skeena',
-         'Vancouver Island',
-         'Thompson-Nicola'
-       ];
+  'Cariboo',
+  'Kootenay',
+  'Okanagan',
+  'Lower Mainland',
+  'Omineca',
+  'Peace',
+  'Skeena',
+  'Vancouver Island',
+  'Thompson-Nicola'
+];
