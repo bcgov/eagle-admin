@@ -21,8 +21,6 @@ import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
 
-import { Utils } from 'app/shared/utils/utils';
-
 // TODO: Project and Document filters should be made into components
 // What a mess otherwise!
 class SearchFilterObject {
@@ -133,8 +131,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     private orgService: OrgService,
     public searchService: SearchService, // also used in template
     private router: Router,
-    private route: ActivatedRoute,
-    private utils: Utils
+    private route: ActivatedRoute
   ) { }
 
   // TODO: when clicking on radio buttons, url must change to reflect dataset.
@@ -312,27 +309,45 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     }
   }
 
-  paramsToCollectionFilters(params, name, collection, identifyBy) {
-    const paramname = (name === 'docType' || name === 'projectType') ? 'type' : name;
+  paramsToCollectionFilters(params, name, collection, identifyBy)
+  {
+    delete this.filterForURL[name];
+    delete this.filterForAPI[name];
 
-    this.filterForUI[name] = [];
-    delete this.filterForURL[paramname];
-    delete this.filterForAPI[paramname];
-
-    if (params[paramname] && collection) {
+    if (params[name] && collection)
+    {
       let confirmedValues = [];
-      // look up each value in collection
-      const values = params[paramname].split(',');
-      values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
-        if (record) {
-          this.filterForUI[name].push(record);
-          confirmedValues.push(value);
+      const values = params[name].split(',');
+      for(let valueIdx in values)
+      {
+        if (values.hasOwnProperty(valueIdx))
+        {
+          let value = values[valueIdx];
+          const record = _.find(collection, [ identifyBy, value ]);
+          if (record)
+          {
+            let optionArray = this.filterForUI[name];
+            let recordExists = false;
+            for(let optionIdx in optionArray)
+            {
+              if(optionArray[optionIdx]._id === record['_id'])
+              {
+                recordExists = true;
+                break;
+              }
+            }
+
+            if(!recordExists)
+            {
+              optionArray.push(record);
+              confirmedValues.push(value);
+            }
+          }
+          if (confirmedValues.length) {
+            this.filterForURL[name] = confirmedValues.join(',');
+            this.filterForAPI[name] = confirmedValues.join(',');
+          }
         }
-      });
-      if (confirmedValues.length) {
-        this.filterForURL[paramname] = confirmedValues.join(',');
-        this.filterForAPI[paramname] = confirmedValues.join(',');
       }
     }
   }
@@ -539,7 +554,10 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   public filterCompareWith(filter: any, filterToCompare: any)
   {
-    return this.utils.filterCompareWith(filter, filterToCompare);
+    console.log('comparing ' + filter._id + ' to ' + filterToCompare._id)
+    return filter && filterToCompare
+            ? filter._id === filterToCompare._id
+            : filter === filterToCompare;
   }
 
   ngOnDestroy() {
