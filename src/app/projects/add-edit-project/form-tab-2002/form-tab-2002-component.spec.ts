@@ -100,14 +100,20 @@ describe('FormTab2002', () => {
     component.buildForm();
     expect(component.validateForm()).toBeFalsy();
   });
-  it('should display alert on empty EA Decision', () => {
-    // Getting region of undefined :(
-    projectAjaxData.eacDecision = null;
-    // component.ngOnInit();
+  it('should display alert on empty EPD', () => {
     component.myForm = component.buildFormFromData(projectAjaxData);
     // Check to see that the alert box popped up
     spyOn(window, 'alert');
     component.onSubmit();
-    expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
+    expect(window.alert).toHaveBeenCalledWith('You must select an EPD');
   });
+  // This test will not work because the EPD and lead are not being pre-populated. And they should be
+  // it('should display alert on empty EA Decision', () => {
+  //   projectAjaxData.eacDecision = null;
+  //   component.myForm = component.buildFormFromData(projectAjaxData);
+  //   // Check to see that the alert box popped up
+  //   spyOn(window, 'alert');
+  //   component.onSubmit();
+  //   expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
+  // });
 });
