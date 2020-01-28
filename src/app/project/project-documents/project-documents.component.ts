@@ -593,24 +593,36 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   paramsToCollectionFilters(params, name, collection, identifyBy) {
-    this.filterForUI[name] = [];
     delete this.filterForURL[name];
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
       let confirmedValues = [];
-      // look up each value in collection
       const values = params[name].split(',');
-      values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
-        if (record) {
-          this.filterForUI[name].push(record);
-          confirmedValues.push(value);
+      for (let valueIdx in values) {
+        if (values.hasOwnProperty(valueIdx)) {
+          let value = values[valueIdx];
+          const record = _.find(collection, [ identifyBy, value ]);
+          if (record) {
+            let optionArray = this.filterForUI[name];
+            let recordExists = false;
+            for (let optionIdx in optionArray) {
+              if (optionArray[optionIdx]._id === record['_id']) {
+                recordExists = true;
+                break;
+              }
+            }
+
+            if (!recordExists) {
+              optionArray.push(record);
+              confirmedValues.push(value);
+            }
+          }
+          if (confirmedValues.length) {
+            this.filterForURL[name] = confirmedValues.join(',');
+            this.filterForAPI[name] = confirmedValues.join(',');
+          }
         }
-      });
-      if (confirmedValues.length) {
-        this.filterForURL[name] = confirmedValues.join(',');
-        this.filterForAPI[name] = confirmedValues.join(',');
       }
     }
   }
@@ -793,6 +805,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
     clearSelectedItem(filter: string, item: any) {
       this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+    }
+
+    public filterCompareWith(filter: any, filterToCompare: any) {
+      return filter && filterToCompare
+              ? filter._id === filterToCompare._id
+              : filter === filterToCompare;
     }
 
   ngOnDestroy() {

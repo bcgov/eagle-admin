@@ -88,8 +88,8 @@
                                           </div>
                                           <div class="row">
                                             <div class="col-md-12">
-                                              <ng-select 
-                                                id="type" 
+                                              <ng-select
+                                                id="type"
                                                 name="type"
                                                 multiple="true"
                                                 bindLabel="name"
@@ -97,6 +97,7 @@
                                                 [items]="projectTypes"
                                                 [closeOnSelect]="false"
                                                 [(ngModel)]="filterForUI.type"
+                                                [compareWith]="filterCompareWith"
                                               >
                                               </ng-select>
                                             </div>
@@ -112,8 +113,8 @@
                                             </div>
                                             <div class="row">
                                               <div class="form-group">
-                                                <ng-select 
-                                                  id="eacDecision" 
+                                                <ng-select
+                                                  id="eacDecision"
                                                   name="eacDecision"
                                                   multiple="true"
                                                   groupBy="legislation"
@@ -123,6 +124,7 @@
                                                   [closeOnSelect]="false"
                                                   [markFirst]="false"
                                                   [(ngModel)]="filterForUI.eacDecision"
+                                                  [compareWith]="filterCompareWith"
                                                 >
                                                     <ng-template ng-label-tmp let-item="item">
                                                         <span class="ng-value-icon left" (click)="clearSelectedItem('eacDecision', item)" aria-hidden="true">×</span>
@@ -183,8 +185,8 @@
                                         </div>
                                         <div class="row">
                                           <div class="col-md-12">
-                                            <ng-select 
-                                              id="pcp" 
+                                            <ng-select
+                                              id="pcp"
                                               name="pcp"
                                               multiple="true"
                                               bindLabel="name"
@@ -192,6 +194,7 @@
                                               [items]="commentPeriods"
                                               [closeOnSelect]="false"
                                               [(ngModel)]="filterForUI.pcp"
+                                              [compareWith]="filterCompareWith"
                                             >
                                             </ng-select>
                                           </div>
@@ -208,8 +211,8 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="form-group">
-                                                        <ng-select 
-                                                            id="proponent" 
+                                                        <ng-select
+                                                            id="proponent"
                                                             name="proponent"
                                                             multiple="true"
                                                             bindLabel="name"
@@ -217,6 +220,7 @@
                                                             [items]="proponents"
                                                             [closeOnSelect]="false"
                                                             [(ngModel)]="filterForUI.proponent"
+                                                            [compareWith]="filterCompareWith"
                                                         >
                                                         </ng-select>
                                                     </div>
@@ -231,8 +235,8 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="form-group">
-                                                        <ng-select 
-                                                            id="region" 
+                                                        <ng-select
+                                                            id="region"
                                                             name="region"
                                                             multiple="true"
                                                             bindLabel="name"
@@ -240,6 +244,7 @@
                                                             [items]="regions"
                                                             [closeOnSelect]="false"
                                                             [(ngModel)]="filterForUI.region"
+                                                            [compareWith]="filterCompareWith"
                                                         >
                                                         </ng-select>
                                                     </div>
@@ -254,8 +259,8 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="form-group">
-                                                        <ng-select 
-                                                            id="ceaaInvolvement" 
+                                                        <ng-select
+                                                            id="ceaaInvolvement"
                                                             name="ceaaInvolvement"
                                                             groupBy="legislation"
                                                             multiple="true"
@@ -265,6 +270,7 @@
                                                             [closeOnSelect]="false"
                                                             [markFirst]="false"
                                                             [(ngModel)]="filterForUI.CEAAInvolvement"
+                                                            [compareWith]="filterCompareWith"
                                                         >
                                                             <ng-template ng-label-tmp let-item="item">
                                                                 <span class="ng-value-icon left" (click)="clearSelectedItem('CEAAInvolvement', item)" aria-hidden="true">×</span>
