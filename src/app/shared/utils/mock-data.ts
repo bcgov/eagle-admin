@@ -91,7 +91,7 @@ export const AjaxData: SearchResults[] = [{
                    write: ['staff', 'sysadmin']
                  },
                  location: 'Southern Interior BC',
-                 projectLeadId: null,
+                 projectLeadId: '5c33a481c99e4d002498eeee',
                  projectLead: 'Nathan Braun',
                  projectLeadEmail: 'Nathan.Braun@gov.bc.ca',
                  projectLeadPhone: '778-698-9280',
@@ -121,7 +121,7 @@ export const AjaxData: SearchResults[] = [{
                    __v: 0
                  },
                  region: 'Thompson-Nicola',
-                 responsibleEPDId: null,
+                 responsibleEPDId: '5c33a481c99e4d002498eeee',
                  responsibleEPD: 'Nathan Braun',
                  responsibleEPDEmail: 'Nathan.Braun@gov.bc.ca',
                  responsibleEPDPhone: '778-698-9280',
