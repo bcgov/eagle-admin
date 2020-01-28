@@ -22,7 +22,6 @@ import { SearchService } from 'app/services/search.service';
 import { Constants } from 'app/shared/utils/constants';
 
 // TODO: Project and Document filters should be made into components
-// What a mess otherwise!
 class SearchFilterObject {
   constructor(
     // Project
@@ -316,21 +315,21 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     if (params[name] && collection) {
       let confirmedValues = [];
       const values = params[name].split(',');
-      for(let valueIdx in values) {
+      for (let valueIdx in values) {
         if (values.hasOwnProperty(valueIdx)) {
           let value = values[valueIdx];
           const record = _.find(collection, [ identifyBy, value ]);
           if (record) {
             let optionArray = this.filterForUI[name];
             let recordExists = false;
-            for(let optionIdx in optionArray) {
-              if(optionArray[optionIdx]._id === record['_id']) {
+            for (let optionIdx in optionArray) {
+              if (optionArray[optionIdx]._id === record['_id']) {
                 recordExists = true;
                 break;
               }
             }
 
-            if(!recordExists) {
+            if (!recordExists) {
               optionArray.push(record);
               confirmedValues.push(value);
             }
