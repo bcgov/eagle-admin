@@ -107,13 +107,21 @@ describe('FormTab2002', () => {
     component.onSubmit();
     expect(window.alert).toHaveBeenCalledWith('You must select an EPD');
   });
-  // This test will not work because the EPD and lead are not being pre-populated. And they should be
-  // it('should display alert on empty EA Decision', () => {
-  //   projectAjaxData.eacDecision = null;
-  //   component.myForm = component.buildFormFromData(projectAjaxData);
-  //   // Check to see that the alert box popped up
-  //   spyOn(window, 'alert');
-  //   component.onSubmit();
-  //   expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
-  // });
+  it('should display alert on empty EA Decision', () => {
+    // This test will not work because the EPD and lead are not being pre-populated. Need to add those in manually
+    projectAjaxData.eacDecision = null;
+    projectAjaxData.responsibleEPDObj = {
+      _id: '5c33a481c99e4d002498eeee',
+      displayName: 'Baraka Lwakila'
+    };
+    projectAjaxData.projectLeadObj = {
+      _id: '5c33a481c99e4d002498eeee',
+      displayName: 'Baraka Lwakila'
+    };
+    component.myForm = component.buildFormFromData(projectAjaxData);
+    // Check to see that the alert box popped up
+    spyOn(window, 'alert');
+    component.onSubmit();
+    expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
+  });
 });

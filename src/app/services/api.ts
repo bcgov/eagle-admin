@@ -1100,7 +1100,7 @@ export class ApiService {
         });
       });
     }
-    // This step is already done in the ifabove
+    // This step is already done in the if above
     // queryString += `&fields=${this.buildValues(fields)}`;
     queryString = encodeURI(queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
