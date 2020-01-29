@@ -3,6 +3,7 @@ import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'tbody[app-document-table-rows]',
@@ -19,7 +20,8 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   public activeLegislationYear: number;
 
   constructor(
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar,
   ) { }
 
   ngOnInit() {
@@ -50,6 +52,12 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
 
   goToItem(item) {
     this.activeLegislationYear = 0;
-    this.router.navigate(['p', item.project._id, 'project-documents', 'detail', item._id]);
+    // This happens when the api has not done the lookup on the project id
+    // And we get just the string back and not the project object
+    if (item.project && typeof item.project === 'object' && '_id' in item.project) {
+      this.router.navigate(['p', item.project._id, 'project-documents', 'detail', item._id]);
+    } else {
+      this.snackBar.open('Uh-oh, couldn\'t open document', 'Close');
+    }
   }
 }

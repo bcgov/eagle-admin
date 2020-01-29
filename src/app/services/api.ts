@@ -937,8 +937,9 @@ export class ApiService {
       let element = inspection.elements[i];
       let elementFolder = zip.folder(element.title);
       elementFolder.file(
-        `element.txt`,
+        `element-${element.title}.txt`,
         `
+        Title: ${element.title}\n
         Description: ${element.description}\n
         Requirement: ${element.requirement}\n
         Timestamp: ${element.timestamp}\n
@@ -987,14 +988,14 @@ export class ApiService {
 
     }
     if (this.isMS) {
-      window.navigator.msSaveBlob(content, 'example.zip');
+      window.navigator.msSaveBlob(content, 'inspection.zip');
     } else {
       const url = window.URL.createObjectURL(content);
       const a = window.document.createElement('a');
       window.document.body.appendChild(a);
       a.setAttribute('style', 'display: none');
       a.href = url;
-      a.download = 'example.zip';
+      a.download = 'inspection.zip';
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
@@ -1072,7 +1073,7 @@ export class ApiService {
       });
     }
     if (keys) {
-      queryString += `&keywords=${keys}`;
+      queryString += `&keywords=${encodeURIComponent(keys)}`;
     }
     if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
@@ -1099,7 +1100,9 @@ export class ApiService {
         });
       });
     }
-    queryString += `&fields=${this.buildValues(fields)}`;
+    // This step is already done in the if above
+    // queryString += `&fields=${this.buildValues(fields)}`;
+    queryString = encodeURI(queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
