@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import 'rxjs/add/operator/switchMap';
 
@@ -54,7 +55,21 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     // Validate the filter parameters being sent to the API using the list values.
     this.setFilterFromParams(route.params, milestones, authors, types);
 
-    return this.searchService.getSearchResults(
+    console.log(this.filterForAPI);
+    const categorizedObs = this.searchService.getSearchResults(
+      keywords,
+      'Document',
+      [{ 'name': 'project', 'value': projectId }],
+      pageNum,
+      pageSize,
+      sortBy,
+      { documentSource: 'PROJECT'},
+      true,
+      this.filterForAPI,
+      ''
+    );
+
+    const uncategorizedObs = this.searchService.getSearchResults(
       keywords,
       'Document',
       [{ 'name': 'project', 'value': projectId }],
@@ -66,6 +81,15 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
       this.filterForAPI,
       ''
     );
+
+    const join =  forkJoin(categorizedObs, uncategorizedObs).pipe(map(responses => {
+      return {
+        categorized: responses[0][0],
+        uncategorized: responses[1][0],
+      };
+    }));
+
+    return join;
   }
 
   paramsToCollectionFilter(params, name, collection, identifyBy) {

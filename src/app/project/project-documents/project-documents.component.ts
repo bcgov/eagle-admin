@@ -217,16 +217,19 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       })
       .takeUntil(this.ngUnsubscribe)
       .subscribe(({ documents }: any) => {
-        if (documents[0] && Object.keys(documents[0]).length) {
-          let allDocs: any[] = [];
+        if (documents.categorized && documents.uncategorized) {
           this.tableParams.totalListItems = 0;
 
-          if (documents[0].data.meta && documents[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = documents[0].data.meta[0].searchResultsTotal;
-            allDocs = documents[0].data.searchResults;
+          if (documents.categorized.data && documents.categorized.data.meta.length > 0) {
+            this.tableParams.totalListItems = documents.categorized.data.meta[0].searchResultsTotal;
+            this.categorizedDocs = documents.categorized.data.searchResults;
           }
 
-          this.groupDocuments(allDocs);
+          if (documents.uncategorized.data.meta && documents.uncategorized.data.meta.length > 0) {
+            this.tableParams.totalListItems = documents.uncategorized.data.meta[0].searchResultsTotal;
+            this.uncategorizedDocs = documents.uncategorized.data.searchResults;
+          }
+
           this.setRowData();
 
           this.loading = false;
@@ -572,10 +575,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    console.log('two', this.categorizedDocs);
     if (this.categorizedDocs && this.categorizedDocs.length > 0) {
       const documentList: any[] = [];
-
+console.log(this.categorizedDocs);
       this.categorizedDocs.forEach(document => {
         documentList.push({
           displayName: document.displayName,
@@ -593,6 +595,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           isFeatured: document.isFeatured
         });
       });
+
       this.categorizedDocumentTableData = new TableObject(
         DocumentTableRowsComponent,
         documentList,
@@ -602,7 +605,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
     if (this.uncategorizedDocs && this.uncategorizedDocs.length > 0) {
       const documentList: any[] = [];
-
+console.log(this.uncategorizedDocs);
       this.uncategorizedDocs.forEach(document => {
         documentList.push({
           displayName: document.displayName,
@@ -625,8 +628,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         documentList,
         this.tableParams
       );
-
-      console.log(this.uncategorizedDocumentTableData);
     }
   }
 
