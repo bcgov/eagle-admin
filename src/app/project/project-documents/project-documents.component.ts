@@ -42,7 +42,8 @@ class DocumentFilterObject {
   styleUrls: ['./project-documents.component.scss']
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
-  public documents: Document[] = null;
+  public categorizedDocs: Document[] = [];
+  public uncategorizedDocs: Document[] = [];
   public milestones: any[] = [];
   public authors: any[] = [];
   public types: any[] = [];
@@ -74,7 +75,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     type: 0
   };
 
-  public documentTableData: TableObject;
+  public categorizedDocumentTableData: TableObject;
+  public uncategorizedDocumentTableData: TableObject;
   public documentTableColumns: any[] = [
     {
       name: '',
@@ -121,7 +123,13 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public selectedCount = 0;
+  private readonly CATEGORIZED = 'categorized';
+  private readonly UNCATEGORIZED = 'uncategorized';
+  public selectedCount = {
+    categorized: 0,
+    uncategorized: 0,
+    total: 0,
+  };
   public currentProject;
   public canPublish;
   public canUnpublish;
@@ -142,13 +150,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Fetch the Lists
-    this.searchService
-    .getFullList('List')
-      .switchMap((res: any) => {
-        if (res.length > 0) {
-          this.configService.addLists(res[0].searchResults);
-          res[0].searchResults.map(item => {
+    this.route.parent.data
+      .switchMap(parentData => {
+        const list = parentData.list;
+
+        if (list.length > 0) {
+          list.map(item => {
             switch (item.type) {
               case 'label':
                 this.milestones.push({ ...item });
@@ -209,20 +216,19 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         return this.route.data;
       })
       .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          if (
-            res.documents[0].data.meta &&
-            res.documents[0].data.meta.length > 0
-          ) {
-            this.tableParams.totalListItems =
-              res.documents[0].data.meta[0].searchResultsTotal;
-            this.documents = res.documents[0].data.searchResults;
-          } else {
-            this.tableParams.totalListItems = 0;
-            this.documents = [];
+      .subscribe(({ documents }: any) => {
+        if (documents[0] && Object.keys(documents[0]).length) {
+          let allDocs: any[] = [];
+          this.tableParams.totalListItems = 0;
+
+          if (documents[0].data.meta && documents[0].data.meta.length > 0) {
+            this.tableParams.totalListItems = documents[0].data.meta[0].searchResultsTotal;
+            allDocs = documents[0].data.searchResults;
           }
+
+          this.groupDocuments(allDocs);
           this.setRowData();
+
           this.loading = false;
           this._changeDetectionRef.detectChanges();
         } else {
@@ -240,31 +246,26 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       duration: 4000
     });
   }
+
   public selectAction(action) {
     let promises = [];
 
     // select all documents
     switch (action) {
       case 'copyLink':
-        this.documentTableData.data.map(item => {
+        this.categorizedDocumentTableData.data.map(item => {
           if (item.checkbox === true) {
-            let selBox = document.createElement('textarea');
-            selBox.style.position = 'fixed';
-            selBox.style.left = '0';
-            selBox.style.top = '0';
-            selBox.style.opacity = '0';
-            const safeName = this.utils.encodeString(
-              item.documentFileName,
-              true
+            this.createRowCopy(item);
+            this.openSnackBar(
+              'A  PUBLIC  link to this document has been copied.',
+              'Close'
             );
-            selBox.value =
-              window.location.origin +
-              `/api/document/${item._id}/fetch/${safeName}`;
-            document.body.appendChild(selBox);
-            selBox.focus();
-            selBox.select();
-            document.execCommand('copy');
-            document.body.removeChild(selBox);
+          }
+        });
+
+        this.uncategorizedDocumentTableData.data.map(item => {
+          if (item.checkbox === true) {
+            this.createRowCopy(item);
             this.openSnackBar(
               'A  PUBLIC  link to this document has been copied.',
               'Close'
@@ -274,38 +275,49 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         break;
       case 'selectAll':
         let someSelected = false;
-        this.documentTableData.data.map(item => {
+        this.categorizedDocumentTableData.data.map(item => {
           if (item.checkbox === true) {
             someSelected = true;
           }
         });
-        this.documentTableData.data.map(item => {
+        this.categorizedDocumentTableData.data.map(item => {
           item.checkbox = !someSelected;
         });
 
-        this.selectedCount = someSelected
+        this.selectedCount.total = someSelected
           ? 0
-          : this.documentTableData.data.length;
+          : this.categorizedDocumentTableData.data.length;
 
         this.setPublishUnpublish();
 
         this._changeDetectionRef.detectChanges();
         break;
       case 'edit':
-        let selectedDocs = [];
-        this.documentTableData.data.map(item => {
+        const selectedDocs = [];
+
+        this.categorizedDocumentTableData.data.map(item => {
           if (item.checkbox === true) {
             selectedDocs.push(
-              this.documents.filter(d => d._id === item._id)[0]
+              this.categorizedDocs.filter(d => d._id === item._id)[0]
             );
           }
         });
+
+        this.uncategorizedDocumentTableData.data.map(item => {
+          if (item.checkbox === true) {
+            selectedDocs.push(
+              this.uncategorizedDocs.filter(d => d._id === item._id)[0]
+            );
+          }
+        });
+
         // Store and send to the edit page.
         this.storageService.state.selectedDocs = selectedDocs;
         // Set labels if doc size === 1
         if (selectedDocs.length === 1) {
           this.storageService.state.labels = selectedDocs[0].labels;
         }
+
         this.router.navigate([
           'p',
           this.currentProject._id,
@@ -317,19 +329,29 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this.deleteDocument();
         break;
       case 'download':
-        this.documentTableData.data.map(item => {
+        this.categorizedDocumentTableData.data.map(item => {
           if (item.checkbox === true) {
             promises.push(
               this.api.downloadDocument(
-                this.documents.filter(d => d._id === item._id)[0]
+                this.categorizedDocs.filter(d => d._id === item._id)[0]
               )
             );
           }
         });
+
+        this.uncategorizedDocumentTableData.data.map(item => {
+          if (item.checkbox === true) {
+            promises.push(
+              this.api.downloadDocument(
+                this.uncategorizedDocs.filter(d => d._id === item._id)[0]
+              )
+            );
+          }
+        });
+
         return Promise.all(promises).then(() => {
           console.log('Download initiated for file(s)');
         });
-        break;
       case 'publish':
         this.publishDocument();
         break;
@@ -350,7 +372,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         {
           title: 'Publish Document(s)',
           message:
-            'Click <strong>OK</strong> to publish the selected Documents or <strong>Cancel</strong> to return to the list.'
+            'Click <strong>OK</strong> to publish the selected Documents or <strong>Cancel</strong> to return to the list.',
+            okOnly: false,
         },
         {
           backdropColor: 'rgba(0, 0, 0, 0.5)'
@@ -361,11 +384,19 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         if (isConfirmed) {
           this.loading = true;
           let observables = [];
-          this.documentTableData.data.map(item => {
+
+          this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox && !item.read.includes('public')) {
               observables.push(this.documentService.publish(item._id));
             }
           });
+
+          this.uncategorizedDocumentTableData.data.map(item => {
+            if (item.checkbox && !item.read.includes('public')) {
+              observables.push(this.documentService.publish(item._id));
+            }
+          });
+
           forkJoin(observables).subscribe(
             res => {},
             err => {
@@ -391,7 +422,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         {
           title: 'Unpublish Document(s)',
           message:
-            'Click <strong>OK</strong> to unpublish the selected Documents or <strong>Cancel</strong> to return to the list.'
+            'Click <strong>OK</strong> to unpublish the selected Documents or <strong>Cancel</strong> to return to the list.',
+          okOnly: false,
         },
         {
           backdropColor: 'rgba(0, 0, 0, 0.5)'
@@ -402,11 +434,19 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         if (isConfirmed) {
           this.loading = true;
           let observables = [];
-          this.documentTableData.data.map(item => {
+
+          this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox && item.read.includes('public')) {
               observables.push(this.documentService.unPublish(item._id));
             }
           });
+
+          this.uncategorizedDocumentTableData.data.map(item => {
+            if (item.checkbox && item.read.includes('public')) {
+              observables.push(this.documentService.unPublish(item._id));
+            }
+          });
+
           forkJoin(observables).subscribe(
             res => {},
             err => {
@@ -432,7 +472,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         {
           title: 'Delete Document',
           message:
-            'Click <strong>OK</strong> to delete this Document or <strong>Cancel</strong> to return to the list.'
+            'Click <strong>OK</strong> to delete this Document or <strong>Cancel</strong> to return to the list.',
+          okOnly: false,
         },
         {
           backdropColor: 'rgba(0, 0, 0, 0.5)'
@@ -443,8 +484,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         if (isConfirmed) {
           this.loading = true;
           // Delete the Document(s)
-          let itemsToDelete = [];
-          this.documentTableData.data.map(item => {
+          const itemsToDelete = [];
+          this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               itemsToDelete.push({
                 promise: this.documentService.delete(item).toPromise(),
@@ -452,13 +493,23 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
               });
             }
           });
+
+          this.uncategorizedDocumentTableData.data.map(item => {
+            if (item.checkbox === true) {
+              itemsToDelete.push({
+                promise: this.documentService.delete(item).toPromise(),
+                item: item
+              });
+            }
+          });
+
           this.loading = false;
+
           return Promise.all(itemsToDelete).then(() => {
             // Reload main page.
             this.onSubmit();
           });
         }
-        this.loading = false;
       });
   }
 
@@ -521,9 +572,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let documentList = [];
-    if (this.documents && this.documents.length > 0) {
-      this.documents.forEach(document => {
+    console.log('two', this.categorizedDocs);
+    if (this.categorizedDocs && this.categorizedDocs.length > 0) {
+      const documentList: any[] = [];
+
+      this.categorizedDocs.forEach(document => {
         documentList.push({
           displayName: document.displayName,
           documentFileName: document.documentFileName,
@@ -540,11 +593,40 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           isFeatured: document.isFeatured
         });
       });
-      this.documentTableData = new TableObject(
+      this.categorizedDocumentTableData = new TableObject(
         DocumentTableRowsComponent,
         documentList,
         this.tableParams
       );
+    }
+
+    if (this.uncategorizedDocs && this.uncategorizedDocs.length > 0) {
+      const documentList: any[] = [];
+
+      this.uncategorizedDocs.forEach(document => {
+        documentList.push({
+          displayName: document.displayName,
+          documentFileName: document.documentFileName,
+          datePosted: document.datePosted,
+          status: document.read.includes('public')
+            ? 'Published'
+            : 'Not Published',
+          type: document.type,
+          milestone: document.milestone,
+          legislation: document.legislation,
+          _id: document._id,
+          project: document.project,
+          read: document.read
+        });
+      });
+
+      this.uncategorizedDocumentTableData = new TableObject(
+        DocumentTableRowsComponent,
+        documentList,
+        this.tableParams
+      );
+
+      console.log(this.uncategorizedDocumentTableData);
     }
   }
 
@@ -560,29 +642,42 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   isEnabled(button) {
     switch (button) {
       case 'copyLink':
-        return this.selectedCount === 1;
-        break;
+        return this.selectedCount.total === 1;
       case 'publish':
-        return this.selectedCount > 0 && this.canPublish;
-        break;
+        return this.selectedCount.total > 0 && this.canPublish;
       case 'unpublish':
-        return this.selectedCount > 0 && this.canUnpublish;
-        break;
+        return this.selectedCount.total > 0 && this.canUnpublish;
       default:
-        return this.selectedCount > 0;
-        break;
+        return this.selectedCount.total > 0;
     }
   }
 
-  updateSelectedRow(count) {
-    this.selectedCount = count;
+  updateSelectedRow(documentType, count) {
+    this.selectedCount[documentType] = count;
+    // Accessing on a keyed index so that the constants can be used.
+    this.selectedCount.total = this.selectedCount[this.CATEGORIZED] + this.selectedCount[this.UNCATEGORIZED];
     this.setPublishUnpublish();
   }
 
   setPublishUnpublish() {
     this.canPublish = false;
     this.canUnpublish = false;
-    for (let document of this.documentTableData.data) {
+
+    for (let document of this.categorizedDocumentTableData.data) {
+      if (document.checkbox) {
+        if (document.read.includes('public')) {
+          this.canUnpublish = true;
+        } else {
+          this.canPublish = true;
+        }
+      }
+
+      if (this.canPublish && this.canUnpublish) {
+        return;
+      }
+    }
+
+    for (let document of this.uncategorizedDocumentTableData.data) {
       if (document.checkbox) {
         if (document.read.includes('public')) {
           this.canUnpublish = true;
@@ -771,7 +866,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         this.tableParams.totalListItems =
           res[0].data.meta[0].searchResultsTotal;
-        this.documents = res[0].data.searchResults;
+        this.categorizedDocs = res[0].data.searchResults;
         this.tableTemplateUtils.updateUrl(
           this.tableParams.sortBy,
           this.tableParams.currentPage,
@@ -785,18 +880,53 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       });
   }
 
-     // Compares selected options when a dropdown is grouped by legislation.
-     compareDropdownOptions(optionA: any, optionB: any) {
-      if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
-        return true;
+    // Compares selected options when a dropdown is grouped by legislation.
+  compareDropdownOptions(optionA: any, optionB: any) {
+    if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  clearSelectedItem(filter: string, item: any) {
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+  }
+
+  private createRowCopy(item): void {
+    let selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    const safeName = this.utils.encodeString(
+      item.documentFileName,
+      true
+    );
+    selBox.value =
+      window.location.origin +
+      `/api/document/${item._id}/fetch/${safeName}`;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+  }
+
+  /**
+   * Groups documents into categorized and uncategorized.
+   *
+   * @param documents Array of documents.
+   */
+  private groupDocuments(documents: any[]): void {
+    documents.forEach(document => {
+      if (!document.milestone || !document.documentType || !document.documentAuthorType) {
+        this.uncategorizedDocs.push(document);
+      } else {
+        this.categorizedDocs.push(document);
       }
-
-      return false;
-    }
-
-    clearSelectedItem(filter: string, item: any) {
-      this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
-    }
+    });
+  }
 
     public filterCompareWith(filter: any, filterToCompare: any) {
       if (filter.hasOwnProperty('code')) {

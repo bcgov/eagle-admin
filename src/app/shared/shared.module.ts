@@ -28,6 +28,7 @@ import { LinkOrganizationTableRowsComponent } from './components/link-organizati
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
 import { ExtensionComponent } from './components/extension/extension.component';
+import { ListResolver } from './resolvers/list-resolver.service';
 
 @NgModule({
   imports: [
@@ -85,7 +86,8 @@ import { ExtensionComponent } from './components/extension/extension.component';
   providers: [
     TableTemplateUtils,
     NavigationStackUtils,
-    Utils
+    Utils,
+    ListResolver
   ]
 })
 

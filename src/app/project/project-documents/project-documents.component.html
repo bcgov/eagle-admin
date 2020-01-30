@@ -226,16 +226,6 @@
                         *ngIf="!loading && tableParams.totalListItems === 0">
                         No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
                     </p>
-                    <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
-                        *ngIf="!loading && tableParams.totalListItems > 0">
-                        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s
-                            found</span>
-                    </div>
-                </div>
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <p class="text-right mr-2 mb-0"><b>Show Items Per Page:</b></p>
-                    </div>
                 </div>
             </div>
 
@@ -243,132 +233,135 @@
                 <div class="spinner-new rotating"></div>
             </div>
 
-            <div class="input-group-prepend">
-                <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
-                    id="button-sa">Select All</button>
-                <button (click)="selectAction('edit')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('edit')" type="button" id="button-e"><i
-                        class="material-icons">edit</i>Edit</button>
-                <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('publish')" type="button" id="button-p"><i
-                        class="material-icons">cloud_done</i>Publish</button>
-                <button (click)="selectAction('unpublish')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('unpublish')" type="button" id="button-u"><i
-                        class="material-icons">cloud_off</i>Unpublish</button>
-                <button (click)="selectAction('copyLink')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('copyLink')" type="button" id="button-cl"><i
-                        class="material-icons">link</i>Link</button>
-                <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
-                        class="material-icons">cloud_download</i>Download</button>
-                <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('delete')" type="button" id="button-d"><i
-                        class="material-icons">delete</i>Delete</button>
-                <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-                    [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
-                    <button class="btn btn-outline-secondary mr-1" type="button" id="button-d">
-                        <i class="material-icons">file_upload</i>Upload Document(s)
-                    </button>
-                </a>
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <!-- <b class="text-right m-2"><b>Show Items Per Page:</b></p> -->
-                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
-                            aria-label="Toolbar with button groups">
-                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=25; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 25"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=50; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 50"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=100; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 100"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                                    All</a>
+            <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
+                id="button-sa">Select All</button>
+            <button (click)="selectAction('edit')" class="btn btn-outline-secondary mr-1"
+                [disabled]="!isEnabled('edit')" type="button" id="button-e"><i
+                    class="material-icons">edit</i>Edit</button>
+            <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1"
+                [disabled]="!isEnabled('publish')" type="button" id="button-p"><i
+                    class="material-icons">cloud_done</i>Publish</button>
+            <button (click)="selectAction('unpublish')" class="btn btn-outline-secondary mr-1"
+                [disabled]="!isEnabled('unpublish')" type="button" id="button-u"><i
+                    class="material-icons">cloud_off</i>Unpublish</button>
+            <button (click)="selectAction('copyLink')" class="btn btn-outline-secondary mr-1"
+                [disabled]="!isEnabled('copyLink')" type="button" id="button-cl"><i
+                    class="material-icons">link</i>Link</button>
+            <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
+                [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
+                    class="material-icons">cloud_download</i>Download</button>
+            <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1"
+                [disabled]="!isEnabled('delete')" type="button" id="button-d"><i
+                    class="material-icons">delete</i>Delete</button>
+            <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+                [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
+                <button class="btn btn-outline-secondary mr-1" type="button" id="button-d">
+                    <i class="material-icons">file_upload</i>Upload Document(s)
+                </button>
+            </a>
+            
+            <div class="document-tabs">
+                <ngb-tabset [destroyOnHide]="false">
+                    <ngb-tab title="Documents ({{tableParams.totalListItems}} results found)" [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length">
+                        <ng-template ngbTabContent>
+                            <div class="input-group-prepend">
+                                <div class="col mb-2">
+                                    <div class="col mb-2">
+                                        <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                                            <p class="text-right mr-2 mb-0"><b>Show Items Per Page:</b></p>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                                        <!-- <b class="text-right m-2"><b>Show Items Per Page:</b></p> -->
+                                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
+                                            aria-label="Toolbar with button groups">
+                                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
+                                                    (click)="tableParams.pageSize=25; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 25"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                                                <!-- &nbsp; -->
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
+                                                    (click)="tableParams.pageSize=50; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 50"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                                                <!-- &nbsp; -->
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
+                                                    (click)="tableParams.pageSize=100; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 100"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                                                <!-- &nbsp; -->
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                                                    All</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
+                            <app-table-template *ngIf="!loading && tableParams.totalListItems != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
+                                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
+                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(CATEGORIZED, $event)'
+                                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+                            </app-table-template>
+                        </ng-template>
+                    </ngb-tab>
 
-            <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
-                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
-                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
-            </app-table-template>
+                    <ngb-tab title="Uncategorized Documents ({{tableParams.totalListItems}} results found)" [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length">
+                        <ng-template ngbTabContent>
+                            <div class="input-group-prepend">
+                                <div class="col mb-2">
+                                    <div class="col mb-2">
+                                        <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                                            <p class="text-right mr-2 mb-0"><b>Show Items Per Page:</b></p>
+                                        </div>
+                                    </div>
+                                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+                                        <!-- <b class="text-right m-2"><b>Show Items Per Page:</b></p> -->
+                                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
+                                            aria-label="Toolbar with button groups">
+                                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
+                                                    (click)="tableParams.pageSize=25; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 25"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
+                                                <!-- &nbsp; -->
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
+                                                    (click)="tableParams.pageSize=50; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 50"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
+                                                <!-- &nbsp; -->
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
+                                                    (click)="tableParams.pageSize=100; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === 100"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
+                                                <!-- &nbsp; -->
+                                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                                                    All</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <app-table-template *ngIf="!loading && tableParams.totalListItems != 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
+                                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
+                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(UNCATEGORIZED, $event)'
+                                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+                            </app-table-template>
+                        </ng-template>
+                    </ngb-tab>
+                </ngb-tabset>
+            </div>
         </div>
 
         <div>
-            <div class="row align-items-end">
-                <div class="col justify-content-start results ml-1 mb-1">
-                    <p class="justify-content-start align-text-bottom" align="left"
-                        *ngIf="!loading && tableParams.totalListItems === 0">
-                        No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
-                    </p>
-                    <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
-                        *ngIf="!loading && tableParams.totalListItems > 0">
-                        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s
-                            found</span>
-                    </div>
-                </div>
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <p class="text-right mr-2 mb-0"><b>Show Items Per Page:</b></p>
-                    </div>
-                </div>
-            </div>
-
             <div class="spinner-container" *ngIf="loading">
                 <div class="spinner-new rotating"></div>
             </div>
-
-            <div class="input-group-prepend">
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <!-- <b class="text-right m-2"><b>Show Items Per Page:</b></p> -->
-                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
-                            aria-label="Toolbar with button groups">
-                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=25; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 25"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=50; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 50"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=100; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 100"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                                    All</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
-                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
-                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
-            </app-table-template>
         </div>
