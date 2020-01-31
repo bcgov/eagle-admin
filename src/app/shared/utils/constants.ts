@@ -326,6 +326,11 @@ export class Constants {
           'Local Government Liquid Waste Management Facilities',
           'Solid Waste Management'
         ],
+        'Waste Disposal': [
+          'Hazardous Waste Facilities',
+          'Local Government Liquid Waste Management Facilities',
+          'Local Government Solid Waste Management Facilities'
+        ],
         'Tourist Destination Resorts': [
           'Golf Resorts',
           'Marina Resorts',
