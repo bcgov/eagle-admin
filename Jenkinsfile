@@ -134,7 +134,7 @@ def nodejsTester () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7',
+            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '800m',
             resourceRequestMemory: '2Gi',
@@ -171,7 +171,7 @@ def nodejsLinter () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7',
+            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '800m',
             resourceRequestMemory: '2Gi',
@@ -214,7 +214,7 @@ def nodejsSonarqube () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7',
+            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '1000m',
             resourceRequestMemory: '2Gi',
@@ -320,7 +320,7 @@ def zapScanner () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: '172.50.0.2:5000/openshift/jenkins-slave-zap',
+            image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '1500m',
             resourceRequestMemory: '3Gi',
