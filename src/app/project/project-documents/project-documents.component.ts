@@ -42,8 +42,11 @@ class DocumentFilterObject {
   styleUrls: ['./project-documents.component.scss']
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
-  public categorizedDocs: Document[] = [];
-  public uncategorizedDocs: Document[] = [];
+  private categorizedDocs: Document[] = [];
+  private uncategorizedDocs: Document[] = [];
+  private categorizedDocsCount: number = 0;
+  private uncategorizedDocsCount: number = 0;
+
   public milestones: any[] = [];
   public authors: any[] = [];
   public types: any[] = [];
@@ -221,12 +224,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.tableParams.totalListItems = 0;
 
           if (documents.categorized.data && documents.categorized.data.meta.length > 0) {
-            this.tableParams.totalListItems = documents.categorized.data.meta[0].searchResultsTotal;
+            this.categorizedDocsCount = documents.categorized.data.meta[0].searchResultsTotal;
             this.categorizedDocs = documents.categorized.data.searchResults;
           }
 
           if (documents.uncategorized.data.meta && documents.uncategorized.data.meta.length > 0) {
-            this.tableParams.totalListItems = documents.uncategorized.data.meta[0].searchResultsTotal;
+            this.uncategorizedDocsCount = documents.uncategorized.data.meta[0].searchResultsTotal;
             this.uncategorizedDocs = documents.uncategorized.data.searchResults;
           }
 

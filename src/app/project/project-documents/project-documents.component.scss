@@ -59,10 +59,30 @@ input[type="text"] {
   padding: 8px;
 }
 
-.show-advanced-search-button .btn {
-  float: right;
-  margin-right: 8px !important;
-  width: 200px;
+.show-advanced-search-button {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  .btn {
+   float: right;
+   margin-right: 8px !important;
+   width: 200px;
+  }
+
+  a {
+    display: flex;
+    text-decoration: none;
+
+    i {
+      color: #6c757d;
+      justify-content: center;
+    }
+  }
+}
+
+.content-container {
+  margin-top: 50px;
 }
 
 .advanced-search {
@@ -172,6 +192,33 @@ input[type="text"] {
   }
 }
 
-.document-tabs {
-  margin-top: 20px;
+.actions-container {
+  display: flex;
+  justify-content: space-between;
+
+  .paging-content {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+
+    .title {
+      margin: 0;
+    }
+
+    .paging-label {
+      margin-right: 5px;
+      margin-left: 5px;
+
+      &:hover {
+        cursor: pointer;
+        text-decoration: none;
+      }
+    }
+
+    .active {
+      color: #495057;
+      font-weight: 700;
+    }
+  }
 }
+

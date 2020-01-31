@@ -55,7 +55,6 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     // Validate the filter parameters being sent to the API using the list values.
     this.setFilterFromParams(route.params, milestones, authors, types);
 
-    console.log(this.filterForAPI);
     const categorizedObs = this.searchService.getSearchResults(
       keywords,
       'Document',
@@ -63,7 +62,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
       pageNum,
       pageSize,
       sortBy,
-      { documentSource: 'PROJECT'},
+      { documentSource: 'PROJECT' },
       true,
       this.filterForAPI,
       ''
@@ -82,12 +81,12 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
       ''
     );
 
-    const join =  forkJoin(categorizedObs, uncategorizedObs).pipe(map(responses => {
-      return {
+    const join =  forkJoin(categorizedObs, uncategorizedObs).pipe(map(responses => (
+      {
         categorized: responses[0][0],
         uncategorized: responses[1][0],
-      };
-    }));
+      }
+    )));
 
     return join;
   }
