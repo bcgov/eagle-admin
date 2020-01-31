@@ -40,7 +40,8 @@ export class Project {
   code: String;
   commodity: String;
   commentPeriods: CommentPeriod[];
-  currentPhaseName: string;
+  currentPhaseName: any;
+  phaseHistory: any[];
   dateAdded: String;
   dateUpdated: String;
   decisionDate: String;
@@ -67,7 +68,6 @@ export class Project {
 
   eaDecision: any;
   operational: any;
-
   // TODO: New Stuff?
   eaStatus: any;
   eaStatusDate: String;
@@ -152,6 +152,7 @@ export class Project {
     this.code                = obj && obj.code                || undefined;
     this.commodity           = obj && obj.commodity           || undefined;
     this.currentPhaseName    = obj && obj.currentPhaseName    || undefined;
+    this.phaseHistory        = obj && obj.phaseHistory        || undefined;
     this.dateAdded           = obj && obj.dateAdded           || undefined;
     this.dateUpdated         = obj && obj.dateUpdated         || undefined;
     this.decisionDate        = obj && obj.decisionDate        || undefined;
