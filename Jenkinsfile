@@ -122,11 +122,12 @@ def getChangeLog(pastBuilds) {
   return log;
 }
 
-def nodejsTester () {
+def testPodLabel = 'node-tester-' + UUID.randomUUID().toString();
+def nodejsTestandLint () {
   openshift.withCluster() {
     openshift.withProject() {
       podTemplate(
-        label: 'node-tester',
+        label: testPodLabel,
         name: 'node-tester',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -134,44 +135,7 @@ def nodejsTester () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7',
-            resourceRequestCpu: '500m',
-            resourceLimitCpu: '800m',
-            resourceRequestMemory: '2Gi',
-            resourceLimitMemory: '4Gi',
-            workingDir: '/tmp',
-            command: '',
-          )
-        ]
-      ) {
-        // node("node-tester") {
-        //   checkout scm
-        //   try {
-        //     sh 'npm i'
-        //     sh 'npm run tests-ci'
-        //   } finally {
-        //     echo "Unit Tests Passed"
-        //   }
-        // }
-      }
-      return true
-    }
-  }
-}
-
-def nodejsLinter () {
-  openshift.withCluster() {
-    openshift.withProject() {
-      podTemplate(
-        label: 'node-linter',
-        name: 'node-linter',
-        serviceAccount: 'jenkins',
-        cloud: 'openshift',
-        slaveConnectTimeout: 300,
-        containers: [
-          containerTemplate(
-            name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7',
+            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '800m',
             resourceRequestMemory: '2Gi',
@@ -179,20 +143,17 @@ def nodejsLinter () {
             activeDeadlineSeconds: '1200',
             workingDir: '/tmp',
             command: '',
-            args: '${computer.jnlpmac} ${computer.name}',
           )
         ]
       ) {
-        node("node-linter") {
+        node(testPodLabel) {
           checkout scm
           try {
-            // install deps to get angular-cli
-            sh '''
-              npm install @angular/compiler @angular/core @angular/cli @angular-devkit/build-angular codelyzer rxjs tslint
-              npm run lint
-            '''
+            sh 'npm i'
+            sh 'npm run lint'
+            // sh 'npm run tests-ci'
           } finally {
-            echo "Linting Done"
+            echo "Lint & Unit Tests Passed"
           }
         }
       }
@@ -201,12 +162,12 @@ def nodejsLinter () {
   }
 }
 
-// todo templates can be pulled from a repository, instead of declared here
+def sonarLabel = 'sonarqube-runner-' + UUID.randomUUID().toString();
 def nodejsSonarqube () {
   openshift.withCluster() {
     openshift.withProject() {
       podTemplate(
-        label: 'node-sonarqube',
+        label: sonarLabel,
         name: 'node-sonarqube',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -214,7 +175,7 @@ def nodejsSonarqube () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7',
+            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '1000m',
             resourceRequestMemory: '2Gi',
@@ -225,7 +186,7 @@ def nodejsSonarqube () {
           )
         ]
       ) {
-        node("node-sonarqube") {
+        node(sonarLabel) {
           checkout scm
           dir('sonar-runner') {
             try {
@@ -307,12 +268,13 @@ def nodejsSonarqube () {
   }
 }
 
+def zapPodLabel = 'zap-scanner-' + UUID.randomUUID().toString();
 def zapScanner () {
   openshift.withCluster() {
     openshift.withProject() {
       // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
       podTemplate(
-        label: 'owasp-zap',
+        label: zapPodLabel,
         name: 'owasp-zap',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -320,7 +282,7 @@ def zapScanner () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: '172.50.0.2:5000/openshift/jenkins-slave-zap',
+            image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '1500m',
             resourceRequestMemory: '3Gi',
@@ -331,7 +293,7 @@ def zapScanner () {
           )
         ]
       ){
-        node('owasp-zap') {
+        node(zapPodLabel) {
           // The name  of the ZAP report
           def ZAP_REPORT_NAME = "zap-report.xml"
 
@@ -399,12 +361,13 @@ def zapScanner () {
   }
 }
 
+def zapToSonarLabel = 'zap-to-sonar-' + UUID.randomUUID().toString();
 def postZapToSonar () {
   openshift.withCluster() {
     openshift.withProject() {
       // The jenkins-python3nodejs template has been purpose built for supporting SonarQube scanning.
       podTemplate(
-        label: 'jenkins-python3nodejs',
+        label: zapToSonarLabel,
         name: 'jenkins-python3nodejs',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -423,7 +386,7 @@ def postZapToSonar () {
           )
         ]
       ){
-        node('jenkins-python3nodejs') {
+        node(zapToSonarLabel) {
           // The name  of the ZAP report
           def ZAP_REPORT_NAME = "zap-report.xml"
 
@@ -546,20 +509,49 @@ pipeline {
     stage('Parallel Build Steps') {
       failFast true
       parallel {
-         stage('Unit Tests') {
+        stage('Build') {
+          agent any
           steps {
             script {
-              echo "Running unit tests"
-              def results = nodejsTester()
+              pastBuilds = []
+              buildsSinceLastSuccess(pastBuilds, currentBuild);
+              CHANGELOG = getChangeLog(pastBuilds);
+
+              echo ">>>>>>Changelog: \n ${CHANGELOG}"
+
+              try {
+                sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+                ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+                ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+
+                echo "Building eagle-admin develop branch"
+                openshiftBuild bldCfg: 'eagle-admin-angular', showBuildLogs: 'true'
+                openshiftBuild bldCfg: 'eagle-admin-build', showBuildLogs: 'true'
+                echo "Build done"
+
+                echo ">>> Get Image Hash"
+                // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
+                // Tag the images for deployment based on the image's hash
+                IMAGE_HASH = sh (
+                  script: """oc get istag eagle-admin:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
+                  returnStdout: true).trim()
+                echo ">> IMAGE_HASH: ${IMAGE_HASH}"
+              } catch (error) {
+                notifyRocketChat(
+                  "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+                  ROCKET_QA_WEBHOOK
+                )
+                throw error
+              }
             }
           }
         }
 
-        stage('Linting') {
+        stage('Unit Tests') {
           steps {
             script {
-              echo "Running linter"
-              def results = nodejsLinter()
+              echo "Running linter & unit tests"
+              def results = nodejsTestandLint()
             }
           }
         }
@@ -570,44 +562,6 @@ pipeline {
               echo "Running Sonarqube"
               def result = nodejsSonarqube()
             }
-          }
-        }
-      }
-    }
-
-    stage('Build') {
-      agent any
-      steps {
-        script {
-          pastBuilds = []
-          buildsSinceLastSuccess(pastBuilds, currentBuild);
-          CHANGELOG = getChangeLog(pastBuilds);
-
-          echo ">>>>>>Changelog: \n ${CHANGELOG}"
-
-          try {
-            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
-            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-            ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
-
-            echo "Building eagle-admin develop branch"
-            openshiftBuild bldCfg: 'eagle-admin-angular', showBuildLogs: 'true'
-            openshiftBuild bldCfg: 'eagle-admin-build', showBuildLogs: 'true'
-            echo "Build done"
-
-            echo ">>> Get Image Hash"
-            // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
-            // Tag the images for deployment based on the image's hash
-            IMAGE_HASH = sh (
-              script: """oc get istag eagle-admin:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
-              returnStdout: true).trim()
-            echo ">> IMAGE_HASH: ${IMAGE_HASH}"
-          } catch (error) {
-            notifyRocketChat(
-              "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
-              ROCKET_QA_WEBHOOK
-            )
-            throw error
           }
         }
       }
