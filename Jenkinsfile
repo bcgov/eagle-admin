@@ -122,12 +122,12 @@ def getChangeLog(pastBuilds) {
   return log;
 }
 
-def testPodLabel = 'node-tester-' + UUID.randomUUID().toString();
+// def testPodLabel = 'node-tester-' + UUID.randomUUID().toString();
 def nodejsTestandLint () {
   openshift.withCluster() {
     openshift.withProject() {
       podTemplate(
-        label: testPodLabel,
+        label: 'node-tester',
         name: 'node-tester',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -146,7 +146,7 @@ def nodejsTestandLint () {
           )
         ]
       ) {
-        node(testPodLabel) {
+        node('node-tester') {
           checkout scm
           try {
             sh 'npm i'
@@ -162,12 +162,12 @@ def nodejsTestandLint () {
   }
 }
 
-def sonarLabel = 'sonarqube-runner-' + UUID.randomUUID().toString();
+// def sonarLabel = 'sonarqube-runner-' + UUID.randomUUID().toString();
 def nodejsSonarqube () {
   openshift.withCluster() {
     openshift.withProject() {
       podTemplate(
-        label: sonarLabel,
+        label: 'node-sonarqube',
         name: 'node-sonarqube',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -186,7 +186,7 @@ def nodejsSonarqube () {
           )
         ]
       ) {
-        node(sonarLabel) {
+        node('node-sonarqube') {
           checkout scm
           dir('sonar-runner') {
             try {
@@ -268,13 +268,13 @@ def nodejsSonarqube () {
   }
 }
 
-def zapPodLabel = 'zap-scanner-' + UUID.randomUUID().toString();
+// def zapPodLabel = 'zap-scanner-' + UUID.randomUUID().toString();
 def zapScanner () {
   openshift.withCluster() {
     openshift.withProject() {
       // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
       podTemplate(
-        label: zapPodLabel,
+        label: 'owasp-zap',
         name: 'owasp-zap',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -293,7 +293,7 @@ def zapScanner () {
           )
         ]
       ){
-        node(zapPodLabel) {
+        node('owasp-zap') {
           // The name  of the ZAP report
           def ZAP_REPORT_NAME = "zap-report.xml"
 
@@ -361,13 +361,13 @@ def zapScanner () {
   }
 }
 
-def zapToSonarLabel = 'zap-to-sonar-' + UUID.randomUUID().toString();
+// def zapToSonarLabel = 'zap-to-sonar-' + UUID.randomUUID().toString();
 def postZapToSonar () {
   openshift.withCluster() {
     openshift.withProject() {
       // The jenkins-python3nodejs template has been purpose built for supporting SonarQube scanning.
       podTemplate(
-        label: zapToSonarLabel,
+        label: 'jenkins-python3nodejs',
         name: 'jenkins-python3nodejs',
         serviceAccount: 'jenkins',
         cloud: 'openshift',
@@ -386,7 +386,7 @@ def postZapToSonar () {
           )
         ]
       ){
-        node(zapToSonarLabel) {
+        node('jenkins-python3nodejs') {
           // The name  of the ZAP report
           def ZAP_REPORT_NAME = "zap-report.xml"
 
