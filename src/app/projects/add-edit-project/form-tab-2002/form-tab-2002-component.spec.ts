@@ -9,7 +9,7 @@ import { MatSnackBarModule } from '@angular/material';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
-import { AjaxData, regionsData } from 'app/shared/utils/mock-data';
+import { AjaxData, regionsData, eaDecisions } from 'app/shared/utils/mock-data';
 import { ConfigService } from 'app/services/config.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'app/services/project.service';
@@ -29,7 +29,7 @@ describe('FormTab2002', () => {
       return Observable.of(regionsData);
     },
     getLists: () => {
-      return Observable.of(AjaxData);
+      return Observable.of(eaDecisions);
     },
   };
 
@@ -123,5 +123,25 @@ describe('FormTab2002', () => {
     spyOn(window, 'alert');
     component.onSubmit();
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
+  });
+  it('EA Decision dropdown should contain only 2002 legislative items', () => {
+    expect(component.eacDecisions).not.toEqual([]);
+    expect(component.eacDecisions).not.toEqual(
+      jasmine.arrayContaining([
+        jasmine.objectContaining({
+          legislation: 2018
+        })
+      ])
+    );
+  });
+  it('IAAC Involvement dropdown should contain only 2002 legislative items', async () => {
+    expect(component.eacDecisions).not.toEqual([]);
+    expect(component.ceaaInvolvements).not.toEqual(
+      jasmine.arrayContaining([
+        jasmine.objectContaining({
+          legislation: 2018
+        })
+      ])
+    );
   });
 });
