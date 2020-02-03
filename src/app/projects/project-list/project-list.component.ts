@@ -37,7 +37,8 @@ class ProjectFilterObject {
     public proponent: Array<Org> = [],
     public region: Array<string> = [],
     public CEAAInvolvement: Array<string> = [],
-    public vc: Array<object> = []
+    public vc: Array<object> = [],
+    public phase: object = {},
   ) {}
 }
 
@@ -54,6 +55,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   public eacDecisions: Array<object> = [];
   public commentPeriods: Array<object> = [];
   public projectTypes: Array<object> = [];
+  public phase: Array<object> = [];
 
   public loading = true;
 
@@ -529,6 +531,9 @@ export class ProjectListComponent implements OnInit, OnDestroy {
           case 'ceaaInvolvements':
             this.ceaaInvolvements.push({ ...item });
             break;
+          case 'currentPhaseName':
+            this.phase.push({ ...item});
+            break;
           default:
             break;
         }
@@ -538,6 +543,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     // Sorts by legislation first and then listOrder for each legislation group.
     this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
     this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+    this.phase = _.sortBy(this.phase, ['legislation', 'listOrder']);
+
   }
 
     // Compares selected options when a dropdown is grouped by legislation.
