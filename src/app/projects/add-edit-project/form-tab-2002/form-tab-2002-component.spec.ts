@@ -109,7 +109,6 @@ describe('FormTab2002', () => {
   });
   it('should display alert on empty EA Decision', () => {
     // This test will not work because the EPD and lead are not being pre-populated. Need to add those in manually
-    projectAjaxData.eacDecision = null;
     projectAjaxData.responsibleEPDObj = {
       _id: '5c33a481c99e4d002498eeee',
       displayName: 'Baraka Lwakila'
@@ -119,6 +118,7 @@ describe('FormTab2002', () => {
       displayName: 'Baraka Lwakila'
     };
     component.myForm = component.buildFormFromData(projectAjaxData);
+    component.myForm.controls.eacDecision.setValue(null);
     // Check to see that the alert box popped up
     spyOn(window, 'alert');
     component.onSubmit();
