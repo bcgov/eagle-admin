@@ -622,3 +622,149 @@ export const regionsData = [
   'Vancouver Island',
   'Thompson-Nicola'
 ];
+
+export const eaDecisions = [
+  {
+    '_schemaName' : 'List',
+    'type': 'eaDecisions',
+    'legislation' : 2018,
+    'name' : 'In Progress',
+    'listOrder': 0,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+      '_schemaName' : 'List',
+      'type' : 'eaDecisions',
+      'legislation' : 2002,
+      'name' : 'Certificate Issued',
+      'listOrder': 10,
+      'read' : [
+          'public',
+          'staff',
+          'sysadmin'
+      ],
+      'write' : [
+          'staff',
+          'sysadmin'
+      ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2002,
+    'name' : 'Certificate Expired',
+    'listOrder' : 40,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2002,
+    'name' : 'Withdrawn',
+    'listOrder' : 50,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2002,
+    'name' : 'Terminated',
+    'listOrder' : 60,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2002,
+    'name' : 'Pre-EA Act Approval',
+    'listOrder' : 70,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2018,
+    'name' : 'Not Designated Reviewable',
+    'listOrder': 80,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2018,
+    'name' : 'Further Assessment Required',
+    'listOrder': 90,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  },
+  {
+    '_schemaName' : 'List',
+    'type' : 'eaDecisions',
+    'legislation' : 2018,
+    'name' : 'In Progress',
+    'listOrder': 100,
+    'read' : [
+        'public',
+        'staff',
+        'sysadmin'
+    ],
+    'write' : [
+        'staff',
+        'sysadmin'
+    ]
+  }];
