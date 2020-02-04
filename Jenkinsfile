@@ -151,7 +151,7 @@ def nodejsTestandLint () {
           try {
             sh 'npm i'
             sh 'npm run lint'
-            // sh 'npm run tests-ci'
+            sh 'npm run tests-ci'
           } finally {
             echo "Lint & Unit Tests Passed"
           }
