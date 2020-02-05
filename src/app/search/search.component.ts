@@ -211,6 +211,15 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.currentPage = params.currentPage ? params.currentPage : 1;
         this.pageSize = params.pageSize ? params.pageSize : 25;
 
+        // remove doc and project types
+        // The UI filters are remapping document and project type to the single 'Type' value
+        // this means that whenever we map back to the filters, we need to revert them
+        // from 'type', to the appropriate type. Additionally, the API will fail if we
+        // send "docType" ir "projectType" as a filter, so we need to ensure these are
+        // stripped from the filterForAPI
+        delete this.filterForAPI['docType'];
+        delete this.filterForAPI['projectType'];
+
         return this.searchService.getSearchResults(
           this.terms.keywords,
           this.terms.dataset,
@@ -312,6 +321,17 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     delete this.filterForURL[name];
     delete this.filterForAPI[name];
 
+    // The UI filters are remapping document and project type to the single 'Type' value
+    // this means that whenever we map back to the filters, we need to revert them
+    // from 'type', to the appropriate type.
+    let optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
+           this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
+
+    if (optionName !== name) {
+      delete this.filterForURL[optionName];
+      delete this.filterForAPI[optionName];
+    }
+
     if (params[name] && collection) {
       let confirmedValues = [];
       const values = params[name].split(',');
@@ -320,7 +340,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
           let value = values[valueIdx];
           const record = _.find(collection, [ identifyBy, value ]);
           if (record) {
-            let optionArray = this.filterForUI[name];
+            let optionArray = this.filterForUI[optionName];
             let recordExists = false;
             for (let optionIdx in optionArray) {
               if (optionArray[optionIdx]._id === record['_id']) {
@@ -329,7 +349,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               }
             }
 
-            if (!recordExists) {
+            if (!recordExists && optionArray) {
               optionArray.push(record);
             }
 
@@ -338,6 +358,11 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
           if (confirmedValues.length) {
             this.filterForURL[name] = confirmedValues.join(',');
             this.filterForAPI[name] = confirmedValues.join(',');
+
+            if (optionName !== name) {
+              this.filterForURL[optionName] = confirmedValues.join(',');
+              this.filterForAPI[optionName] = confirmedValues.join(',');
+            }
           }
         }
       }
@@ -367,6 +392,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
       this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
       this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
+      this.paramsToCollectionFilters(params, 'type', this.projectTypes, '_id');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -374,6 +400,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
       this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
       this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
+      this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
