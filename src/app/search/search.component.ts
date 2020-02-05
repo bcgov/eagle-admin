@@ -331,8 +331,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
             if (!recordExists) {
               optionArray.push(record);
-              confirmedValues.push(value);
             }
+
+            confirmedValues.push(value);
           }
           if (confirmedValues.length) {
             this.filterForURL[name] = confirmedValues.join(',');

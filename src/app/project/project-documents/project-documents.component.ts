@@ -615,8 +615,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
             if (!recordExists) {
               optionArray.push(record);
-              confirmedValues.push(value);
             }
+
+            confirmedValues.push(value);
           }
           if (confirmedValues.length) {
             this.filterForURL[name] = confirmedValues.join(',');
