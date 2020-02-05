@@ -764,11 +764,11 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   getLists() {
     this.config.getLists().subscribe (lists => {
       lists.map(item => {
-        switch (item.type) {
-          case 'eaDecisions':
+        switch (`${item.type}|${item.legislation}`) {
+          case `eaDecisions|${this.legislationYear}`:
             this.eacDecisions.push({ ...item });
             break;
-          case 'ceaaInvolvements':
+          case `ceaaInvolvements|${this.legislationYear}`:
             this.ceaaInvolvements.push({ ...item });
             break;
           default:

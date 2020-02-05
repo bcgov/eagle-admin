@@ -9,7 +9,7 @@ import { MatSnackBarModule } from '@angular/material';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
-import { AjaxData, regionsData } from 'app/shared/utils/mock-data';
+import { AjaxData, regionsData, eaDecisions } from 'app/shared/utils/mock-data';
 import { ConfigService } from 'app/services/config.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'app/services/project.service';
@@ -29,7 +29,7 @@ describe('FormTab2002', () => {
       return Observable.of(regionsData);
     },
     getLists: () => {
-      return Observable.of(AjaxData);
+      return Observable.of(eaDecisions);
     },
   };
 
@@ -109,7 +109,6 @@ describe('FormTab2002', () => {
   });
   it('should display alert on empty EA Decision', () => {
     // This test will not work because the EPD and lead are not being pre-populated. Need to add those in manually
-    projectAjaxData.eacDecision = null;
     projectAjaxData.responsibleEPDObj = {
       _id: '5c33a481c99e4d002498eeee',
       displayName: 'Baraka Lwakila'
@@ -119,9 +118,30 @@ describe('FormTab2002', () => {
       displayName: 'Baraka Lwakila'
     };
     component.myForm = component.buildFormFromData(projectAjaxData);
+    component.myForm.controls.eacDecision.setValue(null);
     // Check to see that the alert box popped up
     spyOn(window, 'alert');
     component.onSubmit();
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
+  });
+  it('EA Decision dropdown should contain only 2002 legislative items', () => {
+    expect(component.eacDecisions).not.toEqual([]);
+    expect(component.eacDecisions).not.toEqual(
+      jasmine.arrayContaining([
+        jasmine.objectContaining({
+          legislation: 2018
+        })
+      ])
+    );
+  });
+  it('IAAC Involvement dropdown should contain only 2002 legislative items', async () => {
+    expect(component.eacDecisions).not.toEqual([]);
+    expect(component.ceaaInvolvements).not.toEqual(
+      jasmine.arrayContaining([
+        jasmine.objectContaining({
+          legislation: 2018
+        })
+      ])
+    );
   });
 });
