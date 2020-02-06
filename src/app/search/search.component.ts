@@ -356,13 +356,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
             confirmedValues.push(value);
           }
           if (confirmedValues.length) {
-            this.filterForURL[name] = confirmedValues.join(',');
-            this.filterForAPI[name] = confirmedValues.join(',');
-
             if (optionName !== name) {
               this.filterForURL[optionName] = confirmedValues.join(',');
               this.filterForAPI[optionName] = confirmedValues.join(',');
             }
+
+            this.filterForURL[name] = confirmedValues.join(',');
+            this.filterForAPI[name] = confirmedValues.join(',');
           }
         }
       }
@@ -392,7 +392,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
       this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
       this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
-      this.paramsToCollectionFilters(params, 'type', this.projectTypes, '_id');
+      this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
