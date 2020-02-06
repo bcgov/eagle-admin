@@ -357,11 +357,11 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
           }
           if (confirmedValues.length) {
             if (optionName !== name) {
-              this.filterForURL[optionName] = confirmedValues.join(',');
+              this.filterForURL[optionName] =  encodeURI(confirmedValues.join(','));
               this.filterForAPI[optionName] = confirmedValues.join(',');
             }
 
-            this.filterForURL[name] = confirmedValues.join(',');
+            this.filterForURL[name] = encodeURI(confirmedValues.join(','));
             this.filterForAPI[name] = confirmedValues.join(',');
           }
         }
@@ -572,9 +572,15 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   public filterCompareWith(filter: any, filterToCompare: any) {
-    return filter && filterToCompare
-            ? filter._id === filterToCompare._id
-            : filter === filterToCompare;
+    if (filter.hasOwnProperty('code')) {
+      return filter && filterToCompare
+             ? filter.code === filterToCompare.code
+             : filter === filterToCompare;
+    } else if (filter.hasOwnProperty('_id')) {
+      return filter && filterToCompare
+             ? filter._id === filterToCompare._id
+             : filter === filterToCompare;
+    }
   }
 
   ngOnDestroy() {

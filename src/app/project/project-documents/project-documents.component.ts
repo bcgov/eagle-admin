@@ -809,9 +809,15 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
 
     public filterCompareWith(filter: any, filterToCompare: any) {
-      return filter && filterToCompare
-              ? filter._id === filterToCompare._id
-              : filter === filterToCompare;
+      if (filter.hasOwnProperty('code')) {
+        return filter && filterToCompare
+               ? filter.code === filterToCompare.code
+               : filter === filterToCompare;
+      } else if (filter.hasOwnProperty('_id')) {
+        return filter && filterToCompare
+               ? filter._id === filterToCompare._id
+               : filter === filterToCompare;
+      }
     }
 
   ngOnDestroy() {
