@@ -135,7 +135,7 @@ def nodejsTestandLint () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'esm/eagle-unit-tester',
+            image: 'docker-registry.default.svc:5000/esm/eagle-unit-tester',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '800m',
             resourceRequestMemory: '2Gi',
