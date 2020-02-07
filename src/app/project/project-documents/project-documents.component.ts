@@ -598,32 +598,17 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
     if (params[name] && collection) {
       let confirmedValues = [];
+      // look up each value in collection
       const values = params[name].split(',');
-      for (let valueIdx in values) {
-        if (values.hasOwnProperty(valueIdx)) {
-          let value = values[valueIdx];
-          const record = _.find(collection, [ identifyBy, value ]);
-          if (record) {
-            let optionArray = this.filterForUI[name];
-            let recordExists = false;
-            for (let optionIdx in optionArray) {
-              if (optionArray[optionIdx]._id === record['_id']) {
-                recordExists = true;
-                break;
-              }
-            }
-
-            if (!recordExists) {
-              optionArray.push(record);
-            }
-
-            confirmedValues.push(value);
-          }
-          if (confirmedValues.length) {
-            this.filterForURL[name] = confirmedValues.join(',');
-            this.filterForAPI[name] = confirmedValues.join(',');
-          }
+      values.forEach(value => {
+        const record = _.find(collection, [ identifyBy, value ]);
+        if (record) {
+          confirmedValues.push(value);
         }
+      });
+      if (confirmedValues.length) {
+        this.filterForURL[name] = confirmedValues.join(',');
+        this.filterForAPI[name] = confirmedValues.join(',');
       }
     }
   }

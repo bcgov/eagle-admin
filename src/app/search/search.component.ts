@@ -20,6 +20,7 @@ import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
+import { LoadedRouterConfig } from '@angular/router/src/config';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -200,7 +201,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.keywords = this.terms.keywords;
         this.hadFilter = this.hasFilter();
 
-        if (_.isEmpty(this.terms.getParams()) && !this.hasFilter()) {
+        // additional check to see if we have any filter elements applied to the
+        // query string. Previously these were ignored on a refresh
+        let filterKeys = Object.keys(this.filterForAPI);
+        let hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
+
+        if (_.isEmpty(this.terms.getParams())
+            && !this.hasFilter()
+            && !hasFilterFromQueryString) {
           return Observable.of(null);
         }
 
@@ -334,40 +342,26 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
     if (params[name] && collection) {
       let confirmedValues = [];
+      // look up each value in collection
       const values = params[name].split(',');
-      for (let valueIdx in values) {
-        if (values.hasOwnProperty(valueIdx)) {
-          let value = values[valueIdx];
-          const record = _.find(collection, [ identifyBy, value ]);
-          if (record) {
-            let optionArray = this.filterForUI[optionName];
-            let recordExists = false;
-            for (let optionIdx in optionArray) {
-              if (optionArray[optionIdx]._id === record['_id']) {
-                recordExists = true;
-                break;
-              }
-            }
-
-            if (!recordExists && optionArray) {
-              optionArray.push(record);
-            }
-
-            confirmedValues.push(value);
-          }
-          if (confirmedValues.length) {
-            if (optionName !== name) {
-              this.filterForURL[optionName] =  encodeURI(confirmedValues.join(','));
-              this.filterForAPI[optionName] = confirmedValues.join(',');
-            }
-
-            this.filterForURL[name] = encodeURI(confirmedValues.join(','));
-            this.filterForAPI[name] = confirmedValues.join(',');
-          }
+      values.forEach(value => {
+        const record = _.find(collection, [ identifyBy, value ]);
+        if (record) {
+          confirmedValues.push(value);
         }
+      });
+      if (confirmedValues.length) {
+        if (optionName !== name) {
+          this.filterForURL[optionName] =  encodeURI(confirmedValues.join(','));
+          this.filterForAPI[optionName] = confirmedValues.join(',');
+        }
+
+        this.filterForURL[name] = encodeURI(confirmedValues.join(','));
+        this.filterForAPI[name] = confirmedValues.join(',');
       }
     }
   }
+
 
   paramsToDateFilters(params, name) {
     this.filterForUI[name] = null;
