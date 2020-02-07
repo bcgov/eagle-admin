@@ -42,7 +42,12 @@ module.exports = function (config) {
     customLaunchers: {
         ChromeHeadlessNoSandbox: {
             base: 'ChromeHeadless',
-            flags: ['--no-sandbox']
+            flags: [
+              '--no-sandbox',
+              '--v=1',
+              '--disable-background-timer-throttling',
+              '--disable-renderer-backgrounding'
+            ]
         }
     }
     // browsers: ['ChromeHeadless'],
