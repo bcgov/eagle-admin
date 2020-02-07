@@ -48,6 +48,13 @@
 
           </select>
         </div>
+        <div class="label-pair">
+          <label for="currentPhaseName">Project Phase* </label>
+          <select name="currentPhaseName" id="currentPhaseName" formControlName="currentPhaseName" class="form-control">
+            <option *ngFor="let projectPhase of projectPhases" [ngValue]="currentPhaseName">{{projectPhase.name}}</option>
+
+          </select>
+        </div>
         <div class="label-pair med">
           <label for="description">Description* </label>
           <textarea name="description" id="description" formControlName="description" class="form-control"></textarea>
