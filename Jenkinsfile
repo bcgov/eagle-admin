@@ -135,7 +135,7 @@ def nodejsTestandLint () {
         containers: [
           containerTemplate(
             name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
+            image: 'docker-registry.default.svc:5000/esm/eagle-unit-tester',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '800m',
             resourceRequestMemory: '2Gi',
