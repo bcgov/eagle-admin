@@ -73,7 +73,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
         },
         error => {
           console.log('error =', error);
-          this.snackBar.open('Could not Un-Favorite document.');
+          this.snackBar.open('Could not Un-Favorite document.', '', {duration: 3000});
         }
       );
     } else {
@@ -86,7 +86,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
           console.log('error =', error);
           // move the magic number '5' into a configuration
           // matching config value from service
-          this.snackBar.open('Could not Favorite document. Maximum favorites is 5');
+          this.snackBar.open('Could not Favorite document. Maximum favorites is 5', '', {duration: 3000});
         }
       );
     }
