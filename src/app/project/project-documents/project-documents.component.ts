@@ -112,7 +112,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       value: 'legislation',
       width: 'col-1'
     },
-
+    {
+      name: 'Feature',
+      value: 'isFeatured',
+      width: 'col-2'
+    }
   ];
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();

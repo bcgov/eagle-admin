@@ -1,9 +1,10 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
+import { DocumentService } from 'app/services/document.service';
 
 @Component({
   selector: 'tbody[app-document-table-rows]',
@@ -22,6 +23,8 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
+    private documentService: DocumentService,
+    private _changeDetectionRef: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -59,5 +62,17 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
     } else {
       this.snackBar.open('Uh-oh, couldn\'t open document', 'Close');
     }
+  }
+
+  favoriteDocument(document) {
+    document.isFeatured = !document.isFeatured;
+    this.documentService.update(document, document._id).subscribe(
+      () => {
+        this._changeDetectionRef.detectChanges();
+      },
+      error => {
+        console.log('error =', error);
+      }
+    );
   }
 }
