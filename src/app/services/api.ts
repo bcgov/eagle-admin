@@ -796,7 +796,7 @@ export class ApiService {
   }
 
   unFeatureDocument(docId: String): Observable<Document> {
-    const queryString = `document/${docId}/feature`;
+    const queryString = `document/${docId}/unfeature`;
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
