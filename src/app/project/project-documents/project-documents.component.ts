@@ -536,7 +536,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           legislation: document.legislation,
           _id: document._id,
           project: document.project,
-          read: document.read
+          read: document.read,
+          isFeatured: document.isFeatured
         });
       });
       this.documentTableData = new TableObject(

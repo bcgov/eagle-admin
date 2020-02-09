@@ -699,7 +699,8 @@ export class ApiService {
       'documentFileName',
       'displayName',
       'internalURL',
-      'internalMime'
+      'internalMime',
+      'isFeatured'
     ];
     const queryString = `document?isDeleted=false&_project=${projId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -730,7 +731,8 @@ export class ApiService {
       'projectPhase',
       'milestone',
       'description',
-      'isPublished'
+      'isPublished',
+      'isFeatured'
     ];
     const queryString = `document?docIds=${this.buildValues(ids)}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -761,7 +763,8 @@ export class ApiService {
       'legislation',
       'milestone',
       'description',
-      'isPublished'
+      'isPublished',
+      'isFeatured'
     ];
     const queryString = `document/${id}?fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -787,13 +790,24 @@ export class ApiService {
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
+  featureDocument(docId: String): Observable<Document> {
+    const queryString = `document/${docId}/feature`;
+    return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
+  }
+
+  unFeatureDocument(docId: String): Observable<Document> {
+    const queryString = `document/${docId}/feature`;
+    return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
+  }
+
   uploadDocument(formData: FormData, publish: Boolean): Observable<Document> {
     const fields = [
       'documentFileName',
       'internalOriginalName',
       'displayName',
       'internalURL',
-      'internalMime'
+      'internalMime',
+      'isFeatured'
     ];
     let queryString = `document?fields=${this.buildValues(fields)}`;
     if (publish) { queryString += `&publish=${publish}`; }

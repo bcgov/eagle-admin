@@ -65,14 +65,32 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   }
 
   favoriteDocument(document) {
-    document.isFeatured = !document.isFeatured;
-    this.documentService.update(document, document._id).subscribe(
-      () => {
-        this._changeDetectionRef.detectChanges();
-      },
-      error => {
-        console.log('error =', error);
-      }
-    );
+    if (document.isFeatured) {
+      this.documentService.unFeature(document._id).subscribe(
+        () => {
+          document.isFeatured = false;
+          this._changeDetectionRef.detectChanges();
+        },
+        error => {
+          console.log('error =', error);
+          // move the magic number '5' into a configuration
+          // matching config value from service
+          this.snackBar.open('Could not Favorite document. Maximum favorites is 5');
+        }
+      );
+    } else {
+      this.documentService.feature(document._id).subscribe(
+        () => {
+          document.isFeatured = true;
+          this._changeDetectionRef.detectChanges();
+        },
+        error => {
+          console.log('error =', error);
+          // move the magic number '5' into a configuration
+          // matching config value from service
+          this.snackBar.open('Could not Favorite document. Maximum favorites is 5');
+        }
+      );
+    }
   }
 }
