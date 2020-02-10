@@ -84,9 +84,10 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
         },
         error => {
           console.log('error =', error);
+          let message = error.status === 500 ? 'Document could not be validated. Please correct validation errors and try again.' : 'Maximum favorites is 5';
           // move the magic number '5' into a configuration
           // matching config value from service
-          this.snackBar.open('Could not Favorite document. Maximum favorites is 5', '', {duration: 3000});
+          this.snackBar.open('Could not Favorite document: ' + message, '', {duration: 3000});
         }
       );
     }
