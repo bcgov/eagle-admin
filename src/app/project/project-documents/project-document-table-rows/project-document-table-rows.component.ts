@@ -1,9 +1,10 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
+import { DocumentService } from 'app/services/document.service';
 
 @Component({
   selector: 'tbody[app-document-table-rows]',
@@ -22,6 +23,8 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
+    private documentService: DocumentService,
+    private _changeDetectionRef: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -58,6 +61,35 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
       this.router.navigate(['p', item.project._id, 'project-documents', 'detail', item._id]);
     } else {
       this.snackBar.open('Uh-oh, couldn\'t open document', 'Close');
+    }
+  }
+
+  favoriteDocument(document) {
+    if (document.isFeatured) {
+      this.documentService.unFeature(document._id).subscribe(
+        () => {
+          document.isFeatured = false;
+          this._changeDetectionRef.detectChanges();
+        },
+        error => {
+          console.log('error =', error);
+          this.snackBar.open('Could not Un-Favorite document.', '', {duration: 3000});
+        }
+      );
+    } else {
+      this.documentService.feature(document._id).subscribe(
+        () => {
+          document.isFeatured = true;
+          this._changeDetectionRef.detectChanges();
+        },
+        error => {
+          console.log('error =', error);
+          let message = error.status === 500 ? 'Document could not be validated. Please correct validation errors and try again.' : 'Maximum favorites is 5';
+          // move the magic number '5' into a configuration
+          // matching config value from service
+          this.snackBar.open('Could not Favorite document: ' + message, '', {duration: 3000});
+        }
+      );
     }
   }
 }

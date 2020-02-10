@@ -1,6 +1,9 @@
 <tr *ngFor="let entry of entries | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
     class="clickable-row">
-    <td (click)="togglePin(entry)" data-label="Pin" scope="row" class="col-1 pin"><i *ngIf="entry.pinned === true" class="material-icons" aria-hidden="true">star</i></td>
+    <td (click)="togglePin(entry)" data-label="Pin" scope="row" class="col-1 pin">
+      <i *ngIf="entry.pinned === true" class="material-icons" aria-hidden="true">star</i>
+      <i *ngIf="entry.pinned !== true" class="material-icons" aria-hidden="true">star_border</i>
+    </td>
     <td (click)="goToItem(entry)" data-label="Headline" scope="row" class="col-3">{{entry.headline}}</td>
     <td (click)="goToItem(entry)" data-label="Project" scope="row" class="col-2">{{entry.project?.name}}</td>
     <td (click)="goToItem(entry)" data-label="Type" scope="row" class="col-2">{{entry.type}}</td>

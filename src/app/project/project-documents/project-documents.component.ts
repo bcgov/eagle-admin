@@ -112,7 +112,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       value: 'legislation',
       width: 'col-1'
     },
-
+    {
+      name: 'Feature',
+      value: 'isFeatured',
+      width: 'col-2'
+    }
   ];
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
@@ -532,7 +536,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           legislation: document.legislation,
           _id: document._id,
           project: document.project,
-          read: document.read
+          read: document.read,
+          isFeatured: document.isFeatured
         });
       });
       this.documentTableData = new TableObject(

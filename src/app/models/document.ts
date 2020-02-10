@@ -29,6 +29,8 @@ export class Document {
   labels: any[];
   isPublished = false; // depends on tags; see below
 
+  isFeatured = false;
+
   read: Array<String> = [];
 
   constructor(obj?: any) {
@@ -62,5 +64,7 @@ export class Document {
     this.labels = obj && obj.labels || null;
 
     this.read = obj && obj.read || null;
+
+    this.isFeatured = obj && obj.isFeatured || null;
   }
 }
