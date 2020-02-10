@@ -58,7 +58,10 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     const categorizedObs = this.searchService.getSearchResults(
       keywords,
       'Document',
-      [{ 'name': 'project', 'value': projectId }],
+      [
+        { name: 'project', value: projectId },
+        { name: 'categorized', value: true }
+      ],
       pageNum,
       pageSize,
       sortBy,
@@ -71,7 +74,10 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     const uncategorizedObs = this.searchService.getSearchResults(
       keywords,
       'Document',
-      [{ 'name': 'project', 'value': projectId }],
+      [
+        { name: 'project', value: projectId },
+        { name: 'categorized', value: false }
+      ],
       pageNum,
       pageSize,
       sortBy,
