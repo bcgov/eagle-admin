@@ -368,7 +368,9 @@ def zapScanner () {
             } catch (error) {
               firstScan = true
             }
+          }
 
+          dir('sonar-runner') {
             echo "Checking out the sonar-runner folder ..."
             checkout scm
 
