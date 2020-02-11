@@ -351,80 +351,31 @@ def zapScanner () {
               currentBuild.result = "FAILURE"
               exit 1
             }
-          }
-          // Stash the ZAP report for publishing in a different stage (which will run on a different pod).
-          echo "Stash the report for the publishing stage ..."
-          stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
-        }
-      }
-    }
-  }
-}
 
-def postZapToSonar () {
-  openshift.withCluster() {
-    openshift.withProject() {
-      String zapToSonarLabel = "zap-to-sonar-${UUID.randomUUID().toString()}";
-      // The jenkins-python3nodejs template has been purpose built for supporting SonarQube scanning.
-      podTemplate(
-        label: zapToSonarLabel,
-        name: zapToSonarLabel,
-        serviceAccount: 'jenkins',
-        cloud: 'openshift',
-        slaveConnectTimeout: 300,
-        containers: [
-          containerTemplate(
-            name: 'jnlp',
-            image: '172.50.0.2:5000/openshift/jenkins-slave-python3nodejs',
-            resourceRequestCpu: '1000m',
-            resourceLimitCpu: '2000m',
-            resourceRequestMemory: '2Gi',
-            resourceLimitMemory: '4Gi',
-            workingDir: '/tmp',
-            command: '',
-            args: '${computer.jnlpmac} ${computer.name}'
-          )
-        ]
-      ){
-        node(zapToSonarLabel) {
-          // The name  of the ZAP report
-          def ZAP_REPORT_NAME = "zap-report.xml"
+            def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
 
-          // The location of the ZAP reports
-          def ZAP_REPORT_PATH = "/zap/wrk/${ZAP_REPORT_NAME}"
+            // url for the sonarqube report
+            def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
 
-          // The name of the "stash" containing the ZAP report
-          def ZAP_REPORT_STASH = "zap-report"
+            boolean firstScan = false
 
-          // get sonarqube url
-          def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+            def OLD_ZAP_DATE
 
-          // url for the sonarqube report
-          def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
+            try {
+              // get old sonar report date
+              def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+              OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
+            } catch (error) {
+              firstScan = true
+            }
 
-          boolean firstScan = false
+            echo "Checking out the sonar-runner folder ..."
+            checkout scm
 
-          def OLD_ZAP_DATE
-
-          try {
-            // get old sonar report date
-            def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-            OLD_ZAP_DATE = sonarGetDate (OLD_ZAP_DATE_JSON)
-          } catch (error) {
-            firstScan = true
-          }
-
-          echo "Checking out the sonar-runner folder ..."
-          checkout scm
-
-          echo "Preparing the report for the publishing ..."
-          unstash name: "${ZAP_REPORT_STASH}"
-
-          echo "Publishing the report ..."
-          dir('sonar-runner') {
+            echo "Publishing the report ..."
+            // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
+            // Exclude the report from being scanned as an xml file.  We only care about the results of the ZAP scan.
             sh (
-              // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
-              // Exclude the report from being scanned as an xml file.  We only care about the results of the ZAP scan.
               returnStdout: true,
               script: "./gradlew sonarqube --stacktrace --info \
                 -Dsonar.verbose=true \
@@ -436,7 +387,6 @@ def postZapToSonar () {
                 -Dsonar.zaproxy.reportPath=${WORKSPACE}${ZAP_REPORT_PATH} \
                 -Dsonar.exclusions=**/*.xml"
             )
-
             if ( !firstScan ) {
               // wiat for report to be updated
               if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
@@ -496,6 +446,7 @@ def postZapToSonar () {
     }
   }
 }
+
 
 def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
@@ -630,18 +581,6 @@ pipeline {
         }
       }
     }
-
-
-    stage('Zap to Sonarqube') {
-      steps {
-        script {
-          echo "Posting Zap Scan to Sonarqube Report"
-          def result = postZapToSonar()
-        }
-      }
-    }
-
-
     // stage('BDD Tests') {
     //   agent { label: bddPodLabel }
     //   steps{
