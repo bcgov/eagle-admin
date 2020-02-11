@@ -122,7 +122,7 @@ def getChangeLog(pastBuilds) {
   return log;
 }
 
-def nodejsTestandLint () {
+def nodejsTest () {
   openshift.withCluster() {
     openshift.withProject() {
       String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
@@ -150,10 +150,9 @@ def nodejsTestandLint () {
           checkout scm
           try {
             sh 'npm i'
-            sh 'npm run lint'
             sh 'npm run tests-ci'
           } finally {
-            echo "Lint & Unit Tests Passed"
+            echo "Unit Tests Passed"
           }
         }
       }
@@ -503,8 +502,8 @@ pipeline {
         stage('Unit Tests') {
           steps {
             script {
-              echo "Running linter & unit tests"
-              def results = nodejsTestandLint()
+              echo "Running unit tests"
+              def results = nodejsTest()
             }
           }
         }
