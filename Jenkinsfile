@@ -178,7 +178,7 @@ def nodejsSonarqube () {
             resourceRequestCpu: '500m',
             resourceLimitCpu: '1000m',
             resourceRequestMemory: '2Gi',
-            resourceLimitMemory: '4Gi',
+            resourceLimitMemory: '2Gi',
             workingDir: '/tmp',
             command: '',
             args: '${computer.jnlpmac} ${computer.name}',
@@ -282,10 +282,10 @@ def zapScanner () {
           containerTemplate(
             name: 'jnlp',
             image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
-            resourceRequestCpu: '500m',
-            resourceLimitCpu: '1500m',
+            resourceRequestCpu: '1',
+            resourceLimitCpu: '1',
             resourceRequestMemory: '3Gi',
-            resourceLimitMemory: '4Gi',
+            resourceLimitMemory: '3Gi',
             workingDir: '/home/jenkins',
             command: '',
             args: '${computer.jnlpmac} ${computer.name}'
@@ -315,7 +315,7 @@ def zapScanner () {
               // working directory, so they have to be copied over after the fact.
               def retVal = sh (
                 returnStatus: true,
-                script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}"
+                script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}/admin/"
               )
               echo "Return value is: ${retVal}"
 
@@ -352,6 +352,7 @@ def zapScanner () {
             }
 
             def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+            echo "${SONARQUBE_URL}"
 
             // url for the sonarqube report
             def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
@@ -372,7 +373,8 @@ def zapScanner () {
           dir('sonar-runner') {
             echo "Checking out the sonar-runner folder ..."
             checkout scm
-
+            def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+            echo "${SONARQUBE_URL}"
             echo "Publishing the report ..."
             // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
             // Exclude the report from being scanned as an xml file.  We only care about the results of the ZAP scan.
