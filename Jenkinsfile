@@ -165,8 +165,7 @@ def getChangeLog(pastBuilds) {
 }
 
 def nodejsTest () {
-  openshift.withCluster() {
-    openshift.withProject() {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
       String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
       podTemplate(
         label: testPodLabel,
@@ -204,8 +203,7 @@ def nodejsTest () {
 }
 
 def nodejsSonarqube () {
-  openshift.withCluster() {
-    openshift.withProject() {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
       String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
       podTemplate(
         label: sonarLabel,
@@ -310,8 +308,7 @@ def nodejsSonarqube () {
 }
 
 def zapScanner () {
-  openshift.withCluster() {
-    openshift.withProject() {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
       String zapPodLabel = "owasp-zap-${UUID.randomUUID().toString()}";
       // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
       podTemplate(
@@ -491,6 +488,9 @@ def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
 
 pipeline {
+  environment {
+    TOOLSPROJECT = "esm"
+  }
   agent any
   options {
     disableResume()
