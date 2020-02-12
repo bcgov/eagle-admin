@@ -409,7 +409,6 @@ def zapScanner () {
         dir('sonar-runner') {
           echo "Publishing the report ..."
           // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
-          // Exclude the report from being scanned as an xml file.  We only care about the results of the ZAP scan.
           sh (
             returnStdout: true,
             script: "./gradlew sonarqube --stacktrace --info \
@@ -419,8 +418,7 @@ def zapScanner () {
               -Dsonar.projectKey='org.sonarqube:eagle-admin-zap-scan' \
               -Dsonar.projectBaseDir='../' \
               -Dsonar.sources='./src/app' \
-              -Dsonar.zaproxy.reportPath=${WORKSPACE}${ZAP_REPORT_PATH} \
-              -Dsonar.exclusions=**/*.xml"
+              -Dsonar.zaproxy.reportPath=${WORKSPACE}${ZAP_REPORT_PATH}"
           )
           if ( !firstScan ) {
             // wiat for report to be updated
