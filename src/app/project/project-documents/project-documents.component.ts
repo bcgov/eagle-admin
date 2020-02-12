@@ -20,11 +20,13 @@ import { DocumentTableRowsComponent } from './project-document-table-rows/projec
 
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
+import { TableDocumentParamsObject } from 'app/shared/components/table-template/table-document-params-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { TableDocumentTemplateUtils } from 'app/shared/utils/table-document-template-utils';
 
 import { Utils } from 'app/shared/utils/utils';
 import { ConfigService } from 'app/services/config.service';
+import { Constants } from 'app/shared/utils/constants';
 
 class DocumentFilterObject {
   constructor(
@@ -42,6 +44,9 @@ class DocumentFilterObject {
   styleUrls: ['./project-documents.component.scss']
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
+  // Must do this to expose the constants to the template,
+  private readonly constants = Constants;
+
   private categorizedDocs: Document[] = [];
   private uncategorizedDocs: Document[] = [];
   private categorizedDocsCount: number = 0;
@@ -54,7 +59,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
   public loading = true;
 
-  public tableParams: TableParamsObject = new TableParamsObject();
+  public tableParams: TableDocumentParamsObject = new TableDocumentParamsObject();
   public terms = new SearchTerms();
 
   public filterForURL: object = {};
@@ -126,8 +131,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  private readonly CATEGORIZED = 'categorized';
-  private readonly UNCATEGORIZED = 'uncategorized';
   public selectedCount = {
     categorized: 0,
     uncategorized: 0,
@@ -148,7 +151,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private configService:  ConfigService,
     private storageService:  StorageService,
-    private tableTemplateUtils: TableTemplateUtils,
+    private tableDocumentTemplateUtils: TableDocumentTemplateUtils,
     private utils: Utils
   ) {}
 
@@ -190,19 +193,26 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this.updateCounts();
 
         if (this.storageService.state.projectDocumentTableParams == null) {
-          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
+          this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
             params,
             this.filterForURL
           );
-          if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = '-datePosted';
+
+          if (this.tableParams.sortByCategorized === '') {
+            this.tableParams.sortByCategorized = '-datePosted';
           }
+
+          if (this.tableParams.sortByUncategorized === '') {
+            this.tableParams.sortByUncategorized = '-datePosted';
+          }
+
           if (params.keywords !== undefined) {
             this.tableParams.keywords =
               decodeURIComponent(params.keywords) || '';
           } else {
             this.tableParams.keywords = '';
           }
+
           this.storageService.state.projectDocumentTableParams = this.tableParams;
           this._changeDetectionRef.detectChanges();
         } else {
@@ -221,16 +231,20 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(({ documents }: any) => {
         if (documents.categorized && documents.uncategorized) {
-          this.tableParams.totalListItems = 0;
-
           if (documents.categorized.data && documents.categorized.data.meta.length > 0) {
-            this.categorizedDocsCount = documents.categorized.data.meta[0].searchResultsTotal;
+            this.tableParams.totalListItemsCategorized = documents.categorized.data.meta[0].searchResultsTotal;
             this.categorizedDocs = documents.categorized.data.searchResults;
+          } else {
+            this.tableParams.totalListItemsCategorized = 0;
+            this.categorizedDocs = [];
           }
 
           if (documents.uncategorized.data.meta && documents.uncategorized.data.meta.length > 0) {
-            this.uncategorizedDocsCount = documents.uncategorized.data.meta[0].searchResultsTotal;
+            this.tableParams.totalListItemsUncategorized = documents.uncategorized.data.meta[0].searchResultsTotal;
             this.uncategorizedDocs = documents.uncategorized.data.searchResults;
+          } else {
+            this.tableParams.totalListItemsUncategorized = 0;
+            this.uncategorizedDocs = [];
           }
 
           this.setRowData();
@@ -530,14 +544,17 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = 1;
-    params['sortBy'] = this.tableParams.sortBy;
+    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
+    params['currentPageUncategorized'] = this.tableParams.currentPageUncategorized = 1;
+    params['sortByCategorized'] = this.tableParams.sortByCategorized;
+    params['sortByUncategorized'] = this.tableParams.sortByUncategorized;
     params['keywords'] = this.tableParams.keywords;
-    numItems === 'max'
-      ? (params[
-          'pageSize'
-        ] = this.tableParams.pageSize = this.tableParams.totalListItems)
-      : (params['pageSize'] = this.tableParams.pageSize = numItems);
+
+    if (numItems === 'max') {
+      params['pageSize'] = this.tableParams.pageSize = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
+    } else {
+      params['pageSize'] = this.tableParams.pageSize = numItems;
+    }
 
     this.router.navigate([
       'p',
@@ -560,8 +577,10 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage;
-    params['sortBy'] = this.tableParams.sortBy = '-datePosted';
+    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
+    params['currentPageUncategorized'] = this.tableParams.currentPageUncategorized = 1;
+    params['sortByCategorized'] = this.tableParams.sortByCategorized = '-datePosted';
+    params['sortByUncategorized'] = this.tableParams.sortByUncategorized = '-datePosted';
     params['keywords'] = this.utils.encodeParams(
       (this.tableParams.keywords = this.tableParams.keywords || '')
     );
@@ -580,7 +599,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   setRowData() {
     if (this.categorizedDocs && this.categorizedDocs.length > 0) {
       const documentList: any[] = [];
-console.log(this.categorizedDocs);
+
       this.categorizedDocs.forEach(document => {
         documentList.push({
           displayName: document.displayName,
@@ -599,16 +618,25 @@ console.log(this.categorizedDocs);
         });
       });
 
+      const categorizedTableParams: TableParamsObject = new TableParamsObject(
+        this.tableParams.pageSize,
+        this.tableParams.currentPageCategorized,
+        this.tableParams.totalListItemsCategorized,
+        this.tableParams.sortByCategorized,
+        this.tableParams.keywords,
+        this.tableParams.filter
+      );
+
       this.categorizedDocumentTableData = new TableObject(
         DocumentTableRowsComponent,
         documentList,
-        this.tableParams
+        categorizedTableParams
       );
     }
 
     if (this.uncategorizedDocs && this.uncategorizedDocs.length > 0) {
       const documentList: any[] = [];
-console.log(this.uncategorizedDocs);
+
       this.uncategorizedDocs.forEach(document => {
         documentList.push({
           displayName: document.displayName,
@@ -626,21 +654,30 @@ console.log(this.uncategorizedDocs);
         });
       });
 
+      const uncategorizedTableParams: TableParamsObject = new TableParamsObject(
+        this.tableParams.pageSize,
+        this.tableParams.currentPageUncategorized,
+        this.tableParams.totalListItemsUncategorized,
+        this.tableParams.sortByUncategorized,
+        this.tableParams.keywords,
+        this.tableParams.filter
+      );
+
       this.uncategorizedDocumentTableData = new TableObject(
         DocumentTableRowsComponent,
         documentList,
-        this.tableParams
+        uncategorizedTableParams
       );
     }
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedDocs(this.tableParams.currentPage);
+    // if (this.tableParams.sortBy.charAt(0) === '+') {
+    //   this.tableParams.sortBy = '-' + column;
+    // } else {
+    //   this.tableParams.sortBy = '+' + column;
+    // }
+    // this.getPaginatedDocs(this.tableParams.currentPage);
   }
 
   isEnabled(button) {
@@ -659,7 +696,7 @@ console.log(this.uncategorizedDocs);
   updateSelectedRow(documentType, count) {
     this.selectedCount[documentType] = count;
     // Accessing on a keyed index so that the constants can be used.
-    this.selectedCount.total = this.selectedCount[this.CATEGORIZED] + this.selectedCount[this.UNCATEGORIZED];
+    this.selectedCount.total = this.selectedCount[Constants.documentTypes.CATEGORIZED] + this.selectedCount[Constants.documentTypes.UNCATEGORIZED];
     this.setPublishUnpublish();
   }
 
@@ -842,25 +879,29 @@ console.log(this.uncategorizedDocs);
     this.updateCount('type');
   }
 
-  getPaginatedDocs(pageNumber) {
+  getPaginatedDocs(docType, pageNumber) {
     // Go to top of page after clicking to a different page.
     window.scrollTo(0, 0);
     this.loading = true;
 
-    this.tableParams = this.tableTemplateUtils.updateTableParams(
+    this.tableParams = this.tableDocumentTemplateUtils.updateTableParams(
+      docType,
       this.tableParams,
       pageNumber,
-      this.tableParams.sortBy
     );
 
-    this.searchService
+    if (docType === Constants.documentTypes.CATEGORIZED) {
+      this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
         'Document',
-        [{ name: 'project', value: this.currentProject._id }],
+        [
+          { name: 'project', value: this.currentProject._id },
+          { name: 'categorized', value: true }
+        ],
         pageNumber,
         this.tableParams.pageSize,
-        this.tableParams.sortBy,
+        this.tableParams.sortByCategorized,
         { documentSource: 'PROJECT' },
         true,
         this.filterForAPI,
@@ -868,20 +909,58 @@ console.log(this.uncategorizedDocs);
       )
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.tableParams.totalListItems =
-          res[0].data.meta[0].searchResultsTotal;
+        this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
         this.categorizedDocs = res[0].data.searchResults;
-        this.tableTemplateUtils.updateUrl(
-          this.tableParams.sortBy,
-          this.tableParams.currentPage,
+        this.tableDocumentTemplateUtils.updateUrl(
+          this.tableParams.sortByCategorized,
+          this.tableParams.sortByUncategorized,
+          this.tableParams.currentPageCategorized,
+          this.tableParams.currentPageUncategorized,
           this.tableParams.pageSize,
           this.filterForURL,
           this.tableParams.keywords || ''
         );
+
         this.setRowData();
         this.loading = false;
         this._changeDetectionRef.detectChanges();
       });
+    } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
+      this.searchService
+      .getSearchResults(
+        this.tableParams.keywords || '',
+        'Document',
+        [
+          { name: 'project', value: this.currentProject._id },
+          { name: 'categorized', value: false }
+        ],
+        pageNumber,
+        this.tableParams.pageSize,
+        this.tableParams.sortByUncategorized,
+        { documentSource: 'PROJECT' },
+        true,
+        this.filterForAPI,
+        ''
+      )
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res: any) => {
+        this.tableParams.totalListItemsUncategorized = res[0].data.meta[0].searchResultsTotal;
+        this.uncategorizedDocs = res[0].data.searchResults;
+        this.tableDocumentTemplateUtils.updateUrl(
+          this.tableParams.sortByCategorized,
+          this.tableParams.sortByUncategorized,
+          this.tableParams.currentPageCategorized,
+          this.tableParams.currentPageUncategorized,
+          this.tableParams.pageSize,
+          this.filterForURL,
+          this.tableParams.keywords || ''
+        );
+
+        this.setRowData();
+        this.loading = false;
+        this._changeDetectionRef.detectChanges();
+      });
+    }
   }
 
     // Compares selected options when a dropdown is grouped by legislation.
@@ -943,6 +1022,16 @@ console.log(this.uncategorizedDocs);
                : filter === filterToCompare;
       }
     }
+
+  private onPageLimitClick(pageLimit: number | string) {
+    if (pageLimit === 'all') {
+      this.tableParams.pageSize = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
+    } else {
+      this.tableParams.pageSize = pageLimit as number;
+    }
+
+    this.onSubmit();
+  }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();

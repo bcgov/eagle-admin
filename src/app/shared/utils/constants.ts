@@ -11,6 +11,11 @@ export class Constants {
     DEFAULT_KEYWORDS: ''
   };
 
+  public static readonly documentTypes = {
+    CATEGORIZED: 'categorized',
+    UNCATEGORIZED: 'uncategorized',
+  };
+
   public static readonly buildToNature: BuildNature[] = [
     { build: 'new',
       nature: 'New Construction'

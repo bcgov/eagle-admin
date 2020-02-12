@@ -16,6 +16,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { TableDirective } from './components/table-template/table.directive';
 import { DropdownTemplateComponent } from './components/dropdown-template/dropdown-template.component';
 import { TableTemplateUtils } from './utils/table-template-utils';
+import { TableDocumentTemplateUtils } from './utils/table-document-template-utils';
 import { CommentStatsComponent } from './components/comment-stats/comment-stats.component';
 import { ListConverterPipe } from './pipes/list-converter.pipe';
 import { OrgNamePipe } from './pipes/org-name.pipe';
@@ -85,6 +86,7 @@ import { ListResolver } from './resolvers/list-resolver.service';
   ],
   providers: [
     TableTemplateUtils,
+    TableDocumentTemplateUtils,
     NavigationStackUtils,
     Utils,
     ListResolver

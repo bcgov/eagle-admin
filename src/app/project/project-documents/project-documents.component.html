@@ -258,25 +258,27 @@
                             aria-label="Toolbar with button groups">
                             <div class="btn-group-toggle" role="group" aria-label="First group">
                                 <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="tableParams.pageSize=25; onSubmit();"
+                                    (click)="onPageLimitClick(25)"
                                     aria-pressed="tableParams.pageSize === 25"
                                     [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
                                 <!-- &nbsp; -->
                                 <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="tableParams.pageSize=50; onSubmit();"
+                                    (click)="onPageLimitClick(50)"
                                     aria-pressed="tableParams.pageSize === 50"
                                     [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
                                 <!-- &nbsp; -->
                                 <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="tableParams.pageSize=100; onSubmit();"
+                                    (click)="onPageLimitClick(100);"
                                     aria-pressed="tableParams.pageSize === 100"
                                     [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
                                 <!-- &nbsp; -->
                                 <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                                    (click)="onPageLimitClick('all')"
                                     aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                                    All</a>
+                                    [ngClass]="{'active': 
+                                        this.tableParams.pageSize === this.tableParams.totalListItemsCategorized ||
+                                        this.tableParams.pageSize === this.tableParams.totalListItemsUncategorized
+                                     }">Show All</a>
                             </div>
                         </div>
                     </div>
@@ -284,23 +286,23 @@
             </div>
             
             <div class="document-tabs">
-                <ngb-tabset [destroyOnHide]="false">
-                    <ngb-tab title="Documents ({{categorizedDocsCount}} results found)" [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length">
+                <ngb-tabset>
+                    <ngb-tab title="Documents ({{this.tableParams.totalListItemsCategorized}} results found)" [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length || categorizedDocs.length === 0">
                         <ng-template ngbTabContent>
-                            <app-table-template *ngIf="!loading && categorizedDocsCount != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
+                            <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
-                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(CATEGORIZED, $event)'
-                                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)'>
                             </app-table-template>
                         </ng-template>
                     </ngb-tab>
 
-                    <ngb-tab title="Uncategorized Documents ({{uncategorizedDocsCount}} results found)" [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length">
+                    <ngb-tab title="Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} results found)" [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length || uncategorizedDocs.length === 0">
                         <ng-template ngbTabContent>
-                            <app-table-template *ngIf="!loading && uncategorizedDocsCount != 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
+                            <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
-                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(UNCATEGORIZED, $event)'
-                                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.UNCATEGORIZED, $event)'
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)'>
                             </app-table-template>
                         </ng-template>
                     </ngb-tab>
