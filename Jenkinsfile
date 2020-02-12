@@ -492,9 +492,6 @@ pipeline {
     TOOLSPROJECT = "esm"
   }
   agent any
-  options {
-    disableResume()
-  }
   stages {
     stage('Build Init') {
       steps {
