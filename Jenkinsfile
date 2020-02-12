@@ -307,6 +307,11 @@ def zapScanner () {
 
           echo "Target URL: ${TARGET_URL}"
 
+          def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+          echo "${SONARQUBE_URL}"
+          def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
+
+          def OLD_ZAP_DATE
           boolean firstScan = false
           dir('zap') {
             try {
@@ -352,14 +357,6 @@ def zapScanner () {
               exit 1
             }
 
-            def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
-            echo "${SONARQUBE_URL}"
-
-            // url for the sonarqube report
-            def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
-
-            def OLD_ZAP_DATE
-
             try {
               // get old sonar report date
               def OLD_ZAP_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
@@ -369,11 +366,9 @@ def zapScanner () {
             }
           }
 
+          echo "Checking out the sonar-runner folder ..."
           checkout scm
           dir('sonar-runner') {
-            echo "Checking out the sonar-runner folder ..."
-            def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
-            echo "${SONARQUBE_URL}"
             echo "Publishing the report ..."
             // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
             // Exclude the report from being scanned as an xml file.  We only care about the results of the ZAP scan.
