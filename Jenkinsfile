@@ -483,7 +483,7 @@ def zapScanner () {
 
 def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
-
+def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
 pipeline {
   environment {
     TOOLSPROJECT = "esm"
@@ -492,7 +492,6 @@ pipeline {
   stages {
     stage('Build Init') {
       steps {
-        def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
         script {
           openshift.setLockName(lockName)
         }
