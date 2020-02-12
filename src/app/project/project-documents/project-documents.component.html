@@ -286,8 +286,11 @@
             </div>
             
             <div class="document-tabs">
-                <ngb-tabset>
-                    <ngb-tab title="Documents ({{this.tableParams.totalListItemsCategorized}} results found)" [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length || categorizedDocs.length === 0">
+                <ngb-tabset (tabChange)="onTabChange($event)">
+                    <ngb-tab 
+                        id="constants.documentTypes.CATEGORIZED" 
+                        title="Documents ({{this.tableParams.totalListItemsCategorized}} {{getResultTerm(this.tableParams.totalListItemsCategorized)}} found)" 
+                        [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length || categorizedDocs.length === 0">
                         <ng-template ngbTabContent>
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
@@ -297,7 +300,10 @@
                         </ng-template>
                     </ngb-tab>
 
-                    <ngb-tab title="Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} results found)" [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length || uncategorizedDocs.length === 0">
+                    <ngb-tab 
+                        id="constants.documentTypes.UNCATEGORIZED" 
+                        title="Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} {{getResultTerm(this.tableParams.totalListItemsUncategorized)}} found)"
+                        [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length || uncategorizedDocs.length === 0">
                         <ng-template ngbTabContent>
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
