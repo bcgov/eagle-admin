@@ -496,6 +496,14 @@ pipeline {
     disableResume()
   }
   stages {
+    stage('Build Init') {
+      steps {
+        def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER"}"
+        script {
+          openshift.setLockName(lockName)
+        }
+      }
+    }
     stage('Parallel Build Steps') {
       failFast true
       parallel {
