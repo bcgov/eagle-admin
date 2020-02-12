@@ -294,7 +294,7 @@
                         <ng-template ngbTabContent>
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
-                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
+                                (onColumnSort)='setColumnSort(constants.documentTypes.CATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
                                 (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)'>
                             </app-table-template>
                         </ng-template>
@@ -307,7 +307,7 @@
                         <ng-template ngbTabContent>
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
-                                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.UNCATEGORIZED, $event)'
+                                (onColumnSort)='setColumnSort(constants.documentTypes.UNCATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.UNCATEGORIZED, $event)'
                                 (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)'>
                             </app-table-template>
                         </ng-template>

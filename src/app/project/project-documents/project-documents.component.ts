@@ -674,13 +674,28 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  setColumnSort(column) {
-    // if (this.tableParams.sortBy.charAt(0) === '+') {
-    //   this.tableParams.sortBy = '-' + column;
-    // } else {
-    //   this.tableParams.sortBy = '+' + column;
-    // }
-    // this.getPaginatedDocs(this.tableParams.currentPage);
+  setColumnSort(docType, column) {
+    let currentPage;
+
+    if (docType === Constants.documentTypes.CATEGORIZED) {
+      currentPage = this.tableParams.currentPageCategorized;
+
+      if (this.tableParams.sortByCategorized.charAt(0) === '+') {
+        this.tableParams.sortByCategorized = '-' + column;
+      } else {
+        this.tableParams.sortByCategorized = '+' + column;
+      }
+    } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
+      currentPage = this.tableParams.currentPageUncategorized;
+
+      if (this.tableParams.sortByUncategorized.charAt(0) === '+') {
+        this.tableParams.sortByUncategorized = '-' + column;
+      } else {
+        this.tableParams.sortByUncategorized = '+' + column;
+      }
+    }
+
+    this.getPaginatedDocs(docType, currentPage);
   }
 
   isEnabled(button) {
