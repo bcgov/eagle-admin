@@ -282,8 +282,8 @@ def zapScanner () {
           containerTemplate(
             name: 'jnlp',
             image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
-            resourceRequestCpu: '1',
-            resourceLimitCpu: '1',
+            resourceRequestCpu: '2',
+            resourceLimitCpu: '2',
             resourceRequestMemory: '3Gi',
             resourceLimitMemory: '3Gi',
             workingDir: '/home/jenkins',
@@ -370,9 +370,9 @@ def zapScanner () {
             }
           }
 
+          checkout scm
           dir('sonar-runner') {
             echo "Checking out the sonar-runner folder ..."
-            checkout scm
             def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
             echo "${SONARQUBE_URL}"
             echo "Publishing the report ..."
