@@ -492,7 +492,7 @@ pipeline {
   stages {
     stage('Build Init') {
       steps {
-        def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER"}"
+        def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
         script {
           openshift.setLockName(lockName)
         }
