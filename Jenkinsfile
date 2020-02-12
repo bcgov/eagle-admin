@@ -307,6 +307,7 @@ def zapScanner () {
 
           echo "Target URL: ${TARGET_URL}"
 
+          boolean firstScan = false
           dir('zap') {
             try {
               // The ZAP scripts are installed on the root of the jenkins-slave-zap image.
@@ -356,8 +357,6 @@ def zapScanner () {
 
             // url for the sonarqube report
             def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
-
-            boolean firstScan = false
 
             def OLD_ZAP_DATE
 
