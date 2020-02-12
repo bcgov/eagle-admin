@@ -33,6 +33,48 @@ def notifyRocketChat(text, url) {
     sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
 }
 
+// Print stack trace of error
+@NonCPS
+private static String stackTraceAsString(Throwable t) {
+    StringWriter sw = new StringWriter();
+    t.printStackTrace(new PrintWriter(sw));
+    return sw.toString()
+}
+
+def _openshift(String name, String project, Closure body) {
+  script {
+    openshift.withCluster() {
+      openshift.withProject(project) {
+        echo "Running Stage '${name}'"
+        waitUntil {
+          boolean isDone=false
+          try {
+            body()
+            isDone=true
+            echo "Completed Stage '${name}'"
+          } catch (error) {
+            echo "${stackTraceAsString(error)}"
+            def inputAction = input(
+              message: "This step (${name}) has failed. See related messages:",
+              ok: 'Confirm',
+              parameters: [
+                choice(
+                  name: 'action',
+                  choices: 'Re-run\nIgnore',
+                  description: 'What would you like to do?'
+                )
+              ]
+            )
+            if ('Ignore'.equalsIgnoreCase(inputAction)) {
+              isDone=true
+            }
+          }
+          return isDone
+        }
+      }
+    }
+  }
+}
 
 /*
  * takes in a sonarqube status json payload
@@ -123,8 +165,7 @@ def getChangeLog(pastBuilds) {
 }
 
 def nodejsTest () {
-  openshift.withCluster() {
-    openshift.withProject() {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
       String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
       podTemplate(
         label: testPodLabel,
@@ -162,8 +203,7 @@ def nodejsTest () {
 }
 
 def nodejsSonarqube () {
-  openshift.withCluster() {
-    openshift.withProject() {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
       String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
       podTemplate(
         label: sonarLabel,
@@ -268,8 +308,7 @@ def nodejsSonarqube () {
 }
 
 def zapScanner () {
-  openshift.withCluster() {
-    openshift.withProject() {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
       String zapPodLabel = "owasp-zap-${UUID.randomUUID().toString()}";
       // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
       podTemplate(
@@ -449,11 +488,19 @@ def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
 
 pipeline {
-  agent any
-  options {
-    disableResume()
+  environment {
+    TOOLSPROJECT = "esm"
   }
+  agent any
   stages {
+    stage('Build Init') {
+      steps {
+        def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER"}"
+        script {
+          openshift.setLockName(lockName)
+        }
+      }
+    }
     stage('Parallel Build Steps') {
       failFast true
       parallel {
