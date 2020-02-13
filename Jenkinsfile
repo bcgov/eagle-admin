@@ -322,6 +322,8 @@ def zapScanner () {
           image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
           resourceRequestCpu: '2',
           resourceLimitCpu: '2',
+          resourceRequestMemory: '0Gi',
+          resourceLimitMemory: '0Gi',
           workingDir: '/home/jenkins',
           command: '',
           args: '${computer.jnlpmac} ${computer.name}'
