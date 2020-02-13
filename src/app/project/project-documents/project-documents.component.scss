@@ -203,3 +203,13 @@ input[type="text"] {
   }
 }
 
+.custom-tab-title {
+  display: flex;
+  align-items: center;
+}
+
+.custom-tab-title-tooltip {
+  .tooltip-inner {
+    min-width: 250px;
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 
@@ -41,6 +41,7 @@ class DocumentFilterObject {
 @Component({
   selector: 'app-project-documents',
   templateUrl: './project-documents.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./project-documents.component.scss']
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {

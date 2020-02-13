@@ -302,8 +302,18 @@
 
                     <ngb-tab 
                         id="constants.documentTypes.UNCATEGORIZED" 
-                        title="Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} {{getResultTerm(this.tableParams.totalListItemsUncategorized)}} found)"
                         [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length || uncategorizedDocs.length === 0">
+                        <ng-template ngbTabTitle>
+                            <div class="custom-tab-title">
+                                <span>Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} {{getResultTerm(this.tableParams.totalListItemsUncategorized)}} found)</span>
+                                <i 
+                                    class="material-icons md-20" 
+                                    placement="top" 
+                                    ngbTooltip="Documents within this table have not yet been categorized by author, document type, and/or milestone. We are actively processing these documents so they can be searched and filtered – making it easier to find what you’re looking for."
+                                    tooltipClass="custom-tab-title-tooltip"
+                                >help</i>
+                            </div>
+                        </ng-template>
                         <ng-template ngbTabContent>
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
