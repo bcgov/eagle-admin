@@ -48,11 +48,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   // Must do this to expose the constants to the template,
   private readonly constants = Constants;
 
-  private categorizedDocs: Document[] = [];
-  private uncategorizedDocs: Document[] = [];
-  private categorizedDocsCount = 0;
-  private uncategorizedDocsCount = 0;
   private activeLegislationYear: number;
+
+  public categorizedDocsCount = 0;
+  public uncategorizedDocsCount = 0;
+  public categorizedDocs: Document[] = [];
+  public uncategorizedDocs: Document[] = [];
 
   public milestones: any[] = [];
   public authors: any[] = [];
@@ -1022,7 +1023,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
    *
    * @param documents Array of documents.
    */
-  private groupDocuments(documents: any[]): void {
+  public groupDocuments(documents: any[]): void {
     documents.forEach(document => {
       if (!document.milestone || !document.documentType || !document.documentAuthorType) {
         this.uncategorizedDocs.push(document);
@@ -1044,7 +1045,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       }
     }
 
-  private onPageLimitClick(pageLimit: number | string) {
+  public onPageLimitClick(pageLimit: number | string) {
     if (pageLimit === 'all') {
       this.tableParams.pageSize = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
     } else {
@@ -1054,12 +1055,12 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     this.onSubmit();
   }
 
-  private onTabChange(_event) {
+  public onTabChange(_event) {
     this.uncategorizedDocumentTableData.extraData = this.activeLegislationYear;
     this.categorizedDocumentTableData.extraData = this.activeLegislationYear;
   }
 
-  private getResultTerm(count) {
+  public getResultTerm(count) {
     if (count === 1) {
       return 'result';
     } else {
