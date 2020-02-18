@@ -30,6 +30,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   ngOnInit() {
     this.documents = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.activeLegislationYear = this.data.extraData;
   }
 
   selectItem(item) {
@@ -48,9 +49,9 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
       }
     });
     if (count === 0) {
-      this.activeLegislationYear = 0;
+      this.activeLegislationYear = null;
     }
-    this.selectedCount.emit(count);
+    this.selectedCount.emit({ count, activeLegislationYear: this.activeLegislationYear });
   }
 
   goToItem(item) {
