@@ -19,6 +19,7 @@
 </table>
 <div class="page-controls text-center pt-3 pb-3">
     <nz-pagination
+        *ngIf="data.paginationData.totalListItems > 10"
         [nzPageIndex]="activePage"
         (nzPageIndexChange)="updatePageNumber($event)"
         (nzPageSizeChange)="updatePageSize($event)"

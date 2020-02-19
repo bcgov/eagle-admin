@@ -565,6 +565,7 @@
 
     <div *ngIf="ranSearch && !searching && count != 0" class="page-controls text-center pt-3">
       <nz-pagination
+        *ngIf="count > 10"
         [nzPageIndex]="currentPage"
         (nzPageIndexChange)="updatePageNumber($event)"
         (nzPageSizeChange)="updatePageSize($event)"
