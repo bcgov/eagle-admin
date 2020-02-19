@@ -21,4 +21,8 @@
     {{document.milestone | listConverter}}</td>
   <td data-label="Legislation" (click)="goToItem(document)" scope="row" class="col-1">
     {{document.legislation}}</td>
+  <td data-label="Feature" (click)="favoriteDocument(document)" scope="row" class="col-2">
+    <i *ngIf="document.isFeatured === true" class="material-icons featured-star" aria-hidden="true">star</i>
+    <i *ngIf="document.isFeatured !== true" class="material-icons un-featured-star" aria-hidden="true">star_border</i>
+  </td>
 </tr>

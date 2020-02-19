@@ -33,6 +33,48 @@ def notifyRocketChat(text, url) {
     sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
 }
 
+// Print stack trace of error
+@NonCPS
+private static String stackTraceAsString(Throwable t) {
+    StringWriter sw = new StringWriter();
+    t.printStackTrace(new PrintWriter(sw));
+    return sw.toString()
+}
+
+def _openshift(String name, String project, Closure body) {
+  script {
+    openshift.withCluster() {
+      openshift.withProject(project) {
+        echo "Running Stage '${name}'"
+        waitUntil {
+          boolean isDone=false
+          try {
+            body()
+            isDone=true
+            echo "Completed Stage '${name}'"
+          } catch (error) {
+            echo "${stackTraceAsString(error)}"
+            def inputAction = input(
+              message: "This step (${name}) has failed. See related messages:",
+              ok: 'Confirm',
+              parameters: [
+                choice(
+                  name: 'action',
+                  choices: 'Re-run\nIgnore',
+                  description: 'What would you like to do?'
+                )
+              ]
+            )
+            if ('Ignore'.equalsIgnoreCase(inputAction)) {
+              isDone=true
+            }
+          }
+          return isDone
+        }
+      }
+    }
+  }
+}
 
 /*
  * takes in a sonarqube status json payload
@@ -122,289 +164,236 @@ def getChangeLog(pastBuilds) {
   return log;
 }
 
-def nodejsTestandLint () {
-  openshift.withCluster() {
-    openshift.withProject() {
-      String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
-      podTemplate(
-        label: testPodLabel,
-        name: testPodLabel,
-        serviceAccount: 'jenkins',
-        cloud: 'openshift',
-        slaveConnectTimeout: 300,
-        containers: [
-          containerTemplate(
-            name: 'jnlp',
-            image: 'docker-registry.default.svc:5000/esm/eagle-unit-tester',
-            resourceRequestCpu: '500m',
-            resourceLimitCpu: '800m',
-            resourceRequestMemory: '2Gi',
-            resourceLimitMemory: '4Gi',
-            activeDeadlineSeconds: '1200',
-            workingDir: '/tmp',
-            command: '',
-          )
-        ]
-      ) {
-        node(testPodLabel) {
-          checkout scm
-          try {
-            sh 'npm i'
-            sh 'npm run lint'
-            sh 'npm run tests-ci'
-          } finally {
-            echo "Lint & Unit Tests Passed"
-          }
+def nodejsTest () {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
+    String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
+    podTemplate(
+      label: testPodLabel,
+      name: testPodLabel,
+      serviceAccount: 'jenkins',
+      cloud: 'openshift',
+      slaveConnectTimeout: 300,
+      containers: [
+        containerTemplate(
+          name: 'jnlp',
+          image: 'docker-registry.default.svc:5000/esm/eagle-unit-tester',
+          resourceRequestCpu: '500m',
+          resourceLimitCpu: '800m',
+          resourceRequestMemory: '2Gi',
+          resourceLimitMemory: '4Gi',
+          activeDeadlineSeconds: '1200',
+          workingDir: '/tmp',
+          command: '',
+        )
+      ]
+    ) {
+      node(testPodLabel) {
+        checkout scm
+        try {
+          sh 'npm i'
+          sh 'npm run tests-ci'
+        } finally {
+          echo "Unit Tests Passed"
         }
       }
-      return true
     }
+    return true
   }
 }
+
 
 def nodejsSonarqube () {
-  openshift.withCluster() {
-    openshift.withProject() {
-      String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
-      podTemplate(
-        label: sonarLabel,
-        name: sonarLabel,
-        serviceAccount: 'jenkins',
-        cloud: 'openshift',
-        slaveConnectTimeout: 300,
-        containers: [
-          containerTemplate(
-            name: 'jnlp',
-            image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
-            resourceRequestCpu: '500m',
-            resourceLimitCpu: '1000m',
-            resourceRequestMemory: '2Gi',
-            resourceLimitMemory: '4Gi',
-            workingDir: '/tmp',
-            command: '',
-            args: '${computer.jnlpmac} ${computer.name}',
-          )
-        ]
-      ) {
-        node(sonarLabel) {
-          checkout scm
-          dir('sonar-runner') {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
+    String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
+    podTemplate(
+      label: sonarLabel,
+      name: sonarLabel,
+      serviceAccount: 'jenkins',
+      cloud: 'openshift',
+      slaveConnectTimeout: 300,
+      containers: [
+        containerTemplate(
+          name: 'jnlp',
+          image: 'registry.access.redhat.com/openshift3/jenkins-agent-nodejs-8-rhel7:v3.11.161',
+          resourceRequestCpu: '500m',
+          resourceLimitCpu: '1000m',
+          resourceRequestMemory: '2Gi',
+          resourceLimitMemory: '2Gi',
+          workingDir: '/tmp',
+          command: '',
+          args: '${computer.jnlpmac} ${computer.name}',
+        )
+      ]
+    ) {
+      node(sonarLabel) {
+        checkout scm
+        dir('sonar-runner') {
+          try {
+            // get sonarqube url
+            def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+            echo "${SONARQUBE_URL}"
+
+            // sonarqube report link
+            def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin"
+
+            boolean firstScan = false;
+
+            def OLD_SONAR_DATE
+
             try {
-              // get sonarqube url
-              def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
-              echo "${SONARQUBE_URL}"
-
-              // sonarqube report link
-              def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin"
-
-              boolean firstScan = false;
-
-              def OLD_SONAR_DATE
-
-              try {
-                // get old sonar report date
-                def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-                OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
-              } catch (error) {
-                firstScan = true
-              }
-
-              // run scan
-              sh "npm install typescript"
-              sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
-
-              if ( !firstScan ) {
-                // wiat for report to be updated
-                if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
-                  echo "sonarqube report failed to complete, or timed out"
-
-                  notifyRocketChat(
-                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
-                    ROCKET_DEPLOY_WEBHOOK
-                  )
-
-                  currentBuild.result = "FAILURE"
-                  exit 1
-                }
-              } else {
-                sleep (30)
-              }
-
-              // check if sonarqube passed
-              sh("oc extract secret/sonarqube-status-urls --to=${env.WORKSPACE}/sonar-runner --confirm")
-
-              SONARQUBE_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-              SONARQUBE_STATUS = sonarGetStatus (SONARQUBE_STATUS_JSON)
-
-              if ( "${SONARQUBE_STATUS}" == "ERROR") {
-                echo "Scan Failed"
-
-                notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Sonarqube scan failed: : ${SONARQUBE_URL}",
-                  ROCKET_DEPLOY_WEBHOOK
-                )
-
-                echo "Sonarqube Scan Failed"
-                currentBuild.result = 'FAILURE'
-                exit 1
-              } else {
-                echo "Sonarqube Scan Passed"
-              }
-
+              // get old sonar report date
+              def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+              OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
             } catch (error) {
-              notifyRocketChat(
-                "@all The latest build of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error.message}",
-                ROCKET_DEPLOY_WEBHOOK
-              )
-              throw error
-            } finally {
-              echo "Sonarqube Scan Complete"
+              firstScan = true
             }
-          }
-        }
-      }
-      return true
-    }
-  }
-}
 
-def zapScanner () {
-  openshift.withCluster() {
-    openshift.withProject() {
-      String zapPodLabel = "owasp-zap-${UUID.randomUUID().toString()}";
-      // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
-      podTemplate(
-        label: zapPodLabel,
-        name: zapPodLabel,
-        serviceAccount: 'jenkins',
-        cloud: 'openshift',
-        slaveConnectTimeout: 300,
-        containers: [
-          containerTemplate(
-            name: 'jnlp',
-            image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
-            resourceRequestCpu: '500m',
-            resourceLimitCpu: '1500m',
-            resourceRequestMemory: '3Gi',
-            resourceLimitMemory: '4Gi',
-            workingDir: '/home/jenkins',
-            command: '',
-            args: '${computer.jnlpmac} ${computer.name}'
-          )
-        ]
-      ){
-        node(zapPodLabel) {
-          // The name  of the ZAP report
-          def ZAP_REPORT_NAME = "zap-report.xml"
+            // run scan
+            sh "npm install typescript"
+            sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
 
-          // The location of the ZAP reports
-          def ZAP_REPORT_PATH = "/zap/wrk/${ZAP_REPORT_NAME}"
-
-          // The name of the "stash" containing the ZAP report
-          def ZAP_REPORT_STASH = "zap-report"
-
-          // Dynamicaly determine the target URL for the ZAP scan ...
-          def TARGET_URL = getUrlFromRoute('eagle-admin', 'esm-dev').trim()
-
-          echo "Target URL: ${TARGET_URL}"
-
-          dir('zap') {
-            try {
-              // The ZAP scripts are installed on the root of the jenkins-slave-zap image.
-              // When running ZAP from there the reports will be created in /zap/wrk/ by default.
-              // ZAP has problems with creating the reports directly in the Jenkins
-              // working directory, so they have to be copied over after the fact.
-              def retVal = sh (
-                returnStatus: true,
-                script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}"
-              )
-              echo "Return value is: ${retVal}"
-
-              // Copy the ZAP report into the Jenkins working directory so the Jenkins tools can access it.
-              sh (
-                returnStdout: true,
-                script: "mkdir -p ./wrk/ && cp /zap/wrk/${ZAP_REPORT_NAME} ./wrk/"
-              )
-            } catch (error) {
-              // revert dev from backup
-              echo "Reverting dev image form backup..."
-              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
-
-              // wait for revert to complete
-              if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
-                echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+            if ( !firstScan ) {
+              // wiat for report to be updated
+              if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
+                echo "sonarqube report failed to complete, or timed out"
 
                 notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
                 currentBuild.result = "FAILURE"
                 exit 1
               }
+            } else {
+              sleep (30)
+            }
+
+            // check if sonarqube passed
+            sh("oc extract secret/sonarqube-status-urls --to=${env.WORKSPACE}/sonar-runner --confirm")
+
+            SONARQUBE_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+            SONARQUBE_STATUS = sonarGetStatus (SONARQUBE_STATUS_JSON)
+
+            if ( "${SONARQUBE_STATUS}" == "ERROR") {
+              echo "Scan Failed"
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Sonarqube scan failed: : ${SONARQUBE_URL}",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              echo "Sonarqube Scan Failed"
+              currentBuild.result = 'FAILURE'
+              exit 1
+            } else {
+              echo "Sonarqube Scan Passed"
+            }
+
+          } catch (error) {
+            notifyRocketChat(
+              "@all The latest build of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+            throw error
+          } finally {
+            echo "Sonarqube Scan Complete"
+          }
+        }
+      }
+    }
+    return true
+  }
+}
+
+def zapScanner () {
+  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
+    String zapPodLabel = "owasp-zap-${UUID.randomUUID().toString()}";
+    // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
+    podTemplate(
+      label: zapPodLabel,
+      name: zapPodLabel,
+      serviceAccount: 'jenkins',
+      cloud: 'openshift',
+      slaveConnectTimeout: 300,
+      containers: [
+        containerTemplate(
+          name: 'jnlp',
+          image: '172.50.0.2:5000/bcgov/jenkins-slave-zap:stable',
+          resourceRequestCpu: '2',
+          resourceLimitCpu: '2',
+          resourceRequestMemory: '2Gi',
+          resourceLimitMemory: '3.5Gi',
+          workingDir: '/home/jenkins',
+          command: '',
+          args: '${computer.jnlpmac} ${computer.name}'
+        )
+      ]
+    ){
+      node(zapPodLabel) {
+        // The name  of the ZAP report
+        def ZAP_REPORT_NAME = "zap-report.xml"
+
+        // The location of the ZAP reports
+        def ZAP_REPORT_PATH = "/zap/wrk/${ZAP_REPORT_NAME}"
+
+        // The name of the "stash" containing the ZAP report
+        def ZAP_REPORT_STASH = "zap-report"
+
+        // Dynamicaly determine the target URL for the ZAP scan ...
+        def TARGET_URL = getUrlFromRoute('eagle-admin', 'esm-dev').trim()
+
+        echo "Target URL: ${TARGET_URL}"
+
+        def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+        echo "${SONARQUBE_URL}"
+        def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
+
+        def OLD_ZAP_DATE
+        boolean firstScan = false
+        dir('zap') {
+          try {
+            // The ZAP scripts are installed on the root of the jenkins-slave-zap image.
+            // When running ZAP from there the reports will be created in /zap/wrk/ by default.
+            // ZAP has problems with creating the reports directly in the Jenkins
+            // working directory, so they have to be copied over after the fact.
+            def retVal = sh (
+              returnStatus: true,
+              script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}/admin/"
+            )
+            echo "Return value is: ${retVal}"
+
+            // Copy the ZAP report into the Jenkins working directory so the Jenkins tools can access it.
+            sh (
+              returnStdout: true,
+              script: "mkdir -p ./wrk/ && cp /zap/wrk/${ZAP_REPORT_NAME} ./wrk/"
+            )
+          } catch (error) {
+            // revert dev from backup
+            echo "Reverting dev image form backup..."
+            openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
+
+            // wait for revert to complete
+            if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
+              echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+
+              notifyRocketChat(
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
               currentBuild.result = "FAILURE"
               exit 1
             }
+
+            notifyRocketChat(
+              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+
+            currentBuild.result = "FAILURE"
+            exit 1
           }
-          // Stash the ZAP report for publishing in a different stage (which will run on a different pod).
-          echo "Stash the report for the publishing stage ..."
-          stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
-        }
-      }
-    }
-  }
-}
-
-def postZapToSonar () {
-  openshift.withCluster() {
-    openshift.withProject() {
-      String zapToSonarLabel = "zap-to-sonar-${UUID.randomUUID().toString()}";
-      // The jenkins-python3nodejs template has been purpose built for supporting SonarQube scanning.
-      podTemplate(
-        label: zapToSonarLabel,
-        name: zapToSonarLabel,
-        serviceAccount: 'jenkins',
-        cloud: 'openshift',
-        slaveConnectTimeout: 300,
-        containers: [
-          containerTemplate(
-            name: 'jnlp',
-            image: '172.50.0.2:5000/openshift/jenkins-slave-python3nodejs',
-            resourceRequestCpu: '1000m',
-            resourceLimitCpu: '2000m',
-            resourceRequestMemory: '2Gi',
-            resourceLimitMemory: '4Gi',
-            workingDir: '/tmp',
-            command: '',
-            args: '${computer.jnlpmac} ${computer.name}'
-          )
-        ]
-      ){
-        node(zapToSonarLabel) {
-          // The name  of the ZAP report
-          def ZAP_REPORT_NAME = "zap-report.xml"
-
-          // The location of the ZAP reports
-          def ZAP_REPORT_PATH = "/zap/wrk/${ZAP_REPORT_NAME}"
-
-          // The name of the "stash" containing the ZAP report
-          def ZAP_REPORT_STASH = "zap-report"
-
-          // get sonarqube url
-          def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
-
-          // url for the sonarqube report
-          def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:eagle-admin-zap-scan"
-
-          boolean firstScan = false
-
-          def OLD_ZAP_DATE
 
           try {
             // get old sonar report date
@@ -413,83 +402,76 @@ def postZapToSonar () {
           } catch (error) {
             firstScan = true
           }
+        }
 
-          echo "Checking out the sonar-runner folder ..."
-          checkout scm
-
-          echo "Preparing the report for the publishing ..."
-          unstash name: "${ZAP_REPORT_STASH}"
-
+        echo "Checking out the sonar-runner folder ..."
+        checkout scm
+        dir('sonar-runner') {
           echo "Publishing the report ..."
-          dir('sonar-runner') {
-            sh (
-              // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
-              // Exclude the report from being scanned as an xml file.  We only care about the results of the ZAP scan.
-              returnStdout: true,
-              script: "./gradlew sonarqube --stacktrace --info \
-                -Dsonar.verbose=true \
-                -Dsonar.host.url=${SONARQUBE_URL} \
-                -Dsonar.projectName='eagle-admin-zap-scan'\
-                -Dsonar.projectKey='org.sonarqube:eagle-admin-zap-scan' \
-                -Dsonar.projectBaseDir='../' \
-                -Dsonar.sources='./src/app' \
-                -Dsonar.zaproxy.reportPath=${WORKSPACE}${ZAP_REPORT_PATH} \
-                -Dsonar.exclusions=**/*.xml"
-            )
-
-            if ( !firstScan ) {
-              // wiat for report to be updated
-              if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
-                echo "Zap report failed to complete, or timed out"
-
-                notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
-                  ROCKET_DEPLOY_WEBHOOK
-                )
-
-                currentBuild.result = "FAILURE"
-                exit 1
-              }
-            } else {
-              sleep(30)
-            }
-
-            // check if zap passed
-            ZAP_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
-            ZAP_STATUS = sonarGetStatus (ZAP_STATUS_JSON)
-
-            if ( "${ZAP_STATUS}" == "ERROR" ) {
-              echo "ZAP scan failed"
-
-              // revert dev from backup
-              echo "Reverting dev image form backup..."
-              openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
-
-              // wait for revert to complete
-              if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
-                echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
-
-                notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
-                  ROCKET_DEPLOY_WEBHOOK
-                )
-
-                currentBuild.result = "FAILURE"
-                exit 1
-              }
+          // 'sonar.zaproxy.reportPath' must be set to the absolute path of the xml formatted ZAP report.
+          sh (
+            returnStdout: true,
+            script: "./gradlew sonarqube --stacktrace --info \
+              -Dsonar.verbose=true \
+              -Dsonar.host.url=${SONARQUBE_URL} \
+              -Dsonar.projectName='eagle-admin-zap-scan'\
+              -Dsonar.projectKey='org.sonarqube:eagle-admin-zap-scan' \
+              -Dsonar.projectBaseDir='../' \
+              -Dsonar.sources='./src/app' \
+              -Dsonar.zaproxy.reportPath=${WORKSPACE}${ZAP_REPORT_PATH}"
+          )
+          if ( !firstScan ) {
+            // wiat for report to be updated
+            if(!sonarqubeReportComplete ( OLD_ZAP_DATE, SONARQUBE_STATUS_URL)) {
+              echo "Zap report failed to complete, or timed out"
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
-              echo "Zap scan Failed"
-              echo "Reverted dev deployment from backup"
-              currentBuild.result = 'FAILURE'
+              currentBuild.result = "FAILURE"
               exit 1
-            } else {
-              echo "ZAP Scan Passed"
             }
+          } else {
+            sleep(30)
+          }
+
+          // check if zap passed
+          ZAP_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+          ZAP_STATUS = sonarGetStatus (ZAP_STATUS_JSON)
+
+          if ( "${ZAP_STATUS}" == "ERROR" ) {
+            echo "ZAP scan failed"
+
+            // revert dev from backup
+            echo "Reverting dev image form backup..."
+            openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'eagle-admin', srcTag: 'dev-backup'
+
+            // wait for revert to complete
+            if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
+              echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+
+              notifyRocketChat(
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              currentBuild.result = "FAILURE"
+              exit 1
+            }
+
+            notifyRocketChat(
+              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+
+            echo "Zap scan Failed"
+            echo "Reverted dev deployment from backup"
+            currentBuild.result = 'FAILURE'
+            exit 1
+          } else {
+            echo "ZAP Scan Passed"
           }
         }
       }
@@ -499,13 +481,20 @@ def postZapToSonar () {
 
 def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
-
+def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
 pipeline {
-  agent any
-  options {
-    disableResume()
+  environment {
+    TOOLSPROJECT = "esm"
   }
+  agent any
   stages {
+    stage('Build Init') {
+      steps {
+        script {
+          openshift.setLockName(lockName)
+        }
+      }
+    }
     stage('Parallel Build Steps') {
       failFast true
       parallel {
@@ -538,7 +527,7 @@ pipeline {
                 echo ">> IMAGE_HASH: ${IMAGE_HASH}"
               } catch (error) {
                 notifyRocketChat(
-                  "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+                  "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
                   ROCKET_QA_WEBHOOK
                 )
                 throw error
@@ -550,8 +539,8 @@ pipeline {
         stage('Unit Tests') {
           steps {
             script {
-              echo "Running linter & unit tests"
-              def results = nodejsTestandLint()
+              echo "Running unit tests"
+              def results = nodejsTest()
             }
           }
         }
@@ -580,7 +569,7 @@ pipeline {
               echo "Dev image backup failed"
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Dev image backup failed",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Dev image backup failed",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -597,7 +586,7 @@ pipeline {
               echo "Dev image deployment failed"
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n Dev image deployment failed",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Dev image deployment failed",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -612,7 +601,7 @@ pipeline {
 
           } catch (error) {
             notifyRocketChat(
-              "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.BUILD_URL}\n Error: ${error.message}",
+              "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
@@ -630,18 +619,6 @@ pipeline {
         }
       }
     }
-
-
-    stage('Zap to Sonarqube') {
-      steps {
-        script {
-          echo "Posting Zap Scan to Sonarqube Report"
-          def result = postZapToSonar()
-        }
-      }
-    }
-
-
     // stage('BDD Tests') {
     //   agent { label: bddPodLabel }
     //   steps{

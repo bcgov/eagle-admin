@@ -20,6 +20,7 @@ import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
+import { LoadedRouterConfig } from '@angular/router/src/config';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -200,7 +201,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.keywords = this.terms.keywords;
         this.hadFilter = this.hasFilter();
 
-        if (_.isEmpty(this.terms.getParams()) && !this.hasFilter()) {
+        // additional check to see if we have any filter elements applied to the
+        // query string. Previously these were ignored on a refresh
+        let filterKeys = Object.keys(this.filterForAPI);
+        let hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
+
+        if (_.isEmpty(this.terms.getParams())
+            && !this.hasFilter()
+            && !hasFilterFromQueryString) {
           return Observable.of(null);
         }
 
@@ -210,6 +218,15 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.count = 0;
         this.currentPage = params.currentPage ? params.currentPage : 1;
         this.pageSize = params.pageSize ? params.pageSize : 25;
+
+        // remove doc and project types
+        // The UI filters are remapping document and project type to the single 'Type' value
+        // this means that whenever we map back to the filters, we need to revert them
+        // from 'type', to the appropriate type. Additionally, the API will fail if we
+        // send "docType" ir "projectType" as a filter, so we need to ensure these are
+        // stripped from the filterForAPI
+        delete this.filterForAPI['docType'];
+        delete this.filterForAPI['projectType'];
 
         return this.searchService.getSearchResults(
           this.terms.keywords,
@@ -312,36 +329,39 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     delete this.filterForURL[name];
     delete this.filterForAPI[name];
 
+    // The UI filters are remapping document and project type to the single 'Type' value
+    // this means that whenever we map back to the filters, we need to revert them
+    // from 'type', to the appropriate type.
+    let optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
+           this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
+
+    if (optionName !== name) {
+      delete this.filterForURL[optionName];
+      delete this.filterForAPI[optionName];
+    }
+
     if (params[name] && collection) {
       let confirmedValues = [];
+      // look up each value in collection
       const values = params[name].split(',');
-      for (let valueIdx in values) {
-        if (values.hasOwnProperty(valueIdx)) {
-          let value = values[valueIdx];
-          const record = _.find(collection, [ identifyBy, value ]);
-          if (record) {
-            let optionArray = this.filterForUI[name];
-            let recordExists = false;
-            for (let optionIdx in optionArray) {
-              if (optionArray[optionIdx]._id === record['_id']) {
-                recordExists = true;
-                break;
-              }
-            }
-
-            if (!recordExists) {
-              optionArray.push(record);
-              confirmedValues.push(value);
-            }
-          }
-          if (confirmedValues.length) {
-            this.filterForURL[name] = confirmedValues.join(',');
-            this.filterForAPI[name] = confirmedValues.join(',');
-          }
+      values.forEach(value => {
+        const record = _.find(collection, [ identifyBy, value ]);
+        if (record) {
+          confirmedValues.push(value);
         }
+      });
+      if (confirmedValues.length) {
+        if (optionName !== name) {
+          this.filterForURL[optionName] =  encodeURI(confirmedValues.join(','));
+          this.filterForAPI[optionName] = confirmedValues.join(',');
+        }
+
+        this.filterForURL[name] = encodeURI(confirmedValues.join(','));
+        this.filterForAPI[name] = confirmedValues.join(',');
       }
     }
   }
+
 
   paramsToDateFilters(params, name) {
     this.filterForUI[name] = null;
@@ -366,6 +386,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
       this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
       this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
+      this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -373,6 +394,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
       this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
       this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
+      this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
@@ -544,9 +566,15 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   public filterCompareWith(filter: any, filterToCompare: any) {
-    return filter && filterToCompare
-            ? filter._id === filterToCompare._id
-            : filter === filterToCompare;
+    if (filter.hasOwnProperty('code')) {
+      return filter && filterToCompare
+             ? filter.code === filterToCompare.code
+             : filter === filterToCompare;
+    } else if (filter.hasOwnProperty('_id')) {
+      return filter && filterToCompare
+             ? filter._id === filterToCompare._id
+             : filter === filterToCompare;
+    }
   }
 
   ngOnDestroy() {

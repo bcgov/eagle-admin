@@ -16,6 +16,7 @@ import { NgxPaginationModule } from 'ngx-pagination';
 import { TableDirective } from './components/table-template/table.directive';
 import { DropdownTemplateComponent } from './components/dropdown-template/dropdown-template.component';
 import { TableTemplateUtils } from './utils/table-template-utils';
+import { TableDocumentTemplateUtils } from './utils/table-document-template-utils';
 import { CommentStatsComponent } from './components/comment-stats/comment-stats.component';
 import { ListConverterPipe } from './pipes/list-converter.pipe';
 import { OrgNamePipe } from './pipes/org-name.pipe';
@@ -28,6 +29,7 @@ import { LinkOrganizationTableRowsComponent } from './components/link-organizati
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
 import { ExtensionComponent } from './components/extension/extension.component';
+import { ListResolver } from './resolvers/list-resolver.service';
 
 @NgModule({
   imports: [
@@ -84,8 +86,10 @@ import { ExtensionComponent } from './components/extension/extension.component';
   ],
   providers: [
     TableTemplateUtils,
+    TableDocumentTemplateUtils,
     NavigationStackUtils,
-    Utils
+    Utils,
+    ListResolver
   ]
 })
 

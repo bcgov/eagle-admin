@@ -31,19 +31,14 @@
 
     .nav-link {
         border: none;
-        background: $tab-sm-bg;
         text-align: center;
-        text-transform: uppercase;
-        font-weight: 700;
         transition: all ease-in 0.2s;
 
         position: relative;
         padding: 0.75rem;
-        color: rgba($tab-color, 0.8);
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
         background-color: transparent;
-        font-size: 0.85rem;
 
         &:hover {
             background-color: $tab-hover-bg;

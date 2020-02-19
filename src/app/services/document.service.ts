@@ -67,4 +67,13 @@ export class DocumentService {
       .catch(error => this.api.handleError(error));
   }
 
+  feature(docId: string): Observable<Document> {
+    return this.api.featureDocument(docId)
+      .catch(error => this.api.handleError(error));
+  }
+
+  unFeature(docId: string): Observable<Document> {
+    return this.api.unFeatureDocument(docId)
+      .catch(error => this.api.handleError(error));
+  }
 }

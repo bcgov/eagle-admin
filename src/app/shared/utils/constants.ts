@@ -11,6 +11,11 @@ export class Constants {
     DEFAULT_KEYWORDS: ''
   };
 
+  public static readonly documentTypes = {
+    CATEGORIZED: 'categorized',
+    UNCATEGORIZED: 'uncategorized',
+  };
+
   public static readonly buildToNature: BuildNature[] = [
     { build: 'new',
       nature: 'New Construction'
@@ -327,9 +332,9 @@ export class Constants {
           'Solid Waste Management'
         ],
         'Waste Disposal': [
-          'Hazardous Waste Facilities',
-          'Local Government Liquid Waste Management Facilities',
-          'Local Government Solid Waste Management Facilities'
+          'Hazardous Waste Management',
+          'Solid Waste Management',
+          'Liquid Waste Management'
         ],
         'Tourist Destination Resorts': [
           'Golf Resorts',
