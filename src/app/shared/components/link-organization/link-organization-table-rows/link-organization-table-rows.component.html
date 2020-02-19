@@ -1,5 +1,5 @@
 <tr (click) = "onRowClick(organization)"
-  *ngFor="let organization of organizations | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let organization of organizations"
   class="clickable-row">
   <td  *ngIf="showCheckboxes" data-label="Select" scope="row" class="col-1">
     <input type="checkbox" aria-label="Checkbox for row organization" [(ngModel)]='organization.checkbox'>

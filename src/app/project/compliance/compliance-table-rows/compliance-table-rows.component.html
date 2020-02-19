@@ -1,5 +1,5 @@
 <tr
-  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let item of items"
   class="clickable-row">
   <div class="spinner-container" *ngIf="loading">
     <div class="spinner-new rotating"></div>
