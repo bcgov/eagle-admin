@@ -311,6 +311,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   updatePageSize(pageSize) {
     window.scrollTo(0, 0);
+    this.currentPage = 1;
     this.pageSize = parseInt(pageSize, 10);
     this.onSubmit();
   }
