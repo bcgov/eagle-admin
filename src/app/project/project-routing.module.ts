@@ -53,6 +53,7 @@ import { SubmissionDetailResolver } from './compliance/submission-detail/submiss
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 import { ProjectsRoutes } from 'app/projects/projects-routes';
 import { FullProjectResolver } from './full-project-resolver.service';
+import { ListResolver } from 'app/shared/resolvers/list-resolver.service';
 
 const routes: Routes = [
   {
@@ -60,7 +61,8 @@ const routes: Routes = [
     component: ProjectComponent,
     runGuardsAndResolvers: 'always',
     resolve: {
-      project: ProjectResolver
+      project: ProjectResolver,
+      list: ListResolver,
     },
     children: [
       {
@@ -125,7 +127,7 @@ const routes: Routes = [
         path: 'project-documents',
         component: ProjectDocumentsComponent,
         resolve: {
-          documents: DocumentsResolver
+          documents: DocumentsResolver,
         }
       },
       {
