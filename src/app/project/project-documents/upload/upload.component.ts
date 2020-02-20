@@ -213,7 +213,7 @@ export class UploadComponent implements OnInit, OnDestroy {
 public docNameExists() {
   // Doc name "exists" if the form has a value, or if the form has more than one document
   // this does not check name validity (validateChars does that)
-  return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) || 
+  return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) ||
          (this.documents && this.documents.length > 1);
 }
 
