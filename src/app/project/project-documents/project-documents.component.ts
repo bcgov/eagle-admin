@@ -1,31 +1,24 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
-
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Subject, forkJoin } from 'rxjs';
-
 import * as moment from 'moment';
 import * as _ from 'lodash';
 
 import { Document } from 'app/models/document';
 import { SearchTerms } from 'app/models/search';
-
 import { ApiService } from 'app/services/api';
 import { DocumentService } from 'app/services/document.service';
 import { SearchService } from 'app/services/search.service';
 import { StorageService } from 'app/services/storage.service';
-
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
-
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableDocumentParamsObject } from 'app/shared/components/table-template/table-document-params-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableDocumentTemplateUtils } from 'app/shared/utils/table-document-template-utils';
-
 import { Utils } from 'app/shared/utils/utils';
-import { ConfigService } from 'app/services/config.service';
 import { Constants } from 'app/shared/utils/constants';
 
 class DocumentFilterObject {
@@ -152,7 +145,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private searchService: SearchService,
-    private configService:  ConfigService,
     private storageService:  StorageService,
     private tableDocumentTemplateUtils: TableDocumentTemplateUtils,
     private utils: Utils
@@ -163,28 +155,20 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       .switchMap(parentData => {
         const list = parentData.list;
 
-        if (list.length > 0) {
-          list.map(item => {
-            switch (item.type) {
-              case 'label':
-                this.milestones.push({ ...item });
-                break;
-              case 'author':
-                this.authors.push({ ...item });
-                break;
-              case 'doctype':
-                this.types.push({ ...item });
-                break;
-              default:
-                break;
-            }
-          });
+        if (this.milestones.length === 0) {
+          const milestones = list.filter(item => item.type === 'label');
+          this.milestones = _.sortBy(milestones, ['legislation']);
         }
 
-        // Sort by legislation.
-        this.milestones = _.sortBy(this.milestones, ['legislation']);
-        this.authors = _.sortBy(this.authors, ['legislation']);
-        this.types = _.sortBy(this.types, ['legislation', 'listOrder']);
+        if (this.authors.length === 0) {
+          const authors = list.filter(item => item.type === 'author');
+          this.authors = _.sortBy(authors, ['legislation']);
+        }
+
+        if (this.types.length === 0) {
+          const types = list.filter(item => item.type === 'doctype');
+          this.types = _.sortBy(types, ['legislation', 'listOrder']);
+        }
 
         return this.route.params;
       })
