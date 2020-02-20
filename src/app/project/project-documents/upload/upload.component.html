@@ -116,7 +116,7 @@
           </div>
           <div>
               <textarea *ngIf="documents && documents.length > 1" disabled class="form-control" id="displayName" name="displayName" rows="1" formControlName="displayName"></textarea>
-              <textarea *ngIf="!documents || documents.length < 2" required class="form-control" id="displayName" name="displayName" rows="1" formControlName="displayName" (ngModelChange)="validateChars()"></textarea>
+              <textarea *ngIf="!documents || documents.length < 2" class="form-control" id="displayName" name="displayName" rows="1" formControlName="displayName" (ngModelChange)="validateChars()"></textarea>
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@
   <div class="text-right" >
     <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
     &nbsp;
-    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid || docNameInvalid || documents?.length === 0 "  type="submit" (click)="uploadDocuments()">Upload</button>
+    <button class="btn btn-primary mr-1" [disabled]="!docNameExists() || !myForm.valid || docNameInvalid || documents?.length === 0"  type="submit" (click)="uploadDocuments()">Upload</button>
     &nbsp;
     <!-- <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid || documents?.length === 0 " type="publish" (click)="uploadAndPublish()" >Upload & Publish</button> -->
   </div>
