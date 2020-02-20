@@ -1110,7 +1110,7 @@ export class ApiService {
           } else {
             safeItem = item;
           }
-          queryString += `&or[${key}]=${safeItem}`;
+          queryString += `&and[${key}]=${safeItem}`;
         });
       });
     }
