@@ -210,6 +210,13 @@ export class UploadComponent implements OnInit, OnDestroy {
       );
   }
 
+public docNameExists() {
+  // Doc name "exists" if the form has a value, or if the form has more than one document
+  // this does not check name validity (validateChars does that)
+  return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) || 
+         (this.documents && this.documents.length > 1);
+}
+
   public validateChars() {
     if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
       this.docNameInvalid = true;
@@ -238,6 +245,10 @@ export class UploadComponent implements OnInit, OnDestroy {
           // save document for upload to db when project is added or saved
           this.documents.push(document);
         }
+      }
+
+      if (this.documents && this.documents.length > 1) {
+        this.docNameInvalid = false;
       }
     }
     this._changeDetectionRef.detectChanges();
