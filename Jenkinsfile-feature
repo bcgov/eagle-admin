@@ -514,7 +514,7 @@ pipeline {
                 ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
 
                 echo "Building eagle-admin develop branch"
-                openshiftBuild bldCfg: 'cac-eagle-admin-angular', showBuildLogs: 'true'
+                openshiftBuild bldCfg: 'cac-eagle-admin-angular-builder', showBuildLogs: 'true'
                 openshiftBuild bldCfg: 'cac-eagle-admin-build', showBuildLogs: 'true'
                 echo "Build done"
 
