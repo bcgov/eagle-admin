@@ -95,8 +95,8 @@ def sonarGetDate (jsonPayload) {
 }
 
 boolean imageTaggingComplete ( String sourceTag, String destinationTag, String action, def iterations = 6 ) {
-  def sourceImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${sourceTag} | head -n 1".trim()
-  def destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
+  def sourceImageName = sh returnStdout: true, script: "oc describe istag/cac-eagle-admin:${sourceTag} | head -n 1".trim()
+  def destinationImageName = sh returnStdout: true, script: "oc describe istag/cac-eagle-admin:${destinationTag} | head -n 1".trim()
   int delay = 0
 
   for (int i=0; i<iterations; i++){
@@ -108,7 +108,7 @@ boolean imageTaggingComplete ( String sourceTag, String destinationTag, String a
     } else {
       delay = (1<<i) // exponential backoff
       sleep(delay)
-      destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
+      destinationImageName = sh returnStdout: true, script: "oc describe istag/cac-eagle-admin:${destinationTag} | head -n 1".trim()
     }
   }
   return false
