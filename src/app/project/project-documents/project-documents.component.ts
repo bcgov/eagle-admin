@@ -735,7 +735,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   updateSelectedRow(documentType, changeEvent) {
     this.activeLegislationYear = changeEvent.activeLegislationYear;
     this.selectedCount[documentType] = changeEvent.count;
-    console.log(this.activeLegislationYear);
     // Accessing on a keyed index so that the constants can be used.
     this.selectedCount.total = this.selectedCount[Constants.documentTypes.CATEGORIZED] + this.selectedCount[Constants.documentTypes.UNCATEGORIZED];
     this.setPublishUnpublish();
@@ -932,7 +931,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     );
 
     if (docType === Constants.documentTypes.CATEGORIZED) {
-      console.log(this.filterForAPI);
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -968,7 +966,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
       });
     } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
-      console.log(this.filterForAPI);
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
