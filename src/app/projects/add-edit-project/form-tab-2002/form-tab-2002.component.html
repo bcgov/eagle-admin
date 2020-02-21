@@ -51,7 +51,7 @@
         <div class="label-pair">
           <label for="currentPhaseName">Project Phase* </label>
           <select name="currentPhaseName" id="currentPhaseName" formControlName="currentPhaseName" class="form-control">
-            <option *ngFor="let projectPhase of projectPhases" [ngValue]="currentPhaseName">{{projectPhase.name}}</option>
+            <option *ngFor="let projectPhase of projectPhases" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
 
           </select>
         </div>
