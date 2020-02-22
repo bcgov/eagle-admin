@@ -20,6 +20,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @ViewChild(TableDirective) tableHost: TableDirective;
 
   @Output() onPageNumUpdate: EventEmitter<any> = new EventEmitter();
+  @Output() onUpdatePageSize: EventEmitter<any> = new EventEmitter();
   @Output() onItemClicked: EventEmitter<any> = new EventEmitter();
   @Output() onSelectedRow: EventEmitter<any> = new EventEmitter();
   @Output() onColumnSort: EventEmitter<any> = new EventEmitter();

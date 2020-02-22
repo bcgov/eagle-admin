@@ -2,7 +2,8 @@ import { Constants } from 'app/shared/utils/constants';
 
 export class TableDocumentParamsObject {
   constructor(
-    public pageSize: number = Constants.tableDefaults.DEFAULT_PAGE_SIZE,
+    public pageSizeCategorized: number = Constants.tableDefaults.DEFAULT_PAGE_SIZE,
+    public pageSizeUncategorized: number = Constants.tableDefaults.DEFAULT_PAGE_SIZE,
     public currentPageCategorized: number = Constants.tableDefaults.DEFAULT_CURRENT_PAGE,
     public currentPageUncategorized: number = Constants.tableDefaults.DEFAULT_CURRENT_PAGE,
     public totalListItemsCategorized: number = 0,
