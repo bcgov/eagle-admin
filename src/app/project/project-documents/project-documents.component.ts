@@ -921,8 +921,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     window.scrollTo(0, 0);
     this.loading = true;
 
-    const cc = this.tableParams2;
-
     this.tableParams = this.tableDocumentTemplateUtils.updateTableParams(
       docType,
       this.tableParams,
