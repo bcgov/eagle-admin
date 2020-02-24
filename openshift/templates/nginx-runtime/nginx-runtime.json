@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "eagle-admin-nginx-runtime",
+    "name": "${NAME}",
     "creationTimestamp": null
   },
   "objects": [

@@ -53,6 +53,13 @@
                             Document Type<span
                                 *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
                         </button>
+                        <button type="button" (click)="toggleFilter('projectPhase');" [ngClass]="{'btn': true, 'type-btn': true,
+                'btn-dark': showFilters.projectPhase,
+                'btn-secondary': !showFilters.projectPhase && numFilters.projectPhase > 0,
+                'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
+                            Project Phase<span
+                                *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
+                        </button>
                         <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
                     </div>
                     <div
@@ -209,6 +216,42 @@
                         </div>
                     </div>
                 </div>
+                <div *ngIf="showAdvancedSearch && showFilters.projectPhase" class="projectPhase-filters project-filter row">
+                  <div class="col-md-12 filter-border">
+                      <div class="row sub-filter">
+                          <div class="col-md-12">
+                              <div class="row">
+                                  <b>Phase</b>
+                              </div>
+                              <div class="row">
+                                  <div class="form-group">
+                                      <ng-select
+                                          id="projectPhase"
+                                          name="projectPhase"
+                                          multiple="true"
+                                          bindLabel="name"
+                                          groupBy="legislation"
+                                          placeholder="Type Project Phase"
+                                          [items]="projectPhases"
+                                          [markFirst]="false"
+                                          [closeOnSelect]="false"
+                                          [(ngModel)]="filterForUI.projectPhase"
+                                          [compareWith]="filterCompareWith"
+                                      >
+                                          <ng-template ng-label-tmp let-item="item">
+                                              <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)" aria-hidden="true">×</span>
+                                              <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                          </ng-template>
+                                          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                              {{item.legislation}} Act Terms
+                                          </ng-template>
+                                      </ng-select>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
                 <button *ngIf="showAdvancedSearch && isShowingFilter()" class="btn btn-primary search-button"
                     type="submit">
                     <span>Search</span>
@@ -275,7 +318,7 @@
                                 <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
                                     (click)="onPageLimitClick('all')"
                                     aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active': 
+                                    [ngClass]="{'active':
                                         this.tableParams.pageSize === this.tableParams.totalListItemsCategorized ||
                                         this.tableParams.pageSize === this.tableParams.totalListItemsUncategorized
                                      }">Show All</a>
@@ -284,12 +327,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="document-tabs">
                 <ngb-tabset (tabChange)="onTabChange($event)">
-                    <ngb-tab 
-                        id="constants.documentTypes.CATEGORIZED" 
-                        title="Documents ({{this.tableParams.totalListItemsCategorized}} {{getResultTerm(this.tableParams.totalListItemsCategorized)}} found)" 
+                    <ngb-tab
+                        id="constants.documentTypes.CATEGORIZED"
+                        title="Documents ({{this.tableParams.totalListItemsCategorized}} {{getResultTerm(this.tableParams.totalListItemsCategorized)}} found)"
                         [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length || categorizedDocs.length === 0">
                         <ng-template ngbTabContent>
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
@@ -300,15 +343,15 @@
                         </ng-template>
                     </ngb-tab>
 
-                    <ngb-tab 
-                        id="constants.documentTypes.UNCATEGORIZED" 
+                    <ngb-tab
+                        id="constants.documentTypes.UNCATEGORIZED"
                         [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length || uncategorizedDocs.length === 0">
                         <ng-template ngbTabTitle>
                             <div class="custom-tab-title">
                                 <span>Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} {{getResultTerm(this.tableParams.totalListItemsUncategorized)}} found)</span>
-                                <i 
-                                    class="material-icons md-20" 
-                                    placement="top" 
+                                <i
+                                    class="material-icons md-20"
+                                    placement="top"
                                     ngbTooltip="Documents within this table have not yet been categorized by author, document type, and/or milestone. We are actively processing these documents so they can be searched and filtered – making it easier to find what you’re looking for."
                                     tooltipClass="custom-tab-title-tooltip"
                                 >help</i>

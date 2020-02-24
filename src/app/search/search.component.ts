@@ -40,6 +40,7 @@ class SearchFilterObject {
     public datePostedStart: object = {},
     public datePostedEnd: object = {},
     public docType: Array<string> = [],
+    public projectPhase: Array<string> = [],
     public documentAuthorType: Array<string> = []
   ) { }
 }
@@ -63,7 +64,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public milestones: any[] = [];
   public authors: any[] = [];
   public docTypes: any[] = [];
-
+  public projectPhases: any[] = [];
   public loading = true;
 
   public filterForURL: object = {}; // Not used on this page yet
@@ -80,7 +81,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     milestone: false,
     date: false,
     documentAuthorType: false,
-    docType: false
+    docType: false,
+    projectPhase: false
   };
 
   public numFilters: object = {
@@ -91,7 +93,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     milestone: 0,
     date: 0,
     documentAuthorType: 0,
-    docType: 0
+    docType: 0,
+    projectPhase: 0
   };
 
   public terms = new SearchTerms();
@@ -158,6 +161,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               case 'ceaaInvolvements':
                 this.ceaaInvolvements.push({ ...item });
                 break;
+              case 'projectPhase':
+                this.projectPhases.push({ ...item });
+                break;
               default:
                 break;
             }
@@ -172,6 +178,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         // Sort by legislation.
         this.milestones = _.sortBy(this.milestones, ['legislation']);
         this.authors = _.sortBy(this.authors, ['legislation']);
+        this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
         this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
         this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
 
@@ -395,6 +402,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
       this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
       this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
@@ -447,6 +455,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.collectionFilterToParams(params, 'milestone', '_id');
       this.collectionFilterToParams(params, 'documentAuthorType', '_id');
       this.collectionFilterToParams(params, 'docType', '_id');
+      this.collectionFilterToParams(params, 'projectPhase', '_id');
 
       this.dateFilterToParams(params, 'datePostedStart');
       this.dateFilterToParams(params, 'datePostedEnd');
@@ -531,6 +540,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.updateCount('date');
     this.updateCount('documentAuthorType');
     this.updateCount('docType');
+    this.updateCount('projectPhase');
   }
 
   // reload page with current search terms

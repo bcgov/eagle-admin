@@ -82,6 +82,10 @@
                   {
                     "name": "REMOTE_PUBLIC_PATH",
                     "value": "${REMOTE_PUBLIC_PATH}"
+                  },
+                  {
+                    "name": "KEYCLOAK_CLIENT_ID",
+                    "value": "${KEYCLOAK_CLIENT_ID}"
                   }
                 ],
                 "resources": {
@@ -262,6 +266,12 @@
       "displayName": "URL path to Public",
       "description": "[Currently Unused] The 'https://' prefixed URL path to the Public app that the admin Angular app will link back to.",
       "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
+    },
+    {
+      "name": "KEYCLOAK_CLIENT_ID",
+      "displayName": "Default KeyCloak Client",
+      "description": "The default keycloak client that the admin app will be authenticating against.",
+      "value": "eagle-admin-console"
     }
   ]
 }
