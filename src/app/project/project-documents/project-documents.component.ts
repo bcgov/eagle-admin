@@ -27,7 +27,8 @@ class DocumentFilterObject {
     public datePostedStart: object = {},
     public datePostedEnd: object = {},
     public type: Array<string> = [],
-    public documentAuthorType: Array<string> = []
+    public documentAuthorType: Array<string> = [],
+    public projectPhase: Array<string> = []
   ) {}
 }
 
@@ -51,6 +52,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   public milestones: any[] = [];
   public authors: any[] = [];
   public types: any[] = [];
+  public projectPhases: any[] = [];
   public legislations: any[] = [];
 
   public loading = true;
@@ -69,6 +71,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     milestone: false,
     date: false,
     documentAuthorType: false,
+    projectPhase: false,
     type: false
   };
 
@@ -76,6 +79,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     milestone: 0,
     date: 0,
     documentAuthorType: 0,
+    projectPhase: 0,
     type: 0
   };
 
@@ -168,6 +172,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         if (this.types.length === 0) {
           const types = list.filter(item => item.type === 'doctype');
           this.types = _.sortBy(types, ['legislation', 'listOrder']);
+        }
+
+        if (this.projectPhases.length === 0) {
+          const projectPhases = list.filter(item => item.type === 'projectPhase');
+          this.projectPhases = _.sortBy(projectPhases, ['legislation']);
         }
 
         return this.route.params;
@@ -726,7 +735,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   updateSelectedRow(documentType, changeEvent) {
     this.activeLegislationYear = changeEvent.activeLegislationYear;
     this.selectedCount[documentType] = changeEvent.count;
-    console.log(this.activeLegislationYear);
     // Accessing on a keyed index so that the constants can be used.
     this.selectedCount.total = this.selectedCount[Constants.documentTypes.CATEGORIZED] + this.selectedCount[Constants.documentTypes.UNCATEGORIZED];
     this.setPublishUnpublish();
@@ -808,13 +816,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
   setFiltersFromParams(params) {
     this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
-    this.paramsToCollectionFilters(
-      params,
-      'documentAuthorType',
-      this.authors,
-      '_id'
-    );
+    this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id' );
     this.paramsToCollectionFilters(params, 'type', this.types, '_id');
+    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
     this.paramsToDateFilters(params, 'datePostedStart');
     this.paramsToDateFilters(params, 'datePostedEnd');
@@ -848,6 +852,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     this.collectionFilterToParams(params, 'milestone', '_id');
     this.collectionFilterToParams(params, 'documentAuthorType', '_id');
     this.collectionFilterToParams(params, 'type', '_id');
+    this.collectionFilterToParams(params, 'projectPhase', '_id');
 
     this.dateFilterToParams(params, 'datePostedStart');
     this.dateFilterToParams(params, 'datePostedEnd');
@@ -911,6 +916,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     this.updateCount('date');
     this.updateCount('documentAuthorType');
     this.updateCount('type');
+    this.updateCount('projectPhase');
   }
 
   getPaginatedDocs(docType, pageNumber) {
