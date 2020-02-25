@@ -39,6 +39,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public back: any = {};
   public regions: any[] = [];
   public sectorsSelected = [];
+  public projectPhases: Array<any> = [];
   public proponentName = '';
   public proponentId = '';
   public legislationYear: Number = 2002;
@@ -125,6 +126,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         this.buildForm();
         this.initContacts();
         this.getLists();
+
+
 
         this.loading = false;
         try {
@@ -217,6 +220,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.myForm = new FormGroup({
         'name': new FormControl(),
         'proponent': new FormControl(),
+        'currentPhaseName': new FormControl(this.projectPhases[0]),
         'build': new FormControl(),
         'type': new FormControl(),
         'sector': new FormControl(),
@@ -377,6 +381,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'proponent': new FormControl(formData.proponent),
       'build': new FormControl(formData.build),
       'type': new FormControl(formData.type),
+      'currentPhaseName': new FormControl(formData.currentPhaseName._id),
       'sector': new FormControl(formData.sector),
       'description': new FormControl(formData.description),
       'location': new FormControl(formData.location),
@@ -444,6 +449,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'proponent': this.proponentId,
       'build': form.controls.build.value,
       'type': form.controls.type.value,
+      'currentPhaseName': form.controls.currentPhaseName.value,
       'sector': form.controls.sector.value,
       'description': form.controls.description.value,
       'location': form.controls.location.value,
@@ -505,6 +511,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       return false;
     } else if (this.myForm.controls.type.value === '') {
       alert('You must select a type.');
+      return false;
+    } else if (this.myForm.controls.currentPhaseName.value === '') {
+      alert('You must select a project phase.');
       return false;
     } else if (this.myForm.controls.sector.value === '') {
       alert('You must select a sub-type.');
@@ -771,6 +780,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           case `ceaaInvolvements|${this.legislationYear}`:
             this.ceaaInvolvements.push({ ...item });
             break;
+          case `projectPhase|${this.legislationYear}`:
+            this.projectPhases.push({ ...item});
+            break;
           default:
             break;
         }
@@ -780,6 +792,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     // Sorts by legislation first and then listOrder for each legislation group.
     this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
     this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+    this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
   }
 
   ngOnDestroy() {
