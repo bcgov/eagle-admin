@@ -272,7 +272,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     switch (action) {
       case 'copyLink':
 
-        if (this.categorizedDocumentTableData && this.currentTab === Constants.documentTypes.CATEGORIZED) {
+        if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               this.createRowCopy(item);
@@ -284,7 +284,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        if (this.uncategorizedDocumentTableData && this.currentTab === Constants.documentTypes.UNCATEGORIZED) {
+        if (this.uncategorizedDocumentTableData) {
           this.uncategorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               this.createRowCopy(item);
@@ -299,7 +299,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       case 'selectAll':
         let someSelected = false;
 
-        if (this.categorizedDocumentTableData && this.currentTab === Constants.documentTypes.CATEGORIZED) {
+        if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               someSelected = true;
@@ -310,7 +310,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        if (this.uncategorizedDocumentTableData && this.currentTab === Constants.documentTypes.UNCATEGORIZED) {
+        if (this.uncategorizedDocumentTableData) {
           this.uncategorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               someSelected = true;
@@ -336,7 +336,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       case 'edit':
         const selectedDocs = [];
 
-        if (this.categorizedDocumentTableData && this.currentTab === Constants.documentTypes.CATEGORIZED) {
+        if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               selectedDocs.push(
@@ -346,7 +346,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        if (this.uncategorizedDocumentTableData && this.currentTab === Constants.documentTypes.UNCATEGORIZED) {
+        if (this.uncategorizedDocumentTableData) {
           this.uncategorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               selectedDocs.push(
