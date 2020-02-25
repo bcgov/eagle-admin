@@ -928,6 +928,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     );
 
     if (docType === Constants.documentTypes.CATEGORIZED) {
+      this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData.paginationData.pageSize;
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -964,6 +965,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
       });
     } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
+      this.tableParams.pageSizeUncategorized = this.uncategorizedDocumentTableData.paginationData.pageSize;
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
