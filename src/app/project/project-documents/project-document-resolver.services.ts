@@ -32,6 +32,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     const milestones: any[] = [];
     const authors: any[] = [];
     const types: any[] = [];
+    const projectPhases: any[] = [];
 
     // Get the list types that are needed.
     if (list.length > 0) {
@@ -46,6 +47,9 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
           case 'doctype':
             types.push({ ...item });
             break;
+          case 'projectPhase':
+            projectPhases.push({ ...item });
+            break;
           default:
             break;
         }
@@ -53,7 +57,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     }
 
     // Validate the filter parameters being sent to the API using the list values.
-    this.setFilterFromParams(route.params, milestones, authors, types);
+    this.setFilterFromParams(route.params, milestones, authors, types, projectPhases);
 
     const categorizedObs = this.searchService.getSearchResults(
       keywords,
@@ -124,10 +128,11 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     }
   }
 
-  setFilterFromParams(params, milestones: any[], authors: any[], types: any[]) {
+  setFilterFromParams(params, milestones: any[], authors: any[], types: any[], projectPhases: any[]) {
     this.paramsToCollectionFilter(params, 'milestone', milestones, '_id');
     this.paramsToCollectionFilter(params, 'documentAuthorType', authors, '_id');
     this.paramsToCollectionFilter(params, 'type', types, '_id');
+    this.paramsToCollectionFilter(params, 'projectPhase', projectPhases, '_id');
 
     this.paramsToDateFilter(params, 'datePostedStart');
     this.paramsToDateFilter(params, 'datePostedEnd');
