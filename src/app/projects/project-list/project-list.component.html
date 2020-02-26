@@ -282,6 +282,38 @@
                                                         </ng-select>
                                                     </div>
                                                 </div>
+                                                <div class="row">
+                                                  <div class="col-md-12">
+                                                      <hr />
+                                                  </div>
+                                              </div>
+                                              <div class="row">
+                                                  <b>Project Phase</b>
+                                              </div>
+                                              <div class="row">
+                                                  <div class="form-group">
+                                                      <ng-select
+                                                          id="projectPhase"
+                                                          name="projectPhase"
+                                                          multiple="true"
+                                                          groupBy="legislation"
+                                                          bindLabel="name"
+                                                          placeholder="Type Project Phase"
+                                                          [items]="projectPhases"
+                                                          [closeOnSelect]="false"
+                                                          [markFirst]="false"
+                                                          [(ngModel)]="filterForUI.projectPhase"
+                                                      >
+                                                          <ng-template ng-label-tmp let-item="item">
+                                                              <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)" aria-hidden="true">×</span>
+                                                              <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                                          </ng-template>
+                                                          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                              {{item.legislation}} Act Terms
+                                                          </ng-template>
+                                                      </ng-select>
+                                                  </div>
+                                              </div>
                                             </div>
                                         </div>
                                     </div>

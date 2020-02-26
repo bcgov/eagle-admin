@@ -38,7 +38,7 @@ class ProjectFilterObject {
     public region: Array<string> = [],
     public CEAAInvolvement: Array<string> = [],
     public vc: Array<object> = [],
-    public phase: object = {},
+    public projectPhase: object = {},
   ) {}
 }
 
@@ -55,7 +55,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   public eacDecisions: Array<object> = [];
   public commentPeriods: Array<object> = [];
   public projectTypes: Array<object> = [];
-  public phase: Array<object> = [];
+  public projectPhases: Array<object> = [];
 
   public loading = true;
 
@@ -283,6 +283,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
     this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
     this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
+    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -334,6 +335,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.collectionFilterToParams(params, 'eacDecision', '_id');
     this.collectionFilterToParams(params, 'pcp', 'code');
     this.collectionFilterToParams(params, 'type', 'name');
+    this.collectionFilterToParams(params, 'projectPhase', '_id');
 
     this.dateFilterToParams(params, 'decisionDateStart');
     this.dateFilterToParams(params, 'decisionDateEnd');
@@ -404,6 +406,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.updateCount('eacDecision');
     this.updateCount('pcp');
     this.updateCount('more');
+    this.updateCount('projectPhase');
   }
 
   setRowData() {
@@ -448,6 +451,14 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       this.tableParams.sortBy
     );
 
+    // if we're searching for projects, replace projectPhase with currentPhaseName
+    // The code is called projectPhase, but the db column on projects is currentPhaseName
+    // so the rename is required to pass in the correct query
+    if (this.filterForAPI.hasOwnProperty('projectPhase')) {
+      this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
+      delete this.filterForAPI['projectPhase'];
+    }
+
     this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -463,6 +474,13 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       )
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
+        // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
+        // the change so the UI can function as normal
+        if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
+          this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
+          delete this.filterForAPI['currentPhaseName'];
+        }
+
         if (res[0].data) {
           this.tableParams.totalListItems =
             res[0].data.meta[0].searchResultsTotal;
@@ -517,8 +535,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
           case 'ceaaInvolvements':
             this.ceaaInvolvements.push({ ...item });
             break;
-          case 'currentPhaseName':
-            this.phase.push({ ...item});
+          case 'projectPhase':
+            this.projectPhases.push({ ...item});
             break;
           default:
             break;
@@ -529,7 +547,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     // Sorts by legislation first and then listOrder for each legislation group.
     this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
     this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-    this.phase = _.sortBy(this.phase, ['legislation', 'listOrder']);
+    this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
 
   }
 
