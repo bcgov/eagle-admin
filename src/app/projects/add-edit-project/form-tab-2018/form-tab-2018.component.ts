@@ -340,7 +340,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'proponent': new FormControl(formData.proponent),
       'build': new FormControl(formData.build),
       'type': new FormControl(formData.type),
-      'currentPhaseName': new FormControl(formData.currentPhaseName._id),
+      'currentPhaseName': new FormControl( formData.currentPhaseName ? formData.currentPhaseName._id : ''),
       'sector': new FormControl(formData.sector),
       'description': new FormControl(formData.description),
       'location': new FormControl(formData.location),
