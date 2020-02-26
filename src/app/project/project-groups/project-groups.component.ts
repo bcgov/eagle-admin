@@ -312,7 +312,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     } else {
       this.tableParams.sortBy = '+' + column;
     }
-    // this.onSubmit(this.tableParams.currentPage);
+    this.onSubmit(this.tableParams.currentPage);
   }
 
   // Called via storage service in shared module.

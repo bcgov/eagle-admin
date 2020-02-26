@@ -67,6 +67,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
   public showAdvancedSearch = true;
 
+  public currentTab = Constants.documentTypes.CATEGORIZED;
+
   public showFilters: object = {
     milestone: false,
     date: false,
@@ -296,14 +298,32 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         break;
       case 'selectAll':
         let someSelected = false;
-        this.categorizedDocumentTableData.data.map(item => {
-          if (item.checkbox === true) {
-            someSelected = true;
-          }
-        });
-        this.categorizedDocumentTableData.data.map(item => {
-          item.checkbox = !someSelected;
-        });
+
+        if (this.categorizedDocumentTableData) {
+          this.categorizedDocumentTableData.data.map(item => {
+            if (item.checkbox === true) {
+              someSelected = true;
+            }
+          });
+          this.categorizedDocumentTableData.data.map(item => {
+            item.checkbox = !someSelected;
+          });
+        }
+
+        if (this.uncategorizedDocumentTableData) {
+          this.uncategorizedDocumentTableData.data.map(item => {
+            if (item.checkbox === true) {
+              someSelected = true;
+            }
+          });
+          this.uncategorizedDocumentTableData.data.map(item => {
+            item.checkbox = !someSelected;
+          });
+
+          this.selectedCount.total = someSelected
+            ? 0
+            : this.uncategorizedDocumentTableData.data.length;
+        }
 
         this.selectedCount.total = someSelected
           ? 0
@@ -354,7 +374,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this.deleteDocument();
         break;
       case 'download':
-        if (this.categorizedDocumentTableData) {
+        if (this.categorizedDocumentTableData && this.currentTab === Constants.documentTypes.CATEGORIZED) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               promises.push(
@@ -366,7 +386,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        if (this.uncategorizedDocumentTableData) {
+        if (this.uncategorizedDocumentTableData && this.currentTab === Constants.documentTypes.UNCATEGORIZED) {
           this.uncategorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               promises.push(
@@ -1074,6 +1094,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   public onTabChange(_event) {
+    this.currentTab = this.currentTab === Constants.documentTypes.CATEGORIZED ? Constants.documentTypes.UNCATEGORIZED : Constants.documentTypes.CATEGORIZED;
+
     if (this.uncategorizedDocumentTableData) {
       this.uncategorizedDocumentTableData.extraData = this.activeLegislationYear;
     }

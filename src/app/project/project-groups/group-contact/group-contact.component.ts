@@ -140,6 +140,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     } else {
       this.tableParams.sortBy = '+' + column;
     }
+
     this.getPaginatedContacts(this.tableParams.currentPage);
   }
 
@@ -394,11 +395,22 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     window.scrollTo(0, 0);
     this.loading = true;
 
+    // refresh the page
+
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
     this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, null || '');
-    this.setRowData();
-    this.loading = false;
-    this._changeDetectionRef.detectChanges();
+
+    this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe((res: any) => {
+      // Incoming users
+      this.tableParams.totalListItems = res.length;
+      this.users = res;
+
+      this.setRowData();
+      this.loading = false;
+      this._changeDetectionRef.detectChanges();
+    });
   }
 
   async saveName() {
