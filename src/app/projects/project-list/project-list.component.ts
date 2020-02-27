@@ -48,6 +48,7 @@ class ProjectFilterObject {
   styleUrls: ['./project-list.component.scss']
 })
 export class ProjectListComponent implements OnInit, OnDestroy {
+  public readonly constants = Constants;
   public projects: Array<Project> = [];
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];

@@ -54,6 +54,7 @@ class SearchFilterObject {
 })
 
 export class SearchComponent implements OnInit, OnDestroy, DoCheck {
+  public readonly constants = Constants;
   public results: Array<any> = [];
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];

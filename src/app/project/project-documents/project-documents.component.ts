@@ -40,7 +40,7 @@ class DocumentFilterObject {
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   // Must do this to expose the constants to the template,
-  private readonly constants = Constants;
+  public readonly constants = Constants;
 
   private activeLegislationYear: number;
 
