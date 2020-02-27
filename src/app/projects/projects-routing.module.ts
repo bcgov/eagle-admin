@@ -9,6 +9,7 @@ import { LinkOrganizationResolver } from 'app/shared/components/link-organizatio
 import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
 import { ContactsResolver } from 'app/contacts/contacts-resolver.service';
 import { ProjectsRoutes } from './projects-routes';
+import { AuthGuard } from '../services/auth-guard.service';
 const routes: Routes = [
   {
     path: 'projects/add/:formTab/link-org',
@@ -32,6 +33,7 @@ const routes: Routes = [
   {
     path: 'projects',
     component: ProjectListComponent,
+    canActivate: [AuthGuard],
     resolve: {
       projects: ProjectListResolver
     }
@@ -47,7 +49,8 @@ const routes: Routes = [
   ],
   providers: [
     ProjectListResolver,
-    LinkOrganizationResolver
+    LinkOrganizationResolver,
+    AuthGuard
   ]
 })
 

@@ -165,8 +165,10 @@ export class KeycloakService {
 
   getUserRoles() {
     const jwt = new JwtUtil().decodeToken(this.keycloakAuth.token);
-    if (jwt) {
+    if (jwt && jwt.realm_access && jwt.realm_access.roles) {
       return jwt.realm_access.roles;
+    } else {
+      return null;
     }
   }
 

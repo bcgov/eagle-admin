@@ -11,7 +11,7 @@ String getUrlFromRoute(String routeName, String projectNameSpace = '') {
   }
 
   def url = sh (
-    script: "oc get routes ${nameSpaceFlag} -o wide --no-headers | awk \'/${routeName}/{ print match(\$0,/edge/) ?  \"https://\"\$2 : \"http://\"\$2 }\'",
+    script: "oc get routes ${nameSpaceFlag} -o wide --no-headers ${routeName} | awk \'/${routeName}/{ print match(\$0,/edge/) ?  \"https://\"\$2 : \"http://\"\$2 }\'",
     returnStdout: true
   ).trim()
 

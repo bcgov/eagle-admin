@@ -62,7 +62,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       });
 
     const roles = this.keycloakService.getUserRoles();
-    if (roles.includes('inspector')) {
+    if (roles !== null && roles.includes('inspector')) {
       this.isInspectorRole = true;
     }
 

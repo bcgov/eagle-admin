@@ -79,8 +79,6 @@ export class ActivityComponent implements OnInit, OnDestroy {
     this.route.params
       .takeUntil(this.ngUnsubscribe)
       .subscribe(params => {
-        // this.filter.dateAddedStart = params.dateAddedStart == null || params.dateAddedStart === '' ? null : this.utils.convertJSDateToNGBDate(new Date(params.dateAddedStart));
-        // this.filter.dateAddedEnd = params.dateAddedEnd == null || params.dateAddedEnd === '' ? null : this.utils.convertJSDateToNGBDate(new Date(params.dateAddedEnd));
         if (params.type != null) {
           this.typeFilters = params.type.split(',');
           if (this.typeFilters.includes('publicCommentPeriod')) { this.filterPublicCommentPeriod = true; }
