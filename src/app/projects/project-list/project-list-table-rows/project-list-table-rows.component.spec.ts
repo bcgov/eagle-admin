@@ -1,6 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { NgxPaginationModule } from 'ngx-pagination';
 import { Router } from '@angular/router';
 
 import { AjaxDefaultData } from 'app/shared/utils/mock-data';
@@ -40,13 +39,10 @@ describe('ProjectListTableRowsComponent', () => {
       declarations: [
         ProjectListTableRowsComponent
       ],
-      imports: [
-        NgxPaginationModule,
-      ],
       providers: [
         { provide: Router, useValue: routerSpy }
       ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      schemas: [NO_ERRORS_SCHEMA]
     })
       .compileComponents();
   }));
