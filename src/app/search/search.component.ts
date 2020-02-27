@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, SimpleChanges, OnChanges, ViewEncapsulation } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -50,7 +50,8 @@ class SearchFilterObject {
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 
 export class SearchComponent implements OnInit, OnDestroy, DoCheck {
@@ -109,10 +110,12 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public hadFilter = false;
 
   public count = 0; // for template
-  public currentPage: 1;
-  public pageSize: 10;
+  public currentPage = 1;
+  public pageSize = 10;
 
   private togglingOpen = '';
+
+  public pageSizeArray: number[];
 
   // These values should be moved into Lists instead of being hard-coded all over the place
 
@@ -225,7 +228,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.searching = true;
         this.count = 0;
         this.currentPage = params.currentPage ? params.currentPage : 1;
-        this.pageSize = params.pageSize ? params.pageSize : 25;
+        this.pageSize = params.pageSize ? parseInt(params.pageSize, 10) : 25;
 
         // remove doc and project types
         // The UI filters are remapping document and project type to the single 'Type' value
@@ -284,6 +287,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.searching = false;
         this.ranSearch = true;
         this._changeDetectionRef.detectChanges();
+        const pageSizeTemp = [10, 25, 50, 100, this.count];
+        this.pageSizeArray = pageSizeTemp.filter(function(el: number) { return el >= 10; });
+        this.pageSizeArray.sort(function(a: number, b: number) { return a - b; });
       }, error => {
         console.log('error =', error);
 
@@ -323,6 +329,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     // Go to top of page after clicking to a different page.
     window.scrollTo(0, 0);
     this.currentPage = pageNumber;
+    this.onSubmit();
+  }
+
+  updatePageSize(pageSize) {
+    window.scrollTo(0, 0);
+    this.currentPage = 1;
+    this.pageSize = parseInt(pageSize, 10);
     this.onSubmit();
   }
 

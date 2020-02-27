@@ -1,4 +1,4 @@
-<tr *ngFor="let entry of entries | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+<tr *ngFor="let entry of entries"
     class="clickable-row">
     <td (click)="togglePin(entry)" data-label="Pin" scope="row" class="col-1 pin">
       <i *ngIf="entry.pinned === true" class="material-icons" aria-hidden="true">star</i>

@@ -555,7 +555,7 @@
     <div *ngIf="count > 0">
       <!-- NOT ALL -->
       <div *ngIf="terms.dataset === 'Document'">
-        <div class="app-details" *ngFor="let result of results | paginate: { id: 'table-template-pagination', itemsPerPage: pageSize, currentPage: currentPage, totalItems: count }">
+        <div class="app-details" *ngFor="let result of results">
           <div class="card">
             <header class="card-header">
               <span class="project-name">
@@ -599,7 +599,7 @@
         </div>
       </div>
       <div *ngIf="terms.dataset === 'Project'">
-        <div class="app-details" *ngFor="let result of results | paginate: { id: 'table-template-pagination', itemsPerPage: pageSize, currentPage: currentPage, totalItems: count }">
+        <div class="app-details" *ngFor="let result of results">
           <div class="card">
             <header class="card-header">
               <span class="project-name">
@@ -619,7 +619,7 @@
         </div>
       </div>
       <div *ngIf="terms.dataset === 'Vc'">
-        <div class="app-details" *ngFor="let result of results | paginate: { id: 'table-template-pagination', itemsPerPage: pageSize, currentPage: currentPage, totalItems: count }">
+        <div class="app-details" *ngFor="let result of results">
           <div class="card">
             <header class="card-header">
               <span class="project-name">
@@ -639,12 +639,20 @@
     </div>
 
     <div *ngIf="ranSearch && !searching && count != 0" class="page-controls text-center pt-3">
-      <pagination-controls
-        (pageChange)="updatePageNumber($event)"
-        id="table-template-pagination"
-        autoHide="true">
-      </pagination-controls>
+      <nz-pagination
+        *ngIf="count > 10"
+        [nzPageIndex]="currentPage"
+        (nzPageIndexChange)="updatePageNumber($event)"
+        (nzPageSizeChange)="updatePageSize($event)"
+        [nzShowSizeChanger]="true"
+        [nzPageSize]="pageSize"
+        [nzTotal]="count"
+        [nzPageSizeOptions]="pageSizeArray"
+        [nzShowTotal]="totalTemplate">
+      </nz-pagination>
+      <ng-template #totalTemplate let-total>{{total}} result<span *ngIf="total != 1">s</span> found
+        <button nz-button nzType="primary" class="show_all_btn" (click)="updatePageSize(count)">Show All</button>
+      </ng-template>
     </div>
-
   </div>
 </div>
