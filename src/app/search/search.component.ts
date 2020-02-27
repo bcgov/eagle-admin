@@ -40,7 +40,9 @@ class SearchFilterObject {
     public datePostedStart: object = {},
     public datePostedEnd: object = {},
     public docType: Array<string> = [],
-    public documentAuthorType: Array<string> = []
+    public documentAuthorType: Array<string> = [],
+    // both
+    public projectPhase: Array<string> = []
   ) { }
 }
 
@@ -64,7 +66,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public milestones: any[] = [];
   public authors: any[] = [];
   public docTypes: any[] = [];
-
+  public projectPhases: any[] = [];
   public loading = true;
 
   public filterForURL: object = {}; // Not used on this page yet
@@ -81,7 +83,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     milestone: false,
     date: false,
     documentAuthorType: false,
-    docType: false
+    docType: false,
+    projectPhase: false
   };
 
   public numFilters: object = {
@@ -92,7 +95,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     milestone: 0,
     date: 0,
     documentAuthorType: 0,
-    docType: 0
+    docType: 0,
+    projectPhase: 0
   };
 
   public terms = new SearchTerms();
@@ -161,6 +165,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               case 'ceaaInvolvements':
                 this.ceaaInvolvements.push({ ...item });
                 break;
+              case 'projectPhase':
+                this.projectPhases.push({ ...item });
+                break;
               default:
                 break;
             }
@@ -175,6 +182,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         // Sort by legislation.
         this.milestones = _.sortBy(this.milestones, ['legislation']);
         this.authors = _.sortBy(this.authors, ['legislation']);
+        this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
         this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
         this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
 
@@ -231,6 +239,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         delete this.filterForAPI['docType'];
         delete this.filterForAPI['projectType'];
 
+        // if we're searching for projects, replace projectPhase with currentPhaseName
+        // The code is called projectPhase, but the db column on projects is currentPhaseName
+        // so the rename is required to pass in the correct query
+        if (this.filterForAPI.hasOwnProperty('projectPhase') && this.terms.dataset === 'Project') {
+          this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
+          delete this.filterForAPI['projectPhase'];
+        }
+
         return this.searchService.getSearchResults(
           this.terms.keywords,
           this.terms.dataset,
@@ -246,6 +262,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       })
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
+        // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
+        // the change so the UI can function as normal
+        if (this.filterForAPI.hasOwnProperty('currentPhaseName') && this.terms.dataset === 'Project') {
+          this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
+          delete this.filterForAPI['currentPhaseName'];
+        }
+
         if (res && res[0].data.meta.length > 0) {
           this.count = res[0].data.meta[0].searchResultsTotal;
           let items = res[0].data.searchResults;
@@ -400,6 +423,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
       this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
       this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -408,6 +432,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
       this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
       this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
@@ -453,6 +478,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.collectionFilterToParams(params, 'proponent', '_id');
       this.collectionFilterToParams(params, 'vc', '_id');
       this.collectionFilterToParams(params, 'projectType', 'name');
+      this.collectionFilterToParams(params, 'projectPhase', '_id');
 
       this.dateFilterToParams(params, 'decisionDateStart');
       this.dateFilterToParams(params, 'decisionDateEnd');
@@ -460,6 +486,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.collectionFilterToParams(params, 'milestone', '_id');
       this.collectionFilterToParams(params, 'documentAuthorType', '_id');
       this.collectionFilterToParams(params, 'docType', '_id');
+      this.collectionFilterToParams(params, 'projectPhase', '_id');
 
       this.dateFilterToParams(params, 'datePostedStart');
       this.dateFilterToParams(params, 'datePostedEnd');
@@ -544,6 +571,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.updateCount('date');
     this.updateCount('documentAuthorType');
     this.updateCount('docType');
+    this.updateCount('projectPhase');
   }
 
   // reload page with current search terms

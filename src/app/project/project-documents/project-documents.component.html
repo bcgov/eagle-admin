@@ -53,6 +53,13 @@
                             Document Type<span
                                 *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
                         </button>
+                        <button type="button" (click)="toggleFilter('projectPhase');" [ngClass]="{'btn': true, 'type-btn': true,
+                'btn-dark': showFilters.projectPhase,
+                'btn-secondary': !showFilters.projectPhase && numFilters.projectPhase > 0,
+                'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
+                            Project Phase<span
+                                *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
+                        </button>
                         <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
                     </div>
                     <div
@@ -209,6 +216,42 @@
                         </div>
                     </div>
                 </div>
+                <div *ngIf="showAdvancedSearch && showFilters.projectPhase" class="projectPhase-filters project-filter row">
+                  <div class="col-md-12 filter-border">
+                      <div class="row sub-filter">
+                          <div class="col-md-12">
+                              <div class="row">
+                                  <b>Phase</b>
+                              </div>
+                              <div class="row">
+                                  <div class="form-group">
+                                      <ng-select
+                                          id="projectPhase"
+                                          name="projectPhase"
+                                          multiple="true"
+                                          bindLabel="name"
+                                          groupBy="legislation"
+                                          placeholder="Type Project Phase"
+                                          [items]="projectPhases"
+                                          [markFirst]="false"
+                                          [closeOnSelect]="false"
+                                          [(ngModel)]="filterForUI.projectPhase"
+                                          [compareWith]="filterCompareWith"
+                                      >
+                                          <ng-template ng-label-tmp let-item="item">
+                                              <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)" aria-hidden="true">×</span>
+                                              <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                          </ng-template>
+                                          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                              {{item.legislation}} Act Terms
+                                          </ng-template>
+                                      </ng-select>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
                 <button *ngIf="showAdvancedSearch && isShowingFilter()" class="btn btn-primary search-button"
                     type="submit">
                     <span>Search</span>
@@ -251,7 +294,6 @@
                     </a>
                 </div>
             </div>
-
             <div class="document-tabs mt-3">
                 <ngb-tabset (tabChange)="onTabChange($event)">
                     <ngb-tab

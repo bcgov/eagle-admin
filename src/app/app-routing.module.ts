@@ -36,6 +36,8 @@ import { NotificationProjectComponent } from './notification-project/notificatio
 import { NotificationProjectResolver } from './notification-project/notification-project-resolver.service';
 import { NotificationProjectDocumentsResolver } from './notification-project/notification-project-documents-resolver.service';
 
+import { AuthGuard } from './services/auth-guard.service';
+
 const routes: Routes = [
   {
     path: 'login',
@@ -43,11 +45,13 @@ const routes: Routes = [
   },
   {
     path: 'administration',
-    component: AdministrationComponent
+    component: AdministrationComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'o/:orgId/edit',
     component: AddEditOrganizationComponent,
+    canActivate: [AuthGuard],
     resolve: {
       organization: EditOrganizationResolver
     }
@@ -55,6 +59,7 @@ const routes: Routes = [
   {
     path: 'o/:orgId/edit/link-org',
     component: LinkOrganizationComponent,
+    canActivate: [AuthGuard],
     resolve: {
       organizations: LinkOrganizationResolver
     }
@@ -62,17 +67,20 @@ const routes: Routes = [
   {
     path: 'orgs',
     component: OrganizationsComponent,
+    canActivate: [AuthGuard],
     resolve: {
       orgs: OrganizationsResolver
     }
   },
   {
     path: 'orgs/add',
-    component: AddEditOrganizationComponent
+    component: AddEditOrganizationComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'orgs/add/link-org',
     component: LinkOrganizationComponent,
+    canActivate: [AuthGuard],
     resolve: {
       organizations: LinkOrganizationResolver
     }
@@ -80,6 +88,7 @@ const routes: Routes = [
   {
     path: 'administration/topics',
     component: TopicsComponent,
+    canActivate: [AuthGuard],
     resolve: {
       topics: TopicsResolver
     }
@@ -90,19 +99,23 @@ const routes: Routes = [
   },
   {
     path: 'search',
-    component: SearchComponent
+    component: SearchComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'map',
-    component: MapComponent
+    component: MapComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'metrics',
-    component: MetricsComponent
+    component: MetricsComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'notification-projects',
     component: NotificationProjectsComponent,
+    canActivate: [AuthGuard],
     resolve: {
       notificationProjects: NotificationProjectsResolver
     }
@@ -122,10 +135,12 @@ const routes: Routes = [
       {
         path: 'notification-project-details',
         component: NotificationProjectComponent,
+        canActivate: [AuthGuard],
       },
       {
         path: 'edit',
         component: AddEditNotificationProjectComponent,
+        canActivate: [AuthGuard],
       }
     ],
     runGuardsAndResolvers: 'always',
@@ -133,10 +148,12 @@ const routes: Routes = [
   {
     path: 'notification-projects/add',
     component: AddEditNotificationProjectComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'c/:contactId/edit/link-org',
     component: LinkOrganizationComponent,
+    canActivate: [AuthGuard],
     resolve: {
       organizations: LinkOrganizationResolver
     }
@@ -144,6 +161,7 @@ const routes: Routes = [
   {
     path: 'c/:contactId/edit',
     component: AddEditContactComponent,
+    canActivate: [AuthGuard],
     resolve: {
       contact: EditContactResolver
     }
@@ -151,6 +169,7 @@ const routes: Routes = [
   {
     path: 'contacts/add/link-org',
     component: LinkOrganizationComponent,
+    canActivate: [AuthGuard],
     resolve: {
       organizations: LinkOrganizationResolver
     }
@@ -158,10 +177,12 @@ const routes: Routes = [
   {
     path: 'contacts/add',
     component: AddEditContactComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'contacts',
     component: ContactsComponent,
+    canActivate: [AuthGuard],
     resolve: {
       users: ContactsResolver
     }
@@ -169,6 +190,7 @@ const routes: Routes = [
   {
     path: 'activity',
     component: ActivityComponent,
+    canActivate: [AuthGuard],
     resolve: {
       activities: ActivityComponentResolver
     },
@@ -176,22 +198,26 @@ const routes: Routes = [
   {
     path: 'activity/:activityId/edit',
     component: AddEditActivityComponent,
+    canActivate: [AuthGuard],
     resolve: {
       activity: ActivityComponentResolver
     }
   },
   {
     path: 'activity/add',
-    component: AddEditActivityComponent
+    component: AddEditActivityComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'search-help',
-    component: SearchHelpComponent
+    component: SearchHelpComponent,
+    canActivate: [AuthGuard],
   },
   {
     // default route
     path: '',
-    component: SearchComponent
+    component: SearchComponent,
+    canActivate: [AuthGuard],
   },
   {
     // wildcard route
@@ -222,7 +248,8 @@ const routes: Routes = [
     ProjectContactsGroupResolver,
     ProjectGroupResolver,
     TopicsResolver,
-    NotificationProjectDocumentsResolver
+    NotificationProjectDocumentsResolver,
+    AuthGuard,
   ]
 })
 

@@ -18,6 +18,7 @@ export class ProjectListResolver implements Resolve<Object> {
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
+  public projectPhases: Array<object> = [];
 
   public filterForURL: object = {};
   public filterForAPI: object = {};
@@ -112,6 +113,14 @@ export class ProjectListResolver implements Resolve<Object> {
           this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
         }
 
+        // if we're searching for projects, replace projectPhase with currentPhaseName
+        // The code is called projectPhase, but the db column on projects is currentPhaseName
+        // so the rename is required to pass in the correct query
+        if (route.params.hasOwnProperty('projectPhase')) {
+          this.filterForAPI['currentPhaseName'] = route.params['projectPhase'];
+          delete this.filterForAPI['projectPhase'];
+        }
+
         return this.searchService.getSearchResults(
           tableParams.keywords,
           'Project',
@@ -184,6 +193,7 @@ export class ProjectListResolver implements Resolve<Object> {
     this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'code');
     this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
     this.paramsToCollectionFilters(params, 'vc', null, '_id');
+    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
