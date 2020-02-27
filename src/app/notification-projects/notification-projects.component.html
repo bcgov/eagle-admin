@@ -12,7 +12,7 @@
     <div class="spinner-container" *ngIf="loading">
         <div class="spinner-new rotating"></div>
     </div>
-    <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit(1)">
+    <form #f="ngForm" class="search-form ui form mb-3" (ngSubmit)="onSubmit(1)">
         <div class="input-group main-search-field mb-2">
             <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
                 id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
@@ -21,51 +21,6 @@
                 <button class="btn btn-primary" type="submit" id="search">
                     <span>Search</span>
                 </button>
-            </div>
-        </div>
-        <div>
-            <div class="row align-items-end">
-                <div class="col justify-content-start results ml-1 mb-1">
-                    <p class="justify-content-start align-text-bottom" align="left"
-                        *ngIf="!loading && tableParams.totalListItems === 0">
-                        No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
-                    </p>
-                    <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
-                        *ngIf="!loading && tableParams.totalListItems > 0">
-                        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s
-                            found</span>
-                    </div>
-                </div>
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <p class="text-right m-2"><b>Show Items Per Page:</b></p>
-                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
-                            aria-label="Toolbar with button groups">
-                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=25; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 25"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=50; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 50"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=100; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 100"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                                    All</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </form>
@@ -77,28 +32,5 @@
     </div>
     <div *ngIf="tableParams.totalListItems == 0">
         There are no notification projects.
-    </div>
-    <div class="col mb-2">
-        <div *ngIf="!loading && this.tableParams.pageSize >= 50">
-            <p class="text-right m-2"><b>Show Items Per Page:</b></p>
-            <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
-                <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                        (click)="tableParams.pageSize=25; onSubmit();" aria-pressed="tableParams.pageSize === 25"
-                        [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                    <a href="javascript:void(0);" role="button" class="btn btn-primar mr-1"
-                        (click)="tableParams.pageSize=50; onSubmit();" aria-pressed="tableParams.pageSize === 50"
-                        [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                        (click)="tableParams.pageSize=100; onSubmit();" aria-pressed="tableParams.pageSize === 100"
-                        [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                    <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                        (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
-                        aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                        [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                        All</a>
-                </div>
-            </div>
-        </div>
     </div>
 </main>

@@ -1,5 +1,5 @@
 <tr
-  *ngFor="let comment of comments | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let comment of comments"
   class="clickable-row">
   <td (click)="goToItem(comment)" data-label="Id" scope="row" class="col-1">{{comment.commentId}}</td>
   <td (click)="goToItem(comment)" data-label="Author" scope="row" class="col-2">{{comment.author}}</td>

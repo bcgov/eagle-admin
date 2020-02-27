@@ -5,7 +5,6 @@ import { CookieService } from 'ngx-cookie-service';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule, APP_INITIALIZER, ApplicationRef } from '@angular/core';
-import { NgxPaginationModule } from 'ngx-pagination';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -134,7 +133,6 @@ export function kcFactory(keycloakService: KeycloakService) {
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters
     NgbModule.forRoot(),
-    NgxPaginationModule,
     BootstrapModalModule.forRoot({ container: document.body }),
     NgSelectModule
   ],

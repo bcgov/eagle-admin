@@ -1,4 +1,4 @@
-<tr *ngFor="let topic of topics | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+<tr *ngFor="let topic of topics"
     class="clickable-row">
     <td class="col-4" data-label="Name" scope="row">{{topic.name}}</td>
     <td class="col-2" data-label="Description" scope="row">{{topic.description}}</td>

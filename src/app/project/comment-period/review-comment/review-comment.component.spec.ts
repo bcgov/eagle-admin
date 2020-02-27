@@ -2,8 +2,9 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbDate, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxPaginationModule } from 'ngx-pagination';
 import { MatSnackBarModule } from '@angular/material';
+import { NgZorroAntdModule } from 'ng-zorro-antd';
+
 
 import { ReviewCommentComponent } from './review-comment.component';
 import { GetValuedComponentsComponent } from './get-valued-components/get-valued-components.component';
@@ -35,7 +36,7 @@ describe('ReviewCommentComponent', () => {
   ]);
 
   mockStorageService.state.currentProject = {
-    data: {_id: 12345}
+    data: { _id: 12345 }
   };
 
   const mockUtils = jasmine.createSpyObj('Utils', [
@@ -43,7 +44,7 @@ describe('ReviewCommentComponent', () => {
     'convertFormGroupNGBDateToJSDate'
   ]);
 
-  beforeEach( async (() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
         ReviewCommentComponent,
@@ -55,14 +56,14 @@ describe('ReviewCommentComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         NgbModule,
-        NgxPaginationModule,
-        MatSnackBarModule
+        MatSnackBarModule,
+        NgZorroAntdModule,
       ],
       providers: [
-        { provide: ApiService, useValue: mockApiService},
-        { provide: CommentService, useValue: mockCommentService},
-        { provide: StorageService, useValue: mockStorageService},
-        { provide: Utils, useValue: mockUtils}
+        { provide: ApiService, useValue: mockApiService },
+        { provide: CommentService, useValue: mockCommentService },
+        { provide: StorageService, useValue: mockStorageService },
+        { provide: Utils, useValue: mockUtils }
       ]
     })
       .compileComponents();
