@@ -288,47 +288,13 @@
                             class="material-icons">delete</i>Delete</button>
                     <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
                         [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
-                        <button class="btn btn-outline-secondary mr-1" type="button" id="button-d">
+                        <button class="btn btn-outline-secondary mr-1" type="button" id="button-upl">
                             <i class="material-icons">file_upload</i>Upload Document(s)
                         </button>
                     </a>
                 </div>
-                <div class="paging-content">
-                    <p class="title"><b>Show Items Per Page:</b></p>
-                    <div *ngIf="!loading">
-                        <!-- <b class="text-right m-2"><b>Show Items Per Page:</b></p> -->
-                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
-                            aria-label="Toolbar with button groups">
-                            <div class="btn-group-toggle" role="group" aria-label="First group">
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="onPageLimitClick(25)"
-                                    aria-pressed="tableParams.pageSize === 25"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="onPageLimitClick(50)"
-                                    aria-pressed="tableParams.pageSize === 50"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="onPageLimitClick(100);"
-                                    aria-pressed="tableParams.pageSize === 100"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary ml-1"
-                                    (click)="onPageLimitClick('all')"
-                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active':
-                                        this.tableParams.pageSize === this.tableParams.totalListItemsCategorized ||
-                                        this.tableParams.pageSize === this.tableParams.totalListItemsUncategorized
-                                     }">Show All</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
-
-            <div class="document-tabs">
+            <div class="document-tabs mt-3">
                 <ngb-tabset (tabChange)="onTabChange($event)">
                     <ngb-tab
                         id="constants.documentTypes.CATEGORIZED"

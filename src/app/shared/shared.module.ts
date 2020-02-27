@@ -11,7 +11,8 @@ import { ObjectFilterPipe } from 'app/shared/pipes/object-filter.pipe';
 import { VarDirective } from 'app/shared/utils/ng-var.directive';
 import { FileUploadComponent } from 'app/file-upload/file-upload.component';
 import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
-import { NgxPaginationModule } from 'ngx-pagination';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgZorroAntdModule, NZ_I18N, en_US } from 'ng-zorro-antd';
 
 import { TableDirective } from './components/table-template/table.directive';
 import { DropdownTemplateComponent } from './components/dropdown-template/dropdown-template.component';
@@ -37,7 +38,8 @@ import { ListResolver } from './resolvers/list-resolver.service';
     BrowserModule,
     MatSlideToggleModule,
     MatSnackBarModule,
-    NgxPaginationModule,
+    BrowserAnimationsModule,
+    NgZorroAntdModule,
     FormsModule,
     ReactiveFormsModule,
     MatMenuModule,
@@ -77,19 +79,20 @@ import { ListResolver } from './resolvers/list-resolver.service';
     MatSlideToggleModule,
     MatSnackBarModule,
     NewlinesPipe,
-    NgxPaginationModule,
     OrderByPipe,
     OrgNamePipe,
     PublishedPipe,
     TableTemplateComponent,
-    VarDirective
+    VarDirective,
+    NgZorroAntdModule
   ],
   providers: [
     TableTemplateUtils,
     TableDocumentTemplateUtils,
     NavigationStackUtils,
     Utils,
-    ListResolver
+    ListResolver,
+    { provide: NZ_I18N, useValue: en_US }
   ]
 })
 

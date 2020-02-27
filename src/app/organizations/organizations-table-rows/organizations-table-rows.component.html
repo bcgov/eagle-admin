@@ -1,4 +1,4 @@
-<tr *ngFor="let organization of organizations | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+<tr *ngFor="let organization of organizations"
     class="clickable-row">
     <td scope="row" data-label="Name" class="col-4">{{organization.name || '-'}}</td>
     <td scope="row" data-label="Organization" class="col-3">{{organization.companyType || '-' }}</td>

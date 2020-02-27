@@ -1,5 +1,5 @@
 <tr
-  *ngFor="let topic of topics | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let topic of topics"
   class="clickable-row" (click)="selectItem(topic)" >
   <td data-label="Select" scope="row" class="col-1">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='topic.checkbox'>

@@ -1,6 +1,6 @@
 <tr
   (click)="goToProject(project)"
-  *ngFor="let project of projects | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+  *ngFor="let project of projects">
   <td scope="row" data-label="Name" class="col-2">{{project.name || '-'}}</td>
   <!-- TODO: Get proponent name in here. -->
   <td scope="row" data-label="Proponent" class="col-2">{{project.proponent?.name || '-'}}</td>

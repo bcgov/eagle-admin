@@ -515,3 +515,21 @@ $cl-arrow-font-color: #fff;
   border-bottom-left-radius: 0.25rem;
   border-bottom-right-radius: 0.25rem;
 }
+.ant-pagination-item:focus, .ant-pagination-item:hover, .ant-btn-primary, .ant-select-dropdown-menu-item-active,
+.ant-pagination-item-active, .ant-select-dropdown-menu-item:hover {
+    background: #007bff !important;
+    color: #fff !important;
+}
+.ant-pagination-item-active a, .ant-pagination-item:focus a, .ant-pagination-item:hover a {
+    color: #fff !important;
+}
+.ant-pagination-item-container .ant-pagination-item-link-icon {
+    color: #007bff;
+}
+.ant-pagination-prev:hover .ant-pagination-item-link, .ant-pagination-next:hover .ant-pagination-item-link {
+    background: #007bff !important;
+    color: #fff !important;
+}
+.show_all_btn {
+    margin-left: 10px;
+}

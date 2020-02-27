@@ -11,12 +11,12 @@ export class TableDocumentTemplateUtils {
     private router: Router
   ) { }
 
-  public updateUrl(sortByCategorized, sortByUncategorized, currentPageCategorized, currentPageUncategorized, pageSize, filter = null, keywords = '') {
+  public updateUrl(sortByCategorized, sortByUncategorized, currentPageCategorized, currentPageUncategorized, pageSizeCategorized, pageSizeUncategorized, filter = null, keywords = '') {
     let currentUrl = this.router.url;
     currentUrl = (this.platformLocation as any).getBaseHrefFromDOM() + currentUrl.slice(1);
     currentUrl = currentUrl.split(';')[0];
 
-    currentUrl += `;currentPageCategorized=${currentPageCategorized};currentPageUncategorized=${currentPageUncategorized};pageSize=${pageSize}`;
+    currentUrl += `;currentPageCategorized=${currentPageCategorized};currentPageUncategorized=${currentPageUncategorized};pageSizeCategorized=${pageSizeCategorized};pageSizeUncategorized=${pageSizeUncategorized}`;
 
     if (keywords !== '') { currentUrl += `;keywords=${keywords}`; }
 
@@ -47,11 +47,15 @@ export class TableDocumentTemplateUtils {
   }
 
   public getParamsFromUrl(params, filter = null, defaultPageSize = null, filterFieldList = []) {
-    let pageSize = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
+    let pageSizeCategorized = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
+    let pageSizeUncategorized = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
     if (defaultPageSize !== null) {
-      pageSize = +defaultPageSize;
-    } else if (params.pageSize) {
-      pageSize = +params.pageSize;
+      pageSizeCategorized = +defaultPageSize;
+      pageSizeUncategorized = +defaultPageSize;
+    } else if (params.pageSizeCategorized) {
+      pageSizeCategorized = +params.pageSizeCategorized;
+    } else if (params.pageSizeUncategorized) {
+      pageSizeUncategorized = +params.pageSizeUncategorized;
     }
     let currentPageCategorized = params.currentPageCategorized ? +params.currentPageCategorized : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
     let currentPageUncategorized = params.currentPageUncategorized ? +params.currentPageUncategorized : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
@@ -68,10 +72,11 @@ export class TableDocumentTemplateUtils {
       }
     });
 
-    this.updateUrl(sortByCategorized, sortByUncategorized, currentPageCategorized, currentPageUncategorized, pageSize, filter, keywords);
+    this.updateUrl(sortByCategorized, sortByUncategorized, currentPageCategorized, currentPageUncategorized, pageSizeCategorized, pageSizeUncategorized, filter, keywords);
 
     return new TableDocumentParamsObject(
-      pageSize,
+      pageSizeCategorized,
+      pageSizeUncategorized,
       currentPageCategorized,
       currentPageUncategorized,
       0,

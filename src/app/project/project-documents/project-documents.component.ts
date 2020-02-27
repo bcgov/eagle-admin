@@ -593,9 +593,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
 
     if (numItems === 'max') {
-      params['pageSize'] = this.tableParams.pageSize = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
+      params['pageSizeCategorized'] = this.tableParams.totalListItemsCategorized;
+      params['pageSizeUncategorized'] =  this.tableParams.totalListItemsUncategorized;
     } else {
-      params['pageSize'] = this.tableParams.pageSize = numItems;
+      params['pageSizeCategorized'] = this.tableParams.pageSizeCategorized = numItems;
+      params['pageSizeUncategorized'] =  this.tableParams.pageSizeUncategorized = numItems;
     }
 
     this.router.navigate([
@@ -626,7 +628,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     params['keywords'] = this.utils.encodeParams(
       (this.tableParams.keywords = this.tableParams.keywords || '')
     );
-    params['pageSize'] = this.tableParams.pageSize;
+    params['pageSizeCategorized'] = this.tableParams.pageSizeCategorized;
+    params['pageSizeUncategorized'] =  this.tableParams.totalListItemsUncategorized;
 
     this.setParamsFromFilters(params);
 
@@ -661,7 +664,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       });
 
       const categorizedTableParams: TableParamsObject = new TableParamsObject(
-        this.tableParams.pageSize,
+        this.tableParams.pageSizeCategorized,
         this.tableParams.currentPageCategorized,
         this.tableParams.totalListItemsCategorized,
         this.tableParams.sortByCategorized,
@@ -698,7 +701,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       });
 
       const uncategorizedTableParams: TableParamsObject = new TableParamsObject(
-        this.tableParams.pageSize,
+        this.tableParams.pageSizeUncategorized,
         this.tableParams.currentPageUncategorized,
         this.tableParams.totalListItemsUncategorized,
         this.tableParams.sortByUncategorized,
@@ -951,6 +954,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     );
 
     if (docType === Constants.documentTypes.CATEGORIZED) {
+      this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData.paginationData.pageSize;
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -960,7 +964,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           { name: 'categorized', value: true }
         ],
         pageNumber,
-        this.tableParams.pageSize,
+        this.categorizedDocumentTableData.paginationData.pageSize,
         this.tableParams.sortByCategorized,
         { documentSource: 'PROJECT' },
         true,
@@ -976,7 +980,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.tableParams.sortByUncategorized,
           this.tableParams.currentPageCategorized,
           this.tableParams.currentPageUncategorized,
-          this.tableParams.pageSize,
+          this.categorizedDocumentTableData.paginationData.pageSize,
+          this.uncategorizedDocumentTableData.paginationData.pageSize,
           this.filterForURL,
           this.tableParams.keywords || ''
         );
@@ -986,6 +991,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
       });
     } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
+      this.tableParams.pageSizeUncategorized = this.uncategorizedDocumentTableData.paginationData.pageSize;
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -995,7 +1001,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           { name: 'categorized', value: false }
         ],
         pageNumber,
-        this.tableParams.pageSize,
+        this.uncategorizedDocumentTableData.paginationData.pageSize,
         this.tableParams.sortByUncategorized,
         { documentSource: 'PROJECT' },
         true,
@@ -1011,7 +1017,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.tableParams.sortByUncategorized,
           this.tableParams.currentPageCategorized,
           this.tableParams.currentPageUncategorized,
-          this.tableParams.pageSize,
+          this.categorizedDocumentTableData.paginationData.pageSize,
+          this.uncategorizedDocumentTableData.paginationData.pageSize,
           this.filterForURL,
           this.tableParams.keywords || ''
         );
@@ -1085,9 +1092,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
   public onPageLimitClick(pageLimit: number | string) {
     if (pageLimit === 'all') {
-      this.tableParams.pageSize = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
+      this.tableParams.pageSizeCategorized = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
     } else {
-      this.tableParams.pageSize = pageLimit as number;
+      this.tableParams.pageSizeUncategorized = pageLimit as number;
     }
 
     this.onSubmit();
