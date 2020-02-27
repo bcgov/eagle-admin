@@ -1,5 +1,5 @@
 <tr (click)="goToItem(item)"
-    *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+    *ngFor="let item of items"
     class="clickable-row">
     <td scope="row" data-label="Name" class="col-2">{{item.name || '-'}}</td>
     <td scope="row" data-label="Proponent" class="col-3">{{item.proponentName || '-'}}</td>

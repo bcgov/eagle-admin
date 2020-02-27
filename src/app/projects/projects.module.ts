@@ -2,7 +2,6 @@
 import { CommonModule } from '@angular/common';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule } from '@angular/core';
-import { NgxPaginationModule } from 'ngx-pagination';
 import { ProjectsRoutingModule } from './projects-routing.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +20,6 @@ import { ModificationsListTableRowsComponent } from './add-edit-project/modifica
     CommonModule,
     FormsModule,
     NgbModule.forRoot(),
-    NgxPaginationModule,
     ProjectsRoutingModule,
     SharedModule,
     ReactiveFormsModule,

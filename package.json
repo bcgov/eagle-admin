@@ -48,7 +48,7 @@
     "mygovbc-bootstrap-theme": "^0.4.1",
     "ng2-bootstrap-modal": "^1.0.1",
     "ngx-cookie-service": "^1.0.10",
-    "ngx-pagination": "^3.2.0",
+    "ng-zorro-antd": "1.8.1",
     "path": "^0.12.7",
     "rxjs": "^6.3.2",
     "rxjs-compat": "^6.3.2",
