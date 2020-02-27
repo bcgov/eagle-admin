@@ -4,7 +4,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxPaginationModule } from 'ngx-pagination';
 import { MatSnackBarModule } from '@angular/material';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
@@ -16,6 +15,7 @@ import { ProjectService } from 'app/services/project.service';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Observable, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+
 describe('FormTab2002', () => {
   let component: FormTab2002Component;
   let fixture: ComponentFixture<FormTab2002Component>;
@@ -48,7 +48,7 @@ describe('FormTab2002', () => {
   ]);
   const mockActivatedRoute = {
     parent: {
-      data: Observable.of({fullProject: AjaxData})
+      data: Observable.of({ fullProject: AjaxData })
     }
   };
   const mockNavigationStackUtils = jasmine.createSpyObj('NavigationStackUtils', [
@@ -70,19 +70,18 @@ describe('FormTab2002', () => {
         FormsModule,
         ReactiveFormsModule,
         NgbModule,
-        NgxPaginationModule,
       ],
       providers: [
-        { provide: ApiService, useValue: mockApiService},
-        { provide: ConfigService, useValue: mockConfigService},
-        { provide: StorageService, useValue: mockStorageService},
-        { provide: ProjectService, useValue: mockProjectService},
-        { provide: DialogService, useValue: mockDialogService},
-        { provide: ActivatedRoute, useValue: mockActivatedRoute},
-        { provide: NavigationStackUtils, useValue: mockNavigationStackUtils},
-        { provide: Utils, useValue: utils}
+        { provide: ApiService, useValue: mockApiService },
+        { provide: ConfigService, useValue: mockConfigService },
+        { provide: StorageService, useValue: mockStorageService },
+        { provide: ProjectService, useValue: mockProjectService },
+        { provide: DialogService, useValue: mockDialogService },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: NavigationStackUtils, useValue: mockNavigationStackUtils },
+        { provide: Utils, useValue: utils }
       ],
-      schemas: [ NO_ERRORS_SCHEMA ]
+      schemas: [NO_ERRORS_SCHEMA]
     })
       .compileComponents();
   }));
