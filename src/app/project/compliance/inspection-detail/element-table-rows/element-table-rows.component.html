@@ -1,13 +1,20 @@
-<tr
-  *ngFor="let item of items">
-  <td scope="row" class="col-3" data-label="Submission Title" (click)="goToItem(item)">
+<tr *ngFor="let item of items">
+  <td scope="row" class="col-1" data-label="Collapse Icon" (click)="openItem(item)">
+    <i class="material-icons" *ngIf="item.itemClicked">
+      remove_circle_outline
+    </i>
+    <i class="material-icons" *ngIf="!item.itemClicked">
+      add_circle_outline
+    </i>
+  </td>
+  <td scope="row" class="col-2" data-label="Submission Title" (click)="openItem(item)">
     {{item.title}}</td>
-  <td scope="row" class="col-4" data-label="Requirements" (click)="goToItem(item)">
+  <td scope="row" class="col-4" data-label="Requirements" (click)="openItem(item)">
     {{item.requirement}}</td>
-  <td scope="row" class="col-4" data-label="Description" (click)="goToItem(item)">
+  <td scope="row" class="col-4" data-label="Description" (click)="openItem(item)">
     {{item.description}}
   </td>
-  <td scope="row" class="col-1" data-label="Assets" (click)="goToItem(item)">
+  <td scope="row" class="col-1" data-label="Assets" (click)="openItem(item)">
     <i class="material-icons">
       attach_file
     </i>
@@ -15,3 +22,11 @@
     {{item.items.length}}
   </td>
 </tr>
+<!-- Here will be the table with the elements need to use -->
+<div class="spinner-container" *ngIf="loading">
+  <div class="spinner-new rotating"></div>
+</div>
+<app-table-template *ngIf="!loading && tableParams && tableParams.totalListItems != 0"   (checkboxChange)='checkChange($event)'
+  [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+  (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+</app-table-template>

@@ -28,9 +28,15 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   public tableData: TableObject;
   public tableColumns: any[] = [
     {
+      name: '',
+      value: 'icon',
+      width: 'col-1',
+      nosort: true
+    },
+    {
       name: 'Submission Title',
       value: 'title',
-      width: 'col-3'
+      width: 'col-2'
     },
     {
       name: 'Requirements',
@@ -68,7 +74,11 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
         if (this.compliance.label) {
           this.compliance.label = this.compliance.label.replace(new RegExp('\n', 'g'), '<br />');
         }
-        this.elements = this.compliance.elements;
+        // Adding itemClicked to the elements to track the icons
+        this.elements = this.compliance.elements.map(el => {
+          let newEl = {...el, itemClicked: false};
+          return newEl;
+        });
         this.tableParams.totalListItems = this.elements.length;
         this.tableParams.currentPage = 1;
         this.tableParams.pageSize = 100000;
