@@ -32,6 +32,14 @@
       <p id="displayName">{{document.displayName || '-'}}</p>
     </div>
     <div class="label-pair">
+      <h3 for="publicHitCount">Public Hits: </h3>
+      <p id="publicHitCount">{{document.publicHitCount || '-'}}</p>
+    </div>
+    <div class="label-pair">
+      <h3 for="secureHitCount">Secure Hits: </h3>
+      <p id="secureHitCount">{{document.secureHitCount || '-'}}</p>
+    </div>
+    <div class="label-pair">
       <p id="status publish-state">
         <i class="material-icons">
           {{publishText === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}

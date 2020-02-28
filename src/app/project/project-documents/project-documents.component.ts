@@ -97,7 +97,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-6'
+      width: 'col-4'
     },
     {
       name: 'Status',
@@ -107,7 +107,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-2'
+      width: 'col-1'
     },
     {
       name: 'Type',
@@ -117,7 +117,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-2'
+      width: 'col-1'
     },
     {
       name: 'Legislation',
@@ -127,7 +127,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Feature',
       value: 'isFeatured',
-      width: 'col-2'
+      width: 'col-1'
     }
   ];
 
@@ -659,7 +659,10 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           _id: document._id,
           project: document.project,
           read: document.read,
-          isFeatured: document.isFeatured
+          isFeatured: document.isFeatured,
+          sortOrder: document.sortOrder,
+          publicHitCount: document.publicHitCount,
+          secureHitCount: document.secureHitCount
         });
       });
 
