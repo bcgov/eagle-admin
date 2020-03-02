@@ -1,9 +1,14 @@
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+
 export interface BuildNature {
   build: string;
   nature: string;
 }
 
 export class Constants {
+  public static readonly minPickerDate: NgbDateStruct = { year: 1900, month: 1, day: 1 };
+  public static readonly maxPickerDate: NgbDateStruct = { year: (new Date().getFullYear() + 20), month: 1, day: 1 };
+
   public static readonly tableDefaults = {
     DEFAULT_CURRENT_PAGE: 1,
     DEFAULT_PAGE_SIZE: 10,

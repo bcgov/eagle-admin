@@ -185,7 +185,9 @@
                     <div class="input-group">
                       <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDateStart"
                         [(ngModel)]="filterForUI.decisionDateStart" ngbDatepicker
-                        #decisionDateStartPicker="ngbDatepicker">
+                        #decisionDateStartPicker="ngbDatepicker"
+                        [minDate]="constants.minPickerDate"
+                        [maxDate]="constants.maxPickerDate">
                       <div class="input-group-append">
                         <button class="btn btn-outline-secondary calendar" (click)="decisionDateStartPicker.toggle()" type="button">
                           <i class="material-icons">date_range</i>
@@ -197,7 +199,9 @@
                     <div class="input-group">
                       <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDateEnd"
                         [(ngModel)]="filterForUI.decisionDateEnd" ngbDatepicker
-                        #decisionDateEndPicker="ngbDatepicker">
+                        #decisionDateEndPicker="ngbDatepicker"
+                        [minDate]="constants.minPickerDate"
+                        [maxDate]="constants.maxPickerDate">
                       <div class="input-group-append">
                         <button class="btn btn-outline-secondary calendar" (click)="decisionDateEndPicker.toggle()" type="button">
                           <i class="material-icons">date_range</i>
@@ -401,7 +405,9 @@
                   <div class="input-group">
                     <input type="text" class="form-control" placeholder="yyyy-mm-dd" id="date_input" name="datePostedStart"
                       [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker
-                      #datePostedStartPicker="ngbDatepicker">
+                      #datePostedStartPicker="ngbDatepicker"
+                      [minDate]="constants.minPickerDate"
+                      [maxDate]="constants.maxPickerDate">
                     <div class="input-group-append">
                       <button class="btn btn-outline-secondary calendar" (click)="datePostedStartPicker.toggle()" type="button">
                         <i class="material-icons">date_range</i>
@@ -413,7 +419,9 @@
                   <div class="input-group">
                     <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePostedEnd"
                       [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker
-                      #datePostedEndPicker="ngbDatepicker">
+                      #datePostedEndPicker="ngbDatepicker"
+                      [minDate]="constants.minPickerDate"
+                      [maxDate]="constants.maxPickerDate">
                     <div class="input-group-append">
                       <button class="btn btn-outline-secondary calendar" (click)="datePostedEndPicker.toggle()" type="button">
                         <i class="material-icons">date_range</i>
