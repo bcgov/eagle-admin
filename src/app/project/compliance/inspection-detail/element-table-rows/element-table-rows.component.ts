@@ -25,6 +25,7 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
   public compliance: Compliance = null;
   public submission: any = null;
   public loading = false;
+  public showTable = true;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public itemClicked = false;
@@ -70,18 +71,9 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
 
   }
   openItem(item) {
-    // Need to open the item in the table.
     // Need to figure out the toggling of the icon which needs to toggle item clicked
     this.loading = true;
-    if (item.itemClicked) {
-      // Don't load any items, because the same item has been clicked
-      this.loading = false;
-      item.itemClicked = !item.itemClicked;
-      this.nukeTableData();
-      // this._changeDetectionRef.detectChanges();
-      return;
-    }
-    item.itemClicked = !item.itemClicked;
+    this.handleItemClicked(item);
     // Load elements here
     // This is to get the submission inspection element
     // Make sure to cache this
@@ -130,8 +122,30 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
         });
       });
   }
+  handleItemClicked(item) {
+    // If an item is clicked need to make sure every other item is unclicked.
+    const newItems = [];
+    this.items.forEach(i => {
+      if (i._id !== item._id) {
+        i.itemClicked = false;
+      }
+      newItems.push(i);
+    });
+    this.items = [...newItems];
+    if (item.itemClicked) {
+      // Don't load any items, because the same item has been clicked
+      this.loading = false;
+      item.itemClicked = !item.itemClicked;
+      this.nukeTableData();
+      return;
+    }
+    this.showTable = true;
+    item.itemClicked = !item.itemClicked;
+  }
   nukeTableData() {
     this.tableParams = new TableParamsObject();
+    this.showTable = false;
+    // This doesn't seem to do anything
   }
   setRowData() {
     if (this.assets && this.assets.length > 0) {
