@@ -264,30 +264,6 @@ def nodejsSonarqube () {
               // check if sonarqube passed
               sh("oc extract secret/sonarqube-status-urls --to=${env.WORKSPACE}/sonar-runner --confirm")
 
-            // run scan
-            sh "npm install typescript"
-            sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
-
-            if ( !firstScan ) {
-              // wiat for report to be updated
-              if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
-                echo "sonarqube report failed to complete, or timed out"
-
-                notifyRocketChat(
-                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
-                  ROCKET_DEPLOY_WEBHOOK
-                )
-
-                currentBuild.result = "FAILURE"
-                exit 1
-              }
-            } else {
-              sleep (30)
-            }
-
-            // check if sonarqube passed
-            sh("oc extract secret/sonarqube-status-urls --to=${env.WORKSPACE}/sonar-runner --confirm")
-
             SONARQUBE_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
             SONARQUBE_STATUS = sonarGetStatus (SONARQUBE_STATUS_JSON)
 
