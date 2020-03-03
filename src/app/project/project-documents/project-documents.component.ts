@@ -265,7 +265,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     });
   }
 
-  public selectAction(action, selectAll) {
+  public selectAction(action) {
     let promises = [];
 
     // select all documents
