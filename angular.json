@@ -32,6 +32,7 @@
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
               "node_modules/leaflet/dist/leaflet.css",
+              "src/assets/fonts/BCSans.css",
               "src/ant-design-custom.less"
             ],
             "scripts": [
