@@ -700,7 +700,10 @@ export class ApiService {
       'displayName',
       'internalURL',
       'internalMime',
-      'isFeatured'
+      'isFeatured',
+      'sortOrder',
+      'secureHitCount',
+      'publicHitCount'
     ];
     const queryString = `document?isDeleted=false&_project=${projId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -732,7 +735,10 @@ export class ApiService {
       'milestone',
       'description',
       'isPublished',
-      'isFeatured'
+      'isFeatured',
+      'sortOrder',
+      'secureHitCount',
+      'publicHitCount'
     ];
     const queryString = `document?docIds=${this.buildValues(ids)}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -764,7 +770,10 @@ export class ApiService {
       'milestone',
       'description',
       'isPublished',
-      'isFeatured'
+      'isFeatured',
+      'sortOrder',
+      'secureHitCount',
+      'publicHitCount'
     ];
     const queryString = `document/${id}?fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});

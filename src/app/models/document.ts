@@ -30,6 +30,9 @@ export class Document {
   isPublished = false; // depends on tags; see below
 
   isFeatured = false;
+  secureHitCount = 0;
+  publicHitCount = 0;
+  sortOrder = 0;
 
   read: Array<String> = [];
 
@@ -66,5 +69,8 @@ export class Document {
     this.read = obj && obj.read || null;
 
     this.isFeatured = obj && obj.isFeatured || null;
+    this.sortOrder = obj && obj.sortOrder || null;
+    this.publicHitCount = obj && obj.publicHitCount || null;
+    this.secureHitCount = obj && obj.secureHitCount || null;
   }
 }
