@@ -512,9 +512,9 @@ pipeline {
                 ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
                 ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
 
-                echo "Building eagle-admin projectNotificationFeature branch"
-                openshiftBuild bldCfg: 'eagle-admin-angular', showBuildLogs: 'true'
-                openshiftBuild bldCfg: 'eagle-admin-build', showBuildLogs: 'true'
+                echo "Building demo-eagle-admin projectNotificationFeature branch"
+                openshiftBuild bldCfg: 'demo-eagle-admin-angular', showBuildLogs: 'true'
+                openshiftBuild bldCfg: 'demo-eagle-admin-build', showBuildLogs: 'true'
                 echo "Build done"
 
                 echo ">>> Get Image Hash"
