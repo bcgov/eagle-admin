@@ -39,7 +39,7 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
       nosort: true
     },
     {
-      name: 'GPS Coordinates',
+      name: 'UTM Coordinates',
       value: 'geo',
       width: 'col-3',
       nosort: true
