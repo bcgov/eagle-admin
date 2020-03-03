@@ -201,7 +201,6 @@ def nodejsTest () {
   }
 }
 
-
 def nodejsSonarqube () {
   _openshift(env.STAGE_NAME, TOOLSPROJECT) {
     String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
