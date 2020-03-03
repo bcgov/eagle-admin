@@ -1,5 +1,4 @@
-<tr
-  *ngFor="let item of items">
+<tr *ngFor="let item of items">
   <div class="spinner-container" *ngIf="loading">
     <div class="spinner-new rotating"></div>
   </div>
@@ -22,8 +21,8 @@
   <td scope="row" class="col-4" data-label="Caption">
     <div [innerHTML]="item.caption" id="description"></div>
   </td>
-  <td scope="row" class="col-3" data-label="GPS Coordinates">
-    {{item.geo.latitude}}, {{item.geo.longitude}}
+  <td scope="row" class="col-3" data-label="UTM Coordinates">
+    {{item.geo.Easting}} E, {{item.geo.Northing}} N, {{item.geo.ZoneNumber}}{{item.geo.ZoneLetter}}
   </td>
   <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-3 clickable">
     <p class="card-text publish-state">
