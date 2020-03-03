@@ -10,6 +10,34 @@
     </ol>
 </nav>
 <div class="container-fluid-padding">
+  <h1>
+    <div class="row">
+      <div>Documents</div>
+      <div class="ml-auto" ngbDropdown placement="bottom-right">
+        <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
+        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+          <button (click)="selectAction('edit')" class="dropdown-item"
+              [disabled]="!isEnabled('edit')" type="button" id="button-e">Edit</button>
+          <button (click)="selectAction('publish')" class="dropdown-item"
+              [disabled]="!isEnabled('publish')" type="button" id="button-p">Publish</button>
+          <button (click)="selectAction('unpublish')" class="dropdown-item"
+              [disabled]="!isEnabled('unpublish')" type="button" id="button-u">Unpublish</button>
+          <button (click)="selectAction('copyLink')" class="dropdown-item"
+              [disabled]="!isEnabled('copyLink')" type="button" id="button-cl">Link</button>
+          <button (click)="selectAction('download')" class="dropdown-item"
+              [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
+          <button (click)="selectAction('delete')" class="dropdown-item"
+              [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
+          <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+              [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
+              <button class="dropdown-item" type="button" id="button-upl">
+                  Upload Document(s)
+              </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </h1>
     <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
         <div class="search-area">
             <div class="input-group main-search-field">
@@ -264,40 +292,6 @@
         </div>
 
         <div class="content-container">
-            <div class="actions-container">
-                <div class="actions">
-                    <div class="spinner-container" *ngIf="loading">
-                        <div class="spinner-new rotating"></div>
-                    </div>
-
-                    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
-                        id="button-sa">Select All</button>
-                    <button (click)="selectAction('edit')" class="btn btn-outline-secondary mr-1"
-                        [disabled]="!isEnabled('edit')" type="button" id="button-e"><i
-                            class="material-icons">edit</i>Edit</button>
-                    <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1"
-                        [disabled]="!isEnabled('publish')" type="button" id="button-p"><i
-                            class="material-icons">cloud_done</i>Publish</button>
-                    <button (click)="selectAction('unpublish')" class="btn btn-outline-secondary mr-1"
-                        [disabled]="!isEnabled('unpublish')" type="button" id="button-u"><i
-                            class="material-icons">cloud_off</i>Unpublish</button>
-                    <button (click)="selectAction('copyLink')" class="btn btn-outline-secondary mr-1"
-                        [disabled]="!isEnabled('copyLink')" type="button" id="button-cl"><i
-                            class="material-icons">link</i>Link</button>
-                    <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
-                        [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
-                            class="material-icons">cloud_download</i>Download</button>
-                    <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1"
-                        [disabled]="!isEnabled('delete')" type="button" id="button-d"><i
-                            class="material-icons">delete</i>Delete</button>
-                    <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-                        [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
-                        <button class="btn btn-outline-secondary mr-1" type="button" id="button-upl">
-                            <i class="material-icons">file_upload</i>Upload Document(s)
-                        </button>
-                    </a>
-                </div>
-            </div>
             <div class="document-tabs mt-3">
                 <ngb-tabset (tabChange)="onTabChange($event)">
                     <ngb-tab
@@ -308,7 +302,7 @@
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
                                 (onColumnSort)='setColumnSort(constants.documentTypes.CATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
-                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)'>
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll')">
                             </app-table-template>
                         </ng-template>
                     </ngb-tab>
@@ -331,7 +325,7 @@
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
                                 (onColumnSort)='setColumnSort(constants.documentTypes.UNCATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.UNCATEGORIZED, $event)'
-                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)'>
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll', $event)">
                             </app-table-template>
                         </ng-template>
                     </ngb-tab>

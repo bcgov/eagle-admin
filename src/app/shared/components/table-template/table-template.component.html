@@ -6,7 +6,13 @@
         (click)="!entry.nosort && sort(entry.value)"
         [ngClass]="entry.width"
         >
+        <div *ngIf="entry.name !== 'select_all_box'">
         {{entry.name}}
+        </div>
+        <div *ngIf="entry.name === 'select_all_box'">
+          <i *ngIf="selectAll === false" class="material-icons" aria-hidden="true" (click)="selectAction()">check_box_outline_blank</i>
+          <i *ngIf="selectAll === true" class="material-icons" aria-hidden="true" (click)="selectAction()">check_box</i>
+        </div>
         <i *ngIf="entry.nosort !== true" class="sort"
            [ngClass]="{'sort-asc': (column.slice(1) == entry.value && column.charAt(0) === '+'), 'sort-desc': (column.slice(1) == entry.value && column.charAt(0) === '-') }"
            aria-hidden="true"></i>
