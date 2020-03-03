@@ -24,9 +24,12 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @Output() onItemClicked: EventEmitter<any> = new EventEmitter();
   @Output() onSelectedRow: EventEmitter<any> = new EventEmitter();
   @Output() onColumnSort: EventEmitter<any> = new EventEmitter();
+  @Output() selectAllClicked: EventEmitter<any> = new EventEmitter();
   public column: string = null;
 
   interval: any;
+
+  public selectAll = false;
 
   constructor(private componentFactoryResolver: ComponentFactoryResolver) { }
 
@@ -91,5 +94,25 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     clearInterval(this.interval);
+  }
+
+  public selectAction() {
+    this.selectAll = !this.selectAll;
+
+    let someSelected = false;
+
+    if (this.data.data) {
+      this.data.data.map(item => {
+        if (item.checkbox === true) {
+          someSelected = true;
+        }
+      });
+
+      if (someSelected && this.selectAll) {
+        this.selectAll = false;
+      }
+    }
+
+    this.selectAllClicked.emit({ selectAll: this.selectAll});
   }
 }

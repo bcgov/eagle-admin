@@ -89,8 +89,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   public uncategorizedDocumentTableData: TableObject;
   public documentTableColumns: any[] = [
     {
-      name: '',
-      value: 'check',
+      name: 'select_all_box',
+      value: 'select_all_box',
       width: 'col-1',
       nosort: true
     },
