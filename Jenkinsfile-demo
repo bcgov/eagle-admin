@@ -386,7 +386,7 @@ def zapScanner () {
             }
 
             notifyRocketChat(
-              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
               ROCKET_DEPLOY_WEBHOOK
             )
 
@@ -512,9 +512,9 @@ pipeline {
                 ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
                 ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
 
-                echo "Building eagle-admin projectNotificationFeature branch"
-                openshiftBuild bldCfg: 'eagle-admin-angular', showBuildLogs: 'true'
-                openshiftBuild bldCfg: 'eagle-admin-build', showBuildLogs: 'true'
+                echo "Building demo-eagle-admin projectNotificationFeature branch"
+                openshiftBuild bldCfg: 'demo-eagle-admin-angular', showBuildLogs: 'true'
+                openshiftBuild bldCfg: 'demo-eagle-admin-build', showBuildLogs: 'true'
                 echo "Build done"
 
                 echo ">>> Get Image Hash"
