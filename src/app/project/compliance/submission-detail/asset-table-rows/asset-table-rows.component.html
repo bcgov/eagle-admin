@@ -18,13 +18,16 @@
       <i class="material-icons">mic</i>
     </div>
   </td>
-  <td scope="row" class="col-4" data-label="Caption">
+  <td scope="row" class="col-3" data-label="Caption">
     <div [innerHTML]="item.caption" id="description"></div>
   </td>
   <td scope="row" class="col-3" data-label="UTM Coordinates">
     {{item.geo.Easting}} E, {{item.geo.Northing}} N, {{item.geo.ZoneNumber}}{{item.geo.ZoneLetter}}
   </td>
-  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-3 clickable">
+  <td scope="row" class="col-2" data-label="Date/Time Taken">
+    {{item.timestamp}}
+  </td>
+  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-2 clickable">
     <p class="card-text publish-state">
       Download &nbsp;<i class="material-icons">
         cloud_download

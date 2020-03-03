@@ -2,7 +2,6 @@ import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef } fro
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { AssetTableRowsComponent } from '../../submission-detail/asset-table-rows/asset-table-rows.component';
@@ -41,19 +40,25 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
     {
       name: 'Caption',
       value: 'caption',
-      width: 'col-4',
+      width: 'col-3',
       nosort: true
     },
     {
-      name: 'GPS Coordinates',
+      name: 'UTM Coordinates',
       value: 'geo',
       width: 'col-3',
       nosort: true
     },
     {
+      name: 'Date/Time Taken',
+      value: 'timestamp',
+      width: 'col-2',
+      nosort: true
+    },
+    {
       name: 'Actions',
       value: 'actions',
-      width: 'col-3',
+      width: 'col-2',
       nosort: true
     }
   ];
@@ -62,7 +67,6 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
     private searchService: SearchService,
     private _changeDetectionRef: ChangeDetectorRef,
     public api: ApiService,
-    private router: Router
   ) { }
 
   ngOnInit() {
@@ -71,12 +75,8 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
 
   }
   openItem(item) {
-    // Need to figure out the toggling of the icon which needs to toggle item clicked
     this.loading = true;
     this.handleItemClicked(item);
-    // Load elements here
-    // This is to get the submission inspection element
-    // Make sure to cache this
     this.searchService.getItem(item._id, 'InspectionElement')
       .subscribe((res: any) => {
         if (!res || !res.data) {
@@ -88,7 +88,6 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
         this.submission.description = this.submission.description.replace(new RegExp('\n', 'g'), '<br />');
 
         this.assets = this.submission.items;
-        // This is to make sure we are using the browsers timezone.
         for (let i = 0; i < this.assets.length; i++) {
           this.assets[i].timestamp = new Date(this.assets[i].timestamp);
         }
@@ -159,9 +158,5 @@ export class ElementTableRowsComponent implements OnInit, TableComponent {
         }
       );
     }
-  }
-  downloadElement(element) {
-    // Download the element here
-
   }
 }
