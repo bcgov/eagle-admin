@@ -28,6 +28,7 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
+import { ProjectCACComponent } from './project-cac/project-cac.component';
 import { ReviewCommentsTabComponent } from './comment-period/review-comments-tab/review-comments-tab.component';
 import { ReviewCommentsTabTableRowsComponent } from './comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
@@ -103,6 +104,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     ProjectDocumentsComponent,
     ProjectGroupsComponent,
     ProjectUpdatesComponent,
+    ProjectCACComponent,
     ReviewCommentComponent,
     ReviewCommentsTabComponent,
     ReviewCommentsTabTableRowsComponent,
@@ -137,6 +139,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     ProjectDetailComponent,
     ProjectArchivedDetailComponent,
     ProjectUpdatesComponent,
+    ProjectCACComponent,
     ValuedComponentsComponent,
     PinsListComponent
   ],

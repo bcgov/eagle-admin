@@ -21,6 +21,7 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
+import { ProjectCACComponent } from './project-cac/project-cac.component';
 import { ReviewCommentComponent } from './comment-period/review-comment/review-comment.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
 import { ValuedComponentsComponent } from './valued-components/valued-components.component';
@@ -36,6 +37,7 @@ import { ReviewCommentResolver } from './comment-period/review-comment/review-co
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
 import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
 import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';
+import { ProjectCACResolver } from './project-cac/project-cac-resolver.services';
 import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
 import { PinsListComponent } from './pins-list/pins-list.component';
@@ -206,6 +208,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'project-cac',
+        component: ProjectCACComponent,
+        resolve: {
+          cacMembers: ProjectCACResolver
+        }
+      },
+      {
         path: 'project-groups',
         component: ProjectGroupsComponent,
         resolve: {
@@ -331,6 +340,7 @@ const routes: Routes = [
     DocumentsResolver,
     ComplianceResolver,
     ProjectUpdatesResolver,
+    ProjectCACResolver,
     InspectionDetailResolver,
     TopicResolver,
     ProjectResolver,

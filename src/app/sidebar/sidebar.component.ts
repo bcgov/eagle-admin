@@ -87,6 +87,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
         case 'project-updates': {
           break;
         }
+        case 'project-cac': {
+          break;
+        }
         case 'project-groups': {
           break;
         }

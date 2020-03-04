@@ -1,0 +1,5 @@
+<tr *ngFor="let entry of entries | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+    <td data-label="Name" scope="row" class="col-2">{{entry.name}}</td>
+    <td data-label="Email" scope="row" class="col-2">{{entry.email}}</td>
+    <td data-label="Comment" scope="row" class="col-10">{{entry.comment}}</td>
+</tr>
