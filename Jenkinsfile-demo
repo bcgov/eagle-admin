@@ -369,16 +369,16 @@ def zapScanner () {
               script: "mkdir -p ./wrk/ && cp /zap/wrk/${ZAP_REPORT_NAME} ./wrk/"
             )
           } catch (error) {
-            // revert dev from backup
-            echo "Reverting dev image form backup..."
-            openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'demo-eagle-admin', srcTag: 'dev-backup'
+            // revert demo from backup
+            echo "Reverting demo image form backup..."
+            openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo', srcStream: 'demo-eagle-admin', srcTag: 'demo-backup'
 
             // wait for revert to complete
-            if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
-              echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+            if(!imageTaggingComplete ('demo-backup', 'demo', 'revert')) {
+              echo "Failed to revert demo image after Zap scan failed, please revert the demo image manually from demo-backup"
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the demo image manually from demo-backup",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -387,7 +387,7 @@ def zapScanner () {
             }
 
             notifyRocketChat(
-              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n demo image was reverted",
               ROCKET_DEPLOY_WEBHOOK
             )
 
@@ -444,16 +444,16 @@ def zapScanner () {
           if ( "${ZAP_STATUS}" == "ERROR" ) {
             echo "ZAP scan failed"
 
-            // revert dev from backup
-            echo "Reverting dev image form backup..."
-            openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'dev', srcStream: 'demo-eagle-admin', srcTag: 'dev-backup'
+            // revert demo from backup
+            echo "Reverting demo image form backup..."
+            openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo', srcStream: 'demo-eagle-admin', srcTag: 'demo-backup'
 
             // wait for revert to complete
-            if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
-              echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+            if(!imageTaggingComplete ('demo-backup', 'oemp', 'revert')) {
+              echo "Failed to revert demo image after Zap scan failed, please revert the demo image manually from demo-backup"
 
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the demo image manually from demo-backup",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -462,12 +462,12 @@ def zapScanner () {
             }
 
             notifyRocketChat(
-              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev image has been reverted",
+              "@all The latest build, ${env.BUILD_DISPLAY_NAME} of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n demo image has been reverted",
               ROCKET_DEPLOY_WEBHOOK
             )
 
             echo "Zap scan Failed"
-            echo "Reverted dev deployment from backup"
+            echo "Reverted demo deployment from backup"
             currentBuild.result = 'FAILURE'
             exit 1
           } else {
@@ -556,13 +556,13 @@ pipeline {
       }
     }
 
-    stage('Deploy to dev'){
+    stage('Deploy to demo'){
       steps {
         script {
           try {
             // backup
-            echo "Backing up dev image..."
-            openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo', srcStream: 'demo-eagle-admin', srcTag: 'dev'
+            echo "Backing up demo image..."
+            openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo-backup', srcStream: 'demo-eagle-admin', srcTag: 'demo'
 
             // wait for backup to complete
             if( !imageTaggingComplete ('demo', 'demo-backup', 'backup')) {
@@ -582,7 +582,7 @@ pipeline {
             openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo', srcStream: 'demo-eagle-admin', srcTag: "${IMAGE_HASH}"
 
             // wait for deployment to complete
-            if ( CHANGELOG && CHANGELOG != "No new changes" && !imageTaggingComplete ('latest', 'dev', 'deploy')) {
+            if ( CHANGELOG && CHANGELOG != "No new changes" && !imageTaggingComplete ('latest', 'demo', 'deploy')) {
               echo "Demo image deployment failed"
 
               notifyRocketChat(
