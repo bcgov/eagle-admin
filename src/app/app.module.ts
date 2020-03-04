@@ -62,6 +62,7 @@ import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-
 import { RecentActivityService } from './services/recent-activity';
 import { SearchHelpComponent } from './search-help/search-help.component';
 import { ActivityDetailTableRowsComponent } from './activity/activity-detail-table-rows/activity-detail-table-rows.component';
+import { CACTableRowsComponent } from './project/project-cac/cac-table-rows/cac-table-rows.component';
 import { PinsTableRowsComponent } from './project/pins-list/pins-table-rows/pins-table-rows.component';
 import { GroupsTableRowsComponent } from './project/project-groups/project-groups-table-rows/project-groups-table-rows.component';
 import { InputModalComponent } from './input-modal/input-modal.component';
@@ -113,6 +114,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ProjectComponent,
+    CACTableRowsComponent,
     SearchComponent,
     SearchHelpComponent,
     SidebarComponent,
@@ -185,6 +187,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     NotificationProjectTableRowsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
+    CACTableRowsComponent,
     TopicTableRowsComponent,
     UserTableRowsComponent
   ],

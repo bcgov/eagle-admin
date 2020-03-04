@@ -77,6 +77,11 @@
         <div>
           <h3>Location: </h3> {{comment.location}}
         </div>
+        <div>
+          <h3>CAC Comment: </h3>
+          <div class="border ml-2 badge badge-pill badge-info"
+          [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? true : false}}</div>
+        </div>
         <div class="row">
           <div class="col-md-12">
             {{comment.comment}}

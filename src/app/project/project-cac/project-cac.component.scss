@@ -1,0 +1,15 @@
+legend {
+	padding-top: 30px;
+	font-size: 3rem;
+}
+
+.actions-container {
+  display: flex;
+  justify-content: space-between;
+
+  .paging-content {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}

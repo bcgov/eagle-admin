@@ -13,4 +13,8 @@
   </td>
   <td (click)="goToItem(comment)" data-label="Location" scope="row" class="col-2">{{comment.location}}</td>
   <td (click)="goToItem(comment)" data-label="Status" scope="row" class="col-2">{{comment.eaoStatus}}</td>
+  <td (click)="goToItem(comment)" data-label="CAC" scope="row" class="col-1">
+    <div class="border ml-2 badge badge-pill badge-info"
+         [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? true : false}}</div>
+  </td>
 </tr>
