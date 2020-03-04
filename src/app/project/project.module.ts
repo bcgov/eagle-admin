@@ -19,7 +19,6 @@ import { DocumentDetailComponent } from './project-documents/detail/detail.compo
 import { InspectionDetailComponent } from './compliance/inspection-detail/inspection-detail.component';
 import { DocumentTableRowsComponent } from './project-documents/project-document-table-rows/project-document-table-rows.component';
 import { ComplianceTableRowsComponent } from './compliance/compliance-table-rows/compliance-table-rows.component';
-import { IndigenousNationsComponent } from './indigenous-nations/indigenous-nations.component';
 import { MatTabsModule, MatMenuModule } from '@angular/material';
 import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectGroupsComponent } from './project-groups/project-groups.component';
@@ -93,7 +92,6 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     GroupContactComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,
-    IndigenousNationsComponent,
     MilestonesComponent,
     PinsListComponent,
     ProjectDetailComponent,
@@ -129,7 +127,6 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
   ],
   exports: [
     ComplianceComponent,
-    IndigenousNationsComponent,
     MilestonesComponent,
     ProjectGroupsComponent,
     ProjectDetailComponent,
