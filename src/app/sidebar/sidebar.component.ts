@@ -6,7 +6,6 @@ import { filter } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
 import { Subject } from 'rxjs/Subject';
 import { KeycloakService } from 'app/services/keycloak.service';
-import { ApiService } from 'app/services/api';
 
 @Component({
   selector: 'app-sidebar',
@@ -23,7 +22,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public showNotificationProjects = false;
   public showProjectDetails = false;
   public showProjectDetailsSubItems = false;
+  public showProjectNotificationDetails = false;
   public currentProjectId = '';
+  public mainRouteId = '';
   public currentMenu = '';
   public showArchiveButton = false;
 
@@ -36,7 +37,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private storageService: StorageService,
     private keycloakService: KeycloakService,
     private sideBarService: SideBarService,
-    private apiService: ApiService
   ) {
 
     router.events.pipe(
@@ -68,53 +68,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   SetActiveSidebarItem() {
-    let urlArray = this.routerSnapshot.url.split('/');
-    // urlArray[0] will be empty so we use shift to get rid of it.
+    const urlArray = this.routerSnapshot.url.split('/');
+
+    // The first element will be empty, so shift in order to remove it.
     urlArray.shift();
-    if (urlArray[0] === 'p') {
-      switch (urlArray[2]) {
-        // case 'compliance': {
-        //   break;
-        // }
-        case 'valued-components': {
-          break;
-        }
-        case 'project-updates': {
-          break;
-        }
-        case 'project-groups': {
-          break;
-        }
-        case 'project-pins': {
-          break;
-        }
-        case 'project-documents': {
-          break;
-        }
-        case 'comment-periods': {
-          break;
-        }
-        case 'milestones': {
-          break;
-        }
-        case 'project-archived-detail': {
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-      this.currentProjectId = urlArray[1];
-      try {
-        this.currentMenu = urlArray[2];
-        this.currentMenu = urlArray[2].split(';')[0];
-      } catch (e) {
-        // When coming from search, it's blank.
-      }
-      this.showProjectDetails = true;
-    } else {
-      this.currentProjectId = urlArray[0];
-      this.showProjectDetails = false;
+    const [mainRoute, mainRouteId, currentMenu] = urlArray;
+
+    this.mainRouteId = mainRouteId;
+    this.currentMenu = currentMenu && currentMenu.split(';')[0];
+
+    switch (mainRoute) {
+      case 'p':
+        this.showProjectDetails = true;
+        this.showProjectNotificationDetails = false;
+        break;
+
+      case 'pn':
+        this.showProjectNotificationDetails = true;
+        this.showProjectDetails = false;
+        break;
+      default:
+        // There is now submenu so the main route ID becomes the main route. This is a root level page.
+        this.mainRouteId = mainRoute;
     }
   }
 
