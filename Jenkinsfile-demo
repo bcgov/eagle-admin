@@ -449,7 +449,7 @@ def zapScanner () {
             openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo', srcStream: 'demo-eagle-admin', srcTag: 'demo-backup'
 
             // wait for revert to complete
-            if(!imageTaggingComplete ('demo-backup', 'oemp', 'revert')) {
+            if(!imageTaggingComplete ('demo-backup', 'demo', 'revert')) {
               echo "Failed to revert demo image after Zap scan failed, please revert the demo image manually from demo-backup"
 
               notifyRocketChat(
