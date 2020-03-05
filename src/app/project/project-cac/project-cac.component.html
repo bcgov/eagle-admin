@@ -10,20 +10,30 @@
   </ol>
 </nav>
 <div class="container-fluid-padding">
-  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
-    <div class="input-group main-search-field">
-      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-        id="keywordInput" [(ngModel)]="keywords" autofocus />
-      <div class="input-group-append">
-        <!-- prevent searching if input is empty or we're already searching -->
-        <button class="btn btn-primary" type="submit">
-          <span>Search</span>
-        </button>
-      </div>
+  <div>
+    <div class='input-group-prepend'>
+      <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button" id="button-sa"><i
+          class="material-icons">select_all</i>Select
+        All</button>
+      <button (click)="selectAction('add')" class="btn btn-outline-secondary mr-1" type="button" id="button-a">
+        <i class="material-icons">add</i>Add User
+      </button>
+      <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+        [routerLink]="['/p', currentProject._id, 'project-groups', 'select']">
+      </a>
+      <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
+        type="button" id="button-d"><i class="material-icons">delete</i>Delete User</button>
+      <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('export')"
+        type="button" id="button-ex"><i class="material-icons">import_export</i>Export</button>
+      <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
+        type="button" id="button-ce"><i class="material-icons">import_export</i>Copy Emails</button>
     </div>
+  </div>
+  <br>
+  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
     <div class="results">
       <p *ngIf="!loading && tableParams.totalListItems == 0">
-        No result<span *ngIf="count != 1">s</span> found for "{{keywords}}"
+        No result<span *ngIf="count != 1">s</span> found
       </p>
       <div *ngIf="!loading && tableParams.totalListItems > 0">
         {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>

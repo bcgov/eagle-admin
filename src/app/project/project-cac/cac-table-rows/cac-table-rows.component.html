@@ -1,5 +1,9 @@
-<tr *ngFor="let entry of entries | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
-    <td data-label="Name" scope="row" class="col-2">{{entry.name}}</td>
-    <td data-label="Email" scope="row" class="col-2">{{entry.email}}</td>
-    <td data-label="Comment" scope="row" class="col-10">{{entry.comment}}</td>
+<tr
+  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
+  <td data-label="Select" (click)="selectItem(item)" scope="row" class="col-1">
+    <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='item.checkbox'>
+  </td>
+  <td data-label="Name" scope="row" class="col-2">{{item.name}}</td>
+  <td data-label="Email" scope="row" class="col-2">{{item.email}}</td>
+  <td data-label="Comment" scope="row" class="col-7">{{item.comment}}</td>
 </tr>
