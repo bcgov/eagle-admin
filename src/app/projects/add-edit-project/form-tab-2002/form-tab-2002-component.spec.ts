@@ -13,7 +13,7 @@ import { ConfigService } from 'app/services/config.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'app/services/project.service';
 import { DialogService } from 'ng2-bootstrap-modal';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
 describe('FormTab2002', () => {
@@ -33,12 +33,12 @@ describe('FormTab2002', () => {
     },
   };
 
-  const mockProjectService = jasmine.createSpyObj('ProjectService', [
-    'unPublish',
-    'Publish',
-    'add',
-    'save'
-  ]);
+  const mockProjectService = jasmine.createSpyObj('ProjectService', {
+    'unPublish': Observable.of({}),
+    'Publish': Observable.of({}),
+    'add': Observable.of({}),
+    'save': Observable.of({}),
+  });
 
   const mockStorageService = jasmine.createSpyObj('StorageService', [
     'state'
