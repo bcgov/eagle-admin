@@ -72,11 +72,11 @@ import { OrganizationsTableRowsComponent } from './organizations/organizations-t
 import { AddEditOrganizationComponent } from './organizations/add-edit-organization/add-edit-organization.component';
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
 import { LinkOrganizationTableRowsComponent } from './shared/components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
-import { NotificationProjectsComponent } from './notification-projects/notification-projects.component';
-import { AddEditNotificationProjectComponent } from './notification-projects/add-edit-notification-project/add-edit-notification-project.component';
+import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
+import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
 import { NotificationProjectService } from './services/notification-project.service';
-import { NotificationProjectTableRowsComponent } from './notification-projects/notification-projects-table-rows/notification-project-table-rows.component';
-import { NotificationProjectComponent } from './notification-project/notification-project.component';
+import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
+import { ProjectNotificationComponent } from './project-notification/project-notification.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -89,7 +89,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ActivityTableRowsComponent,
     AddEditActivityComponent,
     AddEditContactComponent,
-    AddEditNotificationProjectComponent,
+    AddEditProjectNotificationComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
     AdministrationComponent,
@@ -106,9 +106,9 @@ export function kcFactory(keycloakService: KeycloakService) {
     MapComponent,
     MetricsComponent,
     NotAuthorizedComponent,
-    NotificationProjectComponent,
-    NotificationProjectsComponent,
-    NotificationProjectTableRowsComponent,
+    ProjectNotificationComponent,
+    ProjectNotificationsComponent,
+    ProjectNotificationTableRowsComponent,
     OrganizationsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
@@ -182,7 +182,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     InputModalComponent,
     LinkOrganizationComponent,
     LinkOrganizationTableRowsComponent,
-    NotificationProjectTableRowsComponent,
+    ProjectNotificationTableRowsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     TopicTableRowsComponent,

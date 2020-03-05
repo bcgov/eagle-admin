@@ -2,21 +2,21 @@
   <div *ngIf="!isEditing && navigationObject == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/notification-projects']">All Notification Projects</a>
+        <a [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
-        Add Notification Project
+        Add Project Notifications
       </li>
     </ol>
   </div>
   <div *ngIf="isEditing && navigationObject == null">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/notification-projects']">All Notification Projects</a>
+        <a [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
         <a
-          [routerLink]="['/np', notificationProjectId, 'notification-project-details']">{{notificationProject.name}}</a>
+          [routerLink]="['/pn', notificationProjectId, 'notification-project-details']">{{notificationProject.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Edit
@@ -30,8 +30,8 @@
     <div class="spinner-new rotating"></div>
   </div>
   <form *ngIf="myForm" [formGroup]="myForm" novalidate>
-    <h2 *ngIf="!isEditing">Add Notification Project</h2>
-    <h2 *ngIf="isEditing">Edit Notification Project</h2>
+    <h2 *ngIf="!isEditing">Add Project Notification</h2>
+    <h2 *ngIf="isEditing">Edit Project Notification</h2>
 
     <div class="flex-container">
       <div class="label-pair">

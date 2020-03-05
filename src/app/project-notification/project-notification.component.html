@@ -1,7 +1,7 @@
 <nav class="action-container">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-      <a [routerLink]="['/notification-projects']">All Notification Projects</a>
+      <a [routerLink]="['/project-notifications']">All Project Notifications</a>
     </li>
     <li class="breadcrumb-item active">{{notificationProject && notificationProject.name}}</li>
   </ol>
@@ -90,7 +90,7 @@
           </li>
         </ul>
         <div *ngIf="documents?.length === 0">
-          <p>This notification project has no associated documents.</p>
+          <p>This project notification has no associated documents.</p>
         </div>
       </div>
     </div>

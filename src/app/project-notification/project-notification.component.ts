@@ -11,11 +11,11 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-notification-project',
-  templateUrl: './notification-project.component.html',
-  styleUrls: ['./notification-project.component.scss']
+  templateUrl: './project-notification.component.html',
+  styleUrls: ['./project-notification.component.scss']
 })
 
-export class NotificationProjectComponent implements OnInit, OnDestroy {
+export class ProjectNotificationComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -54,7 +54,7 @@ export class NotificationProjectComponent implements OnInit, OnDestroy {
   }
 
   edit() {
-    this.router.navigate(['np', this.notificationProject._id, 'edit']);
+    this.router.navigate(['pn', this.notificationProject._id, 'edit']);
   }
 
   publish() {

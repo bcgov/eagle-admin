@@ -7,7 +7,7 @@ import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { StorageService } from 'app/services/storage.service';
 
 @Injectable()
-export class NotificationProjectsResolver implements Resolve<object> {
+export class ProjectNotificationsResolver implements Resolve<object> {
   constructor(
     private searchService: SearchService,
     private tableTemplateUtils: TableTemplateUtils,

@@ -17,11 +17,11 @@ import { Utils } from 'app/shared/utils/utils';
 
 @Component({
   selector: 'app-add-edit-notification-project',
-  templateUrl: './add-edit-notification-project.component.html',
-  styleUrls: ['./add-edit-notification-project.component.scss']
+  templateUrl: './add-edit-project-notification.component.html',
+  styleUrls: ['./add-edit-project-notification.component.scss']
 })
 
-export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
+export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public isEditing = false;
@@ -155,7 +155,7 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
             console.log('Error: ', error);
             alert('An error has occured.');
           },
-          () => { this.router.navigate(['/notification-projects']); }
+          () => { this.router.navigate(['/project-notifications']); }
         );
     } else {
       notificationProject._id = this.notificationProjectId;
@@ -197,7 +197,7 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
             alert('An error has occured.');
           },
           () => {
-            this.router.navigate(['/np', this.notificationProjectId, 'notification-project-details']);
+            this.router.navigate(['/pn', this.notificationProjectId, 'notification-project-details']);
           }
         );
     }
@@ -255,9 +255,9 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
 
   public onCancel() {
     if (!this.isEditing) {
-      this.router.navigate(['/notification-projects']);
+      this.router.navigate(['/project-notifications']);
     } else {
-      this.router.navigate(['/np', this.notificationProjectId, 'notification-project-details']);
+      this.router.navigate(['/pn', this.notificationProjectId, 'notification-project-details']);
     }
   }
 

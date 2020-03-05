@@ -5,20 +5,13 @@ import { Observable } from 'rxjs/Observable';
 import { SearchService } from 'app/services/search.service';
 
 @Injectable()
-export class NotificationProjectDocumentsResolver implements Resolve<object> {
+export class EditProjectNotificationResolver implements Resolve<Observable<object>> {
   constructor(
     private searchService: SearchService,
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
-    const notificationProjectId = route.paramMap.get('notificationProjectId');
-    return this.searchService.getSearchResults(
-      null,
-      'Document',
-      [],
-      1,
-      1000,
-      null,
-      { documentSource: 'PROJECT', project: notificationProjectId });
+    const contactId = route.paramMap.get('contactId');
+    return this.searchService.getItem(contactId, 'User');
   }
 }
