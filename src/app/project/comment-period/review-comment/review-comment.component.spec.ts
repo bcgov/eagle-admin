@@ -72,12 +72,9 @@ describe('ReviewCommentComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ReviewCommentComponent);
     component = fixture.componentInstance;
-
-    fixture.detectChanges();
   });
 
-  it('should create', (done) => {
+  it('should create', () => {
     expect(component).toBeTruthy();
-    done();
   });
 });
