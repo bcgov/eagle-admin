@@ -321,6 +321,16 @@ export class ApiService {
     return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
+  createProjectCAC(projectId: string): Observable<any> {
+    const queryString = `project/${projectId}/addCAC`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, {}, {});
+  }
+
+  deleteMemberFromCAC(projectId: string, member: any): Observable<any> {
+    const queryString = `project/${projectId}/cacRemoveMember`;
+    return this.http.put<any>(`${this.pathAPI}/${queryString}`, member, {});
+  }
+
   // //
   // // Features
   // //

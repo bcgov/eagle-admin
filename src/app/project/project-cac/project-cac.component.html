@@ -9,7 +9,20 @@
     <li class="breadcrumb-item active" aria-current="page">CAC</li>
   </ol>
 </nav>
-<div class="container-fluid-padding">
+
+<!-- NO CAC EXISTS -->
+<div *ngIf="currentProject && !currentProject.projectCAC" class="container-fluid-padding">
+  <p>No Project CAC has been added to this Project - Click the 'Create Project CAC' button to add one.</p>
+  <button
+    (click)="selectAction('createCAC')"
+    class="btn btn-outline-secondary mr-1"
+    type="button"
+    id="button-d"><i class="material-icons">delete</i>Create Project CAC</button>
+</div>
+
+
+<!-- CAC EXISTS -->
+<div *ngIf="currentProject && currentProject.projectCAC" class="container-fluid-padding">
   <div>
     <div class='input-group-prepend'>
       <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button" id="button-sa"><i

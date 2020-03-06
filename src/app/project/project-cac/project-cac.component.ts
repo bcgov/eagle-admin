@@ -15,6 +15,7 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { SearchService } from 'app/services/search.service';
 import { ExcelService } from 'app/services/excel.service';
 import { MatSnackBar } from '@angular/material';
+import { ProjectService } from 'app/services/project.service';
 
 @Component({
   selector: 'app-project-cac',
@@ -59,18 +60,18 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   constructor(
     private dialogService: DialogService,
     private storageService: StorageService,
-    private searchService: SearchService,
+    private projectService: ProjectService,
     private router: Router,
     private snackBar: MatSnackBar,
     private excelService: ExcelService,
     private route: ActivatedRoute,
-    private tableTemplateUtils: TableTemplateUtils,
     private _changeDetectionRef: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
 
+    console.log("DATA:", this.currentProject);
     // this.route.params
     //   .takeUntil(this.ngUnsubscribe)
     //   .subscribe(params => {
@@ -173,6 +174,10 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
 
   public selectAction(action) {
     switch (action) {
+      case 'createCAC': {
+        this.createCAC();
+        break;
+      }
       case 'copyEmail':
         this.copyEmail();
         break;
@@ -182,7 +187,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         // Safety check
         if (!this.tableData) {
           return;
-        };
+        }
 
         this.tableData.data.map((item) => {
           if (item.checkbox === true) {
@@ -197,10 +202,10 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
         break;
       case 'add':
-        this.addNewMember();
+        this.addNewCACMember();
         break;
       case 'delete':
-        this.deleteItems();
+        this.deleteCACMember();
         break;
       case 'export':
         this.exportItems();
@@ -208,11 +213,25 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
     }
   }
 
-  private addNewMember() {
+  private createCAC() {
+    this.projectService.createCAC(this.currentProject._id).toPromise()
+    .then(() => {
+      // Force reload because caching will return the non-updated object.
+      this.router.routeReuseStrategy.shouldReuseRoute = function () {
+        return false;
+      };
+      this.onSubmit();
+    })
+    .catch((error) => {
+      alert('Failed to create CAC:' + error);
+    });
+  }
+
+  private addNewCACMember() {
     alert('TBD');
   }
 
-  async deleteItems() {
+  async deleteCACMember() {
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Delete Members',
@@ -229,7 +248,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
             let itemsToDelete = [];
             this.tableData.data.map((item) => {
               if (item.checkbox === true) {
-                // itemsToDelete.push({ promise: this.projectService.deleteGroup(this.currentProject, item._id).toPromise(), item: item });
+                itemsToDelete.push({ promise: this.projectService.deleteCACMember(this.currentProject, item).toPromise(), item: item });
               }
             });
             this.loading = false;

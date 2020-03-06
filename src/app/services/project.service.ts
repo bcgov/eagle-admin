@@ -242,6 +242,17 @@ export class ProjectService {
       .catch(error => this.api.handleError(error));
   }
 
+  createCAC(projectId: string): Observable<Project> {
+    return this.api.createProjectCAC(projectId)
+      .catch(error => this.api.handleError(error));
+  }
+
+  deleteCACMember(projectId: string, member: any): Observable<any> {
+    // Remove this user from the CAC on this project.
+    return this.api.deleteMemberFromCAC(projectId, member)
+      .catch(error => this.api.handleError(error));
+  }
+
   // isAccepted(status: string): boolean {
   //   return (status && status.toUpperCase() === 'ACCEPTED');
   // }
