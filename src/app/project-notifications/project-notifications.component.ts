@@ -24,12 +24,7 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'name',
-      width: 'col-2'
-    },
-    {
-      name: 'Proponent',
-      value: 'proponent',
-      width: 'col-2'
+      width: 'col-4'
     },
     {
       name: 'Type',
