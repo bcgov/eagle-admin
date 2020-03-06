@@ -1,25 +1,26 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
+import { forkJoin } from 'rxjs';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/concat';
 
 import { ApiService } from 'app/services/api';
 import { NotificationProjectService } from 'app/services/notification-project.service';
 import { DocumentService } from 'app/services/document.service';
-import { forkJoin } from 'rxjs';
+import { ProjectNotification } from 'app/models/projectNotification';
 
 @Component({
   selector: 'app-notification-project',
-  templateUrl: './project-notification.component.html',
-  styleUrls: ['./project-notification.component.scss']
+  templateUrl: './project-notification-detail.component.html',
+  styleUrls: ['./project-notification-detail.component.scss']
 })
 
-export class ProjectNotificationComponent implements OnInit, OnDestroy {
+export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public notificationProject = null;
+  public projectNotification: ProjectNotification = null;
   public loading = false;
   public isPublished = false;
   public documents = [];
@@ -38,10 +39,12 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res) {
-          this.notificationProject = res.notificationProject.data;
-          if (this.notificationProject.read.includes('public')) {
+          this.projectNotification = ProjectNotification.mapResponseToModel(res.notificationProject.data);
+
+          if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
           }
+
           this.documents = res.documents[0].data.searchResults;
           this.loading = false;
           this._changeDetectorRef.detectChanges();
@@ -54,7 +57,7 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
   }
 
   edit() {
-    this.router.navigate(['pn', this.notificationProject._id, 'edit']);
+    this.router.navigate(['pn', this.projectNotification._id, 'edit']);
   }
 
   publish() {
@@ -67,7 +70,7 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
     });
 
     // Publish notification project
-    observables.push(this.notificationProjectService.save(this.notificationProject, true));
+    observables.push(this.notificationProjectService.save(this.projectNotification, true));
 
     forkJoin(observables)
       .takeUntil(this.ngUnsubscribe)
@@ -88,7 +91,7 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
     });
 
     // Un-publish notification project
-    observables.push(this.notificationProjectService.save(this.notificationProject, false));
+    observables.push(this.notificationProjectService.save(this.projectNotification, false));
 
     forkJoin(observables)
       .takeUntil(this.ngUnsubscribe)

@@ -8,7 +8,7 @@ import * as moment from 'moment-timezone';
 
 import { Document } from 'app/models/document';
 import { DocumentService } from 'app/services/document.service';
-import { NotificationProject } from 'app/models/notificationProject';
+import { ProjectNotification } from 'app/models/projectNotification';
 
 import { ConfigService } from 'app/services/config.service';
 import { Constants } from 'app/shared/utils/constants';
@@ -28,8 +28,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public isPublished = false;
   public loading = false;
   public myForm: FormGroup;
-  public notificationProject = null;
-  public notificationProjectId = '';
+  public projectNotification: ProjectNotification = null;
+  public projectNotificationId = '';
   public regions: any[] = [];
   public subTypeSelected = [];
 
@@ -47,6 +47,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
   public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
+  public NOTIFICATION_TRIGGERS: Array<string> = Constants.NOTIFICATION_TRIGGERS;
+  public NOTIFICATION_DECISIONS: Array<string> = Constants.NOTIFICATION_DECISIONS;
+  public NATURE_DEFAULT = 'New Construction';
 
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
@@ -69,33 +72,37 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(res => {
         this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
-        this.notificationProjectId = this.isEditing ? res.notificationProject.data._id : '';
+        this.projectNotificationId = this.isEditing ? res.notificationProject.data._id : '';
 
         if (!this.isEditing) {
           this.buildForm({
             'name': '',
             'type': '',
             'subType': '',
-            'proponentName': '',
-            'startDate': '',
-            'decisionDate': '',
+            'nature': this.NATURE_DEFAULT,
             'region': '',
-            'notificationDecision': '',
+            'location': '',
+            'decision': '',
+            'decisionDate': '',
             'description': '',
-            'centroid': ['', '']
+            'latitude': '',
+            'longitude': '',
+            'trigger': '',
           });
         } else {
-          this.notificationProject = res.notificationProject.data;
+          this.projectNotification = ProjectNotification.mapResponseToModel(res.notificationProject.data);
           this.existingDocuments = res.documents[0].data.searchResults;
-          if (this.notificationProject.read.includes('public')) {
+
+          if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
           }
-          let editData = { ...res.notificationProject.data };
-          editData.startDate = this.utils.convertJSDateToNGBDate(new Date(res.notificationProject.data.startDate));
-          editData.decisionDate = this.utils.convertJSDateToNGBDate(new Date(res.notificationProject.data.decisionDate));
+
+          let editData = { ...this.projectNotification  };
+          editData.decisionDate = this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) as any;
           this.buildForm(editData);
           this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
         }
+
         this.loading = false;
         this._changeDetectorRef.detectChanges();
       });
@@ -107,222 +114,147 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     }
 
     let saveOnly = false;
-    if (publish == null) {
+    if (publish === null) {
       saveOnly = true;
     }
 
-    if (publish == null && this.isPublished) {
+    if (publish === null && this.isPublished) {
       publish = true;
-    } else if (publish == null && !this.isPublished) {
+    } else if (publish === null && !this.isPublished) {
       publish = false;
     }
-    let notificationProject = new NotificationProject({
-      name: this.myForm.controls.name.value,
-      type: this.myForm.controls.type.value,
-      subType: this.myForm.controls.subType.value,
-      proponentName: this.myForm.controls.proponentName.value,
-      startDate: this.myForm.get('startDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('startDate').value))).toISOString() : null,
-      decisionDate: this.myForm.get('decisionDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('decisionDate').value))).toISOString() : null,
-      region: this.myForm.controls.region.value,
-      notificationDecision: this.myForm.controls.notificationDecision.value,
-      description: this.myForm.controls.description.value,
-      centroid: [this.myForm.controls.longitude.value, this.myForm.controls.latitude.value]
-    });
 
-    let observables = [];
+    let notificationProject = new ProjectNotification({
+      name: this.myForm.value.name,
+      type: this.myForm.value.type,
+      subType: this.myForm.value.subType,
+      nature: this.myForm.get('nature').disabled ? this.NATURE_DEFAULT : this.myForm.value.nature,
+      trigger: this.myForm.value.trigger,
+      region: this.myForm.value.region,
+      location: this.myForm.value.location,
+      decisionDate: this.myForm.value.decisionDate ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))).toISOString() : null,
+      notificationDecision: this.myForm.value.notificationDecision,
+      description: this.myForm.value.description,
+      centroid: [this.myForm.value.longitude, this.myForm.value.latitude]
+    });
 
     if (!this.isEditing) {
       this.notificationProjectService.add(notificationProject, publish)
-        .pipe(
-          // We do this pipe because we need to make sure that we create the notification project before submitting the documents.
-          // Documents require notification project's ID.
-          map(np => {
-            // Set document IDs to the newly created notification project's (variable np) ID.
-            let documentForms = this.setDocumentForm(np._id);
-            observables = documentForms.map(documentForm => {
-              // If we are publishing the notification project, this will also publish all documents.
-              return this.documentService.add(documentForm, publish);
-            });
-            return forkJoin(observables)
-              .takeUntil(this.ngUnsubscribe)
-              .subscribe();
-          })
-        )
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
           error => {
-            console.log('Error: ', error);
-            alert('An error has occured.');
+            alert('An error has occurred.');
           },
           () => { this.router.navigate(['/project-notifications']); }
         );
     } else {
-      notificationProject._id = this.notificationProjectId;
-      let documentForms = this.setDocumentForm(this.notificationProjectId);
+      notificationProject._id = this.projectNotificationId;
 
-      // Account for new documents.
-      observables = documentForms.map(documentForm => {
-        if (saveOnly) {
-          // this means we just did a save
-          return this.documentService.add(documentForm, this.isPublished);
-        } else {
-          // This means we did a save and publish/un-publish
-          return this.documentService.add(documentForm, publish);
-        }
-      });
-
-      // Account for existing documents.
-      // Delete the ones we don't want anymore.
-      this.documentsToDelete.forEach(item => observables.push(this.documentService.delete(item)));
-
-      // Publish/un-publish the ones we are keeping.
-      this.existingDocuments.forEach(item => {
-        if (publish) {
-          observables.push(this.documentService.publish(item._id));
-        } else {
-          observables.push(this.documentService.unPublish(item._id));
-        }
-      });
-
-      // Finally push in the edit notification project all.
-      observables.push(this.notificationProjectService.save(notificationProject, publish));
-
-      forkJoin(observables)
+      this.notificationProjectService.save(notificationProject, publish)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
           error => {
-            console.log('Error: ', error);
-            alert('An error has occured.');
+            alert('An error has occurred.');
           },
           () => {
-            this.router.navigate(['/pn', this.notificationProjectId, 'notification-project-details']);
+            this.router.navigate(['/pn', this.projectNotificationId, 'details']);
           }
         );
     }
-  }
-
-  public addDocuments(files: FileList) {
-    if (files) { // safety check
-      for (let i = 0; i < files.length; i++) {
-        if (files[i]) {
-          // ensure file is not already in the list
-          if (this.newDocuments.find(x => x.documentFileName === files[i].name)) {
-            continue;
-          }
-
-          this.newFiles.push(files[i]);
-
-          const document = new Document();
-          document.upfile = files[i];
-          document.documentFileName = files[i].name;
-
-          // save document for upload to db when project is added or saved
-          this.newDocuments.push(document);
-        }
-      }
-    }
-    this._changeDetectorRef.detectChanges();
-  }
-
-  public deleteDocument(doc: Document, isExisting: boolean) {
-    if (doc && isExisting) {
-      this.documentsToDelete.push(doc);
-      this.existingDocuments = this.existingDocuments.filter(item => (item.documentFileName !== doc.documentFileName));
-    } else if (doc && !isExisting) {
-      this.newFiles = this.newFiles.filter(item => (item.name !== doc.documentFileName));
-      this.newDocuments = this.newDocuments.filter(item => (item.documentFileName !== doc.documentFileName));
-    }
-  }
-
-  private setDocumentForm(notificationProjectId) {
-    let docForms = [];
-    this.newDocuments.map(doc => {
-      const formData = new FormData();
-      formData.append('upfile', doc.upfile);
-      formData.append('project', notificationProjectId);
-      formData.append('documentFileName', doc.documentFileName);
-      formData.append('internalOriginalName', doc.internalOriginalName);
-      formData.append('documentSource', 'PROJECT');
-      formData.append('dateUploaded', moment());
-      formData.append('datePosted', moment());
-      docForms.push(formData);
-    });
-
-    return docForms;
   }
 
   public onCancel() {
     if (!this.isEditing) {
       this.router.navigate(['/project-notifications']);
     } else {
-      this.router.navigate(['/pn', this.notificationProjectId, 'notification-project-details']);
+      this.router.navigate(['/pn', this.projectNotificationId, 'notification-project-details']);
     }
   }
 
-
   private buildForm(data) {
+    const natureDisabled = data.trigger !== 'Greenhouse Gases';
+
     this.myForm = new FormGroup({
       'name': new FormControl(data.name),
       'type': new FormControl(data.type),
       'subType': new FormControl(data.subType),
-      'proponentName': new FormControl(data.proponentName),
-      'startDate': new FormControl(data.startDate),
-      'decisionDate': new FormControl(data.decisionDate),
+      'nature': new FormControl({ value: data.nature, disabled: natureDisabled }),
       'region': new FormControl(data.region),
-      'notificationDecision': new FormControl(data.notificationDecision),
+      'location': new FormControl(data.location),
+      'decision': new FormControl(data.notificationDecision),
+      'decisionDate': new FormControl(data.decisionDate),
       'description': new FormControl(data.description),
-      'longitude': new FormControl(data.centroid[0]),
-      'latitude': new FormControl(data.centroid[1]),
+      'longitude': new FormControl(data.longitude),
+      'latitude': new FormControl(data.latitude),
+      'trigger': new FormControl(data.trigger)
     });
   }
 
   private validateForm() {
     // These fields must not be empty.
-    if (this.myForm.controls.name.value === '') {
+    if (!this.myForm.value.name) {
       alert('Name cannot be empty.');
       return false;
-    } else if (this.myForm.controls.type.value === '') {
+    }
+
+    if (!this.myForm.value.type) {
       alert('Type cannot be empty.');
       return false;
-    } else if (this.myForm.controls.subType.value === '') {
+    }
+
+    if (!this.myForm.value.subType) {
       alert('Notification project sub-type cannot be empty.');
       return false;
-    } else if (this.myForm.controls.proponentName.value === '') {
-      alert('Proponent name cannot be empty.');
+    }
+
+    if (this.myForm.get('nature').enabled && !this.myForm.value.nature) {
+      alert('Nature cannot be empty.');
       return false;
-    } else if (this.myForm.controls.startDate.value == null || this.myForm.controls.startDate.value === '') {
-      alert('Start date cannot be empty.');
+    }
+
+    if (!this.myForm.value.trigger) {
+      alert('Trigger cannot be empty.');
       return false;
-    } else if (this.myForm.controls.decisionDate.value == null || this.myForm.controls.decisionDate.value === '') {
-      alert('End date cannot be empty.');
+    }
+
+    if (!this.myForm.value.decision) {
+      alert('Decision cannot be empty.');
       return false;
-    } else if (this.myForm.controls.region.value === '') {
+    }
+
+    if (!this.myForm.value.region) {
       alert('Region cannot be empty.');
       return false;
-    } else if (this.myForm.controls.description.value === '') {
+    }
+
+    if (!this.myForm.value.location) {
+      alert('Location cannot be empty.');
+      return false;
+    }
+
+    if (!this.myForm.value.description) {
       alert('Description cannot be empty.');
       return false;
-    } else if (this.myForm.controls.latitude.value === '') {
+    }
+
+    if (!this.myForm.value.latitude) {
       alert('Latitude cannot be empty.');
       return false;
-    } else if (this.myForm.controls.longitude.value === '') {
+    }
+
+    if (!this.myForm.value.longitude) {
       alert('Longitude cannot be empty.');
       return false;
     }
 
-    if (moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.controls.startDate.value)) > moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.controls.decisionDate.value))) {
-      alert('Decision date must come after start date.');
-      return false;
-    }
-
-    if (this.myForm.controls.latitude.value >= 60.01 || this.myForm.controls.latitude.value <= 48.20) {
+    if (this.myForm.value.latitude >= 60.01 || this.myForm.value.latitude <= 48.20) {
       alert('Latitude must be between 48.20 and 60.01');
       return false;
     }
 
-    if (this.myForm.controls.longitude.value >= -114.01 || this.myForm.controls.longitude.value <= -139.06) {
+    if (this.myForm.value.longitude >= -114.01 || this.myForm.value.longitude <= -139.06) {
       alert('Longitude must be between -114.01 and -139.06');
       return false;
     }
@@ -332,6 +264,20 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   public onChangeType(event) {
     this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
+    this._changeDetectorRef.detectChanges();
+  }
+
+  public onChangeTrigger(event) {
+    const trigger = this.myForm.value.trigger;
+
+    if (trigger !== 'Greenhouse Gases') {
+      // Nature can only be modified from the default for one selection. Revert to the default if not.
+      this.myForm.patchValue({ nature: this.NATURE_DEFAULT });
+      this.myForm.get('nature').disable();
+    } else {
+      this.myForm.get('nature').enable();
+    }
+
     this._changeDetectorRef.detectChanges();
   }
 

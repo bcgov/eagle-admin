@@ -32,9 +32,9 @@ import { LinkOrganizationResolver } from './shared/components/link-organization/
 import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
 import { ProjectNotificationsResolver } from './project-notifications/project-notifications-resolver.service';
 import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
-import { ProjectNotificationComponent } from './project-notification/project-notification.component';
+import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 import { ProjectNotificationResolver } from './project-notification/project-notification-resolver.service';
-import { ProjectNotificationDocumentsResolver } from './project-notification/project-notification-documents-resolver.service';
+import { ProjectNotificationDocumentsResolver } from './project-notification/documents/project-notification-documents-resolver.service';
 
 import { AuthGuard } from './services/auth-guard.service';
 
@@ -129,12 +129,12 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'notification-project-details',
+        redirectTo: 'details',
         pathMatch: 'full',
       },
       {
-        path: 'notification-project-details',
-        component: ProjectNotificationComponent,
+        path: 'details',
+        component: ProjectNotificationDetailComponent,
         canActivate: [AuthGuard],
       },
       {

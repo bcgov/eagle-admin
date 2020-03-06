@@ -67,6 +67,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Sets the active menu item in the sibebar.
+   */
   SetActiveSidebarItem() {
     const urlArray = this.routerSnapshot.url.split('/');
 
@@ -88,8 +91,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.showProjectDetails = false;
         break;
       default:
-        // There is now submenu so the main route ID becomes the main route. This is a root level page.
+        // There is now sub-menu so the main route ID becomes the main route. This is a root level page.
         this.mainRouteId = mainRoute;
+        this.showProjectNotificationDetails = false;
+        this.showProjectDetails = false;
     }
   }
 

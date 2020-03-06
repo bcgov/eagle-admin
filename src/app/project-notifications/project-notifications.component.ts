@@ -6,7 +6,7 @@ import { ProjectNotificationTableRowsComponent } from './project-notifications-t
 import { SearchTerms } from 'app/models/search';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { NotificationProject } from 'app/models/notificationProject';
+import { ProjectNotification } from 'app/models/projectNotification';
 
 @Component({
   selector: 'app-notification-projects',
@@ -16,7 +16,7 @@ import { NotificationProject } from 'app/models/notificationProject';
 export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public notificationProjects: NotificationProject[] = null;
+  public notificationProjects: ProjectNotification[] = null;
   public loading = true;
 
   public documentTableData: TableObject;
