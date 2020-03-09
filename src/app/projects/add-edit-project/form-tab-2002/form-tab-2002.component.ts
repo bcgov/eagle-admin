@@ -773,14 +773,18 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   getLists() {
     this.config.getLists().subscribe (lists => {
       lists.map(item => {
+        // List values only have 2002 and 2018 values.
+        // If a project is set to 1996 legislation, make sure
+        // to load the 2002 codes.
+        let tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
         switch (`${item.type}|${item.legislation}`) {
-          case `eaDecisions|${this.legislationYear}`:
+          case `eaDecisions|${tempLegislationYear}`:
             this.eacDecisions.push({ ...item });
             break;
-          case `ceaaInvolvements|${this.legislationYear}`:
+          case `ceaaInvolvements|${tempLegislationYear}`:
             this.ceaaInvolvements.push({ ...item });
             break;
-          case `projectPhase|${this.legislationYear}`:
+          case `projectPhase|${tempLegislationYear}`:
             this.projectPhases.push({ ...item});
             break;
           default:
