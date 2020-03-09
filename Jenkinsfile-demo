@@ -234,11 +234,8 @@ def nodejsSonarqube () {
             echo "${SONARQUBE_URL}"
 
             // sonarqube report link
-            def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:demo-eagle-admin"
+            def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey='org.sonarqube:demo-eagle-admin'"
 
-            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
-            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-            
             boolean firstScan = false;
 
             def OLD_SONAR_DATE
@@ -266,7 +263,6 @@ def nodejsSonarqube () {
                 )
 
                 currentBuild.result = "FAILURE"
-                exit 1
               }
             } else {
               sleep (30)
@@ -354,7 +350,7 @@ def zapScanner () {
         def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
         echo "${SONARQUBE_URL}"
         def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:demo-eagle-admin-zap-scan"
-        
+
 
         def OLD_ZAP_DATE
         boolean firstScan = false
