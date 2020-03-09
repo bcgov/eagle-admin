@@ -139,14 +139,11 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   }
   handleElementClicked(element) {
     // If an item is clicked need to make sure every other item is unclicked.
-    const newElements = [];
     this.elements.forEach(i => {
       if (i._id !== element._id) {
         i.itemClicked = false;
       }
-      newElements.push(i);
     });
-    this.elements = [...newElements];
     if (element.itemClicked) {
       // Don't load any items, because the same item has been clicked
       this.loading = false;
