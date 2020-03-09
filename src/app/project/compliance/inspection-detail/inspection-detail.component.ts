@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Compliance } from 'app/models/compliance';
 import { Project } from 'app/models/project';
@@ -66,7 +66,6 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private searchService: SearchService,
     public api: ApiService,
-    private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
     private snackBar: MatSnackBar,
   ) {
@@ -113,18 +112,16 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
         this.tableParams.pageSize = 100000;
         this.setRowData();
         this.loading = false;
-        let self = this;
 
-        self.assets.map(async z => {
+        this.assets.forEach(async z => {
           if (z.type === 'photo') {
             // Show thumb
-            let resource = await self.api.downloadElementThumbnail(self.compliance._id, self.submission._id, z._id);
+            let resource = await this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id);
             const reader = new FileReader();
             reader.readAsDataURL(resource);
             reader.onloadend = function () {
               // result includes identifier 'data:image/png;base64,' plus the base64 data
               z.src = reader.result;
-              // self._changeDetectionRef.detectChanges();
             };
           } else if (z.type === 'video') {
             // Show it's type with a clickable event.
