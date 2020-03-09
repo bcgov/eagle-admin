@@ -293,7 +293,7 @@ def nodejsSonarqube () {
             }
 
           } catch (error) {
-            echo error
+            echo ${error}
             notifyRocketChat(
               "@all The latest build of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
