@@ -634,9 +634,9 @@ pipeline {
     // }
 
     stage('Success Notifications') {
-      ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
       steps {
         script {
+          ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
           notifyRocketChat(
             "A new version of demo-eagle-admin projectNotificationFeature is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
             ROCKET_DEPLOY_WEBHOOK
