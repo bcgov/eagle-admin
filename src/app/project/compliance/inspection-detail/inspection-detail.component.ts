@@ -91,6 +91,10 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   }
 
   openElement(element) {
+    if (!element.items.length || element.items.length === 0) {
+      // No assets so don't fire request
+      return;
+    }
     this.loading = true;
     this.handleElementClicked(element);
     this.searchService.getItem(element._id, 'InspectionElement')
