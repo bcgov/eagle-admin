@@ -235,7 +235,6 @@ def nodejsSonarqube () {
 
             // sonarqube report link
             def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:demo-eagle-admin"
-            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
 
             boolean firstScan = false;
 
@@ -349,7 +348,6 @@ def zapScanner () {
         def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
         echo "${SONARQUBE_URL}"
         def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:demo-eagle-admin-zap-scan"
-        
 
         def OLD_ZAP_DATE
         boolean firstScan = false
@@ -566,7 +564,6 @@ pipeline {
             echo "Backing up demo image..."
             openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo-backup', srcStream: 'demo-eagle-admin', srcTag: 'demo'
             ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-
             // wait for backup to complete
             if( !imageTaggingComplete ('demo', 'demo-backup', 'backup')) {
               echo "Demo image backup failed"
@@ -634,9 +631,9 @@ pipeline {
     // }
 
     stage('Success Notifications') {
-      ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
       steps {
         script {
+          ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
           notifyRocketChat(
             "A new version of demo-eagle-admin projectNotificationFeature is now in Dev, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
             ROCKET_DEPLOY_WEBHOOK
