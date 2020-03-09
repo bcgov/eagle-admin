@@ -107,7 +107,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-1'
+      width: 'col-2'
     },
     {
       name: 'Type',
@@ -117,7 +117,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-1'
+      width: 'col-2'
     },
     {
       name: 'Legislation',
