@@ -239,7 +239,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
         }
       ]
     );
-    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 25 }]);
+    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 10 }]);
   }
 
   public onSubmit(pageNumber = 1, reset = false) {

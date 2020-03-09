@@ -13,7 +13,7 @@ export class PinsGlobalComponentResolver implements Resolve<Observable<object>> 
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const pageNum = route.params.currentPage ? route.params.currentPage : 1;
-    const pageSize = route.params.pageSize ? route.params.pageSize : 25;
+    const pageSize = route.params.pageSize ? route.params.pageSize : 10;
     const sortBy = route.params.sortBy ? route.params.sortBy : '+name';
     const keywords = route.params.keywords || '';
 
