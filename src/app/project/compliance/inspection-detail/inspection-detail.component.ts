@@ -113,8 +113,6 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
         this.tableParams.pageSize = 100000;
         this.setRowData();
         this.loading = false;
-        // this._changeDetectionRef.detectChanges();
-
         let self = this;
 
         self.assets.map(async z => {
@@ -161,7 +159,6 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   nukeTableData() {
     this.tableParams = new TableParamsObject();
     this.showTable = false;
-    // This doesn't seem to do anything
   }
   setRowData() {
     if (this.assets && this.assets.length > 0) {

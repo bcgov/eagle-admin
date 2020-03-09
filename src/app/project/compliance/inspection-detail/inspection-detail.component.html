@@ -92,7 +92,7 @@
           </div>
           <div [attr.id]="element.title" [ngbCollapse]="!element.itemClicked">
             <div class="card">
-              <app-table-template *ngIf="!loading && tableParams && tableParams.totalListItems != 0 && showTable"   (checkboxChange)='checkChange($event)'
+              <app-table-template *ngIf="!loading && tableParams && tableParams.totalListItems !== 0 && showTable"   (checkboxChange)='checkChange($event)'
                 [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
                 (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
               </app-table-template>
