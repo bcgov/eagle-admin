@@ -51,6 +51,4 @@ export class ProjectNotification {
 
     this.read = obj && obj.read || undefined;
   }
-
-  
 }
