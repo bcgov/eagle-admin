@@ -294,6 +294,7 @@ def nodejsSonarqube () {
             }
 
           } catch (error) {
+            echo error
             notifyRocketChat(
               "@all The latest build of demo-eagle-admin projectNotificationFeature seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
@@ -570,7 +571,7 @@ pipeline {
 
             sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
             ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-            
+
             // wait for backup to complete
             if( !imageTaggingComplete ('demo', 'demo-backup', 'backup')) {
               echo "Demo image backup failed"
