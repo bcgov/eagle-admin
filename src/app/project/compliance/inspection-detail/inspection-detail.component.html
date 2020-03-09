@@ -52,16 +52,16 @@
     <div *ngIf="elements.length > 0" class="label-pair">
       <h3 for="tags">Inspection Submissions</h3>
       <div class="row">
-        <div class="col">
+        <div class="col-2">
           <h3>Title</h3>
         </div>
-        <div class="col">
+        <div class="col-6">
           <h3>Description</h3>
         </div>
-        <div class="col">
+        <div class="col-3">
           <h3>Requirements</h3>
         </div>
-        <div class="col">
+        <div class="col-1">
           <h3>Assets</h3>
         </div>
       </div>
@@ -70,23 +70,23 @@
           <div class="mouse-hover card-header-inspection" (click)="openElement(element)"
           [attr.aria-expanded]="element.itemClicked" [attr.aria-controls]="element.title">
             <div class="row">
-              <div class="col">
-                <h3>{{element.title}}</h3>
+              <div class="col-2">
+                <h5>{{element.title}}</h5>
               </div>
-              <div class="col">
-                <h3>{{element.description}}</h3>
+              <div class="col-6">
+                <h5>{{element.description}}</h5>
               </div>
-              <div class="col">
-                <h3>{{element.requirement}}</h3>
+              <div class="col-3">
+                <h5>{{element.requirement}}</h5>
               </div>
-              <div class="col">
-                <h3>
+              <div class="col-1">
+                <h5>
                   <i class="material-icons">
                     attach_file
                   </i>
                   &nbsp;
                   {{element.items.length}}
-                </h3>
+                </h5>
               </div>
             </div>
           </div>
