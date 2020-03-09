@@ -235,6 +235,7 @@ def nodejsSonarqube () {
 
             // sonarqube report link
             def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:demo-eagle-admin"
+
             sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
             ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
             
@@ -350,6 +351,7 @@ def zapScanner () {
         def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
         echo "${SONARQUBE_URL}"
         def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=org.sonarqube:demo-eagle-admin-zap-scan"
+        
 
         def OLD_ZAP_DATE
         boolean firstScan = false
@@ -565,8 +567,10 @@ pipeline {
             // backup
             echo "Backing up demo image..."
             openshiftTag destStream: 'demo-eagle-admin', verbose: 'false', destTag: 'demo-backup', srcStream: 'demo-eagle-admin', srcTag: 'demo'
+
             sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
             ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+            
             // wait for backup to complete
             if( !imageTaggingComplete ('demo', 'demo-backup', 'backup')) {
               echo "Demo image backup failed"
