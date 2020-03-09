@@ -16,8 +16,8 @@ export class NotificationProjectService {
       .catch(error => this.api.handleError(error));
   }
 
-  add(notificationProject: ProjectNotification, publish: boolean = false): Observable<ProjectNotification> {
-    return this.api.addNotificationProject(notificationProject, publish)
+  add(projectNotification: ProjectNotification, publish: boolean = false): Observable<ProjectNotification> {
+    return this.api.addProjectNotification(projectNotification, publish)
       .catch(error => this.api.handleError(error));
   }
 }

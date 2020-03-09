@@ -85,12 +85,11 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             'decision': '',
             'decisionDate': '',
             'description': '',
-            'latitude': '',
-            'longitude': '',
+            'centroid': ['', ''],
             'trigger': '',
           });
         } else {
-          this.projectNotification = ProjectNotification.mapResponseToModel(res.notificationProject.data);
+          this.projectNotification = res.notificationProject.data;
           this.existingDocuments = res.documents[0].data.searchResults;
 
           if (this.projectNotification.read.includes('public')) {
@@ -133,9 +132,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       region: this.myForm.value.region,
       location: this.myForm.value.location,
       decisionDate: this.myForm.value.decisionDate ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))).toISOString() : null,
-      notificationDecision: this.myForm.value.notificationDecision,
+      decision: this.myForm.value.decision,
       description: this.myForm.value.description,
-      centroid: [this.myForm.value.longitude, this.myForm.value.latitude]
+      centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
     });
 
     if (!this.isEditing) {
@@ -183,11 +182,11 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       'nature': new FormControl({ value: data.nature, disabled: natureDisabled }),
       'region': new FormControl(data.region),
       'location': new FormControl(data.location),
-      'decision': new FormControl(data.notificationDecision),
+      'decision': new FormControl(data.decision),
       'decisionDate': new FormControl(data.decisionDate),
       'description': new FormControl(data.description),
-      'longitude': new FormControl(data.longitude),
-      'latitude': new FormControl(data.latitude),
+      'longitude': new FormControl(data.centroid[1]),
+      'latitude': new FormControl(data.centroid[0]),
       'trigger': new FormControl(data.trigger)
     });
   }

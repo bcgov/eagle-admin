@@ -12,6 +12,6 @@ export class ProjectNotificationResolver implements Resolve<object> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const notificationProjectId = route.paramMap.get('notificationProjectId');
-    return this.searchService.getItem(notificationProjectId, 'NotificationProject');
+    return this.searchService.getItem(notificationProjectId, 'ProjectNotification');
   }
 }

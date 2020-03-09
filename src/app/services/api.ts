@@ -1221,19 +1221,19 @@ export class ApiService {
   }
 
   //
-  // Notification Projects
+  // Project Notifications
   //
-  saveNotificationProject(notificationProject: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
-    let queryString = `notificationProject/${notificationProject._id}`;
+  saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    let queryString = `projectNotification/${projectNotification._id}`;
     if (publish !== null) {
       queryString += `?publish=${publish}`;
     }
-    return this.http.put<ProjectNotification>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+    return this.http.put<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
   }
 
-  addNotificationProject(notificationProject: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
-    const queryString = `notificationProject?publish=${publish}`;
-    return this.http.post<ProjectNotification>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+  addProjectNotification(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    const queryString = `projectNotification?publish=${publish}`;
+    return this.http.post<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
   }
 
 

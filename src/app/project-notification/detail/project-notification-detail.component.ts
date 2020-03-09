@@ -39,7 +39,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res) {
-          this.projectNotification = ProjectNotification.mapResponseToModel(res.notificationProject.data);
+          this.projectNotification = res.notificationProject.data;
 
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
