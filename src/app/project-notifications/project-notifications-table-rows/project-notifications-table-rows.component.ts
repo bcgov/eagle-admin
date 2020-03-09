@@ -6,10 +6,10 @@ import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-notification-project-table-rows',
-  templateUrl: './notification-project-table-rows.component.html',
-  styleUrls: ['./notification-project-table-rows.component.scss']
+  templateUrl: './project-notifications-table-rows.component.html',
+  styleUrls: ['./project-notifications-table-rows.component.scss']
 })
-export class NotificationProjectTableRowsComponent implements OnInit {
+export class ProjectNotificationTableRowsComponent implements OnInit {
   @Input() data: TableObject;
 
   public items: any;
@@ -28,6 +28,6 @@ export class NotificationProjectTableRowsComponent implements OnInit {
 
   goToItem(item) {
     this.navigationStackUtils.clearNavigationStack();
-    this.router.navigate(['np/', item._id, 'notification-project-details']);
+    this.router.navigate(['pn/', item._id, 'notification-project-details']);
   }
 }

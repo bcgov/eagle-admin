@@ -5,7 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import { SearchService } from 'app/services/search.service';
 
 @Injectable()
-export class NotificationProjectResolver implements Resolve<object> {
+export class ProjectNotificationResolver implements Resolve<object> {
   constructor(
     private searchService: SearchService,
   ) { }

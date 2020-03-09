@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { NotificationProjectTableRowsComponent } from './notification-projects-table-rows/notification-project-table-rows.component';
+import { ProjectNotificationTableRowsComponent } from './project-notifications-table-rows/project-notifications-table-rows.component';
 import { SearchTerms } from 'app/models/search';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
@@ -10,10 +10,10 @@ import { NotificationProject } from 'app/models/notificationProject';
 
 @Component({
   selector: 'app-notification-projects',
-  templateUrl: './notification-projects.component.html',
-  styleUrls: ['./notification-projects.component.scss']
+  templateUrl: './project-notifications.component.html',
+  styleUrls: ['./project-notifications.component.scss']
 })
-export class NotificationProjectsComponent implements OnInit, OnDestroy {
+export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public notificationProjects: NotificationProject[] = null;
@@ -103,14 +103,14 @@ export class NotificationProjectsComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
     params['sortBy'] = this.tableParams.sortBy;
 
-    this.router.navigate(['notification-projects', params]);
+    this.router.navigate(['project-notifications', params]);
   }
 
   setRowData() {
     if (this.notificationProjects && this.notificationProjects.length > 0) {
       const list = [...this.notificationProjects];
       this.documentTableData = new TableObject(
-        NotificationProjectTableRowsComponent,
+        ProjectNotificationTableRowsComponent,
         list,
         this.tableParams
       );
@@ -131,7 +131,7 @@ export class NotificationProjectsComponent implements OnInit, OnDestroy {
   }
 
   addNP() {
-    this.router.navigate(['notification-projects', 'add']);
+    this.router.navigate(['project-notifications', 'add']);
   }
 
   ngOnDestroy() {

@@ -65,11 +65,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (roles !== null && roles.includes('inspector')) {
       this.isInspectorRole = true;
     }
-
-    // Remove this when notification projects are ready.
-    if (this.apiService.env === 'demo') {
-      this.showNotificationProjects = true;
-    }
   }
 
   SetActiveSidebarItem() {
