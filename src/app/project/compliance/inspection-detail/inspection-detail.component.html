@@ -26,19 +26,19 @@
         <h3 class="mb-4">{{compliance.startDate | date}} -
           {{compliance.endDate | date}}</h3>
         <div class="label-pair">
-          <h3 for="name">Inspection Name: </h3>
+          <h3>Inspection Name: </h3>
           <p id="name">{{compliance.name || '-'}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="inspectionNumber">Inspection #: </h3>
+          <h3>Inspection #: </h3>
           <p id="inspectionNumber">{{compliance.case || '-'}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="email">Inspector Email: </h3>
+          <h3>Inspector Email: </h3>
           <p id="email">{{compliance.email}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="notes">Notes: </h3>
+          <h3>Notes: </h3>
           <div *ngIf="compliance.label" [innerHTML]="compliance.label" id="notes"></div>
           <p *ngIf="compliance.label == null">-</p>
         </div>
@@ -50,7 +50,7 @@
   </section>
   <section>
     <div *ngIf="elements.length > 0" class="label-pair">
-      <h3 for="tags">Inspection Submissions</h3>
+      <h3>Inspection Submissions</h3>
       <div class="row">
         <div class="col-2">
           <h3>Title</h3>
