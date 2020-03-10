@@ -16,7 +16,7 @@
       </li>
       <li class="breadcrumb-item" aria-current="page">
         <a
-          [routerLink]="['/pn', notificationProjectId, 'notification-project-details']">{{notificationProject.name}}</a>
+          [routerLink]="['/pn', notificationProjectId, 'notification-project-details']">{{projectNotification.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Edit
@@ -54,24 +54,37 @@
       </div>
 
       <div class="label-pair">
-        <label for="proponentName">Proponent Name*</label>
-        <input name="proponentName" id="proponentName" formControlName="proponentName" type="text"
-          class="form-control" />
+        <label for="nature">Nature* </label>
+        <input name="nature" id="nature" formControlName="nature" type="text" class="form-control">
       </div>
 
       <div class="label-pair">
-        <label for="startDate">Start Date*</label>
-        <div class="input-group">
-          <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="startDate" formControlName="startDate"
-            ngbDatepicker #startDatePicker="ngbDatepicker" />
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary calendar" (click)="startDatePicker.toggle()"
-              type="button"></button>
-          </div>
-        </div>
+        <label for="trigger">Trigger* </label>
+        <select name="trigger" id="trigger" formControlName="trigger" class="form-control" (change)="onChangeTrigger($event)">
+          <option *ngFor="let trigger of NOTIFICATION_TRIGGERS" [ngValue]="trigger">{{trigger}}</option>
+        </select>
       </div>
 
       <div class="label-pair">
+        <label for="region">Region* </label>
+        <select name="region" id="region" formControlName="region" class="form-control">
+          <option *ngFor="let region of regions" [ngValue]="region">{{region}}</option>
+        </select>
+      </div>
+
+      <div class="label-pair">
+        <label for="location">Location* </label>
+        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+      </div>
+
+      <div class="label-pair">
+        <label for="decision">Notification Decision*</label>
+        <select name="decision" id="decision" formControlName="decision" class="form-control">
+          <option *ngFor="let decision of NOTIFICATION_DECISIONS" [ngValue]="decision">{{decision}}</option>
+        </select>
+      </div>
+
+      <div *ngIf="myForm.value.decision && myForm.value.decision !== 'In Progress'" class="label-pair">
         <label for="decisionDate">Decision Date*</label>
         <div class="input-group">
           <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
@@ -81,19 +94,6 @@
               type="button"></button>
           </div>
         </div>
-      </div>
-
-      <div class="label-pair">
-        <label for="region">Region* </label>
-        <select name="region" id="region" formControlName="region" class="form-control" (change)="onChangeType($event)">
-          <option *ngFor="let region of regions" [ngValue]="region">{{region}}</option>
-        </select>
-      </div>
-
-      <div class="label-pair">
-        <label for="notificationDecision">Notification Decision</label>
-        <input name="notificationDecision" id="notificationDecision" formControlName="notificationDecision" type="text"
-          class="form-control" />
       </div>
     </div>
 
@@ -116,60 +116,6 @@
       </div>
     </div>
   </form>
-
-  <div class="row">
-    <div class="col-md-6">
-      <label for="documents">Documents</label>
-      <app-file-upload [maxFiles]="50" [maxSize]="300" [showInfo]="false" [showList]="false" [files]="newFiles"
-        (filesChange)="addDocuments($event); newFiles = []">
-      </app-file-upload>
-    </div>
-  </div>
-
-  <br>
-
-  <div class="row">
-    <div class="col-md-6">
-      <ul class="doc-list mb-3" *ngIf="newDocuments?.length > 0">
-        <label for="newDocuments" *ngIf="newDocuments?.length > 0">New Documents:</label>
-        <li *ngFor="let doc of newDocuments">
-          <span class="cell icon">
-            <i class="material-icons">insert_drive_file</i>
-          </span>
-          <span class="cell name" [title]="doc.displayName || ''">
-            <span class="cell__txt-content">{{doc.documentFileName}}</span>
-          </span>
-          <span class="cell actions">
-            <button class="btn btn-icon" type="button" title="Delete this document"
-              (click)="deleteDocument(doc, false)">
-              <i class="material-icons">delete</i>
-            </button>
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-6">
-      <ul class="doc-list mb-3" *ngIf="existingDocuments?.length > 0">
-        <label for="existingDocuments" *ngIf="existingDocuments?.length > 0">Existing Documents:</label>
-        <li *ngFor="let doc of existingDocuments">
-          <span class="cell icon">
-            <i class="material-icons">insert_drive_file</i>
-          </span>
-          <span class="cell name" [title]="doc.displayName || ''">
-            <span class="cell__txt-content">{{doc.documentFileName}}</span>
-          </span>
-          <span class="cell actions">
-            <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc, true)">
-              <i class="material-icons">delete</i>
-            </button>
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
 
   <div class="text-right">
     <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>

@@ -22,7 +22,7 @@ export class ProjectNotificationsResolver implements Resolve<object> {
 
     return this.searchService.getSearchResults(
       tableParams.keywords || '',
-      'NotificationProject',
+      'ProjectNotification',
       null,
       tableParams.currentPage,
       tableParams.pageSize,

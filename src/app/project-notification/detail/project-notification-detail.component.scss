@@ -7,6 +7,7 @@ section {
 }
 
 h1 {
+  font-size: 2.1rem;
   margin-bottom: 1.75rem;
 }
 
@@ -37,4 +38,17 @@ h1 {
 li:hover {
   cursor: pointer;
   background-color: #e2f1ff;
+}
+
+.badge-published{
+  color: white;
+  font-size: large;
+  margin-bottom: 11px;
+}
+
+.badge-unpublished{
+  background-color: #343A40;
+  color: white;
+  font-size: large;
+  margin-bottom: 11px;
 }

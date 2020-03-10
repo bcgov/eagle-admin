@@ -28,6 +28,6 @@ export class ProjectNotificationTableRowsComponent implements OnInit {
 
   goToItem(item) {
     this.navigationStackUtils.clearNavigationStack();
-    this.router.navigate(['pn/', item._id, 'notification-project-details']);
+    this.router.navigate(['pn/', item._id, 'details']);
   }
 }

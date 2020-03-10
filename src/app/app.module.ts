@@ -76,7 +76,7 @@ import { ProjectNotificationsComponent } from './project-notifications/project-n
 import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
 import { NotificationProjectService } from './services/notification-project.service';
 import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
-import { ProjectNotificationComponent } from './project-notification/project-notification.component';
+import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -106,7 +106,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     MapComponent,
     MetricsComponent,
     NotAuthorizedComponent,
-    ProjectNotificationComponent,
+    ProjectNotificationDetailComponent,
     ProjectNotificationsComponent,
     ProjectNotificationTableRowsComponent,
     OrganizationsComponent,

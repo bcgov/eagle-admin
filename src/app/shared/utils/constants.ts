@@ -9,6 +9,22 @@ export class Constants {
   public static readonly minPickerDate: NgbDateStruct = { year: 1900, month: 1, day: 1 };
   public static readonly maxPickerDate: NgbDateStruct = { year: (new Date().getFullYear() + 20), month: 1, day: 1 };
 
+  public static readonly NOTIFICATION_TRIGGERS = [
+    'Federally Designated Physical Activity',
+    'Within 15% of Design Threshold',
+    'Workforce',
+    'Greenhouse Gases',
+    'Transmission Line',
+    'Land Clearance',
+    'Linear Clearance',
+  ];
+
+  public static readonly NOTIFICATION_DECISIONS = [
+    'In Progress',
+    'Referred for s.11 consideration',
+    'Not referred for s.11 consideration'
+  ];
+
   public static readonly tableDefaults = {
     DEFAULT_CURRENT_PAGE: 1,
     DEFAULT_PAGE_SIZE: 10,

@@ -25,7 +25,7 @@ import { RecentActivity } from 'app/models/recentActivity';
 import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
 import { Utils } from 'app/shared/utils/utils';
-import { NotificationProject } from 'app/models/notificationProject';
+import { ProjectNotification } from 'app/models/projectNotification';
 
 interface LocalLoginResponse {
   _id: string;
@@ -1221,19 +1221,19 @@ export class ApiService {
   }
 
   //
-  // Notification Projects
+  // Project Notifications
   //
-  saveNotificationProject(notificationProject: NotificationProject, publish: boolean): Observable<NotificationProject> {
-    let queryString = `notificationProject/${notificationProject._id}`;
+  saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    let queryString = `projectNotification/${projectNotification._id}`;
     if (publish !== null) {
       queryString += `?publish=${publish}`;
     }
-    return this.http.put<NotificationProject>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+    return this.http.put<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
   }
 
-  addNotificationProject(notificationProject: NotificationProject, publish: boolean): Observable<NotificationProject> {
-    const queryString = `notificationProject?publish=${publish}`;
-    return this.http.post<NotificationProject>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+  addProjectNotification(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    const queryString = `projectNotification?publish=${publish}`;
+    return this.http.post<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
   }
 
 
