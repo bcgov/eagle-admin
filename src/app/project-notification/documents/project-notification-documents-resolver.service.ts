@@ -19,6 +19,6 @@ export class ProjectNotificationDocumentsResolver implements Resolve<object> {
       1,
       1000,
       null,
-      { documentSource: 'PROJECT', project: notificationProjectId });
+      { documentSource: 'PROJECT-NOTIFICATION', project: notificationProjectId });
   }
 }

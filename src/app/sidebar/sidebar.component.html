@@ -17,7 +17,7 @@
     <a [ngClass]="{'active': mainRouteId === 'project-notifications' || mainRouteId === 'pn'}" id="notificationProjects" [routerLink]="['/project-notifications']"><i class="material-icons mr-3">view_module</i>Project Notifications</a>
     <section class="project-nav" *ngIf="showProjectNotificationDetails === true">
       <a [ngClass]="{'active': showProjectNotificationDetails && (currentMenu === 'details' || currentMenu === 'edit')}" class="project-menu" id="pn-details" [routerLink]="['pn', mainRouteId, 'details']"><i class="material-icons">assignment</i>Details</a>
-      <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'documents'}" class="project-menu" id="compliance" [routerLink]="['pn', mainRouteId, 'compliance']"><i class="material-icons">event_note</i>Documents</a>
+      <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'project-notification-documents'}" class="project-menu" id="pn-documents" (click)="goToPnDocuments(mainRouteId)" [routerLink]="['pn', mainRouteId, 'project-notification-documents']"><i class="material-icons">event_note</i>Documents</a>
       <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'comment-periods'}" class="project-menu" id="documents" [routerLink]="['pn', mainRouteId, 'project-documents']"><i class="material-icons">comment</i>Comment Period</a>
     </section>
     <a [ngClass]="{'active': mainRouteId === 'activity'}" id="activityPosts" [routerLink]="['/activity']"><i class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>
