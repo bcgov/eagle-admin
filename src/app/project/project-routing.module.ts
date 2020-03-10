@@ -50,7 +50,6 @@ import { LinkOrganizationResolver } from 'app/shared/components/link-organizatio
 import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
 import { ExtensionComponent } from 'app/shared/components/extension/extension.component';
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
-import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 import { ProjectsRoutes } from 'app/projects/projects-routes';
 import { FullProjectResolver } from './full-project-resolver.service';
 import { ListResolver } from 'app/shared/resolvers/list-resolver.service';
@@ -175,13 +174,6 @@ const routes: Routes = [
             path: 'inspection-details',
             component: InspectionDetailComponent
           },
-          {
-            path: 's/:submissionId',
-            component: SubmissionDetailComponent,
-            resolve: {
-              submission: SubmissionDetailResolver
-            }
-          }
         ]
       },
       {

@@ -51,7 +51,6 @@ import { PinsListComponent } from './pins-list/pins-list.component';
 import { GroupsTableRowsComponent } from './project-groups/project-groups-table-rows/project-groups-table-rows.component';
 import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
 import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
-import { ElementTableRowsComponent } from './compliance/inspection-detail/element-table-rows/element-table-rows.component';
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 import { AssetTableRowsComponent } from './compliance/submission-detail/asset-table-rows/asset-table-rows.component';
 
@@ -86,7 +85,6 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     DocumentDetailComponent,
     DocumentEditComponent,
     DocumentTableRowsComponent,
-    ElementTableRowsComponent,
     GetValuedComponentsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactComponent,
@@ -116,7 +114,6 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     CommentPeriodsTableRowsComponent,
     ComplianceTableRowsComponent,
     DocumentTableRowsComponent,
-    ElementTableRowsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,
