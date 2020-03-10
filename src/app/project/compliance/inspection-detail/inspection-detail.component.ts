@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Compliance } from 'app/models/compliance';
 import { Project } from 'app/models/project';
@@ -8,8 +8,9 @@ import { StorageService } from 'app/services/storage.service';
 import { MatSnackBar } from '@angular/material';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { ElementTableRowsComponent } from './element-table-rows/element-table-rows.component';
+import { AssetTableRowsComponent } from '../submission-detail/asset-table-rows/asset-table-rows.component';
 import { SearchTerms } from 'app/models/search';
+import { SearchService } from 'app/services/search.service';
 
 @Component({
   selector: 'app-inspection-detail',
@@ -22,37 +23,49 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
   public compliance: Compliance = null;
   public currentProject: Project = null;
   public elements: any[] = [];
+  public assets = [];
+  public submission: any = null;
   public publishText: string;
   public loading = true;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
+  public showTable = true;
   public tableColumns: any[] = [
     {
-      name: 'Submission Title',
-      value: 'title',
-      width: 'col-3'
-    },
-    {
-      name: 'Requirements',
-      value: 'requirement',
-      width: 'col-4'
-    },
-    {
-      name: 'Description',
-      value: 'description',
-      width: 'col-4'
-    },
-    {
       name: 'Assets',
-      value: '',
-      width: 'col-1'
+      value: 'internalExt',
+      width: 'col-2',
+      nosort: true
+    },
+    {
+      name: 'Caption',
+      value: 'caption',
+      width: 'col-3',
+      nosort: true
+    },
+    {
+      name: 'UTM Coordinates',
+      value: 'geo',
+      width: 'col-3',
+      nosort: true
+    },
+    {
+      name: 'Date/Time Taken',
+      value: 'timestamp',
+      width: 'col-2',
+      nosort: true
+    },
+    {
+      name: 'Actions',
+      value: 'actions',
+      width: 'col-2',
+      nosort: true
     }
   ];
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    private searchService: SearchService,
     public api: ApiService,
-    private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
     private snackBar: MatSnackBar,
   ) {
@@ -68,56 +81,95 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
         if (this.compliance.label) {
           this.compliance.label = this.compliance.label.replace(new RegExp('\n', 'g'), '<br />');
         }
-        this.elements = this.compliance.elements;
-        this.tableParams.totalListItems = this.elements.length;
+        // Adding itemClicked to the elements to track the icons
+        this.elements = this.compliance.elements.map(el => {
+          let newEl = {...el, itemClicked: false};
+          return newEl;
+        });
+        this.loading = false;
+      });
+  }
+
+  openElement(element) {
+    if (!element.items.length || element.items.length === 0) {
+      // No assets so don't fire request
+      return;
+    }
+    this.loading = true;
+    this.handleElementClicked(element);
+    this.searchService.getItem(element._id, 'InspectionElement')
+      .subscribe((res: any) => {
+        if (!res || !res.data) {
+          this.loading = false;
+          return;
+        }
+        this.compliance = new Compliance(res.data);
+        this.submission = res.data;
+        this.submission.description = this.submission.description.replace(new RegExp('\n', 'g'), '<br />');
+
+        this.assets = this.submission.items;
+        for (let i = 0; i < this.assets.length; i++) {
+          this.assets[i].timestamp = new Date(this.assets[i].timestamp);
+        }
+        this.tableParams.totalListItems = this.assets.length;
         this.tableParams.currentPage = 1;
         this.tableParams.pageSize = 100000;
         this.setRowData();
         this.loading = false;
-        this._changeDetectionRef.detectChanges();
+
+        this.assets.forEach(async z => {
+          if (z.type === 'photo') {
+            // Show thumb
+            let resource = await this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id);
+            const reader = new FileReader();
+            reader.readAsDataURL(resource);
+            reader.onloadend = function () {
+              // result includes identifier 'data:image/png;base64,' plus the base64 data
+              z.src = reader.result;
+            };
+          } else if (z.type === 'video') {
+            // Show it's type with a clickable event.
+          } else if (z.type === 'voice') {
+            // Show it's type with a clickable event.
+          } else if (z.type === 'text') {
+            // Show it's type with a clickable event.
+          }
+        });
       });
   }
-
+  handleElementClicked(element) {
+    // If an item is clicked need to make sure every other item is unclicked.
+    this.elements.forEach(i => {
+      if (i._id !== element._id) {
+        i.itemClicked = false;
+      }
+    });
+    if (element.itemClicked) {
+      // Don't load any items, because the same item has been clicked
+      this.loading = false;
+      element.itemClicked = !element.itemClicked;
+      this.nukeTableData();
+      return;
+    }
+    this.showTable = true;
+    element.itemClicked = !element.itemClicked;
+  }
+  nukeTableData() {
+    this.tableParams = new TableParamsObject();
+    this.showTable = false;
+  }
   setRowData() {
-    if (this.elements && this.elements.length > 0) {
+    if (this.assets && this.assets.length > 0) {
       this.tableData = new TableObject(
-        ElementTableRowsComponent,
-        this.elements,
+        AssetTableRowsComponent,
+        this.assets,
         this.tableParams,
         {
-          inspectionId: this.compliance._id
+          inspection: this.compliance,
+          elementId: this.submission._id
         }
       );
     }
-  }
-
-  public onSubmit(currentPage = 1) {
-    // dismiss any open snackbar
-    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
-    this.loading = true;
-
-    // Reset page.
-    const params = this.terms.getParams();
-    params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = currentPage;
-    params['pageSize'] = this.tableParams.pageSize;
-    params['sortBy'] = this.tableParams.sortBy;
-
-    this.router.navigate(['p', this.currentProject._id, 'compliance', 'i', this.compliance._id, params]);
-  }
-
-  setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.onSubmit(this.tableParams.currentPage);
   }
 
   async download() {

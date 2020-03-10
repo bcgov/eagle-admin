@@ -54,3 +54,20 @@ h1 {
   font-weight: 600;
   text-transform: uppercase;
 }
+
+.mouse-hover {
+  cursor: pointer;
+}
+.card-header-inspection {
+  padding: 0.5rem 1rem;
+  color: #495057;
+  background: rgba(0,0,0,.03);
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0.1rem 0.1rem 0.5rem rgba(158, 158, 158, 0.24);
+  border: none;
+}
+// TODO: if the white space needs to be presevered add this line in. This is for the description on the header for the cards.
+// .with-newlines {
+  // white-space: pre-line;
+// }
