@@ -76,7 +76,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           this.contactId = params.contactId;
           this.isEditing = true;
         }
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 15);
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+name';
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);

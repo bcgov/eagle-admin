@@ -107,7 +107,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-1'
+      width: 'col-2'
     },
     {
       name: 'Type',
@@ -117,7 +117,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-1'
+      width: 'col-2'
     },
     {
       name: 'Legislation',
@@ -957,7 +957,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     );
 
     if (docType === Constants.documentTypes.CATEGORIZED) {
-      this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData.paginationData.pageSize;
+      this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0;
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -983,8 +983,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.tableParams.sortByUncategorized,
           this.tableParams.currentPageCategorized,
           this.tableParams.currentPageUncategorized,
-          this.categorizedDocumentTableData.paginationData.pageSize,
-          this.uncategorizedDocumentTableData.paginationData.pageSize,
+          this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0,
+          this.uncategorizedDocumentTableData ? this.uncategorizedDocumentTableData.paginationData.pageSize : 0,
           this.filterForURL,
           this.tableParams.keywords || ''
         );
@@ -994,7 +994,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
       });
     } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
-      this.tableParams.pageSizeUncategorized = this.uncategorizedDocumentTableData.paginationData.pageSize;
+      this.tableParams.pageSizeUncategorized = this.uncategorizedDocumentTableData ? this.uncategorizedDocumentTableData.paginationData.pageSize : 0;
       this.searchService
       .getSearchResults(
         this.tableParams.keywords || '',
@@ -1004,7 +1004,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           { name: 'categorized', value: false }
         ],
         pageNumber,
-        this.uncategorizedDocumentTableData.paginationData.pageSize,
+        this.uncategorizedDocumentTableData ? this.uncategorizedDocumentTableData.paginationData.pageSize : 0,
         this.tableParams.sortByUncategorized,
         { documentSource: 'PROJECT' },
         true,
@@ -1020,8 +1020,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.tableParams.sortByUncategorized,
           this.tableParams.currentPageCategorized,
           this.tableParams.currentPageUncategorized,
-          this.categorizedDocumentTableData.paginationData.pageSize,
-          this.uncategorizedDocumentTableData.paginationData.pageSize,
+          this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0,
+          this.uncategorizedDocumentTableData ? this.uncategorizedDocumentTableData.paginationData.pageSize : 0,
           this.filterForURL,
           this.tableParams.keywords || ''
         );
