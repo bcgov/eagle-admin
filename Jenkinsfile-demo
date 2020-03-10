@@ -343,7 +343,7 @@ def zapScanner () {
         def ZAP_REPORT_STASH = "zap-report"
 
         // Dynamicaly determine the target URL for the ZAP scan ...
-        def TARGET_URL = getUrlFromRoute('demo-eagle-admin', 'esm-dev').trim()
+        def TARGET_URL = getUrlFromRoute('demo-eagle-admin', 'esm-test').trim()
 
         echo "Target URL: ${TARGET_URL}"
 
@@ -386,7 +386,6 @@ def zapScanner () {
               )
 
               currentBuild.result = "FAILURE"
-              exit 1
             }
 
             notifyRocketChat(
@@ -395,7 +394,6 @@ def zapScanner () {
             )
 
             currentBuild.result = "FAILURE"
-            exit 1
           }
 
           try {
