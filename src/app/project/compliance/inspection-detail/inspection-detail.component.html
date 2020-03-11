@@ -66,7 +66,7 @@
         </div>
       </div>
       <div *ngIf="!loading"  class="element-accordions">
-        <div class="card" *ngFor="let element of this.elements">
+        <div class="card add-margin" *ngFor="let element of this.elements">
           <div class="card-header-inspection" [ngClass]="{ 'mouse-hover': element.items.length}" (click)="openElement(element)"
           [attr.aria-expanded]="element.itemClicked" [attr.aria-controls]="element.title">
             <div class="row">
