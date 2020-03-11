@@ -11,6 +11,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 // modules
 import { AppRoutingModule } from 'app/app-routing.module';
 import { ProjectModule } from 'app/project/project.module';
+import { ProjectNotificationModule } from 'app/project-notification/project-notification.module';
 import { ProjectsModule } from 'app/projects/projects.module';
 import { SharedModule } from './shared/shared.module';
 import { EditorModule } from '@tinymce/tinymce-angular';
@@ -128,6 +129,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ReactiveFormsModule,
     HttpClientModule,
     ProjectModule,
+    ProjectNotificationModule,
     ProjectsModule,
     SharedModule,
     EditorModule,

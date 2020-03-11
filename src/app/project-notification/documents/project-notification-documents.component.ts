@@ -3,14 +3,13 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Subject, forkJoin } from 'rxjs';
-import * as moment from 'moment';
 import * as _ from 'lodash';
 import { Document } from 'app/models/document';
 import { ApiService } from 'app/services/api';
 import { DocumentService } from 'app/services/document.service';
 import { SearchService } from 'app/services/search.service';
 import { StorageService } from 'app/services/storage.service';
-import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
+import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableDocumentParamsObject } from 'app/shared/components/table-template/table-document-params-object';
@@ -63,26 +62,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       name: 'Date',
       value: 'datePosted',
       width: 'col-1'
-    },
-    {
-      name: 'Type',
-      value: 'type',
-      width: 'col-1'
-    },
-    {
-      name: 'Milestone',
-      value: 'milestone',
-      width: 'col-1'
-    },
-    {
-      name: 'Legislation',
-      value: 'legislation',
-      width: 'col-1'
-    },
-    {
-      name: 'Feature',
-      value: 'isFeatured',
-      width: 'col-1'
     }
   ];
 
@@ -112,12 +91,15 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   ) {}
 
   ngOnInit() {
+    alert('Init PN doc screen');
     this.route.parent.data
       .switchMap(parentData => {
         return this.route.params;
       })
       .switchMap((res: any) => {
         let params = { ...res };
+
+        alert(this.storageService.state);
 
         if (this.storageService.state.projectDocumentTableParams == null) {
           this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
@@ -406,22 +388,8 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
 
-    const params = this.terms.getParams();
+    const params = {};
     params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
-    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
-    params['currentPageUncategorized'] = this.tableParams.currentPageUncategorized = 1;
-    params['sortByCategorized'] = this.tableParams.sortByCategorized;
-    params['sortByUncategorized'] = this.tableParams.sortByUncategorized;
-    params['keywords'] = this.tableParams.keywords;
-
-    if (numItems === 'max') {
-      params['pageSizeCategorized'] = this.tableParams.totalListItemsCategorized;
-      params['pageSizeUncategorized'] =  this.tableParams.totalListItemsUncategorized;
-    } else {
-      params['pageSizeCategorized'] = this.tableParams.pageSizeCategorized = numItems;
-      params['pageSizeUncategorized'] =  this.tableParams.pageSizeUncategorized = numItems;
-    }
 
     this.router.navigate([
       'p',
@@ -441,20 +409,8 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
     this.loading = true;
 
-    const params = this.terms.getParams();
+    const params = {};
     params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
-    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
-    params['currentPageUncategorized'] = this.tableParams.currentPageUncategorized = 1;
-    params['sortByCategorized'] = this.tableParams.sortByCategorized = '-datePosted';
-    params['sortByUncategorized'] = this.tableParams.sortByUncategorized = '-datePosted';
-    params['keywords'] = this.utils.encodeParams(
-      (this.tableParams.keywords = this.tableParams.keywords || '')
-    );
-    params['pageSizeCategorized'] = this.tableParams.pageSizeCategorized;
-    params['pageSizeUncategorized'] =  this.tableParams.totalListItemsUncategorized;
-
-    this.setParamsFromFilters(params);
 
     this.router.navigate([
       'p',
@@ -499,7 +455,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       );
 
       this.documentTableData = new TableObject(
-        DocumentTableRowsComponent,
+        PnDocumentTableRowsComponent,
         documentList,
         categorizedTableParams,
         this.activeLegislationYear,
@@ -586,81 +542,42 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       pageNumber,
     );
 
-    if (docType === Constants.documentTypes.CATEGORIZED) {
-      this.tableParams.pageSizeCategorized = this.documentTableData.paginationData.pageSize;
-      this.searchService
-      .getSearchResults(
-        this.tableParams.keywords || '',
-        'Document',
-        [
-          { name: 'project', value: this.currentProject._id },
-          { name: 'categorized', value: true }
-        ],
-        pageNumber,
-        this.documentTableData.paginationData.pageSize,
+    this.tableParams.pageSizeCategorized = this.documentTableData.paginationData.pageSize;
+    this.searchService
+    .getSearchResults(
+      this.tableParams.keywords || '',
+      'Document',
+      [
+        { name: 'project', value: this.currentProject._id },
+        { name: 'categorized', value: true }
+      ],
+      pageNumber,
+      this.documentTableData.paginationData.pageSize,
+      this.tableParams.sortByCategorized,
+      { documentSource: 'PROJECT-NOTIFICATIONS' },
+      true,
+      this.filterForAPI,
+      ''
+    )
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe((res: any) => {
+      this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
+      this.docs = res[0].data.searchResults;
+      this.tableDocumentTemplateUtils.updateUrl(
         this.tableParams.sortByCategorized,
-        { documentSource: 'PROJECT-NOTIFICATIONS' },
-        true,
-        this.filterForAPI,
-        ''
-      )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
-        this.docs = res[0].data.searchResults;
-        this.tableDocumentTemplateUtils.updateUrl(
-          this.tableParams.sortByCategorized,
-          this.tableParams.sortByUncategorized,
-          this.tableParams.currentPageCategorized,
-          this.tableParams.currentPageUncategorized,
-          this.documentTableData.paginationData.pageSize,
-          this.undocumentTableData.paginationData.pageSize,
-          this.filterForURL,
-          this.tableParams.keywords || ''
-        );
-
-        this.setRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
-    } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
-      this.tableParams.pageSizeUncategorized = this.undocumentTableData.paginationData.pageSize;
-      this.searchService
-      .getSearchResults(
-        this.tableParams.keywords || '',
-        'Document',
-        [
-          { name: 'project', value: this.currentProject._id },
-          { name: 'categorized', value: false }
-        ],
-        pageNumber,
-        this.undocumentTableData.paginationData.pageSize,
         this.tableParams.sortByUncategorized,
-        { documentSource: 'PROJECT' },
-        true,
-        this.filterForAPI,
-        ''
-      )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItemsUncategorized = res[0].data.meta[0].searchResultsTotal;
-        this.uncategorizedDocs = res[0].data.searchResults;
-        this.tableDocumentTemplateUtils.updateUrl(
-          this.tableParams.sortByCategorized,
-          this.tableParams.sortByUncategorized,
-          this.tableParams.currentPageCategorized,
-          this.tableParams.currentPageUncategorized,
-          this.documentTableData.paginationData.pageSize,
-          this.undocumentTableData.paginationData.pageSize,
-          this.filterForURL,
-          this.tableParams.keywords || ''
-        );
+        this.tableParams.currentPageCategorized,
+        this.tableParams.currentPageUncategorized,
+        this.documentTableData.paginationData.pageSize,
+        null,
+        this.filterForURL,
+        this.tableParams.keywords || ''
+      );
 
-        this.setRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
-    }
+      this.setRowData();
+      this.loading = false;
+      this._changeDetectionRef.detectChanges();
+    });
   }
 
     // Compares selected options when a dropdown is grouped by legislation.
@@ -670,10 +587,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     }
 
     return false;
-  }
-
-  clearSelectedItem(filter: string, item: any) {
-    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
   }
 
   private createRowCopy(item): void {
