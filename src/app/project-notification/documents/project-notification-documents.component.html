@@ -1,13 +1,13 @@
 <nav class="action-container" aria-label="breadcrumb">
-  <!-- <ol class="breadcrumb">
+  <ol class="breadcrumb">
       <li class="breadcrumb-item">
           <a [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item">
-          <a *ngIf='currentProject' [routerLink]="['/pn', currentProject._id]" routerLinkActive="active">{{currentProject.name}}</a>
+          <a *ngIf='currentProject' [routerLink]="['/pn', currentProject._id, 'details']">{{currentProject.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">Documents</li>
-  </ol> -->
+  </ol>
 </nav>
 
 <div class="container-fluid-padding">
@@ -27,12 +27,12 @@
             [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
         <button (click)="selectAction('delete')" class="dropdown-item"
             [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
-        <!-- <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': projectNotification._id === 'activity'}"
-            [routerLink]="['/pn', projectNotification._id, 'project-notification-documents', 'upload']">
+        <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+            [routerLink]="['/pn', currentProject._id, 'project-notification-documents', 'upload']">
             <button class="dropdown-item" type="button" id="button-upl">
                 Upload Document(s)
             </button>
-        </a> -->
+        </a>
       </div>
     </div>
   </div>

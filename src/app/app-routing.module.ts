@@ -35,6 +35,7 @@ import { AddEditProjectNotificationComponent } from './project-notifications/add
 import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 import { ProjectNotificationResolver } from './project-notification/project-notification-resolver.service';
 import { ProjectNotificationDocumentsResolver } from './project-notification/documents/project-notification-documents-resolver.service';
+import { ProjectNotificationDocumentsComponent } from './project-notification/documents/project-notification-documents.component';
 
 import { AuthGuard } from './services/auth-guard.service';
 
@@ -140,6 +141,11 @@ const routes: Routes = [
       {
         path: 'edit',
         component: AddEditProjectNotificationComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'project-notification-documents',
+        component: ProjectNotificationDocumentsComponent,
         canActivate: [AuthGuard],
       }
     ],

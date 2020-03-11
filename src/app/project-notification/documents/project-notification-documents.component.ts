@@ -91,7 +91,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   ) {}
 
   ngOnInit() {
-    alert('Init PN doc screen');
     this.route.parent.data
       .switchMap(parentData => {
         return this.route.params;
@@ -99,18 +98,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       .switchMap((res: any) => {
         let params = { ...res };
 
-        alert(this.storageService.state);
-
-        if (this.storageService.state.projectDocumentTableParams == null) {
-          this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
-            params,
-            this.filterForURL
-          );
-          this.storageService.state.projectDocumentTableParams = this.tableParams;
-        }
-
-        this.currentProject = this.storageService.state.currentProject.data;
-        this.storageService.state.labels = null;
+        this.currentProject = this.storageService.state.currentProject;
         this._changeDetectionRef.detectChanges();
 
         return this.route.data;

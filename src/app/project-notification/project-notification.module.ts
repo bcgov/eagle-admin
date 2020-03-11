@@ -8,6 +8,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 
 // components
 import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
+import { ProjectNotificationRoutingModule } from './project-notification-routing.module';
 import { PnDocumentTableRowsComponent } from './documents/project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { MatTabsModule, MatMenuModule } from '@angular/material';
 
@@ -25,15 +26,14 @@ import { StorageService } from 'app/services/storage.service';
     MatTabsModule,
     ReactiveFormsModule,
     SharedModule,
-    NgSelectModule
+    NgSelectModule,
+    ProjectNotificationRoutingModule
   ],
   declarations: [
-    PnDocumentTableRowsComponent,
-    ProjectNotificationDocumentsComponent
+    ProjectNotificationDocumentsComponent,
+    PnDocumentTableRowsComponent
   ],
   entryComponents: [
-    PnDocumentTableRowsComponent,
-    ProjectNotificationDocumentsComponent
   ],
   exports: [
 

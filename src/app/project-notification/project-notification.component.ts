@@ -1,27 +1,25 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
-import { forkJoin } from 'rxjs';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/concat';
 
 import { ApiService } from 'app/services/api';
 import { NotificationProjectService } from 'app/services/notification-project.service';
 import { DocumentService } from 'app/services/document.service';
-import { ProjectNotification } from 'app/models/projectNotification';
-import { StorageService } from 'app/services/storage.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-notification-project',
-  templateUrl: './project-notification-detail.component.html',
-  styleUrls: ['./project-notification-detail.component.scss']
+  templateUrl: './project-notification.component.html',
+  styleUrls: ['./project-notification.component.scss']
 })
 
-export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
+export class ProjectNotificationComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public projectNotification: ProjectNotification = null;
+  public notificationProject = null;
   public loading = false;
   public isPublished = false;
   public documents = [];
@@ -33,7 +31,6 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
     public notificationProjectService: NotificationProjectService,
     public documentService: DocumentService,
     private _changeDetectorRef: ChangeDetectorRef,
-    private storageService:  StorageService
   ) { }
 
   ngOnInit() {
@@ -41,19 +38,13 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res) {
-          this.projectNotification = res.notificationProject.data;
-
-          if (this.projectNotification.read.includes('public')) {
+          /*this.notificationProject = res.notificationProject.data;
+          if (this.notificationProject.read.includes('public')) {
             this.isPublished = true;
           }
-
           this.documents = res.documents[0].data.searchResults;
           this.loading = false;
-          this._changeDetectorRef.detectChanges();
-
-          // add to storage service
-          this.storageService.state['currentProject'] = this.projectNotification;
-          this.storageService.state.currentProject['documents'] = this.documents;
+          this._changeDetectorRef.detectChanges();*/
         } else {
           alert('Uh-oh, couldn\'t load notification project');
           // project not found --> navigate back to search
@@ -63,7 +54,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
   }
 
   edit() {
-    this.router.navigate(['pn', this.projectNotification._id, 'edit']);
+    this.router.navigate(['pn', this.notificationProject._id, 'edit']);
   }
 
   publish() {
@@ -76,7 +67,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
     });
 
     // Publish notification project
-    observables.push(this.notificationProjectService.save(this.projectNotification, true));
+    observables.push(this.notificationProjectService.save(this.notificationProject, true));
 
     forkJoin(observables)
       .takeUntil(this.ngUnsubscribe)
@@ -97,7 +88,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
     });
 
     // Un-publish notification project
-    observables.push(this.notificationProjectService.save(this.projectNotification, false));
+    observables.push(this.notificationProjectService.save(this.notificationProject, false));
 
     forkJoin(observables)
       .takeUntil(this.ngUnsubscribe)
