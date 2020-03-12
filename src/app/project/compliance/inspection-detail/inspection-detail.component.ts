@@ -103,7 +103,6 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
           this.loading = false;
           return;
         }
-        this.compliance = new Compliance(res.data);
         this.submission = res.data;
         this.submission.description = this.submission.description.replace(new RegExp('\n', 'g'), '<br />');
 
