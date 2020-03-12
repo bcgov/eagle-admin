@@ -11,7 +11,7 @@ import { ProjectNotificationDocumentsComponent } from './documents/project-notif
 import { ProjectNotificationRoutingModule } from './project-notification-routing.module';
 import { PnDocumentTableRowsComponent } from './documents/project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { MatTabsModule, MatMenuModule } from '@angular/material';
-
+import { UploadComponent } from './documents/upload/upload.component';
 // services
 import { ApiService } from 'app/services/api';
 import { ExcelService } from 'app/services/excel.service';
@@ -31,9 +31,11 @@ import { StorageService } from 'app/services/storage.service';
   ],
   declarations: [
     ProjectNotificationDocumentsComponent,
-    PnDocumentTableRowsComponent
+    PnDocumentTableRowsComponent,
+    UploadComponent
   ],
   entryComponents: [
+    UploadComponent
   ],
   exports: [
 

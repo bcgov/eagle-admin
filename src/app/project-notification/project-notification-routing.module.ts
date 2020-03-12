@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { ProjectNotificationComponent } from './project-notification.component';
 import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
-
+import { UploadComponent } from './documents/upload/upload.component';
 import { ProjectNotificationResolver } from './project-notification-resolver.service';
 import { ProjectNotificationDocumentsResolver } from './documents/project-notification-documents-resolver.service';
 import { ListResolver } from 'app/shared/resolvers/list-resolver.service';
@@ -24,6 +24,10 @@ const routes: Routes = [
         resolve: {
           documents: ProjectNotificationDocumentsResolver,
         }
+      },
+      {
+        path: 'project-notification-documents/upload',
+        component: UploadComponent
       }
     ]
   }

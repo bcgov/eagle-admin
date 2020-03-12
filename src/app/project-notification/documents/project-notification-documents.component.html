@@ -41,8 +41,8 @@
       <div class="content-container">
           <div class="document-tabs mt-3">
             <ng-template ngbTabContent>
-                <app-table-template *ngIf="!loading && this.tableParams.totalListItems != 0 && documentTableData && documentTableData.data.length"
-                    (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="cdocumentTableData"
+                <app-table-template
+                    (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
                     (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
                     (onPageNumUpdate)='getPaginatedDocs($event)' (selectAllClicked)="selectAction('selectAll')">
                 </app-table-template>

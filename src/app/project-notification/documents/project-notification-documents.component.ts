@@ -51,17 +51,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-4'
-    },
-    {
-      name: 'Status',
-      value: 'status',
-      width: 'col-2'
-    },
-    {
-      name: 'Date',
-      value: 'datePosted',
-      width: 'col-1'
+      width: 'col-11'
     }
   ];
 
