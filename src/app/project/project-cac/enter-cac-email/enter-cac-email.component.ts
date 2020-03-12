@@ -34,8 +34,8 @@ export class EnterCACEmailComponent extends DialogComponent<DataModel, string> i
     this.close();
   }
 
-  register(form: FormGroup) {
-    console.log('Successful registration');
-    console.log(form);
+  cancel() {
+    this.result = '';
+    this.close();
   }
 }
