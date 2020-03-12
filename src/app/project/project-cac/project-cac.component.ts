@@ -386,7 +386,6 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy || '-email';
-    // params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.keywords || '');
     params['pageSize'] = this.tableParams.pageSize || 25;
     this.router.navigate(['p', this.currentProject._id, 'project-cac', params]);
   }
@@ -397,7 +396,6 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
     params['sortBy'] = this.tableParams.sortBy || '-email';
-    // params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.keywords || '');
     params['pageSize'] = this.tableParams.pageSize || 25;
     this.router.navigate(['p', this.currentProject._id, 'project-cac', params]);
   }
