@@ -1,16 +1,17 @@
 <nav class="action-container" aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-      <a [routerLink]="['/projects']">All Projects</a>
+      <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
     </li>
     <li class="breadcrumb-item">
-      <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="['/p', currentProject._id, 'comment-periods']">Comment Periods</a>
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="['/p', currentProject._id, 'cp', commentPeriod._id]">{{commentPeriod.dateStarted | date: 'MMMM d'}} -
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', commentPeriod._id]">{{commentPeriod.dateStarted | date: 'MMMM d'}} -
         {{commentPeriod.dateCompleted | date}}</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
@@ -176,7 +177,7 @@
         </div>
       </div>
     </div>
-    <div class="form-row">
+    <div *ngIf="currentProject.type === 'currentProject'" class="form-row">
       <div class="form-group col-md-12">
         <label for="valuedComponents"><b>Valued Components</b></label>
         <app-get-valued-components id="valuedComponents"></app-get-valued-components>

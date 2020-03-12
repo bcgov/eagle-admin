@@ -20,7 +20,7 @@
           <button class="dropdown-item" (click)="editCommentPeriod()">Edit</button>
           <button class="dropdown-item" (click)="addComment()">Add a comment</button>
           <button class="dropdown-item" (click)="exportCommentsForStaff()">Export All Comments</button>
-          <button class="dropdown-item" (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
+          <button *ngIf="projectType === 'currentProject'" class="dropdown-item" (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
           <button class="dropdown-item" (click)="togglePublishState()">{{publishAction}}</button>
           <button *ngIf="canDeleteCommentPeriod" class="dropdown-item" (click)="deleteCommentPeriod()">Delete</button>
         </div>
@@ -47,7 +47,7 @@
         Commenting {{commentPeriod.commentPeriodStatus}}
       </p>
     </div>
-    <div class="col-md-4">
+    <div *ngIf="projectType === 'currentProject'" class="col-md-4">
       <h3>MILESTONE(S):</h3>
       <p id="milestone">{{commentPeriod.milestone | listConverter}}</p>
     </div>
@@ -110,7 +110,7 @@
   </div>
 </section>
 
-<section id="open-house-details">
+<section  *ngIf="projectType === 'currentProject'"id="open-house-details">
   <div class="row">
     <div class="col-12">
       <h2>OPEN HOUSE</h2>

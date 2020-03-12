@@ -19,6 +19,7 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
   public commentPeriod: CommentPeriod;
   public loading: Boolean = true;
   public currentProject;
+  public baseRouteUrl: string;
   public selectedTab = 0;
 
   constructor(
@@ -28,7 +29,8 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.state.currentProject;
+    this.baseRouteUrl = this.currentProject.type === 'currentProjectNotification' ? '/pn' : '/p';
     this.storageService.state.selectedDocumentsForCP = null;
     this.storageService.state.addEditCPForm = null;
     this.storageService.state.currentVCs = null;
