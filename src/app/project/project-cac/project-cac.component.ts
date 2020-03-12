@@ -51,25 +51,25 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
     {
       name: 'Live Near',
       value: 'liveNear',
-      width: 'col-2',
+      width: 'col-1',
       nosort: true
     },
     {
       name: 'MemberOf',
       value: 'memberOf',
-      width: 'col-2',
+      width: 'col-1',
       nosort: true
     },
     {
       name: 'KnowledgeOf',
       value: 'knowledgeOf',
-      width: 'col-2',
+      width: 'col-1',
       nosort: true
     },
     {
       name: 'Additional',
       value: 'additionalNotes',
-      width: 'col-2',
+      width: 'col-4',
       nosort: true
     }
   ];

@@ -7,7 +7,7 @@
   <td data-label="Live Near"
       scope="row"
       data-toggle="tooltip" data-placement="bottom" title="{{item.liveNear}}"
-      class="col-2">
+      class="col-1">
       <div class="badge badge-pill badge-info"
            [ngClass]="{'bg-success': item.liveNear !== '', 'bg-danger': item.liveNear === ''}">{{item.liveNear !== ''}}
       </div>
@@ -15,7 +15,7 @@
   <td data-label="KnowledgeOf"
       scope="row"
       data-toggle="tooltip" data-placement="bottom" title="{{item.memberOf}}"
-      class="col-2">
+      class="col-1">
       <div class="badge badge-pill badge-info"
            [ngClass]="{'bg-success': item.memberOf !== '', 'bg-danger': item.memberOf === ''}">{{item.memberOf !== ''}}
       </div>
@@ -23,7 +23,7 @@
   <td data-label="MemberOf"
       scope="row"
       data-toggle="tooltip" data-placement="bottom" title="{{item.knowledgeOf}}"
-      class="col-2">
+      class="col-1">
       <div class="badge badge-pill badge-info"
            [ngClass]="{'bg-success': item.knowledgeOf !== '', 'bg-danger': item.knowledgeOf === ''}">{{item.knowledgeOf !== ''}}
       </div>
@@ -31,7 +31,7 @@
   <td data-label="MemberOf"
       scope="row"
       data-toggle="tooltip" data-placement="bottom" title="{{item.additionalNotes}}"
-      class="col-2">
+      class="col-4">
       <div class="badge badge-pill badge-info"
            [ngClass]="{'bg-success': item.additionalNotes !== '', 'bg-danger': item.additionalNotes === ''}">{{item.additionalNotes !== ''}}
       </div>
