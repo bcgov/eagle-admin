@@ -27,7 +27,7 @@
             [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
         <button (click)="selectAction('delete')" class="dropdown-item"
             [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
-        <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+        <a *ngIf='currentProject && docs.length < 2' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
             [routerLink]="['/pn', currentProject._id, 'project-notification-documents', 'upload']">
             <button class="dropdown-item" type="button" id="button-upl">
                 Upload Document(s)
@@ -37,21 +37,18 @@
     </div>
   </div>
 </h1>
-  <form #f="ngForm" class="search-form ui form">
-      <div class="content-container">
-          <div class="document-tabs mt-3">
-            <ng-template ngbTabContent>
-                <app-table-template
-                    (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
-                    (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-                    (onPageNumUpdate)='getPaginatedDocs($event)' (selectAllClicked)="selectAction('selectAll')">
-                </app-table-template>
-              </ng-template>
-          </div>
-      </div>
+<div class="content-container">
+    <div class="document-tabs mt-3">
+      <app-table-template *ngIf="!loading && documentTableData && documentTableData.data.length"
+          (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
+          (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
+          (onPageNumUpdate)='getPaginatedDocs($event)' (selectAllClicked)="selectAction('selectAll')">
+      </app-table-template>
+    </div>
+</div>
 
-      <div>
-          <div class="spinner-container" *ngIf="loading">
-              <div class="spinner-new rotating"></div>
-          </div>
-      </div>
+<div>
+    <div class="spinner-container" *ngIf="loading">
+        <div class="spinner-new rotating"></div>
+    </div>
+</div>

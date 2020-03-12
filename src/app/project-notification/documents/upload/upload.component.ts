@@ -144,6 +144,7 @@ public docNameExists() {
           const document = new Document();
           document.upfile = files[i];
           document.documentFileName = files[i].name;
+          document.legislation = 2018;
 
           // save document for upload to db when project is added or saved
           this.documents.push(document);

@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/concat';
-
+import { StorageService } from 'app/services/storage.service';
 import { ApiService } from 'app/services/api';
 import { NotificationProjectService } from 'app/services/notification-project.service';
 import { DocumentService } from 'app/services/document.service';
@@ -31,6 +31,7 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
     public notificationProjectService: NotificationProjectService,
     public documentService: DocumentService,
     private _changeDetectorRef: ChangeDetectorRef,
+    private storageService:  StorageService
   ) { }
 
   ngOnInit() {
@@ -38,13 +39,12 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res) {
-          /*this.notificationProject = res.notificationProject.data;
+          this.notificationProject = this.storageService.state.currentProject;
           if (this.notificationProject.read.includes('public')) {
             this.isPublished = true;
           }
-          this.documents = res.documents[0].data.searchResults;
           this.loading = false;
-          this._changeDetectorRef.detectChanges();*/
+          this._changeDetectorRef.detectChanges();
         } else {
           alert('Uh-oh, couldn\'t load notification project');
           // project not found --> navigate back to search

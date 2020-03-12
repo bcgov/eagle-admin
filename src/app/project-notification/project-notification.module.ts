@@ -35,6 +35,7 @@ import { StorageService } from 'app/services/storage.service';
     UploadComponent
   ],
   entryComponents: [
+    PnDocumentTableRowsComponent,
     UploadComponent
   ],
   exports: [

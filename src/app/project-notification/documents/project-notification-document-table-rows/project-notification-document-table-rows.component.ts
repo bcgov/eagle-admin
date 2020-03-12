@@ -27,28 +27,18 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
   ngOnInit() {
     this.documents = this.data.data;
     this.paginationData = this.data.paginationData;
-    this.activeLegislationYear = this.data.extraData;
+    this.activeLegislationYear = 2018;
   }
 
   selectItem(item) {
-    if (this.activeLegislationYear && item && this.activeLegislationYear !== item.legislation) {
-      alert('To use multi-edit, please select documents with the same legislation year.');
-      return;
-    }
     item.checkbox = !item.checkbox;
     let count = 0;
     this.documents.map(doc => {
       if (doc.checkbox === true) {
         count++;
-        if (!this.activeLegislationYear) {
-          this.activeLegislationYear = doc.legislation;
-        }
       }
     });
-    if (count === 0) {
-      this.activeLegislationYear = null;
-    }
-    this.selectedCount.emit({ count, activeLegislationYear: this.activeLegislationYear });
+    this.selectedCount.emit({ count, activeLegislationYear: 2018 });
   }
 
   goToItem(item) {
