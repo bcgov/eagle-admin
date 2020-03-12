@@ -27,7 +27,7 @@ export class CACTableRowsComponent implements OnInit, TableComponent {
     item.checkbox = !item.checkbox;
 
     let count = 0;
-    this.items.map(doc => {
+    this.items.forEach(doc => {
       if (doc.checkbox === true) {
         count++;
       }
