@@ -49,9 +49,27 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       width: 'col-2'
     },
     {
-      name: 'Comment',
-      value: 'comment',
-      width: 'col-7',
+      name: 'Live Near',
+      value: 'liveNear',
+      width: 'col-2',
+      nosort: true
+    },
+    {
+      name: 'MemberOf',
+      value: 'memberOf',
+      width: 'col-2',
+      nosort: true
+    },
+    {
+      name: 'KnowledgeOf',
+      value: 'knowledgeOf',
+      width: 'col-2',
+      nosort: true
+    },
+    {
+      name: 'Additional',
+      value: 'additionalNotes',
+      width: 'col-2',
       nosort: true
     }
   ];
@@ -347,7 +365,10 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       userData.push({
         name: user.name,
         email: user.email,
-        reason: user.comment
+        liveNear: user.liveNear,
+        memberOf: user.memberOf,
+        knowledgeOf: user.knowledgeOf,
+        additionalNotes: user.additionalNotes
       });
     });
 
