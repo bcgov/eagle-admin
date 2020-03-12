@@ -7,10 +7,10 @@ import { SharedModule } from 'app/shared/shared.module';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 // components
+import { ProjectNotificationComponent } from './project-notification.component';
 import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
 import { ProjectNotificationRoutingModule } from './project-notification-routing.module';
 import { PnDocumentTableRowsComponent } from './documents/project-notification-document-table-rows/project-notification-document-table-rows.component';
-import { MatTabsModule, MatMenuModule } from '@angular/material';
 import { UploadComponent } from './documents/upload/upload.component';
 // services
 import { ApiService } from 'app/services/api';
@@ -22,12 +22,10 @@ import { StorageService } from 'app/services/storage.service';
     CommonModule,
     FormsModule,
     NgbModule.forRoot(),
-    MatMenuModule,
-    MatTabsModule,
+    ProjectNotificationRoutingModule,
     ReactiveFormsModule,
     SharedModule,
-    NgSelectModule,
-    ProjectNotificationRoutingModule
+    NgSelectModule
   ],
   declarations: [
     ProjectNotificationDocumentsComponent,
@@ -35,6 +33,7 @@ import { StorageService } from 'app/services/storage.service';
     UploadComponent
   ],
   entryComponents: [
+    ProjectNotificationComponent,
     PnDocumentTableRowsComponent,
     UploadComponent
   ],

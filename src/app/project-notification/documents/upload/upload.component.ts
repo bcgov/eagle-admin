@@ -37,7 +37,7 @@ export class UploadComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject;
+    this.currentProject = this.storageService.state.currentProject.data;
     this.buildForm();
   }
 
@@ -45,7 +45,6 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.myForm = new FormGroup({
       'displayName': new FormControl()
     });
-    this.myForm.controls.displayName.setValue('My File!');
     this.loading = false;
   }
 

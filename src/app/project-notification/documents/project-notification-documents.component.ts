@@ -87,7 +87,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       .switchMap((res: any) => {
         let params = { ...res };
 
-        this.currentProject = this.storageService.state.currentProject;
+        this.currentProject = this.storageService.state.currentProject.data;
         this._changeDetectionRef.detectChanges();
 
         return this.route.data;

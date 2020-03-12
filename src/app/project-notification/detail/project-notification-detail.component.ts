@@ -42,6 +42,8 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res) {
           this.projectNotification = res.notificationProject.data;
+          // Set as the current project. A project notification is treated the same as a project.
+          this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
 
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
@@ -50,10 +52,6 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
           this.documents = res.documents[0].data.searchResults;
           this.loading = false;
           this._changeDetectorRef.detectChanges();
-
-          // add to storage service
-          this.storageService.state['currentProject'] = this.projectNotification;
-          this.storageService.state.currentProject['documents'] = this.documents;
         } else {
           alert('Uh-oh, couldn\'t load notification project');
           // project not found --> navigate back to search

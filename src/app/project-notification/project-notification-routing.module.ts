@@ -1,12 +1,15 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { ProjectNotificationComponent } from './project-notification.component';
+import { ProjectNotificationDetailComponent } from '../project-notification/detail/project-notification-detail.component';
+import { ProjectNotificationResolver } from '../project-notification/project-notification-resolver.service';
 import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
+import { ProjectNotificationDocumentsResolver } from '../project-notification/documents/project-notification-documents-resolver.service';
+import { ProjectNotificationComponent } from './project-notification.component';
+import { AddEditProjectNotificationComponent } from '../project-notifications/add-edit-project-notification/add-edit-project-notification.component';
 import { UploadComponent } from './documents/upload/upload.component';
-import { ProjectNotificationResolver } from './project-notification-resolver.service';
-import { ProjectNotificationDocumentsResolver } from './documents/project-notification-documents-resolver.service';
-import { ListResolver } from 'app/shared/resolvers/list-resolver.service';
+
+import { AuthGuard } from '../services/auth-guard.service';
 
 const routes: Routes = [
   {
@@ -14,10 +17,25 @@ const routes: Routes = [
     component: ProjectNotificationComponent,
     runGuardsAndResolvers: 'always',
     resolve: {
-      project: ProjectNotificationResolver,
-      list: ListResolver,
+      notificationProject: ProjectNotificationResolver,
+      documents: ProjectNotificationDocumentsResolver
     },
     children: [
+      {
+        path: '',
+        redirectTo: 'details',
+        pathMatch: 'full',
+      },
+      {
+        path: 'details',
+        component: ProjectNotificationDetailComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'edit',
+        component: AddEditProjectNotificationComponent,
+        canActivate: [AuthGuard],
+      },
       {
         path: 'project-notification-documents',
         component: ProjectNotificationDocumentsComponent,
@@ -29,8 +47,8 @@ const routes: Routes = [
         path: 'project-notification-documents/upload',
         component: UploadComponent
       }
-    ]
-  }
+    ],
+  },
 ];
 
 @NgModule({
@@ -41,10 +59,10 @@ const routes: Routes = [
     RouterModule
   ],
   providers: [
-     ProjectNotificationComponent,
-     ProjectNotificationDocumentsComponent,
-     ProjectNotificationResolver,
-     ProjectNotificationDocumentsResolver
+    ProjectNotificationComponent,
+    ProjectNotificationDocumentsComponent,
+    ProjectNotificationResolver,
+    ProjectNotificationDocumentsResolver
   ]
 })
 
