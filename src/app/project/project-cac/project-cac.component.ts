@@ -173,7 +173,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
 
   async copyEmail() {
     let itemsToExport = [];
-    this.tableData.data.map((item) => {
+    this.tableData.data.forEach((item) => {
       if (item.checkbox === true) {
         itemsToExport.push(item);
       }
@@ -226,12 +226,12 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.tableData.data.map((item) => {
+        this.tableData.data.forEach((item) => {
           if (item.checkbox === true) {
             someSelected = true;
           }
         });
-        this.tableData.data.map((item) => {
+        this.tableData.data.forEach((item) => {
           item.checkbox = !someSelected;
         });
 
@@ -328,7 +328,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
           if (isConfirmed) {
             this.loading = true;
             let itemsToDelete = [];
-            this.tableData.data.map((item) => {
+            this.tableData.data.forEach((item) => {
               if (item.checkbox === true) {
                 itemsToDelete.push({ promise: this.projectService.deleteCACMember(this.currentProject._id, item).toPromise(), item: item });
               }
@@ -346,7 +346,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
 
   async exportItems() {
     let itemsToExport = [];
-    this.tableData.data.map((item) => {
+    this.tableData.data.forEach((item) => {
       if (item.checkbox === true) {
         itemsToExport.push(item);
       }
