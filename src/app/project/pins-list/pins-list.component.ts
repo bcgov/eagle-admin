@@ -98,7 +98,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
-            this.tableParams.totalListItems = res.contacts[0].length;
+            this.tableParams.totalListItems = res.contacts[0].total_items;
           } else {
             this.tableParams.totalListItems = 0;
           }
