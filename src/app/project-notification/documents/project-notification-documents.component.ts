@@ -364,7 +364,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
         documentList.push({
           displayName: document.displayName,
           documentFileName: document.documentFileName,
-          datePosted: new Date();,
+          datePosted: new Date(),
           status: '',
           type: '',
           milestone: '',

@@ -15,7 +15,7 @@ export class ProjectNotificationDocumentsResolver implements Resolve<object> {
     let notificationProjectId = route.params['notificationProjectId'];
     const currentProject = this.storageService.state.currentProject;
 
-    if(currentProject) {
+    if (currentProject) {
       notificationProjectId = currentProject._id;
     }
 

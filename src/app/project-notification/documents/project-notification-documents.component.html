@@ -38,7 +38,7 @@
   </div>
 </h1>
 <div class="content-container">
-    <div class="document-tabs mt-3">
+    <div class="table-min-height mt-3">
       <app-table-template *ngIf="!loading && documentTableData && documentTableData.data.length"
           (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
           (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'

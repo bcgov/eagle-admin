@@ -12,13 +12,7 @@ export class ProjectNotificationResolver implements Resolve<object> {
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
-    let notificationProjectId = route.paramMap.get('notificationProjectId');
-    const currentProject = this.storageService.state.currentProject;
-
-    if(currentProject) {
-      notificationProjectId = currentProject._id;
-    }
-
+    const notificationProjectId = route.paramMap.get('notificationProjectId');
     return this.searchService.getItem(notificationProjectId, 'ProjectNotification');
   }
 }

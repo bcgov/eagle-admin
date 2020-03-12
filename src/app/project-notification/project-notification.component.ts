@@ -40,7 +40,7 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res) {
           this.notificationProject = this.storageService.state.currentProject;
-          if (this.notificationProject.read.includes('public')) {
+          if (this.notificationProject && this.notificationProject.read.includes('public')) {
             this.isPublished = true;
           }
           this.loading = false;
