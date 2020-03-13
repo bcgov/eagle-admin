@@ -321,6 +321,21 @@ export class ApiService {
     return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
+  createProjectCAC(projectId: string, cacEmail: string): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { cacEmail: cacEmail}, {});
+  }
+
+  deleteProjectCAC(projectId: string): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  deleteMemberFromCAC(projectId: string, member: any): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.put<any>(`${this.pathAPI}/${queryString}`, member, {});
+  }
+
   // //
   // // Features
   // //
@@ -625,6 +640,7 @@ export class ApiService {
       'isAnonymous',
       'location',
       'eaoStatus',
+      'submittedCAC',
       'period',
       'read'
     ];
@@ -657,6 +673,7 @@ export class ApiService {
       'documents',
       'eaoNotes',
       'eaoStatus',
+      'submittedCAC',
       'isAnonymous',
       'location',
       'period',
@@ -713,6 +730,7 @@ export class ApiService {
     const fields = [
       '_id',
       'eaoStatus',
+      'submittedCAC',
       'internalOriginalName',
       'documentFileName',
       'labels',

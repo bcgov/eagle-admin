@@ -26,12 +26,14 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
+import { ProjectCACComponent } from './project-cac/project-cac.component';
 import { ReviewCommentsTabComponent } from './comment-period/review-comments-tab/review-comments-tab.component';
 import { ReviewCommentsTabTableRowsComponent } from './comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
 import { ValuedComponentsComponent } from './valued-components/valued-components.component';
 import { ValuedComponentTableRowsComponent } from './valued-components/valued-component-table-rows/valued-component-table-rows.component';
 import { TopicTableRowsComponent } from './valued-components/add-vc/topic-table-rows/topic-table-rows.component';
+import { EnterCACEmailComponent } from './project-cac/enter-cac-email/enter-cac-email.component';
 
 // services
 import { ApiService } from 'app/services/api';
@@ -85,6 +87,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     DocumentDetailComponent,
     DocumentEditComponent,
     DocumentTableRowsComponent,
+    EnterCACEmailComponent,
     GetValuedComponentsComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactComponent,
@@ -97,6 +100,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     ProjectDocumentsComponent,
     ProjectGroupsComponent,
     ProjectUpdatesComponent,
+    ProjectCACComponent,
     ReviewCommentComponent,
     ReviewCommentsTabComponent,
     ReviewCommentsTabTableRowsComponent,
@@ -114,6 +118,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     CommentPeriodsTableRowsComponent,
     ComplianceTableRowsComponent,
     DocumentTableRowsComponent,
+    EnterCACEmailComponent,
     GetValuedComponentTableRowsComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,
@@ -129,6 +134,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     ProjectDetailComponent,
     ProjectArchivedDetailComponent,
     ProjectUpdatesComponent,
+    ProjectCACComponent,
     ValuedComponentsComponent,
     PinsListComponent
   ],

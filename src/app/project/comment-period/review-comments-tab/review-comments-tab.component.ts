@@ -45,7 +45,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'dateAdded',
-      width: 'col-3'
+      width: 'col-2'
     },
     {
       name: 'Attachments',
@@ -62,6 +62,11 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
       name: 'Status',
       value: 'eaoStatus',
       width: 'col-2'
+    },
+    {
+      name: 'CAC',
+      value: 'submittedCAC',
+      width: 'col-1'
     }
   ];
 
@@ -170,6 +175,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
           eaoStatus: comment.eaoStatus,
           location: comment.location,
           period: comment.period,
+          submittedCAC: comment.submittedCAC
         }
       );
     });
