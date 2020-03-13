@@ -42,6 +42,12 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
   public areDatesInvalid = false;
 
+  public tinyMceSettings = {
+    skin: false,
+    browser_spellcheck: true,
+    height: 240
+  };
+
   constructor(
     private route: ActivatedRoute,
     private _changeDetectionRef: ChangeDetectorRef,
