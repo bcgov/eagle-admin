@@ -61,7 +61,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     public storageService: StorageService,
-    private utils: Utils,
+    private utils: Utils
   ) { }
 
   ngOnInit() {
