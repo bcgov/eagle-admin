@@ -20,6 +20,7 @@ import { TableTemplateUtils } from './utils/table-template-utils';
 import { TableDocumentTemplateUtils } from './utils/table-document-template-utils';
 import { CommentStatsComponent } from './components/comment-stats/comment-stats.component';
 import { ListConverterPipe } from './pipes/list-converter.pipe';
+import { SafeHtmlPipe} from './pipes/safe-html-converter.pipe';
 import { OrgNamePipe } from './pipes/org-name.pipe';
 import { Utils } from './utils/utils';
 import { ContactSelectComponent } from './components/contact-select/contact-select.component';
@@ -31,6 +32,7 @@ import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
 import { ExtensionComponent } from './components/extension/extension.component';
 import { ListResolver } from './resolvers/list-resolver.service';
+import { from } from 'rxjs';
 
 @NgModule({
   imports: [
@@ -54,6 +56,7 @@ import { ListResolver } from './resolvers/list-resolver.service';
     LinkOrganizationComponent,
     LinkOrganizationTableRowsComponent,
     ListConverterPipe,
+    SafeHtmlPipe,
     NewlinesPipe,
     ObjectFilterPipe,
     OrderByPipe,
@@ -76,6 +79,7 @@ import { ListResolver } from './resolvers/list-resolver.service';
     LinkOrganizationComponent,
     LinkOrganizationTableRowsComponent,
     ListConverterPipe,
+    SafeHtmlPipe,
     MatSlideToggleModule,
     MatSnackBarModule,
     NewlinesPipe,

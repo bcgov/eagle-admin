@@ -101,7 +101,7 @@
             <div class="flex-container">
                 <div class="label-pair lrg">
                     <label for="description">Notes</label>
-                    <editor [init]="tinyMceSettings" name="descriptionText" id="description" formControlName="descriptionText"></editor>
+                    <editor [init]="tinyMceSettings" (onKeyUp)="updateDescriptionPreview()" name="descriptionText" id="description" formControlName="descriptionText"></editor>
                  </div>
             </div>
         </div>
@@ -115,8 +115,9 @@
                 <p class="text-secondary">
                     Comment Period on the {{infoForCommentPreview}} for {{currentProject.name}} Project.
                     <br>
-                    {{descriptionPreview}}
+                    {{descriptionPreview }}
                 </p>
+                <div class="renderedTextPreview" [innerHTML]="descriptionPreview  | safeHtml"></div>
             </div>
         </div>
 

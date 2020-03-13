@@ -4,7 +4,6 @@ import { FormGroup, FormControl, FormBuilder, FormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material';
 import { Subject } from 'rxjs/Subject';
 import * as moment from 'moment';
-
 import { CommentPeriod } from 'app/models/commentPeriod';
 
 import { CommentPeriodService } from 'app/services/commentperiod.service';
@@ -15,11 +14,15 @@ import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
 import { Project } from 'app/models/project';
 
+
 @Component({
   selector: 'app-add-edit-comment-period',
   templateUrl: './add-edit-comment-period.component.html',
   styleUrls: ['./add-edit-comment-period.component.scss']
 })
+
+
+
 
 export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
@@ -58,7 +61,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     public storageService: StorageService,
-    private utils: Utils
+    private utils: Utils,
   ) { }
 
   ngOnInit() {
@@ -337,6 +340,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   public updateDescriptionPreview() {
+    
     this.infoForCommentPreview = this.commentPeriodForm.get('infoForCommentText').value;
     this.descriptionPreview = this.commentPeriodForm.get('descriptionText').value;
     this._changeDetectionRef.detectChanges();
