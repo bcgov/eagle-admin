@@ -4,15 +4,13 @@ import { Project } from 'app/models/project';
 import { Subject } from 'rxjs';
 import { SideBarService } from 'app/services/sidebar.service';
 import { StorageService } from 'app/services/storage.service';
-import { Utils } from 'app/shared/utils/utils';
-import { ISearchResults } from 'app/models/search';
 
 @Component({
-  selector: 'app-project',
-  templateUrl: './project.component.html',
-  styleUrls: ['./project.component.scss']
+  selector: 'app-project-notification',
+  templateUrl: './project-notification.component.html',
+  styleUrls: ['./project-notification.component.scss']
 })
-export class ProjectComponent implements OnInit, OnDestroy {
+export class ProjectNotificationComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public project: Project = null;
@@ -24,7 +22,6 @@ export class ProjectComponent implements OnInit, OnDestroy {
     private router: Router,
     private _changeDetectorRef: ChangeDetectorRef,
     private sidebarService: SideBarService,
-    private utils: Utils,
     private storageService: StorageService
   ) {
   }
@@ -39,16 +36,13 @@ export class ProjectComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        (data: { project: ISearchResults<Project>[] }) => {
-          if (data.project) {
-            const projectSearchData = this.utils.extractFromSearchResults(data.project);
-            this.project = projectSearchData ? projectSearchData[0] : null;
-            this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
+        (data: any) => {
+          if (data.notificationProject) {
+            this.storageService.state.currentProject = { type: 'currentProjectNotification', data: data.notificationProject.data };
             this.loading = false;
             this._changeDetectorRef.detectChanges();
           } else {
-            alert('Uh-oh, couldn\'t load project');
-            // project not found --> navigate back to search
+            // project notification not found --> navigate back to search
             this.router.navigate(['/search']);
           }
         }

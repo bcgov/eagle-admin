@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { AddCommentComponent } from './comment-period/add-comment/add-comment.component';
-import { AddDocumentComponent } from './comment-periods/add-edit-comment-period/add-documents/add-documents.component';
-import { AddEditCommentPeriodComponent } from './comment-periods/add-edit-comment-period/add-edit-comment-period.component';
+import { AddCommentComponent } from '../comment-period/add-comment/add-comment.component';
+import { AddDocumentComponent } from '../comment-periods/add-edit-comment-period/add-documents/add-documents.component';
+import { AddEditCommentPeriodComponent } from '../comment-periods/add-edit-comment-period/add-edit-comment-period.component';
 import { AddEditProjectComponent } from 'app/projects/add-edit-project/add-edit-project.component';
 import { AddLabelComponent } from './project-documents/add-label/add-label.component';
 import { AddVcComponent } from './valued-components/add-vc/add-vc.component';
-import { CommentPeriodComponent } from './comment-period/comment-period.component';
-import { CommentPeriodsComponent } from './comment-periods/comment-periods.component';
-import { CommentPeriodsResolver } from './comment-periods/comment-periods-resolver.services';
+import { CommentPeriodComponent } from '../comment-period/comment-period.component';
+import { CommentPeriodsComponent } from '../comment-periods/comment-periods.component';
+import { CommentPeriodsResolver } from '../comment-periods/comment-periods-resolver.services';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
 import { InspectionDetailComponent } from './compliance/inspection-detail/inspection-detail.component';
@@ -21,18 +21,18 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
-import { ReviewCommentComponent } from './comment-period/review-comment/review-comment.component';
+import { ReviewCommentComponent } from '../comment-period/review-comment/review-comment.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
 import { ValuedComponentsComponent } from './valued-components/valued-components.component';
 
-import { AddDocumentsResolver } from './comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
-import { CommentPeriodResolver } from './comment-period/comment-period-resolver.service';
+import { AddDocumentsResolver } from '../comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
+import { CommentPeriodResolver } from '../comment-period/comment-period-resolver.service';
 import { DocumentDetailResolver } from './project-documents/detail/document-detail-resolver.service';
 import { InspectionDetailResolver } from './compliance/inspection-detail/inspection-detail-resolver.service';
 import { DocumentsResolver } from './project-documents/project-document-resolver.services';
 import { ComplianceResolver } from './compliance/compliance-resolver.service';
 import { ProjectResolver } from './project-resolver.service';
-import { ReviewCommentResolver } from './comment-period/review-comment/review-comment-resolver.service';
+import { ReviewCommentResolver } from '../comment-period/review-comment/review-comment-resolver.service';
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
 import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
 import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';

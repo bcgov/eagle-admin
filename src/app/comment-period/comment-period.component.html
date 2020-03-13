@@ -1,10 +1,14 @@
 <nav class="action-container" aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-      <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="['/p', currentProject._id, 'comment-periods']">Comment Periods</a>
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
       {{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}
@@ -17,7 +21,7 @@
     <div class="spinner-new rotating"></div>
   </div>
 
-  <h1 id="name">{{currentProject.name}} <span class="date">| Comment Period</span></h1>
+  <h1 id="name">{{currentProject.data.name}} <span class="date">| Comment Period</span></h1>
 
   <div>
     <mat-tab-group [selectedIndex]="selectedTab">

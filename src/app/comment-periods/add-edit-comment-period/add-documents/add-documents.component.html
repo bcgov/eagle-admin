@@ -2,16 +2,17 @@
   <div *ngIf="!isEditing">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <a [routerLink]="['/projects']">All Projects</a>
+        <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item">
-        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+        <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/p', currentProject._id, 'comment-periods']">Comment Periods</a>
+        <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/p', currentProject._id, 'comment-periods', 'add']">Add</a>
+        <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods', 'add']">Add</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Add Documents
@@ -21,22 +22,23 @@
   <div *ngIf="isEditing">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
-        <a [routerLink]="['/projects']">All Projects</a>
+        <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item">
-        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+        <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a (click)="clearSelectedDocs(['/p', currentProject._id, 'comment-periods'])" [routerLink]="">Comment
+        <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'comment-periods'])" [routerLink]="">Comment
           Periods</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/p', projectId, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted | date: 'LLLL'}}
+        <a [routerLink]="[baseRouteUrl, projectId, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted | date: 'LLLL'}}
           -
           {{currentCommentPeriod.dateCompleted | date}}</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a (click)="clearSelectedDocs(['/p', currentProject._id, 'cp', currentCommentPeriod._id, 'edit'])"
+        <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'cp', currentCommentPeriod._id, 'edit'])"
           [routerLink]="">Edit</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">

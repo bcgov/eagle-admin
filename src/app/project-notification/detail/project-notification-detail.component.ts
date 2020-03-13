@@ -7,6 +7,7 @@ import 'rxjs/add/operator/concat';
 
 import { ApiService } from 'app/services/api';
 import { NotificationProjectService } from 'app/services/notification-project.service';
+import { StorageService } from 'app/services/storage.service';
 import { DocumentService } from 'app/services/document.service';
 import { ProjectNotification } from 'app/models/projectNotification';
 
@@ -31,6 +32,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
     public api: ApiService,
     public notificationProjectService: NotificationProjectService,
     public documentService: DocumentService,
+    private storageService: StorageService,
     private _changeDetectorRef: ChangeDetectorRef,
   ) { }
 
@@ -40,6 +42,8 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res) {
           this.projectNotification = res.notificationProject.data;
+          // Set as the current project. A project notification is treated the same as a project.
+          this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
 
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;

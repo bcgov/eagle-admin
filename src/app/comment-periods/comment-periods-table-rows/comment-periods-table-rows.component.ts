@@ -15,6 +15,7 @@ export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent 
 
     public commentPeriods: any;
     public paginationData: any;
+    public baseRouteUrl: string;
 
     constructor(
         private router: Router
@@ -23,9 +24,10 @@ export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent 
     ngOnInit() {
         this.commentPeriods = this.data.data;
         this.paginationData = this.data.paginationData;
+        this.baseRouteUrl = this.data.extraData.baseRouteUrl;
     }
 
     goToItem(commentPeriod) {
-        this.router.navigate([`p/${commentPeriod.project}/cp/${commentPeriod._id}/comment-period-details`]);
+        this.router.navigate([`${this.baseRouteUrl}/${commentPeriod.project}/cp/${commentPeriod._id}/comment-period-details`]);
     }
 }

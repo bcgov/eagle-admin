@@ -6,13 +6,14 @@
     <div *ngIf="!isEditing">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a [routerLink]="['/projects']">All Projects</a>
+                <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+                <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
             </li>
             <li class="breadcrumb-item">
-                <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
             </li>
             <li class="breadcrumb-item" aria-current="page">
-                <a [routerLink]="['/p', currentProject._id, 'comment-periods']">Comment Periods</a>
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
             </li>
             <li class="breadcrumb-item active" aria-current="page">
                 Add
@@ -22,16 +23,17 @@
     <div *ngIf="isEditing">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a [routerLink]="['/projects']">All Projects</a>
+                <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+                <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
             </li>
             <li class="breadcrumb-item">
-                <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
             </li>
             <li class="breadcrumb-item" aria-current="page">
-                <a [routerLink]="['/p', currentProject._id, 'comment-periods']">Comment Periods</a>
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
             </li>
             <li class="breadcrumb-item" aria-current="page">
-                <a [routerLink]="['/p', currentProject._id, 'cp', commentPeriod._id, 'comment-period-details']">{{commentPeriod.dateStarted | date: 'LLLL'}}
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'cp', commentPeriod._id, 'comment-period-details']">{{commentPeriod.dateStarted | date: 'LLLL'}}
                     -
                     {{commentPeriod.dateCompleted | date}}</a>
             </li>
@@ -109,7 +111,7 @@
                     </i>
                 </h6>
                 <p class="text-secondary">
-                    Comment Period on the {{infoForCommentPreview}} for {{currentProject.name}} Project.
+                    Comment Period on the {{infoForCommentPreview}} for {{currentProject.data.name}} Project.
                     <br>
                     {{descriptionPreview}}
                 </p>
@@ -140,7 +142,7 @@
                 </div>
             </div>
         </div>
-        <div class="form-row">
+        <div *ngIf="currentProject.type === 'currentProject'" class="form-row">
             <div class="form-group col-md-6">
                 <label for="milestoneSel">Content for Comment [Milestones]*</label>
                 <select required class="form-control" formControlName="milestoneSel">
@@ -150,7 +152,7 @@
             </div>
         </div>
 
-        <div formArrayName="openHouses">
+        <div *ngIf="currentProject.type === 'currentProject'" formArrayName="openHouses">
             <div class="card" *ngFor="let item of commentPeriodForm.get('openHouses')['controls']; let $index=index"
                 [formGroupName]="$index">
                 <div class="card-header">Open House #{{$index+1}}
@@ -187,7 +189,7 @@
             &nbsp;
         </div>
 
-        <button class="btn btn-primary" (click)="addOpenHouseRow()">
+        <button *ngIf="currentProject.type === 'currentProject'" class="btn btn-primary" (click)="addOpenHouseRow()">
             Add Another Open House
         </button>
 

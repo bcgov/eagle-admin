@@ -24,6 +24,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public currentProject;
+  public baseRouteUrl: string;
   public comment: Comment;
   public commentPeriod: CommentPeriod;
   public loading = true;
@@ -44,7 +45,8 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.state.currentProject;
+    this.baseRouteUrl = this.currentProject === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.selectedTab = 1;
 
     this.route.data
@@ -138,18 +140,17 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
           this.comment = newComment;
         },
         error => {
-          console.log('error =', error);
           alert('Uh-oh, couldn\'t edit comment');
         },
         () => {
           this.openSnackBar(`Comment #${previousCommentId} updated.`, 'Close');
           switch (action) {
             case 'exit': {
-              this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+              this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
               break;
             }
             case 'next': {
-              this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id, 'c', this.nextCommentId, 'comment-details']);
+              this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id, 'c', this.nextCommentId, 'comment-details']);
               break;
             }
             default: {
@@ -163,7 +164,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+      this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
     }
   }
 

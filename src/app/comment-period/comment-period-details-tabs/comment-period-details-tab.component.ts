@@ -26,6 +26,8 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   public publishAction: string;
   public projectId: string;
   public projectName: string;
+  public projectType: string;
+  public baseRouteUrl: string;
   public loading = true;
   public commentPeriodDocs = [];
   public canDeleteCommentPeriod = false;
@@ -43,6 +45,8 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
     this.setPublishStatus();
     this.projectId = this.storageService.state.currentProject.data._id;
     this.projectName = this.storageService.state.currentProject.data.name;
+    this.projectType = this.storageService.state.currentProject.type;
+    this.baseRouteUrl = this.projectType === 'currentProject' ? '/p' : '/pn';
 
     if (this.commentPeriod.relatedDocuments.length > 0) {
       this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
@@ -98,7 +102,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   }
 
   editCommentPeriod() {
-    this.router.navigateByUrl(`/p/${this.projectId}/cp/${this.commentPeriod._id}/edit`);
+    this.router.navigateByUrl(`${this.baseRouteUrl}/${this.projectId}/cp/${this.commentPeriod._id}/edit`);
   }
 
   deleteCommentPeriod() {
@@ -109,7 +113,6 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
         .subscribe(
           () => { },
           error => {
-            console.log('error =', error);
             alert('Uh-oh, couldn\'t delete comment period');
           },
           () => { // onCompleted
@@ -117,14 +120,14 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
             // Clear out the document state that was stored previously.
             this.loading = false;
             this.openSnackBar('This comment period has been deleted', 'Close');
-            this.router.navigate(['p', this.projectId, 'comment-periods']);
+            this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
           }
         );
     }
   }
 
   public addComment() {
-    this.router.navigate(['/p', this.commentPeriod.project, 'cp', this.commentPeriod._id, 'add-comment']);
+    this.router.navigate([this.baseRouteUrl, this.commentPeriod.project, 'cp', this.commentPeriod._id, 'add-comment']);
   }
 
   public exportCommentsForStaff() {
