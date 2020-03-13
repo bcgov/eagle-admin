@@ -45,7 +45,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'dateAdded',
-      width: 'col-3'
+      width: 'col-2'
     },
     {
       name: 'Attachments',
