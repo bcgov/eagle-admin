@@ -14,7 +14,8 @@ import { Utils } from 'app/shared/utils/utils';
 export class SearchService {
 
   public isError = false;
-
+  // This might get large
+  private _cachedItems = {};
   constructor(
     private api: ApiService,
     private utils: Utils
@@ -22,6 +23,10 @@ export class SearchService {
 
 
   getItem(_id: string, schema: string): Observable<any> {
+    if (this._cachedItems && this._cachedItems.hasOwnProperty(_id)) {
+      // Check cache first
+      return of(this._cachedItems[_id]);
+    }
     const searchResults = this.api.getItem(_id, schema)
       .map(res => {
         let allResults = <any>[];
@@ -30,6 +35,7 @@ export class SearchService {
           allResults.push(r);
         });
         if (allResults.length === 1) {
+          this._cachedItems[_id] = allResults[0];
           return allResults[0];
         } else {
           return {};

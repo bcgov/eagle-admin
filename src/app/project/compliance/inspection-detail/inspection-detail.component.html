@@ -26,19 +26,19 @@
         <h3 class="mb-4">{{compliance.startDate | date}} -
           {{compliance.endDate | date}}</h3>
         <div class="label-pair">
-          <h3 for="name">Inspection Name: </h3>
+          <h3>Inspection Name: </h3>
           <p id="name">{{compliance.name || '-'}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="inspectionNumber">Inspection #: </h3>
+          <h3>Inspection #: </h3>
           <p id="inspectionNumber">{{compliance.case || '-'}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="email">Inspector Email: </h3>
+          <h3>Inspector Email: </h3>
           <p id="email">{{compliance.email}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="notes">Notes: </h3>
+          <h3>Notes: </h3>
           <div *ngIf="compliance.label" [innerHTML]="compliance.label" id="notes"></div>
           <p *ngIf="compliance.label == null">-</p>
         </div>
@@ -50,11 +50,56 @@
   </section>
   <section>
     <div *ngIf="elements.length > 0" class="label-pair">
-      <h3 for="tags">Inspection Submissions: </h3>
-      <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
-        [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-        (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
-      </app-table-template>
+      <h3>Inspection Submissions</h3>
+      <div class="row">
+        <div class="col-2">
+          <h3>Title</h3>
+        </div>
+        <div class="col-6">
+          <h3>Description</h3>
+        </div>
+        <div class="col-3">
+          <h3>Requirements</h3>
+        </div>
+        <div class="col-1">
+          <h3>Assets</h3>
+        </div>
+      </div>
+      <div *ngIf="!loading"  class="element-accordions">
+        <div class="card add-margin" *ngFor="let element of this.elements">
+          <div class="card-header-inspection" [ngClass]="{ 'mouse-hover': element.items.length}" (click)="openElement(element)"
+          [attr.aria-expanded]="element.itemClicked" [attr.aria-controls]="element.title">
+            <div class="row">
+              <div class="col-2">
+                <h5>{{element.title}}</h5>
+              </div>
+              <div class="col-6 with-newlines">
+                <h5>{{element.description}}</h5>
+              </div>
+              <div class="col-3">
+                <h5>{{element.requirement}}</h5>
+              </div>
+              <div class="col-1">
+                <h5>
+                  <i class="material-icons">
+                    attach_file
+                  </i>
+                  &nbsp;
+                  {{element.items.length}}
+                </h5>
+              </div>
+            </div>
+          </div>
+          <div [attr.id]="element.title" [ngbCollapse]="!element.itemClicked">
+            <div class="card">
+              <app-table-template *ngIf="!loading && tableParams && tableParams.totalListItems !== 0 && showTable"   (checkboxChange)='checkChange($event)'
+                [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+                (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+              </app-table-template>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
