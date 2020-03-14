@@ -79,6 +79,12 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('displayName', this.documents.length > 1 ? doc.documentFileName : this.myForm.value.displayName);
       formData.append('dateUploaded', new Date().toISOString());
       formData.append('datePosted', new Date().toISOString());
+      formData.append('milestone', null);
+      formData.append('type', null);
+      formData.append('description', 'Project Notification Document');
+      formData.append('documentAuthorType', null);
+      formData.append('projectPhase', null);
+      formData.append('legislation', '2018');
       observables.push(this.documentService.add(formData, this.publishDoc));
     });
 
