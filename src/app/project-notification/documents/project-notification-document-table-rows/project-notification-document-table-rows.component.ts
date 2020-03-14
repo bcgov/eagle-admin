@@ -33,7 +33,7 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
   selectItem(item) {
     item.checkbox = !item.checkbox;
     let count = 0;
-    this.documents.map(doc => {
+    this.documents.forEach(doc => {
       if (doc.checkbox === true) {
         count++;
       }
