@@ -72,6 +72,7 @@ export class UploadComponent implements OnInit, OnDestroy {
 
     this.documents.map(doc => {
       const formData = new FormData();
+
       formData.append('upfile', doc.upfile);
       formData.append('project', this.currentProject._id);
       formData.append('documentFileName', doc.documentFileName);
@@ -85,6 +86,7 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('documentAuthorType', null);
       formData.append('projectPhase', null);
       formData.append('legislation', '2018');
+
       observables.push(this.documentService.add(formData, this.publishDoc));
     });
 
