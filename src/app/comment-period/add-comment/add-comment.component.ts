@@ -26,6 +26,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public currentProject;
+  public baseRouteUrl: string;
   public comment = new Comment();
   public commentPeriod: CommentPeriod;
   public commentFiles: Array<File> = [];
@@ -50,7 +51,8 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       this.storageService.state.currentVCs = { type: 'currentVCs', data: [] };
     }
 
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.state.currentProject;
+    this.baseRouteUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
 
     this.route.data
       .takeUntil(this.ngUnsubscribe)
@@ -143,7 +145,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
           alert('Uh-oh, couldn\'t add comment');
         },
         () => { // onCompleted
-          this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+          this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
           this.loading = false;
           this.openSnackBar('This comment was updated successfuly.', 'Close');
         }
@@ -152,7 +154,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+      this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
     }
   }
 
@@ -224,14 +226,18 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.documents.map(doc => {
       const formData = new FormData();
       formData.append('upfile', doc.upfile);
-      formData.append('project', this.currentProject._id);
+      formData.append('project', this.currentProject.data._id);
       formData.append('documentFileName', doc.documentFileName);
       formData.append('internalOriginalName', doc.internalOriginalName);
       formData.append('documentSource', 'COMMENT');
       formData.append('dateUploaded', moment());
       formData.append('datePosted', moment());
       formData.append('documentAuthor', this.addCommentForm.get('authorText').value);
-      formData.append('legislation', this.currentProject.legislationYear.toString());
+
+      if (this.currentProject.type === 'currentProject') {
+        formData.append('legislation', this.currentProject.data.legislationYear.toString());
+      }
+
       // todo add authorType? selector?
       docForms.push(formData);
     });

@@ -12,10 +12,8 @@ import { MetricsComponent } from './metrics/metrics.component';
 import { ContactsComponent } from './contacts/contacts.component';
 import { ActivityComponent } from './activity/activity.component';
 import { SearchHelpComponent } from './search-help/search-help.component';
-
 import { ContactsResolver } from './contacts/contacts-resolver.service';
 import { ActivityComponentResolver } from './activity/activity-component-resolver.services';
-
 import { CanDeactivateGuard } from 'app/services/can-deactivate-guard.service';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
 import { TopicsResolver } from './administration/topics/topics-resolver.services';
@@ -32,11 +30,10 @@ import { LinkOrganizationResolver } from './shared/components/link-organization/
 import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
 import { ProjectNotificationsResolver } from './project-notifications/project-notifications-resolver.service';
 import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
-import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 import { ProjectNotificationResolver } from './project-notification/project-notification-resolver.service';
 import { ProjectNotificationDocumentsResolver } from './project-notification/documents/project-notification-documents-resolver.service';
 import { ProjectNotificationDocumentsComponent } from './project-notification/documents/project-notification-documents.component';
-
+import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 import { AuthGuard } from './services/auth-guard.service';
 
 const routes: Routes = [

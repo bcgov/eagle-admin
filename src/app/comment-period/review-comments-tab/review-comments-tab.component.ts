@@ -67,6 +67,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public commentPeriodId: string;
+  public baseRouteUrl: string;
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -81,23 +82,26 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     if (this.storageService.state.commentReviewTabParams == null) {
-      this.route.params.subscribe(params => {
-        this.commentPeriodId = params.commentPeriodId;
-        this.filter.pending = params.pending == null || params.pending === 'false' ? false : true;
-        this.filter.published = params.published == null || params.published === 'false' ? false : true;
-        this.filter.deferred = params.deferred == null || params.deferred === 'false' ? false : true;
-        this.filter.rejected = params.rejected == null || params.rejected === 'false' ? false : true;
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, this.filter);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = '-commentId';
-        }
-      });
+      this.route.params
+        .subscribe(params => {
+          this.commentPeriodId = params.commentPeriodId;
+          this.filter.pending = params.pending == null || params.pending === 'false' ? false : true;
+          this.filter.published = params.published == null || params.published === 'false' ? false : true;
+          this.filter.deferred = params.deferred == null || params.deferred === 'false' ? false : true;
+          this.filter.rejected = params.rejected == null || params.rejected === 'false' ? false : true;
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, this.filter);
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = '-commentId';
+          }
+        });
     } else {
       this.commentPeriodId = this.storageService.state.commentReviewTabParams.commentPeriodId;
       this.filter = this.storageService.state.commentReviewTabParams.filter;
       this.tableParams = this.storageService.state.commentReviewTabParams.tableParams;
       this.storageService.state.commentReviewTabParams = null;
     }
+
+    this.baseRouteUrl = this.storageService.state.currentProject.type === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.selectedTab = 0;
 
     this.commentService.getByPeriodId(
@@ -176,7 +180,8 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
     this.commentTableData = new TableObject(
       ReviewCommentsTabTableRowsComponent,
       commentList,
-      this.tableParams
+      this.tableParams,
+      { baseRouteUrl: this.baseRouteUrl }
     );
   }
 

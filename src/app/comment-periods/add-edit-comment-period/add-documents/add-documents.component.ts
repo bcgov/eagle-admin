@@ -61,6 +61,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
   ];
 
   public currentProject;
+  public baseRouteUrl: string;
   public currentCommentPeriod;
   public originalSelectedDocs = [];
   public selectedCount = 0;
@@ -86,7 +87,8 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     // BUG: If you refresh while adding comment period, the page does not show up.
     let isRedirecting = false;
 
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.state.currentProject;
+    this.baseRouteUrl = this.currentProject.type === 'currentProjectNotification' ? '/pn' : '/p';
 
     // Check if we're editing
     this.route.url.subscribe(segments => {
@@ -193,9 +195,9 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
         break;
       case 'submitDocs':
         if (this.isEditing) {
-          this.router.navigate(['/p', this.currentProject._id, 'cp', this.currentCommentPeriod._id, 'edit']);
+          this.router.navigate(['/p', this.currentProject.data._id, 'cp', this.currentCommentPeriod._id, 'edit']);
         } else {
-          this.router.navigate(['/p', this.currentProject._id, 'comment-periods', 'add']);
+          this.router.navigate(['/p', this.currentProject.data._id, 'comment-periods', 'add']);
         }
         break;
     }
@@ -283,7 +285,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     this.searchService.getSearchResults(
       this.tableParams.keywords || '',
       'Document',
-      [{ 'name': 'project', 'value': this.currentProject._id }],
+      [{ 'name': 'project', 'value': this.currentProject.data._id }],
       pageNumber,
       this.tableParams.pageSize,
       this.tableParams.sortBy,

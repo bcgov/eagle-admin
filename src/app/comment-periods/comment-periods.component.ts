@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 
 import { CommentPeriod } from 'app/models/commentPeriod';
 
-import { CommentPeriodsTableRowsComponent } from 'app/project/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
+import { CommentPeriodsTableRowsComponent } from 'app/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
 
 import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { StorageService } from 'app/services/storage.service';
@@ -59,6 +59,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   public commentPeriodTableData: TableObject;
   public loading = true;
   public currentProject;
+  public baseRouteUrl: string;
 
   public tableParams: TableParamsObject = new TableParamsObject();
 
@@ -76,7 +77,8 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     this.storageService.state.addEditCPForm = null;
     this.storageService.state.currentCommentPeriod = null;
 
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.state.currentProject;
+    this.baseRouteUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.commentReviewTabParams = null;
 
     this.route.params.subscribe(params => {
@@ -149,7 +151,8 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     this.commentPeriodTableData = new TableObject(
       CommentPeriodsTableRowsComponent,
       cpList,
-      this.tableParams
+      this.tableParams,
+      { baseRouteUrl: this.baseRouteUrl }
     );
   }
 
@@ -160,7 +163,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.commentPeriodService.getAllByProjectId(this.currentProject._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
+    this.commentPeriodService.getAllByProjectId(this.currentProject.data._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         this.tableParams.totalListItems = res.totalCount;
@@ -174,7 +177,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
   public addCommentPeriod() {
     this.storageService.state.currentProject = this.currentProject;
-    this.router.navigate(['p', this.currentProject._id, 'comment-periods', 'add']);
+    this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
   }
 
   ngOnDestroy() {

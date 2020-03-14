@@ -7,6 +7,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule, APP_INITIALIZER, ApplicationRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { MatTabsModule, MatMenuModule } from '@angular/material';
 
 // modules
 import { AppRoutingModule } from 'app/app-routing.module';
@@ -19,17 +20,33 @@ import { EditorModule } from '@tinymce/tinymce-angular';
 // components
 import { AdministrationComponent } from 'app/administration/administration.component';
 import { AppComponent } from 'app/app.component';
+import { AssetTableRowsComponent } from 'app/project/compliance/submission-detail/asset-table-rows/asset-table-rows.component';
+import { AddCommentComponent } from 'app/comment-period/add-comment/add-comment.component';
+import { AddDocumentTableRowsComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
+import { AddEditCommentPeriodComponent } from 'app/comment-periods/add-edit-comment-period/add-edit-comment-period.component';
+import { AddLabelComponent } from 'app/project/project-documents/add-label/add-label.component';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { CommentPeriodComponent } from 'app/comment-period/comment-period.component';
+import { CommentPeriodDetailsTabComponent } from 'app/comment-period/comment-period-details-tabs/comment-period-details-tab.component';
+import { CommentPeriodsComponent } from 'app/comment-periods/comment-periods.component';
+import { CommentPeriodsTableRowsComponent } from 'app/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
+import { AddDocumentComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-documents.component';
 import { FooterComponent } from 'app/footer/footer.component';
+import { GetValuedComponentsComponent } from 'app/comment-period/review-comment/get-valued-components/get-valued-components.component';
+import { GetValuedComponentTableRowsComponent } from 'app/comment-period/review-comment/get-valued-components/get-valued-component-table-rows/get-valued-component-table-rows.component';
 import { HeaderComponent } from 'app/header/header.component';
 import { ToggleButtonComponent } from 'app/toggle-button/toggle-button.component';
 import { HomeComponent } from 'app/home/home.component';
 import { LoginComponent } from 'app/login/login.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { ProjectComponent } from './project/project.component';
+import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
+import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-tab/review-comments-tab.component';
+import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { SearchComponent } from 'app/search/search.component';
 import { SidebarComponent } from 'app/sidebar/sidebar.component';
 import { TopicsComponent } from 'app/administration/topics/topics.component';
+import { UploadComponent } from 'app/project/project-documents/upload/upload.component';
 
 // services
 import { AuthenticationService } from 'app/services/authentication.service';
@@ -89,17 +106,29 @@ export function kcFactory(keycloakService: KeycloakService) {
     ActivityComponent,
     ActivityDetailTableRowsComponent,
     ActivityTableRowsComponent,
+    AddCommentComponent,
+    AddDocumentComponent,
+    AddDocumentTableRowsComponent,
     AddEditActivityComponent,
+    AddEditCommentPeriodComponent,
     AddEditContactComponent,
     AddEditProjectNotificationComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
+    AddLabelComponent,
     AdministrationComponent,
     AppComponent,
+    AssetTableRowsComponent,
+    CommentPeriodComponent,
+    CommentPeriodDetailsTabComponent,
+    CommentPeriodsComponent,
+    CommentPeriodsTableRowsComponent,
     ConfirmComponent,
     ContactsComponent,
     DayCalculatorModalComponent,
     FooterComponent,
+    GetValuedComponentsComponent,
+    GetValuedComponentTableRowsComponent,
     GroupTableRowsComponent,
     HeaderComponent,
     HomeComponent,
@@ -116,12 +145,16 @@ export function kcFactory(keycloakService: KeycloakService) {
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ProjectComponent,
+    ReviewCommentComponent,
+    ReviewCommentsTabComponent,
+    ReviewCommentsTabTableRowsComponent,
     SearchComponent,
     SearchHelpComponent,
     SidebarComponent,
     ToggleButtonComponent,
     TopicsComponent,
     TopicTableRowsComponent,
+    UploadComponent,
     UserTableRowsComponent
   ],
   imports: [
@@ -133,12 +166,15 @@ export function kcFactory(keycloakService: KeycloakService) {
     ProjectModule,
     ProjectNotificationModule,
     ProjectsModule,
+    ProjectNotificationModule,
     SharedModule,
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters
     NgbModule.forRoot(),
     BootstrapModalModule.forRoot({ container: document.body }),
-    NgSelectModule
+    NgSelectModule,
+    MatMenuModule,
+    MatTabsModule,
   ],
   providers: [
     KeycloakService,
@@ -175,12 +211,18 @@ export function kcFactory(keycloakService: KeycloakService) {
   entryComponents: [
     ActivityDetailTableRowsComponent,
     ActivityTableRowsComponent,
+    AddDocumentTableRowsComponent,
     AddEditActivityComponent,
     AddEditContactComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
+    AssetTableRowsComponent,
+    CommentPeriodComponent,
+    CommentPeriodsComponent,
+    CommentPeriodsTableRowsComponent,
     ConfirmComponent,
     DayCalculatorModalComponent,
+    GetValuedComponentTableRowsComponent,
     GroupsTableRowsComponent,
     GroupTableRowsComponent,
     InputModalComponent,
@@ -189,7 +231,9 @@ export function kcFactory(keycloakService: KeycloakService) {
     ProjectNotificationTableRowsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
+    ReviewCommentsTabTableRowsComponent,
     TopicTableRowsComponent,
+    UploadComponent,
     UserTableRowsComponent
   ],
   bootstrap: [AppComponent]

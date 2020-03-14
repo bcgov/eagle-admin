@@ -20,6 +20,7 @@ export class ReviewCommentsTabTableRowsComponent implements OnInit, TableCompone
   public comments: Comment[];
   public paginationData: any;
   public projectId: string;
+  public baseRouteUrl: string;
 
   constructor(
     private router: Router,
@@ -30,9 +31,10 @@ export class ReviewCommentsTabTableRowsComponent implements OnInit, TableCompone
     this.projectId = this.storageService.state.currentProject.data._id;
     this.comments = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.baseRouteUrl = this.data.extraData.baseRouteUrl;
   }
 
   goToItem(comment) {
-    this.router.navigate([`p/${this.projectId}/cp/${comment.period}/c/${comment._id}/comment-details`]);
+    this.router.navigate([`${this.baseRouteUrl}/${this.projectId}/cp/${comment.period}/c/${comment._id}/comment-details`]);
   }
 }

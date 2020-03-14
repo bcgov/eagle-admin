@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { SideBarService } from 'app/services/sidebar.service';
 import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
-import { ISearchResult, ISearchResults } from 'app/models/search';
+import { ISearchResults } from 'app/models/search';
 
 @Component({
   selector: 'app-project',

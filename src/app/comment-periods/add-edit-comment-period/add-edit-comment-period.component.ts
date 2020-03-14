@@ -24,7 +24,8 @@ import { Project } from 'app/models/project';
 export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public currentProject: Project;
+  public currentProject: { type: string, data: Project };
+  public componentBaseUrl: string;
   public commentPeriod = new CommentPeriod;
   public milestones: any[] = [];
 
@@ -57,11 +58,14 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // BUG: Go to add docs. refresh. it will redirect and have errors.
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.state.currentProject;
+
+    // Set the base navigation route to use depending on if viewing a project or project notification.
+    this.componentBaseUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
 
     this.config.getLists().subscribe((lists) => {
       lists.forEach(listItem => {
-        if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.legislationYear) {
+        if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.data.legislationYear) {
           this.milestones.push(Object.assign({}, listItem));
         }
       });
@@ -206,7 +210,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // Check info for comment
     // Check description
     this.commentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
-    this.commentPeriod.instructions += ` for ${this.currentProject.name} Project.`;
+    this.commentPeriod.instructions += ` for ${this.currentProject.data.name} Project.`;
     this.commentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
 
     if (this.storageService.state.selectedDocumentsForCP) {
@@ -242,30 +246,27 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
         .subscribe(
           () => { },
           error => {
-            console.log('error =', error);
             alert('Uh-oh, couldn\'t edit comment period');
           },
           () => { // onCompleted
             this.loading = false;
-            this.openSnackBar('This comment period was created successfuly.', 'Close');
-            this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+            this.openSnackBar('This comment period was created successfully.', 'Close');
+            this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
           }
         );
     } else {
-      this.commentPeriod.project = this.currentProject._id;
-      console.log('Attenpting to add comment period:', this.commentPeriod);
+      this.commentPeriod.project = this.currentProject.data._id;
       this.commentPeriodService.add(this.commentPeriod)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
           error => {
-            console.log('error =', error);
             alert('Uh-oh, couldn\'t add new comment period');
           },
           () => { // onCompleted
             this.loading = false;
-            this.openSnackBar('This comment period was created successfuly.', 'Close');
-            this.router.navigate(['p', this.currentProject._id, 'comment-periods']);
+            this.openSnackBar('This comment period was created successfully.', 'Close');
+            this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
           }
         );
     }
@@ -276,9 +277,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     if (confirm(`Are you sure you want to discard all changes?`)) {
       this.storageService.state.selectedDocumentsForCP = null;
       if (this.isEditing) {
-        this.router.navigate(['/p', this.currentProject._id, 'cp', this.commentPeriod._id]);
+        this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
       } else {
-        this.router.navigate(['/p', this.currentProject._id, 'comment-periods']);
+        this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
       }
     }
   }
@@ -286,9 +287,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public addDocuments() {
     this.storageService.state.addEditCPForm = { type: 'addEditCPForm', data: this.commentPeriodForm };
     if (this.isEditing) {
-      this.router.navigate(['/p', this.commentPeriod.project, 'cp', this.commentPeriod._id, 'edit', 'add-documents']);
+      this.router.navigate([this.componentBaseUrl, this.commentPeriod.project, 'cp', this.commentPeriod._id, 'edit', 'add-documents']);
     } else {
-      this.router.navigate(['/p', this.currentProject._id, 'comment-periods', 'add', 'add-documents']);
+      this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods', 'add', 'add-documents']);
     }
   }
 

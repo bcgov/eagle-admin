@@ -12,7 +12,7 @@ export class CommentPeriodsResolver implements Resolve<Object> {
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
-    const projectId = route.parent.paramMap.get('projId');
+    const projectId = route.parent.paramMap.get('projId') || route.parent.paramMap.get('notificationProjectId');
     const pageNum = route.params.pageNum ? route.params.pageNum : 1;
     const pageSize = route.params.pageSize ? route.params.pageSize : 10;
     const sortBy = route.params.sortBy ? route.params.sortBy : '-dateStarted';
