@@ -14,6 +14,10 @@ import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
 import { Project } from 'app/models/project';
 
+//tiny mce imports for plugins
+import 'tinymce/plugins/advlist';
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/link';
 
 @Component({
   selector: 'app-add-edit-comment-period',
@@ -48,7 +52,13 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public tinyMceSettings = {
     skin: false,
     browser_spellcheck: true,
-    height: 240
+    height: 240,
+    plugins: ['lists, advlist, link'],
+    toolbar: [ 'undo redo | formatselect | ' +
+    ' bold italic backcolor | alignleft aligncenter ' +
+    ' alignright alignjustify | bullist numlist outdent indent |' +
+    ' removeformat | help' ]
+    
   };
 
   constructor(
