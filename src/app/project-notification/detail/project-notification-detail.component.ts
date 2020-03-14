@@ -10,7 +10,6 @@ import { NotificationProjectService } from 'app/services/notification-project.se
 import { StorageService } from 'app/services/storage.service';
 import { DocumentService } from 'app/services/document.service';
 import { ProjectNotification } from 'app/models/projectNotification';
-import { StorageService } from 'app/services/storage.service';
 
 @Component({
   selector: 'app-notification-project',
@@ -34,8 +33,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
     public notificationProjectService: NotificationProjectService,
     public documentService: DocumentService,
     private storageService: StorageService,
-    private _changeDetectorRef: ChangeDetectorRef,
-    private storageService:  StorageService
+    private _changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
