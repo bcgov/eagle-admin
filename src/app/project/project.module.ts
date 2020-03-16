@@ -6,6 +6,7 @@ import { NgModule } from '@angular/core';
 import { ProjectRoutingModule } from './project-routing.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { EditorModule } from '@tinymce/tinymce-angular';
 
 // components
 import { AddEditCommentPeriodComponent } from './comment-periods/add-edit-comment-period/add-edit-comment-period.component';
@@ -66,6 +67,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
     ProjectRoutingModule,
     ReactiveFormsModule,
     SharedModule,
+    EditorModule,
     NgSelectModule
   ],
   declarations: [

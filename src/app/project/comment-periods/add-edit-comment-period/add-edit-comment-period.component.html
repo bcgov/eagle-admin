@@ -96,12 +96,16 @@
                     (keyup)="updateDescriptionPreview()" rows="3" name="infoForCommentText"
                     formControlName="infoForCommentText"></textarea>
             </div>
-            <div class="form-group col-md-6">
-                <label for="description">Description</label>
-                <textarea id="description" class="form-control" placeholder="%description%"
-                    (keyup)="updateDescriptionPreview()" rows="3" name="descriptionText"
-                    formControlName="descriptionText"></textarea>
+        </div>
+        <div class="form-row">
+            <div class="flex-container">
+                <div class="label-pair lrg">
+                    <label for="description">Description</label>
+                    <editor [init]="tinyMceSettings" (onKeyUp)="updateDescriptionPreview()" name="descriptionText" id="description" formControlName="descriptionText"></editor>
+                 </div>
             </div>
+        </div>
+        <div class="form-row">
             <div>
                 <h6>
                     <i>
@@ -110,9 +114,8 @@
                 </h6>
                 <p class="text-secondary">
                     Comment Period on the {{infoForCommentPreview}} for {{currentProject.name}} Project.
-                    <br>
-                    {{descriptionPreview}}
                 </p>
+                <div class="renderedTextPreview" [innerHTML]="descriptionPreview  | safeHtml"></div>
             </div>
         </div>
 

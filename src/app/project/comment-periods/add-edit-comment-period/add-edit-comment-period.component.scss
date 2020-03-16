@@ -23,6 +23,7 @@ input[type="text"] {
   -webkit-appearance: none;
   border: 1px solid #ababab;
   font-size: 1rem;
+  height: 40px;
 
   &:focus {
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
@@ -47,3 +48,4 @@ input[type="text"] {
 	vertical-align: middle;
 	cursor: pointer;
 }
+
