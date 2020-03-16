@@ -1,5 +1,25 @@
 @import "~assets/styles/base/base.scss";
 
+.env-banner {
+  padding: 5px 10px;
+  z-index: 10000;
+
+  &.red {
+    background-color: #ff8e8e;
+    color: #a70404
+  }
+  
+  &.yellow {
+    background-color: #f1ef63;
+    color: #98980f;
+  }
+
+  &.green {
+    background-color: #aaf1a0;
+    color: #057713;
+  }
+}
+
 .app-header {
   @include clearfix;
   padding: 0;

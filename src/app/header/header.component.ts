@@ -35,8 +35,9 @@ import { Subject } from 'rxjs/Subject';
 })
 
 export class HeaderComponent implements OnInit, OnDestroy {
-  isNavMenuOpen = false;
-  welcomeMsg: String;
+  public envName: string;
+  public isNavMenuOpen = false;
+  public welcomeMsg: String;
   private _api: ApiService;
   public jwt: {
     username: String,
@@ -84,10 +85,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.dialogService.addDialog(ConfirmComponent,
         {
           title: 'Browser Incompatible',
-          message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.'
+          message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.',
+          okOnly: true,
         }, {
           backdropColor: 'rgba(0, 0, 0, 0.5)'
         });
+    }
+
+    // Set the environment
+    switch (this.api.env) {
+      case 'local':
+        this.envName = 'Local';
+        break;
+      case 'dev':
+        this.envName = 'Development';
+        break;
+      case 'test':
+        this.envName = 'Testing';
+        break;
+      case 'demo':
+        this.envName = 'Demo';
+        break;
+      default:
+        this.envName = null;
     }
   }
 
