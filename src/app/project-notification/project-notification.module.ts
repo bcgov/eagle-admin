@@ -9,7 +9,9 @@ import { NgSelectModule } from '@ng-select/ng-select';
 
 // components
 import { ProjectNotificationComponent } from './project-notification.component';
-
+import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
+import { PnDocumentTableRowsComponent } from './documents/project-notification-document-table-rows/project-notification-document-table-rows.component';
+import { UploadComponent } from './documents/upload/upload.component';
 // services
 import { ApiService } from 'app/services/api';
 import { ExcelService } from 'app/services/excel.service';
@@ -26,10 +28,15 @@ import { StorageService } from 'app/services/storage.service';
     NgSelectModule
   ],
   declarations: [
-    ProjectNotificationComponent,
+    ProjectNotificationDocumentsComponent,
+    PnDocumentTableRowsComponent,
+    UploadComponent
   ],
   entryComponents: [
     ProjectNotificationComponent,
+    PnDocumentTableRowsComponent,
+    UploadComponent,
+    ProjectNotificationComponent
   ],
   exports: [
 

@@ -3,7 +3,11 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { ProjectNotificationDetailComponent } from '../project-notification/detail/project-notification-detail.component';
 import { ProjectNotificationResolver } from '../project-notification/project-notification-resolver.service';
+import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
 import { ProjectNotificationDocumentsResolver } from '../project-notification/documents/project-notification-documents-resolver.service';
+import { ProjectNotificationComponent } from './project-notification.component';
+import { AddEditProjectNotificationComponent } from '../project-notifications/add-edit-project-notification/add-edit-project-notification.component';
+import { UploadComponent } from './documents/upload/upload.component';
 import { AddCommentComponent } from '../comment-period/add-comment/add-comment.component';
 import { AddDocumentComponent } from '../comment-periods/add-edit-comment-period/add-documents/add-documents.component';
 import { AddEditCommentPeriodComponent } from '../comment-periods/add-edit-comment-period/add-edit-comment-period.component';
@@ -14,8 +18,6 @@ import { ReviewCommentComponent } from '../comment-period/review-comment/review-
 import { ReviewCommentResolver } from '../comment-period/review-comment/review-comment-resolver.service';
 import { AddDocumentsResolver } from '../comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
 import { CommentPeriodResolver } from '../comment-period/comment-period-resolver.service';
-import { ProjectNotificationComponent } from './project-notification.component';
-import { AddEditProjectNotificationComponent } from '../project-notifications/add-edit-project-notification/add-edit-project-notification.component';
 
 import { AuthGuard } from '../services/auth-guard.service';
 
@@ -42,6 +44,19 @@ const routes: Routes = [
       {
         path: 'edit',
         component: AddEditProjectNotificationComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'project-notification-documents',
+        component: ProjectNotificationDocumentsComponent,
+        resolve: {
+          documents: ProjectNotificationDocumentsResolver,
+        },
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'project-notification-documents/upload',
+        component: UploadComponent,
         canActivate: [AuthGuard],
       },
       {
@@ -125,10 +140,14 @@ const routes: Routes = [
     RouterModule
   ],
   providers: [
+    ProjectNotificationComponent,
+    ProjectNotificationDocumentsComponent,
+    ProjectNotificationResolver,
+    ProjectNotificationDocumentsResolver,
     AddDocumentsResolver,
     CommentPeriodResolver,
     CommentPeriodsResolver,
-    ReviewCommentResolver,
+    ReviewCommentResolver
   ]
 })
 

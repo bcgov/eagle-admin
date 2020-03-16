@@ -33,7 +33,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
     public notificationProjectService: NotificationProjectService,
     public documentService: DocumentService,
     private storageService: StorageService,
-    private _changeDetectorRef: ChangeDetectorRef,
+    private _changeDetectorRef: ChangeDetectorRef
   ) { }
 
   ngOnInit() {

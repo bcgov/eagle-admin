@@ -115,6 +115,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.router.navigate(['p', currentProjectId, 'project-documents']);
   }
 
+  goToPnDocuments(currentProjectId) {
+    this.storageService.state.projectDocumentTableParams = null;
+    this.router.navigate(['pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId}]);
+  }
+
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();

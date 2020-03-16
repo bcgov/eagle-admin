@@ -93,6 +93,7 @@ import { LinkOrganizationTableRowsComponent } from './shared/components/link-org
 import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
 import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
 import { NotificationProjectService } from './services/notification-project.service';
+import { ProjectNotificationComponent } from './project-notification/project-notification.component';
 import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
 import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 
@@ -139,6 +140,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ProjectNotificationDetailComponent,
     ProjectNotificationsComponent,
     ProjectNotificationTableRowsComponent,
+    ProjectNotificationComponent,
     OrganizationsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
@@ -162,6 +164,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ReactiveFormsModule,
     HttpClientModule,
     ProjectModule,
+    ProjectNotificationModule,
     ProjectsModule,
     ProjectNotificationModule,
     SharedModule,
