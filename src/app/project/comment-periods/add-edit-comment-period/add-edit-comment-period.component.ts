@@ -14,7 +14,7 @@ import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
 import { Project } from 'app/models/project';
 
-//tiny mce imports for plugins
+// tiny mce imports for plugins
 import 'tinymce/plugins/advlist';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/link';
@@ -58,7 +58,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     ' bold italic backcolor | alignleft aligncenter ' +
     ' alignright alignjustify | bullist numlist outdent indent |' +
     ' removeformat | help' ]
-    
   };
 
   constructor(
@@ -350,7 +349,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   public updateDescriptionPreview() {
-    
     this.infoForCommentPreview = this.commentPeriodForm.get('infoForCommentText').value;
     this.descriptionPreview = this.commentPeriodForm.get('descriptionText').value;
     this._changeDetectionRef.detectChanges();
