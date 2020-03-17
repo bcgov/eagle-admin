@@ -215,7 +215,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
       this.orgService.add(org)
         .subscribe(item => {
           if (this.navigationStackUtils.getLastBackUrl()) {
-            this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
+            this.router.navigate(this.navigationStackUtils.getLastBackUrl());
           } else {
             this.router.navigate(['orgs']);
           }
