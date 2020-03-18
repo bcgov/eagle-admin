@@ -89,32 +89,32 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'name',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Proponent',
       value: 'proponent.name',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Phase',
       value: 'currentPhaseName',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Decision',
       value: 'eacDecision',
-      width: 'col-2'
+      width: '15%'
     }
   ];
 

@@ -1,17 +1,17 @@
 <tr *ngFor="let entry of entries"
     class="clickable-row">
-    <td (click)="togglePin(entry)" data-label="Pin" scope="row" class="col-1 pin">
+    <td (click)="togglePin(entry)" data-label="Pin" scope="row" class="pin" [style.width]="!useSmallTable && columns[0].width">
       <i *ngIf="entry.pinned === true" class="material-icons" aria-hidden="true">star</i>
       <i *ngIf="entry.pinned !== true" class="material-icons" aria-hidden="true">star_border</i>
     </td>
-    <td (click)="goToItem(entry)" data-label="Headline" scope="row" class="col-3">{{entry.headline}}</td>
-    <td (click)="goToItem(entry)" data-label="Project" scope="row" class="col-2">{{entry.project?.name}}</td>
-    <td (click)="goToItem(entry)" data-label="Type" scope="row" class="col-2">{{entry.type}}</td>
-    <td (click)="goToItem(entry)" data-label="Date Added" scope="row" class="col-2">{{entry.dateAdded | date: 'longDate'}}</td>
-    <td (click)="goToItem(entry)" data-label="Status" scope="row" class="col-1">
+    <td (click)="goToItem(entry)" data-label="Headline" scope="row" style.width]="!useSmallTable && columns[1].width">{{entry.headline}}</td>
+    <td (click)="goToItem(entry)" data-label="Project" scope="row" [style.width]="!useSmallTable && columns[2].width">{{entry.project?.name}}</td>
+    <td (click)="goToItem(entry)" data-label="Type" scope="row" [style.width]="!useSmallTable && columns[3].width">{{entry.type}}</td>
+    <td (click)="goToItem(entry)" data-label="Date Added" scope="row" [style.width]="!useSmallTable && columns[4].width">{{entry.dateAdded | date: 'longDate'}}</td>
+    <td (click)="goToItem(entry)" data-label="Status" scope="row" [style.width]="!useSmallTable && columns[5].width">
         <span [ngClass]="entry.active === true ? 'active-flag': 'inactive-flag'" class="">{{entry.active === true ? 'ACTIVE' : 'INACTIVE'}}</span>
     </td>
-    <td class="delete col-1">
+    <td class="delete" [style.width]="!useSmallTable && columns[6].width">
       <button type="button" (click)="deleteActivity(entry)" class="btn"><i class="material-icons">delete</i></button>
     </td>
 </tr>

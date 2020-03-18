@@ -42,17 +42,17 @@ export class PinsListComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'name',
-      width: 'col-8'
+      width: '65%'
     },
     {
       name: 'Province',
       value: 'province',
-      width: 'col-4'
+      width: '25%'
     },
     {
       name: 'Delete',
       value: 'delete',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
   ];

@@ -12,12 +12,15 @@ import { StorageService } from 'app/services/storage.service';
 
 export class GetValuedComponentTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public valuedComponents: any;
   public paginationData: any;
-
   public selectedVCs;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private storageService: StorageService
@@ -27,6 +30,8 @@ export class GetValuedComponentTableRowsComponent implements OnInit, TableCompon
     this.valuedComponents = this.data.data;
     this.paginationData = this.data.paginationData;
     this.selectedVCs = this.storageService.state.currentVCs.data;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   selectItem(item) {

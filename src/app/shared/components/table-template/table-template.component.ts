@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ComponentFactoryResolver, OnDestroy, ViewChild, Output, EventEmitter, SimpleChanges, OnChanges, ViewEncapsulation } from '@angular/core';
-
+import {MediaMatcher} from '@angular/cdk/layout';
 import { TableDirective } from './table.directive';
 import { TableObject } from './table-object';
 import { TableComponent } from './table.component';
@@ -25,13 +25,20 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @Output() onSelectedRow: EventEmitter<any> = new EventEmitter();
   @Output() onColumnSort: EventEmitter<any> = new EventEmitter();
   @Output() selectAllClicked: EventEmitter<any> = new EventEmitter();
+
   public column: string = null;
-
-  interval: any;
-
+  public interval: any;
   public selectAll = false;
+  public mobileQuery: MediaQueryList;
+  private mobileQueryListener: () => void;
 
-  constructor(private componentFactoryResolver: ComponentFactoryResolver) { }
+  constructor(private componentFactoryResolver: ComponentFactoryResolver,
+              private media: MediaMatcher) {
+    // Detect when the app displays in mobile mode and reload the component.
+    this.mobileQuery = this.media.matchMedia('(max-width: 600px)');
+    this.mobileQueryListener = () => this.loadComponent();
+    this.mobileQuery.addListener(this.mobileQueryListener);
+   }
 
   ngOnInit() {
     this.loadComponent();
@@ -62,12 +69,15 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   loadComponent() {
     let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.data.component);
-
     let viewContainerRef = this.tableHost.viewContainerRef;
     viewContainerRef.clear();
 
     let componentRef = viewContainerRef.createComponent(componentFactory);
-    (<TableComponent>componentRef.instance).data = this.data;
+    (<TableComponent>componentRef.instance) = {
+      data: this.data,
+      columnData: this.columns,
+      smallTable: this.mobileQuery.matches,
+    };
 
     // Don't subscribe if it doesn't exist.
     if (componentRef.instance.selectedCount) {
@@ -94,6 +104,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     clearInterval(this.interval);
+    this.mobileQuery.removeListener(this.mobileQueryListener);
   }
 
   public selectAction() {

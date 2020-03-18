@@ -32,27 +32,27 @@ export class TopicsComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'name',
-      width: 'col-4'
+      width: '30%'
     },
     {
       name: 'Description',
       value: 'description',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-3'
+      width: '20%'
     },
     {
       name: 'Pillar',
       value: 'pillar',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Action',
       value: 'null',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     }
   ];

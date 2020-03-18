@@ -12,9 +12,13 @@ import { Router } from '@angular/router';
 
 export class ProjectListTableRowsComponent implements OnInit, TableComponent {
     @Input() data: TableObject;
+    @Input() columnData: Array<any>;
+    @Input() smallTable: boolean;
 
     public projects: any;
     public paginationData: any;
+    public columns: any;
+    public useSmallTable: boolean;
 
     constructor(
         private router: Router
@@ -23,6 +27,8 @@ export class ProjectListTableRowsComponent implements OnInit, TableComponent {
     ngOnInit() {
         this.projects = this.data.data;
         this.paginationData = this.data.paginationData;
+        this.columns = this.columnData;
+        this.useSmallTable = this.smallTable;
     }
 
     goToProject(project) {

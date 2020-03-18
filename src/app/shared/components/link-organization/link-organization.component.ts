@@ -30,14 +30,19 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public tableData: TableObject;
   public tableColumns: any[] = [
     {
+      name: '',
+      value: '',
+      width: '10%'
+    },
+    {
       name: 'Name',
       value: 'name',
-      width: 'col-6'
+      width: '45%'
     },
     {
       name: 'Company Type',
       value: 'companyType',
-      width: 'col-6'
+      width: '45%'
     }
   ];
 
