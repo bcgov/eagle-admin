@@ -244,6 +244,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'project-pins/link-org',
+        component: LinkOrganizationComponent,
+        resolve: {
+          organizations: PinsGlobalComponentResolver
+        }
+      },
+      {
         path: 'comment-periods/add/add-documents',
         component: AddDocumentComponent,
         resolve: {
