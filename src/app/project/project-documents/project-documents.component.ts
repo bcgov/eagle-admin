@@ -91,43 +91,43 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'select_all_box',
       value: 'select_all_box',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-4'
+      width: '30%'
     },
     {
       name: 'Status',
       value: 'status',
-      width: 'col-2'
+      width: '10%'
     },
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-2'
+      width: '12%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-1'
+      width: '12%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-2'
+      width: '11%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      width: 'col-1'
+      width: '10%'
     },
     {
       name: 'Feature',
       value: 'isFeatured',
-      width: 'col-1'
+      width: '10%'
     }
   ];
 

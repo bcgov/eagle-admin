@@ -4,7 +4,7 @@
       <th *ngFor="let entry of columns"
         class="project-table__name-col sortable"
         (click)="!entry.nosort && sort(entry.value)"
-        [ngClass]="entry.width"
+        [style.width]="entry.width"
         >
         <div *ngIf="entry.name !== 'select_all_box'">
         {{entry.name}}

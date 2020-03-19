@@ -29,25 +29,31 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
     {
       name: 'Assets',
       value: 'internalExt',
-      width: 'col-2',
+      width: '15%',
       nosort: true
     },
     {
       name: 'Caption',
       value: 'caption',
-      width: 'col-4',
+      width: '25%',
       nosort: true
     },
     {
       name: 'UTM Coordinates',
       value: 'geo',
-      width: 'col-3',
+      width: '15%',
+      nosort: true
+    },
+    {
+      name: 'Date/Time Taken',
+      value: 'date',
+      width: '20%',
       nosort: true
     },
     {
       name: 'Actions',
       value: 'actions',
-      width: 'col-3',
+      width: '25%',
       nosort: true
     }
   ];

@@ -35,36 +35,36 @@ export class ActivityComponent implements OnInit, OnDestroy {
     {
       name: 'Pin',
       value: 'pinned',
-      width: 'col-1'
+      width: '5%'
     },
     {
       name: 'Headline',
       value: 'headline',
-      width: 'col-3'
+      width: '30%'
     },
     {
       name: 'Project',
       value: 'project.name',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Date',
       value: 'dateAdded',
-      width: 'col-2'
+      width: '10%'
     },
     {
       name: 'Status',
       value: 'active',
-      width: 'col-1'
+      width: '10%'
     },
     {
       name: 'Delete',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     }
   ];

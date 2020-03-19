@@ -15,11 +15,15 @@ import { Org } from 'app/models/org';
 
 export class LinkOrganizationTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public organizations: any;
   public paginationData: any;
   public showCheckboxes = false;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private router: Router,
@@ -31,6 +35,8 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
     this.organizations = this.data.data;
     this.showCheckboxes = this.storageService.state.showOrgTableCheckboxes;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
     this.organizations.forEach((org: Org) => {
       org.checkbox = this.storageService.state.selectedOrgs.some(element => {
         return org._id === element._id;

@@ -21,7 +21,6 @@ import { Constants } from 'app/shared/utils/constants';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-// import { ModificationsListTableRowsComponent } from '../modifications-list-table-rows/modifications-list-table-rows.component';
 import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { flatMap } from 'rxjs/operators';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
@@ -55,35 +54,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public PROJECT_NATURE = Constants.PROJECT_NATURE(this.legislationYear);
   public PROJECT_NATURE_OBJECT = Constants.buildToNature;
   public EA_READINESS_TYPES = Constants.EA_READINESS_TYPES(this.legislationYear);
-  // these are for extensions
-  // public modifications = [];
-  // public modificationsTableData: TableObject;
-  // public modificationsTableColumns: any[] = [
-  //   {
-  //     name: 'Type',
-  //     value: 'type',
-  //     width: 'col-2',
-  //     nosort: true
-  //   },
-  //   {
-  //     name: 'Applied To',
-  //     value: 'appliedTo',
-  //     width: 'col-4',
-  //     nosort: true
-  //   },
-  //   {
-  //     name: 'Start',
-  //     value: 'start',
-  //     width: 'col-3',
-  //     nosort: true
-  //   },
-  //   {
-  //     name: 'End',
-  //     value: 'end',
-  //     width: 'col-3',
-  //     nosort: true
-  //   }
-  // ];
 
   public projectName: string;
   public projectId: string;

@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 
+import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
@@ -12,10 +13,14 @@ import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 })
 export class OrganizationsTableRowsComponent implements OnInit {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
 
   public organizations: any;
   public paginationData: any;
   public dropdownItems = ['Edit', 'Delete'];
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private router: Router,
@@ -26,6 +31,8 @@ export class OrganizationsTableRowsComponent implements OnInit {
   ngOnInit() {
     this.organizations = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   editItem(organization) {

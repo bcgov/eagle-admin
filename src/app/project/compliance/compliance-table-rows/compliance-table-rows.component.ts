@@ -13,11 +13,15 @@ import { ApiService } from 'app/services/api';
 
 export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public items: any;
   public paginationData: any;
   public loading = false;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private api: ApiService,
@@ -27,6 +31,8 @@ export class ComplianceTableRowsComponent implements OnInit, TableComponent {
   ngOnInit() {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   selectItem(item) {
