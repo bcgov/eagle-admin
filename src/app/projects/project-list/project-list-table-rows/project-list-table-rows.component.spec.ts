@@ -21,6 +21,40 @@ describe('ProjectListTableRowsComponent', () => {
     'sortBy': '+name',
     'totalListItems': 1
   };
+
+  const projectTableColumns = [
+    {
+      name: 'Name',
+      value: 'name',
+      width: '20%'
+    },
+    {
+      name: 'Proponent',
+      value: 'proponent.name',
+      width: '20%'
+    },
+    {
+      name: 'Type',
+      value: 'type',
+      width: '15%'
+    },
+    {
+      name: 'Region',
+      value: 'region',
+      width: '15%'
+    },
+    {
+      name: 'Phase',
+      value: 'currentPhaseName',
+      width: '15%'
+    },
+    {
+      name: 'Decision',
+      value: 'eacDecision',
+      width: '15%'
+    }
+  ];
+
   let projectList = [];
 
   projectList.push({
@@ -51,6 +85,7 @@ describe('ProjectListTableRowsComponent', () => {
     fixture = TestBed.createComponent(ProjectListTableRowsComponent);
     component = fixture.componentInstance;
     component.data = tableData;
+    component.columnData = projectTableColumns;
     fixture.detectChanges();
   });
 
