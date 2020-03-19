@@ -10,7 +10,6 @@
       <i class="material-icons">
         {{document.status === 'Not Published' ?   'cloud_off' : 'cloud_done' || '-'}}
       </i>
-      {{document.status === 'Not Published' ?  'Not Published' : 'Published' || '-'}}
     </p>
   </td>
   <td data-label="Date" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[3].width">

@@ -4,7 +4,7 @@
     <td scope="row" data-label="Ends Date" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[2].width">{{commentPeriod.dateCompleted | date:'longDate'}}
     </td>
     <td scope="row" data-label="Days Remaining" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[3].width">{{commentPeriod.daysRemaining}}</td>
-    <td scope="row" class="text-center" data-label="Published" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[4].width">{{commentPeriod.read}}</td>
+    <td scope="row" data-label="Published" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[4].width">{{commentPeriod.read}}</td>
     <td scope="row" data-label="Comment Data" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[5].width">
       <app-comment-stats [period]="commentPeriod"></app-comment-stats>
     </td>

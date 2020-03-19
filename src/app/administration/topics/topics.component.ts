@@ -78,7 +78,7 @@ export class TopicsComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe((res: any) => {
           if (res.topics) {
-            if (res.topics.data.length > 0) {
+            if (res.topics.data && res.topics.data.length > 0) {
               this.tableParams.totalListItems = res.topics.totalCount;
               this.topics = res.topics.data;
             } else {

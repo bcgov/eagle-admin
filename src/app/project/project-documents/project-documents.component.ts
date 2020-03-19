@@ -97,37 +97,37 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'displayName',
-      width: '30%'
+      width: '36%'
     },
     {
       name: 'Status',
       value: 'status',
-      width: '10%'
+      width: '5%'
     },
     {
       name: 'Date',
       value: 'datePosted',
-      width: '10%'
+      width: '12%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: '10%'
+      width: '12%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: '10%'
+      width: '12%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      width: '10%'
+      width: '5%'
     },
     {
       name: 'Feature',
       value: 'isFeatured',
-      width: '10%'
+      width: '5%'
     }
   ];
 

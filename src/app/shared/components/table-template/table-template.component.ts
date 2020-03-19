@@ -73,11 +73,9 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     viewContainerRef.clear();
 
     let componentRef = viewContainerRef.createComponent(componentFactory);
-    (<TableComponent>componentRef.instance) = {
-      data: this.data,
-      columnData: this.columns,
-      smallTable: this.mobileQuery.matches,
-    };
+    (<TableComponent>componentRef.instance).data = this.data;
+    (<TableComponent>componentRef.instance).columnData = this.columns;
+    (<TableComponent>componentRef.instance).smallTable = this.mobileQuery.matches;
 
     // Don't subscribe if it doesn't exist.
     if (componentRef.instance.selectedCount) {
