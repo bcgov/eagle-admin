@@ -91,18 +91,18 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'select_all_box',
       value: 'select_all_box',
-      width: '10%',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: '36%'
+      width: '30%'
     },
     {
       name: 'Status',
       value: 'status',
-      width: '5%'
+      width: '10%'
     },
     {
       name: 'Date',
@@ -117,17 +117,17 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Milestone',
       value: 'milestone',
-      width: '12%'
+      width: '11%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      width: '5%'
+      width: '10%'
     },
     {
       name: 'Feature',
       value: 'isFeatured',
-      width: '5%'
+      width: '10%'
     }
   ];
 
