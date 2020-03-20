@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
-// import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/throw';
 import { throwError } from 'rxjs';
@@ -60,7 +59,6 @@ export class ApiService {
     // The following items are loaded by a file that is only present on cluster builds.
     // Locally, this will be empty and local defaults will be used.
     const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
-    const remote_public_path = window.localStorage.getItem('from_admin_server--remote_public_path');  // available in case its ever needed
     const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
     this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
@@ -1085,7 +1083,7 @@ export class ApiService {
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
-  addVCToProject(vc: any, project: any): Observable<ValuedComponent> {
+  addVCToProject(vc: any): Observable<ValuedComponent> {
     const queryString = `vc/`;
     return this.http.post<ValuedComponent>(`${this.pathAPI}/${queryString}`, vc, {});
   }

@@ -8,10 +8,6 @@ import * as _ from 'lodash';
 import { ApiService } from './api';
 import { Topic } from 'app/models/topic';
 
-interface GetParameters {
-  getDocuments?: boolean;
-}
-
 @Injectable()
 export class TopicService {
 

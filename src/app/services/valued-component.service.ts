@@ -30,7 +30,7 @@ export class ValuedComponentService {
     }
 
     addToProject(item: any, projectId: any) {
-      return this.api.addVCToProject(item, projectId)
+      return this.api.addVCToProject(item)
       .map(() => {
         return {};
       })

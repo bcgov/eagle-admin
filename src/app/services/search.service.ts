@@ -6,9 +6,7 @@ import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { SearchResults, ISearchResults, ISearchResult } from 'app/models/search';
-import { Project } from 'app/models/project';
-import { Utils } from 'app/shared/utils/utils';
+import { SearchResults } from 'app/models/search';
 
 @Injectable()
 export class SearchService {
@@ -17,8 +15,7 @@ export class SearchService {
   // This might get large
   private _cachedItems = {};
   constructor(
-    private api: ApiService,
-    private utils: Utils
+    private api: ApiService
   ) { }
 
 
@@ -53,7 +50,7 @@ export class SearchService {
     return this.api.getFullDataSet(schema);
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = '', getPeopleData = false): Observable<SearchResults[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = ''): Observable<SearchResults[]> {
     if (sortBy === '') {
       sortBy = null;
     }

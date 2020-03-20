@@ -1,16 +1,17 @@
 import { Params } from '@angular/router';
 import * as _ from 'lodash';
 
-import { Project } from './project';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 export class SearchResults {
   _schemaName: string;
   data: any;
+  hostname: any;
 
   constructor(search?: any, hostname?: any) {
-    this._schemaName          = search && search._schemaName          || 0;
-    this.data       = search && search.data       || 0;
+    this._schemaName = search && search._schemaName || 0;
+    this.data        = search && search.data        || 0;
+    this.hostname    = hostname || null;
   }
 }
 
