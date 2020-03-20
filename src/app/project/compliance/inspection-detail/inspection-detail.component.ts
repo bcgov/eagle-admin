@@ -96,7 +96,10 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
       return;
     }
     this.loading = true;
-    this.handleElementClicked(element);
+    const loadTable = this.handleElementClicked(element);
+    if (!loadTable) {
+      return;
+    }
     this.searchService.getItem(element._id, 'InspectionElement')
       .subscribe((res: any) => {
         if (!res || !res.data) {
@@ -115,11 +118,26 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
         this.tableParams.pageSize = 100000;
         this.setRowData();
         this.loading = false;
+        let showError = false;
+
 
         this.assets.forEach(async z => {
           if (z.type === 'photo') {
+            let resource;
             // Show thumb
-            let resource = await this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id);
+            this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id).then(response => {
+              resource = response;
+            })
+            .catch(err => {
+              showError = true;
+            });
+            if (!resource) {
+              // There was an error so return
+              if (showError) {
+                this.openSnackBar('Error: Thumbnail(s) cannot load', 'Close');
+              }
+              return;
+            }
             const reader = new FileReader();
             reader.readAsDataURL(resource);
             reader.onloadend = function () {
@@ -148,10 +166,11 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
       this.loading = false;
       element.itemClicked = !element.itemClicked;
       this.nukeTableData();
-      return;
+      return false;
     }
     this.showTable = true;
     element.itemClicked = !element.itemClicked;
+    return true;
   }
   nukeTableData() {
     this.tableParams = new TableParamsObject();

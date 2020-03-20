@@ -8,7 +8,9 @@
         <img class="thumbnail" [src]="item.src" />
       </div>
       <div class="thumbnail" *ngIf="!item.src">
-        <div class="spinner-new rotating"></div>
+        <span class="material-icons">
+          error_outline
+        </span>
       </div>
     </div>
     <div *ngIf="item.type === 'video'">
