@@ -4,8 +4,7 @@ import 'zone.js/dist/async-test.js';
 import 'zone.js/dist/proxy.js';
 import 'zone.js/dist/sync-test';
 import 'zone.js/dist/jasmine-patch';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async } from '@angular/core/testing';
 
 describe('Utils', () => {
   let utilsComponent: Utils;
