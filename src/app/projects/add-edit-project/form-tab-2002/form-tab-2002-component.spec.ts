@@ -90,6 +90,7 @@ describe('FormTab2002', () => {
     fixture = TestBed.createComponent(FormTab2002Component);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    component.ngOnInit();
   });
 
   it('should create', () => {
