@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
 import { MatSnackBar } from '@angular/material';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { CommentPeriod } from 'app/models/commentPeriod';
 
@@ -69,7 +69,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
         this.commentPeriodService.unPublish(this.commentPeriod)
           .takeUntil(this.ngUnsubscribe)
           .subscribe(
-            (res => {
+            (() => {
               this.commentPeriod.isPublished = false;
               this.setPublishStatus();
               this.openSnackBar('This comment period has been un-published.', 'Close');
@@ -80,7 +80,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
         this.commentPeriodService.publish(this.commentPeriod)
           .takeUntil(this.ngUnsubscribe)
           .subscribe(
-            (res => {
+            (() => {
               this.commentPeriod.isPublished = true;
               this.setPublishStatus();
               this.openSnackBar('This comment period has been published.', 'Close');

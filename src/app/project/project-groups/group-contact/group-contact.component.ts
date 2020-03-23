@@ -120,7 +120,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  public checkChange(event) {
+  public checkChange() {
   }
 
   setRowData() {

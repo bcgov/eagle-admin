@@ -1,24 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs';
-import { map, flatMap } from 'rxjs/operators';
 import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { DocumentService } from './document.service';
 import { Decision } from 'app/models/decision';
-
-interface GetParameters {
-  getDocuments?: boolean;
-}
 
 @Injectable()
 export class DecisionService {
 
   constructor(
-    private api: ApiService,
-    private documentService: DocumentService
+    private api: ApiService
   ) { }
 
   add(orig: Decision): Observable<Decision> {

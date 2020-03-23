@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { Resolve } from '@angular/router';
 import { Observable, } from 'rxjs';
 
 import { ConfigService } from 'app/services/config.service';
@@ -10,7 +10,7 @@ export class ListResolver implements Resolve<Observable<object>> {
     private configService: ConfigService,
   ) { }
 
-  resolve(route: ActivatedRouteSnapshot): Observable<any> {
+  resolve(): Observable<any> {
     return this.configService.getLists();
   }
 }

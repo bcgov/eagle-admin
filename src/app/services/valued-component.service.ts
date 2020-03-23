@@ -29,7 +29,7 @@ export class ValuedComponentService {
             }).catch(error => this.api.handleError(error));
     }
 
-    addToProject(item: any, projectId: any) {
+    addToProject(item: any) {
       return this.api.addVCToProject(item)
       .map(() => {
         return {};

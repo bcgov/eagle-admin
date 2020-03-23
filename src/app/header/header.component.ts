@@ -38,7 +38,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public envName: string;
   public isNavMenuOpen = false;
   public welcomeMsg: String;
-  private _api: ApiService;
   public jwt: {
     username: String,
     realm_access: {
@@ -47,7 +46,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     scopes: Array<String>
   };
   private dayCalculatorModal: NgbModalRef = null;
-  private showDayCalculatorModal = false;
+  public showDayCalculatorModal = false;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   constructor(
@@ -57,10 +56,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     public router: Router
   ) {
-    this._api = api;
     router.events
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(val => {
+      .subscribe(() => {
         const token = this.keycloakService.getToken();
         // TODO: Change this to observe the change in the _api.token
         if (token) {

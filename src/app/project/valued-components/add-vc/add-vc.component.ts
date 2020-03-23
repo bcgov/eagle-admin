@@ -123,7 +123,7 @@ export class AddVcComponent implements OnInit, OnDestroy {
             delete vc._id;
             vc.project = this.currentProject._id;
             vc.title = vc.description;
-            itemsToAdd.push({ promise: this.valuedComponentService.addToProject(vc, this.currentProject._id).toPromise(), item: item });
+            itemsToAdd.push({ promise: this.valuedComponentService.addToProject(vc).toPromise(), item: item });
           }
         });
         this.loading = false;

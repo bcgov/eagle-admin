@@ -19,7 +19,7 @@ import { ModificationsListTableRowsComponent } from './add-edit-project/modifica
   imports: [
     CommonModule,
     FormsModule,
-    NgbModule.forRoot(),
+    NgbModule,
     ProjectsRoutingModule,
     SharedModule,
     ReactiveFormsModule,

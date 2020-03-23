@@ -38,7 +38,7 @@ export class GroupTableRowsComponent implements OnInit {
       if (item.checkbox) {
         this.storageService.state.selectedUsers.push(item);
       } else {
-        this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (value, index, arr) {
+        this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (value) {
           return value._id !== item._id;
         });
       }

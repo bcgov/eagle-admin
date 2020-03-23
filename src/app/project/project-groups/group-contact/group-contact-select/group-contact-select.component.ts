@@ -124,8 +124,6 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   }
 
   public selectAction(action) {
-    let promises = [];
-
     // select all documents
     switch (action) {
       case 'selectAll':

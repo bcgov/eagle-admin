@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
-import { Subject, of, forkJoin } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import * as moment from 'moment-timezone';
 
 import { ConfigService } from 'app/services/config.service';

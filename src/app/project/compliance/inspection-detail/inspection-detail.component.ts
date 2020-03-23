@@ -128,7 +128,7 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
             this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id).then(response => {
               resource = response;
             })
-            .catch(err => {
+            .catch(() => {
               showError = true;
             });
             if (!resource) {
