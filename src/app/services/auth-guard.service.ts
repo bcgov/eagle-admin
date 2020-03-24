@@ -16,10 +16,10 @@ export class AuthGuard implements CanActivate {
   }
 
   canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
-    if (this.api.env === 'local'){
+    if ( this.api.env === 'local') {
       return true;
     }
-    if (this.keycloakService.isValidForSite()) {
+    if ( this.keycloakService.isValidForSite()) {
       return true;
     }
     this.router.navigate(['/not-authorized']);
