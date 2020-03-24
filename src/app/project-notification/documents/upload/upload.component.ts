@@ -101,13 +101,14 @@ export class UploadComponent implements OnInit, OnDestroy {
         },
         error => {
           console.log('error =', error);
-          alert('Uh-oh, couldn\'t delete project');
-          // TODO: should fully reload project here so we have latest non-deleted objects
+          alert('Document upload failed due to a service error.');
+          this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
+          this.loading = false;
         },
         () => { // onCompleted
           // delete succeeded --> navigate back to search
           // Clear out the document state that was stored previously.
-          this.router.navigate(['p', this.currentProject._id, 'project-documents']);
+          this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
           this.loading = false;
         }
       );

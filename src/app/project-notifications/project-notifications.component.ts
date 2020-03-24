@@ -63,6 +63,10 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+        // default sort order
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = '-_id';
+        }
         this.route.data
           .takeUntil(this.ngUnsubscribe)
           .subscribe((res: any) => {
