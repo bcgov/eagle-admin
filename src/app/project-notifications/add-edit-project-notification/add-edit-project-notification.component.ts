@@ -165,7 +165,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     if (this.isAdd) {
       this.router.navigate(['/project-notifications']);
     } else {
-      this.router.navigate(['/pn', this.projectNotification._id, 'notification-project-details']);
+      this.router.navigate(['/pn', this.projectNotification._id, 'details']);
     }
   }
 
