@@ -2,15 +2,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 
-import { map } from 'rxjs/operators';
-import { Subject, forkJoin } from 'rxjs';
+import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
 
 import { Document } from 'app/models/document';
-import { DocumentService } from 'app/services/document.service';
 import { ProjectNotification } from 'app/models/projectNotification';
 
 import { ConfigService } from 'app/services/config.service';
+import { StorageService } from 'app/services/storage.service';
 import { Constants } from 'app/shared/utils/constants';
 import { NotificationProjectService } from 'app/services/notification-project.service';
 import { Utils } from 'app/shared/utils/utils';
@@ -24,12 +23,11 @@ import { Utils } from 'app/shared/utils/utils';
 export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  public isEditing = false;
+  public isAdd = false;
   public isPublished = false;
   public loading = false;
   public myForm: FormGroup;
   public projectNotification: ProjectNotification = null;
-  public projectNotificationId = '';
   public regions: any[] = [];
   public subTypeSelected = [];
 
@@ -54,8 +52,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
     private config: ConfigService,
-    private documentService: DocumentService,
     private notificationProjectService: NotificationProjectService,
+    private storageService: StorageService,
     private route: ActivatedRoute,
     private router: Router,
     private utils: Utils
@@ -68,13 +66,14 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       });
     this._changeDetectorRef.detectChanges();
 
-    this.route.data
+    this.route.url
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(res => {
-        this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
-        this.projectNotificationId = this.isEditing ? res.notificationProject.data._id : '';
+      .subscribe((url) => {
+        // Determine if this an add or edit.
+        this.isAdd = url.some(urlObject => urlObject.path === 'add');
+        this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
 
-        if (!this.isEditing) {
+        if (this.isAdd || !this.projectNotification) {
           this.buildForm({
             'name': '',
             'type': '',
@@ -89,8 +88,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             'trigger': '',
           });
         } else {
-          this.projectNotification = res.notificationProject.data;
-          this.existingDocuments = res.documents[0].data.searchResults;
 
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
@@ -137,7 +134,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
     });
 
-    if (!this.isEditing) {
+    if (this.isAdd) {
       this.notificationProjectService.add(notificationProject, publish)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -148,7 +145,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
           () => { this.router.navigate(['/project-notifications']); }
         );
     } else {
-      notificationProject._id = this.projectNotificationId;
+      notificationProject._id = this.projectNotification._id;
 
       this.notificationProjectService.save(notificationProject, publish)
         .takeUntil(this.ngUnsubscribe)
@@ -158,17 +155,17 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             alert('An error has occurred.');
           },
           () => {
-            this.router.navigate(['/pn', this.projectNotificationId, 'details']);
+            this.router.navigate(['/pn', this.projectNotification._id, 'details']);
           }
         );
     }
   }
 
   public onCancel() {
-    if (!this.isEditing) {
+    if (this.isAdd) {
       this.router.navigate(['/project-notifications']);
     } else {
-      this.router.navigate(['/pn', this.projectNotificationId, 'notification-project-details']);
+      this.router.navigate(['/pn', this.projectNotification._id, 'notification-project-details']);
     }
   }
 
