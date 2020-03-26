@@ -9,6 +9,7 @@ export class RecentActivity {
     content: string;
     documentUrl: string;
     contentUrl: string;
+    notificationName: string;
     pinned: boolean;
 
     constructor(obj?: any) {
@@ -20,6 +21,7 @@ export class RecentActivity {
         this.content = obj && obj.content || null;
         this.documentUrl = obj && obj.documentUrl || null;
         this.contentUrl = obj && obj.contentUrl || null;
+        this.notificationName = obj && obj.notificationName || null;
         this.headline = obj && obj.headline || null;
         this.active = obj && obj.active || null;
         this.pinned = obj && obj.pinned || null;

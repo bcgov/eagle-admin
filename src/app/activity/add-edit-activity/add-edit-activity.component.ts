@@ -7,6 +7,8 @@ import { RecentActivityService } from 'app/services/recent-activity';
 import { RecentActivity } from 'app/models/recentActivity';
 import { Utils } from 'app/shared/utils/utils';
 import { CommentPeriodService } from 'app/services/commentperiod.service';
+import { Constants } from 'app/shared/utils/constants';
+import { MatSnackBar } from '@angular/material';
 @Component({
   selector: 'app-add-edit-activity',
   templateUrl: './add-edit-activity.component.html',
@@ -19,10 +21,13 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   public loading = true;
   public projects = [];
   public types = [];
+  public activityTypes = Constants.activityTypes;
   public periods = [];
   public activity: any;
   public typeIsPCP = false;
+  public typeIsNotification = false;
   public projectIsSelected = false;
+  public snackBarTimeout = 1500;
 
   public tinyMceSettings = {
     skin: false,
@@ -34,6 +39,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private utils: Utils,
+    private snackBar: MatSnackBar,
     private recentActivityService: RecentActivityService,
     private projectService: ProjectService,
     private commentPeriodService: CommentPeriodService,
@@ -52,6 +58,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
             'project': '',
             'active': '',
             'pinned': false,
+            'notificationName': '',
             'type': '',
             'pcp': '',
             'contentUrl': '',
@@ -104,18 +111,17 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         project: this.myForm.get('project').value,
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
+        notificationName: this.myForm.get('notificationName').value,
 
-        // TODO: ETL this to merge.
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         active: this.myForm.controls.active.value === 'yes' ? true : false,
         pinned: this.activity.pinned
       });
-      console.log('saving:', activity);
       this.recentActivityService.save(activity)
         .subscribe(item => {
-          // console.log('item', item);
-          this.router.navigate(['/activity']);
+          this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout});
+          window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });
     } else {
       let activity = new RecentActivity({
@@ -125,29 +131,38 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         project: this.myForm.get('project').value,
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
+        notificationName: this.myForm.get('notificationName').value,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         pinned: false,
         active: this.myForm.controls.active.value === 'yes' ? true : false
       });
-      console.log('adding:', activity);
       this.recentActivityService.add(activity)
         .subscribe(item => {
-          // console.log('saved:', item);
-          this.router.navigate(['/activity']);
+          this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout});
+          window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });
     }
   }
 
   public updateType() {
-    if (this.myForm.get('type').value === 'Public Comment Period') {
+    if (this.myForm.get('type').value === this.activityTypes[0]) {
       this.typeIsPCP = true;
+      this.typeIsNotification = false;
       this.myForm.get('pcp').enable();
+      this.myForm.get('project').enable();
       if (this.projectIsSelected) {
         this.loadPcpsForProject(this.myForm.get('project').value);
       }
+    } else if (this.myForm.get('type').value === this.activityTypes[1]) {
+      this.typeIsNotification = true;
+      this.myForm.controls['project'].reset({ value: '', disabled: true });
+      this.myForm.controls['pcp'].reset({ value: '', disabled: true });
+      this.typeIsPCP = false;
     } else {
       this.typeIsPCP = false;
+      this.typeIsNotification = false;
+      this.myForm.get('project').enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
     }
     this._changeDetectorRef.detectChanges();
@@ -184,7 +199,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   buildForm(data) {
-    // console.log('data:', data);
+    console.log('data:', data);
     this.myForm = new FormGroup({
       'headline': new FormControl(data.headline),
       'content': new FormControl(data.content),
@@ -193,7 +208,10 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       'active': new FormControl(data.active ? 'yes' : 'no'),
       'type': new FormControl(data.type),
       'pcp': new FormControl({ value: data.pcp, disabled: true }),
+      // TODO: Check name from api
+      'notificationName': new FormControl(data.notificationName),
       'contentUrl': new FormControl(data.contentUrl),
+      // For project notification this is the url
       'documentUrl': new FormControl(data.documentUrl)
     });
   }
