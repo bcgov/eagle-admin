@@ -205,7 +205,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       'active': new FormControl(data.active ? 'yes' : 'no'),
       'type': new FormControl(data.type),
       'pcp': new FormControl({ value: data.pcp, disabled: true }),
-      // TODO: Check name from api
       'notificationName': new FormControl(data.notificationName),
       'contentUrl': new FormControl(data.contentUrl),
       // For project notification this is the url
