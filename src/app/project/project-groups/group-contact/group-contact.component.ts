@@ -36,28 +36,28 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-3'
+      width: '26%'
     },
     {
       name: 'Organization',
       value: 'orgName',
-      width: 'col-3'
+      width: '26%'
     },
     {
       name: 'Email',
       value: 'email',
-      width: 'col-3'
+      width: '27%'
     },
     {
       name: 'Phone Number',
       value: 'phoneNumber',
-      width: 'col-2'
+      width: '15%'
     }
   ];
 
@@ -120,7 +120,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  public checkChange(event) {
+  public checkChange() {
   }
 
   setRowData() {

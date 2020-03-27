@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';

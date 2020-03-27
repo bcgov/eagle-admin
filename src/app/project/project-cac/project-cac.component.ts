@@ -298,7 +298,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
             self.loading = true;
             self._changeDetectionRef.detectChanges();
             self.projectService.createCAC(self.currentProject._id, cacEmail).toPromise()
-            .then((data) => {
+            .then(() => {
               // Update cac data, it was successful
               self.currentProject.cacEmail = cacEmail;
               self.onSubmit();

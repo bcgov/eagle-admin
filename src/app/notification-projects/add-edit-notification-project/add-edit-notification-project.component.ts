@@ -330,7 +330,7 @@ export class AddEditNotificationProjectComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  public onChangeType(event) {
+  public onChangeType() {
     this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
     this._changeDetectorRef.detectChanges();
   }

@@ -181,13 +181,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   buildForm() {
     if (this.storageService.state.form2018) {
       this.myForm = this.storageService.state.form2018;
-      this.onChangeType(null);
+      this.onChangeType();
     } else if (!this.tabIsEditing && !this.only2018) {
       this.autofill();
     } else if (this.tabIsEditing) {
       // First entry on resolver
       this.myForm = this.buildFormFromData(this.project);
-      this.onChangeType(null);
+      this.onChangeType();
     } else {
       this.myForm = new FormGroup({
         'name': new FormControl(),
@@ -374,7 +374,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     return theForm;
   }
 
-  onChangeType(event) {
+  onChangeType() {
     this.sectorsSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
     this._changeDetectorRef.detectChanges();
   }
@@ -538,7 +538,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
               _id: this.fullProject._id
             }).takeUntil(this.ngUnsubscribe)
               .subscribe(
-                (data) => { // onNext
+                () => { // onNext
                 },
                 error => {
                   console.log('error =', error);
@@ -581,7 +581,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
                 (data) => {
                   this.projectId = data._id;
                 },
-                (error) => {
+                () => {
                 },
                 () => {
                   this.published = true;
@@ -593,9 +593,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
               ],
               // PUT SUBSCRIBE
               [
-                (data) => {
+                () => {
                 },
-                (error) => {
+                () => {
                 },
                 () => {
                   this.published = true;
@@ -678,7 +678,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         (data) => {
           this.projectId = data._id;
         },
-        (error) => {
+        () => {
         },
         () => {
           this.clearStorageService();
@@ -689,9 +689,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       ],
       // PUT SUBSCRIBE
       [
-        (data) => {
+        () => {
         },
-        (error) => {
+        () => {
         },
         () => {
           this.clearStorageService();
@@ -745,7 +745,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     });
   }
 
-  register(myForm: FormGroup) { }
+  register() { }
 
   getLists() {
     this.config.getLists().subscribe (lists => {

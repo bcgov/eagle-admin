@@ -2,7 +2,6 @@ import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'tbody[app-groups-table-rows]',
@@ -22,7 +21,6 @@ export class GroupsTableRowsComponent implements OnInit, TableComponent {
   public useSmallTable: boolean;
 
   constructor(
-    private router: Router
   ) { }
 
   ngOnInit() {

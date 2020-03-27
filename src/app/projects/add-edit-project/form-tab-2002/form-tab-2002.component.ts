@@ -18,10 +18,6 @@ import { FullProject } from 'app/models/fullProject';
 
 import { Constants } from 'app/shared/utils/constants';
 
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { flatMap } from 'rxjs/operators';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { DialogService } from 'ng2-bootstrap-modal';
@@ -181,11 +177,11 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     if (this.storageService.state.form2002) {
       // TODO: Save the projectID if it was originally an edit.
       this.myForm = this.storageService.state.form2002;
-      this.onChangeType(null);
+      this.onChangeType();
     } else if (this.tabIsEditing) {
       // First entry on resolver
       this.myForm = this.buildFormFromData(this.project);
-      this.onChangeType(null);
+      this.onChangeType();
     } else {
       this.myForm = new FormGroup({
         'name': new FormControl(),
@@ -219,54 +215,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         'responsibleEPD': new FormControl(),
         'projectLeadId': new FormControl(),
         'projectLead': new FormControl(),
-        // this stuff is for extensions will be moved somewhere appropriate sometime soon
-        // 'review180Start': new FormControl(),
-        // 'review45Start': new FormControl()
       });
-    }
-    // extension stuff
-    // if (this.project.reviewExtensions) {
-    //   this.project.reviewExtensions.forEach( item => {
-    //     this.modifications.push(item);
-    //   });
-    // }
-    // if (this.project.reviewSuspensions) {
-    //   this.project.reviewSuspensions.forEach( item => {
-    //     this.modifications.push(item);
-    //   });
-    // }
-    // this.modificationsTableData = new TableObject(
-    //   ModificationsListTableRowsComponent,
-    //   this.modifications,
-    //   []
-    // );
-    }
-  // these 3 functions are also for extensions
-  // public addExtension() {
-  //   this.storageService.state.form = this.myForm;
-  //   this.storageService.state.extensionType = 'add-extension';
-  //   this.setNavigation();
-  //   this.router.navigate(['/p', this.project._id, 'edit', 'add-extension']);
-  // }
-
-  // public addSuspension() {
-  //   this.storageService.state.extensionType = 'add-suspension';
-  //   this.storageService.state.form = this.myForm;
-  //   this.setNavigation();
-  //   this.router.navigate(['/p', this.project._id, 'edit', 'add-suspension']);
-  // }
-
-  // public onItemClicked(item) {
-  //   if (item.type === 'Extension') {
-  //     this.storageService.state.extensionType = 'edit-extension';
-  //   } else {
-  //     this.storageService.state.extensionType = 'edit-suspension';
-  //   }
-  //   this.storageService.state.extension = item;
-  //   this.storageService.state.form = this.myForm;
-  //   this.setNavigation();
-  //   this.router.navigate(['/p', this.project._id, 'edit', this.storageService.state.extensionType]);
-  // }
+    }}
 
   private setNavigation() {
     if (!this.pageIsEditing) {
@@ -385,7 +335,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     return theForm;
   }
 
-  onChangeType(event) {
+  onChangeType() {
     this.sectorsSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
     this._changeDetectorRef.detectChanges();
   }
@@ -549,7 +499,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
               _id: this.fullProject._id
             }).takeUntil(this.ngUnsubscribe)
               .subscribe(
-                (data) => { // onNext
+                () => { // onNext
                 },
                 error => {
                   console.log('error =', error);
@@ -591,7 +541,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                 (data) => {
                   this.projectId = data._id;
                 },
-                (error) => {
+                () => {
                 },
                 () => {
                   this.published = true;
@@ -603,9 +553,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
               ],
               // PUT SUBSCRIBE
               [
-                (data) => {
+                () => {
                 },
-                (error) => {
+                () => {
                 },
                 () => {
                   this.published = true;
@@ -634,6 +584,12 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       let project = new Project(
         this.convertFormToProject(this.myForm)
       );
+
+      if (postFunction) {
+        // currently ignored, doesn't match 2018 save process?
+        // why are these different at all, why not use a controller for both?
+      }
+
       this.projectService.add(project)
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
@@ -672,7 +628,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         (data) => {
           this.projectId = data._id;
         },
-        (error) => {
+        () => {
         },
         () => {
           this.clearStorageService();
@@ -683,9 +639,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       ],
       // PUT SUBSCRIBE
       [
-        (data) => {
+        () => {
         },
-        (error) => {
+        () => {
         },
         () => {
           this.clearStorageService();
@@ -738,7 +694,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     });
   }
 
-  register(myForm: FormGroup) { }
+  register() { }
 
   getLists() {
     this.config.getLists().subscribe (lists => {

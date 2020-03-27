@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 

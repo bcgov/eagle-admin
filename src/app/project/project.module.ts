@@ -61,7 +61,7 @@ import { AssetTableRowsComponent } from './compliance/submission-detail/asset-ta
   imports: [
     CommonModule,
     FormsModule,
-    NgbModule.forRoot(),
+    NgbModule,
     MatMenuModule,
     MatTabsModule,
     ProjectRoutingModule,

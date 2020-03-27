@@ -1,7 +1,7 @@
 //
 // inspired by http://www.advancesharp.com/blog/1218/angular-4-upload-files-with-data-and-web-api-by-drag-drop
 //
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 
 @Component({
   selector: 'app-file-upload',

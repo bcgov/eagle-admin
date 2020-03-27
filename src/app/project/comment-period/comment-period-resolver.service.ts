@@ -3,7 +3,7 @@ import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 
 import { CommentPeriodService } from 'app/services/commentperiod.service';
-import { forkJoin, of, from } from 'rxjs';
+import { forkJoin, from } from 'rxjs';
 import { CommentPeriod } from 'app/models/commentPeriod';
 
 @Injectable()

@@ -213,7 +213,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
     this.clearStorageService();
     if (!this.isEditing) {
       this.orgService.add(org)
-        .subscribe(item => {
+        .subscribe(() => {
           if (this.navigationStackUtils.getLastBackUrl()) {
             this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
           } else {
@@ -223,7 +223,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
     } else {
       org._id = this.orgId;
       this.orgService.save(org)
-        .subscribe(item => {
+        .subscribe(() => {
           this.router.navigate(['orgs']);
         });
     }
