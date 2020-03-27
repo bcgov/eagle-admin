@@ -32,6 +32,13 @@ export class Constants {
     DEFAULT_KEYWORDS: ''
   };
 
+  // This order matters for the activity component
+  public static readonly activityTypes = [
+    'Public Comment Period',
+    'Project Notification Public Comment Period',
+    'News'
+  ];
+
   public static readonly documentTypes = {
     CATEGORIZED: 'categorized',
     UNCATEGORIZED: 'uncategorized',
