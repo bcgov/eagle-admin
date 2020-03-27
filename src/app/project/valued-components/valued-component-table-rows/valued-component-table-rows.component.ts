@@ -12,13 +12,19 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 export class ValuedComponentTableRowsComponent implements OnInit, TableComponent {
     @Input() data: TableObject;
     @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+    @Input() columnData: Array<any>;
+    @Input() smallTable: boolean;
 
     public valuedComponents: any;
     public paginationData: any;
+    public columns: any;
+    public useSmallTable: boolean;
 
     ngOnInit() {
         this.valuedComponents = this.data.data;
         this.paginationData = this.data.paginationData;
+        this.columns = this.columnData;
+        this.useSmallTable = this.smallTable;
     }
 
     selectItem(item) {

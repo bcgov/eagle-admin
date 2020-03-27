@@ -30,14 +30,19 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public tableData: TableObject;
   public tableColumns: any[] = [
     {
+      name: '',
+      value: '',
+      width: '10%'
+    },
+    {
       name: 'Name',
       value: 'name',
-      width: 'col-6'
+      width: '45%'
     },
     {
       name: 'Company Type',
       value: 'companyType',
-      width: 'col-6'
+      width: '45%'
     }
   ];
 
@@ -76,7 +81,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           this.contactId = params.contactId;
           this.isEditing = true;
         }
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 15);
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+name';
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);

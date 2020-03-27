@@ -119,7 +119,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         pinned: this.activity.pinned
       });
       this.recentActivityService.save(activity)
-        .subscribe(item => {
+        .subscribe(() => {
           this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout});
           window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });
@@ -138,7 +138,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         active: this.myForm.controls.active.value === 'yes' ? true : false
       });
       this.recentActivityService.add(activity)
-        .subscribe(item => {
+        .subscribe(() => {
           this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout});
           window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });

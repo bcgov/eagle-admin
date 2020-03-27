@@ -2,7 +2,6 @@ import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { Router } from '@angular/router';
 import { StorageService } from 'app/services/storage.service';
 
 @Component({
@@ -13,19 +12,24 @@ import { StorageService } from 'app/services/storage.service';
 
 export class AddDocumentTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public documents: any;
   public paginationData: any;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
-    private router: Router,
     private storageService: StorageService
   ) { }
 
   ngOnInit() {
     this.documents = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
 
     if (this.storageService.state.selectedDocumentsForCP.data.length > 0) {
       this.documents.forEach(doc => {

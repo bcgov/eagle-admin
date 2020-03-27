@@ -96,6 +96,55 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.showProjectNotificationDetails = false;
         this.showProjectDetails = false;
     }
+
+    if (urlArray[0] === 'p') {
+      switch (urlArray[2]) {
+        // case 'compliance': {
+        //   break;
+        // }
+        case 'valued-components': {
+          break;
+        }
+        case 'project-updates': {
+          break;
+        }
+        case 'project-cac': {
+          break;
+        }
+        case 'project-groups': {
+          break;
+        }
+        case 'project-pins': {
+          break;
+        }
+        case 'project-documents': {
+          break;
+        }
+        case 'comment-periods': {
+          break;
+        }
+        case 'milestones': {
+          break;
+        }
+        case 'project-archived-detail': {
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+      this.currentProjectId = urlArray[1];
+      try {
+        this.currentMenu = urlArray[2];
+        this.currentMenu = urlArray[2].split(';')[0];
+      } catch (e) {
+        // When coming from search, it's blank.
+      }
+      this.showProjectDetails = true;
+    } else {
+      this.currentProjectId = urlArray[0];
+      this.showProjectDetails = false;
+    }
   }
 
   toggleDropdown() {

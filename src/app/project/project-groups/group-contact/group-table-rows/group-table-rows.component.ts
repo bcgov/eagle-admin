@@ -11,9 +11,13 @@ import { StorageService } from 'app/services/storage.service';
 export class GroupTableRowsComponent implements OnInit {
   @Input() data: TableObject;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
 
   public contacts: any;
   public paginationData: any;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private storageService: StorageService
@@ -22,6 +26,8 @@ export class GroupTableRowsComponent implements OnInit {
   ngOnInit() {
     this.contacts = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   selectItem(item) {
@@ -38,7 +44,7 @@ export class GroupTableRowsComponent implements OnInit {
       if (item.checkbox) {
         this.storageService.state.selectedUsers.push(item);
       } else {
-        this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (value, index, arr) {
+        this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (value) {
           return value._id !== item._id;
         });
       }

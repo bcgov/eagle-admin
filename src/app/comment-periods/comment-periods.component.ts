@@ -27,35 +27,36 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     {
       name: 'Status',
       value: 'commentPeriodStatus',
-      width: 'col-1'
+      width: '10%'
     },
     {
       name: 'Start Date',
       value: 'dateStarted',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'End Date',
       value: 'dateCompleted',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Days Remaining',
       value: 'daysRemaining',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Published',
       value: 'isPublished',
-      width: 'col-2 text-center'
+      width: '15%'
     },
     {
       name: 'Comment Data',
       value: 'commentData',
-      width: 'col-3 text-center',
+      width: '30%',
       nosort: true
     }
   ];
+
   public commentPeriodTableData: TableObject;
   public loading = true;
   public currentProject;

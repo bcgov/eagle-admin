@@ -1,14 +1,14 @@
 <tr
   *ngFor="let topic of topics"
   class="clickable-row" (click)="selectItem(topic)" >
-  <td data-label="Select" scope="row" class="col-1">
+  <td data-label="Select" scope="row" [style.width]="!useSmallTable && columns[0].width">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='topic.checkbox'>
   </td>
-  <td data-label="Name" scope="row" class="col-3">{{topic.name}}</td>
-  <td data-label="Description" scope="row" class="col-5">{{topic.description}}</td>
-  <td data-label="Type" scope="row" class="col-2">{{topic.type}}</td>
-  <td data-label="Pillar" scope="row" class="col-2">{{topic.pillar}}</td>
-  <td data-label="Parent" scope="row" class="col-2">{{topic.parent}}</td>
+  <td data-label="Name" scope="row" [style.width]="!useSmallTable && columns[1].width">{{topic.name}}</td>
+  <td data-label="Description" scope="row" [style.width]="!useSmallTable && columns[2].width">{{topic.description}}</td>
+  <td data-label="Type" scope="row" [style.width]="!useSmallTable && columns[3].width">{{topic.type}}</td>
+  <td data-label="Pillar" scope="row" [style.width]="!useSmallTable && columns[4].width">{{topic.pillar}}</td>
+  <td data-label="Parent" scope="row" [style.width]="!useSmallTable && columns[5].width">{{topic.parent}}</td>
   <!-- <td>
             <button type="button" (click)="deleteVC(topic)" class="btn btn-danger">Delete</button>
         </td> -->

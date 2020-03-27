@@ -15,12 +15,16 @@ import { StorageService } from 'app/services/storage.service';
 
 export class ReviewCommentsTabTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public comments: Comment[];
   public paginationData: any;
   public projectId: string;
   public baseRouteUrl: string;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private router: Router,
@@ -32,6 +36,8 @@ export class ReviewCommentsTabTableRowsComponent implements OnInit, TableCompone
     this.comments = this.data.data;
     this.paginationData = this.data.paginationData;
     this.baseRouteUrl = this.data.extraData.baseRouteUrl;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   goToItem(comment) {

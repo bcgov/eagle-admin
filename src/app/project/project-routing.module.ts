@@ -21,7 +21,8 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
-import { ReviewCommentComponent } from '../comment-period/review-comment/review-comment.component';
+import { ProjectCACComponent } from './project-cac/project-cac.component';
+import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
 import { ValuedComponentsComponent } from './valued-components/valued-components.component';
 
@@ -36,6 +37,7 @@ import { ReviewCommentResolver } from '../comment-period/review-comment/review-c
 import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
 import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
 import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';
+import { ProjectCACResolver } from './project-cac/project-cac-resolver.services';
 import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
 import { PinsListComponent } from './pins-list/pins-list.component';
@@ -50,7 +52,6 @@ import { LinkOrganizationResolver } from 'app/shared/components/link-organizatio
 import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
 import { ExtensionComponent } from 'app/shared/components/extension/extension.component';
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
-import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 import { ProjectsRoutes } from 'app/projects/projects-routes';
 import { FullProjectResolver } from './full-project-resolver.service';
 import { ListResolver } from 'app/shared/resolvers/list-resolver.service';
@@ -175,13 +176,6 @@ const routes: Routes = [
             path: 'inspection-details',
             component: InspectionDetailComponent
           },
-          {
-            path: 's/:submissionId',
-            component: SubmissionDetailComponent,
-            resolve: {
-              submission: SubmissionDetailResolver
-            }
-          }
         ]
       },
       {
@@ -203,6 +197,14 @@ const routes: Routes = [
         component: ProjectUpdatesComponent,
         resolve: {
           documents: ProjectUpdatesResolver
+        }
+      },
+      {
+        path: 'project-cac',
+        component: ProjectCACComponent,
+        resolve: {
+          cacMembers: ProjectCACResolver,
+          project: FullProjectResolver
         }
       },
       {
@@ -236,6 +238,13 @@ const routes: Routes = [
       },
       {
         path: 'project-pins/select',
+        component: LinkOrganizationComponent,
+        resolve: {
+          organizations: PinsGlobalComponentResolver
+        }
+      },
+      {
+        path: 'project-pins/link-org',
         component: LinkOrganizationComponent,
         resolve: {
           organizations: PinsGlobalComponentResolver
@@ -331,6 +340,7 @@ const routes: Routes = [
     DocumentsResolver,
     ComplianceResolver,
     ProjectUpdatesResolver,
+    ProjectCACResolver,
     InspectionDetailResolver,
     TopicResolver,
     ProjectResolver,

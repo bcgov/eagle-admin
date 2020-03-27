@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, SimpleChanges, OnChanges, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, ViewEncapsulation } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -20,7 +20,6 @@ import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
-import { LoadedRouterConfig } from '@angular/router/src/config';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {

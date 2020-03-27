@@ -30,27 +30,27 @@ export class GetValuedComponentsComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1'
+      width: '10%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-3'
+      width: '20%'
     },
     {
       name: 'Title',
       value: 'title',
-      width: 'col-5'
+      width: '40%'
     },
     {
       name: 'Pillar',
       value: 'pillar',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Parent',
       value: 'parent',
-      width: 'col-2'
+      width: '15%'
     }
   ];
 

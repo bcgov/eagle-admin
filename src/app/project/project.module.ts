@@ -6,6 +6,7 @@ import { NgModule } from '@angular/core';
 import { ProjectRoutingModule } from './project-routing.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { EditorModule } from '@tinymce/tinymce-angular';
 
 // components
 import { ComplianceComponent } from './compliance/compliance.component';
@@ -20,9 +21,15 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
+import { ProjectCACComponent } from './project-cac/project-cac.component';
+import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component'
+import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-tab/review-comments-tab.component';
+import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
+import { UploadComponent } from './project-documents/upload/upload.component';
 import { ValuedComponentsComponent } from './valued-components/valued-components.component';
 import { ValuedComponentTableRowsComponent } from './valued-components/valued-component-table-rows/valued-component-table-rows.component';
 import { TopicTableRowsComponent } from './valued-components/add-vc/topic-table-rows/topic-table-rows.component';
+import { EnterCACEmailComponent } from './project-cac/enter-cac-email/enter-cac-email.component';
 
 // services
 import { ApiService } from 'app/services/api';
@@ -36,17 +43,19 @@ import { PinsListComponent } from './pins-list/pins-list.component';
 import { GroupsTableRowsComponent } from './project-groups/project-groups-table-rows/project-groups-table-rows.component';
 import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
 import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
-import { ElementTableRowsComponent } from './compliance/inspection-detail/element-table-rows/element-table-rows.component';
 import { SubmissionDetailComponent } from './compliance/submission-detail/submission-detail.component';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
-    NgbModule.forRoot(),
+    NgbModule,
+    MatMenuModule,
+    MatTabsModule,
     ProjectRoutingModule,
     ReactiveFormsModule,
     SharedModule,
+    EditorModule,
     NgSelectModule
   ],
   declarations: [
@@ -58,7 +67,7 @@ import { SubmissionDetailComponent } from './compliance/submission-detail/submis
     DocumentDetailComponent,
     DocumentEditComponent,
     DocumentTableRowsComponent,
-    ElementTableRowsComponent,
+    EnterCACEmailComponent,
     GroupContactComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,
@@ -69,6 +78,11 @@ import { SubmissionDetailComponent } from './compliance/submission-detail/submis
     ProjectDocumentsComponent,
     ProjectGroupsComponent,
     ProjectUpdatesComponent,
+    ProjectCACComponent,
+    UploadComponent,
+    ReviewCommentComponent,
+    ReviewCommentsTabComponent,
+    ReviewCommentsTabTableRowsComponent,
     SubmissionDetailComponent,
     TopicTableRowsComponent,
     ValuedComponentsComponent,
@@ -77,7 +91,7 @@ import { SubmissionDetailComponent } from './compliance/submission-detail/submis
   entryComponents: [
     ComplianceTableRowsComponent,
     DocumentTableRowsComponent,
-    ElementTableRowsComponent,
+    EnterCACEmailComponent,
     GroupContactSelectComponent,
     GroupsTableRowsComponent,
     TopicTableRowsComponent,
@@ -90,6 +104,7 @@ import { SubmissionDetailComponent } from './compliance/submission-detail/submis
     ProjectDetailComponent,
     ProjectArchivedDetailComponent,
     ProjectUpdatesComponent,
+    ProjectCACComponent,
     ValuedComponentsComponent,
     PinsListComponent
   ],

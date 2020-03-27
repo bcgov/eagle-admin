@@ -55,7 +55,7 @@
   <div class="row">
     <div class="col-md-8">
       <h3>DESCRIPTION</h3>
-      <p id="instructions">{{commentPeriod.instructions}}</p>
+      <div id="instructions" [innerHTML]="commentPeriod.instructions  | safeHtml"></div>
       <p>{{commentPeriod.additionalText}}</p>
       <p>{{commentPeriod.informationLabel}}</p>
     </div>

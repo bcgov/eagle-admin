@@ -1,8 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-
-import { RecentActivity } from 'app/models/recentActivity';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
 
@@ -13,8 +11,6 @@ import { SearchTerms } from 'app/models/search';
 import { StorageService } from 'app/services/storage.service';
 import { Org } from 'app/models/org';
 import { ProjectService } from 'app/services/project.service';
-import { DialogService } from 'ng2-bootstrap-modal';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { MatSnackBar } from '@angular/material';
 
@@ -42,24 +38,23 @@ export class PinsListComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'name',
-      width: 'col-8'
+      width: '65%'
     },
     {
       name: 'Province',
       value: 'province',
-      width: 'col-4'
+      width: '25%'
     },
     {
       name: 'Delete',
       value: 'delete',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
   ];
   constructor(
     private route: ActivatedRoute,
     private storageService: StorageService,
-    private dialogService: DialogService,
     private snackBar: MatSnackBar,
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
@@ -98,7 +93,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
-            this.tableParams.totalListItems = res.contacts[0].length;
+            this.tableParams.totalListItems = res.contacts[0].total_items;
           } else {
             this.tableParams.totalListItems = 0;
           }
@@ -113,7 +108,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
         }
       });
   }
-  isEnabled(button) {
+  isEnabled() {
     return this.selectedCount > 0;
   }
   publishPins() {
@@ -239,7 +234,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
         }
       ]
     );
-    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 25 }]);
+    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 10 }]);
   }
 
   public onSubmit(pageNumber = 1, reset = false) {

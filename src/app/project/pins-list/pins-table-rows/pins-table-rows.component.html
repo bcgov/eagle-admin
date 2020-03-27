@@ -1,8 +1,8 @@
 <tr
   *ngFor="let item of contacts">
-  <td scope="row" data-label="Name" class="col-8">{{item.name || '-'}}</td>
-  <td scope="row" data-label="Province" class="col-4">{{item.province || '-' }}</td>
-  <td data-label="Select" (click)="deleteActivity(item)" scope="row" class="col-1 cursor-pointer">
+  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{item.name || '-'}}</td>
+  <td scope="row" data-label="Province" [style.width]="!useSmallTable && columns[1].width">{{item.province || '-' }}</td>
+  <td data-label="Select" (click)="deleteActivity(item)" scope="row" class="cursor-pointer" [style.width]="!useSmallTable && columns[2].width">
     <i class="material-icons">
       delete
     </i>

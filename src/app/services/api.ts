@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
-// import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/throw';
 import { throwError } from 'rxjs';
@@ -60,7 +59,6 @@ export class ApiService {
     // The following items are loaded by a file that is only present on cluster builds.
     // Locally, this will be empty and local defaults will be used.
     const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
-    const remote_public_path = window.localStorage.getItem('from_admin_server--remote_public_path');  // available in case its ever needed
     const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
     this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
@@ -319,6 +317,21 @@ export class ApiService {
   saveProject(proj: Project): Observable<Project> {
     const queryString = `project/${proj._id}`;
     return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
+  }
+
+  createProjectCAC(projectId: string, cacEmail: string): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { cacEmail: cacEmail}, {});
+  }
+
+  deleteProjectCAC(projectId: string): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  deleteMemberFromCAC(projectId: string, member: any): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.put<any>(`${this.pathAPI}/${queryString}`, member, {});
   }
 
   // //
@@ -625,6 +638,7 @@ export class ApiService {
       'isAnonymous',
       'location',
       'eaoStatus',
+      'submittedCAC',
       'period',
       'read'
     ];
@@ -657,6 +671,7 @@ export class ApiService {
       'documents',
       'eaoNotes',
       'eaoStatus',
+      'submittedCAC',
       'isAnonymous',
       'location',
       'period',
@@ -713,6 +728,7 @@ export class ApiService {
     const fields = [
       '_id',
       'eaoStatus',
+      'submittedCAC',
       'internalOriginalName',
       'documentFileName',
       'labels',
@@ -1067,7 +1083,7 @@ export class ApiService {
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
-  addVCToProject(vc: any, project: any): Observable<ValuedComponent> {
+  addVCToProject(vc: any): Observable<ValuedComponent> {
     const queryString = `vc/`;
     return this.http.post<ValuedComponent>(`${this.pathAPI}/${queryString}`, vc, {});
   }

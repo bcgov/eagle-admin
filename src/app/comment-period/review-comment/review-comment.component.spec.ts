@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbDate, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBarModule } from '@angular/material';
 import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { Component } from '@angular/core';
@@ -15,14 +15,15 @@ import { CommentService } from 'app/services/comment.service';
 import { StorageService } from 'app/services/storage.service';
 import { Utils } from 'app/shared/utils/utils';
 
-import { of } from 'rxjs';
+// Added the declaration of BlankComponent to be used for test routing
+@Component({ selector: 'test-blank', template: `` })
+class BlankComponent { }
 
 // Added the declaration of BlankComponent to be used for test routing
 @Component({ selector: 'test-blank', template: `` })
 class BlankComponent { }
 
 describe('ReviewCommentComponent', () => {
-  let component: ReviewCommentComponent;
   let fixture: ComponentFixture<ReviewCommentComponent>;
 
   const mockApiService = jasmine.createSpyObj('ApiService', [
@@ -78,7 +79,8 @@ describe('ReviewCommentComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ReviewCommentComponent);
-    component = fixture.componentInstance;
+
+    fixture.detectChanges();
   });
 
   // it('should create', () => {

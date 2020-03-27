@@ -16,11 +16,15 @@ import { RecentActivityService } from 'app/services/recent-activity';
 
 export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public contacts: any;
   public paginationData: any;
   public dropdownItems = ['Edit', 'Delete'];
+  public columns: any;
+  public useSmallTable: boolean;
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -34,6 +38,8 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   async ngOnInit() {
     this.contacts = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   deleteActivity(activity) {

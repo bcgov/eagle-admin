@@ -41,7 +41,7 @@
 
       <div class="label-pair">
         <label for="type">Type* </label>
-        <select name="type" id="type" formControlName="type" class="form-control" (change)="onChangeType($event)">
+        <select name="type" id="type" formControlName="type" class="form-control" (change)="onChangeType()">
           <option *ngFor="let type of PROJECT_TYPES" [ngValue]="type">{{type}}</option>
         </select>
       </div>

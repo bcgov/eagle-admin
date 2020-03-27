@@ -1,13 +1,13 @@
 <tr
   *ngFor="let document of documents"
   class="clickable-row">
-  <td data-label="Select" (click)="selectItem(document)" scope="row" class="col-1">
+  <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox'>
   </td>
-  <td data-label="Name" (click)="selectItem(document)" scope="row" class="col-6">{{document.displayName}}</td>
-  <td data-label="Date" (click)="selectItem(document)" scope="row" class="col-2">{{document.datePosted | date:'longDate'}}
+  <td data-label="Name" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
+  <td data-label="Date" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">{{document.datePosted | date:'longDate'}}
   </td>
-  <td data-label="Type" (click)="selectItem(document)" scope="row" class="col-2">{{document.type | listConverter}}</td>
-  <td data-label="Milestone" (click)="selectItem(document)" scope="row" class="col-2">
+  <td data-label="Type" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[3].width">{{document.type | listConverter}}</td>
+  <td data-label="Milestone" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[4].width">
     {{document.milestone | listConverter}}</td>
 </tr>

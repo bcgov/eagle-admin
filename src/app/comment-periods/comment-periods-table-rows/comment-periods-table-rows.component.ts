@@ -12,10 +12,14 @@ import { Router } from '@angular/router';
 
 export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent {
     @Input() data: TableObject;
+    @Input() columnData: Array<any>;
+    @Input() smallTable: boolean;
 
     public commentPeriods: any;
     public paginationData: any;
     public baseRouteUrl: string;
+    public columns: any;
+    public useSmallTable: boolean;
 
     constructor(
         private router: Router
@@ -25,6 +29,8 @@ export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent 
         this.commentPeriods = this.data.data;
         this.paginationData = this.data.paginationData;
         this.baseRouteUrl = this.data.extraData.baseRouteUrl;
+        this.columns = this.columnData;
+        this.useSmallTable = this.smallTable;
     }
 
     goToItem(commentPeriod) {

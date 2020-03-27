@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { flatMap } from 'rxjs/operators';
-import { of, forkJoin, empty, merge } from 'rxjs';
+import { of, forkJoin, merge } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
@@ -13,7 +13,6 @@ import { CommentPeriod } from 'app/models/commentPeriod';
 import { Org } from 'app/models/org';
 import { SearchService } from './search.service';
 import { FullProject } from 'app/models/fullProject';
-import { ISearchResult } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
 
 interface GetParameters {
@@ -239,6 +238,22 @@ export class ProjectService {
 
   deleteGroupMembers(projectId: string, groupId: string, member: string): Observable<Project> {
     return this.api.deleteMembersFromGroup(projectId, groupId, member)
+      .catch(error => this.api.handleError(error));
+  }
+
+  createCAC(projectId: string, cacEmail: string): Observable<Project> {
+    return this.api.createProjectCAC(projectId, cacEmail)
+      .catch(error => this.api.handleError(error));
+  }
+
+  deleteCAC(projectId: string): Observable<Project> {
+    return this.api.deleteProjectCAC(projectId)
+      .catch(error => this.api.handleError(error));
+  }
+
+  deleteCACMember(projectId: string, member: any): Observable<any> {
+    // Remove this user from the CAC on this project.
+    return this.api.deleteMemberFromCAC(projectId, member)
       .catch(error => this.api.handleError(error));
   }
 

@@ -11,7 +11,7 @@ import { ProjectService } from 'app/services/project.service';
 })
 
 export class HomeComponent implements OnInit, OnDestroy {
-  private numProjects: number = null;
+  public numProjects: number = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   constructor(

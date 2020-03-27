@@ -35,28 +35,28 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-6'
+      width: '50%'
     },
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-2'
+      width: '15%'
     }
   ];
 

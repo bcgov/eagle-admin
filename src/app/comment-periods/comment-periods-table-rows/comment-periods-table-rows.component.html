@@ -1,11 +1,11 @@
 <tr *ngFor="let commentPeriod of commentPeriods">
-    <td scope="row" class="col-1" data-label="Status" (click)="goToItem(commentPeriod)">{{commentPeriod.commentPeriodStatus}}</td>
-    <td scope="row" class="col-2" data-label="Start Date" (click)="goToItem(commentPeriod)">{{commentPeriod.dateStarted | date:'longDate'}}</td>
-    <td scope="row" class="col-2" data-label="Ends Date" (click)="goToItem(commentPeriod)">{{commentPeriod.dateCompleted | date:'longDate'}}
+    <td scope="row" data-label="Status" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[0].width">{{commentPeriod.commentPeriodStatus}}</td>
+    <td scope="row" data-label="Start Date" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[1].width">{{commentPeriod.dateStarted | date:'longDate'}}</td>
+    <td scope="row" data-label="Ends Date" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[2].width">{{commentPeriod.dateCompleted | date:'longDate'}}
     </td>
-    <td scope="row" class="col-2" data-label="Days Remaining" (click)="goToItem(commentPeriod)">{{commentPeriod.daysRemaining}}</td>
-    <td scope="row" class="col-2 text-center" data-label="Published" (click)="goToItem(commentPeriod)">{{commentPeriod.read}}</td>
-    <td scope="row" class="col-3" data-label="Comment Data" (click)="goToItem(commentPeriod)">
+    <td scope="row" data-label="Days Remaining" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[3].width">{{commentPeriod.daysRemaining}}</td>
+    <td scope="row" data-label="Published" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[4].width">{{commentPeriod.read}}</td>
+    <td scope="row" data-label="Comment Data" (click)="goToItem(commentPeriod)" [style.width]="!useSmallTable && columns[5].width">
       <app-comment-stats [period]="commentPeriod"></app-comment-stats>
     </td>
 </tr>

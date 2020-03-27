@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDate } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
@@ -12,7 +12,6 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 
 import { Utils } from 'app/shared/utils/utils';
-import { DomRendererFactory2 } from '@angular/platform-browser/src/dom/dom_renderer';
 
 @Component({
   selector: 'app-document-edit',
@@ -47,7 +46,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   constructor(
     private config: ConfigService,
     private documentService: DocumentService,
-    private _changeDetectionRef: ChangeDetectorRef,
     private snackBar: MatSnackBar,
     private router: Router,
     private storageService: StorageService,

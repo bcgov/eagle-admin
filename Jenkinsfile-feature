@@ -95,8 +95,8 @@ def sonarGetDate (jsonPayload) {
 }
 
 boolean imageTaggingComplete ( String sourceTag, String destinationTag, String action, def iterations = 6 ) {
-  def sourceImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${sourceTag} | head -n 1".trim()
-  def destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
+  def sourceImageName = sh returnStdout: true, script: "oc describe istag/cac-eagle-admin:${sourceTag} | head -n 1".trim()
+  def destinationImageName = sh returnStdout: true, script: "oc describe istag/cac-eagle-admin:${destinationTag} | head -n 1".trim()
   int delay = 0
 
   for (int i=0; i<iterations; i++){
@@ -108,7 +108,7 @@ boolean imageTaggingComplete ( String sourceTag, String destinationTag, String a
     } else {
       delay = (1<<i) // exponential backoff
       sleep(delay)
-      destinationImageName = sh returnStdout: true, script: "oc describe istag/eagle-admin:${destinationTag} | head -n 1".trim()
+      destinationImageName = sh returnStdout: true, script: "oc describe istag/cac-eagle-admin:${destinationTag} | head -n 1".trim()
     }
   }
   return false
@@ -164,44 +164,6 @@ def getChangeLog(pastBuilds) {
   return log;
 }
 
-def nodejsTest () {
-  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
-    String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
-    podTemplate(
-      label: testPodLabel,
-      name: testPodLabel,
-      serviceAccount: 'jenkins',
-      cloud: 'openshift',
-      slaveConnectTimeout: 300,
-      containers: [
-        containerTemplate(
-          name: 'jnlp',
-          image: 'docker-registry.default.svc:5000/esm/eagle-unit-tester',
-          resourceRequestCpu: '500m',
-          resourceLimitCpu: '800m',
-          resourceRequestMemory: '2Gi',
-          resourceLimitMemory: '4Gi',
-          activeDeadlineSeconds: '1200',
-          workingDir: '/tmp',
-          command: '',
-        )
-      ]
-    ) {
-      node(testPodLabel) {
-        checkout scm
-        try {
-          sh 'npm i'
-          sh 'npm run tests-ci'
-        } finally {
-          echo "Unit Tests Passed"
-        }
-      }
-    }
-    return true
-  }
-}
-
-
 def nodejsSonarqube () {
   _openshift(env.STAGE_NAME, TOOLSPROJECT) {
     String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
@@ -250,7 +212,7 @@ def nodejsSonarqube () {
 
             // run scan
             sh "npm install typescript"
-            sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
+            sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar.projectKey='org.sonarqube:cac-eagle-admin' -Dsonar.projectName=cac-eagle-admin -Dsonar.verbose=true --stacktrace --info"
 
             if ( !firstScan ) {
               // wiat for report to be updated
@@ -532,15 +494,6 @@ pipeline {
                 )
                 throw error
               }
-            }
-          }
-        }
-
-        stage('Unit Tests') {
-          steps {
-            script {
-              echo "Running unit tests"
-              def results = nodejsTest()
             }
           }
         }

@@ -5,7 +5,7 @@ import 'zone.js/dist/sync-test';
 import 'zone.js/dist/jasmine-patch';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Utils } from 'app/shared/utils/utils';
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async } from '@angular/core/testing';
 // import {
 //   BrowserDynamicTestingModule,
 //   platformBrowserDynamicTesting
@@ -17,8 +17,6 @@ import { DayCalculatorModalComponent } from './day-calculator-modal.component';
 
 describe('DayCalculatorModalComponent', () => {
   let component: DayCalculatorModalComponent;
-  let fixture: ComponentFixture<DayCalculatorModalComponent>;
-
   let calculated: DayCalculatorResult;
 
   // calculator inputs

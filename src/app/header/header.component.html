@@ -3,6 +3,9 @@
         <a class="navbar-brand" title="EPIC" routerLink="/home">
           <span class="navbar-brand__title">EPIC</span>
         </a>
+        <div *ngIf="envName" class="env-banner" [ngClass]="{'red': envName === 'Development' || envName === 'Local', 'yellow': envName === 'Demo', 'green': envName === 'Testing'}">
+          This is the&nbsp;<strong>{{envName}}</strong>&nbsp;environment. The content you are viewing is not final and subject to change.
+        </div>
         <button class="navbar-toggler" type="button" title="Toggle Main Navigation"
           data-toggle="collapse"
           data-target="#mainNav"
