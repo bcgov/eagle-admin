@@ -81,12 +81,10 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
   ngOnInit() {
     this.route.parent.data
-      .switchMap(parentData => {
+      .switchMap(() => {
         return this.route.params;
       })
-      .switchMap((res: any) => {
-        let params = { ...res };
-
+      .switchMap(() => {
         this.currentProject = this.storageService.state.currentProject.data;
         this._changeDetectionRef.detectChanges();
 
@@ -225,7 +223,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           }
 
           forkJoin(observables).subscribe(
-            res => {},
+            () => {},
             err => {
               console.log('Error:', err);
             },
@@ -271,7 +269,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           }
 
           forkJoin(observables).subscribe(
-            res => {},
+            () => {},
             err => {
               console.log('Error:', err);
             },
@@ -330,7 +328,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       });
   }
 
-  public onNumItems(numItems) {
+  public onNumItems() {
     const params = {};
     params['ms'] = new Date().getMilliseconds();
 
@@ -342,7 +340,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     ]);
   }
 
-  public onSubmit(currentPage = 1) {
+  public onSubmit() {
     this.loading = true;
 
     const params = {};

@@ -193,7 +193,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       });
   }
 
-  register(myForm: FormGroup) {
+  register() {
   }
 
   buildForm(data) {

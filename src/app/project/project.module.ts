@@ -22,7 +22,7 @@ import { ProjectArchivedDetailComponent } from './project-archived-detail/projec
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
 import { ProjectCACComponent } from './project-cac/project-cac.component';
-import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component'
+import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
 import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-tab/review-comments-tab.component';
 import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { UploadComponent } from './project-documents/upload/upload.component';

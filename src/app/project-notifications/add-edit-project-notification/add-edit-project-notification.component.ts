@@ -109,11 +109,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let saveOnly = false;
-    if (publish === null) {
-      saveOnly = true;
-    }
-
     if (publish === null && this.isPublished) {
       publish = true;
     } else if (publish === null && !this.isPublished) {
@@ -139,7 +134,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
-          error => {
+          () => {
             alert('An error has occurred.');
           },
           () => { this.router.navigate(['/project-notifications']); }
@@ -151,7 +146,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
-          error => {
+          () => {
             alert('An error has occurred.');
           },
           () => {
@@ -258,12 +253,12 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     return true;
   }
 
-  public onChangeType(event) {
+  public onChangeType() {
     this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
     this._changeDetectorRef.detectChanges();
   }
 
-  public onChangeTrigger(event) {
+  public onChangeTrigger() {
     const trigger = this.myForm.value.trigger;
 
     if (trigger !== 'Greenhouse Gases') {

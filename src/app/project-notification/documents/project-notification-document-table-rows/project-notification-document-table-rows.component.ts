@@ -1,8 +1,8 @@
-import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 
 @Component({
@@ -13,11 +13,15 @@ import { MatSnackBar } from '@angular/material';
 
 export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public documents: any;
   public paginationData: any;
   public activeLegislationYear: number;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private router: Router,
@@ -28,6 +32,9 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
     this.documents = this.data.data;
     this.paginationData = this.data.paginationData;
     this.activeLegislationYear = 2018;
+
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   selectItem(item) {
