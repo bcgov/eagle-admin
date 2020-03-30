@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 
 import { SearchService } from 'app/services/search.service';
@@ -12,7 +12,7 @@ export class AddDocumentsResolver implements Resolve<Observable<object>> {
     private storageService: StorageService
   ) { }
 
-  resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<object> {
+  resolve(route: ActivatedRouteSnapshot): Observable<object> {
     let projectId;
     if (this.storageService.state.currentProject) {
       projectId = this.storageService.state.currentProject.data._id;

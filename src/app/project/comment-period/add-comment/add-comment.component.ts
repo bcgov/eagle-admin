@@ -137,7 +137,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.commentService.add(this.comment, documentsForm)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        res => { },
+        () => {},
         error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t add comment');

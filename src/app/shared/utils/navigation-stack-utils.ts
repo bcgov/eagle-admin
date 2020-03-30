@@ -89,7 +89,6 @@ export class NavigationStackUtils {
         let poppedItem = null;
         let isPopping = true;
         if (stack) {
-            let index = stack.length - 1;
             while (isPopping) {
                 poppedItem = this.popNavigationStack();
                 if (poppedItem == null) {
@@ -97,7 +96,6 @@ export class NavigationStackUtils {
                 } else if (poppedItem.breadcrumbs[poppedItem.breadcrumbs.length - 1] === breadcrumb) {
                     isPopping = false;
                 }
-                index--;
             }
             router.navigate(breadcrumb.route);
         } else {

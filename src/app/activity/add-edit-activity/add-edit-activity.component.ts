@@ -113,7 +113,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       });
       console.log('saving:', activity);
       this.recentActivityService.save(activity)
-        .subscribe(item => {
+        .subscribe(() => {
           // console.log('item', item);
           this.router.navigate(['/activity']);
         });
@@ -132,7 +132,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       });
       console.log('adding:', activity);
       this.recentActivityService.add(activity)
-        .subscribe(item => {
+        .subscribe(() => {
           // console.log('saved:', item);
           this.router.navigate(['/activity']);
         });

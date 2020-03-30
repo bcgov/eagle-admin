@@ -15,7 +15,6 @@ import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { DecisionService } from 'app/services/decision.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-import { SearchService } from 'app/services/search.service';
 import { ISearchResults } from 'app/models/search';
 import { Utils } from 'app/shared/utils/utils';
 import { SideBarService } from 'app/services/sidebar.service';
@@ -60,7 +59,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     public decisionService: DecisionService,
     private storageService: StorageService,
     public documentService: DocumentService,
-    private searchService: SearchService,
     private utils: Utils
 
   ) {

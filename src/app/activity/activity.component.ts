@@ -10,8 +10,6 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { SearchTerms } from 'app/models/search';
-import { Utils } from 'app/shared/utils/utils';
-
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',

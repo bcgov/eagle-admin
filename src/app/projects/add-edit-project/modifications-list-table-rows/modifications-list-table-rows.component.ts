@@ -2,7 +2,6 @@ import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { Router } from '@angular/router';
 
 @Component({
     selector: 'tbody[app-modifications-list-table-rows]',
@@ -21,9 +20,7 @@ export class ModificationsListTableRowsComponent implements OnInit, TableCompone
     public columns: any;
     public useSmallTable: boolean;
 
-    constructor(
-        private router: Router
-    ) { }
+    constructor() { }
 
     ngOnInit() {
         this.items = this.data.data;

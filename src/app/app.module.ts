@@ -134,7 +134,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     SharedModule,
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters
-    NgbModule.forRoot(),
+    NgbModule,
     BootstrapModalModule.forRoot({ container: document.body }),
     NgSelectModule
   ],

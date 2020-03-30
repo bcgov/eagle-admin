@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material';
@@ -131,7 +130,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     });
   }
 
-  register(myForm: FormGroup) { }
+  register() { }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();

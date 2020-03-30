@@ -3,7 +3,6 @@ import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 
 import { SearchService } from 'app/services/search.service';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
 @Injectable()
 export class PinsGlobalComponentResolver implements Resolve<Observable<object>> {

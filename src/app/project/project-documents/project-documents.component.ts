@@ -451,7 +451,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           }
 
           forkJoin(observables).subscribe(
-            res => {},
+            () => {},
             err => {
               console.log('Error:', err);
             },
@@ -505,7 +505,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           }
 
           forkJoin(observables).subscribe(
-            res => {},
+            () => {},
             err => {
               console.log('Error:', err);
             },
@@ -608,10 +608,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  public onSubmit(currentPage = 1) {
-    // dismiss any open snackbar
-    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
+  public onSubmit() {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time

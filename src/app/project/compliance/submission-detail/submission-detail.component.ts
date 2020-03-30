@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Compliance } from 'app/models/compliance';
 import { Project } from 'app/models/project';
@@ -59,7 +59,6 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
   ];
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     public api: ApiService,
     private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
