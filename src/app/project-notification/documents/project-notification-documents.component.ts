@@ -43,7 +43,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     {
       name: 'select_all_box',
       value: 'select_all_box',
-      width: '20px',
+      width: '35px',
       nosort: true
     },
     {

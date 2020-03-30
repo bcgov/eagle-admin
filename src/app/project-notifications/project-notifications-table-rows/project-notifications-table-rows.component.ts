@@ -31,6 +31,9 @@ export class ProjectNotificationTableRowsComponent implements OnInit, TableCompo
   ngOnInit() {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;
+
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   goToItem(item) {
