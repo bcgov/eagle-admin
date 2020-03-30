@@ -19,10 +19,6 @@ import { Utils } from 'app/shared/utils/utils';
 @Component({ selector: 'test-blank', template: `` })
 class BlankComponent { }
 
-// Added the declaration of BlankComponent to be used for test routing
-@Component({ selector: 'test-blank', template: `` })
-class BlankComponent { }
-
 describe('ReviewCommentComponent', () => {
   let fixture: ComponentFixture<ReviewCommentComponent>;
 
