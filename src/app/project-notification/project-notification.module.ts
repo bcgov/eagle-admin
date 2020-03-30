@@ -21,7 +21,7 @@ import { StorageService } from 'app/services/storage.service';
   imports: [
     CommonModule,
     FormsModule,
-    NgbModule.forRoot(),
+    NgbModule,
     ProjectNotificationRoutingModule,
     ReactiveFormsModule,
     SharedModule,

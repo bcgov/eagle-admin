@@ -112,7 +112,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
-          error => {
+          () => {
             alert('Uh-oh, couldn\'t delete comment period');
           },
           () => { // onCompleted

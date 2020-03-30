@@ -263,7 +263,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
-          error => {
+          () => {
             alert('Uh-oh, couldn\'t edit comment period');
           },
           () => { // onCompleted
@@ -278,7 +278,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
         .takeUntil(this.ngUnsubscribe)
         .subscribe(
           () => { },
-          error => {
+          () => {
             alert('Uh-oh, couldn\'t add new comment period');
           },
           () => { // onCompleted

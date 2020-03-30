@@ -24,27 +24,27 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'name',
-      width: 'col-4'
+      width: '40%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Sub Type',
       value: 'subType',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Decision',
       value: 'notificationDecision',
-      width: 'col-2'
+      width: '15%'
     }
   ];
 

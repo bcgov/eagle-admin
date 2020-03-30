@@ -16,7 +16,7 @@
   <div class="spinner-container" *ngIf="loading">
     <div class="spinner-new rotating"></div>
   </div>
-  <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
+  <form [formGroup]="myForm" (ngSubmit)="register()" novalidate>
     <div class="text-right">
       <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
       &nbsp;
@@ -63,7 +63,7 @@
           <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
         </select>
       </div>
-      
+
     </div>
     <div class="flex-container">
       <div class="label-pair">

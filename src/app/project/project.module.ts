@@ -22,10 +22,6 @@ import { ProjectArchivedDetailComponent } from './project-archived-detail/projec
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
 import { ProjectCACComponent } from './project-cac/project-cac.component';
-import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
-import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-tab/review-comments-tab.component';
-import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
-import { UploadComponent } from './project-documents/upload/upload.component';
 import { ValuedComponentsComponent } from './valued-components/valued-components.component';
 import { ValuedComponentTableRowsComponent } from './valued-components/valued-component-table-rows/valued-component-table-rows.component';
 import { TopicTableRowsComponent } from './valued-components/add-vc/topic-table-rows/topic-table-rows.component';
@@ -79,10 +75,6 @@ import { SubmissionDetailComponent } from './compliance/submission-detail/submis
     ProjectGroupsComponent,
     ProjectUpdatesComponent,
     ProjectCACComponent,
-    UploadComponent,
-    ReviewCommentComponent,
-    ReviewCommentsTabComponent,
-    ReviewCommentsTabTableRowsComponent,
     SubmissionDetailComponent,
     TopicTableRowsComponent,
     ValuedComponentsComponent,

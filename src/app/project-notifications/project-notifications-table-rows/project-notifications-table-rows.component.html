@@ -1,9 +1,9 @@
 <tr (click)="goToItem(item)"
     *ngFor="let item of items"
     class="clickable-row">
-    <td scope="row" data-label="Name" class="col-4">{{item.name || '-'}}</td>
-    <td scope="row" data-label="Type" class="col-2">{{item.type || '-'}}</td>
-    <td scope="row" data-label="Type" class="col-2">{{item.subType || '-'}}</td>
-    <td scope="row" data-label="Region" class="col-2">{{item.region || '-'}}</td>
-    <td scope="row" data-label="Decision" class="col-2">{{item.decision || '-'}}</td>
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{item.name || '-'}}</td>
+    <td scope="row" data-label="Type" [style.width]="!useSmallTable && columns[1].width">{{item.type || '-'}}</td>
+    <td scope="row" data-label="Type" [style.width]="!useSmallTable && columns[2].width">{{item.subType || '-'}}</td>
+    <td scope="row" data-label="Region" [style.width]="!useSmallTable && columns[3].width">{{item.region || '-'}}</td>
+    <td scope="row" data-label="Decision" [style.width]="!useSmallTable && columns[4].width">{{item.decision || '-'}}</td>
 </tr>

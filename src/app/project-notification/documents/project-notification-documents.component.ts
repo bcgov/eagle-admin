@@ -43,13 +43,13 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     {
       name: 'select_all_box',
       value: 'select_all_box',
-      width: 'col-1',
+      width: '20px',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-11',
+      width: '100%',
       nosort: true
     }
   ];
@@ -396,10 +396,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   }
 
   setColumnSort(docType, column) {
-    let currentPage;
-
     if (docType === Constants.documentTypes.CATEGORIZED) {
-      currentPage = this.tableParams.currentPageCategorized;
 
       if (this.tableParams.sortByCategorized.charAt(0) === '+') {
         this.tableParams.sortByCategorized = '-' + column;
@@ -407,7 +404,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
         this.tableParams.sortByCategorized = '+' + column;
       }
     } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
-      currentPage = this.tableParams.currentPageUncategorized;
 
       if (this.tableParams.sortByUncategorized.charAt(0) === '+') {
         this.tableParams.sortByUncategorized = '-' + column;

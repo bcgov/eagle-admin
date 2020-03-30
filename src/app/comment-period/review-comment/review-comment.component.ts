@@ -139,7 +139,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
         newComment => {
           this.comment = newComment;
         },
-        error => {
+        () => {
           alert('Uh-oh, couldn\'t edit comment');
         },
         () => {
