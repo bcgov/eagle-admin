@@ -20,6 +20,10 @@ export class ProjectNotificationsResolver implements Resolve<object> {
       tableParams.sortBy = this.storageService.state.sortBy;
     }
 
+    if (tableParams.sortBy === '') {
+      tableParams.sortBy = '-_id';
+    }
+
     return this.searchService.getSearchResults(
       tableParams.keywords || '',
       'ProjectNotification',
