@@ -91,8 +91,9 @@ export class GroupContactComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         // Incoming users
         if (res && res.users && res.users.length > 0) {
-          this.tableParams.totalListItems = res.users.length;
-          this.users = res.users;
+          this.tableParams.totalListItems = res.users[0].total_items;
+          this.tableParams.pageSize = 10; // force to default on init
+          this.users = res.users[0].results;
         } else {
           this.tableParams.totalListItems = 0;
           this.users = [];
@@ -404,8 +405,8 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     .takeUntil(this.ngUnsubscribe)
     .subscribe((res: any) => {
       // Incoming users
-      this.tableParams.totalListItems = res.length;
-      this.users = res;
+      this.tableParams.totalListItems = res[0].total_items;
+      this.users = res[0].results;
 
       this.setRowData();
       this.loading = false;

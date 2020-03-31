@@ -15,7 +15,7 @@ export class ProjectContactsGroupResolver implements Resolve<Observable<object>>
     const projId = route.parent.paramMap.get('projId');
     const groupId = route.paramMap.get('groupId');
     const pageNum = route.params.pageNum ? route.params.pageNum : 1;
-    const pageSize = route.params.pageSize ? route.params.pageSize : 25;
+    const pageSize = route.params.pageSize ? route.params.pageSize : 10;
     const sortBy = route.params.sortBy ? route.params.sortBy : '+displayName';
 
     return this.projectService.getGroupMembers(projId, groupId, pageNum, pageSize, sortBy);
