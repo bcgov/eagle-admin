@@ -1,0 +1,8 @@
+<tr
+  *ngFor="let document of documents"
+  class="clickable-row" [className]="'active'">
+  <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
+    <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox'>
+  </td>
+  <td data-label="Name" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
+</tr>

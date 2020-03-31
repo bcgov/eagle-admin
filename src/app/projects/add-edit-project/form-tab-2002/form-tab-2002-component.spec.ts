@@ -33,12 +33,12 @@ describe('FormTab2002', () => {
     },
   };
 
-  const mockProjectService = jasmine.createSpyObj('ProjectService', [
-    'unPublish',
-    'Publish',
-    'add',
-    'save'
-  ]);
+  const mockProjectService = jasmine.createSpyObj('ProjectService', {
+    'unPublish': Observable.of({}),
+    'Publish': Observable.of({}),
+    'add': Observable.of({}),
+    'save': Observable.of({}),
+  });
 
   const mockStorageService = jasmine.createSpyObj('StorageService', [
     'state'

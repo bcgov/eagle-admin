@@ -12,10 +12,8 @@ import { MetricsComponent } from './metrics/metrics.component';
 import { ContactsComponent } from './contacts/contacts.component';
 import { ActivityComponent } from './activity/activity.component';
 import { SearchHelpComponent } from './search-help/search-help.component';
-
 import { ContactsResolver } from './contacts/contacts-resolver.service';
 import { ActivityComponentResolver } from './activity/activity-component-resolver.services';
-
 import { CanDeactivateGuard } from 'app/services/can-deactivate-guard.service';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
 import { TopicsResolver } from './administration/topics/topics-resolver.services';
@@ -29,13 +27,13 @@ import { AddEditOrganizationComponent } from './organizations/add-edit-organizat
 import { EditOrganizationResolver } from './organizations/add-edit-organization/edit-organization-resolver.services';
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
 import { LinkOrganizationResolver } from './shared/components/link-organization/link-organization-resolver.services';
-import { NotificationProjectsComponent } from './notification-projects/notification-projects.component';
-import { NotificationProjectsResolver } from './notification-projects/notification-projects-resolver.service';
-import { AddEditNotificationProjectComponent } from './notification-projects/add-edit-notification-project/add-edit-notification-project.component';
-import { NotificationProjectComponent } from './notification-project/notification-project.component';
-import { NotificationProjectResolver } from './notification-project/notification-project-resolver.service';
-import { NotificationProjectDocumentsResolver } from './notification-project/notification-project-documents-resolver.service';
-
+import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
+import { ProjectNotificationsResolver } from './project-notifications/project-notifications-resolver.service';
+import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
+import { ProjectNotificationResolver } from './project-notification/project-notification-resolver.service';
+import { ProjectNotificationDocumentsResolver } from './project-notification/documents/project-notification-documents-resolver.service';
+import { ProjectNotificationDocumentsComponent } from './project-notification/documents/project-notification-documents.component';
+import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 import { AuthGuard } from './services/auth-guard.service';
 
 const routes: Routes = [
@@ -113,41 +111,46 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'notification-projects',
-    component: NotificationProjectsComponent,
+    path: 'project-notifications',
+    component: ProjectNotificationsComponent,
     canActivate: [AuthGuard],
     resolve: {
-      notificationProjects: NotificationProjectsResolver
+      notificationProjects: ProjectNotificationsResolver
     }
   },
   {
-    path: 'np/:notificationProjectId',
+    path: 'pn/:notificationProjectId',
     resolve: {
-      notificationProject: NotificationProjectResolver,
-      documents: NotificationProjectDocumentsResolver
+      notificationProject: ProjectNotificationResolver,
+      documents: ProjectNotificationDocumentsResolver
     },
     children: [
       {
         path: '',
-        redirectTo: 'notification-project-details',
+        redirectTo: 'details',
         pathMatch: 'full',
       },
       {
-        path: 'notification-project-details',
-        component: NotificationProjectComponent,
+        path: 'details',
+        component: ProjectNotificationDetailComponent,
         canActivate: [AuthGuard],
       },
       {
         path: 'edit',
-        component: AddEditNotificationProjectComponent,
+        component: AddEditProjectNotificationComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'project-notification-documents',
+        component: ProjectNotificationDocumentsComponent,
         canActivate: [AuthGuard],
       }
     ],
     runGuardsAndResolvers: 'always',
   },
   {
-    path: 'notification-projects/add',
-    component: AddEditNotificationProjectComponent,
+    path: 'project-notifications/add',
+    component: AddEditProjectNotificationComponent,
     canActivate: [AuthGuard],
   },
   {
@@ -241,14 +244,14 @@ const routes: Routes = [
     EditContactResolver,
     EditOrganizationResolver,
     LinkOrganizationResolver,
-    NotificationProjectsResolver,
-    NotificationProjectResolver,
+    ProjectNotificationsResolver,
+    ProjectNotificationResolver,
     OrganizationsResolver,
     PinsGlobalComponentResolver,
     ProjectContactsGroupResolver,
     ProjectGroupResolver,
     TopicsResolver,
-    NotificationProjectDocumentsResolver,
+    ProjectNotificationDocumentsResolver,
     AuthGuard,
   ]
 })

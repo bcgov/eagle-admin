@@ -1,0 +1,130 @@
+<nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
+  <div *ngIf="!isEditing && navigationObject == null">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">
+        <a [routerLink]="['/project-notifications']">All Project Notifications</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Add Project Notifications
+      </li>
+    </ol>
+  </div>
+  <div *ngIf="isEditing && navigationObject == null">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page">
+        <a [routerLink]="['/project-notifications']">All Project Notifications</a>
+      </li>
+      <li class="breadcrumb-item" aria-current="page">
+        <a
+          [routerLink]="['/pn', notificationProjectId, 'notification-project-details']">{{projectNotification.name}}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">
+        Edit
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<main class="container-fluid-padding add-edit-form">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+  <form *ngIf="myForm" [formGroup]="myForm" novalidate>
+    <h2 *ngIf="!isEditing">Add Project Notification</h2>
+    <h2 *ngIf="isEditing">Edit Project Notification</h2>
+
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="name">Name*</label>
+        <input name="name" id="name" formControlName="name" type="text" class="form-control" />
+      </div>
+
+      <div class="label-pair">
+        <label for="type">Type* </label>
+        <select name="type" id="type" formControlName="type" class="form-control" (change)="onChangeType()">
+          <option *ngFor="let type of PROJECT_TYPES" [ngValue]="type">{{type}}</option>
+        </select>
+      </div>
+
+      <div class="label-pair">
+        <label for="subType">Sub-Type* </label>
+        <select name="subType" id="subType" formControlName="subType" class="form-control">
+          <option *ngFor="let subType of subTypeSelected" [ngValue]="subType">{{subType}}</option>
+        </select>
+      </div>
+
+      <div class="label-pair">
+        <label for="nature">Nature* </label>
+        <input name="nature" id="nature" formControlName="nature" type="text" class="form-control">
+      </div>
+
+      <div class="label-pair">
+        <label for="trigger">Trigger* </label>
+        <select name="trigger" id="trigger" formControlName="trigger" class="form-control" (change)="onChangeTrigger($event)">
+          <option *ngFor="let trigger of NOTIFICATION_TRIGGERS" [ngValue]="trigger">{{trigger}}</option>
+        </select>
+      </div>
+
+      <div class="label-pair">
+        <label for="region">Region* </label>
+        <select name="region" id="region" formControlName="region" class="form-control">
+          <option *ngFor="let region of regions" [ngValue]="region">{{region}}</option>
+        </select>
+      </div>
+
+      <div class="label-pair">
+        <label for="location">Location* </label>
+        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+      </div>
+
+      <div class="label-pair">
+        <label for="decision">Notification Decision*</label>
+        <select name="decision" id="decision" formControlName="decision" class="form-control">
+          <option *ngFor="let decision of NOTIFICATION_DECISIONS" [ngValue]="decision">{{decision}}</option>
+        </select>
+      </div>
+
+      <div *ngIf="myForm.value.decision && myForm.value.decision !== 'In Progress'" class="label-pair">
+        <label for="decisionDate">Decision Date*</label>
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
+            formControlName="decisionDate" ngbDatepicker #decisionDatePicker="ngbDatepicker" />
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="latitude">Latitude*</label>
+        <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
+      </div>
+      <div class="label-pair">
+        <label for="longitude">Longitude*</label>
+        <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
+      </div>
+    </div>
+
+    <div class="flex-container">
+      <div class="label-pair med">
+        <label for="description">Description*</label>
+        <textarea name="description" id="description" formControlName="description" type="text"
+          class="form-control"></textarea>
+      </div>
+    </div>
+  </form>
+
+  <div class="text-right">
+    <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+    &nbsp;
+    <button class="btn btn-primary" type="submit" (click)="onSubmit(null)">Save</button>
+    &nbsp;
+    <button *ngIf="!isPublished" class="btn btn-primary publish-btn" type="submit" (click)="onSubmit(true)">Save and
+      Publish</button>
+    <button *ngIf="isPublished" class="btn btn-primary un-publish-btn" type="submit" (click)="onSubmit(false)">Save and
+      Un-Publish</button>
+  </div>
+</main>

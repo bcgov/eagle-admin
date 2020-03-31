@@ -1,0 +1,8 @@
+<div class="bottom-container project-container">
+  <div class="spinner-container full-screen" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+  <div *ngIf="!loading">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<nav class="action-container">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item" >
+      <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+    </li>
+    <li class="breadcrumb-item" >
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      Comment Periods
+    </li>
+  </ol>
+  <div>
+    <button type="button" class="btn btn-primary" (click)="addCommentPeriod()">
+      <i class="material-icons">add</i>Add New Comment Period</button>
+  </div>
+</nav>
+
+<main class="container-fluid-padding">
+  <h1>{{currentProject.data.name}}</h1>
+
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+
+  <app-table-template *ngIf="tableParams.totalListItems > 0" [columns]="commentPeriodTableColumns"
+    [data]="commentPeriodTableData" (onColumnSort)='setColumnSort($event)'
+    (onPageNumUpdate)='getPaginatedComments($event, null, null)'>
+  </app-table-template>
+
+  <div *ngIf="tableParams.totalListItems == 0">
+    This project has no comment periods.
+  </div>
+</main>
