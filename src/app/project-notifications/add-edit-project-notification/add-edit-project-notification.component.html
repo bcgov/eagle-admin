@@ -1,5 +1,5 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <div *ngIf="!isEditing && navigationObject == null">
+  <div *ngIf="isAdd">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/project-notifications']">All Project Notifications</a>
@@ -9,7 +9,7 @@
       </li>
     </ol>
   </div>
-  <div *ngIf="isEditing && navigationObject == null">
+  <div *ngIf="!isAdd">
     <ol class="breadcrumb">
       <li class="breadcrumb-item" aria-current="page">
         <a [routerLink]="['/project-notifications']">All Project Notifications</a>
