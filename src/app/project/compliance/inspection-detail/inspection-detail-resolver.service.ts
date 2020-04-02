@@ -12,6 +12,6 @@ export class InspectionDetailResolver implements Resolve<Observable<object>> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const inspectionId = route.paramMap.get('inspectionId');
-    return this.searchService.getItem(inspectionId, 'Inspection');
+    return this.searchService.getItem(inspectionId, 'Inspection', true);
   }
 }

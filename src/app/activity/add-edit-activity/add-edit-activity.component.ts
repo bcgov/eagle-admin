@@ -111,7 +111,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         project: this.myForm.get('project').value,
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
-        notificationName: this.myForm.get('notificationName').value,
+        notificationName: this.myForm.controls.notificationName.value,
 
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
@@ -131,7 +131,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         project: this.myForm.get('project').value,
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
-        notificationName: this.myForm.get('notificationName').value,
+        notificationName: this.myForm.controls.notificationName.value,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         pinned: false,
