@@ -50,7 +50,7 @@
                       aria-label="Toolbar with button groups">
                       <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
                           <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                              (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
+                              (click)="tableParams.pageSize=this.tableParams.totalListItems; getPaginatedContacts(1);"
                               aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
                               [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
                               All Group Members</a>
