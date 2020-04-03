@@ -77,17 +77,23 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.compliance = new Compliance(res.compliance.data);
-        if (this.compliance.label) {
-          this.compliance.label = this.compliance.label.replace(new RegExp('\n', 'g'), '<br />');
+        if (res && res.compliance && res.compliance.data) {
+
+          this.compliance = new Compliance(res.compliance.data);
+          if (this.compliance.label) {
+            this.compliance.label = this.compliance.label.replace(new RegExp('\n', 'g'), '<br />');
+          }
+          // Adding itemClicked to the elements to track the icons
+          this.elements = this.compliance.elements.map(el => {
+            let newEl = {...el, itemClicked: false};
+            return newEl;
+          });
+          this.loading = false;
+        } else {
+          this.openSnackBar('Error, Please try again', 'Close');
+          this.loading = false;
         }
-        // Adding itemClicked to the elements to track the icons
-        this.elements = this.compliance.elements.map(el => {
-          let newEl = {...el, itemClicked: false};
-          return newEl;
         });
-        this.loading = false;
-      });
   }
 
   openElement(element) {

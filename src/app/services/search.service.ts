@@ -19,9 +19,9 @@ export class SearchService {
   ) { }
 
 
-  getItem(_id: string, schema: string): Observable<any> {
-    if (this._cachedItems && this._cachedItems.hasOwnProperty(_id)) {
-      // Check cache first
+  getItem(_id: string, schema: string, useCache = false): Observable<any> {
+    if (this._cachedItems && this._cachedItems.hasOwnProperty(_id), useCache) {
+      // TODO: Revisit this but for now its disabled
       return of(this._cachedItems[_id]);
     }
     const searchResults = this.api.getItem(_id, schema)
