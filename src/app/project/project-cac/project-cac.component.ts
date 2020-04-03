@@ -351,12 +351,8 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         itemsToExport.push(item);
       }
     });
-    let list = [];
-    itemsToExport.map(item => {
-        list.push(item);
-    });
 
-    let filteredArray = list.reduce((unique, item) => {
+    let filteredArray = itemsToExport.reduce((unique, item) => {
       return unique.includes(item) ? unique : [...unique, item];
     }, []);
 
@@ -365,10 +361,10 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       userData.push({
         name: user.name,
         email: user.email,
-        liveNear: user.liveNear,
-        memberOf: user.memberOf,
-        knowledgeOf: user.knowledgeOf,
-        additionalNotes: user.additionalNotes
+        liveNear: user.liveNear ? 'Yes' : 'No',
+        memberOf: user.memberOf ? 'Yes' : 'No',
+        knowledgeOf: user.knowledgeOf ? 'Yes' : 'No',
+        additionalNotes: user.additionalNotes ? user.additionalNotes : 'No'
       });
     });
 
