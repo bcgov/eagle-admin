@@ -51,6 +51,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       value: 'displayName',
       width: '100%',
       nosort: true
+    },
+    {
+      name: 'status',
+      value: 'status',
+      width: '200px',
+      nosort: true
     }
   ];
 
@@ -363,7 +369,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           displayName: document.displayName,
           documentFileName: document.documentFileName,
           datePosted: new Date(),
-          status: '',
+          status: document['status'],
           type: '',
           milestone: '',
           legislation: 2018,
