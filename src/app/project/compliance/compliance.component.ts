@@ -29,27 +29,27 @@ export class ComplianceComponent implements OnInit, OnDestroy {
     {
       name: 'Inspection Name',
       value: 'name',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Inspector',
       value: 'email',
-      width: 'col-3'
+      width: '25%'
     },
     {
       name: 'Start Date',
       value: 'startDate',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'End Date',
       value: 'endDate',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Actions',
       value: 'actions',
-      width: 'col-3',
+      width: '25%',
       nosort: true
     }
   ];

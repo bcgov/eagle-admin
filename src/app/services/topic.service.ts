@@ -8,10 +8,6 @@ import * as _ from 'lodash';
 import { ApiService } from './api';
 import { Topic } from 'app/models/topic';
 
-interface GetParameters {
-  getDocuments?: boolean;
-}
-
 @Injectable()
 export class TopicService {
 
@@ -26,8 +22,8 @@ export class TopicService {
   // get all topics
   getAllTopics(pageNum: number = 1, pageSize: number = 10000, sortBy: string = null): Observable<Object> {
     return this.api.getTopics(pageNum, pageSize, sortBy)
-      .map((res: any) => {
-        if (res) {
+      .map((res: Array<any>) => {
+        if (res.length) {
           let topics: Array<Topic> = [];
           res[0].results.forEach(topic => {
             topics.push(new Topic(topic));

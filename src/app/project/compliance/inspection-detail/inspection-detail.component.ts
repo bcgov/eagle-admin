@@ -34,31 +34,31 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
     {
       name: 'Assets',
       value: 'internalExt',
-      width: 'col-2',
+      width: '15%',
       nosort: true
     },
     {
       name: 'Caption',
       value: 'caption',
-      width: 'col-3',
+      width: '25%',
       nosort: true
     },
     {
       name: 'UTM Coordinates',
       value: 'geo',
-      width: 'col-3',
+      width: '15%',
       nosort: true
     },
     {
       name: 'Date/Time Taken',
-      value: 'timestamp',
-      width: 'col-2',
+      value: 'date',
+      width: '20%',
       nosort: true
     },
     {
       name: 'Actions',
       value: 'actions',
-      width: 'col-2',
+      width: '25%',
       nosort: true
     }
   ];
@@ -77,17 +77,23 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.compliance = new Compliance(res.compliance.data);
-        if (this.compliance.label) {
-          this.compliance.label = this.compliance.label.replace(new RegExp('\n', 'g'), '<br />');
+        if (res && res.compliance && res.compliance.data) {
+
+          this.compliance = new Compliance(res.compliance.data);
+          if (this.compliance.label) {
+            this.compliance.label = this.compliance.label.replace(new RegExp('\n', 'g'), '<br />');
+          }
+          // Adding itemClicked to the elements to track the icons
+          this.elements = this.compliance.elements.map(el => {
+            let newEl = {...el, itemClicked: false};
+            return newEl;
+          });
+          this.loading = false;
+        } else {
+          this.openSnackBar('Error, Please try again', 'Close');
+          this.loading = false;
         }
-        // Adding itemClicked to the elements to track the icons
-        this.elements = this.compliance.elements.map(el => {
-          let newEl = {...el, itemClicked: false};
-          return newEl;
         });
-        this.loading = false;
-      });
   }
 
   openElement(element) {
@@ -96,7 +102,10 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
       return;
     }
     this.loading = true;
-    this.handleElementClicked(element);
+    const loadTable = this.handleElementClicked(element);
+    if (!loadTable) {
+      return;
+    }
     this.searchService.getItem(element._id, 'InspectionElement')
       .subscribe((res: any) => {
         if (!res || !res.data) {
@@ -115,11 +124,26 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
         this.tableParams.pageSize = 100000;
         this.setRowData();
         this.loading = false;
+        let showError = false;
+
 
         this.assets.forEach(async z => {
           if (z.type === 'photo') {
+            let resource;
             // Show thumb
-            let resource = await this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id);
+            this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id).then(response => {
+              resource = response;
+            })
+            .catch(() => {
+              showError = true;
+            });
+            if (!resource) {
+              // There was an error so return
+              if (showError) {
+                this.openSnackBar('Error: Thumbnail(s) cannot load', 'Close');
+              }
+              return;
+            }
             const reader = new FileReader();
             reader.readAsDataURL(resource);
             reader.onloadend = function () {
@@ -148,10 +172,11 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
       this.loading = false;
       element.itemClicked = !element.itemClicked;
       this.nukeTableData();
-      return;
+      return false;
     }
     this.showTable = true;
     element.itemClicked = !element.itemClicked;
+    return true;
   }
   nukeTableData() {
     this.tableParams = new TableParamsObject();

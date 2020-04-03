@@ -35,41 +35,41 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'name',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Email',
       value: 'email',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Live Near',
       value: 'liveNear',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
     {
       name: 'MemberOf',
       value: 'memberOf',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
     {
       name: 'KnowledgeOf',
       value: 'knowledgeOf',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
     {
       name: 'Additional',
       value: 'additionalNotes',
-      width: 'col-4',
+      width: '30%',
       nosort: true
     }
   ];
@@ -298,7 +298,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
             self.loading = true;
             self._changeDetectionRef.detectChanges();
             self.projectService.createCAC(self.currentProject._id, cacEmail).toPromise()
-            .then((data) => {
+            .then(() => {
               // Update cac data, it was successful
               self.currentProject.cacEmail = cacEmail;
               self.onSubmit();
@@ -351,12 +351,8 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         itemsToExport.push(item);
       }
     });
-    let list = [];
-    itemsToExport.map(item => {
-        list.push(item);
-    });
 
-    let filteredArray = list.reduce((unique, item) => {
+    let filteredArray = itemsToExport.reduce((unique, item) => {
       return unique.includes(item) ? unique : [...unique, item];
     }, []);
 
@@ -365,10 +361,10 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       userData.push({
         name: user.name,
         email: user.email,
-        liveNear: user.liveNear,
-        memberOf: user.memberOf,
-        knowledgeOf: user.knowledgeOf,
-        additionalNotes: user.additionalNotes
+        liveNear: user.liveNear ? 'Yes' : 'No',
+        memberOf: user.memberOf ? 'Yes' : 'No',
+        knowledgeOf: user.knowledgeOf ? 'Yes' : 'No',
+        additionalNotes: user.additionalNotes ? user.additionalNotes : 'No'
       });
     });
 

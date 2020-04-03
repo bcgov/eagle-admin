@@ -44,13 +44,13 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'name',
-      width: 'col-11'
+      width: '90%'
     }
   ];
   constructor(

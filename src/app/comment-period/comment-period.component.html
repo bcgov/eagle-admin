@@ -1,0 +1,37 @@
+<nav class="action-container" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      {{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}
+    </li>
+  </ol>
+</nav>
+
+<main class="container-fluid-padding">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+
+  <h1 id="name">{{currentProject.data.name}} <span class="date">| Comment Period</span></h1>
+
+  <div>
+    <mat-tab-group [selectedIndex]="selectedTab">
+      <mat-tab label="DETAILS">
+        <br>
+        <app-comment-period-details-tab [commentPeriod]="commentPeriod"></app-comment-period-details-tab>
+      </mat-tab>
+      <mat-tab label="REVIEW COMMENTS">
+        <app-review-comments-tab></app-review-comments-tab>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</main>

@@ -6,6 +6,7 @@
     tr {
       background: #e8eff5;
       align-items: flex-start;
+      width: 100%;
     }
 
     th{
@@ -25,10 +26,13 @@
 
   td {
     border: none;
+    display: table-cell;
   }
 
   tr {
+    width: 100%;
     border: none;
+    display: table;
   }
 
 	tr td:first-child,

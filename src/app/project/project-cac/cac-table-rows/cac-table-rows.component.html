@@ -1,39 +1,39 @@
-<tr *ngFor="let item of items">
-  <td data-label="Select" (click)="selectItem(item)" scope="row" class="col-1">
+<tr *ngFor="let item of items" (click)="selectItem(item)">
+  <td data-label="Select" scope="row" [style.width]="!useSmallTable && columns[0].width">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='item.checkbox'>
   </td>
-  <td data-label="Name" scope="row" class="col-2">{{item.name}}</td>
-  <td data-label="Email" scope="row" class="col-2">{{item.email}}</td>
+  <td data-label="Name" scope="row" [style.width]="!useSmallTable && columns[1].width">{{item.name}}</td>
+  <td data-label="Email" scope="row" [style.width]="!useSmallTable && columns[2].width">{{item.email}}</td>
   <td data-label="Live Near"
       scope="row"
-      data-toggle="tooltip" data-placement="bottom" title="{{item.liveNear}}"
-      class="col-1">
+      data-toggle="tooltip" data-placement="bottom" title="{{item.liveNearInput}}"
+      [style.width]="!useSmallTable && columns[3].width">
       <div class="badge badge-pill badge-info"
-           [ngClass]="{'bg-success': item.liveNear !== '', 'bg-danger': item.liveNear === ''}">{{item.liveNear !== ''}}
+           [ngClass]="{'bg-success': item.liveNear === true, 'bg-danger': item.liveNear === false}">{{item.liveNear === true ? 'Yes' : 'No'}}
       </div>
   </td>
   <td data-label="KnowledgeOf"
       scope="row"
-      data-toggle="tooltip" data-placement="bottom" title="{{item.memberOf}}"
-      class="col-1">
+      data-toggle="tooltip" data-placement="bottom" title="{{item.memberOfInput}}"
+      [style.width]="!useSmallTable && columns[4].width">
       <div class="badge badge-pill badge-info"
-           [ngClass]="{'bg-success': item.memberOf !== '', 'bg-danger': item.memberOf === ''}">{{item.memberOf !== ''}}
+           [ngClass]="{'bg-success': item.memberOf === true, 'bg-danger': item.memberOf === false}">{{item.memberOf === true ? 'Yes' : 'No'}}
       </div>
   </td>
   <td data-label="MemberOf"
       scope="row"
-      data-toggle="tooltip" data-placement="bottom" title="{{item.knowledgeOf}}"
-      class="col-1">
+      data-toggle="tooltip" data-placement="bottom" title="{{item.knowledgeOfInput}}"
+      [style.width]="!useSmallTable && columns[5].width">
       <div class="badge badge-pill badge-info"
-           [ngClass]="{'bg-success': item.knowledgeOf !== '', 'bg-danger': item.knowledgeOf === ''}">{{item.knowledgeOf !== ''}}
+           [ngClass]="{'bg-success': item.knowledgeOf === true, 'bg-danger': item.knowledgeOf === false}">{{item.knowledgeOf === true ? 'Yes' : 'No'}}
       </div>
   </td>
   <td data-label="MemberOf"
       scope="row"
       data-toggle="tooltip" data-placement="bottom" title="{{item.additionalNotes}}"
-      class="col-4">
+      [style.width]="!useSmallTable && columns[6].width">
       <div class="badge badge-pill badge-info"
-           [ngClass]="{'bg-success': item.additionalNotes !== '', 'bg-danger': item.additionalNotes === ''}">{{item.additionalNotes !== ''}}
+           [ngClass]="{'bg-success': item.additionalNotes !== '', 'bg-danger': item.additionalNotes === ''}">{{(item.additionalNotes !== '') ? 'Yes' : 'No'}}
       </div>
   </td>
 </tr>

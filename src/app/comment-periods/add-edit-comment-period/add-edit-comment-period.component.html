@@ -1,0 +1,208 @@
+<div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+</div>
+
+<nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
+    <div *ngIf="!isEditing">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+                <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+            </li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                Add
+            </li>
+        </ol>
+    </div>
+    <div *ngIf="isEditing">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+                <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+            </li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+            </li>
+            <li class="breadcrumb-item" aria-current="page">
+                <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'cp', commentPeriod._id, 'comment-period-details']">{{commentPeriod.dateStarted | date: 'LLLL'}}
+                    -
+                    {{commentPeriod.dateCompleted | date}}</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                Edit
+            </li>
+        </ol>
+    </div>
+</nav>
+
+<section *ngIf="!loading" class="container-fluid-padding">
+    <form [formGroup]="commentPeriodForm" (ngSubmit)="register(commentPeriodForm)">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="inputStartDate">Start Date*</label>
+                <div class="input-group">
+                    <input required id="inputStartDate" container='body' type="text" class="form-control"
+                        placeholder="Select a start date" name="startDate" formControlName="startDate" ngbDatepicker
+                        #startDatePicker="ngbDatepicker">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary calendar" (click)="startDatePicker.toggle()"
+                            type="button"></button>
+                    </div>
+                </div>
+                <ngb-timepicker formControlName="startTime" [meridian]="startMeridian"></ngb-timepicker>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label for="inputEndDate">End Date*</label>
+                <div class="input-group">
+                    <input required id="inputEndDate" container='body' type="text" class="form-control"
+                        placeholder="Select a end date" name="endDate" formControlName="endDate" ngbDatepicker
+                        #endDatePicker="ngbDatepicker">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary calendar" (click)="endDatePicker.toggle()"
+                            type="button"></button>
+                    </div>
+                </div>
+                <ngb-timepicker formControlName="endTime" [meridian]="startMeridian"></ngb-timepicker>
+            </div>
+            <p *ngIf="areDatesInvalid" class="text-danger">
+                Start date must be before the end date.
+            </p>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-4">
+                <label for="publishedState">Published State*</label>
+                <select required id="publishedState" class="form-control" name="publishedStateSel"
+                    formControlName="publishedStateSel">
+                    <option disabled selected value>-- select an option --</option>
+                    <option value="unpublished" selected="selected">Unpublished</option>
+                    <option value="published">Published</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="infoForComment">Information for Comment*</label>
+                <textarea required id="infoForComment" class="form-control" placeholder="%information for comment%"
+                    (keyup)="updateDescriptionPreview()" rows="3" name="infoForCommentText"
+                    formControlName="infoForCommentText"></textarea>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="flex-container">
+                <div class="label-pair lrg">
+                    <label for="description">Description</label>
+                    <editor [init]="tinyMceSettings" (onKeyUp)="updateDescriptionPreview()" name="descriptionText" id="description" formControlName="descriptionText"></editor>
+                 </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <h6>
+                    <i>
+                        Preview for description:
+                    </i>
+                </h6>
+                <p class="text-secondary">
+                    Comment Period on the {{infoForCommentPreview}} for {{currentProject.data.name}} Project.
+                    <br>
+                    {{descriptionPreview}}
+                </p>
+                <div class="renderedTextPreview" [innerHTML]="descriptionPreview  | safeHtml"></div>
+            </div>
+        </div>
+
+        <div class="form-row" *ngIf="this.currentProject.type === 'currentProject'">
+            <div class="form-group col-md-12">
+                <label for="documentsSel">Related Documents</label>
+                <ul class="doc-list mb-3" *ngIf="storageService.state.selectedDocumentsForCP">
+                    <li *ngFor="let doc of storageService.state.selectedDocumentsForCP.data">
+                        <span class="cell icon">
+                            <i class="material-icons">insert_drive_file</i>
+                        </span>
+                        <span class="cell name" [title]="doc.displayName || ''">
+                            <span class="cell__txt-content">{{doc.documentFileName}}</span>
+                        </span>
+                        <span class="cell actions">
+                            <button class="btn btn-icon" type="button" title="Delete this document"
+                                (click)="removeSelectedDoc(doc)">
+                                <i class="material-icons">delete</i>
+                            </button>
+                        </span>
+                    </li>
+                </ul>
+                <div>
+                    <button class="btn btn-primary" type="button" (click)="addDocuments()">Add Documents</button>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="currentProject.type === 'currentProject'" class="form-row">
+            <div class="form-group col-md-6">
+                <label for="milestoneSel">Content for Comment [Milestones]*</label>
+                <select required class="form-control" formControlName="milestoneSel">
+                    <option disabled selected value>-- select an option --</option>
+                    <option *ngFor="let milestone of milestones" [ngValue]="milestone._id">{{milestone.name}}</option>
+                </select>
+            </div>
+        </div>
+
+        <div *ngIf="currentProject.type === 'currentProject'" formArrayName="openHouses">
+            <div class="card" *ngFor="let item of commentPeriodForm.get('openHouses')['controls']; let $index=index"
+                [formGroupName]="$index">
+                <div class="card-header">Open House #{{$index+1}}
+                    <button *ngIf="$index > 0" class="btn btn-danger float-right" (click)="removeOpenHouseRow($index)">
+                        Remove
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="col-md-4">
+                        <label for="inputOpenHouseDate">Open House Date</label>
+                        <div class="input-group">
+                            <input type="text" id="inputOpenHouseDate" container='body' class="form-control"
+                                placeholder="Select an open house date" name="eventDate" formControlName="eventDate"
+                                ngbDatepicker #openHouseDatePicker="ngbDatepicker">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary calendar"
+                                    (click)="openHouseDatePicker.toggle()" type="button"></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <label for="openHouseDescription">Description</label>
+                        <textarea id="openHouseDescription" class="form-control" rows="6" name="description"
+                            formControlName="description"></textarea>
+                    </div>
+                    <div class="col-md-4">
+                        &nbsp;
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            &nbsp;
+        </div>
+
+        <button *ngIf="currentProject.type === 'currentProject'" class="btn btn-primary" (click)="addOpenHouseRow()">
+            Add Another Open House
+        </button>
+
+        <div class="text-right">
+            <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+            &nbsp;
+            <button [disabled]="!commentPeriodForm.valid" class="btn btn-primary" type="submit"
+                (click)="onSubmit()">Save</button>
+        </div>
+    </form>
+</section>

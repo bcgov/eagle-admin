@@ -1,10 +1,8 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { HttpClient } from '@angular/common/http';
 import { ApiService } from './api';
 import { Utils } from 'app/shared/utils/utils';
 import { TestBed } from '@angular/core/testing';
 describe('api', () => {
-  let httpMock;
   let keys = '';
   let schemaName = '';
   let fields = [];
@@ -27,7 +25,7 @@ describe('api', () => {
     .compileComponents();
   });
   beforeEach(() => {
-    httpMock = TestBed.get(HttpTestingController);
+    TestBed.get(HttpTestingController);
   });
     const keycloak = null;
     const utils = new Utils();

@@ -69,17 +69,18 @@
         <div class="card add-margin" *ngFor="let element of this.elements">
           <div class="card-header-inspection" [ngClass]="{ 'mouse-hover': element.items.length}" (click)="openElement(element)"
           [attr.aria-expanded]="element.itemClicked" [attr.aria-controls]="element.title">
-            <div class="row">
-              <div class="col-2">
-                <h5>{{element.title}}</h5>
+            <div class="row d-flex center">
+              <div class="col-2 d-flex center">
+                <i class="material-icons">{{element.itemClicked ? 'expand_less' : 'expand_more'}}</i>
+                <h5 class="inline">{{element.title}}</h5>
               </div>
-              <div class="col-6 with-newlines">
+              <div class="col-6 with-newlines d-flex center">
                 <h5>{{element.description}}</h5>
               </div>
-              <div class="col-3">
+              <div class="col-3 d-flex center">
                 <h5>{{element.requirement}}</h5>
               </div>
-              <div class="col-1">
+              <div class="col-1 d-flex center">
                 <h5>
                   <i class="material-icons">
                     attach_file

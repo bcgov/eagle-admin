@@ -1,9 +1,9 @@
 
-import { ISearchResults, SearchResults } from 'app/models/search';
-import { FullProject } from 'app/models/fullProject';
+import { SearchResults } from 'app/models/search';
 
 export const AjaxData: SearchResults[] = [{
          _schemaName: '0',
+         hostname: '',
          data: {
            searchResults: [
              {

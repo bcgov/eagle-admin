@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
-// import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/throw';
 import { throwError } from 'rxjs';
@@ -25,7 +24,7 @@ import { RecentActivity } from 'app/models/recentActivity';
 import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
 import { Utils } from 'app/shared/utils/utils';
-import { NotificationProject } from 'app/models/notificationProject';
+import { ProjectNotification } from 'app/models/projectNotification';
 
 interface LocalLoginResponse {
   _id: string;
@@ -60,7 +59,6 @@ export class ApiService {
     // The following items are loaded by a file that is only present on cluster builds.
     // Locally, this will be empty and local defaults will be used.
     const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
-    const remote_public_path = window.localStorage.getItem('from_admin_server--remote_public_path');  // available in case its ever needed
     const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
     this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
@@ -1085,7 +1083,7 @@ export class ApiService {
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
-  addVCToProject(vc: any, project: any): Observable<ValuedComponent> {
+  addVCToProject(vc: any): Observable<ValuedComponent> {
     const queryString = `vc/`;
     return this.http.post<ValuedComponent>(`${this.pathAPI}/${queryString}`, vc, {});
   }
@@ -1239,19 +1237,19 @@ export class ApiService {
   }
 
   //
-  // Notification Projects
+  // Project Notifications
   //
-  saveNotificationProject(notificationProject: NotificationProject, publish: boolean): Observable<NotificationProject> {
-    let queryString = `notificationProject/${notificationProject._id}`;
+  saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    let queryString = `projectNotification/${projectNotification._id}`;
     if (publish !== null) {
       queryString += `?publish=${publish}`;
     }
-    return this.http.put<NotificationProject>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+    return this.http.put<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
   }
 
-  addNotificationProject(notificationProject: NotificationProject, publish: boolean): Observable<NotificationProject> {
-    const queryString = `notificationProject?publish=${publish}`;
-    return this.http.post<NotificationProject>(`${this.pathAPI}/${queryString}`, notificationProject, {});
+  addProjectNotification(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    const queryString = `projectNotification?publish=${publish}`;
+    return this.http.post<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
   }
 
 

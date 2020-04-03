@@ -36,28 +36,28 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-3'
+      width: '26%'
     },
     {
       name: 'Organization',
       value: 'orgName',
-      width: 'col-3'
+      width: '26%'
     },
     {
       name: 'Email',
       value: 'email',
-      width: 'col-3'
+      width: '27%'
     },
     {
       name: 'Phone Number',
       value: 'phoneNumber',
-      width: 'col-2'
+      width: '15%'
     }
   ];
 
@@ -90,9 +90,10 @@ export class GroupContactComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         // Incoming users
-        if (res && res.users && res.users.length > 0) {
-          this.tableParams.totalListItems = res.users.length;
-          this.users = res.users;
+        if (res && res.users[0] && res.users[0].total_items > 0) {
+          this.tableParams.totalListItems = res.users[0].total_items;
+          this.tableParams.pageSize = 10; // force to default on init
+          this.users = res.users[0].results;
         } else {
           this.tableParams.totalListItems = 0;
           this.users = [];
@@ -120,7 +121,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  public checkChange(event) {
+  public checkChange() {
   }
 
   setRowData() {
@@ -404,8 +405,8 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     .takeUntil(this.ngUnsubscribe)
     .subscribe((res: any) => {
       // Incoming users
-      this.tableParams.totalListItems = res.length;
-      this.users = res;
+      this.tableParams.totalListItems = res[0].total_items;
+      this.users = res[0].results;
 
       this.setRowData();
       this.loading = false;

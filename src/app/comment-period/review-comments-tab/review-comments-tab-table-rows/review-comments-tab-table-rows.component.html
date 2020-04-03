@@ -1,0 +1,20 @@
+<tr
+  *ngFor="let comment of comments"
+  class="clickable-row">
+  <td (click)="goToItem(comment)" data-label="Id" scope="row" [style.width]="!useSmallTable && columns[0].width">{{comment.commentId}}</td>
+  <td (click)="goToItem(comment)" data-label="Author" scope="row" [style.width]="!useSmallTable && columns[1].width">{{comment.author}}</td>
+  <td (click)="goToItem(comment)" data-label="Date" scope="row" [style.width]="!useSmallTable && columns[2].width">{{comment.dateAdded | date:'longDate'}}
+  </td>
+  <td (click)="goToItem(comment)" data-label="Attachments" scope="row" [style.width]="!useSmallTable && columns[3].width">
+    <i *ngIf="comment.attachments" class="material-icons">
+      attach_file
+    </i>
+    {{comment.attachments}}
+  </td>
+  <td (click)="goToItem(comment)" data-label="Location" scope="row" [style.width]="!useSmallTable && columns[4].width">{{comment.location}}</td>
+  <td (click)="goToItem(comment)" data-label="Status" scope="row" [style.width]="!useSmallTable && columns[5].width">{{comment.eaoStatus}}</td>
+  <td (click)="goToItem(comment)" data-label="CAC" scope="row" [style.width]="!useSmallTable && columns[6].width">
+    <div class="border ml-2 badge badge-pill badge-info"
+         [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? 'Yes' : 'No'}}</div>
+  </td>
+</tr>

@@ -16,10 +16,14 @@ import { RecentActivityService } from 'app/services/recent-activity';
 
 export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
 
   public entries: any;
   public paginationData: any;
   public dropdownItems = ['Edit', 'Delete'];
+  public columns: any;
+  public useSmallTable: boolean;
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -33,13 +37,16 @@ export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableCompo
   async ngOnInit() {
     this.entries = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
   }
 
   deleteActivity(activity) {
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Delete Activity',
-        message: 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.'
+        message: 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.',
+        okOnly: true,
       }, {
         backdropColor: 'rgba(0, 0, 0, 0.5)'
       })

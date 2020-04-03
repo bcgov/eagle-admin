@@ -26,27 +26,27 @@ export class ContactsComponent implements OnInit, OnDestroy {
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-3'
+      width: '25%'
     },
     {
       name: 'Organization',
       value: 'org',
-      width: 'col-3'
+      width: '25%'
     },
     {
       name: 'Phone',
       value: 'phoneNumber',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Email',
       value: 'email',
-      width: 'col-3'
+      width: '25%'
     },
     {
       name: 'Action',
       value: 'null',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     }
   ];

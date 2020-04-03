@@ -91,43 +91,43 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'select_all_box',
       value: 'select_all_box',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: 'col-4'
+      width: '30%'
     },
     {
       name: 'Status',
       value: 'status',
-      width: 'col-2'
+      width: '10%'
     },
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-2'
+      width: '12%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-1'
+      width: '12%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-2'
+      width: '11%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      width: 'col-1'
+      width: '10%'
     },
     {
       name: 'Feature',
       value: 'isFeatured',
-      width: 'col-1'
+      width: '10%'
     }
   ];
 
@@ -451,7 +451,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           }
 
           forkJoin(observables).subscribe(
-            res => {},
+            () => {},
             err => {
               console.log('Error:', err);
             },
@@ -505,7 +505,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           }
 
           forkJoin(observables).subscribe(
-            res => {},
+            () => {},
             err => {
               console.log('Error:', err);
             },
@@ -608,10 +608,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  public onSubmit(currentPage = 1) {
-    // dismiss any open snackbar
-    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
+  public onSubmit() {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time

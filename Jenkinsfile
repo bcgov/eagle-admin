@@ -164,44 +164,6 @@ def getChangeLog(pastBuilds) {
   return log;
 }
 
-def nodejsTest () {
-  _openshift(env.STAGE_NAME, TOOLSPROJECT) {
-    String testPodLabel = "node-tester-${UUID.randomUUID().toString()}";
-    podTemplate(
-      label: testPodLabel,
-      name: testPodLabel,
-      serviceAccount: 'jenkins',
-      cloud: 'openshift',
-      slaveConnectTimeout: 300,
-      containers: [
-        containerTemplate(
-          name: 'jnlp',
-          image: 'docker-registry.default.svc:5000/esm/eagle-unit-tester',
-          resourceRequestCpu: '500m',
-          resourceLimitCpu: '800m',
-          resourceRequestMemory: '2Gi',
-          resourceLimitMemory: '4Gi',
-          activeDeadlineSeconds: '1200',
-          workingDir: '/tmp',
-          command: '',
-        )
-      ]
-    ) {
-      node(testPodLabel) {
-        checkout scm
-        try {
-          sh 'npm i'
-          sh 'npm run tests-ci'
-        } finally {
-          echo "Unit Tests Passed"
-        }
-      }
-    }
-    return true
-  }
-}
-
-
 def nodejsSonarqube () {
   _openshift(env.STAGE_NAME, TOOLSPROJECT) {
     String sonarLabel = "sonarqube-runner-${UUID.randomUUID().toString()}";
@@ -532,15 +494,6 @@ pipeline {
                 )
                 throw error
               }
-            }
-          }
-        }
-
-        stage('Unit Tests') {
-          steps {
-            script {
-              echo "Running unit tests"
-              def results = nodejsTest()
             }
           }
         }
