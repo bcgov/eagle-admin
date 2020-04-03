@@ -120,4 +120,71 @@ export class Utils {
       const natureObj = Constants.buildToNature.find(obj => obj.build === key);
       return (natureObj) ? natureObj.nature : key;
     }
+
+    public createProjectTabModifiers(projectTab: string, list: Array<any>) {
+      let types: Array<object>;
+      let milestones: Array<object>;
+      let phases: string;
+
+      switch (projectTab) {
+        case Constants.documentTypes.APPLICATION:
+          types = [
+            { legislation: 2002, name: 'Application Materials' },
+            { legislation: 2018, name: 'Application Materials' },
+            { legislation: 2002, name: 'Scientific Memo' },
+            { legislation: 2018, name: 'Independent Memo' }
+          ];
+          milestones = [
+            { legislation: 2002, name: 'Application Review' },
+            { legislation: 2018, name: 'Revised EAC Application' },
+          ];
+
+          const applications = [
+            { legislation: 2002, name: 'Post Decision - Amendment' },
+            { legislation: 2018, name: 'Post Decision - Amendment' }
+          ];
+
+          // Special case for phases.
+          const amendmentPhaseIds = this.getIdsByName(applications, list).map(type => type.id);
+
+          // Get all phase list items excluding the matched applications.
+          phases = list.filter(item => {
+            if (item.type === 'projectPhase' && !amendmentPhaseIds.includes(item._id)) {
+              return true;
+            }
+
+            return false;
+          })
+          .map(item => item._id)
+          .join(',');
+
+          break;
+      }
+
+      const typeIds = this.getIdsByName(types, list).map(type => type.id).join(',');
+      const milestoneIds = this.getIdsByName(milestones, list).map(milestone => milestone.id).join(',');
+
+      const queryModifier = {
+        documentSource: 'PROJECT',
+        type: typeIds,
+        milestone: milestoneIds,
+      };
+
+      if (phases) {
+        queryModifier['projectPhase'] = phases;
+      }
+
+      return queryModifier;
+    }
+
+    public getIdsByName(terms: Array<any>, list: Array<any>) {
+      const matchedItems = terms.map(term => {
+        const listItem = list.find(item => item.name === term.name && item.legislation === term.legislation);
+        return {
+          name: term.name,
+          id: listItem._id
+        };
+      });
+      return matchedItems;
+    }
 }

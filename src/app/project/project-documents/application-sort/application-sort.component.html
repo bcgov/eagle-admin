@@ -1,0 +1,38 @@
+<nav class="action-container">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a [routerLink]="['/projects']">All Projects</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      </li>
+    <li class="breadcrumb-item active" aria-current="page">
+        <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id, 'project-documents']">Documents</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Application Sort</li>
+  </ol>
+</nav>
+<main class="container-fluid-padding">
+  <h1>
+    <div class="row">
+      <div>Application Sort </div>
+    </div>
+  </h1>
+  <div [hidden]="tableParams.totalListItems == 0">
+    <button class="btn btn-primary mr-1" type="button" (click)="onSave()">Save</button>
+    <button class="btn btn-secondary mr-1" type="cancel" (click)="onCancel()">cancel</button>
+  </div>
+  <app-table-template
+    *ngIf="!loading && tableParams.totalListItems != 0"
+    (updateSelectedCount)=updateSortOrder($event)
+    [columns]="tableColumns"
+    [data]="tableData"
+    (onPageNumUpdate)='getPaginatedDocs($event)'
+    (onColumnSort)='setColumnSort($event)'
+    >
+  </app-table-template>
+  <div *ngIf="tableParams.totalListItems == 0">
+    <p>
+      No application documents for this project.
+    </p>
+  </div>
+</main>

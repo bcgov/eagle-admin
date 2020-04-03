@@ -65,6 +65,7 @@ import { ActivityDetailTableRowsComponent } from './activity/activity-detail-tab
 import { CACTableRowsComponent } from './project/project-cac/cac-table-rows/cac-table-rows.component';
 import { PinsTableRowsComponent } from './project/pins-list/pins-table-rows/pins-table-rows.component';
 import { GroupsTableRowsComponent } from './project/project-groups/project-groups-table-rows/project-groups-table-rows.component';
+import { ApplicationSortTableRowsComponent } from './project/project-documents/application-sort/application-sort-table-rows/application-sort-table-rows.component';
 import { InputModalComponent } from './input-modal/input-modal.component';
 import { GroupTableRowsComponent } from './project/project-groups/group-contact/group-table-rows/group-table-rows.component';
 import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-contact.component';
@@ -180,6 +181,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     ConfirmComponent,
     DayCalculatorModalComponent,
     GroupsTableRowsComponent,
+    ApplicationSortTableRowsComponent,
     GroupTableRowsComponent,
     InputModalComponent,
     LinkOrganizationComponent,
