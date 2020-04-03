@@ -12,6 +12,7 @@ export class InspectionDetailResolver implements Resolve<Observable<object>> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const inspectionId = route.paramMap.get('inspectionId');
-    return this.searchService.getItem(inspectionId, 'Inspection', true);
+    // TODO: look into enabling caching again. For now its disabled
+    return this.searchService.getItem(inspectionId, 'Inspection', false);
   }
 }
