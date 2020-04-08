@@ -97,7 +97,7 @@ def getChangeLog(pastBuilds) {
 
 def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
-def lockName = "cac-eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
+def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
 pipeline {
   agent any
   stages {
