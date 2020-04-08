@@ -129,11 +129,8 @@ export class InspectionDetailComponent implements OnInit, OnDestroy {
 
         this.assets.forEach(async z => {
           if (z.type === 'photo') {
-            let resource;
             // Show thumb
-            this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id).then(response => {
-              resource = response;
-            })
+            let resource = await this.api.downloadElementThumbnail(this.compliance._id, this.submission._id, z._id)
             .catch(() => {
               showError = true;
             });
