@@ -153,7 +153,7 @@ pipeline {
       }
     }
 
-   stage('Deploy to prod'){
+   stage('Deploy to test'){
       agent any
       steps {
         script {
@@ -161,11 +161,11 @@ pipeline {
             echo "Backing up..."
             openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'backup-pipeline-test', srcStream: 'eagle-admin', srcTag: "pipeline-test"
             sleep 5
-            echo "Deploying to prod..."
+            echo "Deploying to test..."
             openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'pipeline-test', srcStream: 'eagle-admin', srcTag: "${IMAGE_HASH}"
             sleep 5
             // todo update namespace before switching over
-            openshiftVerifyDeployment depCfg: 'eagle-admin', namespace: 'esm-dev', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
+            openshiftVerifyDeployment depCfg: 'eagle-admin', namespace: 'esm-test', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
@@ -173,7 +173,7 @@ pipeline {
               ROCKET_DEPLOY_WEBHOOK
             )
             notifyRocketChat(
-              "@all A new test image has been created \n Changes to prod: \n ${CHANGELOG}",
+              "@all A new test image has been created \n Changes to test: \n ${CHANGELOG}",
               ROCKET_QA_WEBHOOK
             )
           } catch (error) {
