@@ -1,8 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { forkJoin } from 'rxjs';
 import { Subject } from 'rxjs';
-import { Document } from 'app/models/document';
 import { Project } from 'app/models/project';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
@@ -14,12 +12,11 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { ApplicationSortTableRowsComponent } from './application-sort-table-rows/application-sort-table-rows.component';
-import { TableDocumentTemplateUtils } from 'app/shared/utils/table-document-template-utils';
 import { User } from 'app/models/user';
 import { Constants } from 'app/shared/utils/constants';
 import { ConfigService } from 'app/services/config.service';
 
-
+import 'rxjs/add/operator/switchMap';
 
 
 @Component({
@@ -43,37 +40,37 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     {
       name: 'Order',
       value: 'sortOrder',
-      width: 'col-1',
+      width: '10%',
     },
     {
       name: 'Name',
       value: 'name',
-      width: 'col-3'
+      width: '30%'
     },
     {
       name: 'Status',
       value: 'status',
-      width: 'col-1'
+      width: '5%'
     },
     {
       name: 'Date',
       value: 'datePosted',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      width: 'col-1'
+      width: '10%'
     }
   ];
 
@@ -89,7 +86,6 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     private utils: Utils,
     private documentService: DocumentService,
     private tableTemplateUtils: TableTemplateUtils,
-    private tableDocumentTemplateUtils: TableDocumentTemplateUtils,
     private configService: ConfigService
   ) {
   }
@@ -150,7 +146,6 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
 
   onSave() {
     let formData = new FormData();
-    let observables = [];
     this.storageService.state.editedDocs.forEach((document: any) =>  {
       console.log(document.sortOrder);
       // document service put id and sort order
