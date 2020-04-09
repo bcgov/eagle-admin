@@ -4,8 +4,6 @@ import { Observable } from 'rxjs/Observable';
 import { SearchService } from 'app/services/search.service';
 import { ConfigService } from 'app/services/config.service';
 import { Utils } from 'app/shared/utils/utils';
-import { Constants } from 'app/shared/utils/constants';
-
 
 @Injectable()
 export class ApplicationSortResolver implements Resolve<Observable<object>> {
@@ -23,7 +21,7 @@ export class ApplicationSortResolver implements Resolve<Observable<object>> {
     const keywords = route.params.keywords ? route.params.keywords : '';
 
     return this.configService.getLists().switchMap (list => {
-      const tabModifier = this.utils.createProjectTabModifiers(Constants.documentTypes.APPLICATION, list);
+      const tabModifier = this.utils.createProjectTabModifiers(list);
       return this.searchService.getSearchResults(
         keywords,
         'Document',

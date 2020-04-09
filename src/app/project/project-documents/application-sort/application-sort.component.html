@@ -23,7 +23,6 @@
   </div>
   <app-table-template
     *ngIf="!loading && tableParams.totalListItems != 0"
-    (updateSelectedCount)=updateSortOrder($event)
     [columns]="tableColumns"
     [data]="tableData"
     (onPageNumUpdate)='getPaginatedDocs($event)'

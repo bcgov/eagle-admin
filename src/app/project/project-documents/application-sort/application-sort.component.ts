@@ -13,7 +13,6 @@ import { TableParamsObject } from 'app/shared/components/table-template/table-pa
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { ApplicationSortTableRowsComponent } from './application-sort-table-rows/application-sort-table-rows.component';
 import { User } from 'app/models/user';
-import { Constants } from 'app/shared/utils/constants';
 import { ConfigService } from 'app/services/config.service';
 
 import 'rxjs/add/operator/switchMap';
@@ -26,13 +25,9 @@ import 'rxjs/add/operator/switchMap';
 })
 export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  // public document: Document = null;
   public currentProject: Project = null;
-  // public publishText: string;
-  // formatBytes: (bytes: any, decimals?: number) => string;
   public loading = true;
   public documents: User[] = null;
-  public readonly constants = Constants;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -95,17 +90,16 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     this.storageService.state.editedDocs = [];
 
     this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
+      .switchMap( params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+sortOrder,-datePosted,+displayName';
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
         this._changeDetectionRef.detectChanges();
-      });
 
-    this.route.data
+        return this.route.data;
+      })
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
         if (res) {
@@ -140,14 +134,9 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateSortOrder(document) {
-    console.log(document);
-  }
-
   onSave() {
     let formData = new FormData();
     this.storageService.state.editedDocs.forEach((document: any) =>  {
-      console.log(document.sortOrder);
       // document service put id and sort order
       formData.set('sortOrder', document.sortOrder);
       this.documentService.update( formData, document._id )
@@ -185,7 +174,7 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     const keywords = this.tableParams.keywords ? this.tableParams.keywords : '';
 
     this.configService.getLists().switchMap (list => {
-      const tabModifier = this.utils.createProjectTabModifiers(Constants.documentTypes.APPLICATION, list);
+      const tabModifier = this.utils.createProjectTabModifiers(list);
       return this.searchService.getSearchResults(
         keywords,
         'Document',
