@@ -131,7 +131,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     // Failsafe: if the decisionDate is set to new Date(null) it'll create a date in 1969.
     // we can assume a date of 31/12/1969@8:00 should actually be null
     if (notificationProject.decisionDate && notificationProject.decisionDate.toISOString() === '1969-12-31T08:00:00.000Z') {
-      notificationProject.decisionDate === null;
+      notificationProject.decisionDate = null;
     }
 
     if (this.isAdd) {
