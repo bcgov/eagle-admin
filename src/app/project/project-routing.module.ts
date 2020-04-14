@@ -12,6 +12,7 @@ import { CommentPeriodsComponent } from '../comment-periods/comment-periods.comp
 import { CommentPeriodsResolver } from '../comment-periods/comment-periods-resolver.services';
 import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
+import { DocumentApplicationSortComponent } from './project-documents/application-sort/application-sort.component';
 import { InspectionDetailComponent } from './compliance/inspection-detail/inspection-detail.component';
 import { DocumentEditComponent } from './project-documents/document-edit/document-edit.component';
 import { MilestonesComponent } from './milestones/milestones.component';
@@ -40,6 +41,7 @@ import { ProjectUpdatesResolver } from './project-updates/project-updates-resolv
 import { ProjectCACResolver } from './project-cac/project-cac-resolver.services';
 import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
+import { ApplicationSortResolver } from './project-documents/application-sort/application-sort-resolver.service';
 import { PinsListComponent } from './pins-list/pins-list.component';
 import { ContactsResolver } from 'app/contacts/contacts-resolver.service';
 import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
@@ -148,6 +150,13 @@ const routes: Routes = [
         component: DocumentDetailComponent,
         resolve: {
           document: DocumentDetailResolver
+        }
+      },
+      {
+        path: 'project-documents/application-sort',
+        component: DocumentApplicationSortComponent,
+        resolve: {
+          documents: ApplicationSortResolver
         }
       },
       {
@@ -349,6 +358,7 @@ const routes: Routes = [
     ValuedComponentsResolver,
     PinsComponentResolver,
     ProjectContactsResolver,
+    ApplicationSortResolver,
     LinkOrganizationResolver,
     SubmissionDetailResolver
   ]
