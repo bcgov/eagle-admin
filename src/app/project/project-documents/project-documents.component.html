@@ -28,6 +28,14 @@
               [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
           <button (click)="selectAction('delete')" class="dropdown-item"
               [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
+
+          <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+              [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">
+              <button class="dropdown-item" type="button" id="button-as">
+                Sort Applications
+              </button>
+          </a>
+
           <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
               [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
               <button class="dropdown-item" type="button" id="button-upl">
