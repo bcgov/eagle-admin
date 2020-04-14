@@ -61,14 +61,12 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   public ngOnInit() {
     this.config.getRegions()
-      .subscribe(regions => {
+      .switchMap(regions => {
         this.regions = regions;
-      });
-    this._changeDetectorRef.detectChanges();
 
-    this.route.url
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((url) => {
+        return this.route.url;
+      })
+      .subscribe(url => {
         // Determine if this an add or edit.
         this.isAdd = url.some(urlObject => urlObject.path === 'add');
         this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
@@ -82,7 +80,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             'region': '',
             'location': '',
             'decision': '',
-            'decisionDate': '',
+            'decisionDate': undefined,
             'description': '',
             'centroid': ['', ''],
             'trigger': '',
@@ -94,7 +92,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
           }
 
           let editData = { ...this.projectNotification  };
-          editData.decisionDate = this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) as any;
+          // new Date(null) will create a date of 31/12/1969, so if decisionDate is null, don't create a date object here.
+          editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
           this.buildForm(editData);
           this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
         }
@@ -123,11 +122,17 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       trigger: this.myForm.value.trigger,
       region: this.myForm.value.region,
       location: this.myForm.value.location,
-      decisionDate: this.myForm.value.decisionDate ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))).toISOString() : null,
+      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))) : null,
       decision: this.myForm.value.decision,
       description: this.myForm.value.description,
       centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
     });
+
+    // Failsafe: if the decisionDate is set to new Date(null) it'll create a date in 1969.
+    // we can assume a date of 31/12/1969@8:00 should actually be null
+    if (notificationProject.decisionDate && notificationProject.decisionDate.toISOString() === '1969-12-31T08:00:00.000Z') {
+      notificationProject.decisionDate = null;
+    }
 
     if (this.isAdd) {
       this.notificationProjectService.add(notificationProject, publish)
