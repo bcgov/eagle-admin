@@ -1,0 +1,23 @@
+<tr
+  *ngFor="let document of documents"
+  class="clickable-row">
+  <td data-label="sortOrder" (change)="updateSelectedCount(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
+    <input type="number" min="1" max="999" aria-label="Input sort order" [(ngModel)]='document.sortOrder'>
+  </td>
+  <td data-label="Name" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
+  <td data-label="Status" scope="row" [style.width]="!useSmallTable && columns[2].width">
+    <p class="card-text publish-state">
+      <i class="material-icons">
+        {{document.status === 'Not Published' ?   'cloud_off' : 'cloud_done' || '-'}}
+      </i>
+    </p>
+  </td>
+  <td data-label="Date" scope="row" [style.width]="!useSmallTable && columns[3].width">
+    <div *ngIf="document.datePosted !== '1900-01-01T08:00:00.000Z'">{{document.datePosted | date:'longDate'}}</div>
+  </td>
+  <td data-label="Type" scope="row" [style.width]="!useSmallTable && columns[4].width">{{document.type | listConverter}}</td>
+  <td data-label="Milestone" scope="row" [style.width]="!useSmallTable && columns[5].width">
+    {{document.milestone | listConverter}}</td>
+  <td data-label="Legislation" scope="row" [style.width]="!useSmallTable && columns[6].width">
+    {{document.legislation}}</td>
+</tr>
