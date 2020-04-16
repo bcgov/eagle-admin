@@ -293,7 +293,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       } else {
         this.myForm.get('nature').enable();
       }
-  
+
       this._changeDetectorRef.detectChanges();
     });
   }
