@@ -127,10 +127,10 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public selectAllInit() {
-    let itemCount = this.data.data.length;
-    let selectedCount = 0;
-
     if (this.data.data) {
+      let itemCount = this.data.data.length;
+      let selectedCount = 0;
+
       this.data.data.forEach(item => {
         if (item.checkbox === true) {
           selectedCount += 1;
@@ -139,7 +139,5 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
       this.selectAll = itemCount === selectedCount;
     }
-
-    // this.selectAllClicked.emit({ selectAll: this.selectAll});
   }
 }
