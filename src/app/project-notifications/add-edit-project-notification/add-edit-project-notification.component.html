@@ -60,9 +60,27 @@
 
       <div class="label-pair">
         <label for="trigger">Trigger* </label>
-        <select name="trigger" id="trigger" formControlName="trigger" class="form-control" (change)="onChangeTrigger($event)">
-          <option *ngFor="let trigger of NOTIFICATION_TRIGGERS" [ngValue]="trigger">{{trigger}}</option>
-        </select>
+        <ng-select
+          id="trigger"
+          name="trigger"
+          multiple="true"
+          placeholder="Type Trigger"
+          bindLabel="name"
+          groupBy="header"
+          [items]="NOTIFICATION_TRIGGERS"
+          [closeOnSelect]="false"
+          [markFirst]="false"
+          [(ngModel)]="triggers"
+          [compareWith]="filterCompareWith"
+          [ngModelOptions]="{standalone: true}">
+          <ng-template ng-label-tmp let-item="item">
+            <span class="ng-value-icon left" (click)="clearSelectedItem(item)" aria-hidden="true">×</span>
+            <span class="ng-value-label">{{item.name}}</span>
+          </ng-template>
+          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+            {{item.header}}
+          </ng-template>
+        </ng-select>
       </div>
 
       <div class="label-pair">
