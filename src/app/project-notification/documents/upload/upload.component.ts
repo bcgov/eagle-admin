@@ -27,6 +27,13 @@ export class UploadComponent implements OnInit, OnDestroy {
   public docNameInvalid = false;
   public legislationYear = '2018';
   public publishDoc = false;
+  public documentLabel = ["Proponent Project Notification", "EAO Project Notification Report"];
+  public documentType = ["Project Notification", "Decision Materials"];
+  public documentMilestone = ["Project Notification"];
+  public documentAuthor = ["Proponent", "EAO"];
+  public documentPhase = [ "Project Designation"];
+
+
 
   constructor(
     private router: Router,
@@ -43,7 +50,13 @@ export class UploadComponent implements OnInit, OnDestroy {
 
   buildForm() {
     this.myForm = new FormGroup({
-      'displayName': new FormControl()
+      'displayName': new FormControl(),
+      'description': new FormControl(),
+      'label': new FormControl(this.documentLabel[0]),
+      'type' : new FormControl({value: this.documentType[0], disabled: true}),
+      'milestone' : new FormControl({ value: this.documentMilestone[0], disabled: true}),
+      'author' : new FormControl( { value: this.documentAuthor[0] , disabled: true }),
+      'phase' : new FormControl({ value: this.documentPhase[0], disabled: true } )
     });
     this.loading = false;
   }
@@ -68,8 +81,6 @@ export class UploadComponent implements OnInit, OnDestroy {
     // go through and upload one at a time.
     let observables = [];
 
-    // NB: If multi upload, then switch to use documentFileName as displayName
-
     this.documents.map(doc => {
       const formData = new FormData();
 
@@ -77,14 +88,14 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('project', this.currentProject._id);
       formData.append('documentFileName', doc.documentFileName);
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
-      formData.append('displayName', this.documents.length > 1 ? doc.documentFileName : this.myForm.value.displayName);
+      formData.append('displayName', doc.documentFileName );
       formData.append('dateUploaded', new Date().toISOString());
       formData.append('datePosted', new Date().toISOString());
-      formData.append('milestone', null);
-      formData.append('type', null);
+      formData.append('milestone', this.myForm.value.milestone);
+      formData.append('type', this.myForm.value.type);
       formData.append('description', 'Project Notification Document');
-      formData.append('documentAuthorType', null);
-      formData.append('projectPhase', null);
+      formData.append('documentAuthorType', this.myForm.value.documentAuthorType);
+      formData.append('projectPhase', this.myForm.value.projectPhase);
       formData.append('legislation', '2018');
 
       observables.push(this.documentService.add(formData, this.publishDoc));
@@ -114,20 +125,9 @@ export class UploadComponent implements OnInit, OnDestroy {
       );
   }
 
-public docNameExists() {
-  // Doc name "exists" if the form has a value, or if the form has more than one document
-  // this does not check name validity (validateChars does that)
-  return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) ||
-         (this.documents && this.documents.length > 1);
-}
 
-  public validateChars() {
-    if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
-      this.docNameInvalid = true;
-    } else {
-      this.docNameInvalid = false;
-    }
-  }
+
+  
 
   public addDocuments(files: FileList) {
     if (this.documents.length === 2) {
@@ -180,6 +180,23 @@ public docNameExists() {
       this.projectFiles = this.projectFiles.filter(item => (item.name !== doc.documentFileName));
       this.documents = this.documents.filter(item => (item.documentFileName !== doc.documentFileName));
     }
+  }
+
+  public onChangeLabel(){
+    if (this.myForm.value.label ===  "Proponent Project Notification"){
+      this.myForm.controls.type.setValue(this.documentType[0]);
+      this.myForm.controls.author.setValue(this.documentAuthor[0]);
+      this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
+      this.myForm.controls.phase.setValue(this.documentPhase[0]);
+    } 
+    else if (this.myForm.value.label === "EAO Project Notification Report"){
+      this.myForm.controls.type.setValue(this.documentType[1]);
+      this.myForm.controls.author.setValue(this.documentAuthor[1]);
+      this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
+      this.myForm.controls.phase.setValue(this.documentPhase[0]);
+    }
+    this._changeDetectionRef.detectChanges();
+    
   }
 
   ngOnDestroy() {
