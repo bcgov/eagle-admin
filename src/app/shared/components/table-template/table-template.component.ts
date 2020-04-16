@@ -49,6 +49,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     if (this.activePage !== parseInt(this.data.paginationData.currentPage, 10)) {
       this.activePage = parseInt(this.data.paginationData.currentPage, 10);
     }
+    this.selectAllInit();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -111,7 +112,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     let someSelected = false;
 
     if (this.data.data) {
-      this.data.data.map(item => {
+      this.data.data.forEach(item => {
         if (item.checkbox === true) {
           someSelected = true;
         }
@@ -123,5 +124,22 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.selectAllClicked.emit({ selectAll: this.selectAll});
+  }
+
+  public selectAllInit() {
+    let itemCount = this.data.data.length;
+    let selectedCount = 0;
+
+    if (this.data.data) {
+      this.data.data.forEach(item => {
+        if (item.checkbox === true) {
+          selectedCount += 1;
+        }
+      });
+
+      this.selectAll = itemCount === selectedCount;
+    }
+
+    // this.selectAllClicked.emit({ selectAll: this.selectAll});
   }
 }
