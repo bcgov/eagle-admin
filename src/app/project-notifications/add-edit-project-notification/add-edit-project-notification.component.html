@@ -55,7 +55,9 @@
 
       <div class="label-pair">
         <label for="nature">Nature* </label>
-        <input name="nature" id="nature" formControlName="nature" type="text" class="form-control">
+        <select name="nature" id="nature" formControlName="nature" class="form-control">
+          <option *ngFor="let nature of NATURE_OPTIONS" [ngValue]="nature">{{nature}}</option>
+        </select>
       </div>
 
       <div class="label-pair">
@@ -72,7 +74,8 @@
           [markFirst]="false"
           [(ngModel)]="triggers"
           [compareWith]="filterCompareWith"
-          [ngModelOptions]="{standalone: true}">
+          [ngModelOptions]="{standalone: true}"
+          (change)="onChangeTrigger()">
           <ng-template ng-label-tmp let-item="item">
             <span class="ng-value-icon left" (click)="clearSelectedItem(item)" aria-hidden="true">×</span>
             <span class="ng-value-label">{{item.name}}</span>

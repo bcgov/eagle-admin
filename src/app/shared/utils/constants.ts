@@ -78,6 +78,11 @@ export class Constants {
     'Not referred for s.11 consideration'
   ];
 
+  public static readonly NOTIFICATION_NATURES = [
+    'New Construction',
+    'Modification of Existing'
+  ];
+
   public static readonly tableDefaults = {
     DEFAULT_CURRENT_PAGE: 1,
     DEFAULT_PAGE_SIZE: 10,

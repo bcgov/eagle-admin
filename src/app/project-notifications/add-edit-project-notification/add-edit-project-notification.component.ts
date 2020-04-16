@@ -43,6 +43,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   // On an edit, these are the documents we are going to delete
   public documentsToDelete = [];
 
+  public NATURE_OPTIONS: Array<string> = Constants.NOTIFICATION_NATURES;
   public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
   public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
   public NOTIFICATION_TRIGGERS: Array<Object> = Constants.NOTIFICATION_TRIGGERS;
@@ -190,7 +191,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       }
     });
 
-    const natureDisabled = data.trigger.split(',').includes('Greenhouse Gases (modification)') || data.trigger.split(',').includes('Greenhouse Gases (new project)');
+    const natureDisabled = !data.trigger.split(',').includes('Greenhouse Gases (modification)') && !data.trigger.split(',').includes('Greenhouse Gases (new project)');
 
     this.myForm = new FormGroup({
       'name': new FormControl(data.name),
@@ -284,21 +285,22 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   }
 
   public onChangeTrigger() {
-    const trigger = this.myForm.value.trigger;
-
-    if (trigger !== 'Greenhouse Gases') {
-      // Nature can only be modified from the default for one selection. Revert to the default if not.
-      this.myForm.patchValue({ nature: this.NATURE_DEFAULT });
-      this.myForm.get('nature').disable();
-    } else {
-      this.myForm.get('nature').enable();
-    }
-
-    this._changeDetectorRef.detectChanges();
+    this.triggers.forEach(trigger => {
+      if (trigger.name !== 'Greenhouse Gases (new project)' && trigger.name !== 'Greenhouse Gases (modification)') {
+        // Nature can only be modified from the default for one selection. Revert to the default if not.
+        this.myForm.patchValue({ nature: this.NATURE_DEFAULT });
+        this.myForm.get('nature').disable();
+      } else {
+        this.myForm.get('nature').enable();
+      }
+  
+      this._changeDetectorRef.detectChanges();
+    });
   }
 
   clearSelectedItem(item: any) {
     this.triggers = this.triggers.filter(option => option.name !== item.name);
+    this.onChangeTrigger();
   }
 
   public filterCompareWith(filter: any, filterToCompare: any) {
