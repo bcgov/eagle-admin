@@ -69,15 +69,7 @@ export class Constants {
     {name:'Greenhouse Gases (modification)', header: 'Effects Thresholds'},
     {name:'Transmission Line (non-linear projects)', header: 'Effects Thresholds'},
     {name:'Land Clearance (Linear)', header: 'Effects Thresholds'},
-    {name:'Land Clearance (Area)', header: 'Effects Thresholds'},
-    // original values
-    {name:'Federally Designated Physical Activity', header: 'Effects Thresholds'},
-    {name:'Within 15% of Design Threshold', header: 'Effects Thresholds'},
-    {name:'Workforce', header: 'Effects Thresholds'},
-    {name:'Greenhouse Gases', header: 'Effects Thresholds'},
-    {name:'Transmission Line', header: 'Effects Thresholds'},
-    {name:'Land Clearance', header: 'Effects Thresholds'},
-    {name:'Linear Clearance',  header: 'Effects Thresholds'}
+    {name:'Land Clearance (Area)', header: 'Effects Thresholds'}
   ];
 
   public static readonly NOTIFICATION_DECISIONS = [
