@@ -27,11 +27,11 @@ export class UploadComponent implements OnInit, OnDestroy {
   public docNameInvalid = false;
   public legislationYear = '2018';
   public publishDoc = false;
-  public documentLabel = ["Proponent Project Notification", "EAO Project Notification Report"];
-  public documentType = ["Project Notification", "Decision Materials"];
-  public documentMilestone = ["Project Notification"];
-  public documentAuthor = ["Proponent", "EAO"];
-  public documentPhase = [ "Project Designation"];
+  public documentLabel = ['Proponent Project Notification', 'EAO Project Notification Report'];
+  public documentType = ['Project Notification', 'Decision Materials'];
+  public documentMilestone = ['Project Notification'];
+  public documentAuthor = ['Proponent', 'EAO'];
+  public documentPhase = [ 'Project Designation'];
 
 
 
@@ -125,10 +125,6 @@ export class UploadComponent implements OnInit, OnDestroy {
       );
   }
 
-
-
-  
-
   public addDocuments(files: FileList) {
     if (this.documents.length === 2) {
       this.snackBar.open('Project Notifications can have a maximum of 2 files', null, {
@@ -182,21 +178,19 @@ export class UploadComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onChangeLabel(){
-    if (this.myForm.value.label ===  "Proponent Project Notification"){
+  public onChangeLabel() {
+    if (this.myForm.value.label ===  'Proponent Project Notification') {
       this.myForm.controls.type.setValue(this.documentType[0]);
       this.myForm.controls.author.setValue(this.documentAuthor[0]);
       this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
       this.myForm.controls.phase.setValue(this.documentPhase[0]);
-    } 
-    else if (this.myForm.value.label === "EAO Project Notification Report"){
+    } else {
       this.myForm.controls.type.setValue(this.documentType[1]);
       this.myForm.controls.author.setValue(this.documentAuthor[1]);
       this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
       this.myForm.controls.phase.setValue(this.documentPhase[0]);
     }
     this._changeDetectionRef.detectChanges();
-    
   }
 
   ngOnDestroy() {
