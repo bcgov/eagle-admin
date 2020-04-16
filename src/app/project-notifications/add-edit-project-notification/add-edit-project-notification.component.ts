@@ -49,6 +49,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public NOTIFICATION_TRIGGERS: Array<Object> = Constants.NOTIFICATION_TRIGGERS;
   public NOTIFICATION_DECISIONS: Array<string> = Constants.NOTIFICATION_DECISIONS;
   public NATURE_DEFAULT = 'New Construction';
+  public NATURE_MODIFIED = 'Modification of Existing';
 
   public triggers: any[];
 
@@ -126,7 +127,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       name: this.myForm.value.name,
       type: this.myForm.value.type,
       subType: this.myForm.value.subType,
-      nature: this.myForm.get('nature').disabled ? this.NATURE_DEFAULT : this.myForm.value.nature,
+      nature: this.myForm.value.nature,
       trigger: triggerCSV.join(),
       region: this.myForm.value.region,
       location: this.myForm.value.location,
@@ -191,13 +192,11 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       }
     });
 
-    const natureDisabled = !data.trigger.split(',').includes('Greenhouse Gases (modification)') && !data.trigger.split(',').includes('Greenhouse Gases (new project)');
-
     this.myForm = new FormGroup({
       'name': new FormControl(data.name),
       'type': new FormControl(data.type),
       'subType': new FormControl(data.subType),
-      'nature': new FormControl({ value: data.nature, disabled: natureDisabled }),
+      'nature': new FormControl({ value: data.nature, disabled: true }),
       'region': new FormControl(data.region),
       'location': new FormControl(data.location),
       'decision': new FormControl(data.decision),
@@ -285,17 +284,15 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   }
 
   public onChangeTrigger() {
+    let natureModified = false;
     this.triggers.forEach(trigger => {
-      if (trigger.name !== 'Greenhouse Gases (new project)' && trigger.name !== 'Greenhouse Gases (modification)') {
-        // Nature can only be modified from the default for one selection. Revert to the default if not.
-        this.myForm.patchValue({ nature: this.NATURE_DEFAULT });
-        this.myForm.get('nature').disable();
-      } else {
-        this.myForm.get('nature').enable();
+      if (trigger.name === 'Greenhouse Gases (modification)') {
+        natureModified = true;
       }
-
-      this._changeDetectorRef.detectChanges();
     });
+
+    this.myForm.patchValue(natureModified ? { nature: this.NATURE_MODIFIED } : { nature: this.NATURE_DEFAULT });
+    this._changeDetectorRef.detectChanges();
   }
 
   clearSelectedItem(item: any) {
