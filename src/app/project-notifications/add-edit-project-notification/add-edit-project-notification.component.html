@@ -77,7 +77,7 @@
       <div class="label-pair">
         <label for="decision">Notification Decision*</label>
         <select name="decision" id="decision" formControlName="decision" class="form-control">
-          <option *ngFor="let decision of NOTIFICATION_DECISIONS" [ngValue]="decision">{{decision}}</option>
+          <option *ngFor="let decision of NOTIFICATION_DECISIONS | keyvalue" [ngValue]="decision.value">{{decision.value}}</option>
         </select>
       </div>
 

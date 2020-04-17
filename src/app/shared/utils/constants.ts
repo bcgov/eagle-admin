@@ -19,11 +19,11 @@ export class Constants {
     'Linear Clearance',
   ];
 
-  public static readonly NOTIFICATION_DECISIONS = [
-    'In Progress',
-    'Referred to Minister for Designation Decision',
-    'No further EAO review required'
-  ];
+  public static readonly NOTIFICATION_DECISIONS = {
+    INPROGRESS: 'In Progress',
+    REFERRED: 'Referred to Minister for Designation Decision',
+    NOREVIEW: 'No further EAO review required',
+  };
 
   public static readonly tableDefaults = {
     DEFAULT_CURRENT_PAGE: 1,

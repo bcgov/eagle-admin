@@ -48,7 +48,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
   public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
   public NOTIFICATION_TRIGGERS: Array<string> = Constants.NOTIFICATION_TRIGGERS;
-  public NOTIFICATION_DECISIONS: Array<string> = Constants.NOTIFICATION_DECISIONS;
+  public NOTIFICATION_DECISIONS = Constants.NOTIFICATION_DECISIONS;
   public NATURE_DEFAULT = 'New Construction';
 
   constructor(
@@ -131,7 +131,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
     let associatedProjectName;
     for (let project in this.projects) {
-      if ( this.projects[project]['_id'] !== null && this.projects[project]['_id'] === this.myForm.value.project ) {
+      if ( this.projects[project]['_id'] === this.myForm.value.project ) {
         associatedProjectName = this.projects[project]['name'];
         break;
       }
@@ -147,8 +147,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       location: this.myForm.value.location,
       decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))) : null,
       decision: this.myForm.value.decision,
-      associatedProjectId: this.myForm.value.project !== null && this.myForm.value.decision === 'Referred to Minister for Designation Decision' ? this.myForm.value.project : null,
-      associatedProjectName: this.myForm.value.project !== null && this.myForm.value.decision === 'Referred to Minister for Designation Decision' ? associatedProjectName : null,
+      associatedProjectId:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
+      associatedProjectName:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
 
       description: this.myForm.value.description,
       centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
