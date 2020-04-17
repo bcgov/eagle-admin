@@ -15,7 +15,8 @@
         <a [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/pn', projectNotification._id, 'details']">{{projectNotification.name}}</a>
+        <a
+          [routerLink]="['/pn', projectNotification._id, 'details']">{{projectNotification.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Edit
@@ -54,15 +55,35 @@
 
       <div class="label-pair">
         <label for="nature">Nature* </label>
-        <input name="nature" id="nature" formControlName="nature" type="text" class="form-control">
+        <select name="nature" id="nature" formControlName="nature" class="form-control">
+          <option *ngFor="let nature of NATURE_OPTIONS" [ngValue]="nature">{{nature}}</option>
+        </select>
       </div>
 
       <div class="label-pair">
         <label for="trigger">Trigger* </label>
-        <select name="trigger" id="trigger" formControlName="trigger" class="form-control"
-          (change)="onChangeTrigger($event)">
-          <option *ngFor="let trigger of NOTIFICATION_TRIGGERS" [ngValue]="trigger">{{trigger}}</option>
-        </select>
+        <ng-select
+          id="trigger"
+          name="trigger"
+          multiple="true"
+          placeholder="Type Trigger"
+          bindLabel="name"
+          groupBy="header"
+          [items]="NOTIFICATION_TRIGGERS"
+          [closeOnSelect]="false"
+          [markFirst]="false"
+          [(ngModel)]="triggers"
+          [compareWith]="filterCompareWith"
+          [ngModelOptions]="{standalone: true}"
+          (change)="onChangeTrigger()">
+          <ng-template ng-label-tmp let-item="item">
+            <span class="ng-value-icon left" (click)="clearSelectedItem(item)" aria-hidden="true">×</span>
+            <span class="ng-value-label">{{item.name}}</span>
+          </ng-template>
+          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+            {{item.header}}
+          </ng-template>
+        </ng-select>
       </div>
 
       <div class="label-pair">
@@ -72,12 +93,15 @@
         </select>
       </div>
 
-      
+      <div class="label-pair">
+        <label for="location">Location* </label>
+        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+      </div>
 
       <div class="label-pair">
         <label for="decision">Notification Decision*</label>
         <select name="decision" id="decision" formControlName="decision" class="form-control">
-          <option *ngFor="let decision of NOTIFICATION_DECISIONS | keyvalue" [ngValue]="decision.value">{{decision.value}}</option>
+          <option *ngFor="let decision of NOTIFICATION_DECISIONS" [ngValue]="decision">{{decision}}</option>
         </select>
       </div>
 
@@ -92,31 +116,9 @@
           </div>
         </div>
       </div>
-
-      <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'"
-        class="label-pair">
-        <label for="project" class="eAPProjectLabel">Associated Environmental Assessment Project*</label>
-        <div class="input-group">
-          <select name="project" id="project" formControlName="project" class="form-control">
-            <option value="">None</option>
-            <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
-          </select>
-      </div>
-    </div>
-
-
-
-
-
     </div>
 
     <div class="flex-container">
-
-      <div class="label-pair">
-        <label for="location">Location* </label>
-        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
-      </div>
-
       <div class="label-pair">
         <label for="latitude">Latitude*</label>
         <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
