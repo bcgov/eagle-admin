@@ -11,7 +11,8 @@ export class ProjectNotification {
   description: string;
   centroid: Array<string>;
   trigger: string;
-
+  associatedProjectId: string;
+  associatedProjectName: string;
   read: Array<string> = [];
 
   constructor(obj?: any) {
@@ -27,7 +28,8 @@ export class ProjectNotification {
     this.description = obj && obj.description || undefined;
     this.trigger = obj && obj.trigger || undefined;
     this.centroid = obj && obj.centroid || undefined;
-
+    this.associatedProjectId = obj && obj.associatedProjectId || undefined;
+    this.associatedProjectName = obj && obj.associatedProjectName || undefined;
     this.read = obj && obj.read || undefined;
   }
 }

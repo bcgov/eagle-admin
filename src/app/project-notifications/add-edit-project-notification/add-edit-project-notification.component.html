@@ -15,8 +15,7 @@
         <a [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a
-          [routerLink]="['/pn', projectNotification._id, 'details']">{{projectNotification.name}}</a>
+        <a [routerLink]="['/pn', projectNotification._id, 'details']">{{projectNotification.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Edit
@@ -60,7 +59,8 @@
 
       <div class="label-pair">
         <label for="trigger">Trigger* </label>
-        <select name="trigger" id="trigger" formControlName="trigger" class="form-control" (change)="onChangeTrigger($event)">
+        <select name="trigger" id="trigger" formControlName="trigger" class="form-control"
+          (change)="onChangeTrigger($event)">
           <option *ngFor="let trigger of NOTIFICATION_TRIGGERS" [ngValue]="trigger">{{trigger}}</option>
         </select>
       </div>
@@ -72,10 +72,7 @@
         </select>
       </div>
 
-      <div class="label-pair">
-        <label for="location">Location* </label>
-        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
-      </div>
+      
 
       <div class="label-pair">
         <label for="decision">Notification Decision*</label>
@@ -95,9 +92,31 @@
           </div>
         </div>
       </div>
+
+      <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'"
+        class="label-pair">
+        <label for="project" class="eAPProjectLabel">Associated Environmental Assessment Project*</label>
+        <div class="input-group">
+          <select name="project" id="project" formControlName="project" class="form-control">
+            <option value="">None</option>
+            <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
+          </select>
+      </div>
+    </div>
+
+
+
+
+
     </div>
 
     <div class="flex-container">
+
+      <div class="label-pair">
+        <label for="location">Location* </label>
+        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+      </div>
+
       <div class="label-pair">
         <label for="latitude">Latitude*</label>
         <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />

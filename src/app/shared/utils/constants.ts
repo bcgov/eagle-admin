@@ -21,8 +21,8 @@ export class Constants {
 
   public static readonly NOTIFICATION_DECISIONS = [
     'In Progress',
-    'Referred for s.11 consideration',
-    'Not referred for s.11 consideration'
+    'Referred to Minister for Designation Decision',
+    'No further EAO review required'
   ];
 
   public static readonly tableDefaults = {
