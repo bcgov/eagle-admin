@@ -361,9 +361,9 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       userData.push({
         name: user.name,
         email: user.email,
-        liveNear: user.liveNear ? 'Yes' : 'No',
-        memberOf: user.memberOf ? 'Yes' : 'No',
-        knowledgeOf: user.knowledgeOf ? 'Yes' : 'No',
+        liveNear: user.liveNear ? user.liveNearInput ? `Yes - ${user.liveNearInput}` : 'Yes' : 'No',
+        memberOf: user.memberOf ? user.memberOfInput ? `Yes - ${user.memberOfInput}` : 'Yes' : 'No',
+        knowledgeOf: user.knowledgeOf ? user.knowledgeOfInput ? `Yes - ${user.knowledgeOfInput}` : 'Yes' : 'No',
         additionalNotes: user.additionalNotes ? user.additionalNotes : 'No'
       });
     });
