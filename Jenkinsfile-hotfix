@@ -126,7 +126,7 @@ pipeline {
                 ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
                 ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
 
-                echo "Building eagle-admin hotfix branch"
+                echo "Building hotfix-eagle-admin hotfix branch"
                 openshiftBuild bldCfg: 'eagle-admin-angular-builder', showBuildLogs: 'true'
                 openshiftBuild bldCfg: 'eagle-admin-build', showBuildLogs: 'true'
                 echo "Build done"
@@ -135,7 +135,7 @@ pipeline {
                 // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
                 // Tag the images for deployment based on the image's hash
                 IMAGE_HASH = sh (
-                  script: """oc get istag eagle-admin:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
+                  script: """oc get istag hotfix-eagle-admin:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
                   returnStdout: true).trim()
                 echo ">> IMAGE_HASH: ${IMAGE_HASH}"
               } catch (error) {
@@ -159,12 +159,12 @@ pipeline {
         script {
           try {
             echo "Backing up..."
-            openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'backup-hotfix', srcStream: 'eagle-admin', srcTag: "hotfix"
+            openshiftTag destStream: 'hotfix-eagle-admin', verbose: 'false', destTag: 'backup-hotfix', srcStream: 'hotfix-eagle-admin', srcTag: "hotfix"
             sleep 5
             echo "Deploying to hotfix..."
-            openshiftTag destStream: 'eagle-admin', verbose: 'false', destTag: 'hotfix', srcStream: 'eagle-admin', srcTag: "${IMAGE_HASH}"
+            openshiftTag destStream: 'hotfix-eagle-admin', verbose: 'false', destTag: 'hotfix', srcStream: 'hotfix-eagle-admin', srcTag: "${IMAGE_HASH}"
             sleep 5
-            openshiftVerifyDeployment depCfg: 'eagle-admin', namespace: 'esm-test', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
+            openshiftVerifyDeployment depCfg: 'hotfix-eagle-admin', namespace: 'esm-test', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
