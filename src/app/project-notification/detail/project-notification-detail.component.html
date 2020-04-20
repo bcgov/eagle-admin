@@ -60,6 +60,10 @@
       <p>{{projectNotification.trigger || '-' }}</p>
     </div>
     <div class="label-pair">
+      <h3>Associated Environmental Assessment Project: </h3>
+      <p>{{projectNotification.associatedProjectName || '-' }}</p>
+    </div>
+    <div class="label-pair">
       <h3>Notification Decision: </h3>
       <p>{{projectNotification.decision || '-' }} {{projectNotification.decisionDate | date:'longDate'}}</p>
     </div>

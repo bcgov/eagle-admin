@@ -13,6 +13,7 @@ import { StorageService } from 'app/services/storage.service';
 import { Constants } from 'app/shared/utils/constants';
 import { NotificationProjectService } from 'app/services/notification-project.service';
 import { Utils } from 'app/shared/utils/utils';
+import { ProjectService } from 'app/services/project.service';
 
 @Component({
   selector: 'app-add-edit-notification-project',
@@ -30,6 +31,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public projectNotification: ProjectNotification = null;
   public regions: any[] = [];
   public subTypeSelected = [];
+  public projects = ['Test'];
 
   // Raw files coming in from file uploader
   public newFiles: Array<File> = [];
@@ -47,7 +49,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
   public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
   public NOTIFICATION_TRIGGERS: Array<Object> = Constants.NOTIFICATION_TRIGGERS;
-  public NOTIFICATION_DECISIONS: Array<string> = Constants.NOTIFICATION_DECISIONS;
+  public NOTIFICATION_DECISIONS = Constants.NOTIFICATION_DECISIONS;
   public NATURE_DEFAULT = 'New Construction';
   public NATURE_MODIFIED = 'Modification of Existing';
 
@@ -60,10 +62,14 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     private storageService: StorageService,
     private route: ActivatedRoute,
     private router: Router,
-    private utils: Utils
+    private utils: Utils,
+    private projectService: ProjectService,
   ) { }
 
   public ngOnInit() {
+
+
+
     this.config.getRegions()
       .switchMap(regions => {
         this.regions = regions;
@@ -85,6 +91,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             'location': '',
             'decision': '',
             'decisionDate': undefined,
+            'project': '',
             'description': '',
             'centroid': ['', ''],
             'trigger': '',
@@ -102,6 +109,14 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
           this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
         }
 
+        this.projectService.getAll(1, 1000, '+name')
+          .takeUntil(this.ngUnsubscribe)
+          .subscribe((res2: any) => {
+            if (res2) {
+              this.projects = res2.data;
+            }
+          });
+
         this.loading = false;
         this._changeDetectorRef.detectChanges();
       });
@@ -118,6 +133,13 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       publish = false;
     }
 
+    let associatedProjectName;
+    for (let project in this.projects) {
+      if ( this.projects[project]['_id'] === this.myForm.value.project ) {
+        associatedProjectName = this.projects[project]['name'];
+        break;
+      }
+    }
     let triggerCSV = [];
     this.triggers.forEach(trigger => {
       triggerCSV.push(trigger.name);
@@ -133,6 +155,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       location: this.myForm.value.location,
       decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))) : null,
       decision: this.myForm.value.decision,
+      associatedProjectId:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
+      associatedProjectName:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
+
       description: this.myForm.value.description,
       centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
     });
@@ -202,6 +227,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       'decision': new FormControl(data.decision),
       'decisionDate': new FormControl(data.decisionDate),
       'description': new FormControl(data.description),
+      'project': new FormControl(data.associatedProjectId),
       'longitude': new FormControl(data.centroid[1]),
       'latitude': new FormControl(data.centroid[0]),
       'trigger': new FormControl(this.triggers)
