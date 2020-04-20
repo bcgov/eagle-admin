@@ -299,7 +299,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       case 'selectAll':
         let someSelected = false;
 
-        if (this.categorizedDocumentTableData) {
+        if (this.categorizedDocumentTableData && this.currentTab === Constants.documentTypes.CATEGORIZED) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               someSelected = true;
@@ -310,7 +310,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        if (this.uncategorizedDocumentTableData) {
+        if (this.uncategorizedDocumentTableData && this.currentTab === Constants.documentTypes.UNCATEGORIZED) {
           this.uncategorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               someSelected = true;
