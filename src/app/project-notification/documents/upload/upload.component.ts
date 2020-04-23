@@ -95,7 +95,7 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('milestone', this.myForm.controls.milestone.value);
       formData.append('type', this.myForm.controls.type.value);
       formData.append('description', this.myForm.value.description);
-      formData.append('documentAuthorType', this.myForm.value.documentAuthorType);
+      formData.append('documentAuthorType', null);
       formData.append('documentAuthor', this.myForm.controls.author.value);
       formData.append('projectPhase', this.myForm.controls.phase.value);
       formData.append('legislation', '2018');
