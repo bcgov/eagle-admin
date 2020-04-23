@@ -72,11 +72,11 @@ export class Constants {
     { name: 'Land Clearance (Area)', header: 'Effects Thresholds' }
   ];
 
-  public static readonly NOTIFICATION_DECISIONS = [
-    'In Progress',
-    'Referred for s.11 consideration',
-    'Not referred for s.11 consideration'
-  ];
+  public static readonly NOTIFICATION_DECISIONS = {
+    INPROGRESS: 'In Progress',
+    REFERRED: 'Referred to Minister for Designation Decision',
+    NOREVIEW: 'No further EAO review required',
+  };
 
   public static readonly NOTIFICATION_NATURES = [
     'New Construction',
