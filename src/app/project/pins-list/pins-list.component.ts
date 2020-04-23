@@ -1,8 +1,6 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-
-import { RecentActivity } from 'app/models/recentActivity';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
 
@@ -13,8 +11,8 @@ import { SearchTerms } from 'app/models/search';
 import { StorageService } from 'app/services/storage.service';
 import { Org } from 'app/models/org';
 import { ProjectService } from 'app/services/project.service';
-import { DialogService } from 'ng2-bootstrap-modal';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-pins-list',
@@ -24,40 +22,41 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 export class PinsListComponent implements OnInit, OnDestroy {
   public currentProject;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public loading = true;
-
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public entries: Org[] = null;
   public terms = new SearchTerms();
   public searchForm = null;
   public typeFilters = [];
+  public loading = true;
   public filterPublicCommentPeriod = false;
   public filterNews = false;
   public selectedCount = 0;
+  public pinsPublished = false;
 
   public tableColumns: any[] = [
     {
-      name: '',
-      value: 'check',
-      width: 'col-1',
-      nosort: true
-    },
-    {
       name: 'Name',
       value: 'name',
-      width: 'col-8'
+      width: '65%'
     },
     {
       name: 'Province',
       value: 'province',
-      width: 'col-4'
-    }
+      width: '25%'
+    },
+    {
+      name: 'Delete',
+      value: 'delete',
+      width: '10%',
+      nosort: true
+    },
   ];
   constructor(
     private route: ActivatedRoute,
     private storageService: StorageService,
-    private dialogService: DialogService,
+    private snackBar: MatSnackBar,
+    private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
@@ -67,7 +66,9 @@ export class PinsListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.loading = true;
     this.currentProject = this.storageService.state.currentProject.data;
+    this.storageService.state.selectedUsers = null;
 
     this.route.params
     .takeUntil(this.ngUnsubscribe)
@@ -85,7 +86,10 @@ export class PinsListComponent implements OnInit, OnDestroy {
       .subscribe((res: any) => {
         if (res) {
           this.entries = [];
-          if (res.contacts && res.contacts[0].total_items > 0) {
+          if (res.contacts && res.contacts.length > 0 && res.contacts[0].results) {
+            if (res.contacts[0].read.includes('public')) {
+              this.pinsPublished = true;
+            }
             res.contacts[0].results.map(contact => {
               this.entries.push(new Org(contact));
             });
@@ -97,70 +101,57 @@ export class PinsListComponent implements OnInit, OnDestroy {
           this.loading = false;
           this._changeDetectionRef.detectChanges();
         } else {
+          this.loading = false;
           alert('Uh-oh, couldn\'t load valued components');
           // project not found --> navigate back to search
           this.router.navigate(['/search']);
         }
       });
   }
-
-  public selectAction(action) {
-    // select all documents
-    switch (action) {
-      case 'delete':
-        this.deleteItems();
-        break;
-      case 'selectAll':
-        let someSelected = false;
-        this.tableData.data.map((item) => {
-          if (item.checkbox === true) {
-            someSelected = true;
-          }
-          item.checkbox = !someSelected;
-        });
-
-        this.selectedCount = someSelected ? 0 : this.tableData.data.length;
-        this._changeDetectionRef.detectChanges();
-        break;
-    }
-  }
-
-  deleteItems() {
-    let projectId = this.currentProject._id;
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Delete PIN',
-        message: 'Click <strong>OK</strong> to delete this Participating Indigenous Nation or <strong>Cancel</strong> to return to the list.'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.loading = true;
-            // Delete the Document(s)
-            let itemsToDelete = [];
-            this.tableData.data.map((item) => {
-              if (item.checkbox === true) {
-                itemsToDelete.push({ promise: this.projectService.deletePin(projectId, item._id).toPromise(), item: item });
-              }
-            });
-            this.loading = false;
-            return Promise.all(itemsToDelete).then(() => {
-              // Reload main page.
-              this.onSubmit();
-            });
-          }
-          this.loading = false;
-        }
-      );
-  }
-
-  isEnabled(button) {
+  isEnabled() {
     return this.selectedCount > 0;
   }
-
+  publishPins() {
+    if (this.currentProject && this.currentProject._id) {
+      this.loading = true;
+      this.projectService.publishPins(this.currentProject._id)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(res => {
+        if (res) {
+          // We assuming the publish action was successful
+          this.loading = false;
+          this.openSnackBar('Participating Indigenous Nations Published Successfully!', 'Close');
+          this.pinsPublished = true;
+        } else {
+          this.loading = false;
+          this.openSnackBar('Error on publishing Participating Indigenous Nations, please try again later', 'Close');
+        }
+      });
+    } else {
+      this.openSnackBar('Invalid Project, please try again!', 'Close');
+      // Error
+    }
+  }
+  unpublishPins() {
+    if (this.currentProject && this.currentProject._id) {
+      this.loading = true;
+      this.projectService.unpublishPins(this.currentProject._id)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(res => {
+        if (res) {
+          this.loading = false;
+          this.openSnackBar('Participating Indigenous Nations Unpublished Successfully!', 'Close');
+          this.pinsPublished = false;
+        } else {
+          this.loading = false;
+          this.openSnackBar('Error on unpublishing Participating Indigenous Nations, please try again later', 'Close');
+        }
+      });
+    } else {
+      // Error
+      this.openSnackBar('Invalid Project, please try again!', 'Close');
+    }
+  }
   setRowData() {
     let list = [];
     if (this.entries && this.entries.length > 0) {
@@ -201,12 +192,9 @@ export class PinsListComponent implements OnInit, OnDestroy {
     });
     // Add all the filtered new items.
     component.projectService.addPins(component.currentProject, filteredPins)
-    // .takeUntil(component.ngUnsubscribe)
+    .takeUntil(component.ngUnsubscribe)
     .subscribe(
-      () => { // onCompleted
-        // this.loading = false;
-        // this.router.navigated = false;
-        // this.openSnackBar('This project was created successfuly.', 'Close');
+      () => {
         component.router.navigate(['/p', component.currentProject._id, 'project-pins']);
       },
       error => {
@@ -217,7 +205,6 @@ export class PinsListComponent implements OnInit, OnDestroy {
   }
 
   setBackURL() {
-    this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-pins'], label: 'Participating Indigenous Nations' };
     this.storageService.state.add = this.add;
     this.storageService.state.component = this;
     this.storageService.state.componentModel = 'Org';
@@ -225,6 +212,29 @@ export class PinsListComponent implements OnInit, OnDestroy {
     this.storageService.state.tableColumns = this.tableColumns;
     this.storageService.state.rowComponent = PinsTableRowsComponent;
     this.storageService.state.sortBy = this.tableParams.sortBy;
+    // todo: fix storage service goofiness below, orgs being stored in key for users
+    this.storageService.state.selectedUsers = [...this.entries];
+    // setting this key turns on checkboxes on the link-org component
+    this.storageService.state.showOrgTableCheckboxes = true;
+
+    this.navigationStackUtils.pushNavigationStack(
+      ['/p', this.currentProject._id, 'project-pins'],
+      [
+        {
+          route: ['/projects'],
+          label: 'All Projects'
+        },
+        {
+          route: ['/p', this.currentProject._id],
+          label: this.currentProject.name
+        },
+        {
+          route: ['/p', this.currentProject._id, 'project-pins'],
+          label: 'Participating Indigenous Nations'
+        }
+      ]
+    );
+    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 10 }]);
   }
 
   public onSubmit(pageNumber = 1, reset = false) {
@@ -261,7 +271,11 @@ export class PinsListComponent implements OnInit, OnDestroy {
       this.typeFilters.push(filterItem);
     }
   }
-
+  public openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 2000,
+    });
+  }
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();

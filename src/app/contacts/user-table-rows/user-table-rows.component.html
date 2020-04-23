@@ -1,10 +1,10 @@
-<tr *ngFor="let contact of contacts | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+<tr *ngFor="let contact of contacts"
     class="clickable-row">
-    <td scope="row" data-label="Name" class="col-3">{{contact.displayName || '-'}}</td>
-    <td scope="row" data-label="Organization" class="col-3">{{contact?.org?.name || '-' }}</td>
-    <td scope="row" data-label="Phone" class="col-2">{{contact.phoneNumber || '-'}}</td>
-    <td scope="row" data-label="Email" class="col-3">{{contact.email || '-'}}</td>
-    <td class="col-1 clickable" data-label="Event" scope="row">
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{contact.displayName || '-'}}</td>
+    <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[1].width">{{contact?.org?.name || '-' }}</td>
+    <td scope="row" data-label="Phone" [style.width]="!useSmallTable && columns[2].width">{{contact.phoneNumber || '-'}}</td>
+    <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[3].width">{{contact.email || '-'}}</td>
+    <td class="clickable" data-label="Event" scope="row" [style.width]="!useSmallTable && columns[4].width">
         <i (click)="editItem(contact)" class="material-icons">
             edit
         </i>

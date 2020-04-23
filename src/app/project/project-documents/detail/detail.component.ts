@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute, ParamMap, Params } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Document } from 'app/models/document';
 import { Project } from 'app/models/project';
@@ -7,6 +7,7 @@ import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { DocumentService } from 'app/services/document.service';
 import { MatSnackBar } from '@angular/material';
+import { Utils } from 'app/shared/utils/utils';
 
 @Component({
   selector: 'app-detail',
@@ -18,6 +19,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
   public document: Document = null;
   public currentProject: Project = null;
   public publishText: string;
+  formatBytes: (bytes: any, decimals?: number) => string;
 
   constructor(
     private route: ActivatedRoute,
@@ -26,13 +28,14 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
     private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
     private snackBar: MatSnackBar,
+    private utils: Utils,
     private documentService: DocumentService,
   ) {
   }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
-
+    this.formatBytes = this.utils.formatBytes;
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
@@ -56,7 +59,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
   togglePublish() {
     if (this.publishText === 'Publish') {
       this.documentService.publish(this.document._id).subscribe(
-        res => { },
+        () => { },
         error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t update document');
@@ -68,7 +71,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
       this.publishText = 'Unpublish';
     } else {
       this.documentService.unPublish(this.document._id).subscribe(
-        res => { },
+        () => { },
         error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t update document');

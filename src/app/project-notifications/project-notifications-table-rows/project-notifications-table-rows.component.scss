@@ -1,0 +1,23 @@
+@import "assets/styles/base/base.scss";
+
+.clickable-row {
+    cursor: pointer;
+}
+
+tr:hover {
+    cursor: pointer;
+    background-color: #e2f1ff;
+}
+
+.clickable-row {
+    cursor: pointer;
+}
+
+td {
+    border-top: 0;
+    text-align: left;
+}
+
+.clickable {
+    cursor: pointer;
+}

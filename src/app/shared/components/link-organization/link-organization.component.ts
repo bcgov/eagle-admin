@@ -30,14 +30,19 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public tableData: TableObject;
   public tableColumns: any[] = [
     {
+      name: '',
+      value: '',
+      width: '10%'
+    },
+    {
       name: 'Name',
       value: 'name',
-      width: 'col-6'
+      width: '45%'
     },
     {
       name: 'Company Type',
       value: 'companyType',
-      width: 'col-6'
+      width: '45%'
     }
   ];
 
@@ -57,6 +62,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.storageService.state.selectedOrgs = [];
     if (this.navigationStackUtils.getNavigationStack()) {
       this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
       if (this.navigationObject.breadcrumbs[0].label === 'Organizations' || this.navigationObject.breadcrumbs[this.navigationObject.breadcrumbs.length - 1].label === 'Add Organization') {
@@ -75,7 +81,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           this.contactId = params.contactId;
           this.isEditing = true;
         }
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 15);
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+name';
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
@@ -104,6 +110,33 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
       });
   }
 
+  save() {
+    this.storageService.state.selectedOrgs.forEach((org: Org) => {
+      let arr: Org[] = [];
+      arr.push(org);
+      this.storageService.state.add(arr, this.storageService.state.component);
+    });
+    this.storageService.state.selectedOrganization = null;
+    this.storageService.state.add = null;
+    let url = this.navigationStackUtils.getLastBackUrl();
+    this.navigationStackUtils.popNavigationStack();
+    this.router.navigate(url);
+  }
+  updateSelectedRow(count) {
+    this.selectedCount = count;
+  }
+  removeSelectedOrg(user) {
+    this.storageService.state.selectedOrgs = this.storageService.state.selectedOrgs.filter(function (element) {
+      return element._id !== user._id;
+    });
+    this.tableData.data.map(item => {
+      if (user._id === item._id) {
+        item.checkbox = false;
+      }
+    });
+    this._changeDetectionRef.detectChanges();
+  }
+
   public onSubmit(currentPage = 1) {
     // dismiss any open snackbar
     // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
@@ -119,12 +152,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     params['sortBy'] = this.tableParams.sortBy;
     params['keywords'] = this.tableParams.keywords;
     params['pageSize'] = this.tableParams.pageSize;
-
-    if (this.isEditing) {
-      this.router.navigate(['c', this.contactId, 'edit', 'link-org', params]);
-    } else {
-      this.router.navigate(['contacts', 'add', 'link-org', params]);
-    }
+    this.router.navigate([...this.router.url.split(';')[0].split('/'), params]);
   }
 
   setRowData() {
@@ -186,6 +214,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.storageService.state.showOrgTableCheckboxes = false;
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }

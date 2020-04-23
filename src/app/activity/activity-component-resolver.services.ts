@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 
 import { SearchService } from 'app/services/search.service';
@@ -45,7 +45,7 @@ export class ActivityComponentResolver implements Resolve<Observable<object>> {
         tableParams.sortBy,
         {},
         true,
-        filterForApi);
+        filterForApi, '');
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { flatMap } from 'rxjs/operators';
-import { of, forkJoin } from 'rxjs';
+import { of, forkJoin, merge } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
@@ -12,6 +12,8 @@ import { Project } from 'app/models/project';
 import { CommentPeriod } from 'app/models/commentPeriod';
 import { Org } from 'app/models/org';
 import { SearchService } from './search.service';
+import { FullProject } from 'app/models/fullProject';
+import { Utils } from 'app/shared/utils/utils';
 
 interface GetParameters {
   getresponsibleEPD?: boolean;
@@ -23,6 +25,7 @@ export class ProjectService {
   private projectList: Project[] = [];
   constructor(
     private api: ApiService,
+    private utils: Utils,
     private searchService: SearchService
   ) { }
 
@@ -102,6 +105,47 @@ export class ProjectService {
       });
   }
 
+  public getPeopleObjs(data): Observable<any> {
+    // Used in Full Project Resolver using current legislation as our key
+    const projectSearchData = this.utils.extractFromSearchResults<FullProject>(data);
+    if (!projectSearchData) {
+      return of(data);
+    }
+    const fullProject = projectSearchData[0];
+    if (!fullProject) {
+      return of(data);
+    }
+    const projectKeys: Number[] = fullProject.legislationYearList;
+    let peopleObjs: Observable<any>[] = [];
+    projectKeys.forEach(key => {
+      const project = fullProject[`legislation_${key.toString()}`];
+      if (!project || Object.keys(project).length === 0 || !project.name) {
+        return of(data);
+      }
+      project.nature = this.utils.natureBuildMapper(project.build);
+
+      const epdId = (project.responsibleEPDId) ? project.responsibleEPDId.toString() : '';
+      const leadId = (project.projectLeadId) ? project.projectLeadId.toString() : '';
+      if (!epdId && !leadId) {
+        return of(data);
+      }
+      peopleObjs.push(forkJoin(
+        this.searchService.getItem(epdId, 'User'),
+        this.searchService.getItem(leadId, 'User')
+      )
+        .map(payloads => {
+          if (payloads) {
+            project.responsibleEPDObj = payloads[0].data;
+            project.projectLeadObj = payloads[1].data;
+            // finally update the object and return
+          }
+          return data;
+        })
+      );
+    });
+    return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
+  }
+
   // create new project
   add(item: Project): Observable<Project> {
     delete item._id;
@@ -135,7 +179,6 @@ export class ProjectService {
   }
 
   publish(proj: Project): Observable<Project> {
-    console.log('publishgin');
     return this.api.publishProject(proj)
       .catch(error => this.api.handleError(error));
   }
@@ -169,6 +212,14 @@ export class ProjectService {
     return this.api.deletePin(projId, pin)
       .catch(error => this.api.handleError(error));
   }
+  publishPins(projId: string): Observable<Project> {
+    return this.api.publishPins(projId)
+      .catch(error => this.api.handleError(error));
+  }
+  unpublishPins(projId: string): Observable<Project> {
+    return this.api.unpublishPins(projId)
+      .catch(error => this.api.handleError(error));
+  }
 
   getPins(proj: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
     return this.api.getProjectPins(proj, pageNum, pageSize, sortBy)
@@ -187,6 +238,22 @@ export class ProjectService {
 
   deleteGroupMembers(projectId: string, groupId: string, member: string): Observable<Project> {
     return this.api.deleteMembersFromGroup(projectId, groupId, member)
+      .catch(error => this.api.handleError(error));
+  }
+
+  createCAC(projectId: string, cacEmail: string): Observable<Project> {
+    return this.api.createProjectCAC(projectId, cacEmail)
+      .catch(error => this.api.handleError(error));
+  }
+
+  deleteCAC(projectId: string): Observable<Project> {
+    return this.api.deleteProjectCAC(projectId)
+      .catch(error => this.api.handleError(error));
+  }
+
+  deleteCACMember(projectId: string, member: any): Observable<any> {
+    // Remove this user from the CAC on this project.
+    return this.api.deleteMemberFromCAC(projectId, member)
       .catch(error => this.api.handleError(error));
   }
 

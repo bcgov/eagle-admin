@@ -1,15 +1,35 @@
-<tr
-  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }">
-  <td scope="row" class="col-2" data-label="Assets">
-    <i class="material-icons">{{item.icon}}</i>
+<tr *ngFor="let item of items">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+  <td scope="row" data-label="Assets" [style.width]="!useSmallTable && columns[0].width">
+    <div *ngIf="item.type === 'photo'">
+      <div *ngIf="item.src">
+        <img class="thumbnail" [src]="item.src" />
+      </div>
+      <div class="thumbnail" *ngIf="!item.src">
+        <span class="material-icons">
+          error_outline
+        </span>
+      </div>
+    </div>
+    <div *ngIf="item.type === 'video'">
+      <i class="material-icons">videocam</i>
+    </div>
+    <div *ngIf="item.type === 'voice'">
+      <i class="material-icons">mic</i>
+    </div>
   </td>
-  <td scope="row" class="col-4" data-label="Caption">
+  <td scope="row" data-label="Caption" [style.width]="!useSmallTable && columns[1].width">
     <div [innerHTML]="item.caption" id="description"></div>
   </td>
-  <td scope="row" class="col-3" data-label="GPS Coordinates">
-    {{item.geo.latitude}}, {{item.geo.longitude}}
+  <td scope="row" data-label="UTM Coordinates" [style.width]="!useSmallTable && columns[2].width">
+    {{item.geo.Easting}} E, {{item.geo.Northing}} N, {{item.geo.ZoneNumber}}{{item.geo.ZoneLetter}}
   </td>
-  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-3 clickable">
+  <td scope="row" data-label="Date/Time Taken" [style.width]="!useSmallTable && columns[3].width">
+    {{item.timestamp}}
+  </td>
+  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="clickable" [style.width]="!useSmallTable && columns[4].width">
     <p class="card-text publish-state">
       Download &nbsp;<i class="material-icons">
         cloud_download

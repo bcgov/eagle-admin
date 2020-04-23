@@ -191,9 +191,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     } else if (this.contactForm.controls.lastName.value === '') {
       alert('Last name cannot be empty.');
       return;
-    } else if (this.contactForm.controls.salutation.value === '') {
-      alert('You must select a salutation.');
-      return;
     } else if (this.contactForm.controls.org.value === '') {
       alert('You must select an organization.');
       return;
@@ -245,6 +242,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    this.storageService.state.add = null;
     this.storageService.state.contactForm = this.contactForm;
     this.setBreadcrumbs();
     if (!this.isEditing) {

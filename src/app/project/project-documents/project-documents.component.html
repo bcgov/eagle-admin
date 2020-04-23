@@ -10,6 +10,42 @@
     </ol>
 </nav>
 <div class="container-fluid-padding">
+  <h1>
+    <div class="row">
+      <div>Documents</div>
+      <div class="ml-auto" ngbDropdown placement="bottom-right">
+        <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
+        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+          <button (click)="selectAction('edit')" class="dropdown-item"
+              [disabled]="!isEnabled('edit')" type="button" id="button-e">Edit</button>
+          <button (click)="selectAction('publish')" class="dropdown-item"
+              [disabled]="!isEnabled('publish')" type="button" id="button-p">Publish</button>
+          <button (click)="selectAction('unpublish')" class="dropdown-item"
+              [disabled]="!isEnabled('unpublish')" type="button" id="button-u">Unpublish</button>
+          <button (click)="selectAction('copyLink')" class="dropdown-item"
+              [disabled]="!isEnabled('copyLink')" type="button" id="button-cl">Link</button>
+          <button (click)="selectAction('download')" class="dropdown-item"
+              [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
+          <button (click)="selectAction('delete')" class="dropdown-item"
+              [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
+
+          <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+              [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">
+              <button class="dropdown-item" type="button" id="button-as">
+                Sort Applications
+              </button>
+          </a>
+
+          <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+              [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
+              <button class="dropdown-item" type="button" id="button-upl">
+                  Upload Document(s)
+              </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </h1>
     <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
         <div class="search-area">
             <div class="input-group main-search-field">
@@ -53,10 +89,20 @@
                             Document Type<span
                                 *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
                         </button>
+                        <button type="button" (click)="toggleFilter('projectPhase');" [ngClass]="{'btn': true, 'type-btn': true,
+                'btn-dark': showFilters.projectPhase,
+                'btn-secondary': !showFilters.projectPhase && numFilters.projectPhase > 0,
+                'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
+                            Project Phase<span
+                                *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
+                        </button>
                         <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
                     </div>
                     <div
                         [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+                        <a [routerLink]="['/search-help']" target="_blank" placement="top" ngbTooltip="Search Help">
+                            <i class="material-icons md-30">help</i>
+                        </a>
                         <button class="btn btn-secondary" type="button"
                             (click)="showAdvancedSearch = !showAdvancedSearch;">
                             <span *ngIf="showAdvancedSearch">Hide Advanced Search</span>
@@ -73,16 +119,27 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <tag-input id="milestone" name="milestone" [(ngModel)]="filterForUI.milestone"
-                                            [identifyBy]="'_id'" [displayBy]="'name'" [onlyFromAutocomplete]="true"
-                                            [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                                            [clearOnBlur]="true" [placeholder]="'Type Milestone'"
-                                            [secondaryPlaceholder]="'Type Milestone'">
-                                            <tag-input-dropdown [autocompleteItems]="milestones" [identifyBy]="'_id'"
-                                                [displayBy]="'name'" [showDropdownIfEmpty]="true" [keepOpen]="false"
-                                                [focusFirstElement]="true">
-                                            </tag-input-dropdown>
-                                        </tag-input>
+                                        <ng-select
+                                            id="milestone"
+                                            name="milestone"
+                                            multiple="true"
+                                            bindLabel="name"
+                                            groupBy="legislation"
+                                            placeholder="Type Milestone"
+                                            [items]="milestones"
+                                            [markFirst]="false"
+                                            [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.milestone"
+                                            [compareWith]="filterCompareWith"
+                                        >
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <span class="ng-value-icon left" (click)="clearSelectedItem('milestone', item)" aria-hidden="true">×</span>
+                                                <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                            </ng-template>
+                                            <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                {{item.legislation}} Act Terms
+                                            </ng-template>
+                                        </ng-select>
                                     </div>
                                 </div>
                             </div>
@@ -104,7 +161,9 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" placeholder="yyyy-mm-dd"
                                         name="datePostedStart" [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker
-                                        #datePostedStartPicker="ngbDatepicker">
+                                        #datePostedStartPicker="ngbDatepicker"
+                                        [minDate]="constants.minPickerDate"
+                                        [maxDate]="constants.maxPickerDate">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary calendar"
                                             (click)="datePostedStartPicker.toggle()" type="button">
@@ -117,7 +176,9 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" placeholder="yyyy-mm-dd"
                                         name="datePostedEnd" [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker
-                                        #datePostedEndPicker="ngbDatepicker">
+                                        #datePostedEndPicker="ngbDatepicker"
+                                        [minDate]="constants.minPickerDate"
+                                        [maxDate]="constants.maxPickerDate">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary calendar"
                                             (click)="datePostedEndPicker.toggle()" type="button">
@@ -139,17 +200,20 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <tag-input id="documentAuthorType" name="documentAuthorType"
-                                            [(ngModel)]="filterForUI.documentAuthorType" [identifyBy]="'_id'"
-                                            [displayBy]="'name'" [onlyFromAutocomplete]="true"
-                                            [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                                            [clearOnBlur]="true" [placeholder]="'Type Document Author'"
-                                            [secondaryPlaceholder]="'Type Document Author'">
-                                            <tag-input-dropdown [autocompleteItems]="authors" [identifyBy]="'_id'"
-                                                [displayBy]="'name'" [showDropdownIfEmpty]="true" [keepOpen]="false"
-                                                [focusFirstElement]="true">
-                                            </tag-input-dropdown>
-                                        </tag-input>
+                                        <ng-select
+                                            id="documentAuthorType"
+                                            name="documentAuthorType"
+                                            multiple="true"
+                                            bindLabel="name"
+                                            groupBy="legislation"
+                                            placeholder="Type Document Author"
+                                            [items]="authors"
+                                            [markFirst]="false"
+                                            [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.documentAuthorType"
+                                            [compareWith]="filterCompareWith"
+                                        >
+                                        </ng-select>
                                     </div>
                                 </div>
                             </div>
@@ -165,145 +229,120 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <tag-input id="type" name="type" [(ngModel)]="filterForUI.type"
-                                            [identifyBy]="'_id'" [displayBy]="'name'" [onlyFromAutocomplete]="true"
-                                            [onTextChangeDebounce]="250" [inputClass]="'tag-input-input'"
-                                            [clearOnBlur]="true" [placeholder]="'Type Document Type'"
-                                            [secondaryPlaceholder]="'Type Document Type'">
-                                            <tag-input-dropdown [autocompleteItems]="types" [identifyBy]="'_id'"
-                                                [displayBy]="'name'" [showDropdownIfEmpty]="true" [keepOpen]="false"
-                                                [focusFirstElement]="true">
-                                            </tag-input-dropdown>
-                                        </tag-input>
+                                        <ng-select
+                                            id="type"
+                                            name="type"
+                                            multiple="true"
+                                            bindLabel="name"
+                                            groupBy="legislation"
+                                            placeholder="Type Document Type"
+                                            [items]="types"
+                                            [markFirst]="false"
+                                            [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.type"
+                                            [compareWith]="filterCompareWith"
+                                        >
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <span class="ng-value-icon left" (click)="clearSelectedItem('type', item)" aria-hidden="true">×</span>
+                                                <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                            </ng-template>
+                                            <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                {{item.legislation}} Act Terms
+                                            </ng-template>
+                                        </ng-select>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div *ngIf="showAdvancedSearch && showFilters.projectPhase" class="projectPhase-filters project-filter row">
+                  <div class="col-md-12 filter-border">
+                      <div class="row sub-filter">
+                          <div class="col-md-12">
+                              <div class="row">
+                                  <b>Phase</b>
+                              </div>
+                              <div class="row">
+                                  <div class="form-group">
+                                      <ng-select
+                                          id="projectPhase"
+                                          name="projectPhase"
+                                          multiple="true"
+                                          bindLabel="name"
+                                          groupBy="legislation"
+                                          placeholder="Type Project Phase"
+                                          [items]="projectPhases"
+                                          [markFirst]="false"
+                                          [closeOnSelect]="false"
+                                          [(ngModel)]="filterForUI.projectPhase"
+                                          [compareWith]="filterCompareWith"
+                                      >
+                                          <ng-template ng-label-tmp let-item="item">
+                                              <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)" aria-hidden="true">×</span>
+                                              <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                          </ng-template>
+                                          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                              {{item.legislation}} Act Terms
+                                          </ng-template>
+                                      </ng-select>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
                 <button *ngIf="showAdvancedSearch && isShowingFilter()" class="btn btn-primary search-button"
                     type="submit">
                     <span>Search</span>
                 </button>
             </div>
         </div>
-        <br>
-        <div class="input-group-append">
-            <a _ngcontent-c7 class="btn btn-primary btn-search-help" [routerLink]="['/search-help']" target="_blank">
-                <i class="material-icons md-18">info</i>
-                <span> Search Help</span>
-            </a>
-        </div>
-        <div>
-            <div class="row align-items-end">
-                <div class="col justify-content-start results ml-1 mb-1">
-                    <p class="justify-content-start align-text-bottom" align="left"
-                        *ngIf="!loading && tableParams.totalListItems === 0">
-                        No result<span *ngIf="count !== 1">s</span> found for "{{tableParams.keywords}}"
-                    </p>
-                    <div class="justify-content-start align-text-bottom ml-1 mb-1" align="left"
-                        *ngIf="!loading && tableParams.totalListItems > 0">
-                        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s
-                            found</span>
-                    </div>
-                </div>
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <p class="text-right mr-2 mb-0"><b>Show Items Per Page:</b></p>
-                    </div>
-                </div>
-            </div>
 
+        <div class="content-container">
+            <div class="document-tabs mt-3">
+                <ngb-tabset (tabChange)="onTabChange($event)">
+                    <ngb-tab
+                        id="constants.documentTypes.CATEGORIZED"
+                        title="Documents ({{this.tableParams.totalListItemsCategorized}} {{getResultTerm(this.tableParams.totalListItemsCategorized)}} found)"
+                        [disabled]="!categorizedDocumentTableData || !categorizedDocumentTableData.data.length || categorizedDocs.length === 0">
+                        <ng-template ngbTabContent>
+                            <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
+                                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
+                                (onColumnSort)='setColumnSort(constants.documentTypes.CATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll')">
+                            </app-table-template>
+                        </ng-template>
+                    </ngb-tab>
+
+                    <ngb-tab
+                        id="constants.documentTypes.UNCATEGORIZED"
+                        [disabled]="!uncategorizedDocumentTableData || !uncategorizedDocumentTableData.data.length || uncategorizedDocs.length === 0">
+                        <ng-template ngbTabTitle>
+                            <div class="custom-tab-title">
+                                <span>Uncategorized Documents ({{this.tableParams.totalListItemsUncategorized}} {{getResultTerm(this.tableParams.totalListItemsUncategorized)}} found)</span>
+                                <i
+                                    class="material-icons md-20"
+                                    placement="top"
+                                    ngbTooltip="Documents within this table have not yet been categorized by author, document type, and/or milestone. We are actively processing these documents so they can be searched and filtered – making it easier to find what you’re looking for."
+                                    tooltipClass="custom-tab-title-tooltip"
+                                >help</i>
+                            </div>
+                        </ng-template>
+                        <ng-template ngbTabContent>
+                            <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
+                                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
+                                (onColumnSort)='setColumnSort(constants.documentTypes.UNCATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.UNCATEGORIZED, $event)'
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll', $event)">
+                            </app-table-template>
+                        </ng-template>
+                    </ngb-tab>
+                </ngb-tabset>
+            </div>
+        </div>
+
+        <div>
             <div class="spinner-container" *ngIf="loading">
                 <div class="spinner-new rotating"></div>
-            </div>
-
-            <div class="input-group-prepend">
-                <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
-                    id="button-sa">Select All</button>
-                <button (click)="selectAction('edit')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('edit')" type="button" id="button-e"><i
-                        class="material-icons">edit</i>Edit</button>
-                <button (click)="selectAction('publish')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('publish')" type="button" id="button-p"><i
-                        class="material-icons">cloud_done</i>Publish</button>
-                <button (click)="selectAction('unpublish')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('unpublish')" type="button" id="button-u"><i
-                        class="material-icons">cloud_off</i>Unpublish</button>
-                <button (click)="selectAction('copyLink')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('copyLink')" type="button" id="button-cl"><i
-                        class="material-icons">link</i>Link</button>
-                <button (click)="selectAction('download')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
-                        class="material-icons">cloud_download</i>Download</button>
-                <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1"
-                    [disabled]="!isEnabled('delete')" type="button" id="button-d"><i
-                        class="material-icons">delete</i>Delete</button>
-                <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-                    [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
-                    <button class="btn btn-outline-secondary mr-1" type="button" id="button-d">
-                        <i class="material-icons">file_upload</i>Upload Document(s)
-                    </button>
-                </a>
-                <div class="col mb-2">
-                    <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                        <!-- <b class="text-right m-2"><b>Show Items Per Page:</b></p> -->
-                        <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
-                            aria-label="Toolbar with button groups">
-                            <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=25; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 25"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=50; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 50"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                                    (click)="tableParams.pageSize=100; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === 100"
-                                    [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                                <!-- &nbsp; -->
-                                <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                                    (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
-                                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                                    All</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
-                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="documentTableData"
-                (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-                (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
-            </app-table-template>
-        </div>
-
-        <div class="col mb-2">
-            <div *ngIf="!loading && this.tableParams.pageSize >= 50">
-                <p class="text-right m-2"><b>Show Items Per Page:</b></p>
-                <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
-                    <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                        <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                            (click)="tableParams.pageSize=25; onSubmit();" aria-pressed="tableParams.pageSize === 25"
-                            [ngClass]="{'active': this.tableParams.pageSize === 25}">25</a>
-                        <a href="javascript:void(0);" role="button" class="btn btn-primar mr-1"
-                            (click)="tableParams.pageSize=50; onSubmit();" aria-pressed="tableParams.pageSize === 50"
-                            [ngClass]="{'active': this.tableParams.pageSize === 50}">50</a>
-                        <a href="javascript:void(0);" role="button" class="btn btn-primary mr-1"
-                            (click)="tableParams.pageSize=100; onSubmit();" aria-pressed="tableParams.pageSize === 100"
-                            [ngClass]="{'active': this.tableParams.pageSize === 100}">100</a>
-                        <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                            (click)="tableParams.pageSize=this.tableParams.totalListItems; onSubmit();"
-                            aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                            [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                            All</a>
-                    </div>
-                </div>
             </div>
         </div>

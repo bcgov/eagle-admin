@@ -1,8 +1,8 @@
 <tr
-  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let item of items"
   class="clickable-row">
-  <td data-label="Select" (click)="selectItem(item)" scope="row" class="col-1">
+  <td data-label="Select" (click)="selectItem(item)" scope="row" [style.width]="!useSmallTable && columns[0].width">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='item.checkbox'>
   </td>
-  <td data-label="Name" (click)="selectItem(item)" scope="row" class="col-11">{{item.name}}</td>
+  <td data-label="Name" (click)="selectItem(item)" scope="row" [style.width]="!useSmallTable && columns[1].width">{{item.name}}</td>
 </tr>

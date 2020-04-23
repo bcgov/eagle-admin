@@ -6,7 +6,10 @@
       "description": "Deployment template for a angular on nginx",
       "tags": "angular,nginx"
     },
-    "name": "admin-angular-on-nginx"
+    "labels": {
+      "app": "${GROUP_NAME}"
+    },
+    "name": "${NAME}"
   },
   "objects": [
     {
@@ -15,15 +18,15 @@
       "metadata": {
         "creationTimestamp": null,
         "labels": {
-          "app": "${NAME}-${TAG_NAME}"
+          "app": "${GROUP_NAME}"
         },
-        "name": "${NAME}-${TAG_NAME}"
+        "name": "${NAME}"
       },
       "spec": {
         "replicas": 2,
         "selector": {
-          "app": "${NAME}-${TAG_NAME}",
-          "deploymentconfig": "${NAME}-${TAG_NAME}"
+          "app": "${GROUP_NAME}",
+          "deploymentconfig": "${NAME}"
         },
         "strategy": {
           "rollingParams": {
@@ -39,16 +42,16 @@
           "metadata": {
             "creationTimestamp": null,
             "labels": {
-              "app": "${NAME}-${TAG_NAME}",
-              "deploymentconfig": "${NAME}-${TAG_NAME}"
+              "app": "${GROUP_NAME}",
+              "deploymentconfig": "${NAME}"
             }
           },
           "spec": {
             "containers": [
               {
-                "image": "${NAME}-${TAG_NAME}",
+                "image": "${NAME}",
                 "imagePullPolicy": "Always",
-                "name": "${NAME}-${TAG_NAME}",
+                "name": "${NAME}",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -67,41 +70,53 @@
                   {
                     "name": "IpFilterRules",
                     "value": "${IpFilterRules}"
+                  },
+                  {
+                    "name": "DEPLOYMENT_ENVIRONMENT",
+                    "value": "${TAG_NAME}"
+                  },
+                  {
+                    "name": "REMOTE_API_PATH",
+                    "value": "${REMOTE_API_PATH}"
+                  },
+                  {
+                    "name": "REMOTE_PUBLIC_PATH",
+                    "value": "${REMOTE_PUBLIC_PATH}"
+                  },
+                  {
+                    "name": "KEYCLOAK_CLIENT_ID",
+                    "value": "${KEYCLOAK_CLIENT_ID}"
                   }
                 ],
                 "resources": {
                   "requests": {
-                    "cpu": "10m",
-                    "memory": "100Mi"
+                    "cpu": "${NODEJS_CPU_REQUEST}",
+                    "memory": "${NODEJS_MEMORY_REQUEST}"
                   },
                   "limits": {
-                    "cpu": "500m",
-                    "memory": "1Gi"
+                    "cpu": "${NODEJS_CPU_LIMIT}",
+                    "memory": "${NODEJS_MEMORY_LIMIT}"
                   }
                 },
                 "livenessProbe": {
-                  "httpGet": {
-                    "path": "/",
-                    "port": 8080,
-                    "scheme": "HTTP"
-                  },
+                  "failureThreshold": 3,
                   "initialDelaySeconds": 30,
-                  "timeoutSeconds": 60,
                   "periodSeconds": 10,
                   "successThreshold": 1,
-                  "failureThreshold": 3
+                  "tcpSocket": {
+                      "port": 8080
+                  },
+                  "timeoutSeconds": 60
                 },
                 "readinessProbe": {
-                  "httpGet": {
-                    "path": "/",
-                    "port": 8080,
-                    "scheme": "HTTP"
-                  },
+                  "failureThreshold": 3,
                   "initialDelaySeconds": 10,
-                  "timeoutSeconds": 60,
                   "periodSeconds": 10,
                   "successThreshold": 1,
-                  "failureThreshold": 3
+                  "tcpSocket": {
+                      "port": 8080
+                  },
+                  "timeoutSeconds": 60
                 }
               }
             ],
@@ -122,7 +137,7 @@
             "imageChangeParams": {
               "automatic": true,
               "containerNames": [
-                "${NAME}-${TAG_NAME}"
+                "${NAME}"
               ],
               "from": {
                 "kind": "ImageStreamTag",
@@ -140,9 +155,9 @@
       "metadata": {
         "creationTimestamp": null,
         "labels": {
-          "app": "${NAME}-${TAG_NAME}"
+          "app": "${GROUP_NAME}"
         },
-        "name": "${NAME}-${TAG_NAME}"
+        "name": "${NAME}"
       },
       "spec": {
         "ports": [
@@ -154,7 +169,7 @@
           }
         ],
         "selector": {
-          "app": "${NAME}",
+          "app": "${GROUP_NAME}",
           "deploymentconfig": "${NAME}"
         },
         "sessionAffinity": "None",
@@ -166,12 +181,13 @@
       "kind": "Route",
       "metadata": {
         "labels": {
-          "app": "${NAME}-${TAG_NAME}"
+          "app": "${GROUP_NAME}"
         },
-        "name": "${NAME}-${TAG_NAME}"
+        "name": "${NAME}"
       },
       "spec": {
         "host": "${APPLICATION_DOMAIN}",
+        "path": "/admin/",
         "port": {
           "targetPort": "8080-tcp"
         },
@@ -185,72 +201,101 @@
           "weight": 100
         }
       }
-    },
-    {
-      "apiVersion": "autoscaling/v2beta1",
-      "kind": "HorizontalPodAutoscaler",
-      "metadata": {
-        "name": "${NAME}-${TAG_NAME}",
-        "labels": {
-          "app": "${NAME}-${TAG_NAME}"
-        }
-      },
-      "spec": {
-        "scaleRef": {
-          "kind": "DeploymentConfig",
-          "name": "${NAME}-${TAG_NAME}",
-          "apiVersion": "autoscaling/v2beta1",
-          "subresource": "scale"
-        },
-        "minReplicas": 2,
-        "maxReplicas": 4
-      }
     }
   ],
   "parameters": [
     {
-      "description": "The name assigned to all of the openshift objects defined in this template. It is also the name of runtime image you want.",
-      "displayName": "Name",
       "name": "NAME",
+      "displayName": "Name",
+      "description": "The name assigned to all of the openshift objects defined in this template. It is also the name of runtime image you want.",
       "required": true,
-      "value": "admin-angular-on-nginx"
+      "value": "eagle-admin"
     },
     {
-      "description": "The namespace where to get the above image name",
-      "displayName": "Image Namespace",
+      "name": "GROUP_NAME",
+      "displayName": "Group Name",
+      "description": "The name to group all of the frontend objects defined in this template.",
+      "required": true,
+      "value": "eagle-api"
+    },
+    {
       "name": "IMAGE_NAMESPACE",
+      "displayName": "Image Namespace",
+      "description": "The namespace where to get the above image name. Eg: esm",
       "required": true,
-      "value": "md4m71-tools"
+      "value": "your-tools-namespace"
     },
     {
-      "description": "OpenShift cluster private IP range in CIDR notation, used by Nginx ngx_http_realip_module.",
-      "displayName": "OpenShift Cluster IP Range",
       "name": "REAL_IP_FROM",
+      "displayName": "OpenShift Cluster IP Range",
+      "description": "OpenShift cluster private IP range in CIDR notation, used by Nginx ngx_http_realip_module.",
       "required": true,
       "value": "172.51.0.0/16"
     },
     {
-      "description": "Additional known and trusted reverse proxy ips conforming to nginx set_real_ip_from directive syntax. Multiple directives are allowed, separated by semicolon.",
+      "name": "AdditionalRealIpFromRules",
       "displayName": "Additional real_ip_from Rules",
-      "name": "AdditionalRealIpFromRules"
+      "description": "Additional known and trusted reverse proxy ips conforming to nginx set_real_ip_from directive syntax. Multiple directives are allowed, separated by semicolon."
     },
     {
-      "description": "Nginx ngx_http_access_module ip filter rules",
-      "displayName": "Ip Filter Rules",
       "name": "IpFilterRules",
+      "displayName": "Ip Filter Rules",
+      "description": "Nginx ngx_http_access_module ip filter rules.",
       "value": "#allow all; deny all;"
     },
     {
-      "description": "The exposed hostname that will route to the service, e.g., myappname.pathfinder.gov.bc.ca, if left blank a value will be defaulted.",
-      "displayName": "Application Hostname",
       "name": "APPLICATION_DOMAIN",
-      "value": "eagle-dev.pathfinder.gov.bc.ca/admin/"
+      "displayName": "Application Hostname",
+      "description": "The exposed hostname that will route to the service.  Recall that both admin and public share the same domain, just use different paths (public uses '/' and admin uses '/admin/'.",
+      "value": "eagle-your-openshift-namespace.pathfinder.gov.bc.ca"
     },
     {
-      "description": "The TAG name for this environment, e.g., dev, test, prod",
-      "displayName": "Env TAG name",
       "name": "TAG_NAME",
-      "value": "dev"
+      "displayName": "Env TAG name",
+      "description": "The TAG name for this environment, e.g., dev, test, prod.",
+      "value": "your-openshift-tag"
+    },
+    {
+      "name": "REMOTE_API_PATH",
+      "displayName": "URL path to API",
+      "description": "The 'https://' prefixed URL path to the API the public Angular app will make calls to.",
+      "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/api"
+    },
+    {
+      "name": "REMOTE_PUBLIC_PATH",
+      "displayName": "URL path to Public",
+      "description": "[Currently Unused] The 'https://' prefixed URL path to the Public app that the admin Angular app will link back to.",
+      "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
+    },
+    {
+      "name": "KEYCLOAK_CLIENT_ID",
+      "displayName": "Default KeyCloak Client",
+      "description": "The default keycloak client that the admin app will be authenticating against.",
+      "value": "eagle-admin-console"
+    },
+    {
+      "name": "NODEJS_CPU_REQUEST",
+      "displayName": "CPU Request",
+      "description": "Reserved amount of CPU (in cores) the Node.js container can use.",
+      "value": "1m"
+    },
+    {
+      "name": "NODEJS_MEMORY_REQUEST",
+      "displayName": "Memory Request",
+      "description": "Reserved amount of memory the Node.js container can use.",
+      "value": "80Mi"
+    },
+    {
+      "name": "NODEJS_CPU_LIMIT",
+      "displayName": "CPU Limit",
+      "description": "Maximum amount of CPU (in cores) the Node.js container can use.",
+      "value": "10m"
+    },
+    {
+      "name": "NODEJS_MEMORY_LIMIT",
+      "displayName": "Memory Limit",
+      "description": "Maximum amount of memory the Node.js container can use.",
+      "value": "100Mi"
     }
   ]
 }

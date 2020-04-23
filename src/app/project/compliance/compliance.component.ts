@@ -27,29 +27,29 @@ export class ComplianceComponent implements OnInit, OnDestroy {
   public documentTableData: TableObject;
   public documentTableColumns: any[] = [
     {
-      name: 'Inspection #',
+      name: 'Inspection Name',
       value: 'name',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Inspector',
       value: 'email',
-      width: 'col-3'
+      width: '25%'
     },
     {
       name: 'Start Date',
       value: 'startDate',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'End Date',
       value: 'endDate',
-      width: 'col-2'
+      width: '15%'
     },
     {
       name: 'Actions',
       value: 'actions',
-      width: 'col-3',
+      width: '25%',
       nosort: true
     }
   ];
@@ -146,8 +146,8 @@ export class ComplianceComponent implements OnInit, OnDestroy {
           {
             _id: item._id,
             name: item.name,
-            startDate: item.startDate,
-            endDate: item.endDate,
+            startDate: new Date(item.startDate),
+            endDate: new Date(item.endDate),
             project: item.project,
             email: item.email,
             case: item.case,

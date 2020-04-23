@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 
 export class Document {
   _id: string;
+  notificationProject: string;
   project: string;
   documentFileName: string;
   internalOriginalName: string;
@@ -21,17 +22,24 @@ export class Document {
   datePosted: Date;
   dateUpdated: Date;
   projectPhase: string;
+  legislation: number;
 
   checkbox: boolean;
   upfile: File;
   labels: any[];
   isPublished = false; // depends on tags; see below
 
+  isFeatured = false;
+  secureHitCount = 0;
+  publicHitCount = 0;
+  sortOrder = 0;
+
   read: Array<String> = [];
 
   constructor(obj?: any) {
     this._id = obj && obj._id || null;
     this.project = obj && obj.project || null;
+    this.notificationProject = obj && obj.notificationProject || null;
 
     this.documentFileName = obj && obj.documentFileName || null;
     this.internalOriginalName = obj && obj.internalOriginalName || null;
@@ -52,11 +60,17 @@ export class Document {
     this.documentAuthorType = obj && obj.documentAuthorType || null;
     this.eaoStatus = obj && obj.eaoStatus || null;
     this.projectPhase = obj && obj.projectPhase || null;
+    this.legislation = obj && obj.legislation || null;
 
     this.checkbox = obj && obj.checkbox || null;
     this.upfile = obj && obj.upfile || null;
     this.labels = obj && obj.labels || null;
 
     this.read = obj && obj.read || null;
+
+    this.isFeatured = obj && obj.isFeatured || null;
+    this.sortOrder = obj && obj.sortOrder || null;
+    this.publicHitCount = obj && obj.publicHitCount || null;
+    this.secureHitCount = obj && obj.secureHitCount || null;
   }
 }

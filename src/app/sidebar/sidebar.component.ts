@@ -19,18 +19,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public isNavMenuOpen = false;
   public routerSnapshot = null;
   public isInspectorRole = false;
+  public showNotificationProjects = false;
   public showProjectDetails = false;
   public showProjectDetailsSubItems = false;
+  public showProjectNotificationDetails = false;
   public currentProjectId = '';
+  public mainRouteId = '';
   public currentMenu = '';
+  public showArchiveButton = false;
 
   @HostBinding('class.is-toggled')
   isOpen = false;
+  isArchive = false;
 
-  constructor(private router: Router,
+  constructor(
+    private router: Router,
     private storageService: StorageService,
     private keycloakService: KeycloakService,
-    private sideBarService: SideBarService) {
+    private sideBarService: SideBarService,
+  ) {
 
     router.events.pipe(
       filter(event => event instanceof NavigationEnd))
@@ -42,22 +49,54 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.sideBarService.change
+    this.sideBarService.archiveChange
+    .takeUntil(this.ngUnsubscribe)
+    .subscribe(isArchive => {
+      this.isArchive = isArchive;
+    });
+
+    this.sideBarService.toggleChange
       .takeUntil(this.ngUnsubscribe)
       .subscribe(isOpen => {
         this.isOpen = isOpen;
       });
 
     const roles = this.keycloakService.getUserRoles();
-    if (roles.includes('inspector')) {
+    if (roles !== null && roles.includes('inspector')) {
       this.isInspectorRole = true;
     }
   }
 
+  /**
+   * Sets the active menu item in the sibebar.
+   */
   SetActiveSidebarItem() {
-    let urlArray = this.routerSnapshot.url.split('/');
-    // urlArray[0] will be empty so we use shift to get rid of it.
+    const urlArray = this.routerSnapshot.url.split('/');
+
+    // The first element will be empty, so shift in order to remove it.
     urlArray.shift();
+    const [mainRoute, mainRouteId, currentMenu] = urlArray;
+
+    this.mainRouteId = mainRouteId;
+    this.currentMenu = currentMenu && currentMenu.split(';')[0];
+
+    switch (mainRoute) {
+      case 'p':
+        this.showProjectDetails = true;
+        this.showProjectNotificationDetails = false;
+        break;
+
+      case 'pn':
+        this.showProjectNotificationDetails = true;
+        this.showProjectDetails = false;
+        break;
+      default:
+        // There is now sub-menu so the main route ID becomes the main route. This is a root level page.
+        this.mainRouteId = mainRoute;
+        this.showProjectNotificationDetails = false;
+        this.showProjectDetails = false;
+    }
+
     if (urlArray[0] === 'p') {
       switch (urlArray[2]) {
         // case 'compliance': {
@@ -67,6 +106,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
           break;
         }
         case 'project-updates': {
+          break;
+        }
+        case 'project-cac': {
           break;
         }
         case 'project-groups': {
@@ -82,6 +124,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
           break;
         }
         case 'milestones': {
+          break;
+        }
+        case 'project-archived-detail': {
           break;
         }
         default: {
@@ -117,6 +162,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
   goToDocuments(currentProjectId) {
     this.storageService.state.projectDocumentTableParams = null;
     this.router.navigate(['p', currentProjectId, 'project-documents']);
+  }
+
+  goToPnDocuments(currentProjectId) {
+    this.storageService.state.projectDocumentTableParams = null;
+    this.router.navigate(['pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId}]);
   }
 
   ngOnDestroy() {

@@ -1,0 +1,109 @@
+<nav class="action-container" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      <a [routerLink]="['/project-notifications']">All Project Notifications</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a *ngIf='currentProject' [routerLink]="['/pn', currentProject._id, 'details']">{{currentProject.name}}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a *ngIf='currentProject'
+        [routerLink]="['/pn', currentProject._id, 'project-notification-documents']">Documents</a>
+    </li>
+    <li class="breadcrumb-item">Upload Document(s)</li>
+  </ol>
+</nav>
+
+<div class="container-fluid-padding">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+
+  <div class="form-group mb-0">
+    <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
+
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="region">Document Label* </label>
+          <select required class="form-control" formControlName="label" (change)="onChangeLabel()">
+            <option *ngFor="let label of documentLabel" [ngValue]="label">{{label}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="region">Type* </label>
+          <select required class="form-control" formControlName="type">
+            <option *ngFor="let type of documentType" [ngValue]="type">{{type}}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-4">
+          <label for="region">Author* </label>
+          <select required class="form-control" formControlName="author">
+            <option *ngFor="let author of documentAuthor" [ngValue]="author">{{author}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="region">Milestone* </label>
+          <select required class="form-control" formControlName="milestone">
+            <option *ngFor="let milestone of documentMilestone" [ngValue]="milestone">{{milestone}}</option>
+          </select>
+        </div>
+
+        <div class="form-group col-md-4">
+          <label for="region">Phase* </label>
+          <select required class="form-control" formControlName="phase">
+            <option *ngFor="let phase of documentPhase" [ngValue]="phase">{{phase}}</option>
+          </select>
+        </div>
+      </div>
+
+
+      <div class="form-group mb-0">
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="description">Description</label>
+            <div>
+              <input type="text" class="form-control" id="description" name="description" formControlName="description" maxlength="255">
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="form-group mb-0">
+    <app-file-upload [maxFiles]="2" [maxSize]="300" [showInfo]="false" [showList]="false" [files]="projectFiles"
+      (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
+    <br>
+    <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
+      <li *ngFor="let doc of documents">
+        <span class="cell icon">
+          <i class="material-icons">insert_drive_file</i>
+        </span>
+        <span class="cell name" [title]="doc.displayName || ''">
+          <span class="cell__txt-content">{{doc.documentFileName}}</span>
+        </span>
+        <span class="cell actions">
+          <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc)">
+            <i class="material-icons">delete</i>
+          </button>
+        </span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="text-right">
+    <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
+    &nbsp;
+    <button class="btn btn-primary mr-1"
+      [disabled]=" !myForm.valid || docNameInvalid || documents?.length === 0" type="submit"
+      (click)="uploadDocuments()">Upload</button>
+    &nbsp;
+  </div>
+
+</div>

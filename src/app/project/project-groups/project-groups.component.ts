@@ -44,13 +44,13 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: 'check',
-      width: 'col-1',
+      width: '10%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'name',
-      width: 'col-11'
+      width: '90%'
     }
   ];
   constructor(
@@ -272,6 +272,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Delete Groups',
+        okOnly: false,
         message: 'Click <strong>OK</strong> to delete selected Group or <strong>Cancel</strong> to return to the list.'
       }, {
         backdropColor: 'rgba(0, 0, 0, 0.5)'
@@ -312,7 +313,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     } else {
       this.tableParams.sortBy = '+' + column;
     }
-    // this.onSubmit(this.tableParams.currentPage);
+    this.onSubmit(this.tableParams.currentPage);
   }
 
   // Called via storage service in shared module.

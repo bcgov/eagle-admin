@@ -2,16 +2,17 @@ import { BootstrapModalModule } from 'ng2-bootstrap-modal';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { CookieService } from 'ngx-cookie-service';
-import { TagInputModule } from 'ngx-chips';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule, APP_INITIALIZER, ApplicationRef } from '@angular/core';
-import { NgxPaginationModule } from 'ngx-pagination';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { MatTabsModule, MatMenuModule } from '@angular/material';
 
 // modules
 import { AppRoutingModule } from 'app/app-routing.module';
 import { ProjectModule } from 'app/project/project.module';
+import { ProjectNotificationModule } from 'app/project-notification/project-notification.module';
 import { ProjectsModule } from 'app/projects/projects.module';
 import { SharedModule } from './shared/shared.module';
 import { EditorModule } from '@tinymce/tinymce-angular';
@@ -19,17 +20,33 @@ import { EditorModule } from '@tinymce/tinymce-angular';
 // components
 import { AdministrationComponent } from 'app/administration/administration.component';
 import { AppComponent } from 'app/app.component';
+import { AssetTableRowsComponent } from 'app/project/compliance/submission-detail/asset-table-rows/asset-table-rows.component';
+import { AddCommentComponent } from 'app/comment-period/add-comment/add-comment.component';
+import { AddDocumentTableRowsComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
+import { AddEditCommentPeriodComponent } from 'app/comment-periods/add-edit-comment-period/add-edit-comment-period.component';
+import { AddLabelComponent } from 'app/project/project-documents/add-label/add-label.component';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
+import { CommentPeriodComponent } from 'app/comment-period/comment-period.component';
+import { CommentPeriodDetailsTabComponent } from 'app/comment-period/comment-period-details-tabs/comment-period-details-tab.component';
+import { CommentPeriodsComponent } from 'app/comment-periods/comment-periods.component';
+import { CommentPeriodsTableRowsComponent } from 'app/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
+import { AddDocumentComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-documents.component';
 import { FooterComponent } from 'app/footer/footer.component';
+import { GetValuedComponentsComponent } from 'app/comment-period/review-comment/get-valued-components/get-valued-components.component';
+import { GetValuedComponentTableRowsComponent } from 'app/comment-period/review-comment/get-valued-components/get-valued-component-table-rows/get-valued-component-table-rows.component';
 import { HeaderComponent } from 'app/header/header.component';
 import { ToggleButtonComponent } from 'app/toggle-button/toggle-button.component';
 import { HomeComponent } from 'app/home/home.component';
 import { LoginComponent } from 'app/login/login.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { ProjectComponent } from './project/project.component';
+import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
+import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-tab/review-comments-tab.component';
+import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { SearchComponent } from 'app/search/search.component';
 import { SidebarComponent } from 'app/sidebar/sidebar.component';
 import { TopicsComponent } from 'app/administration/topics/topics.component';
+import { UploadComponent } from 'app/project/project-documents/upload/upload.component';
 
 // services
 import { AuthenticationService } from 'app/services/authentication.service';
@@ -63,8 +80,10 @@ import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-
 import { RecentActivityService } from './services/recent-activity';
 import { SearchHelpComponent } from './search-help/search-help.component';
 import { ActivityDetailTableRowsComponent } from './activity/activity-detail-table-rows/activity-detail-table-rows.component';
+import { CACTableRowsComponent } from './project/project-cac/cac-table-rows/cac-table-rows.component';
 import { PinsTableRowsComponent } from './project/pins-list/pins-table-rows/pins-table-rows.component';
 import { GroupsTableRowsComponent } from './project/project-groups/project-groups-table-rows/project-groups-table-rows.component';
+import { ApplicationSortTableRowsComponent } from './project/project-documents/application-sort/application-sort-table-rows/application-sort-table-rows.component';
 import { InputModalComponent } from './input-modal/input-modal.component';
 import { GroupTableRowsComponent } from './project/project-groups/group-contact/group-table-rows/group-table-rows.component';
 import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-contact.component';
@@ -73,6 +92,12 @@ import { OrganizationsTableRowsComponent } from './organizations/organizations-t
 import { AddEditOrganizationComponent } from './organizations/add-edit-organization/add-edit-organization.component';
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
 import { LinkOrganizationTableRowsComponent } from './shared/components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
+import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
+import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
+import { NotificationProjectService } from './services/notification-project.service';
+import { ProjectNotificationComponent } from './project-notification/project-notification.component';
+import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
+import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
@@ -83,16 +108,29 @@ export function kcFactory(keycloakService: KeycloakService) {
     ActivityComponent,
     ActivityDetailTableRowsComponent,
     ActivityTableRowsComponent,
+    AddCommentComponent,
+    AddDocumentComponent,
+    AddDocumentTableRowsComponent,
     AddEditActivityComponent,
+    AddEditCommentPeriodComponent,
     AddEditContactComponent,
+    AddEditProjectNotificationComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
+    AddLabelComponent,
     AdministrationComponent,
     AppComponent,
+    AssetTableRowsComponent,
+    CommentPeriodComponent,
+    CommentPeriodDetailsTabComponent,
+    CommentPeriodsComponent,
+    CommentPeriodsTableRowsComponent,
     ConfirmComponent,
     ContactsComponent,
     DayCalculatorModalComponent,
     FooterComponent,
+    GetValuedComponentsComponent,
+    GetValuedComponentTableRowsComponent,
     GroupTableRowsComponent,
     HeaderComponent,
     HomeComponent,
@@ -101,27 +139,25 @@ export function kcFactory(keycloakService: KeycloakService) {
     MapComponent,
     MetricsComponent,
     NotAuthorizedComponent,
+    ProjectNotificationDetailComponent,
+    ProjectNotificationsComponent,
+    ProjectNotificationTableRowsComponent,
+    ProjectNotificationComponent,
     OrganizationsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ProjectComponent,
+    ReviewCommentComponent,
+    ReviewCommentsTabComponent,
+    ReviewCommentsTabTableRowsComponent,
+    CACTableRowsComponent,
     SearchComponent,
     SearchHelpComponent,
     SidebarComponent,
     ToggleButtonComponent,
     TopicsComponent,
     TopicTableRowsComponent,
-    MapComponent,
-    MetricsComponent,
-    ActivityComponent,
-    ContactsComponent,
-    GroupTableRowsComponent,
-    UserTableRowsComponent,
-    PinsTableRowsComponent,
-    ActivityTableRowsComponent,
-    ActivityDetailTableRowsComponent,
-    AddEditActivityComponent,
-    SearchHelpComponent,
+    UploadComponent,
     UserTableRowsComponent
   ],
   imports: [
@@ -130,15 +166,18 @@ export function kcFactory(keycloakService: KeycloakService) {
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    TagInputModule,
     ProjectModule,
+    ProjectNotificationModule,
     ProjectsModule,
+    ProjectNotificationModule,
     SharedModule,
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters
-    NgbModule.forRoot(),
-    NgxPaginationModule,
-    BootstrapModalModule.forRoot({ container: document.body })
+    NgbModule,
+    BootstrapModalModule.forRoot({ container: document.body }),
+    NgSelectModule,
+    MatMenuModule,
+    MatTabsModule,
   ],
   providers: [
     KeycloakService,
@@ -155,6 +194,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     },
     AuthenticationService,
     CanDeactivateGuard,
+
     CommentPeriodService,
     CommentService,
     ConfigService,
@@ -162,6 +202,7 @@ export function kcFactory(keycloakService: KeycloakService) {
     CurrencyPipe,
     DecisionService,
     DocumentService,
+    NotificationProjectService,
     ProjectService,
     RecentActivityService,
     SearchService,
@@ -173,24 +214,31 @@ export function kcFactory(keycloakService: KeycloakService) {
   entryComponents: [
     ActivityDetailTableRowsComponent,
     ActivityTableRowsComponent,
+    AddDocumentTableRowsComponent,
     AddEditActivityComponent,
     AddEditContactComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
-    AddEditTopicComponent,
-    LinkOrganizationComponent,
-    TopicTableRowsComponent,
+    AssetTableRowsComponent,
+    CommentPeriodComponent,
+    CommentPeriodsComponent,
+    CommentPeriodsTableRowsComponent,
     ConfirmComponent,
     DayCalculatorModalComponent,
+    GetValuedComponentTableRowsComponent,
     GroupsTableRowsComponent,
+    ApplicationSortTableRowsComponent,
     GroupTableRowsComponent,
     InputModalComponent,
+    LinkOrganizationComponent,
+    LinkOrganizationTableRowsComponent,
+    ProjectNotificationTableRowsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
-    ActivityTableRowsComponent,
-    ActivityDetailTableRowsComponent,
-    LinkOrganizationTableRowsComponent,
+    ReviewCommentsTabTableRowsComponent,
+    CACTableRowsComponent,
     TopicTableRowsComponent,
+    UploadComponent,
     UserTableRowsComponent
   ],
   bootstrap: [AppComponent]

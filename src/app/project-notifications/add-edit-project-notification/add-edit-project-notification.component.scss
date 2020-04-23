@@ -1,0 +1,20 @@
+@import "assets/styles/components/add-edit.scss";
+
+.form-row {
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 2rem;
+}
+
+.eAPProjectLabel{
+  font-size: 10pt;
+}
+
+.publish-btn {
+  background-color: #4CAF50;
+  border: none;
+}
+
+.un-publish-btn {
+  background-color: red;
+  border: none;
+}

@@ -3,15 +3,20 @@ import * as moment from 'moment';
 
 export class Project {
   // the following are retrieved from the API
+
+  // even though _id is not saved in the db anymore (its on rootlevel project, represented as fullProject on the frontend)
+  // this field is still used for saving the project
   _id: string;
-  CEAAInvolvement: String;
+  CEAAInvolvement: any;
   CELead: String;
   CELeadEmail: String;
   CELeadPhone: String;
   centroid: any[] = [];
   description: String;
-  eacDecision: String;
+  eacDecision: any;
   location: String;
+  legislation: string;
+  legislationYear: number;
   name: String;
   projectLeadObj: any;
   projectLeadId: String;
@@ -35,7 +40,8 @@ export class Project {
   code: String;
   commodity: String;
   commentPeriods: CommentPeriod[];
-  currentPhaseName: string;
+  currentPhaseName: any;
+  phaseHistory: any[];
   dateAdded: String;
   dateUpdated: String;
   decisionDate: String;
@@ -62,13 +68,14 @@ export class Project {
 
   eaDecision: any;
   operational: any;
-
   // TODO: New Stuff?
   eaStatus: any;
   eaStatusDate: String;
   projectStatusDate: String;
   substantiallyDate: String;
   substantially: any;
+  dispute: any;
+  disputeDate: String;
   activeDate: String;
   activeStatus: any;
 
@@ -76,6 +83,12 @@ export class Project {
   projLead: any;
   execProjectDirector: any;
   complianceLead: any;
+
+  // Tracking
+  review180Start: any;
+  review45Start: any;
+  reviewSuspensions: any;
+  reviewExtensions: any;
 
   // Permissions
   read: Array<String> = [];
@@ -130,6 +143,8 @@ export class Project {
     this.projectStatusDate               = obj && obj.projectStatusDate               || undefined;
     this.substantiallyDate               = obj && obj.substantiallyDate               || undefined;
     this.substantially               = obj && obj.substantially               || undefined;
+    this.disputeDate               = obj && obj.disputeDate               || undefined;
+    this.dispute               = obj && obj.dispute               || undefined;
     this.activeDate               = obj && obj.activeDate               || undefined;
 
 
@@ -137,6 +152,7 @@ export class Project {
     this.code                = obj && obj.code                || undefined;
     this.commodity           = obj && obj.commodity           || undefined;
     this.currentPhaseName    = obj && obj.currentPhaseName    || undefined;
+    this.phaseHistory        = obj && obj.phaseHistory        || undefined;
     this.dateAdded           = obj && obj.dateAdded           || undefined;
     this.dateUpdated         = obj && obj.dateUpdated         || undefined;
     this.decisionDate        = obj && obj.decisionDate        || undefined;
@@ -154,6 +170,12 @@ export class Project {
     this.status              = obj && obj.status              || undefined;
     this.substitution        = obj && obj.substitution        || undefined;
     this.updatedBy           = obj && obj.updatedBy           || undefined;
+
+    this.review180Start      = obj && obj.review180Start      || undefined;
+    this.review45Start       = obj && obj.review45Start       || undefined;
+    this.reviewSuspensions   = obj && obj.reviewSuspensions   || undefined;
+    this.reviewExtensions    = obj && obj.reviewExtensions    || undefined;
+
     this.read                = obj && obj.read                || undefined;
     this.write               = obj && obj.write               || undefined;
     this.delete              = obj && obj.delete              || undefined;
@@ -161,6 +183,8 @@ export class Project {
     this.projLead            = obj && obj.projLead              || undefined;
     this.execProjectDirector = obj && obj.execProjectDirector   || undefined;
     this.complianceLead      = obj && obj.complianceLead        || undefined;
+    this.legislation         = obj && obj.legislation         || undefined;
+    this.legislationYear     = obj && obj.legislationYear     || undefined;
 
     // if (obj && obj.publishDate) {
     //   this.publishDate = new Date(obj.publishDate);
@@ -218,4 +242,10 @@ export class Project {
     //   }
     // }
   }
+}
+
+export enum ProjectPublishState {
+  published2002 = 2002,
+  published2018 = 2018,
+  unpublished = 1 // non-falsey value that won't be mistaken for a year
 }

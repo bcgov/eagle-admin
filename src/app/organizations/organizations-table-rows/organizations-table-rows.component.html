@@ -1,9 +1,9 @@
-<tr *ngFor="let organization of organizations | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+<tr *ngFor="let organization of organizations"
     class="clickable-row">
-    <td scope="row" data-label="Name" class="col-4">{{organization.name || '-'}}</td>
-    <td scope="row" data-label="Organization" class="col-3">{{organization.companyType || '-' }}</td>
-    <td scope="row" data-label="Organization" id="legal" class="col-4">{{organization.companyLegal || '-' }}</td>
-    <td class="col-1 clickable" data-label="Event" scope="row">
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{organization.name || '-'}}</td>
+    <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[1].width">{{organization.companyType || '-' }}</td>
+    <td scope="row" data-label="Organization" id="legal" [style.width]="!useSmallTable && columns[2].width">{{organization.companyLegal || '-' }}</td>
+    <td class="clickable" data-label="Event" scope="row" [style.width]="!useSmallTable && columns[3].width">
         <i (click)="editItem(organization)" class="material-icons">
             edit
         </i>

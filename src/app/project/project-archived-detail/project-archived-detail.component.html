@@ -1,0 +1,165 @@
+<nav class="action-container">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a [routerLink]="['/projects']">All Projects</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Archived Project Details</li>
+    </ol>
+</nav>
+<main class="container-fluid-padding">
+    <h1 id="name">{{project.name}}</h1>
+    <section>
+        <app-comment-period-banner></app-comment-period-banner>
+    </section>
+    <section>
+        <i class="material-icons mr-2 md-36 float-left" display="inline-block">access_time</i>
+        <h2 class="mb-1" display="inline">Archived Project Information </h2>
+        <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
+        <div>
+            <a class="btn mt-2 btn-dark legislation-button no-click">
+                <label display="inline-block" class="mb-0">Legislation</label>
+                <!-- <p class="mb-0">{{project?.legislation || "-" }}</p> -->
+                <p class="mb-0">{{project.legislationYear}} Environmental Assessment Act</p>
+            </a>
+        </div>
+        <div class="label-pair mt-3">
+            <h3 for="proponent">Proponent: </h3>
+            <p id="proponent">{{project.proponent.name || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="nature">Project Nature: </h3>
+            <p id="nature">{{project.nature || 'No nature description available'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="type">Type: </h3>
+            <p class="type" id="type">{{project.type || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="type">Sub-Type: </h3>
+            <p class="type" id="subtype">{{project.sector || '-'}}</p>
+        </div>
+        <div class="label-pair full">
+            <h3 for="description">Description: </h3>
+            <p id="description">{{project.description || 'No project description available'}}</p>
+        </div>
+    </section>
+    <section>
+        <h2>Location</h2>
+        <div class="label-pair">
+            <h3 for="location">Location: </h3>
+            <p id="location">{{project.location || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="region">Region: </h3>
+            <p id="region">{{project.region || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="lat">Lat: </h3>
+            <p id="lat">{{project.centroid[1]}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="lon">Long: </h3>
+            <p id="lon">{{project.centroid[0]}}</p>
+        </div>
+    </section>
+    <section>
+        <h2>Supplementary Information</h2>
+        <div class="label-pair">
+            <h3 for="ceaa">IAAC Involvement: </h3>
+            <p id="ceaa">{{project.CEAAInvolvement.name || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="ceaa-url">IAAC URL: </h3>
+            <p id="ceaa-url"><a href="{{project.CEAALink}}">{{project.CEAALink || '-'}}</a></p>
+        </div>
+        <div class="label-pair">
+            <h3 for="ea">EA Decision: </h3>
+            <p id="ea">{{project.eacDecision.name || '-'}} | {{project.decisionDate | date: 'longDate' || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="ea">Capital Investment: </h3>
+            <p id="capital">{{project.intake.investment || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="notes">Notes: </h3>
+            <p id="notes">{{project.intake.investmentNotes || '-'}}</p>
+        </div>
+    </section>
+    <section>
+        <h2>Project Status</h2>
+        <div class="label-pair">
+            <h3 for="eac-status">Project Status: </h3>
+            <p id="eac-status">{{project.status || '-'}}</p>
+        </div>
+        <div class="label-pair">
+            <h3 for="substantially">Substantially Started: </h3>
+            <p id="substantially">{{substantiallyStarted || '-'}} |
+                {{project.substantiallyDate | date: 'longDate' || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="ea">EA Readiness Determination: </h3>
+          <p id="ea">{{project.eaStatus || '-'}} |
+            {{project.eaStatusDate| date: 'longDate' || '-'}}</p>
+        </div>
+    </section>
+    <section class="people">
+        <h2>People</h2>
+        <div class="col" *ngIf="!project.projectLeadObj">
+            <h3 for="project-lead">Project Lead</h3>
+            <p id="project-lead">
+                <i class="material-icons mr-3" role="presentation">person</i>{{project.projectLead || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">phone</i>
+                {{project.projectLeadPhone || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">email</i>
+                <a href="mailTo:{{project.projectLeadEmail}}">{{project.projectLeadEmail || '-'}}</a>
+            </p>
+        </div>
+        <div class="col" *ngIf="project.projectLeadObj">
+            <h3 for="project-lead">Project Lead</h3>
+            <p id="project-lead">
+                <i class="material-icons mr-3"
+                    role="presentation">person</i>{{project.projectLeadObj.displayName || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">phone</i>
+                {{project.projectLeadObj.phoneNumber || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">email</i>
+                <a href="mailTo:{{project.projectLeadObj.email}}">{{project.projectLeadObj.email || '-'}}</a>
+            </p>
+        </div>
+
+        <div class="col" *ngIf="!project.responsibleEPDObj">
+            <h3 for="epd">Executive Project Director</h3>
+            <p id="epd">
+                <i class="material-icons mr-3" role="presentation">person</i>{{project.responsibleEPD || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">phone</i>
+                {{project.responsibleEPDPhone || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">email</i>
+                <a href="mailTo:{{project.responsibleEPDEmail}}">{{project.responsibleEPDEmail || '-'}}</a>
+            </p>
+        </div>
+        <div class="col" *ngIf="project.responsibleEPDObj">
+            <h3 for="epd">Executive Project Director</h3>
+            <p id="epd">
+                <i class="material-icons mr-3"
+                    role="presentation">person</i>{{project.responsibleEPDObj.displayName || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">phone</i>
+                {{project.responsibleEPDObj.phoneNumber || '-'}}<br />
+                <i class="material-icons mr-3" role="presentation">email</i>
+                <a href="mailTo:{{project.responsibleEPDObj.email}}">{{project.responsibleEPDObj.email || '-'}}</a>
+            </p>
+        </div>
+
+        <div class="col">
+            <h3 for="ce-lead">Compliance & Enforcement Lead</h3>
+            <p id="ce-lead">
+                <i class="material-icons mr-3" role="presentation">person</i>Compliance & Enforcement Branch<br />
+                <i class="material-icons mr-3" role="presentation">phone</i>
+                250-387-0131<br />
+                <i class="material-icons mr-3" role="presentation">email</i>
+                <a href="mailTo:eao.compliance@gov.bc.ca">eao.compliance@gov.bc.ca</a>
+            </p>
+        </div>
+    </section>
+</main>

@@ -13,11 +13,16 @@ import { ApiService } from 'app/services/api';
 
 export class AssetTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;
+  @Input() columnData: Array<any>;
+  @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
   public items: any;
   public paginationData: any;
   public icon: any;
+  public loading = false;
+  public columns: any;
+  public useSmallTable: boolean;
 
   constructor(
     private api: ApiService,
@@ -27,26 +32,11 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   ngOnInit() {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.columns = this.columnData;
+    this.useSmallTable = this.smallTable;
     this.items.map(item => {
       item.caption = item.caption.replace(new RegExp('\n', 'g'), '<br />');
-      this.getAssetIcon(item);
     });
-  }
-
-  getAssetIcon(item) {
-    switch (item.type) {
-      case 'photo':
-        item['icon'] = 'photo';
-        break;
-      case 'video':
-        item['icon'] = 'videocam';
-        break;
-      case 'voice':
-        item['icon'] = 'mic';
-        break;
-      default:
-        item['icon'] = 'insert_drive_file';
-    }
   }
 
   selectItem(item) {
@@ -62,7 +52,13 @@ export class AssetTableRowsComponent implements OnInit, TableComponent {
   }
 
   async downloadItem(item) {
-    let res = await this.api.downloadInspectionItem(this.data.extraData.inspectionId, this.data.extraData.elementId, item);
+    this.loading = true;
+    try {
+      await this.api.downloadInspectionItem(this.data.extraData.inspection, this.data.extraData.elementId, item);
+    } catch (err) {
+      console.log(err);
+    }
+    this.loading = false;
   }
 
   goToItem(item) {

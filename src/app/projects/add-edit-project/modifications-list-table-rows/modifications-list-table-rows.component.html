@@ -1,0 +1,6 @@
+<tr *ngFor="let item of items" (click)="itemClicked(item)">
+  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{item.type || '-'}}</td>
+  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[1].width">{{item.appliedTo || '-'}}</td>
+  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[2].width">{{item.start | date: 'longDate'}}</td>
+  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[3].width">{{item.end | date: 'longDate'}}</td>
+</tr>

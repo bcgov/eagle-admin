@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { Compliance } from 'app/models/compliance';
 import { Project } from 'app/models/project';
@@ -29,31 +29,36 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
     {
       name: 'Assets',
       value: 'internalExt',
-      width: 'col-2',
+      width: '15%',
       nosort: true
     },
     {
       name: 'Caption',
       value: 'caption',
-      width: 'col-4',
+      width: '25%',
       nosort: true
     },
     {
-      name: 'GPS Coordinates',
+      name: 'UTM Coordinates',
       value: 'geo',
-      width: 'col-3',
+      width: '15%',
+      nosort: true
+    },
+    {
+      name: 'Date/Time Taken',
+      value: 'date',
+      width: '20%',
       nosort: true
     },
     {
       name: 'Actions',
       value: 'actions',
-      width: 'col-3',
+      width: '25%',
       nosort: true
     }
   ];
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     public api: ApiService,
     private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
@@ -67,18 +72,46 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
     this.route.data
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
-        this.compliance = res.compliance.data;
+        this.compliance = new Compliance(res.compliance.data);
         this.submission = res.submission.data;
         this.submission.description = this.submission.description.replace(new RegExp('\n', 'g'), '<br />');
 
         this.assets = this.submission.items;
+        // This is to make sure we are using the browsers timezone.
+        for (let i = 0; i < this.assets.length; i++) {
+          this.assets[i].timestamp = new Date(this.assets[i].timestamp);
+        }
+
         this.tableParams.totalListItems = this.assets.length;
         this.tableParams.currentPage = 1;
         this.tableParams.pageSize = 100000;
         this.setRowData();
         this.loading = false;
         this._changeDetectionRef.detectChanges();
+
+        let self = this;
+
+        self.assets.map(async z => {
+          if (z.type === 'photo') {
+            // Show thumb
+            let resource = await self.api.downloadElementThumbnail(self.compliance._id, self.submission._id, z._id);
+            const reader = new FileReader();
+            reader.readAsDataURL(resource);
+            reader.onloadend = function () {
+              // result includes identifier 'data:image/png;base64,' plus the base64 data
+              z.src = reader.result;
+              self._changeDetectionRef.detectChanges();
+            };
+          } else if (z.type === 'video') {
+            // Show it's type with a clickable event.
+          } else if (z.type === 'voice') {
+            // Show it's type with a clickable event.
+          } else if (z.type === 'text') {
+            // Show it's type with a clickable event.
+          }
+        });
       });
+
   }
 
   setRowData() {
@@ -88,7 +121,7 @@ export class SubmissionDetailComponent implements OnInit, OnDestroy {
         this.assets,
         this.tableParams,
         {
-          inspectionId: this.compliance._id,
+          inspection: this.compliance,
           elementId: this.submission._id
         }
       );

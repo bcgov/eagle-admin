@@ -1,4 +1,4 @@
-import { Component, OnInit, SimpleChanges, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Dictionary } from 'lodash';
 import * as moment from 'moment';
@@ -353,7 +353,7 @@ export class DayCalculatorModalComponent implements OnInit {
   }
 
   // Handle escape key press.
-  @HostListener('document:keydown.escape', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+  @HostListener('document:keydown.escape', []) onKeydownHandler() {
     this.dismiss();
   }
 }

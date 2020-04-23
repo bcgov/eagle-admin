@@ -46,13 +46,16 @@
   <p><i>Click on the organization table row that you would like to add the contact to:</i></p>
 
   <app-table-template *ngIf="tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
-    (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
+  (checkboxChange)='checkChange($event)'  (onSelectedRow)='updateSelectedRow($event)' (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
   </app-table-template>
 
   <div class="btn-group" role="group" aria-label="Action Buttons" *ngIf="!loading && tableParams.totalListItems != 0">
     <div class="input-group-prepend">
       <button class="btn btn-outline-primary mr-1" type="button" id="button-cl" (click)="goBack()"><i
           class="material-icons">arrow_back</i>Back</button>
+    </div>
+    <div class="input-group-prepend">
+      <button (click)="save()" class="btn btn-primary mr-1" type="submit" id="button-s">Save</button>
     </div>
   </div>
 </main>

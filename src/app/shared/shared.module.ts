@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { MatSlideToggleModule, MatMenuModule } from '@angular/material';
 import { MatSnackBarModule } from '@angular/material';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { OrderByPipe } from 'app/shared/pipes/order-by.pipe';
 import { NewlinesPipe } from 'app/shared/pipes/newlines.pipe';
@@ -10,13 +11,16 @@ import { ObjectFilterPipe } from 'app/shared/pipes/object-filter.pipe';
 import { VarDirective } from 'app/shared/utils/ng-var.directive';
 import { FileUploadComponent } from 'app/file-upload/file-upload.component';
 import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
-import { NgxPaginationModule } from 'ngx-pagination';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgZorroAntdModule, NZ_I18N, en_US } from 'ng-zorro-antd';
 
 import { TableDirective } from './components/table-template/table.directive';
 import { DropdownTemplateComponent } from './components/dropdown-template/dropdown-template.component';
 import { TableTemplateUtils } from './utils/table-template-utils';
+import { TableDocumentTemplateUtils } from './utils/table-document-template-utils';
 import { CommentStatsComponent } from './components/comment-stats/comment-stats.component';
 import { ListConverterPipe } from './pipes/list-converter.pipe';
+import { SafeHtmlPipe} from './pipes/safe-html-converter.pipe';
 import { OrgNamePipe } from './pipes/org-name.pipe';
 import { Utils } from './utils/utils';
 import { ContactSelectComponent } from './components/contact-select/contact-select.component';
@@ -26,6 +30,8 @@ import { LinkOrganizationComponent } from './components/link-organization/link-o
 import { LinkOrganizationTableRowsComponent } from './components/link-organization/link-organization-table-rows/link-organization-table-rows.component';
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
+import { ExtensionComponent } from './components/extension/extension.component';
+import { ListResolver } from './resolvers/list-resolver.service';
 
 @NgModule({
   imports: [
@@ -33,10 +39,12 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
     BrowserModule,
     MatSlideToggleModule,
     MatSnackBarModule,
-    NgxPaginationModule,
+    BrowserAnimationsModule,
+    NgZorroAntdModule,
     FormsModule,
     ReactiveFormsModule,
-    MatMenuModule
+    MatMenuModule,
+    NgbModule
   ],
   declarations: [
     CommentStatsComponent,
@@ -47,6 +55,7 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
     LinkOrganizationComponent,
     LinkOrganizationTableRowsComponent,
     ListConverterPipe,
+    SafeHtmlPipe,
     NewlinesPipe,
     ObjectFilterPipe,
     OrderByPipe,
@@ -54,7 +63,8 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
     PublishedPipe,
     TableDirective,
     TableTemplateComponent,
-    VarDirective
+    VarDirective,
+    ExtensionComponent
   ],
   entryComponents: [
     ContactSelectTableRowsComponent
@@ -68,20 +78,24 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
     LinkOrganizationComponent,
     LinkOrganizationTableRowsComponent,
     ListConverterPipe,
+    SafeHtmlPipe,
     MatSlideToggleModule,
     MatSnackBarModule,
     NewlinesPipe,
-    NgxPaginationModule,
     OrderByPipe,
     OrgNamePipe,
     PublishedPipe,
     TableTemplateComponent,
-    VarDirective
+    VarDirective,
+    NgZorroAntdModule
   ],
   providers: [
     TableTemplateUtils,
+    TableDocumentTemplateUtils,
     NavigationStackUtils,
-    Utils
+    Utils,
+    ListResolver,
+    { provide: NZ_I18N, useValue: en_US }
   ]
 })
 

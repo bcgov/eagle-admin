@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, ViewEncapsulation } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material';
 import { Router, ActivatedRoute } from '@angular/router';
 
@@ -19,8 +19,9 @@ import { ApiService } from 'app/services/api';
 import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
+import { Constants } from 'app/shared/utils/constants';
+
 // TODO: Project and Document filters should be made into components
-// What a mess otherwise!
 class SearchFilterObject {
   constructor(
     // Project
@@ -38,7 +39,9 @@ class SearchFilterObject {
     public datePostedStart: object = {},
     public datePostedEnd: object = {},
     public docType: Array<string> = [],
-    public documentAuthorType: Array<string> = []
+    public documentAuthorType: Array<string> = [],
+    // both
+    public projectPhase: Array<string> = []
   ) { }
 }
 
@@ -46,19 +49,24 @@ class SearchFilterObject {
   selector: 'app-search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 
 export class SearchComponent implements OnInit, OnDestroy, DoCheck {
+  public readonly constants = Constants;
   public results: Array<any> = [];
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
+  public eacDecisions: Array<object> = [];
+  public commentPeriods: Array<object> = [];
+  public projectTypes: Array<object> = [];
 
   public milestones: any[] = [];
   public authors: any[] = [];
   public docTypes: any[] = [];
-
+  public projectPhases: any[] = [];
   public loading = true;
 
   public filterForURL: object = {}; // Not used on this page yet
@@ -75,7 +83,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     milestone: false,
     date: false,
     documentAuthorType: false,
-    docType: false
+    docType: false,
+    projectPhase: false
   };
 
   public numFilters: object = {
@@ -86,7 +95,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     milestone: 0,
     date: 0,
     documentAuthorType: 0,
-    docType: 0
+    docType: 0,
+    projectPhase: 0
   };
 
   public terms = new SearchTerms();
@@ -100,44 +110,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public hadFilter = false;
 
   public count = 0; // for template
-  public currentPage: 1;
-  public pageSize: 10;
+  public currentPage = 1;
+  public pageSize = 10;
 
   private togglingOpen = '';
 
+  public pageSizeArray: number[];
+
   // These values should be moved into Lists instead of being hard-coded all over the place
-
-  private TYPE_MAP: object = {
-    energyElectricity: 'Energy-Electricity',
-    energyPetroleum: 'Energy-Petroleum & Natural Gas',
-    foodProcessing: 'Food Processing',
-    industrial: 'Industrial',
-    mines: 'Mines',
-    other: 'Other',
-    tourist: 'Tourist Destination Resorts',
-    transportation: 'Transportation',
-    wasteDisposal: 'Waste Disposal',
-    waterManagement: 'Water Management'
-  };
-
-  private EAC_DECISIONS_MAP: object = {
-    inProgress: 'In Progress',
-    certificateIssued: 'Certificate Issued',
-    certificateRefused: 'Certificate Refused',
-    furtherAssessmentRequired: 'Further Assessment Required',
-    certificateNotRequired: 'Certificate Not Required',
-    certificateExpired: 'Certificate Expired',
-    withdrawn: 'Withdrawn',
-    terminated: 'Terminated',
-    preEA: 'Pre-EA Act Approval',
-    notReviewable: 'Not Designated Reviewable'
-  };
-
-  private PCP_MAP: object = {
-    pending: 'pending',
-    open: 'open',
-    closed: 'closed'
-  };
 
   private REGIONS_COLLECTION: Array<object> = [
     { code: 'Cariboo', name: 'Cariboo' },
@@ -149,26 +129,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     { code: 'Skeena', name: 'Skeena' },
     { code: 'Thompson-Nicola', name: 'Thompson-Nicola' },
     { code: 'Vancouver Island', name: 'Vancouver Island' }
-  ];
-
-  private CEAA_INVOLVEMENTS_COLLECTION: Array<object> = [
-    { code: 'None', name: 'None' },
-    { code: 'Panel', name: 'Panel' },
-    { code: 'Panel (CEAA 2012)', name: 'Panel (CEAA 2012)' },
-    { code: 'Coordinated', name: 'Coordinated' },
-    { code: 'Screening', name: 'Screening' },
-    { code: 'Screening - Confirmed', name: 'Screening - Confirmed' },
-    { code: 'Substituted', name: 'Substituted' },
-    { code: 'Substituted (Provincial Lead)', name: 'Substituted (Provincial Lead)' },
-    { code: 'Comprehensive Study', name: 'Comprehensive Study' },
-    { code: 'Comprehensive Study - Unconfirmed', name: 'Comprehensive Study - Unconfirmed' },
-    { code: 'Comprehensive Study - Confirmed', name: 'Comprehensive Study - Confirmed' },
-    { code: 'Comprehensive Study (Pre CEAA 2012)', name: 'Comprehensive Study (Pre CEAA 2012)' },
-    { code: 'Comp Study', name: 'Comp Study' },
-    { code: 'Comp Study - Unconfirmed', name: 'Comp Study - Unconfirmed' },
-    { code: 'To be determined', name: 'To be determined' },
-    { code: 'Equivalent - NEB', name: 'Equivalent - NEB' },
-    { code: 'Yes', name: 'Yes' }
   ];
 
   constructor(
@@ -199,6 +159,15 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               case 'doctype':
                 this.docTypes.push({ ...item });
                 break;
+              case 'eaDecisions':
+                this.eacDecisions.push({ ...item });
+                break;
+              case 'ceaaInvolvements':
+                this.ceaaInvolvements.push({ ...item });
+                break;
+              case 'projectPhase':
+                this.projectPhases.push({ ...item });
+                break;
               default:
                 break;
             }
@@ -206,14 +175,16 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         }
 
         // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-        let copy_doctype = this.docTypes;
-        this.docTypes = [];
-        // This order was created by mapping the doctype items from the database with the EAO defined ordered list
-        let docList_order = [0, 1, 2, 6, 10, 11, 14, 4, 3, 5, 13, 16, 15, 17, 18, 19, 7, 8, 9, 12];
-        // We map the doctypes to put in the correct order as defined in doclist_order
-        docList_order.map((item, i) => {
-          this.docTypes[item] = copy_doctype[i];
-        });
+        // todo how are we handling these lists with legislation year in advanced search? EE-406
+        // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
+        this.docTypes = _.sortBy(this.docTypes, ['legislation', 'listOrder']);
+
+        // Sort by legislation.
+        this.milestones = _.sortBy(this.milestones, ['legislation']);
+        this.authors = _.sortBy(this.authors, ['legislation']);
+        this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
+        this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
 
         // Fetch proponents and other collections
         // TODO: Put all of these into Lists
@@ -223,7 +194,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.proponents = res || [];
 
         this.regions = this.REGIONS_COLLECTION;
-        this.ceaaInvolvements = this.CEAA_INVOLVEMENTS_COLLECTION;
+        this.commentPeriods = Constants.PCP_COLLECTION;
+        this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
         return this.route.params;
       })
@@ -240,7 +212,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.keywords = this.terms.keywords;
         this.hadFilter = this.hasFilter();
 
-        if (_.isEmpty(this.terms.getParams()) && !this.hasFilter()) {
+        // additional check to see if we have any filter elements applied to the
+        // query string. Previously these were ignored on a refresh
+        let filterKeys = Object.keys(this.filterForAPI);
+        let hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
+
+        if (_.isEmpty(this.terms.getParams())
+            && !this.hasFilter()
+            && !hasFilterFromQueryString) {
           return Observable.of(null);
         }
 
@@ -249,7 +228,24 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.searching = true;
         this.count = 0;
         this.currentPage = params.currentPage ? params.currentPage : 1;
-        this.pageSize = params.pageSize ? params.pageSize : 25;
+        this.pageSize = params.pageSize ? parseInt(params.pageSize, 10) : 25;
+
+        // remove doc and project types
+        // The UI filters are remapping document and project type to the single 'Type' value
+        // this means that whenever we map back to the filters, we need to revert them
+        // from 'type', to the appropriate type. Additionally, the API will fail if we
+        // send "docType" ir "projectType" as a filter, so we need to ensure these are
+        // stripped from the filterForAPI
+        delete this.filterForAPI['docType'];
+        delete this.filterForAPI['projectType'];
+
+        // if we're searching for projects, replace projectPhase with currentPhaseName
+        // The code is called projectPhase, but the db column on projects is currentPhaseName
+        // so the rename is required to pass in the correct query
+        if (this.filterForAPI.hasOwnProperty('projectPhase') && this.terms.dataset === 'Project') {
+          this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
+          delete this.filterForAPI['projectPhase'];
+        }
 
         return this.searchService.getSearchResults(
           this.terms.keywords,
@@ -260,11 +256,19 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
           null,
           {},
           true,
-          this.filterForAPI
+          this.filterForAPI,
+          ''
         );
       })
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res: any) => {
+        // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
+        // the change so the UI can function as normal
+        if (this.filterForAPI.hasOwnProperty('currentPhaseName') && this.terms.dataset === 'Project') {
+          this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
+          delete this.filterForAPI['currentPhaseName'];
+        }
+
         if (res && res[0].data.meta.length > 0) {
           this.count = res[0].data.meta[0].searchResultsTotal;
           let items = res[0].data.searchResults;
@@ -283,6 +287,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.searching = false;
         this.ranSearch = true;
         this._changeDetectionRef.detectChanges();
+        const pageSizeTemp = [10, 25, 50, 100, this.count];
+        this.pageSizeArray = pageSizeTemp.filter(function(el: number) { return el >= 10; });
+        this.pageSizeArray.sort(function(a: number, b: number) { return a - b; });
       }, error => {
         console.log('error =', error);
 
@@ -325,6 +332,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.onSubmit();
   }
 
+  updatePageSize(pageSize) {
+    window.scrollTo(0, 0);
+    this.currentPage = 1;
+    this.pageSize = parseInt(pageSize, 10);
+    this.onSubmit();
+  }
+
   paramsToCheckboxFilters(params, name, map) {
     const paramname = name === 'projectType' ? 'type' : name;
 
@@ -348,29 +362,42 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   paramsToCollectionFilters(params, name, collection, identifyBy) {
-    const paramname = name === 'docType' ? 'type' : name;
+    delete this.filterForURL[name];
+    delete this.filterForAPI[name];
 
-    this.filterForUI[name] = [];
-    delete this.filterForURL[paramname];
-    delete this.filterForAPI[paramname];
+    // The UI filters are remapping document and project type to the single 'Type' value
+    // this means that whenever we map back to the filters, we need to revert them
+    // from 'type', to the appropriate type.
+    let optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
+           this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
 
-    if (params[paramname] && collection) {
+    if (optionName !== name) {
+      delete this.filterForURL[optionName];
+      delete this.filterForAPI[optionName];
+    }
+
+    if (params[name] && collection) {
       let confirmedValues = [];
       // look up each value in collection
-      const values = params[paramname].split(',');
+      const values = params[name].split(',');
       values.forEach(value => {
         const record = _.find(collection, [ identifyBy, value ]);
         if (record) {
-          this.filterForUI[name].push(record);
           confirmedValues.push(value);
         }
       });
       if (confirmedValues.length) {
-        this.filterForURL[paramname] = confirmedValues.join(',');
-        this.filterForAPI[paramname] = confirmedValues.join(',');
+        if (optionName !== name) {
+          this.filterForURL[optionName] =  encodeURI(confirmedValues.join(','));
+          this.filterForAPI[optionName] = confirmedValues.join(',');
+        }
+
+        this.filterForURL[name] = encodeURI(confirmedValues.join(','));
+        this.filterForAPI[name] = confirmedValues.join(',');
       }
     }
   }
+
 
   paramsToDateFilters(params, name) {
     this.filterForUI[name] = null;
@@ -388,14 +415,15 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   setFiltersFromParams(params) {
     if (this.terms.dataset === 'Project') {
-      this.paramsToCheckboxFilters(params, 'projectType', this.TYPE_MAP);
-      this.paramsToCheckboxFilters(params, 'eacDecision', this.EAC_DECISIONS_MAP);
-      this.paramsToCheckboxFilters(params, 'pcp', this.PCP_MAP);
-
       this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'code');
+      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, '_id');
       this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
       this.paramsToCollectionFilters(params, 'vc', null, '_id');
+      this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
+      this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
+      this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
+      this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -403,6 +431,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
       this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
       this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
+      this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
@@ -424,7 +454,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   collectionFilterToParams(params, name, identifyBy) {
     if (this.filterForUI[name].length) {
       const values = this.filterForUI[name].map(record => { return record[identifyBy]; });
-      params[name === 'docType' ? 'type' : name] = values.join(',');
+      params[(name === 'docType' || name === 'projectType') ? 'type' : name] = values.join(',');
     }
   }
 
@@ -441,14 +471,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   setParamsFromFilters(params) {
     if (this.terms.dataset === 'Project') {
-      this.checkboxFilterToParams(params, 'projectType');
-      this.checkboxFilterToParams(params, 'eacDecision');
-      this.checkboxFilterToParams(params, 'pcp');
-
       this.collectionFilterToParams(params, 'region', 'code');
-      this.collectionFilterToParams(params, 'CEAAInvolvement', 'code');
+      this.collectionFilterToParams(params, 'CEAAInvolvement', '_id');
+      this.collectionFilterToParams(params, 'eacDecision', '_id');
+      this.collectionFilterToParams(params, 'pcp', 'code');
       this.collectionFilterToParams(params, 'proponent', '_id');
       this.collectionFilterToParams(params, 'vc', '_id');
+      this.collectionFilterToParams(params, 'projectType', 'name');
+      this.collectionFilterToParams(params, 'projectPhase', '_id');
 
       this.dateFilterToParams(params, 'decisionDateStart');
       this.dateFilterToParams(params, 'decisionDateEnd');
@@ -456,6 +486,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.collectionFilterToParams(params, 'milestone', '_id');
       this.collectionFilterToParams(params, 'documentAuthorType', '_id');
       this.collectionFilterToParams(params, 'docType', '_id');
+      this.collectionFilterToParams(params, 'projectPhase', '_id');
 
       this.dateFilterToParams(params, 'datePostedStart');
       this.dateFilterToParams(params, 'datePostedEnd');
@@ -540,6 +571,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.updateCount('date');
     this.updateCount('documentAuthorType');
     this.updateCount('docType');
+    this.updateCount('projectPhase');
   }
 
   // reload page with current search terms
@@ -559,6 +591,31 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.setParamsFromFilters(params);
 
     this.router.navigate(['search', params]);
+  }
+
+  // Compares selected options when a dropdown is grouped by legislation.
+  compareDropdownOptions(optionA: any, optionB: any) {
+    if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  clearSelectedItem(filter: string, item: any) {
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+  }
+
+  public filterCompareWith(filter: any, filterToCompare: any) {
+    if (filter.hasOwnProperty('code')) {
+      return filter && filterToCompare
+             ? filter.code === filterToCompare.code
+             : filter === filterToCompare;
+    } else if (filter.hasOwnProperty('_id')) {
+      return filter && filterToCompare
+             ? filter._id === filterToCompare._id
+             : filter === filterToCompare;
+    }
   }
 
   ngOnDestroy() {

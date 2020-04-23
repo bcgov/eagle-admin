@@ -1,6 +1,13 @@
-.col-3 {
-  @media screen and (max-width: 900px) {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
+.status-container {
+  display: flex;
+}
+
+.status-column {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px; 
+}
+
+.status {
+  text-align: start;
 }

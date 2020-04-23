@@ -4,7 +4,6 @@ import { Utils } from './utils';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 describe('sdfasdfas', () => {
-  let component: Utils;
   let myInstance = new Utils();
   let inputJSDate = new Date(2010, 6, 14);
   let inputJSDate2 = new Date(2019, 11, 31);

@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "admin-angular-builder",
+    "name": "${NAME}",
     "creationTimestamp": null
   },
   "objects": [
@@ -28,12 +28,19 @@
         "source": {
           "type": "Git",
           "git": {
-            "uri": "${GIT_REPO_URL}"
-          },
-          "contextDir": "openshift/templates/angular-builder/"
+            "uri": "${GIT_REPO_URL}",
+            "ref": "${GIT_REPO_BRANCH}"
+          }
         },
         "strategy": {
-          "type": "Docker"
+          "sourceStrategy": {
+            "from": {
+              "kind": "ImageStreamTag",
+              "name": "nodejs:10",
+              "namespace": "openshift"
+            }
+          },
+          "type": "Source"
         },
         "output": {
           "to": {
@@ -41,7 +48,24 @@
             "name": "${NAME}:latest"
           }
         },
-        "resources": {},
+        "triggers": [
+          {
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "resources": {
+          "requests": {
+            "cpu": "100m",
+            "memory": "2Gi"
+          },
+          "limits": {
+            "cpu": "1",
+            "memory": "4Gi"
+          }
+        },
         "postCommit": {}
       },
       "status": {
@@ -55,14 +79,21 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.  You should keep this as default unless your know what your doing.",
       "required": true,
-      "value": "admin-angular-builder"
+      "value": "eagle-admin-angular-builder"
     },
     {
       "name": "GIT_REPO_URL",
       "displayName": "Git Repo URL",
-      "description": "The URL to your GIT repo, don't use the this default unless your just experimenting.",
+      "description": "The URL to your GIT repo.",
       "required": true,
       "value": "https://github.com/bcgov/eagle-admin"
+    },
+    {
+      "name": "GIT_REPO_BRANCH",
+      "displayName": "Git Repo Branch",
+      "description": "The branch with your GIT repo.",
+      "required": true,
+      "value": "develop"
     }
   ]
 }

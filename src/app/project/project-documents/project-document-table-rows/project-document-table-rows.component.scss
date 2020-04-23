@@ -4,7 +4,6 @@ tr:hover {
     cursor: pointer;
     background-color: #e2f1ff;
 }
-
 .inputCheckBox {
   cursor: pointer;
 }
@@ -23,4 +22,19 @@ tr:hover {
   font-size: .85rem;
   font-weight: 600;
   text-transform: uppercase;
+}
+.inactive {
+    opacity: 40%;
+    &:hover {
+        cursor: auto;
+        background-color: none;
+    }
+}
+
+.featured-star {
+    color: #ffc107;
+}
+
+.un-featured-star {
+    color: #6a6a6a;
 }

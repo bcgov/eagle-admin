@@ -1,17 +1,20 @@
 <tr
-  *ngFor="let item of items | paginate: { id: 'table-template-pagination', itemsPerPage: paginationData.pageSize, currentPage: paginationData.currentPage, totalItems: paginationData.totalListItems }"
+  *ngFor="let item of items"
   class="clickable-row">
-  <td data-label="Inspection #" (click)="goToItem(item)" scope="row" class="col-2">{{item.case}}</td>
-  <td data-label="Inspector" (click)="goToItem(item)" scope="row" class="col-3">
+  <div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+  <td data-label="Inspection Name" (click)="goToItem(item)" scope="row" [style.width]="!useSmallTable && columns[0].width">{{item.name}}</td>
+  <td data-label="Inspector" (click)="goToItem(item)" scope="row" [style.width]="!useSmallTable && columns[1].width">
     <div>{{item.email}}</div>
   </td>
-  <td data-label="Start Date" (click)="goToItem(item)" scope="row" class="col-2">
+  <td data-label="Start Date" (click)="goToItem(item)" scope="row" [style.width]="!useSmallTable && columns[2].width">
     <div *ngIf="item.startDate !== '1900-01-01T08:00:00.000Z'">{{item.startDate | date:'longDate'}}</div>
   </td>
-  <td data-label="End Date" (click)="goToItem(item)" scope="row" class="col-2">
+  <td data-label="End Date" (click)="goToItem(item)" scope="row" [style.width]="!useSmallTable && columns[3].width">
     <div *ngIf="item.endDate !== '1900-01-01T08:00:00.000Z'">{{item.endDate | date:'longDate'}}</div>
   </td>
-  <td data-label="Actions" (click)="downloadItem(item)" scope="row" class="col-3">
+  <td data-label="Actions" (click)="downloadItem(item)" scope="row" [style.width]="!useSmallTable && columns[4].width">
     <p class="card-text publish-state">
       Download &nbsp;<i class="material-icons">
         cloud_download

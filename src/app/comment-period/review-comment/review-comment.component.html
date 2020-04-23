@@ -1,0 +1,192 @@
+<nav *ngIf="!loading" class="action-container">
+  <ol class="breadcrumb" *ngIf="commentPeriod">
+    <li class="breadcrumb-item">
+      <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notification']">All Project Notifications</a>
+
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', commentPeriod._id]">
+        {{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      Comment
+    </li>
+  </ol>
+  <div class="btn-container">
+    <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+    &nbsp;
+    <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit('exit')">
+      Save/Exit
+    </button>
+    <button *ngIf='pendingCommentCount > 0' [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit"
+      (click)="onSubmit('next')">
+      Save/Next ({{pendingCommentCount}})
+    </button>
+  </div>
+</nav>
+
+<div class="spinner-container" *ngIf="loading">
+  <div class="spinner-new rotating"></div>
+</div>
+
+<main *ngIf="!loading" class="container-fluid-padding">
+  <form *ngIf="commentReviewForm" [formGroup]="commentReviewForm" (ngSubmit)="register()">
+    <div class="form-row">
+      <div class="form-group col-md-8">
+        <div class="btn-group btn-group-toggle">
+          <div class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-primary" [class.active]="commentReviewForm.get('isPublished').value">
+              <input type="checkbox" (click)="setEaoStatus('Published')" autocomplete="off"
+                formControlName="isPublished">Publish
+            </label>
+          </div>
+          &nbsp;
+          <div class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-primary" [class.active]="commentReviewForm.get('isDeferred').value">
+              <input type="checkbox" (click)="setEaoStatus('Deferred')" autocomplete="off"
+                formControlName="isDeferred">Defer
+            </label>
+          </div>
+          &nbsp;
+          <div class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-primary" [class.active]="commentReviewForm.get('isRejected').value">
+              <input type="checkbox" (click)="setEaoStatus('Rejected')" autocomplete="off"
+                formControlName="isRejected">Reject
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        <div>
+          <h3>Comment #</h3> {{comment.commentId}}
+        </div>
+        <div>
+          <h3>Date: </h3> {{comment.dateAdded | date: 'medium'}}
+        </div>
+        <div>
+          <h3>Author: </h3> {{comment.author}}
+        </div>
+        <div>
+          <h3>Location: </h3> {{comment.location}}
+        </div>
+        <div>
+          <h3>CAC Comment: </h3>
+          <div class="border ml-2 badge badge-pill badge-info"
+          [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? 'Yes' : 'No'}}</div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            {{comment.comment}}
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="isAnonymousCheckBox"><b>Make author's name visible to the public</b></label>&nbsp;
+            <input id="isAnonymousCheckBox" type="checkbox" name="isAnonymous" formControlName="isNamePublic">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="proponentResponse"><b>Attachments</b></label>
+            <div *ngIf="comment.documentsList?.length > 0">
+              <ul class="doc-list mb-3">
+                <li *ngFor="let document of comment.documentsList">
+                  <span class="cell icon">
+                    <i class="material-icons">insert_drive_file</i>
+                  </span>
+                  <span class="cell name clickable-row" [title]="document.internalOriginalName || ''"
+                    (click)='downloadDocument(document)'>
+                    <span class="cell__txt-content">{{document.internalOriginalName}}</span>
+                  </span>
+                  <span class="cell actions">
+                    <a class="btn btn-light" [class.active]="document.eaoStatus === 'Published'" role="button"
+                      title="Publish this document" (click)="toggleDocumentPublish(document, 'Published')">
+                      Publish
+                    </a>
+                    <a class="btn btn-light" [class.active]="document.eaoStatus === 'Rejected'" role="button"
+                      title="Reject this document" (click)="toggleDocumentPublish(document, 'Rejected')">
+                      Reject
+                    </a>
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div *ngIf="comment.documentsList?.length === 0">
+              <p>This comment has no associated documents.</p>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="proponentResponse"><b>Proponent Response</b></label>
+            <textarea id="proponentResponse" class="form-control" rows="3" name="proponentResponseText"
+              formControlName="proponentResponseText"></textarea>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="commentReviewForm.get('isPublished').value">
+          <div class="form-group col-md-12">
+            <label for="publishedNotes"><b>Notes</b></label>
+            <textarea id="publishedNotes" class="form-control" rows="3" name="publishedNotesText"
+              formControlName="publishedNotesText"></textarea>
+          </div>
+        </div>
+        <div class="form-row" [style.display]="commentReviewForm.get('isDeferred').value ? '' : 'none'">
+          <div class="form-group col-md-12">
+            <label for="deferralNotes"><b>Deferral Note*</b></label>
+            <textarea [required]="commentReviewForm.get('isDeferred').value" id="deferralNotes" class="form-control"
+              rows="3" name="deferralNotesText" formControlName="deferralNotesText"></textarea>
+          </div>
+        </div>
+        <div class="form-row" [style.display]="commentReviewForm.get('isRejected').value ? '' : 'none'">
+          <div class="form-group col-md-12">
+            <label for="rejectionNotes"><b>Rejection Note*</b></label>
+            <textarea [required]="commentReviewForm.get('isRejected').value" id="rejectionNotes" class="form-control"
+              rows="3" name="rejectionNotesText" formControlName="rejectionNotesText"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="inputAddDate"><b>Date Received</b></label>
+        <div class="input-group">
+          <input id="inputAddDate" container='body' type="text" class="form-control" placeholder="Select an add date"
+            name="dateAdded" formControlName="dateAdded" ngbDatepicker #addDatePicker="ngbDatepicker">
+          <div class="input-group-append">
+            <button disabled class="btn btn-outline-secondary calendar" (click)="addDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </div>
+      <div class="form-group col-md-6">
+        <label for="inputPostDate"><b>Date Published</b></label>
+        <div class="input-group">
+          <input id="inputPostDate" container='body' type="text" class="form-control" placeholder="Not Published"
+            name="datePosted" formControlName="datePosted" ngbDatepicker #postDatePicker="ngbDatepicker">
+          <div class="input-group-append">
+            <button disabled class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="currentProject.type === 'currentProject'" class="form-row">
+      <div class="form-group col-md-12">
+        <label for="valuedComponents"><b>Valued Components</b></label>
+        <app-get-valued-components id="valuedComponents"></app-get-valued-components>
+      </div>
+    </div>
+  </form>
+</main>

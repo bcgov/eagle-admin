@@ -10,8 +10,6 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { SearchTerms } from 'app/models/search';
-import { Utils } from 'app/shared/utils/utils';
-
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
@@ -35,36 +33,36 @@ export class ActivityComponent implements OnInit, OnDestroy {
     {
       name: 'Pin',
       value: 'pinned',
-      width: 'col-1'
+      width: '5%'
     },
     {
       name: 'Headline',
       value: 'headline',
-      width: 'col-3'
+      width: '30%'
     },
     {
       name: 'Project',
       value: 'project.name',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: 'col-2'
+      width: '20%'
     },
     {
       name: 'Date',
       value: 'dateAdded',
-      width: 'col-2'
+      width: '10%'
     },
     {
       name: 'Status',
       value: 'active',
-      width: 'col-1'
+      width: '10%'
     },
     {
       name: 'Delete',
-      width: 'col-1',
+      width: '5%',
       nosort: true
     }
   ];
@@ -79,8 +77,6 @@ export class ActivityComponent implements OnInit, OnDestroy {
     this.route.params
       .takeUntil(this.ngUnsubscribe)
       .subscribe(params => {
-        // this.filter.dateAddedStart = params.dateAddedStart == null || params.dateAddedStart === '' ? null : this.utils.convertJSDateToNGBDate(new Date(params.dateAddedStart));
-        // this.filter.dateAddedEnd = params.dateAddedEnd == null || params.dateAddedEnd === '' ? null : this.utils.convertJSDateToNGBDate(new Date(params.dateAddedEnd));
         if (params.type != null) {
           this.typeFilters = params.type.split(',');
           if (this.typeFilters.includes('publicCommentPeriod')) { this.filterPublicCommentPeriod = true; }

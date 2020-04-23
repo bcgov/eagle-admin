@@ -11,12 +11,15 @@ These projects comprise EAO EPIC:
 * <https://github.com/bcgov/eagle-api>
 * <https://github.com/bcgov/eagle-public>
 * <https://github.com/bcgov/eagle-admin>
+* <https://github.com/bcgov/eagle-mobile-inspections>
 * <https://github.com/bcgov/eagle-common-components>
 * <https://github.com/bcgov/eagle-reports>
 * <https://github.com/bcgov/eagle-helper-pods>
 * <https://github.com/bcgov/eagle-dev-guides>
 
 ## Pre-requisites
+
+Note: The following commands work in MacOS bash (not zsh which now default in Catalina). The scripts are currently not fully working in Windows and Linux, so you may need to look at the source of the scripts and manually apply the commands in a right order.
 
 Run the following two scripts to create your environment
 

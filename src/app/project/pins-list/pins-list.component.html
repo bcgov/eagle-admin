@@ -13,25 +13,30 @@
 <div class="container-fluid-padding">
 
   <div class="input-group-prepend">
-    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
-      id="button-sa">Select All</button>
-    <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('delete')"
-      type="button" id="button-d"><i class="material-icons">delete</i>Delete</button>
     <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-      [routerLink]="['/p', currentProject._id, 'project-pins', 'select']">
-      <button (click)="setBackURL('pins')" class="btn btn-outline-secondary mr-1" type="button" id="button-d">
-        <i class="material-icons">add</i>Add Contact(s)
-      </button>
+    [routerLink]="['/p', currentProject._id, 'project-pins', 'select']">
+    <button (click)="setBackURL('pins')" class="btn btn-outline-secondary mr-1" type="button" id="button-d">
+      <i class="material-icons">add</i>Add Participating Indigenous Nation(s)
+    </button>
     </a>
   </div>
   <br>
 
   <div *ngIf="!loading && tableParams.totalListItems === 0">
-    No project groups found.
+    No Participating Indigenous Nations found.
   </div>
 
   <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
-    [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-    (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event, null, null)'>
+  [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+  (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event, null, null)'>
   </app-table-template>
+<div class="spinner-container" *ngIf="loading">
+    <div class="spinner-new rotating"></div>
+  </div>
+  <div *ngIf="this.entries" class="text-right">
+    <button *ngIf="!this.pinsPublished" (click)="publishPins()" class="btn btn-publish btn-primary" type="button"
+      id="button-sa">Publish</button>
+    <button *ngIf="this.pinsPublished" (click)="unpublishPins()" class="btn btn-unpublish btn-primary" type="button"
+    id="button-sa">Unpublish</button>
+  </div>
 </div>

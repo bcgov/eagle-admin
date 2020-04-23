@@ -28,13 +28,13 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     {
       name: 'Headline',
       value: 'headine',
-      width: 'col-10',
+      width: '80%',
       nosort: true
     },
     {
       name: 'Date',
       value: 'dateUpdated',
-      width: 'col-2',
+      width: '20%',
       nosort: true
     }
   ];

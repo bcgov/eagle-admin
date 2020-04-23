@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/forkJoin';
 
@@ -23,6 +23,7 @@ export class ProjectGroupResolver implements Resolve<Observable<object>> {
       null,
       { _id: groupId },
       false,
-      {});
+      {},
+      '');
   }
 }

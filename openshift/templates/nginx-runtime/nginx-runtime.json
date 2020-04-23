@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "admin-nginx-runtime",
+    "name": "${NAME}",
     "creationTimestamp": null
   },
   "objects": [
@@ -28,7 +28,8 @@
         "source": {
           "type": "Git",
           "git": {
-            "uri": "${GIT_REPO_URL}"
+            "uri": "${GIT_REPO_URL}",
+            "ref": "${GIT_REPO_BRANCH}"
           },
           "contextDir": "openshift/templates/nginx-runtime/"
         },
@@ -41,6 +42,14 @@
             "name": "${NAME}:latest"
           }
         },
+        "triggers": [
+          {
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ],
         "resources": {},
         "postCommit": {}
       },
@@ -55,14 +64,21 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.    You should keep this as default unless your know what your doing.",
       "required": true,
-      "value": "admin-nginx-runtime"
+      "value": "eagle-admin-nginx-runtime"
     },
     {
       "name": "GIT_REPO_URL",
       "displayName": "Git Repo URL",
-      "description": "The URL to your GIT repo, don't use the this default unless your just experimenting.",
+      "description": "The URL to the customized project copy of the original common angular scaffold project https://github.com/bcgov/angular-scaffold.",
       "required": true,
       "value": "https://github.com/bcgov/eagle-admin"
+    },
+    {
+      "name": "GIT_REPO_BRANCH",
+      "displayName": "Git Repo Branch",
+      "description": "The branch with your GIT repo.",
+      "required": true,
+      "value": "develop"
     }
   ]
 }

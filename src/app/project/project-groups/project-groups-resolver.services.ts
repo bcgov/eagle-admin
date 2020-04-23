@@ -14,7 +14,7 @@ export class ProjectContactsResolver implements Resolve<Observable<object>> {
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const projectId = route.parent.paramMap.get('projId');
     const pageNum = route.params.pageNum ? route.params.pageNum : 1;
-    const pageSize = route.params.pageSize ? route.params.pageSize : 25;
+    const pageSize = route.params.pageSize ? route.params.pageSize : 10;
     const sortBy = route.params.sortBy ? route.params.sortBy : '+displayName';
 
     // force-reload so we always have latest data
@@ -26,6 +26,8 @@ export class ProjectContactsResolver implements Resolve<Observable<object>> {
       pageSize,
       sortBy,
       { project: projectId },
-      false);
+      false,
+      {},
+      '');
   }
 }

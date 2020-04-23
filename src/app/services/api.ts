@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
-// import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/throw';
 import { throwError } from 'rxjs';
@@ -25,6 +24,7 @@ import { RecentActivity } from 'app/models/recentActivity';
 import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
 import { Utils } from 'app/shared/utils/utils';
+import { ProjectNotification } from 'app/models/projectNotification';
 
 interface LocalLoginResponse {
   _id: string;
@@ -42,9 +42,9 @@ export class ApiService {
   public token: string;
   public isMS: boolean; // IE, Edge, etc
   // private jwtHelper: JwtHelperService;
-  pathAPI: string;
-  params: Params;
-  env: 'local' | 'dev' | 'test' | 'demo' | 'scale' | 'beta' | 'master' | 'prod';
+  public pathAPI: string;
+  public params: Params;
+  public env: string;  // Could be anything per Openshift settings but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo'
 
   constructor(
     private http: HttpClient,
@@ -56,39 +56,13 @@ export class ApiService {
     this.token = currentUser && currentUser.token;
     this.isMS = window.navigator.msSaveOrOpenBlob ? true : false;
 
-    const { hostname } = window.location;
-    switch (hostname) {
-      case 'localhost':
-        // Local
-        this.pathAPI = 'http://localhost:3000/api';
-        this.env = 'local';
-        break;
+    // The following items are loaded by a file that is only present on cluster builds.
+    // Locally, this will be empty and local defaults will be used.
+    const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
+    const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
 
-      case 'eagle-dev.pathfinder.gov.bc.ca':
-        // Prod
-        this.pathAPI = 'https://eagle-dev.pathfinder.gov.bc.ca/api';
-        this.env = 'dev';
-        break;
-
-      case 'test.projects.eao.gov.bc.ca':
-      case 'esm-test.pathfinder.gov.bc.ca':
-        // Test
-        this.pathAPI = 'https://eagle-test.pathfinder.gov.bc.ca/api';
-        this.env = 'test';
-        break;
-
-      case 'www.projects.eao.gov.bc.ca':
-      case 'projects.eao.gov.bc.ca':
-        // Test
-        this.pathAPI = 'https://eagle-prod.pathfinder.gov.bc.ca/api';
-        this.env = 'prod';
-        break;
-
-      default:
-        // test
-        this.pathAPI = 'https://eagle-test.pathfinder.gov.bc.ca/api';
-        this.env = 'test';
-    }
+    this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
+    this.env = (_.isEmpty(deployment_env)) ? 'local' : deployment_env;
   }
 
   handleError(error: any): Observable<never> {
@@ -216,6 +190,10 @@ export class ApiService {
       'projLead',
       'execProjectDirector',
       'complianceLead',
+      'review180Start',
+      'review45Start',
+      'reviewSuspensions',
+      'reviewExtensions',
       'pins',
       'read',
       'write',
@@ -259,6 +237,24 @@ export class ApiService {
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
+  addExtension(proj: Project, extension: any): Observable<any> {
+    const queryString = `project/${proj._id}/extension`;
+    return this.http.post<any>(`${this.pathAPI}/${queryString}`, extension, {});
+  }
+
+  editExtension(proj: Project, extension: any): Observable<any> {
+    const queryString = `project/${proj._id}/extension`;
+    return this.http.put<any>(`${this.pathAPI}/${queryString}`, extension, {});
+  }
+
+  deleteExtension(proj: Project, extension: any): Observable<any> {
+    let queryString = `project/${proj._id}/extension`;
+    // We need this because DELETE in angular doesn't allow body, even though RFC 7231
+    // explicitly permits it.
+    queryString += '?item=' + encodeURIComponent(JSON.stringify(extension));
+    return this.http.delete<any>(`${this.pathAPI}/${queryString}`, {});
+  }
+
   addPinsToProject(proj: Project, pins: any): Observable<Project> {
     const queryString = `project/${proj._id}/pin`;
     return this.http.post<Project>(`${this.pathAPI}/${queryString}`, pins, {});
@@ -272,6 +268,14 @@ export class ApiService {
   deletePin(projId: string, pinId: string): Observable<Project> {
     const queryString = `project/${projId}/pin/${pinId}`;
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+  publishPins(projId: string): Observable<Project> {
+    const queryString = `project/${projId}/pin/publish`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+  unpublishPins(projId: string): Observable<Project> {
+    const queryString = `project/${projId}/pin/unpublish`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
   getProjectPins(id: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
@@ -313,6 +317,21 @@ export class ApiService {
   saveProject(proj: Project): Observable<Project> {
     const queryString = `project/${proj._id}`;
     return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
+  }
+
+  createProjectCAC(projectId: string, cacEmail: string): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { cacEmail: cacEmail}, {});
+  }
+
+  deleteProjectCAC(projectId: string): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  deleteMemberFromCAC(projectId: string, member: any): Observable<any> {
+    const queryString = `project/${projectId}/cac`;
+    return this.http.put<any>(`${this.pathAPI}/${queryString}`, member, {});
   }
 
   // //
@@ -619,6 +638,7 @@ export class ApiService {
       'isAnonymous',
       'location',
       'eaoStatus',
+      'submittedCAC',
       'period',
       'read'
     ];
@@ -651,6 +671,7 @@ export class ApiService {
       'documents',
       'eaoNotes',
       'eaoStatus',
+      'submittedCAC',
       'isAnonymous',
       'location',
       'period',
@@ -693,7 +714,11 @@ export class ApiService {
       'documentFileName',
       'displayName',
       'internalURL',
-      'internalMime'
+      'internalMime',
+      'isFeatured',
+      'sortOrder',
+      'secureHitCount',
+      'publicHitCount'
     ];
     const queryString = `document?isDeleted=false&_project=${projId}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -703,6 +728,7 @@ export class ApiService {
     const fields = [
       '_id',
       'eaoStatus',
+      'submittedCAC',
       'internalOriginalName',
       'documentFileName',
       'labels',
@@ -724,7 +750,11 @@ export class ApiService {
       'projectPhase',
       'milestone',
       'description',
-      'isPublished'
+      'isPublished',
+      'isFeatured',
+      'sortOrder',
+      'secureHitCount',
+      'publicHitCount'
     ];
     const queryString = `document?docIds=${this.buildValues(ids)}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -752,9 +782,14 @@ export class ApiService {
       'documentAuthor',
       'documentAuthorType',
       'projectPhase',
+      'legislation',
       'milestone',
       'description',
-      'isPublished'
+      'isPublished',
+      'isFeatured',
+      'sortOrder',
+      'secureHitCount',
+      'publicHitCount'
     ];
     const queryString = `document/${id}?fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -780,15 +815,27 @@ export class ApiService {
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
-  uploadDocument(formData: FormData): Observable<Document> {
+  featureDocument(docId: String): Observable<Document> {
+    const queryString = `document/${docId}/feature`;
+    return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
+  }
+
+  unFeatureDocument(docId: String): Observable<Document> {
+    const queryString = `document/${docId}/unfeature`;
+    return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
+  }
+
+  uploadDocument(formData: FormData, publish: Boolean): Observable<Document> {
     const fields = [
       'documentFileName',
       'internalOriginalName',
       'displayName',
       'internalURL',
-      'internalMime'
+      'internalMime',
+      'isFeatured'
     ];
-    const queryString = `document?fields=${this.buildValues(fields)}`;
+    let queryString = `document?fields=${this.buildValues(fields)}`;
+    if (publish) { queryString += `&publish=${publish}`; }
     return this.http.post<Document>(`${this.pathAPI}/${queryString}`, formData, {});
   }
 
@@ -805,7 +852,7 @@ export class ApiService {
     } else {
       filename = document.documentFileName;
     }
-    filename = this.utils.encodeFilename(filename, false);
+    filename = this.utils.encodeString(filename, false);
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -829,14 +876,14 @@ export class ApiService {
     let currentDate = this.utils.formatDate(new Date());
     let filename = '';
     if (format === 'staff') {
-      filename = projectName + '-eao-' + currentDate;
+      filename = projectName + '-eao-' + currentDate + '.csv';
     } else if (format === 'proponent') {
-      filename = projectName + '-proponent-' + currentDate;
+      filename = projectName + '-proponent-' + currentDate + '.csv';
     } else {
       filename = 'export.csv';
     }
 
-    filename = this.utils.encodeFilename(filename, true);
+    filename = this.utils.encodeString(filename, true);
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -859,12 +906,12 @@ export class ApiService {
     } else {
       filename = document.documentFileName;
     }
-    filename = this.utils.encodeFilename(filename, true);
+    filename = this.utils.encodeString(filename, true);
     window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
   }
 
-  public downloadElementThumbnail(id: string): Promise<Blob> {
-    const queryString = `inspection/element/${id}?thumbnail=true`;
+  public downloadElementThumbnail(inspectionId: string, elementId: string, itemId: string): Promise<Blob> {
+    const queryString = `inspection/${inspectionId}/${elementId}/${itemId}?thumbnail=true`;
     return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
   }
 
@@ -873,10 +920,18 @@ export class ApiService {
     window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
   }
 
-  public async downloadInspectionItem(inspectionId, elementId, item: any): Promise<void> {
-    let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
-    const queryString = `inspection/${inspectionId}/${elementId}/${item._id}?filename=${filename}`;
-    let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+  public async downloadInspectionItem(inspection, elementId, item: any): Promise<void> {
+    let tempDate = new Date(item.timestamp);
+    let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}`;
+    filename = filename.replace('.', '-');
+    const queryString = `inspection/${inspection._id}/${elementId}/${item._id}?filename=${filename}`;
+    let blob = null;
+    try {
+      blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    } catch {
+      alert('An error has occured.');
+      throw Error('Unable to download item');
+    }
     if (this.isMS) {
       window.navigator.msSaveBlob(blob, filename);
     } else {
@@ -921,8 +976,9 @@ export class ApiService {
       let element = inspection.elements[i];
       let elementFolder = zip.folder(element.title);
       elementFolder.file(
-        `element.txt`,
+        `element-${element.title}.txt`,
         `
+        Title: ${element.title}\n
         Description: ${element.description}\n
         Requirement: ${element.requirement}\n
         Timestamp: ${element.timestamp}\n
@@ -931,12 +987,26 @@ export class ApiService {
 
       for (let j = 0; j < element.items.length; j++) {
         const itemQueryString = `search?dataset=Item&_id=${element.items[j]}&_schemaName=${'InspectionItem'}`;
-        let itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
+        let itemSearchResults = null;
+        try {
+          itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
+          console.log('SEARCH RES', itemSearchResults);
+        } catch {
+          alert('An error has occured.');
+          throw Error('Unable to find inspection item.');
+        }
 
         let item = itemSearchResults[0];
-        let filename = item.internalURL.substring(item.internalURL.lastIndexOf('/') + 1);
+        let tempDate = new Date(item.timestamp);
+        let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}.${item.internalExt}`;
         const queryString = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
-        let blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+        let blob = null;
+        try {
+          blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+        } catch {
+          alert('An error has occured.');
+          throw Error('Unable to get asset.');
+        }
 
         elementFolder.file(
           `${filename}_caption.txt`,
@@ -947,17 +1017,24 @@ export class ApiService {
         elementFolder.file(filename, blob, { base64: true });
       }
     }
+    let content = null;
 
-    let content = await zip.generateAsync({ type: 'blob' });
+    try {
+      content = await zip.generateAsync({ type: 'blob' });
+    } catch {
+      alert('An error has occured.');
+      throw Error('Unable to generate zip file.');
+
+    }
     if (this.isMS) {
-      window.navigator.msSaveBlob(content, 'example.zip');
+      window.navigator.msSaveBlob(content, 'inspection.zip');
     } else {
       const url = window.URL.createObjectURL(content);
       const a = window.document.createElement('a');
       window.document.body.appendChild(a);
       a.setAttribute('style', 'display: none');
       a.href = url;
-      a.download = 'example.zip';
+      a.download = 'inspection.zip';
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
@@ -1006,7 +1083,7 @@ export class ApiService {
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
-  addVCToProject(vc: any, project: any): Observable<ValuedComponent> {
+  addVCToProject(vc: any): Observable<ValuedComponent> {
     const queryString = `vc/`;
     return this.http.post<ValuedComponent>(`${this.pathAPI}/${queryString}`, vc, {});
   }
@@ -1026,18 +1103,20 @@ export class ApiService {
   //
   // Searching
   //
-  searchKeywords(keys: string, dataset: string, fields: any[], pageNum: number, pageSize: number, sortBy: string = null, queryModifier: object = {}, populate = false, filter = {}): Observable<SearchResults[]> {
-    let queryString = `search?dataset=${dataset}`;
+  searchKeywords(keys: string, schemaName: string, fields: any[], pageNum: number, pageSize: number, projectLegislation: string = null, sortBy: string = null, queryModifier: object = {}, populate = false, filter = {}): Observable<SearchResults[]> {
+    projectLegislation = (projectLegislation === '') ? 'default' : projectLegislation;
+    let queryString = `search?dataset=${schemaName}`;
     if (fields && fields.length > 0) {
       fields.map(item => {
         queryString += `&${item.name}=${item.value}`;
       });
     }
     if (keys) {
-      queryString += `&keywords=${keys}`;
+      queryString += `&keywords=${encodeURIComponent(keys)}`;
     }
     if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
+    if (projectLegislation !== '') { queryString += `&projectLegislation=${projectLegislation}`; }
     if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
     if (populate !== null) { queryString += `&populate=${populate}`; }
     if (queryModifier !== {}) {
@@ -1048,13 +1127,21 @@ export class ApiService {
       });
     }
     if (filter !== {}) {
+      let safeItem;
       Object.keys(filter).map(key => {
         filter[key].split(',').map(item => {
-          queryString += `&or[${key}]=${item}`;
+          if (item.includes('&')) {
+            safeItem = this.utils.encodeString(item, true);
+          } else {
+            safeItem = item;
+          }
+          queryString += `&and[${key}]=${safeItem}`;
         });
       });
     }
-    queryString += `&fields=${this.buildValues(fields)}`;
+    // This step is already done in the if above
+    // queryString += `&fields=${this.buildValues(fields)}`;
+    queryString = encodeURI(queryString);
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -1148,6 +1235,23 @@ export class ApiService {
     const queryString = `organization/`;
     return this.http.post<Org>(`${this.pathAPI}/${queryString}`, org, {});
   }
+
+  //
+  // Project Notifications
+  //
+  saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    let queryString = `projectNotification/${projectNotification._id}`;
+    if (publish !== null) {
+      queryString += `?publish=${publish}`;
+    }
+    return this.http.put<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
+  }
+
+  addProjectNotification(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+    const queryString = `projectNotification?publish=${publish}`;
+    return this.http.post<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
+  }
+
 
   //
   // Local helpers

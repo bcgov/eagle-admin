@@ -17,33 +17,71 @@
     <div class="spinner-new rotating"></div>
   </div>
 
+
   <div class="form-group mb-0">
     <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
+        <div class="form-row">
+          <div class="col-md-12">
+            <div class="flex-container">
+              <label for="docLegislationRadio">Legislation Type*</label>
+              <div name="docLegislationRadio" class="radio-group">
+                <div class="radio">
+                  <input type="radio" id="1996" value="1996" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
+                  <label for="1996" class="legislation-label">1996 Environmental Assessment Act</label>
+                </div>
+                <div class="radio">
+                  <input type="radio" id="2002" value="2002" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
+                  <label for="2002" class="legislation-label">2002 Environmental Assessment Act</label>
+                </div>
+                <div class="radio">
+                  <input type="radio" id="2018" value="2018" formControlName="docLegislationRadio" name="docLegislationRadio" (change)="changeLegislation($event)"/>
+                  <label for="2018" class="legislation-label">2018 Environmental Assessment Act</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       <div class="form-row">
         <div class="form-group col-md-4">
           <label for="doctypesel">Document Type*</label>
-          <select required class="form-control" formControlName="doctypesel">
-            <option *ngFor="let type of doctypes" [ngValue]="type._id">{{type.name}}</option>
-          </select>
+          <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')"  class="form-control" formControlName="doctypesel">
+              <option *ngFor="let type of filteredDoctypes2002" [ngValue]="type._id">{{type.name}}</option>
+            </select>
+
+            <select required [hidden]="!(this.legislationYear === '2018')" class="form-control" formControlName="doctypesel">
+              <option *ngFor="let type of filteredDoctypes2018" [ngValue]="type._id">{{type.name}}</option>
+            </select>
         </div>
         <div class="form-group col-md-4">
           <label for="authorsel">Author*</label>
-          <select required class="form-control" formControlName="authorsel">
-            <option *ngFor="let author of authors" [ngValue]="author._id">{{author.name}}</option>
+          <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" class="form-control" formControlName="authorsel">
+            <option *ngFor="let author2002 of filteredAuthors2002" [ngValue]="author2002._id">{{author2002.name}}</option>
+          </select>
+
+          <select required [hidden]="!(this.legislationYear === '2018')" class="form-control" formControlName="authorsel">
+            <option *ngFor="let author2018 of filteredAuthors2018" [ngValue]="author2018._id">{{author2018.name}}</option>
           </select>
         </div>
         <div class="form-group col-md-4">
           <label for="labelsel">Milestone*</label>
-          <select required class="form-control" formControlName="labelsel">
-            <option *ngFor="let label of labels" [ngValue]="label._id">{{label.name}}</option>
+          <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" class="form-control" formControlName="labelsel">
+            <option *ngFor="let label of filteredLabels2002" [ngValue]="label._id">{{label.name}}</option>
+          </select>
+
+          <select required [hidden]="!(this.legislationYear === '2018')" class="form-control" formControlName="labelsel">
+            <option *ngFor="let label of filteredLabels2018" [ngValue]="label._id">{{label.name}}</option>
           </select>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group col-md-4">
             <label for="projectphasesel">Project Phase*</label>
-            <select required class="form-control" formControlName="projectphasesel">
-                <option *ngFor="let projectPhase of projectPhases" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
+            <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')" class="form-control" formControlName="projectphasesel">
+              <option *ngFor="let projectPhase of filteredProjectPhases2002" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
+            </select>
+
+            <select required [hidden]="!(this.legislationYear === '2018')" class="form-control" formControlName="projectphasesel">
+              <option *ngFor="let projectPhase of filteredProjectPhases2018" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
             </select>
         </div>
         <div class="form-group col-md-4">
@@ -71,7 +109,8 @@
       </div>
       <div class="form-row">
         <div class="form-group col-md-12">
-          <label for="displayName">Document Name</label>
+          <label *ngIf="documents && documents.length > 1" for="displayName">Document Name</label>
+          <label *ngIf="!documents || documents.length < 2" for="displayName">Document Name*</label>
           <div *ngIf="docNameInvalid" class="alert alert-danger" role="alert">
             \ / | : * ? " < > are not accepted file name characters
           </div>
@@ -111,8 +150,11 @@
       </li>
     </ul>
   </div>
-  <div class="input-group-prepend">
-    <button [disabled]="!myForm.valid || documents?.length === 0 || docNameInvalid" (click)="uploadDocuments()" class="btn btn-outline-primary mr-1" type="submit"
-      id="button-cl"><i class="material-icons">arrow_upward</i>Upload</button>
+  <div class="text-right" >
+    <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
+    &nbsp;
+    <button class="btn btn-primary mr-1" [disabled]="!docNameExists() || !myForm.valid || docNameInvalid || documents?.length === 0"  type="submit" (click)="uploadDocuments()">Upload</button>
+    &nbsp;
+    <!-- <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid || documents?.length === 0 " type="publish" (click)="uploadAndPublish()" >Upload & Publish</button> -->
   </div>
 </div>

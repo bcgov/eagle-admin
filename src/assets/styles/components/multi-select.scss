@@ -1,0 +1,28 @@
+// ng-select overrides.
+.ng-select {
+  max-width: 600px;
+
+  input[type="text"] {
+    height: 2.25rem;
+    padding: 0;
+  }
+
+  .ng-placeholder {
+    top: inherit !important;
+  }
+
+  &.ng-select-focused:not(.ng-select-opened) {
+    .ng-select-container { 
+      background-color: #fff;
+      border-color: #80bdff;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25)
+    }
+  }
+
+  .ng-optgroup {
+    font-weight: 700 !important;
+    color: inherit !important;
+    background-color: #e6e6e6;
+  }
+}

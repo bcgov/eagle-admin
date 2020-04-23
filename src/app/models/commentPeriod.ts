@@ -123,8 +123,6 @@ export class CommentPeriod {
       const now = new Date();
       const dateStarted = moment(obj.dateStarted);
       const dateCompleted = moment(obj.dateCompleted);
-      const sevenDays = new Date(obj.dateStarted);
-      sevenDays.setDate(sevenDays.getDate() - 7);
 
       if (moment(now).isBetween(dateStarted, dateCompleted)) {
         this.commentPeriodStatus = 'Open';
@@ -133,7 +131,7 @@ export class CommentPeriod {
       } else if (moment(now).isAfter(dateCompleted)) {
         this.commentPeriodStatus = 'Closed';
         this.daysRemaining = 'Completed';
-      } else if (moment(now).isBetween(moment(sevenDays), dateStarted)) {
+      } else {
         this.commentPeriodStatus = 'Pending';
         this.daysRemaining = 'Pending';
       }

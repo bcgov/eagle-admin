@@ -1,18 +1,22 @@
-<div class="row mb-1 status-container">
-  <div class="col-6">
-    Pending
-    <span class="badge badge-secondary">{{summary?.Pending || 0}}</span>
+<div class="mb-1 status-container">
+  <div class="status-column">
+    <div class="status">
+      Pending
+      <span class="badge badge-secondary">{{summary?.Pending || 0}}</span>
+    </div>
+    <div class="status">
+      Published
+      <span class="badge badge-secondary bg-success">{{summary?.Published || 0}}</span>
+    </div>
   </div>
-  <div class="col-6">
-    Deferred
-    <span class="badge badge-secondary bg-warning">{{summary?.Deferred || 0}}</span>
-  </div>
-  <div class="col-6">
-    Published
-    <span class="badge badge-secondary bg-success">{{summary?.Published || 0}}</span>
-  </div>
-  <div class="col-6">
-    Rejected
-    <span class="badge badge-secondary bg-danger">{{summary?.Rejected || 0}}</span>
+  <div class="status-column">
+    <div class="status">
+      Deferred
+      <span class="badge badge-secondary bg-warning">{{summary?.Deferred || 0}}</span>
+    </div>
+    <div class="status">
+      Rejected
+      <span class="badge badge-secondary bg-danger">{{summary?.Rejected || 0}}</span>
+    </div>
   </div>
 </div>

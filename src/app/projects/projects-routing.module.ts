@@ -8,17 +8,18 @@ import { LinkOrganizationComponent } from 'app/shared/components/link-organizati
 import { LinkOrganizationResolver } from 'app/shared/components/link-organization/link-organization-resolver.services';
 import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
 import { ContactsResolver } from 'app/contacts/contacts-resolver.service';
-
+import { ProjectsRoutes } from './projects-routes';
+import { AuthGuard } from '../services/auth-guard.service';
 const routes: Routes = [
   {
-    path: 'projects/add/link-org',
+    path: 'projects/add/:formTab/link-org',
     component: LinkOrganizationComponent,
     resolve: {
       organizations: LinkOrganizationResolver
     }
   },
   {
-    path: 'projects/add/link-contact',
+    path: 'projects/add/:formTab/link-contact',
     component: ContactSelectComponent,
     resolve: {
       contacts: ContactsResolver
@@ -26,11 +27,13 @@ const routes: Routes = [
   },
   {
     path: 'projects/add',
-    component: AddEditProjectComponent
+    component: AddEditProjectComponent,
+    children: ProjectsRoutes
   },
   {
     path: 'projects',
     component: ProjectListComponent,
+    canActivate: [AuthGuard],
     resolve: {
       projects: ProjectListResolver
     }
@@ -46,7 +49,8 @@ const routes: Routes = [
   ],
   providers: [
     ProjectListResolver,
-    LinkOrganizationResolver
+    LinkOrganizationResolver,
+    AuthGuard
   ]
 })
 

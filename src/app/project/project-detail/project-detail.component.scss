@@ -1,9 +1,127 @@
 @import "assets/styles/components/details.scss";
 
-section {
-  + section {
-    margin-top: 3rem;
-  }
+.badge-wrapper{
+    position: relative;
+}
+.action-drop-button{
+    padding-right: 30px;
+    padding-left: 30px;
+    margin-right: 40px;
+}
+.badge-published{
+    color: white;
+    font-size: large;
+    margin-bottom: 11px;
+}
+.heading-bar{
+    display: flex;
+    justify-content: space-between;
+}
+.badge-unpublished{
+    background-color: #343A40;
+    color: white;
+    font-size: large;
+    margin-bottom: 11px;
+}
+
+.btn-archived {
+    float: right;
+    background-color: #003367;
+    color: #fff;
+}
+
+.no-click {pointer-events: none;}
+
+.legislation-button {
+    // margin-top: 20px;
+    label {
+        font-weight: bold;
+        color: #fcba18;
+        font-size: 1rem;
+    }
+    p {
+        font-size: 1rem;
+        display: inline-block;
+        margin-left: 10px;
+        color:  #fff;
+    }
+}
+
+.project {
+    background: #fff;
+
+    .container {
+      @media (max-width: 767px) {
+        padding: 1rem;
+      }
+    }
+
+    .hero-banner-alt {
+      h1 {
+        display: inline-block;
+      }
+      .desc {
+        margin: 0 0 30px;
+      }
+      .proj-status {
+        display: inline-block;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 8px 10px;
+        color: #fcba18;
+        text-transform: uppercase;
+      }
+      .ea-decision {
+        color: #fcba18;
+        font-size: 1rem;
+        border: 2px solid #fcba18;
+        padding: 3px 10px;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 45px;
+      }
+      .basic-info {
+        @media (min-width: 767px) {
+          display: flex;
+        }
+
+        > div {
+          padding: 0px 15px 0 0;
+          margin-right: 15px;
+          @media (min-width: 767px) {
+            border-right: 1px solid #46617b;
+          }
+          &:last-of-type {
+            border-right: none;
+          }
+        }
+        label {
+          font-weight: bold;
+          color: #fcba18;
+          font-size: 1rem;
+        }
+        p {
+          font-size: 1rem;
+          display: inline-block;
+        }
+      }
+      .legislation-button {
+          margin-top: 20px;
+          label {
+              font-weight: bold;
+              color: #fcba18;
+              font-size: 1rem;
+          }
+          p {
+              font-size: 1rem;
+              display: inline-block;
+              margin-left: 10px;
+          }
+      }
+    }
+}
+button {
+    float: right;
 }
 
 h1 {
