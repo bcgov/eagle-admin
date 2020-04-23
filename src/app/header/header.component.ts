@@ -35,9 +35,9 @@ import { Subject } from 'rxjs/Subject';
 })
 
 export class HeaderComponent implements OnInit, OnDestroy {
-  isNavMenuOpen = false;
-  welcomeMsg: String;
-  private _api: ApiService;
+  public envName: string;
+  public isNavMenuOpen = false;
+  public welcomeMsg: String;
   public jwt: {
     username: String,
     realm_access: {
@@ -46,7 +46,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     scopes: Array<String>
   };
   private dayCalculatorModal: NgbModalRef = null;
-  private showDayCalculatorModal = false;
+  public showDayCalculatorModal = false;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   constructor(
@@ -56,10 +56,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     public router: Router
   ) {
-    this._api = api;
     router.events
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(val => {
+      .subscribe(() => {
         const token = this.keycloakService.getToken();
         // TODO: Change this to observe the change in the _api.token
         if (token) {
@@ -84,10 +83,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.dialogService.addDialog(ConfirmComponent,
         {
           title: 'Browser Incompatible',
-          message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.'
+          message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.',
+          okOnly: true,
         }, {
           backdropColor: 'rgba(0, 0, 0, 0.5)'
         });
+    }
+
+    // Set the environment
+    switch (this.api.env) {
+      case 'local':
+        this.envName = 'Local';
+        break;
+      case 'dev':
+        this.envName = 'Development';
+        break;
+      case 'test':
+        this.envName = 'Testing';
+        break;
+      case 'demo':
+        this.envName = 'Demo';
+        break;
+      case 'hotfix':
+        this.envName = 'Hotfix';
+        break;
+      default:
+        this.envName = null;
     }
   }
 
