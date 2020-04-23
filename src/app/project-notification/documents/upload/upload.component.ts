@@ -51,13 +51,14 @@ export class UploadComponent implements OnInit, OnDestroy {
   buildForm() {
     this.myForm = new FormGroup({
       'displayName': new FormControl(),
-      'description': new FormControl(),
+      'description': new FormControl('Project Notification Document'),
       'label': new FormControl(this.documentLabel[0]),
       'type' : new FormControl({value: this.documentType[0], disabled: true}),
       'milestone' : new FormControl({ value: this.documentMilestone[0], disabled: true}),
       'author' : new FormControl( { value: this.documentAuthor[0] , disabled: true }),
       'phase' : new FormControl({ value: this.documentPhase[0], disabled: true } )
     });
+    console.log(this.myForm);
     this.loading = false;
   }
 
@@ -77,7 +78,7 @@ export class UploadComponent implements OnInit, OnDestroy {
 
   public uploadDocuments() {
     this.loading = true;
-
+    console.log(this.myForm)
     // go through and upload one at a time.
     let observables = [];
 
@@ -91,15 +92,16 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('displayName', doc.documentFileName );
       formData.append('dateUploaded', new Date().toISOString());
       formData.append('datePosted', new Date().toISOString());
-      formData.append('milestone', this.myForm.value.milestone);
-      formData.append('type', this.myForm.value.type);
-      formData.append('description', 'Project Notification Document');
+      formData.append('milestone', this.myForm.controls.milestone.value);
+      formData.append('type', this.myForm.controls.type.value);
+      formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', this.myForm.value.documentAuthorType);
-      formData.append('projectPhase', this.myForm.value.projectPhase);
+      formData.append('documentAuthor', this.myForm.controls.author.value);
+      formData.append('projectPhase', this.myForm.controls.phase.value);
       formData.append('legislation', '2018');
 
       observables.push(this.documentService.add(formData, this.publishDoc));
-    });
+    }, this);
 
     this.storageService.state = { type: 'form', data: null };
     this.storageService.state = { type: 'documents', data: null };
