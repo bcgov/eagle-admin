@@ -104,6 +104,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       case 'demo':
         this.envName = 'Demo';
         break;
+      case 'hotfix':
+        this.envName = 'Hotfix';
+        break;
       default:
         this.envName = null;
     }
