@@ -83,10 +83,10 @@ export class UploadComponent implements OnInit, OnDestroy {
   }
 
 
-  public findID( name, objArr){
-    let id = "null";
-    for ( let i = 0; i < objArr.length; i++ ){
-      if (objArr[i].name === name){
+  public findID( name, objArr) {
+    let id = 'null';
+    for ( let i = 0; i < objArr.length; i++ ) {
+      if (objArr[i].name === name) {
         id = objArr[i]._id;
         break;
       }
@@ -96,23 +96,18 @@ export class UploadComponent implements OnInit, OnDestroy {
 
   public uploadDocuments() {
     this.loading = true;
-    console.log(this.myForm)
-    // go through and upload one at a time.
     let observables = [];
 
- 
-
     let docType = this.myForm.controls.type.value;
-    if (docType === "Project Notification"){
-      docType = "Notification";
+    if (docType === 'Project Notification') {
+      docType = 'Notification';
     }
     let docTypeID = this.findID(docType, this.documentTypeID);
     let milestoneID = this.findID(this.myForm.controls.milestone.value, this.documentMilestoneID);
 
-
     let docAuthor = this.myForm.controls.author.value;
-    if (docAuthor === "Proponent"){
-      docAuthor = "Proponent/Certificate Holder";
+    if (docAuthor === 'Proponent') {
+      docAuthor = 'Proponent/Certificate Holder';
     }
     let authorID = this.findID(docAuthor, this.documentAuthorID);
 
