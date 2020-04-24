@@ -6,7 +6,7 @@ import { Subject, forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-
+import { ConfigService } from 'app/services/config.service';
 import { Document } from 'app/models/document';
 
 @Component({
@@ -32,6 +32,10 @@ export class UploadComponent implements OnInit, OnDestroy {
   public documentMilestone = ['Project Notification'];
   public documentAuthor = ['Proponent', 'EAO'];
   public documentPhase = [ 'Project Designation'];
+  public documentTypeID: any[] = [];
+  public documentMilestoneID: any[] = [];
+  public documentAuthorID: any[] = [];
+  public documentPhaseID: any[] = [];
 
 
 
@@ -41,11 +45,13 @@ export class UploadComponent implements OnInit, OnDestroy {
     private storageService: StorageService,
     private documentService: DocumentService,
     private snackBar: MatSnackBar,
+    private config: ConfigService,
   ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
     this.buildForm();
+    this.getLists();
   }
 
   buildForm() {
@@ -76,11 +82,42 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.uploadDocuments();
   }
 
+
+  public findID( name, objArr){
+    let id = "null";
+    for ( let i = 0; i < objArr.length; i++ ){
+      if (objArr[i].name === name){
+        id = objArr[i]._id;
+        break;
+      }
+    }
+    return id;
+  }
+
   public uploadDocuments() {
     this.loading = true;
     console.log(this.myForm)
     // go through and upload one at a time.
     let observables = [];
+
+ 
+
+    let docType = this.myForm.controls.type.value;
+    if (docType === "Project Notification"){
+      docType = "Notification";
+    }
+    let docTypeID = this.findID(docType, this.documentTypeID);
+    let milestoneID = this.findID(this.myForm.controls.milestone.value, this.documentMilestoneID);
+
+
+    let docAuthor = this.myForm.controls.author.value;
+    if (docAuthor === "Proponent"){
+      docAuthor = "Proponent/Certificate Holder";
+    }
+    let authorID = this.findID(docAuthor, this.documentAuthorID);
+
+    let phaseID = this.findID(this.myForm.controls.phase.value, this.documentPhaseID);
+
 
     this.documents.map(doc => {
       const formData = new FormData();
@@ -92,12 +129,12 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('displayName', doc.documentFileName );
       formData.append('dateUploaded', new Date().toISOString());
       formData.append('datePosted', new Date().toISOString());
-      formData.append('milestone', this.myForm.controls.milestone.value);
-      formData.append('type', this.myForm.controls.type.value);
+      formData.append('milestone', milestoneID);
+      formData.append('type', docTypeID);
       formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', null);
-      formData.append('documentAuthor', this.myForm.controls.author.value);
-      formData.append('projectPhase', this.myForm.controls.phase.value);
+      formData.append('documentAuthor', authorID);
+      formData.append('projectPhase', phaseID);
       formData.append('legislation', '2018');
 
       observables.push(this.documentService.add(formData, this.publishDoc));
@@ -199,4 +236,50 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
+
+
+
+  getLists() {
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.name) {
+          case 'Notification':
+            if (item.legislation === 2018) {
+              this.documentTypeID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Decision Materials':
+            if (item.legislation === 2018) {
+              this.documentTypeID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Proponent/Certificate Holder':
+            if (item.legislation === 2018) {
+              this.documentAuthorID.push(Object.assign({}, item));
+            }
+            break;
+          case 'EAO':
+            if (item.legislation === 2018) {
+              this.documentAuthorID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Project Notification':
+            if (item.legislation === 2018) {
+              this.documentMilestoneID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Project Designation':
+            if (item.legislation === 2018) {
+              this.documentPhaseID.push(Object.assign({}, item));
+            }
+            break;
+        }
+      }, this);
+    });
+  }
+
+
+
+
+
 }
