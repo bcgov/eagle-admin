@@ -93,15 +93,11 @@
         </select>
       </div>
 
-      <div class="label-pair">
-        <label for="location">Location* </label>
-        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
-      </div>
 
       <div class="label-pair">
         <label for="decision">Notification Decision*</label>
         <select name="decision" id="decision" formControlName="decision" class="form-control">
-          <option *ngFor="let decision of NOTIFICATION_DECISIONS" [ngValue]="decision">{{decision}}</option>
+          <option *ngFor="let decision of NOTIFICATION_DECISIONS | keyvalue" [ngValue]="decision.value">{{decision.value}}</option>
         </select>
       </div>
 
@@ -116,26 +112,40 @@
           </div>
         </div>
       </div>
-    </div>
+        <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'"
+          class="label-pair">
+          <label for="project" class="eAPProjectLabel">Associated Environmental Assessment Project*</label>
+          <div class="input-group">
+            <select name="project" id="project" formControlName="project" class="form-control">
+              <option value="">None</option>
+              <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
-    <div class="flex-container">
-      <div class="label-pair">
-        <label for="latitude">Latitude*</label>
-        <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
+      <div class="flex-container">
+        <div class="label-pair">
+          <label for="location">Location* </label>
+          <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+        </div>
+        <div class="label-pair">
+          <label for="latitude">Latitude*</label>
+          <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
+        </div>
+        <div class="label-pair">
+          <label for="longitude">Longitude*</label>
+          <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
+        </div>
       </div>
-      <div class="label-pair">
-        <label for="longitude">Longitude*</label>
-        <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
-      </div>
-    </div>
 
-    <div class="flex-container">
-      <div class="label-pair med">
-        <label for="description">Description*</label>
-        <textarea name="description" id="description" formControlName="description" type="text"
-          class="form-control"></textarea>
+      <div class="flex-container">
+        <div class="label-pair med">
+          <label for="description">Description*</label>
+          <textarea name="description" id="description" formControlName="description" type="text"
+            class="form-control"></textarea>
+        </div>
       </div>
-    </div>
   </form>
 
   <div class="text-right">
