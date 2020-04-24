@@ -64,7 +64,6 @@ export class UploadComponent implements OnInit, OnDestroy {
       'author' : new FormControl( { value: this.documentAuthor[0] , disabled: true }),
       'phase' : new FormControl({ value: this.documentPhase[0], disabled: true } )
     });
-    console.log(this.myForm);
     this.loading = false;
   }
 
