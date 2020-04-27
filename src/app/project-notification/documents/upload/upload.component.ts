@@ -6,7 +6,7 @@ import { Subject, forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-
+import { ConfigService } from 'app/services/config.service';
 import { Document } from 'app/models/document';
 
 @Component({
@@ -27,6 +27,17 @@ export class UploadComponent implements OnInit, OnDestroy {
   public docNameInvalid = false;
   public legislationYear = '2018';
   public publishDoc = false;
+  public documentLabel = ['Proponent Project Notification', 'EAO Project Notification Report'];
+  public documentType = ['Project Notification', 'Decision Materials'];
+  public documentMilestone = ['Project Notification'];
+  public documentAuthor = ['Proponent', 'EAO'];
+  public documentPhase = [ 'Project Designation'];
+  public documentTypeID: any[] = [];
+  public documentMilestoneID: any[] = [];
+  public documentAuthorID: any[] = [];
+  public documentPhaseID: any[] = [];
+
+
 
   constructor(
     private router: Router,
@@ -34,16 +45,24 @@ export class UploadComponent implements OnInit, OnDestroy {
     private storageService: StorageService,
     private documentService: DocumentService,
     private snackBar: MatSnackBar,
+    private config: ConfigService,
   ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
     this.buildForm();
+    this.getLists();
   }
 
   buildForm() {
     this.myForm = new FormGroup({
-      'displayName': new FormControl()
+      'displayName': new FormControl(),
+      'description': new FormControl('Project Notification Document'),
+      'label': new FormControl(this.documentLabel[0]),
+      'type' : new FormControl({value: this.documentType[0], disabled: true}),
+      'milestone' : new FormControl({ value: this.documentMilestone[0], disabled: true}),
+      'author' : new FormControl( { value: this.documentAuthor[0] , disabled: true }),
+      'phase' : new FormControl({ value: this.documentPhase[0], disabled: true } )
     });
     this.loading = false;
   }
@@ -62,13 +81,37 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.uploadDocuments();
   }
 
+
+  public findID( name, objArr) {
+    let id = 'null';
+    for ( let i = 0; i < objArr.length; i++ ) {
+      if (objArr[i].name === name) {
+        id = objArr[i]._id;
+        break;
+      }
+    }
+    return id;
+  }
+
   public uploadDocuments() {
     this.loading = true;
-
-    // go through and upload one at a time.
     let observables = [];
 
-    // NB: If multi upload, then switch to use documentFileName as displayName
+    let docType = this.myForm.controls.type.value;
+    if (docType === 'Project Notification') {
+      docType = 'Notification';
+    }
+    let docTypeID = this.findID(docType, this.documentTypeID);
+    let milestoneID = this.findID(this.myForm.controls.milestone.value, this.documentMilestoneID);
+
+    let docAuthor = this.myForm.controls.author.value;
+    if (docAuthor === 'Proponent') {
+      docAuthor = 'Proponent/Certificate Holder';
+    }
+    let authorID = this.findID(docAuthor, this.documentAuthorID);
+
+    let phaseID = this.findID(this.myForm.controls.phase.value, this.documentPhaseID);
+
 
     this.documents.map(doc => {
       const formData = new FormData();
@@ -77,18 +120,19 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('project', this.currentProject._id);
       formData.append('documentFileName', doc.documentFileName);
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
-      formData.append('displayName', this.documents.length > 1 ? doc.documentFileName : this.myForm.value.displayName);
+      formData.append('displayName', doc.documentFileName );
       formData.append('dateUploaded', new Date().toISOString());
       formData.append('datePosted', new Date().toISOString());
-      formData.append('milestone', null);
-      formData.append('type', null);
-      formData.append('description', 'Project Notification Document');
+      formData.append('milestone', milestoneID);
+      formData.append('type', docTypeID);
+      formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', null);
-      formData.append('projectPhase', null);
+      formData.append('documentAuthor', authorID);
+      formData.append('projectPhase', phaseID);
       formData.append('legislation', '2018');
 
       observables.push(this.documentService.add(formData, this.publishDoc));
-    });
+    }, this);
 
     this.storageService.state = { type: 'form', data: null };
     this.storageService.state = { type: 'documents', data: null };
@@ -112,21 +156,6 @@ export class UploadComponent implements OnInit, OnDestroy {
           this.loading = false;
         }
       );
-  }
-
-public docNameExists() {
-  // Doc name "exists" if the form has a value, or if the form has more than one document
-  // this does not check name validity (validateChars does that)
-  return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) ||
-         (this.documents && this.documents.length > 1);
-}
-
-  public validateChars() {
-    if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
-      this.docNameInvalid = true;
-    } else {
-      this.docNameInvalid = false;
-    }
   }
 
   public addDocuments(files: FileList) {
@@ -182,8 +211,69 @@ public docNameExists() {
     }
   }
 
+  public onChangeLabel() {
+    if (this.myForm.value.label ===  'Proponent Project Notification') {
+      this.myForm.controls.type.setValue(this.documentType[0]);
+      this.myForm.controls.author.setValue(this.documentAuthor[0]);
+      this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
+      this.myForm.controls.phase.setValue(this.documentPhase[0]);
+    } else {
+      this.myForm.controls.type.setValue(this.documentType[1]);
+      this.myForm.controls.author.setValue(this.documentAuthor[1]);
+      this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
+      this.myForm.controls.phase.setValue(this.documentPhase[0]);
+    }
+    this._changeDetectionRef.detectChanges();
+  }
+
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
+
+
+
+  getLists() {
+    this.config.getLists().subscribe (lists => {
+      lists.map(item => {
+        switch (item.name) {
+          case 'Notification':
+            if (item.legislation === 2018) {
+              this.documentTypeID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Decision Materials':
+            if (item.legislation === 2018) {
+              this.documentTypeID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Proponent/Certificate Holder':
+            if (item.legislation === 2018) {
+              this.documentAuthorID.push(Object.assign({}, item));
+            }
+            break;
+          case 'EAO':
+            if (item.legislation === 2018) {
+              this.documentAuthorID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Project Notification':
+            if (item.legislation === 2018) {
+              this.documentMilestoneID.push(Object.assign({}, item));
+            }
+            break;
+          case 'Project Designation':
+            if (item.legislation === 2018) {
+              this.documentPhaseID.push(Object.assign({}, item));
+            }
+            break;
+        }
+      }, this);
+    });
+  }
+
+
+
+
+
 }
