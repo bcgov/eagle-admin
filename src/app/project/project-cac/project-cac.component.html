@@ -26,10 +26,12 @@
 
 <!-- CAC EXISTS -->
 <div *ngIf="projectCAC" class="container-fluid-padding">
-
-  <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
-  <span class="badge badge-unpublished" *ngIf="!isPublished">Not Published</span>
-
+  <div class="row">
+    <div class='input-group-prepend col-10'>
+      <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
+      <span class="badge badge-unpublished" *ngIf="!isPublished">Unpublished</span>
+    </div>
+  </div>
   <div class="row input-group-prepend font-weight-light pull-right col-12 mb-3">
     <u>Community Advisory Committee Email:</u><a class="ml-2" href="mailto://{{this.currentProject.cacEmail}}">{{this.currentProject.cacEmail}}</a>
   </div>
