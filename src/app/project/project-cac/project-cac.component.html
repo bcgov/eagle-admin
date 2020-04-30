@@ -26,6 +26,10 @@
 
 <!-- CAC EXISTS -->
 <div *ngIf="projectCAC" class="container-fluid-padding">
+
+  <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
+  <span class="badge badge-unpublished" *ngIf="!isPublished">Not Published</span>
+
   <div class="row input-group-prepend font-weight-light pull-right col-12 mb-3">
     <u>Community Advisory Committee Email:</u><a class="ml-2" href="mailto://{{this.currentProject.cacEmail}}">{{this.currentProject.cacEmail}}</a>
   </div>
@@ -40,9 +44,16 @@
         type="button" id="button-ex"><i class="material-icons">import_export</i>Export</button>
       <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
         type="button" id="button-ce"><i class="material-icons">import_export</i>Copy Emails</button>
+
+
+      <button class="btn btn-primary btn-publish" type="publish" (click)="selectAction('publishCAC')" *ngIf="!this.isPublished">Publish</button>
+      <button class="btn btn-unpublish"  type="publish" (click)="selectAction('unpublishCAC')"  *ngIf="this.isPublished">Unpublish</button>
+      
+
+
     </div>
     <div class='input-group-prepend col-2'>
-      <button (click)="selectAction('deleteCAC')" class="btn btn-outline-secondary mr-1 pull-right"
+      <button *ngIf="!isPublished" (click)="selectAction('deleteCAC')" class="btn btn-outline-secondary mr-1 pull-right"
         type="button" id="button-ce">Delete CAC</button>
     </div>
   </div>

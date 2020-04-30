@@ -31,6 +31,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
   public selectedCount = 0;
   public cacMembers;
   public projectCAC = false;
+  public isPublished = false;
   public tableColumns: any[] = [
     {
       name: '',
@@ -88,6 +89,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
+    this.isPublished = this.storageService.state.currentProject.data.projectCACPublished;
 
     this.loading = true;
 
@@ -114,6 +116,7 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
             this.tableParams.totalListItems = 0;
             this.cacMembers = [];
           }
+          this.isPublished = data.project[0].data.searchResults[0].projectCACPublished;
           this.setRowData();
           this.loading = false;
           this._changeDetectionRef.detectChanges();
@@ -218,6 +221,12 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       case 'copyEmail':
         this.copyEmail();
         break;
+      case 'publishCAC':
+        this.publishCAC();
+        break;
+      case 'unpublishCAC':
+        this.unpublishCAC();
+        break;
       case 'selectAll':
         let someSelected = false;
 
@@ -278,6 +287,60 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
         }
       );
   }
+
+
+
+
+
+  publishCAC() {
+    if (this.currentProject && this.currentProject._id) {
+      this.loading = true;
+      this.projectService.publishCAC(this.currentProject._id)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(res => {
+        if (res) {
+          // We assuming the publish action was successful
+          this.loading = false;
+          this.openSnackBar('CAC Published Successfully!', 'Close');
+          this.isPublished = true;
+        } else {
+          this.loading = false;
+          this.openSnackBar('Error on publishing CAC, please try again later', 'Close');
+        }
+      });
+    } else {
+      this.openSnackBar('Invalid Project, please try again!', 'Close');
+      // Error
+    }
+  }
+  unpublishCAC() {
+    if (this.currentProject && this.currentProject._id) {
+      this.loading = true;
+      this.projectService.unpublishCAC(this.currentProject._id)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(res => {
+        if (res) {
+          this.loading = false;
+          this.openSnackBar('CAC Unpublished Successfully!', 'Close');
+          this.isPublished = false;
+        } else {
+          this.loading = false;
+          this.openSnackBar('Error on unpublishing CAC, please try again later', 'Close');
+        }
+      });
+    } else {
+      // Error
+      this.openSnackBar('Invalid Project, please try again!', 'Close');
+    }
+  }
+
+
+
+
+
+
+
+
 
   private createCAC() {
     const self = this;
