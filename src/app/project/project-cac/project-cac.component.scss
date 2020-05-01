@@ -13,3 +13,28 @@ legend {
     align-items: flex-end;
   }
 }
+
+.badge-published{
+  color: white;
+  font-size: large;
+  margin-bottom: 11px;
+}
+
+.badge-unpublished{
+  background-color: #343A40;
+  color: white;
+  font-size: large;
+  margin-bottom: 11px;
+}
+
+.btn-unpublish{
+  background-color: white;
+  color: #D8292F;
+  border-color: #D8292F;
+  border-width: 1px;
+}
+
+.btn-publish{
+  background-color: #28a745;
+  border-color: #28a745;
+}
