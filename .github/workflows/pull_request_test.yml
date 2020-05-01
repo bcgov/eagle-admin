@@ -7,7 +7,7 @@ on:
     branches:
     - develop
   milestone:
-    types: [created]
+    types: [created, edited]
 
 jobs:
   pull-request:
