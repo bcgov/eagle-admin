@@ -4,7 +4,7 @@
   <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox' [disabled]="(activeLegislationYear && document.legislation !== activeLegislationYear)">
   </td>
-  <td data-label="Name" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
+  <td data-label="Name" (contextmenu)="goToItemNewTab(document)" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width"><a href="/admin/p/{{document.project._id}}/project-documents/detail/{{document._id}}"> {{document.displayName}} </a></td>
   <td data-label="Status" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
     <p class="card-text publish-state">
       <i class="material-icons">
