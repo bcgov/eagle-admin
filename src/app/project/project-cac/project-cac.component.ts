@@ -288,10 +288,6 @@ export class ProjectCACComponent implements OnInit, OnDestroy {
       );
   }
 
-
-
-
-
   publishCAC() {
     if (this.currentProject && this.currentProject._id) {
       this.loading = true;

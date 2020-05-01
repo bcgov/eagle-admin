@@ -46,13 +46,8 @@
         type="button" id="button-ex"><i class="material-icons">import_export</i>Export</button>
       <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
         type="button" id="button-ce"><i class="material-icons">import_export</i>Copy Emails</button>
-
-
       <button class="btn btn-primary btn-publish" type="publish" (click)="selectAction('publishCAC')" *ngIf="!this.isPublished">Publish</button>
       <button class="btn btn-unpublish"  type="publish" (click)="selectAction('unpublishCAC')"  *ngIf="this.isPublished">Unpublish</button>
-      
-
-
     </div>
     <div class='input-group-prepend col-2'>
       <button *ngIf="!isPublished" (click)="selectAction('deleteCAC')" class="btn btn-outline-secondary mr-1 pull-right"
