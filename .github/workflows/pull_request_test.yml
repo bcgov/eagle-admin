@@ -27,7 +27,6 @@ jobs:
   zap_scan:
     runs-on: ubuntu-latest
     name: Zap Scan EPIC Admin
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -35,6 +34,7 @@ jobs:
           ref: develop
       - name: ZAP Scan
         uses: zaproxy/action-baseline@v0.3.0
+        continue-on-error: true
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           docker_name: 'owasp/zap2docker-stable'
