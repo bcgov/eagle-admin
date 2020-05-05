@@ -76,6 +76,10 @@
                     "value": "${TAG_NAME}"
                   },
                   {
+                    "name": "BANNER_COLOUR",
+                    "value": "${BANNER_COLOUR}"
+                  },
+                  {
                     "name": "REMOTE_API_PATH",
                     "value": "${REMOTE_API_PATH}"
                   },
@@ -266,6 +270,12 @@
       "displayName": "URL path to Public",
       "description": "[Currently Unused] The 'https://' prefixed URL path to the Public app that the admin Angular app will link back to.",
       "value": "https://eagle-your-openshift-namespace.pathfinder.gov.bc.ca/"
+    },
+    {
+      "name": "BANNER_COLOUR",
+      "displayName": "Environment banner colour",
+      "description": "This is a visual clue to clarify the environment that you are in at a glance. Default is an empty string for prod. Other examples are local=red, dev=orange, test=green, etc.",
+      "value": ""
     },
     {
       "name": "KEYCLOAK_CLIENT_ID",
