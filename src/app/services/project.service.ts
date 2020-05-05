@@ -257,6 +257,17 @@ export class ProjectService {
       .catch(error => this.api.handleError(error));
   }
 
+  publishCAC(projectId: string): Observable<Project> {
+    return this.api.publishProjectCAC(projectId)
+      .catch(error => this.api.handleError(error));
+  }
+
+  unpublishCAC(projectId: string): Observable<Project> {
+    return this.api.unpublishProjectCAC(projectId)
+      .catch(error => this.api.handleError(error));
+  }
+
+
   // isAccepted(status: string): boolean {
   //   return (status && status.toUpperCase() === 'ACCEPTED');
   // }

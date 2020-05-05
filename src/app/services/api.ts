@@ -337,6 +337,15 @@ export class ApiService {
     return this.http.put<any>(`${this.pathAPI}/${queryString}`, member, {});
   }
 
+  publishProjectCAC(projectId: string): Observable<any> {
+    const queryString = `project/${projectId}/cac/publish`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
+
+  unpublishProjectCAC(projectId: string): Observable<any> {
+    const queryString = `project/${projectId}/cac/unpublish`;
+    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
+  }
   // //
   // // Features
   // //
