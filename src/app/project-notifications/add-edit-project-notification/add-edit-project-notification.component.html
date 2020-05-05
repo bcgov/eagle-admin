@@ -55,7 +55,7 @@
 
       <div class="label-pair">
         <label for="nature">Nature* </label>
-        <select name="nature" id="nature" formControlName="nature" class="form-control">
+        <select name="nature" id="nature" formControlName="nature" class="form-control" readonly>
           <option *ngFor="let nature of NATURE_OPTIONS" [ngValue]="nature">{{nature}}</option>
         </select>
       </div>

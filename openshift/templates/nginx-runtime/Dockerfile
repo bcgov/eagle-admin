@@ -23,7 +23,6 @@ RUN ln -sf /etc/nginx/adminServerEnvironmentSettings.js /tmp/app/dist/admin/admi
 # ---------------------------------------------------------------------------------
 RUN chmod -R g+rwx $STI_SCRIPTS_PATH
 RUN chmod g+rw /var/cache/nginx \
-RUN chmod g+rw /var/cache/nginx \
                /var/run \
                /var/log/nginx \
                /etc/nginx/adminServerEnvironmentSettings.js \

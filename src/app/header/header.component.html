@@ -32,6 +32,11 @@
                 <span class="align-middle">Calculator</span>
             </a>
         </li>
+        <li *ngIf="jwt" class="nav-item">
+          <a class="nav-link" href="https://eaofider.pathfinder.gov.bc.ca/" target="_blank" rel="noopener noreferrer" title="Leave Feedback" tabindex="0">
+              <span class="align-middle"><i class="material-icons">feedback</i></span>
+          </a>
+        </li>
         <!-- LOGGED IN -->
         <li *ngIf="jwt; else loggedOut" class="nav-item" placement="bottom-right">
           <a class="nav-link" id="welcome" tabindex="0">
