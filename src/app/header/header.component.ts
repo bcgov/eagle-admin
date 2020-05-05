@@ -92,8 +92,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
         });
     }
 
-    this.envName = this.ApiService.env;
-    this.bannerColour = this.ApiService.bannerColour;
+    this.envName = this.api.env;
+    this.bannerColour = this.api.bannerColour;
     // no-banner-colour-set is the default if no banner colour is defined in the openshift environment variables.
     if ( this.envName && this.bannerColour && this.bannerColour !== 'no-banner-colour-set') {
       this.showBanner = true;
