@@ -15,8 +15,11 @@ def notifyRocketChat(text, url) {
       "icon_url":"https://wiki.jenkins.io/download/attachments/2916393/headshot.png",
       "text": message
     ])
-
-    sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+    try {
+      sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+    } catch (error) {
+      echo "Error posting Rocket Chat message: ${error}"
+    }
 }
 
 // Print stack trace of error
@@ -330,7 +333,11 @@ pipeline {
     stage('Setup PR env') {
       steps {
         script {
-          // sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+          try{
+            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+          } catch (error) {
+            echo "Error posting Rocket Chat message: ${error}"
+          }
           echo "Branch to build: ${PR_NAME}"
           echo "Source fork: ${PR_FORK}"
           if (!checkForPRDeployment()) {
@@ -362,20 +369,25 @@ pipeline {
           echo ">>>>>>Changelog: \n ${CHANGELOG}"
           _openshift(env.STAGE_NAME, TOOLSPROJECT) {
             timeout(10) {
-              echo "This has changed"
-              // sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
-              // ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-              // ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+              try { 
+                sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+                ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+                ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+              } catch (error) {
+                echo "Error posting Rocket Chat message: ${error}"
+              }
 
               echo "Building eagle-admin develop branch"
               // trigger and wait for s2i build to complete
               def bcObj1 = openshift.selector('bc', "${PR_NAME}-eagle-admin-angular-builder")
+              bcObj1.startBuild()
               bcObj1.untilEach(1) {
                 echo "bc1: ${it.object()}"
                 return it.object().status.phase == "Complete"
               }
               //  trigger and wait for nginx image build to complete
               def bcObj2 = openshift.selector('bc',"${PR_NAME}-eagle-admin-build" )
+              bcObj2.startBuild()
               bcObj2.untilEach(1) {
                 echo "bc2: ${it.object()}"
                 return it.object().status.phase == "Complete"

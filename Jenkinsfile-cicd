@@ -15,8 +15,11 @@ def notifyRocketChat(text, url) {
       "icon_url":"https://wiki.jenkins.io/download/attachments/2916393/headshot.png",
       "text": message
     ])
-
+    try { 
     sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+    } catch (error) {
+      echo "Error posting Rocket Chat message: ${error}"
+    }
 }
 
 // Print stack trace of error
@@ -83,18 +86,24 @@ pipeline {
         script {
           _openshift(env.STAGE_NAME, TOOLSPROJECT) {
             timeout(10) {
-              // sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
-              // ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-              // ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+              try {
+                sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+                //ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+                //ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+              } catch (error) {
+                echo "Error posting Rocket Chat message: ${error}"
+              }
 
               echo "Building eagle-admin develop branch"
               // trigger and wait for s2i build to complete
               def bcObj1 = openshift.selector('bc', "eagle-admin-angular-builder")
+              bcObj1.startBuild()
               bcObj1.untilEach(1) {
                 return it.object().status.phase == "Complete"
               }
               //  trigger and wait for nginx image build to complete
               def bcObj2 = openshift.selector('bc',"eagle-admin-build" )
+              bcObj2.startBuild()
               bcObj2.untilEach(1) {
                 return it.object().status.phase == "Complete"
               }
