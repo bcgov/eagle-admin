@@ -85,7 +85,7 @@ pipeline {
       steps {
         script {
           _openshift(env.STAGE_NAME, TOOLSPROJECT) {
-            timeout(10) {
+            timeout(20) {
               try {
                 sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
                 //ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
