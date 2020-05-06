@@ -381,7 +381,8 @@ pipeline {
               // trigger and wait for s2i build to complete
               def bcObj1 = openshift.selector('bc', "${PR_NAME}-eagle-admin-angular-builder")
               bcObj1.startBuild()
-              bcObj1.untilEach(1) {
+              def buildSelector1 = bcObj1.narrow("bc").related("builds")
+              buildSelector1.untilEach(1) {
                 echo "bc1: ${it.object()}"
                 echo "bc1 status: ${it.object().status}"
                 return it.object().status.phase == "Complete"
@@ -389,7 +390,8 @@ pipeline {
               //  trigger and wait for nginx image build to complete
               def bcObj2 = openshift.selector('bc',"${PR_NAME}-eagle-admin-build" )
               bcObj2.startBuild()
-              bcObj2.untilEach(1) {
+              def buildSelector2 = bcObj2.narrow("bc").related("builds")
+              buildSelector2.untilEach(1) {
                 echo "bc2: ${it.object()}"
                 return it.object().status.phase == "Complete"
               }
@@ -418,7 +420,7 @@ pipeline {
             openshift.withCluster() {
               openshift.withProject(TOOLSPROJECT) {
                 echo "Deploying to dev env..."
-                openshift.tag("${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${IMAGE_HASH}", "${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${PR_NAME}")
+                openshift.tag("${TOOLSPROJECT}/${PR_NAME}-eagle-admin:latest", "${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${PR_NAME}")
               }
 
               openshift.withProject(DEVPROJECT) {

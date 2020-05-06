@@ -98,13 +98,15 @@ pipeline {
               // trigger and wait for s2i build to complete
               def bcObj1 = openshift.selector('bc', "eagle-admin-angular-builder")
               bcObj1.startBuild()
-              bcObj1.untilEach(1) {
+              def buildSelector1 = bcObj1.narrow("bc").related("builds")
+              buildSelector1 .untilEach(1) {
                 return it.object().status.phase == "Complete"
               }
               //  trigger and wait for nginx image build to complete
               def bcObj2 = openshift.selector('bc',"eagle-admin-build" )
               bcObj2.startBuild()
-              bcObj2.untilEach(1) {
+              def buildSelector2 = bcObj2.narrow("bc").related("builds")
+              buildSelector2.untilEach(1) {
                 return it.object().status.phase == "Complete"
               }
 
@@ -120,7 +122,7 @@ pipeline {
               echo ">> IMAGE_HASH: ${IMAGE_HASH}"
             }
 
-            openshift.tag("${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${IMAGE_HASH}", "${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${PR_NAME}")
+            openshift.tag("${TOOLSPROJECT}/${PR_NAME}-eagle-admin:latest", "${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${PR_NAME}")
           }
         }
       }
