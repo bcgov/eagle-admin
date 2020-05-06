@@ -383,6 +383,7 @@ pipeline {
               bcObj1.startBuild()
               bcObj1.untilEach(1) {
                 echo "bc1: ${it.object()}"
+                echo "bc1 status: ${it.object().status}"
                 return it.object().status.phase == "Complete"
               }
               //  trigger and wait for nginx image build to complete
