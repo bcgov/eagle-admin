@@ -383,7 +383,6 @@ pipeline {
               bcObj1.startBuild()
               def buildSelector1 = bcObj1.narrow("bc").related("builds")
               buildSelector1.untilEach(1) {
-                echo "bc1: ${it.object()}"
                 echo "bc1 status: ${it.object().status}"
                 return it.object().status.phase == "Complete"
               }
@@ -392,7 +391,6 @@ pipeline {
               bcObj2.startBuild()
               def buildSelector2 = bcObj2.narrow("bc").related("builds")
               buildSelector2.untilEach(1) {
-                echo "bc2: ${it.object()}"
                 return it.object().status.phase == "Complete"
               }
 
