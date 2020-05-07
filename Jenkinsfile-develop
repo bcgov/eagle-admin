@@ -320,8 +320,7 @@ def cleanUpPR() {
       notifyRocketChat(
        "@all The cleanup ${env.BUILD_DISPLAY_NAME} of eagle ${PR_NAME} deployment may have failed.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
        'deploy'
-      )
-      currentBuild.result = 'FAILURE'
+      )    
       throw new Exception("Full PR env teardown failed: ${error}")
     }
   }
