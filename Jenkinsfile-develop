@@ -7,8 +7,7 @@ import java.util.regex.Pattern
 /*
  * Sends a rocket chat notification
  */
-def notifyRocketChat(text, url) {
-    def rocketChatURL = url
+def notifyRocketChat(text, target) {
     def message = text.replaceAll(~/\'/, "")
     def payload = JsonOutput.toJson([
       "username":"Jenkins",
@@ -16,6 +15,12 @@ def notifyRocketChat(text, url) {
       "text": message
     ])
     try {
+      def rocketChatURL;
+      if (target == 'deploy') {
+        rocketChatURL = ROCKET_DEPLOY_WEBHOOK
+      } else if (target == 'qa') {
+        rocketChatURL = ROCKET_QA_WEBHOOK
+      }
       sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
     } catch (error) {
       echo "Error posting Rocket Chat message: ${error}"
@@ -56,10 +61,10 @@ def _openshift(String name, String project, Closure body) {
             )
             // todo add a call to cleanup if we 'ignore' failure (change ignore to cleanup)
             if ('Ignore'.equalsIgnoreCase(inputAction)) {
-              //notifyRocketChat(
-              //  "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
-              //ROCKET_DEPLOY_WEBHOOK
-              //)
+              notifyRocketChat(
+                "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+              'deploy'
+              )
               isDone=true
             }
           }
@@ -166,10 +171,10 @@ def sonarQubeJenkinsNode () {
               if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
                 echo "sonarqube report failed to complete, or timed out"
 
-                // notifyRocketChat(
-                //   "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
-                //   ROCKET_DEPLOY_WEBHOOK
-                // )
+                 notifyRocketChat(
+                   "@all The latest build, ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
+                   'deploy'
+                 )
 
                 currentBuild.result = "FAILURE"
                 throw new Exception("sonar timed out or failedz")
@@ -184,20 +189,20 @@ def sonarQubeJenkinsNode () {
             if ( "${SONARQUBE_STATUS}" == "ERROR") {
               echo "Scan Failed"
 
-              // notifyRocketChat(
-              //   "@all The latest build ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
-              //   ROCKET_DEPLOY_WEBHOOK
-              // )
+               notifyRocketChat(
+                 "@all The latest build ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+                 'deploy'
+               )
 
               currentBuild.result = 'FAILURE'
             } else {
               echo "Scan Passed"
             }
           } catch (error) {
-            // notifyRocketChat(
-            //   "@all The latest build ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error.message}",
-            //   ROCKET_DEPLOY_WEBHOOK
-            // )
+             notifyRocketChat(
+               "@all The latest build ${env.BUILD_DISPLAY_NAME} of eagle-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error.message}",
+               'deploy'
+             )
             throw error
           } finally {
             echo "Scan Complete"
@@ -277,17 +282,52 @@ def createFullPRDeployment() {
       '''
       echo "deployment scripts configured and PR env created"
     } catch (error) {
-      //notifyRocketChat(
-      //  "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin dev-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
-      //  ROCKET_DEPLOY_WEBHOOK
-      //)
+      notifyRocketChat(
+        "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin dev-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+        'deploy'
+      )
       currentBuild.result = 'FAILURE'
       throw new Exception("Full PR env deployment failed")
     }
   }
 }
 
-def cleanUpLock() {
+def cleanUpPR() {
+  openshift.withCluster() {
+    echo "Configuring deployment scripts for teardown"
+    try {
+      sh '''
+        if [ -d "eagle-helper-pods" ]
+        then
+          echo "stale helper pods checkout, removing it"
+          rm -rf eagle-helper-pods
+        fi
+        git clone https://github.com/mtcarto/eagle-helper-pods
+        cd eagle-helper-pods/openshift/setup-teardown/
+            # set project to PR deployment template folder
+        find . -name "projectset.config" -exec sed -i -e "s/^\\( *TARGET_PROJECT_SET=*\\)[^ ]*\\(.*\\)*$/\\1PR\\2/" {} \\;
+            # set to unique name (ie. branchName-appName) for pr builds & deployments
+        cd params/CUSTOM_SETTINGS/PR
+        find . -name "*.params" -exec sed -i -e "s/pr-placeholder/${PR_NAME}/g" {} \\;
+        find . -name "*.config" -exec sed -i -e "s/pr-placeholder/${PR_NAME}/g" {} \\;
+        cd ../../../
+        ./teardown-all.sh
+            # switch back to tools project,
+        oc project ${TOOLSPROJECT}
+      '''
+      echo "Template scripts configured and PR env removed"
+    } catch (error) {
+      notifyRocketChat(
+       "@all The cleanup ${env.BUILD_DISPLAY_NAME} of eagle ${PR_NAME} deployment may have failed.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+       'deploy'
+      )
+      currentBuild.result = 'FAILURE'
+      throw new Exception("Full PR env teardown failed: ${error}")
+    }
+  }
+}
+
+def cleanUpLock(lockName) {
   def manager = org.jenkins.plugins.lockableresources.LockableResourcesManager.get()
   def resources = manager.getResources().findAll{
     !it.locked && it.name.equalsIgnoreCase(lockName)
@@ -426,21 +466,21 @@ pipeline {
                 dcObj.rollout().status()
                 echo ">>>> Deployment Complete"
 
-                // notifyRocketChat(
-                //   "A new version of eagle-admin ${PR_NAME} is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
-                //   ROCKET_DEPLOY_WEBHOOK
-                // )
-                // notifyRocketChat(
-                //   "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
-                //   ROCKET_QA_WEBHOOK
-                // )
+                 notifyRocketChat(
+                   "A new version of eagle-admin ${PR_NAME} is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+                   'deploy'
+                 )
+                 notifyRocketChat(
+                   "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
+                   'qa'
+                 )
               }
             }
           } catch (error) {
-            // notifyRocketChat(
-            //   "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
-            //   ROCKET_DEPLOY_WEBHOOK
-            // )
+             notifyRocketChat(
+               "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+               'deploy'
+             )
             currentBuild.result = "FAILURE"
             throw new Exception("Deploy failed")
           }
@@ -472,10 +512,10 @@ pipeline {
               }
             }
           } catch (error) {
-            // notifyRocketChat(
-            //   "@all Data generation failed for the build ${env.BUILD_DISPLAY_NAME} of eagle-api.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
-            //   ROCKET_DEPLOY_WEBHOOK
-            // )
+             notifyRocketChat(
+               "@all Data generation failed for the build ${env.BUILD_DISPLAY_NAME} of eagle-api.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+               'deploy'
+             )
             currentBuild.result = "FAILURE"
             throw new Exception("Data generation failed")
           }
@@ -508,12 +548,9 @@ pipeline {
             ]
           )
           if ('Clean-up'.equalsIgnoreCase(inputAction)) {
-            cleanUpLock()
-            sh 'ls'
-            // sh '''
-            //   cd eagle-helper-pods/openshift/setup-teardown/
-            //   ./teardown-all.sh
-            // '''
+            cleanUpLock(lockName)
+            cleanUpPR()
+            echo "Cleanup of ${PR_NAME} deployment is complete"
           }
         }
       }
