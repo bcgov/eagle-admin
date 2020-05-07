@@ -245,7 +245,7 @@ def createFullPRDeployment() {
           rm -rf eagle-helper-pods
           pwd
         fi
-        git clone https://github.com/mtcarto/eagle-helper-pods
+        git clone https://github.com/bcgov/eagle-helper-pods
         cd eagle-helper-pods/openshift/setup-teardown/
           # set project to PR deployment template folder
         find . -name "projectset.config" -exec sed -i -e "s/^\\( *TARGET_PROJECT_SET=*\\)[^ ]*\\(.*\\)*$/\\1PR\\2/" {} \\;
@@ -302,7 +302,7 @@ def cleanUpPR() {
           echo "stale helper pods checkout, removing it"
           rm -rf eagle-helper-pods
         fi
-        git clone https://github.com/mtcarto/eagle-helper-pods
+        git clone https://github.com/bcgov/eagle-helper-pods
         cd eagle-helper-pods/openshift/setup-teardown/
             # set project to PR deployment template folder
         find . -name "projectset.config" -exec sed -i -e "s/^\\( *TARGET_PROJECT_SET=*\\)[^ ]*\\(.*\\)*$/\\1PR\\2/" {} \\;
@@ -343,8 +343,8 @@ def IMAGE_HASH = "latest"
 def lockName = "eagle-admin-${env.JOB_NAME}-${env.BUILD_NUMBER}"
 pipeline {
   environment {
-    TOOLSPROJECT = "md4m71-tools"
-    DEVPROJECT = "md4m71-dev"
+    TOOLSPROJECT = "esm"
+    DEVPROJECT = "esm-dev"
     PR_NAME = "${env.CHANGE_BRANCH}".toLowerCase()
     PR_FORK = "${env.CHANGE_FORK}"
     SONARQUBE_URL_INT = 'http://sonarqube:9000'
