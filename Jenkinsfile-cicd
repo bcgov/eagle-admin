@@ -7,16 +7,21 @@ import java.util.regex.Pattern
 /*
  * Sends a rocket chat notification
  */
-def notifyRocketChat(text, url) {
-    def rocketChatURL = url
+def notifyRocketChat(text, target) {
     def message = text.replaceAll(~/\'/, "")
     def payload = JsonOutput.toJson([
       "username":"Jenkins",
       "icon_url":"https://wiki.jenkins.io/download/attachments/2916393/headshot.png",
       "text": message
     ])
-    try { 
-    sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+    try {
+      def rocketChatURL;
+      if (target == 'deploy') {
+        rocketChatURL = ROCKET_DEPLOY_WEBHOOK
+      } else if (target == 'qa') {
+        rocketChatURL = ROCKET_QA_WEBHOOK
+      }
+      sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
     } catch (error) {
       echo "Error posting Rocket Chat message: ${error}"
     }
@@ -58,7 +63,7 @@ def _openshift(String name, String project, Closure body) {
             if ('Ignore'.equalsIgnoreCase(inputAction)) {
               notifyRocketChat(
                 "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
-              ROCKET_DEPLOY_WEBHOOK
+              'deploy'
               )
               isDone=true
             }
@@ -148,16 +153,16 @@ pipeline {
 
             notifyRocketChat(
               "eagle-admin dev has been tagged to test",
-              ROCKET_DEPLOY_WEBHOOK
+              'deploy'
             )
             notifyRocketChat(
               "@all eagle-admin dev has been tagged as test",
-              ROCKET_QA_WEBHOOK
+              'qa'
             )
           } catch (error) {
             notifyRocketChat(
               "@all tagging dev as test has failed",
-              ROCKET_DEPLOY_WEBHOOK
+              'deploy'
             )
             currentBuild.result = "FAILURE"
             throw new Exception("Deploy failed")
@@ -184,16 +189,16 @@ pipeline {
             echo ">>>> Tagging Complete"
             notifyRocketChat(
               "eagle-admin test has been tagged to Prod",
-              ROCKET_DEPLOY_WEBHOOK
+              'deploy'
             )
             notifyRocketChat(
               "@all eagle-admin test has been tagged to prod",
-              ROCKET_QA_WEBHOOK
+              'qa'
             )
           } catch (error) {
             notifyRocketChat(
               "@all tagging test as prod has failed",
-              ROCKET_DEPLOY_WEBHOOK
+              'deploy'
             )
             currentBuild.result = "FAILURE"
             throw new Exception("Deploy failed")
