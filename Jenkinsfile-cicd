@@ -59,7 +59,7 @@ def _openshift(String name, String project, Closure body) {
                 )
               ]
             )
-            // todo add a call to cleanup if we 'ignore' failure (change ignore to cleanup)
+
             if ('Ignore'.equalsIgnoreCase(inputAction)) {
               notifyRocketChat(
                 "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
@@ -84,7 +84,6 @@ pipeline {
 
     stage('Build and Tag Dev'){
       when {
-        // todo verify this condidtional
         expression { env.BRANCH_NAME == 'develop' }
       }
       steps {
@@ -103,16 +102,31 @@ pipeline {
               // trigger and wait for s2i build to complete
               def bcObj1 = openshift.selector('bc', "eagle-admin-angular-builder")
               bcObj1.startBuild()
-              def buildSelector1 = bcObj1.narrow("bc").related("builds")
-              buildSelector1 .untilEach(1) {
-                return it.object().status.phase == "Complete"
+              def buildName1 = "eagle-admin-angular-builder-${bcObj1.object().status.lastVersion}"
+              echo "Angular build name: ${buildName1}"
+              def buildSelector1 = openshift.selector('build', buildName1)
+
+              buildSelector1.untilEach(1) {
+                def phase = it.object().status.phase
+                if (phase == 'Failed') {
+                  currentBuild.result = "FAILURE"
+                }
+                return ( BUILD_DONE_STATUSES.contains(phase) )
               }
+
               //  trigger and wait for nginx image build to complete
               def bcObj2 = openshift.selector('bc',"eagle-admin-build" )
               bcObj2.startBuild()
-              def buildSelector2 = bcObj2.narrow("bc").related("builds")
+              def buildName2 = "eagle-admin-build-${bcObj2.object().status.lastVersion}"
+              echo "Ngix build name: ${buildName2}"
+              def buildSelector2 = openshift.selector('build', buildName2)
+
               buildSelector2.untilEach(1) {
-                return it.object().status.phase == "Complete"
+                def phase = it.object().status.phase
+                if (phase == 'Failed') {
+                  currentBuild.result = "FAILURE"
+                }
+                return ( BUILD_DONE_STATUSES.contains(phase) )
               }
 
 
@@ -148,7 +162,7 @@ pipeline {
             echo "Tagging Dev as Test..."
             sh("oc tag esm/eagle-admin:dev esm/eagle-admin:test")
             sleep 5
-            // todo update namespace before switching over
+
             echo ">>>> Tagging Complete"
 
             notifyRocketChat(
