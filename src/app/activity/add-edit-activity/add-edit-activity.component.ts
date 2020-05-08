@@ -111,7 +111,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         project: this.myForm.get('project').value,
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
-        notificationName: this.myForm.controls.notificationName.value,
+        notificationName: this.myForm.get('type').value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
 
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
@@ -131,12 +131,13 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         project: this.myForm.get('project').value,
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
-        notificationName: this.myForm.controls.notificationName.value,
+        notificationName: this.myForm.get('type').value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         pinned: false,
         active: this.myForm.controls.active.value === 'yes' ? true : false
       });
+
       this.recentActivityService.add(activity)
         .subscribe(() => {
           this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout});
