@@ -1,5 +1,6 @@
 #!/usr/bin/env groovy
 
+import bcgov.GitHubHelper
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import java.util.regex.Pattern
@@ -25,6 +26,31 @@ def notifyRocketChat(text, target) {
     } catch (error) {
       echo "Error posting Rocket Chat message: ${error}"
     }
+}
+
+// Create deployment status and pass to Jenkins-GitHub library
+void createDeploymentStatus (String suffix, String status) {
+  def ghDeploymentId = new GitHubHelper().createDeployment(
+    this,
+    "pull/${env.CHANGE_ID}/head",
+    [
+        'environment':"${suffix}",
+        'task':"deploy:pull:${env.CHANGE_ID}"
+    ]
+  )
+
+  new GitHubHelper().createDeploymentStatus(
+    this,
+    ghDeploymentId,
+    "${status}",
+    ['targetUrl':"https://eagle-${PR_NAME}-dev.pathfinder.gov.bc.ca/admin/"]
+  )
+
+  if ('SUCCESS'.equalsIgnoreCase("${status}")) {
+    echo "${suffix} deployment successful!"
+  } else if ('PENDING'.equalsIgnoreCase("${status}")){
+    echo "${suffix} deployment pending."
+  }
 }
 
 // Print stack trace of error
@@ -253,7 +279,7 @@ def createFullPRDeployment() {
         find . -name "*.config" -exec sed -i -e "s/pr-placeholder/${PR_NAME}/g" {} \\;
          # set admin vars to pr fork
         cd admin
-        find . -name "*.config" -exec sed -i -e "s/branch-placeholder/${PR_NAME}/g" {} \\;
+        find . -name "*.config" -exec sed -i -e "s/branch-placeholder/${CHANGE_BRANCH}/g" {} \\;
         find . -name "*.config" -exec sed -i -e "s/fork-placeholder/${PR_FORK}/g" {} \\;
         find . -name "*.params" -exec sed -i -e "s/fork-placeholder/${PR_FORK}/g" {} \\;
         find . -name "*.params" -exec sed -i -e "s/pr-placeholder/${PR_NAME}/g" {} \\;
@@ -391,6 +417,7 @@ pipeline {
           } catch (error) {
             echo "Error posting Rocket Chat message: ${error}"
           }
+          createDeploymentStatus('dev', "PENDING")
           echo "Branch to build: ${PR_NAME}"
           echo "Source fork: ${PR_FORK}"
           if (!checkForPRDeployment()) {
@@ -419,6 +446,7 @@ pipeline {
       }
       agent any
       steps {
+        milestone 1
         script {
           pastBuilds = []
           buildsSinceLastSuccess(pastBuilds, currentBuild);
@@ -502,15 +530,15 @@ pipeline {
                 def dcObj = openshift.selector('dc', "${PR_NAME}-eagle-admin")
                 dcObj.rollout().status()
                 echo ">>>> Deployment Complete"
-
-                 notifyRocketChat(
-                   "A new version of eagle-admin ${PR_NAME} is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
-                   'deploy'
-                 )
-                 notifyRocketChat(
-                   "@all A new version of eagle-admin is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
-                   'qa'
-                 )
+                createDeploymentStatus('dev', "SUCCESS")
+                notifyRocketChat(
+                  "A new version of eagle-admin ${PR_NAME} is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n https://eagle-${PR_NAME}-dev.pathfinder.gov.bc.ca/admin/ \n Changes: \n ${CHANGELOG}",
+                  'deploy'
+                )
+                notifyRocketChat(
+                  "@all A new version of eagle-admin is now in Dev and ready for QA. \n https://eagle-${PR_NAME}-dev.pathfinder.gov.bc.ca/admin/ \n PR changes: \n ${CHANGELOG}",
+                  'qa'
+                )
               }
             }
           } catch (error) {
@@ -581,6 +609,7 @@ pipeline {
         }
       }
       steps {
+        milestone 2
         script {
           echo "Removing pipeline lock and cleaning up deployment"
           def inputAction = input(
