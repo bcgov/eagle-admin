@@ -75,6 +75,7 @@ def _openshift(String name, String project, Closure body) {
   }
 }
 
+def BUILD_DONE_STATUSES = ['Complete', 'Failed', 'Cancelled']
 pipeline {
   environment {
     TOOLSPROJECT = "esm"
@@ -92,8 +93,8 @@ pipeline {
             timeout(20) {
               try {
                 sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
-                //ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-                //ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+                ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+                ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
               } catch (error) {
                 echo "Error posting Rocket Chat message: ${error}"
               }
@@ -141,7 +142,7 @@ pipeline {
               echo ">> IMAGE_HASH: ${IMAGE_HASH}"
             }
 
-            openshift.tag("${TOOLSPROJECT}/${PR_NAME}-eagle-admin:latest", "${TOOLSPROJECT}/${PR_NAME}-eagle-admin:${PR_NAME}")
+            openshift.tag("${TOOLSPROJECT}/eagle-admin:latest", "${TOOLSPROJECT}/eagle-admin:dev")
           }
         }
       }
@@ -153,8 +154,13 @@ pipeline {
       }
       steps {
         script {
-          ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-          ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+          try {
+            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+            ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+          } catch (error) {
+            echo "Error posting Rocket Chat message: ${error}"
+          }
           try {
             echo "Backing up..."
             sh("oc tag esm/eagle-admin:test esm/eagle-admin:test-backup")
@@ -191,8 +197,13 @@ pipeline {
       }
       steps {
         script {
-          ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-          ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+          try {
+            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+            ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+          } catch (error) {
+            echo "Error posting Rocket Chat message: ${error}"
+          }
           try {
             echo "Backing up..."
             sh("oc tag esm/eagle-admin:prod esm/eagle-admin:prod-backup")
