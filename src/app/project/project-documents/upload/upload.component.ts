@@ -8,7 +8,7 @@ import * as moment from 'moment-timezone';
 import { ConfigService } from 'app/services/config.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-
+import { MatSnackBar } from '@angular/material';
 import { Document } from 'app/models/document';
 import { Utils } from 'app/shared/utils/utils';
 
@@ -44,11 +44,13 @@ export class UploadComponent implements OnInit, OnDestroy {
   public filteredProjectPhases2018: any[] = [];
   public legislationYear = '2018';
   public publishDoc = false;
+  public snackBarTimeout = 1500;
 
   constructor(
     private router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
     private storageService: StorageService,
+    private snackBar: MatSnackBar,
     private documentService: DocumentService,
     private utils: Utils,
     private config: ConfigService
@@ -198,12 +200,16 @@ export class UploadComponent implements OnInit, OnDestroy {
         },
         error => {
           console.log('error =', error);
-          alert('Uh-oh, couldn\'t delete project');
+          // Add in api error message
+          const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
+          this.snackBar.open(message, 'Close', { duration: this.snackBarTimeout});
+          this.loading = false;
           // TODO: should fully reload project here so we have latest non-deleted objects
         },
         () => { // onCompleted
           // delete succeeded --> navigate back to search
           // Clear out the document state that was stored previously.
+          this.snackBar.open('Uploaded Successfully!', 'Close', { duration: this.snackBarTimeout});
           this.router.navigate(['p', this.currentProject._id, 'project-documents']);
           this.loading = false;
         }

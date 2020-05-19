@@ -44,7 +44,8 @@ export class ApiService {
   // private jwtHelper: JwtHelperService;
   public pathAPI: string;
   public params: Params;
-  public env: string;  // Could be anything per Openshift settings but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo'
+  public env: string;  // Could be anything per Openshift environment variables  but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo' | 'hotfix'
+  public bannerColour: string;  // This is the colour of the banner that you see in the header, and could be anything per Openshift environment variables but must correspond with the css in header.component.scss e.g. red | orange | green | yellow | purple
 
   constructor(
     private http: HttpClient,
@@ -60,9 +61,11 @@ export class ApiService {
     // Locally, this will be empty and local defaults will be used.
     const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
     const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
+    const banner_colour = window.localStorage.getItem('from_admin_server--banner_colour');
 
     this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
     this.env = (_.isEmpty(deployment_env)) ? 'local' : deployment_env;
+    this.bannerColour = (_.isEmpty(banner_colour)) ? 'red' : banner_colour;
   }
 
   handleError(error: any): Observable<never> {
