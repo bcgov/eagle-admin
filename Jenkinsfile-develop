@@ -283,7 +283,7 @@ def createFullPRDeployment() {
         find . -name "*.config" -exec sed -i -e "s/fork-placeholder/${PR_FORK}/g" {} \\;
         find . -name "*.params" -exec sed -i -e "s/fork-placeholder/${PR_FORK}/g" {} \\;
         find . -name "*.params" -exec sed -i -e "s/pr-placeholder/${PR_NAME}/g" {} \\;
-        find . -name "*.params" -exec sed -i -e "s/branch-placeholder/${PR_NAME}/g" {} \\;
+        find . -name "*.params" -exec sed -i -e "s/branch-placeholder/${CHANGE_BRANCH}/g" {} \\;
           # set api, public to bcgov/develop
         cd ../api
         find . -name "*.config" -exec sed -i -e "s/branch-placeholder/develop/g" {} \\;
@@ -430,7 +430,7 @@ pipeline {
             _openshift(env.STAGE_NAME, TOOLSPROJECT) {
               openshift.patch(
                 "bc/${PR_NAME}-eagle-admin-angular-builder",
-                '\'{"spec":{"source":{"git":{"ref": "${PR_NAME}", "uri": "https://github.com/${PR_FORK}/eagle-admin"}}}}\''
+                '\'{"spec":{"source":{"git":{"ref": "${CHANGE_BRANCH}", "uri": "https://github.com/${PR_FORK}/eagle-admin"}}}}\''
               )
             }
           }
