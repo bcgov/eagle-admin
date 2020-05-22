@@ -36,6 +36,8 @@ import { Subject } from 'rxjs/Subject';
 
 export class HeaderComponent implements OnInit, OnDestroy {
   public envName: string;
+  public bannerColour: string;
+  public showBanner = false;
   public isNavMenuOpen = false;
   public welcomeMsg: String;
   public jwt: {
@@ -90,25 +92,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
         });
     }
 
-    // Set the environment
-    switch (this.api.env) {
-      case 'local':
-        this.envName = 'Local';
-        break;
-      case 'dev':
-        this.envName = 'Development';
-        break;
-      case 'test':
-        this.envName = 'Testing';
-        break;
-      case 'demo':
-        this.envName = 'Demo';
-        break;
-      case 'hotfix':
-        this.envName = 'Hotfix';
-        break;
-      default:
-        this.envName = null;
+    this.envName = this.api.env;
+    this.bannerColour = this.api.bannerColour;
+    // no-banner-colour-set is the default if no banner colour is defined in the openshift environment variables.
+    if ( this.envName && this.bannerColour && this.bannerColour !== 'no-banner-colour-set') {
+      this.showBanner = true;
     }
   }
 

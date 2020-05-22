@@ -1,0 +1,236 @@
+#!/usr/bin/env groovy
+
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.util.regex.Pattern
+
+/*
+ * Sends a rocket chat notification
+ */
+def notifyRocketChat(text, target) {
+    def message = text.replaceAll(~/\'/, "")
+    def payload = JsonOutput.toJson([
+      "username":"Jenkins",
+      "icon_url":"https://wiki.jenkins.io/download/attachments/2916393/headshot.png",
+      "text": message
+    ])
+    try {
+      def rocketChatURL;
+      if (target == 'deploy') {
+        rocketChatURL = ROCKET_DEPLOY_WEBHOOK
+      } else if (target == 'qa') {
+        rocketChatURL = ROCKET_QA_WEBHOOK
+      }
+      sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+    } catch (error) {
+      echo "Error posting Rocket Chat message: ${error}"
+    }
+}
+
+// Print stack trace of error
+@NonCPS
+private static String stackTraceAsString(Throwable t) {
+    StringWriter sw = new StringWriter();
+    t.printStackTrace(new PrintWriter(sw));
+    return sw.toString()
+}
+
+def _openshift(String name, String project, Closure body) {
+  script {
+    openshift.withCluster() {
+      openshift.withProject(project) {
+        echo "Running Stage '${name}'"
+        waitUntil {
+          boolean isDone=false
+          try {
+            body()
+            isDone=true
+            echo "Completed Stage '${name}'"
+          } catch (error) {
+            echo "${stackTraceAsString(error)}"
+            def inputAction = input(
+              message: "This step (${name}) has failed. See related messages:",
+              ok: 'Confirm',
+              parameters: [
+                choice(
+                  name: 'action',
+                  choices: 'Re-run\nIgnore',
+                  description: 'What would you like to do?'
+                )
+              ]
+            )
+
+            if ('Ignore'.equalsIgnoreCase(inputAction)) {
+              notifyRocketChat(
+                "@all The build ${env.BUILD_DISPLAY_NAME} of eagle-admin-pr, seems to be broken.\n ${env.RUN_DISPLAY_URL}\n Error: \n ${error.message}",
+              'deploy'
+              )
+              isDone=true
+            }
+          }
+          return isDone
+        }
+      }
+    }
+  }
+}
+
+def BUILD_DONE_STATUSES = ['Complete', 'Failed', 'Cancelled']
+pipeline {
+  environment {
+    TOOLSPROJECT = "esm"
+  }
+  agent any
+  stages {
+
+    stage('Build and Tag Dev'){
+      when {
+        expression { env.BRANCH_NAME == 'develop' }
+      }
+      steps {
+        script {
+          _openshift(env.STAGE_NAME, TOOLSPROJECT) {
+            timeout(20) {
+              try {
+                sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+                ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+                ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+              } catch (error) {
+                echo "Error posting Rocket Chat message: ${error}"
+              }
+
+              echo "Building eagle-admin develop branch"
+              // trigger and wait for s2i build to complete
+              def bcObj1 = openshift.selector('bc', "eagle-admin-angular-builder")
+              bcObj1.startBuild()
+              def buildName1 = "eagle-admin-angular-builder-${bcObj1.object().status.lastVersion}"
+              echo "Angular build name: ${buildName1}"
+              def buildSelector1 = openshift.selector('build', buildName1)
+
+              buildSelector1.untilEach(1) {
+                def phase = it.object().status.phase
+                if (phase == 'Failed') {
+                  currentBuild.result = "FAILURE"
+                }
+                return ( BUILD_DONE_STATUSES.contains(phase) )
+              }
+
+              //  trigger and wait for nginx image build to complete
+              def bcObj2 = openshift.selector('bc',"eagle-admin-build" )
+              bcObj2.startBuild()
+              def buildName2 = "eagle-admin-build-${bcObj2.object().status.lastVersion}"
+              echo "Ngix build name: ${buildName2}"
+              def buildSelector2 = openshift.selector('build', buildName2)
+
+              buildSelector2.untilEach(1) {
+                def phase = it.object().status.phase
+                if (phase == 'Failed') {
+                  currentBuild.result = "FAILURE"
+                }
+                return ( BUILD_DONE_STATUSES.contains(phase) )
+              }
+
+
+              echo "Build done"
+
+              echo ">>> Get Image Hash"
+              // Don't tag with BUILD_ID so the pruner can do it's job; it won't delete tagged images.
+              // Tag the images for deployment based on the image's hash
+              IMAGE_HASH = sh (
+                script: """oc get istag eagle-admin:latest -o template --template=\"{{.image.dockerImageReference}}\"|awk -F \":\" \'{print \$3}\'""",
+                returnStdout: true).trim()
+              echo ">> IMAGE_HASH: ${IMAGE_HASH}"
+            }
+
+            openshift.tag("${TOOLSPROJECT}/eagle-admin:latest", "${TOOLSPROJECT}/eagle-admin:dev")
+          }
+        }
+      }
+    }
+
+   stage('Tag Dev as Test'){
+      when {
+        expression { env.BRANCH_NAME == 'test' }
+      }
+      steps {
+        script {
+          try {
+            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+            ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+          } catch (error) {
+            echo "Error posting Rocket Chat message: ${error}"
+          }
+          try {
+            echo "Backing up..."
+            sh("oc tag esm/eagle-admin:test esm/eagle-admin:test-backup")
+            sleep 5
+            echo "Tagging Dev as Test..."
+            sh("oc tag esm/eagle-admin:dev esm/eagle-admin:test")
+            sleep 5
+
+            echo ">>>> Tagging Complete"
+
+            notifyRocketChat(
+              "eagle-admin dev has been tagged to test",
+              'deploy'
+            )
+            notifyRocketChat(
+              "@all eagle-admin dev has been tagged as test",
+              'qa'
+            )
+          } catch (error) {
+            notifyRocketChat(
+              "@all tagging dev as test has failed",
+              'deploy'
+            )
+            currentBuild.result = "FAILURE"
+            throw new Exception("Deploy failed")
+          }
+        }
+      }
+    }
+
+    stage('Tag Test as Prod'){
+      when {
+        expression { env.BRANCH_NAME == 'master' }
+      }
+      steps {
+        script {
+          try {
+            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+            ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
+          } catch (error) {
+            echo "Error posting Rocket Chat message: ${error}"
+          }
+          try {
+            echo "Backing up..."
+            sh("oc tag esm/eagle-admin:prod esm/eagle-admin:prod-backup")
+            sleep 5
+            echo "Tagging Test as Prod..."
+            sh("oc tag esm/eagle-admin:test esm/eagle-admin:prod")
+            sleep 5
+            echo ">>>> Tagging Complete"
+            notifyRocketChat(
+              "eagle-admin test has been tagged to Prod",
+              'deploy'
+            )
+            notifyRocketChat(
+              "@all eagle-admin test has been tagged to prod",
+              'qa'
+            )
+          } catch (error) {
+            notifyRocketChat(
+              "@all tagging test as prod has failed",
+              'deploy'
+            )
+            currentBuild.result = "FAILURE"
+            throw new Exception("Deploy failed")
+          }
+        }
+      }
+    }
+
+  }
+}
