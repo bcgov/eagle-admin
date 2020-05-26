@@ -20,6 +20,8 @@ import { Utils } from 'app/shared/utils/utils';
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private readonly SNACKBAR_TIMEOUT = 1500;
+
   public documents: any[] = [];
   public currentProject;
   public myForm: FormGroup;
@@ -256,9 +258,9 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
           this.storageService.state.selectedDocs = d;
         },
         error => {
-          console.log('error =', error);
-          alert('Uh-oh, couldn\'t delete project');
-          // TODO: should fully reload project here so we have latest non-deleted objects
+          const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
+          this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_TIMEOUT});
+          this.loading = false;
         },
         () => { // onCompleted
           // Set new state for docs.
