@@ -26,9 +26,8 @@ RUN chmod g+rw /var/cache/nginx \
                /var/run \
                /var/log/nginx \
                /etc/nginx/adminServerEnvironmentSettings.js \
-               /etc/nginx/nginx.conf \
-               /tmp
+               /etc/nginx/nginx.conf
 # =================================================================================
-RUN chmod 777 /run
+RUN chmod 777 /run /tmp
 EXPOSE 8080
 USER 104
