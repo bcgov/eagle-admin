@@ -64,13 +64,14 @@ export class KeycloakService {
       // Bootup KC
       this.keycloakEnabled = true;
 
-      const keycloak_client_id = window.localStorage.getItem('from_admin_server--keycloak_clientid_env');
+      // TODO fix caching issue improved handling of client id
+      // const keycloak_client_id = window.localStorage.getItem('from_admin_server--keycloak_clientid_env');
 
       return new Promise((resolve, reject) => {
         const config = {
           url: this.keycloakUrl,
           realm: this.keycloakRealm,
-          clientId: (_.isEmpty(keycloak_client_id)) ? 'eagle-admin-console' : keycloak_client_id
+          clientId: 'eagle-admin-console'
         };
 
         // console.log('KC Auth init.');
