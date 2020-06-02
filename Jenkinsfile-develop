@@ -30,26 +30,30 @@ def notifyRocketChat(text, target) {
 
 // Create deployment status and pass to Jenkins-GitHub library
 void createDeploymentStatus (String suffix, String status) {
-  def ghDeploymentId = new GitHubHelper().createDeployment(
-    this,
-    "pull/${env.CHANGE_ID}/head",
-    [
-        'environment':"${suffix}",
-        'task':"deploy:pull:${env.CHANGE_ID}"
-    ]
-  )
+  try {
+    def ghDeploymentId = new GitHubHelper().createDeployment(
+      this,
+      "pull/${env.CHANGE_ID}/head",
+      [
+          'environment':"${suffix}",
+          'task':"deploy:pull:${env.CHANGE_ID}"
+      ]
+    )
 
-  new GitHubHelper().createDeploymentStatus(
-    this,
-    ghDeploymentId,
-    "${status}",
-    ['targetUrl':"https://eagle-${PR_NAME}-dev.pathfinder.gov.bc.ca/admin/"]
-  )
+    new GitHubHelper().createDeploymentStatus(
+      this,
+      ghDeploymentId,
+      "${status}",
+      ['targetUrl':"https://eagle-${PR_NAME}-dev.pathfinder.gov.bc.ca/admin/"]
+    )
 
-  if ('SUCCESS'.equalsIgnoreCase("${status}")) {
-    echo "${suffix} deployment successful!"
-  } else if ('PENDING'.equalsIgnoreCase("${status}")){
-    echo "${suffix} deployment pending."
+    if ('SUCCESS'.equalsIgnoreCase("${status}")) {
+      echo "${suffix} deployment successful!"
+    } else if ('PENDING'.equalsIgnoreCase("${status}")){
+      echo "${suffix} deployment pending."
+    }
+  } catch (error) {
+    echo "error posting status to github: ${error}"
   }
 }
 
