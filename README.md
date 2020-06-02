@@ -1,5 +1,7 @@
 # bcgov / eagle-admin
 
+test epicbcdk
+
 Admin site project for management of EPIC
 
 ## Related projects
