@@ -118,6 +118,10 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         active: this.myForm.controls.active.value === 'yes' ? true : false,
         pinned: this.activity.pinned
       });
+
+      // ensure pinned is not null. If it is null, set to false
+      activity.pinned = activity.pinned !== null ? activity.pinned : false;
+
       this.recentActivityService.save(activity)
         .subscribe(() => {
           this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout});
