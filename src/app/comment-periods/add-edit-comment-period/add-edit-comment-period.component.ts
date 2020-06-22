@@ -233,9 +233,11 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
     if (this.storageService.state.selectedDocumentsForCP) {
       let docIdArray = [];
-      this.storageService.state.selectedDocumentsForCP.data.map(element => {
-        docIdArray.push(element._id);
-      });
+      if (this.storageService.state.selectedDocumentsForCP.data) {
+        this.storageService.state.selectedDocumentsForCP.data.map(element => {
+          docIdArray.push(element._id);
+        });
+      }
       this.commentPeriod.relatedDocuments = docIdArray;
     }
 
