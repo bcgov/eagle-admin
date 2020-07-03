@@ -63,7 +63,7 @@
           },
           "limits": {
             "cpu": "1",
-            "memory": "4Gi"
+            "memory": "6Gi"
           }
         },
         "postCommit": {}
