@@ -31,8 +31,8 @@
       </div>
     </div>
   </div>
-  <div class="result-num">
-    Displaying <strong>{{tableParams.pageSize}} of {{tableParams.totalListItems}}</strong> Comments
+  <div class="result-num" *ngIf="tableParams.totalListItems > 0 && !loading">
+    Displaying <strong>{{tableParams.totalListItems > tableParams.pageSize ? (tableParams.pageSize * tableParams.currentPage - (tableParams.pageSize - 1)) + '-' + (tableParams.pageSize * tableParams.currentPage) + ' of ' : ''}}{{tableParams.totalListItems}}</strong> Comments
   </div>
 </section>
 
