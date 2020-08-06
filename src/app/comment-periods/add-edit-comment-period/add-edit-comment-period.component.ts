@@ -238,7 +238,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.commentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
 
     // Check comment tip
-    // this.commentPeriod.commentTip = (!(this.commentPeriodForm.get('commentTipText').value) || this.commentPeriodForm.get('commentTipText').value === ' ')  ? '' : this.commentPeriodForm.get('commentTipText').value;
     this.commentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value  ? this.commentPeriodForm.get('commentTipText').value : '';
 
     if (this.storageService.state.selectedDocumentsForCP) {
