@@ -60,6 +60,12 @@
       <p>{{commentPeriod.informationLabel}}</p>
     </div>
   </div>
+  <div *ngIf="commentPeriod.commentTip" class="row">
+    <div class="col-md-8">
+      <h3>COMMENT TIP</h3>
+      <div id="commentTip" [innerHTML]="commentPeriod.commentTip  | safeHtml"></div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-md-12">
       <h3>

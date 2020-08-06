@@ -99,14 +99,16 @@
                     formControlName="infoForCommentText"></textarea>
             </div>
         </div>
+
         <div class="form-row">
-            <div class="flex-container">
-                <div class="label-pair lrg">
-                    <label for="description">Description</label>
-                    <editor [init]="tinyMceSettings" (onKeyUp)="updateDescriptionPreview()" name="descriptionText" id="description" formControlName="descriptionText"></editor>
-                 </div>
-            </div>
-        </div>
+          <div class="flex-container">
+              <div class="label-pair lrg">
+                  <label for="description">Description</label>
+                  <editor [init]="tinyMceSettings" (onKeyUp)="updateDescriptionPreview()" name="descriptionText" id="description" formControlName="descriptionText"></editor>
+               </div>
+          </div>
+      </div>
+
         <div class="form-row">
             <div>
                 <h6>
@@ -120,6 +122,19 @@
                 <div class="renderedTextPreview" [innerHTML]="descriptionPreview  | safeHtml"></div>
             </div>
         </div>
+
+        <div class="form-row">
+          <div class="flex-container">
+              <div class="label-pair lrg">
+                  <label for="commentTip">Comment Tip</label>
+                  <p>This alert banner will be shown to the user as they are submitting their public comment. Please specify any additional information or questions you want the participant to consider when submitting their comment.</p>
+                  <ul>
+                    <li>Please be sure your comment tip has been approved by Communications before posting</li>
+                  </ul>
+                  <editor [init]="tinyMceSettings" name="commentTipText" id="commentTip" formControlName="commentTipText"></editor>
+               </div>
+          </div>
+      </div>
 
         <div class="form-row" *ngIf="this.currentProject.type === 'currentProject'">
             <div class="form-group col-md-12">

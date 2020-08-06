@@ -137,6 +137,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
         'publishedStateSel': new FormControl(),
         'infoForCommentText': new FormControl(),
         'descriptionText': new FormControl(),
+        'commentTipText': new FormControl(),
         'milestoneSel': new FormControl(),
         openHouses: this.formBuilder.array([])
       });
@@ -168,6 +169,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // Instructions
     this.extractVarsFromInstructions(this.commentPeriod.instructions, this.commentPeriodForm);
 
+    // Comment Tip
+    this.commentPeriodForm.controls.commentTipText.setValue(this.commentPeriod.commentTip);
+
     // Milestone
     this.commentPeriodForm.controls.milestoneSel.setValue(this.commentPeriod.milestone);
 
@@ -184,6 +188,8 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     } else {
       this.addOpenHouseRow();
     }
+
+    this._changeDetectionRef.detectChanges();
   }
 
   private initSelectedDocs() {
@@ -230,6 +236,10 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.commentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
     this.commentPeriod.instructions += ` for ${this.currentProject.data.name} Project.`;
     this.commentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
+
+    // Check comment tip
+    // this.commentPeriod.commentTip = (!(this.commentPeriodForm.get('commentTipText').value) || this.commentPeriodForm.get('commentTipText').value === ' ')  ? '' : this.commentPeriodForm.get('commentTipText').value;
+    this.commentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value  ? this.commentPeriodForm.get('commentTipText').value : '';
 
     if (this.storageService.state.selectedDocumentsForCP) {
       let docIdArray = [];
