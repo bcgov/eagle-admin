@@ -85,7 +85,7 @@
           [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? 'Yes' : 'No'}}</div>
         </div>
         <div class="row">
-          <div class="col-md-12">
+          <div class="col-md-12 comment">
             {{comment.comment}}
           </div>
         </div>
@@ -126,13 +126,6 @@
             <div *ngIf="comment.documentsList?.length === 0">
               <p>This comment has no associated documents.</p>
             </div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col-md-12">
-            <label for="proponentResponse"><b>Proponent Response</b></label>
-            <textarea id="proponentResponse" class="form-control" rows="3" name="proponentResponseText"
-              formControlName="proponentResponseText"></textarea>
           </div>
         </div>
         <div class="form-row" *ngIf="commentReviewForm.get('isPublished').value">

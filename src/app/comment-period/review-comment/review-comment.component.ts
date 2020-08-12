@@ -46,7 +46,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject;
-    this.baseRouteUrl = this.currentProject === 'currentProject' ? '/p' : '/pn';
+    this.baseRouteUrl = this.currentProject.type === 'currentProjectNotification' ? '/pn' : '/p';
     this.storageService.state.selectedTab = 1;
 
     this.route.data
