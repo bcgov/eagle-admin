@@ -38,6 +38,10 @@ input[type="text"] {
   }
 }
 
+.comment {
+  white-space: pre-wrap;
+}
+
 @media screen and (max-width: 768px) {
   .btn-group-toggle {
     display: block;
