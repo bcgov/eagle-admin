@@ -42,7 +42,7 @@
     </div>
     <div class="label-pair">
       <h3 for="proponent">Proponent: </h3>
-      <p id="proponent">{{project.proponent.name || '-'}}</p>
+      <p id="proponent">{{project.proponent ? project.proponent.name : '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="nature">Project Nature: </h3>
