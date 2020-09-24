@@ -2,7 +2,7 @@
   *ngFor="let item of contacts">
   <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{item.name || '-'}}</td>
   <td scope="row" data-label="Province" [style.width]="!useSmallTable && columns[1].width">{{item.province || '-' }}</td>
-  <td data-label="Select" (click)="deleteActivity(item)" scope="row" class="cursor-pointer" [style.width]="!useSmallTable && columns[2].width">
+  <td data-label="Select" (click)="removeFromProject(item)" scope="row" class="cursor-pointer" [style.width]="!useSmallTable && columns[2].width">
     <i class="material-icons">
       delete
     </i>
