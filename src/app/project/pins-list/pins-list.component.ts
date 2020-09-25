@@ -163,6 +163,10 @@ export class PinsListComponent implements OnInit, OnDestroy {
         list,
         this.tableParams
       );
+
+      if (this.currentProject && this.currentProject._id) {
+        this.tableData.extraData = { projectId: this.currentProject._id };
+      }
     }
   }
 

@@ -7,6 +7,7 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { Subject } from 'rxjs';
 import { RecentActivityService } from 'app/services/recent-activity';
+import { ProjectService } from 'app/services/project.service';
 
 @Component({
   selector: 'tbody[app-pins-table-rows]',
@@ -25,6 +26,7 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   public dropdownItems = ['Edit', 'Delete'];
   public columns: any;
   public useSmallTable: boolean;
+  public projectId: string;
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -33,16 +35,18 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
     private router: Router,
     private dialogService: DialogService,
     private recentActivityService: RecentActivityService,
+    private projectService: ProjectService
   ) { }
 
   async ngOnInit() {
     this.contacts = this.data.data;
     this.paginationData = this.data.paginationData;
+    this.projectId = this.data.extraData.projectId;
     this.columns = this.columnData;
     this.useSmallTable = this.smallTable;
   }
 
-  deleteActivity(activity) {
+  removeFromProject(pin) {
     this.dialogService.addDialog(ConfirmComponent,
       {
         title: 'Delete Participating Indigenous Nation',
@@ -55,11 +59,10 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
       .subscribe(
         isConfirmed => {
           if (isConfirmed) {
-            // Delete the Activity
-            this.recentActivityService.delete(activity)
+            this.projectService.deletePin(this.projectId, pin._id)
               .subscribe(
                 () => {
-                  this.contacts.splice(this.contacts.indexOf(activity), 1);
+                  this.contacts.splice(this.contacts.indexOf(pin), 1);
                   this._changeDetectionRef.detectChanges();
                 },
                 error => {
