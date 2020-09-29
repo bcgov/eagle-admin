@@ -165,7 +165,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.storageService.state.selectedOrganization = null;
       this.proponentName = this.storageService.state.selectedOrganization2002.name;
       this.proponentId = this.storageService.state.selectedOrganization2002._id;
-    } else if (this.tabIsEditing && this.project.proponent._id && this.project.proponent._id !== '') {
+    } else if (this.tabIsEditing && this.project.proponent && this.project.proponent._id) {
       // load from data
       this.proponentName = this.project.proponent.name;
       this.proponentId = this.project.proponent._id;
