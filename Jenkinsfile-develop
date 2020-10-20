@@ -337,13 +337,6 @@ pipeline {
           } catch (error) {
             echo "Error posting Rocket Chat message: ${error}"
           }
-          try {
-            sh '''
-              curl -L -O https://raw.githubusercontent.com/bcgov/eagle-helper-pods/master/openshift/jenkins/scripts/keycloak.js
-            '''
-          } catch (error) {
-            echo "Error retrieving keycloak util: ${error}"
-          }
           createDeploymentStatus('dev', "PENDING")
           echo "Branch to build: ${PR_NAME}"
           echo "Source fork: ${PR_FORK}"
@@ -561,7 +554,7 @@ pipeline {
           if ('Clean-up'.equalsIgnoreCase(inputAction)) {
             sh "node removeURI.js"
             cleanUpLock(lockName)
-            // cleanUpPR()
+            cleanUpPR()
             echo "Cleanup of ${PR_NAME} deployment is complete"
           }
         }
