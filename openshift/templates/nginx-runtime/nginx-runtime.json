@@ -20,7 +20,7 @@
         "name": "${NAME}",
         "creationTimestamp": null,
         "labels": {
-          "app": "${NAME}"
+          "app": "${GROUP_NAME}"
         }
       },
       "spec": {
@@ -65,6 +65,13 @@
       "description": "The name assigned to all of the frontend objects defined in this template.    You should keep this as default unless your know what your doing.",
       "required": true,
       "value": "eagle-admin-nginx-runtime"
+    },
+    {
+      "name": "GROUP_NAME",
+      "displayName": "Group Name",
+      "description": "The name to group all of the frontend objects defined in this template.",
+      "required": true,
+      "value": "eagle-admin"
     },
     {
       "name": "GIT_REPO_URL",
