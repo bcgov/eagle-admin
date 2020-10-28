@@ -18,9 +18,12 @@ export class OrganizationsResolver implements Resolve<object> {
     let tableParams;
     if (this.storageService.state.orgTableParams) {
       tableParams = this.storageService.state.orgTableParams;
-      this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, tableParams.filter, tableParams.keywords);
     } else {
       tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, null, null, ['companyType']);
+      if (tableParams.sortBy === '') {
+        tableParams.sortBy = '+name';
+      }
+      this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, tableParams.filter, tableParams.keywords);
     }
 
     let filterObj = {};
