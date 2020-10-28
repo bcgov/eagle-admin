@@ -80,11 +80,15 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         if (this.storageService.state.orgTableParams) {
           this.tableParams = this.storageService.state.orgTableParams;
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.filter, this.tableParams.keywords);
           this.storageService.state.orgTableParams = null;
         } else {
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, null, ['companyType']);
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = '+name';
+          }
         }
+        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.filter, this.tableParams.keywords);
+
         if (this.tableParams.filter && this.tableParams.filter.companyType) {
           this.setFilterButtons();
         }
