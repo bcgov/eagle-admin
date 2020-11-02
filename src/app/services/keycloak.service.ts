@@ -25,14 +25,14 @@ export class KeycloakService {
       case 'https://eagle-dev.pathfinder.gov.bc.ca':
         // Dev etc
         this.keycloakEnabled = true;
-        this.keycloakUrl = 'https://sso.pathfinder.gov.bc.ca/auth';
+        this.keycloakUrl = 'https://oidc.gov.bc.ca/auth';
         this.keycloakRealm = 'eagle';
         break;
 
       default:
         // Prod
         this.keycloakEnabled = true;
-        this.keycloakUrl = 'https://sso.pathfinder.gov.bc.ca/auth';
+        this.keycloakUrl = 'https://oidc.gov.bc.ca/auth';
         this.keycloakRealm = 'eagle';
     }
   }
