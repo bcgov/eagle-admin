@@ -15,25 +15,29 @@ export class KeycloakService {
   private loggedOut: string;
 
   constructor() {
-    switch (window.location.origin) {
-      // Always enable sso
-      // case 'http://localhost:4200':
-      //   // Local
-      //   this.keycloakEnabled = false;
-      //   break;
 
-      case 'https://eagle-dev.pathfinder.gov.bc.ca':
-        // Dev etc
-        this.keycloakEnabled = true;
+    // Always enable sso
+    this.keycloakEnabled = true;
+    this.keycloakRealm = 'eagle';
+    switch (window.location.origin) {
+      case 'http://esm-prod.pathfinder.bcgov/':
+      case 'https://www.projects.eao.gov.bc.ca':
+      case 'https://projects.eao.gov.bc.ca':
+        // Prod
         this.keycloakUrl = 'https://oidc.gov.bc.ca/auth';
-        this.keycloakRealm = 'eagle';
+        break;
+
+      case 'https://hotfix-eagle-test.pathfinder.gov.bc.ca':
+      case 'https://test.projects.eao.gov.bc.ca':
+      case 'https://eagle-test.pathfinder.gov.bc.ca':
+        // Test
+        this.keycloakUrl = 'https://test.oidc.gov.bc.ca/auth';
         break;
 
       default:
-        // Prod
-        this.keycloakEnabled = true;
-        this.keycloakUrl = 'https://oidc.gov.bc.ca/auth';
-        this.keycloakRealm = 'eagle';
+        // Dev
+        this.keycloakUrl = 'https://dev.oidc.gov.bc.ca/auth';
+        break;
     }
   }
 
