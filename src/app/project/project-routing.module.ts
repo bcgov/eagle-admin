@@ -56,7 +56,6 @@ import { ExtensionComponent } from 'app/shared/components/extension/extension.co
 import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
 import { ProjectsRoutes } from 'app/projects/projects-routes';
 import { FullProjectResolver } from './full-project-resolver.service';
-import { ListResolver } from 'app/shared/resolvers/list-resolver.service';
 
 const routes: Routes = [
   {
@@ -65,7 +64,6 @@ const routes: Routes = [
     runGuardsAndResolvers: 'always',
     resolve: {
       project: ProjectResolver,
-      list: ListResolver,
     },
     children: [
       {

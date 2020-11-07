@@ -31,6 +31,7 @@ describe('FormTab2002', () => {
     getLists: () => {
       return Observable.of(eaDecisions);
     },
+    lists: []
   };
 
   const mockProjectService = jasmine.createSpyObj('ProjectService', {
@@ -130,7 +131,6 @@ describe('FormTab2002', () => {
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
   });
   it('EA Decision dropdown should contain only 2002 legislative items', () => {
-    expect(component.eacDecisions).not.toEqual([]);
     expect(component.eacDecisions).not.toEqual(
       jasmine.arrayContaining([
         jasmine.objectContaining({
@@ -140,7 +140,6 @@ describe('FormTab2002', () => {
     );
   });
   it('IAAC Involvement dropdown should contain only 2002 legislative items', async () => {
-    expect(component.eacDecisions).not.toEqual([]);
     expect(component.ceaaInvolvements).not.toEqual(
       jasmine.arrayContaining([
         jasmine.objectContaining({

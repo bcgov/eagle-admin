@@ -31,7 +31,6 @@ import { LinkOrganizationTableRowsComponent } from './components/link-organizati
 import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
 import { ExtensionComponent } from './components/extension/extension.component';
-import { ListResolver } from './resolvers/list-resolver.service';
 
 @NgModule({
   imports: [
@@ -94,7 +93,6 @@ import { ListResolver } from './resolvers/list-resolver.service';
     TableDocumentTemplateUtils,
     NavigationStackUtils,
     Utils,
-    ListResolver,
     { provide: NZ_I18N, useValue: en_US }
   ]
 })

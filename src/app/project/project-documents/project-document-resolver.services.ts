@@ -35,7 +35,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     const projectPhases: any[] = [];
 
     // Get the list types that are needed.
-    if (list.length > 0) {
+    if (list && list.length > 0) {
       list.map(item => {
         switch (item.type) {
           case 'label':

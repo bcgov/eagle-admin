@@ -141,7 +141,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     private orgService: OrgService,
     private searchService: SearchService,
     private storageService: StorageService,
-    private config: ConfigService,
+    private configService: ConfigService,
     private _changeDetectionRef: ChangeDetectorRef
   ) {}
 
@@ -527,29 +527,26 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   getLists() {
-    this.config.getLists().subscribe (lists => {
-      lists.map(item => {
-        switch (item.type) {
-          case 'eaDecisions':
-            this.eacDecisions.push({ ...item });
-            break;
-          case 'ceaaInvolvements':
-            this.ceaaInvolvements.push({ ...item });
-            break;
-          case 'projectPhase':
-            this.projectPhases.push({ ...item});
-            break;
-          default:
-            break;
-        }
-      });
+    this.configService.lists.map(item => {
+      switch (item.type) {
+        case 'eaDecisions':
+          this.eacDecisions.push({ ...item });
+          break;
+        case 'ceaaInvolvements':
+          this.ceaaInvolvements.push({ ...item });
+          break;
+        case 'projectPhase':
+          this.projectPhases.push({ ...item});
+          break;
+        default:
+          break;
+      }
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.
     this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
     this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
     this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
-
   }
 
     // Compares selected options when a dropdown is grouped by legislation.

@@ -99,9 +99,14 @@ import { ProjectNotificationComponent } from './project-notification/project-not
 import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
 import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 
+export function initConfig(configService: ConfigService) {
+  return () => configService.init();
+}
+
 export function kcFactory(keycloakService: KeycloakService) {
   return () => keycloakService.init();
 }
+
 
 @NgModule({
   declarations: [
@@ -180,6 +185,12 @@ export function kcFactory(keycloakService: KeycloakService) {
     MatTabsModule,
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initConfig,
+      deps: [ConfigService],
+      multi: true
+    },
     KeycloakService,
     {
       provide: APP_INITIALIZER,

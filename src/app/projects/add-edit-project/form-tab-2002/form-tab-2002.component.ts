@@ -67,7 +67,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private router: Router,
-    private config: ConfigService,
+    private configService: ConfigService,
     private _changeDetectorRef: ChangeDetectorRef,
     private utils: Utils,
     private navigationStackUtils: NavigationStackUtils,
@@ -78,11 +78,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.config.getRegions().takeUntil(this.ngUnsubscribe).subscribe(
-      (data) => {
-        this.regions = data;
-      }
-    );
+    this.regions = this.configService.lists.map(item => item.type === 'region');
 
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
@@ -92,8 +88,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         this.buildForm();
         this.initContacts();
         this.getLists();
-
-
 
         this.loading = false;
         try {
@@ -697,26 +691,25 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   register() { }
 
   getLists() {
-    this.config.getLists().subscribe (lists => {
-      lists.map(item => {
-        // List values only have 2002 and 2018 values.
-        // If a project is set to 1996 legislation, make sure
-        // to load the 2002 codes.
-        let tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
-        switch (`${item.type}|${item.legislation}`) {
-          case `eaDecisions|${tempLegislationYear}`:
-            this.eacDecisions.push({ ...item });
-            break;
-          case `ceaaInvolvements|${tempLegislationYear}`:
-            this.ceaaInvolvements.push({ ...item });
-            break;
-          case `projectPhase|${tempLegislationYear}`:
-            this.projectPhases.push({ ...item});
-            break;
-          default:
-            break;
-        }
-      });
+    // List values only have 2002 and 2018 values.
+    // If a project is set to 1996 legislation, make sure
+    // to load the 2002 codes.
+    let tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
+
+    this.configService.lists.forEach(item => {
+      switch (`${item.type}|${item.legislation}`) {
+        case `eaDecisions|${tempLegislationYear}`:
+          this.eacDecisions.push({ ...item });
+          break;
+        case `ceaaInvolvements|${tempLegislationYear}`:
+          this.ceaaInvolvements.push({ ...item });
+          break;
+        case `projectPhase|${tempLegislationYear}`:
+          this.projectPhases.push({ ...item});
+          break;
+        default:
+          break;
+      }
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.

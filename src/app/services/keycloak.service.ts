@@ -161,7 +161,7 @@ export class KeycloakService {
       return currentUser ? currentUser.token : null;
     }
 
-    return this.keycloakAuth.token;
+    return this.keycloakAuth && this.keycloakAuth.token;
   }
 
   getUserRoles() {

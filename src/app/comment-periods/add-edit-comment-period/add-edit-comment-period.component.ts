@@ -65,7 +65,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private _changeDetectionRef: ChangeDetectorRef,
     private commentPeriodService: CommentPeriodService,
-    private config: ConfigService,
+    private configService: ConfigService,
     private documentService: DocumentService,
     private formBuilder: FormBuilder,
     private router: Router,
@@ -81,14 +81,12 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // Set the base navigation route to use depending on if viewing a project or project notification.
     this.componentBaseUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
 
-    this.config.getLists().subscribe((lists) => {
-      lists.forEach(listItem => {
-        if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.data.legislationYear) {
-          this.milestones.push(Object.assign({}, listItem));
-        }
-      });
-      this.milestones.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.configService.lists.forEach(listItem => {
+      if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.data.legislationYear) {
+        this.milestones.push(Object.assign({}, listItem));
+      }
     });
+    this.milestones.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
 
     // Check if we're editing
     this.route.url.subscribe(segments => {
