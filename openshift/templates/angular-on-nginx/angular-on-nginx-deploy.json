@@ -18,7 +18,8 @@
       "metadata": {
         "creationTimestamp": null,
         "labels": {
-          "app": "${GROUP_NAME}"
+          "app": "${GROUP_NAME}",
+          "role": "frontend-admin"
         },
         "name": "${NAME}"
       },
@@ -43,6 +44,7 @@
             "creationTimestamp": null,
             "labels": {
               "app": "${GROUP_NAME}",
+              "role": "frontend-admin",
               "deploymentconfig": "${NAME}"
             }
           },
