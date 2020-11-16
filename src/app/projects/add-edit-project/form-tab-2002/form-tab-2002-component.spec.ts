@@ -25,11 +25,9 @@ describe('FormTab2002', () => {
   const utils = new Utils();
   const projectAjaxData = utils.extractFromSearchResults(AjaxData)[0]['legislation_2002'];
   const mockConfigService = {
-    getRegions: () => {
-      return Observable.of(regionsData);
-    },
+    regions: regionsData,
     getLists: () => {
-      return Observable.of(eaDecisions);
+      return eaDecisions;
     },
     lists: []
   };

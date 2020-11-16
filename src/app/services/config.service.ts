@@ -56,7 +56,7 @@ export class ConfigService {
 
   // getters/setters
   get lists(): any[] { return this._lists; }
-  get regions(): any[] { return this._regions; }
+  get regions(): any { return this._regions; }
   get baseLayerName(): string { return this._baseLayerName; }
   set baseLayerName(val: string) { this._baseLayerName = val; }
 
