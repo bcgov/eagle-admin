@@ -78,7 +78,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.regions = this.configService.lists.map(item => item.type === 'region');
+    this.regions = this.configService.regions;
 
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)

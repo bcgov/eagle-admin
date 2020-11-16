@@ -81,7 +81,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
-    this.regions = this.configService.lists.map(item => item.type === 'region');
+    this.regions = this.configService.regions;
 
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
