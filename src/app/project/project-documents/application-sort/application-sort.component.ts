@@ -173,19 +173,16 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     const sortBy = this.tableParams.sortBy && this.tableParams.sortBy !== 'null' ? this.tableParams.sortBy : '+sortOrder,-datePosted,+displayName';
     const keywords = this.tableParams.keywords ? this.tableParams.keywords : '';
 
-    this.configService.getLists().switchMap (list => {
-      const tabModifier = this.utils.createProjectTabModifiers(list);
-      return this.searchService.getSearchResults(
-        keywords,
-        'Document',
-        [{ 'name': 'project', 'value': projectId }],
-        currentPage,
-        pageSize,
-        sortBy,
-        tabModifier,
-        true
-      );
-    })
+    const tabModifier = this.utils.createProjectTabModifiers(this.configService.lists);
+    return this.searchService.getSearchResults(
+      keywords,
+      'Document',
+      [{ 'name': 'project', 'value': projectId }],
+      currentPage,
+      pageSize,
+      sortBy,
+      tabModifier,
+      true)
     .takeUntil(this.ngUnsubscribe)
     .subscribe((res: any) => {
       if (res && res[0].data.meta && res[0].data.meta.length > 0) {

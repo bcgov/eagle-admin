@@ -25,6 +25,7 @@ import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
 import { Utils } from 'app/shared/utils/utils';
 import { ProjectNotification } from 'app/models/projectNotification';
+import { ConfigService } from './config.service';
 
 interface LocalLoginResponse {
   _id: string;
@@ -50,6 +51,7 @@ export class ApiService {
   constructor(
     private http: HttpClient,
     private keycloakService: KeycloakService,
+    private configService: ConfigService,
     private utils: Utils
   ) {
     // this.jwtHelper = new JwtHelperService();
@@ -57,15 +59,10 @@ export class ApiService {
     this.token = currentUser && currentUser.token;
     this.isMS = window.navigator.msSaveOrOpenBlob ? true : false;
 
-    // The following items are loaded by a file that is only present on cluster builds.
-    // Locally, this will be empty and local defaults will be used.
-    const remote_api_path = window.localStorage.getItem('from_admin_server--remote_api_path');
-    const deployment_env = window.localStorage.getItem('from_admin_server--deployment_env');
-    const banner_colour = window.localStorage.getItem('from_admin_server--banner_colour');
-
-    this.pathAPI = (_.isEmpty(remote_api_path)) ? 'http://localhost:3000/api' : remote_api_path;
-    this.env = (_.isEmpty(deployment_env)) ? 'local' : deployment_env;
-    this.bannerColour = (_.isEmpty(banner_colour)) ? 'red' : banner_colour;
+    this.bannerColour = this.configService.config['BANNER_COLOUR'];
+    this.env     = this.configService.config['ENVIRONMENT'];
+    this.pathAPI = this.configService.config['API_LOCATION']
+                   + this.configService.config['API_PATH'];
   }
 
   handleError(error: any): Observable<never> {
@@ -123,10 +120,6 @@ export class ApiService {
     queryString += `fields=${this.buildValues(fields)}`;
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
-  }
-
-  getFullDataSet(dataSet: string): Observable<any> {
-    return this.http.get<any>(`${this.pathAPI}/search?pageSize=1000&dataset=${dataSet}`, {});
   }
 
   // NB: returns array with 1 element

@@ -3,6 +3,7 @@ import { JwtUtil } from 'app/jwt-util';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import * as _ from 'lodash';
+import { ConfigService } from './config.service';
 
 declare var Keycloak: any;
 
@@ -14,28 +15,7 @@ export class KeycloakService {
   private keycloakRealm: string;
   private loggedOut: string;
 
-  constructor() {
-    switch (window.location.origin) {
-      // Always enable sso
-      // case 'http://localhost:4200':
-      //   // Local
-      //   this.keycloakEnabled = false;
-      //   break;
-
-      case 'https://eagle-dev.pathfinder.gov.bc.ca':
-        // Dev etc
-        this.keycloakEnabled = true;
-        this.keycloakUrl = 'https://oidc.gov.bc.ca/auth';
-        this.keycloakRealm = 'eagle';
-        break;
-
-      default:
-        // Prod
-        this.keycloakEnabled = true;
-        this.keycloakUrl = 'https://oidc.gov.bc.ca/auth';
-        this.keycloakRealm = 'eagle';
-    }
-  }
+  constructor(private configService: ConfigService) {}
 
   isKeyCloakEnabled(): boolean {
     return this.keycloakEnabled;
@@ -55,7 +35,11 @@ export class KeycloakService {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
   }
 
-  init(): Promise<any> {
+  async init() {
+    // Load up the config service data
+    this.keycloakEnabled = this.configService.config['KEYCLOAK_ENABLED'];
+    this.keycloakUrl = this.configService.config['KEYCLOAK_URL'];
+    this.keycloakRealm = this.configService.config['KEYCLOAK_REALM'];
 
     this.loggedOut = this.getParameterByName('loggedout');
 
@@ -161,7 +145,7 @@ export class KeycloakService {
       return currentUser ? currentUser.token : null;
     }
 
-    return this.keycloakAuth.token;
+    return this.keycloakAuth && this.keycloakAuth.token;
   }
 
   getUserRoles() {

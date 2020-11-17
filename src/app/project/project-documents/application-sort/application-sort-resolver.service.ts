@@ -20,18 +20,16 @@ export class ApplicationSortResolver implements Resolve<Observable<object>> {
     const sortBy = route.params.sortBy && route.params.sortBy !== 'null' ? route.params.sortBy : '+sortOrder,-datePosted,+displayName';
     const keywords = route.params.keywords ? route.params.keywords : '';
 
-    return this.configService.getLists().switchMap (list => {
-      const tabModifier = this.utils.createProjectTabModifiers(list);
-      return this.searchService.getSearchResults(
-        keywords,
-        'Document',
-        [{ 'name': 'project', 'value': projectId }],
-        currentPage,
-        pageSize,
-        sortBy,
-        tabModifier,
-        true
-      );
-    });
+    const tabModifier = this.utils.createProjectTabModifiers(this.configService.lists);
+    return this.searchService.getSearchResults(
+      keywords,
+      'Document',
+      [{ 'name': 'project', 'value': projectId }],
+      currentPage,
+      pageSize,
+      sortBy,
+      tabModifier,
+      true
+    );
   }
 }
