@@ -12,6 +12,10 @@
   window.__env.API_PATH = '/api';
   window.__env.API_PUBLIC_PATH = '/api/public';
   window.__env.KEYCLOAK_CLIENT_ID = 'eagle-admin-console';
+  window.__env.KEYCLOAK_URL = 'https://oidc.gov.bc.ca/auth';
+  window.__env.KEYCLOAK_REALM = 'eagle';
+  window.__env.KEYCLOAK_ENABLED = true;
+  window.__env.debugMode = true;
 
   // Add any feature-toggles
   // window.__env.coolFeatureActive = false;
