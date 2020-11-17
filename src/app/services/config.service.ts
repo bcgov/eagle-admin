@@ -1,7 +1,5 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { ApiService } from './api';
-import { Subject } from 'rxjs/Subject';
-import { Observable, of } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 //
 // This service/class provides a centralized place to persist config values
@@ -9,72 +7,58 @@ import { Observable, of } from 'rxjs';
 //
 
 @Injectable()
-export class ConfigService implements OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-
+export class ConfigService {
   // defaults
   private _baseLayerName = 'World Topographic'; // NB: must match a valid base layer name
   private _lists = [];
   private _regions = [];
+  private configuration = { };
 
-  constructor(private api: ApiService) { }
+  constructor(private httpClient: HttpClient) { }
 
-  // called by app constructor
-  public init() {
+  /**
+   * Initialize the Config Service.  Get configuration data from front-end build, or back-end if nginx
+   * is configured to pass the /config endpoint to a dynamic service that returns JSON.
+   */
+  public async init() {
+    try {
+      this.configuration = await this.httpClient.get('/api/config').toPromise();
+
+      console.log('Configuration:', this.configuration);
+      if (this.configuration['debugMode']) {
+        console.log('Configuration:', this.configuration);
+      }
+    } catch (e) {
+      // Not configured
+      console.log('Error getting configuration:', e);
+      this.configuration = window['__env'];
+      if (this.configuration['debugMode']) {
+        console.log('Configuration:', this.configuration);
+      }
+    }
+
+    try {
+      // Get the Lists and set the Regions datasets
+      const lists = await this.httpClient.get<any>(`${this.configuration['API_LOCATION']}${this.configuration['API_PATH']}/search?pageSize=1000&dataset=List`, {}).toPromise();
+      this._lists = lists[0].searchResults;
+      this.populateRegionsList();
+    } catch (e) {
+      if (this.configuration['debugMode']) {
+        console.log('Getting list error:', e);
+      }
+    }
+
+    return Promise.resolve();
   }
-
-  // called by app constructor
-  public destroy() {
-    // FUTURE: save settings to window.localStorage?
+  get config(): any {
+    return this.configuration;
   }
 
   // getters/setters
   get lists(): any[] { return this._lists; }
+  get regions(): any[] { return this._regions; }
   get baseLayerName(): string { return this._baseLayerName; }
   set baseLayerName(val: string) { this._baseLayerName = val; }
-
-  public getLists(): Observable<any> {
-    if (this._lists.length === 0) {
-      return this.api.getFullDataSet('List')
-        .map(res => {
-          if (res) {
-            this._lists = res[0].searchResults;
-            return this._lists;
-          }
-          return null;
-        })
-        .catch(error => this.api.handleError(error));
-    } else {
-      return of(this._lists);
-    }
-  }
-
-  // Manual cache of the list without using the getLists() function
-  public addLists(list) {
-    if (this._lists.length === 0 && list) {
-      this._lists = [...list];
-    }
-  }
-
-  public getRegions(): Observable<any> {
-    if (this._lists.length === 0) {
-      return this.api.getFullDataSet('List')
-        .map(res => {
-          if (res) {
-            this._lists = res[0].searchResults;
-            this.populateRegionsList();
-            return this._regions;
-          }
-          return null;
-        })
-        .catch(error => this.api.handleError(error));
-    } else if (this._regions.length === 0) {
-      this.populateRegionsList();
-      return of(this._regions);
-    } else {
-      return of(this._regions);
-    }
-  }
 
   private populateRegionsList() {
     this._lists.map(item => {
@@ -84,10 +68,5 @@ export class ConfigService implements OnDestroy {
           break;
       }
     });
-  }
-
-  ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
   }
 }

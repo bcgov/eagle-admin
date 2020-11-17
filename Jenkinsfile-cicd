@@ -78,7 +78,7 @@ def _openshift(String name, String project, Closure body) {
 def BUILD_DONE_STATUSES = ['Complete', 'Failed', 'Cancelled']
 pipeline {
   environment {
-    TOOLSPROJECT = "esm"
+    TOOLSPROJECT = "${TOOLS_NAMESPACE ?: '6cdc9e-tools'}"
   }
   agent any
   stages {
@@ -163,10 +163,10 @@ pipeline {
           }
           try {
             echo "Backing up..."
-            sh("oc tag esm/eagle-admin:test esm/eagle-admin:test-backup")
+            sh("oc tag ${TOOLSPROJECT}/eagle-admin:test ${TOOLSPROJECT}/eagle-admin:test-backup")
             sleep 5
             echo "Tagging Dev as Test..."
-            sh("oc tag esm/eagle-admin:dev esm/eagle-admin:test")
+            sh("oc tag ${TOOLSPROJECT}/eagle-admin:dev ${TOOLSPROJECT}/eagle-admin:test")
             sleep 5
 
             echo ">>>> Tagging Complete"
@@ -206,10 +206,10 @@ pipeline {
           }
           try {
             echo "Backing up..."
-            sh("oc tag esm/eagle-admin:prod esm/eagle-admin:prod-backup")
+            sh("oc tag ${TOOLSPROJECT}/eagle-admin:prod ${TOOLSPROJECT}/eagle-admin:prod-backup")
             sleep 5
             echo "Tagging Test as Prod..."
-            sh("oc tag esm/eagle-admin:test esm/eagle-admin:prod")
+            sh("oc tag ${TOOLSPROJECT}/eagle-admin:test ${TOOLSPROJECT}/eagle-admin:prod")
             sleep 5
             echo ">>>> Tagging Complete"
             notifyRocketChat(

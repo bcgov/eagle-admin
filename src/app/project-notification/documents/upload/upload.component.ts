@@ -45,7 +45,7 @@ export class UploadComponent implements OnInit, OnDestroy {
     private storageService: StorageService,
     private documentService: DocumentService,
     private snackBar: MatSnackBar,
-    private config: ConfigService,
+    private configService: ConfigService,
   ) { }
 
   ngOnInit() {
@@ -234,8 +234,7 @@ export class UploadComponent implements OnInit, OnDestroy {
 
 
   getLists() {
-    this.config.getLists().subscribe (lists => {
-      lists.map(item => {
+    this.configService.lists.forEach(item => {
         switch (item.name) {
           case 'Notification':
             if (item.legislation === 2018) {
@@ -269,11 +268,5 @@ export class UploadComponent implements OnInit, OnDestroy {
             break;
         }
       }, this);
-    });
   }
-
-
-
-
-
 }

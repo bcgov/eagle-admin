@@ -20,6 +20,7 @@ import { TableParamsObject } from 'app/shared/components/table-template/table-pa
 import { TableDocumentTemplateUtils } from 'app/shared/utils/table-document-template-utils';
 import { Utils } from 'app/shared/utils/utils';
 import { Constants } from 'app/shared/utils/constants';
+import { ConfigService } from 'app/services/config.service';
 
 class DocumentFilterObject {
   constructor(
@@ -151,38 +152,34 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private searchService: SearchService,
+    private configService: ConfigService,
     private storageService:  StorageService,
     private tableDocumentTemplateUtils: TableDocumentTemplateUtils,
     private utils: Utils
   ) {}
 
   ngOnInit() {
-    this.route.parent.data
-      .switchMap(parentData => {
-        const list = parentData.list;
+      if (this.milestones.length === 0) {
+        const milestones = this.configService.lists.filter(item => item.type === 'label');
+        this.milestones = _.sortBy(milestones, ['legislation']);
+      }
 
-        if (this.milestones.length === 0) {
-          const milestones = list.filter(item => item.type === 'label');
-          this.milestones = _.sortBy(milestones, ['legislation']);
-        }
+      if (this.authors.length === 0) {
+        const authors = this.configService.lists.filter(item => item.type === 'author');
+        this.authors = _.sortBy(authors, ['legislation']);
+      }
 
-        if (this.authors.length === 0) {
-          const authors = list.filter(item => item.type === 'author');
-          this.authors = _.sortBy(authors, ['legislation']);
-        }
+      if (this.types.length === 0) {
+        const types = this.configService.lists.filter(item => item.type === 'doctype');
+        this.types = _.sortBy(types, ['legislation', 'listOrder']);
+      }
 
-        if (this.types.length === 0) {
-          const types = list.filter(item => item.type === 'doctype');
-          this.types = _.sortBy(types, ['legislation', 'listOrder']);
-        }
+      if (this.projectPhases.length === 0) {
+        const projectPhases = this.configService.lists.filter(item => item.type === 'projectPhase');
+        this.projectPhases = _.sortBy(projectPhases, ['legislation']);
+      }
 
-        if (this.projectPhases.length === 0) {
-          const projectPhases = list.filter(item => item.type === 'projectPhase');
-          this.projectPhases = _.sortBy(projectPhases, ['legislation']);
-        }
-
-        return this.route.params;
-      })
+      this.route.params
       .switchMap((res: any) => {
         let params = { ...res };
 
