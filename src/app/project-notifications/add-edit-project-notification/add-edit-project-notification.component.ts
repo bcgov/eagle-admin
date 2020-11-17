@@ -67,7 +67,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   ) { }
 
   public ngOnInit() {
-    this.regions = this.configService.lists.map(item => item.type === 'region');
+    this.regions = this.configService.regions;
     // Determine if this an add or edit.
     this.route.url.subscribe(segments => {
       segments.map(segment => {
