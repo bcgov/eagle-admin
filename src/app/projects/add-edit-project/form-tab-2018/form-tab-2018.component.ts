@@ -302,12 +302,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       formData.eaStatusDate = this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate));
     }
 
-    if (!formData.decisionDate) {
-      formData.decisionDate = '';
-    } else {
-      formData.decisionDate = this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate));
-    }
-
     if (!formData.centroid) {
       formData.centroid = [-123.3656, 48.4284];
     }
@@ -354,7 +348,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
       'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || null),
-      'decisionDate': new FormControl(formData.decisionDate),
+      'decisionDate': new FormControl(formData.decisionDate ? this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(formData.substantiallyDate),
       'dispute': new FormControl(formData.dispute),
