@@ -313,7 +313,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'status': new FormControl(formData.status || this.PROJECT_STATUS[2]),
       'projectStatusDate': new FormControl(),
       'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
-      'decisionDate': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate))),
+      'decisionDate': new FormControl(formData.decisionDate ? this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(),
       'activeStatus': new FormControl(formData.activeStatus),
