@@ -96,12 +96,12 @@
                 ],
                 "resources": {
                   "requests": {
-                    "cpu": "${NODEJS_CPU_REQUEST}",
-                    "memory": "${NODEJS_MEMORY_REQUEST}"
+                    "cpu": "${NGINX_CPU_REQUEST}",
+                    "memory": "${NGINX_MEMORY_REQUEST}"
                   },
                   "limits": {
-                    "cpu": "${NODEJS_CPU_LIMIT}",
-                    "memory": "${NODEJS_MEMORY_LIMIT}"
+                    "cpu": "${NGINX_CPU_LIMIT}",
+                    "memory": "${NGINX_MEMORY_LIMIT}"
                   }
                 },
                 "livenessProbe": {
@@ -222,7 +222,7 @@
       "displayName": "Group Name",
       "description": "The name to group all of the frontend objects defined in this template.",
       "required": true,
-      "value": "eagle-api"
+      "value": "eagle-epic"
     },
     {
       "name": "IMAGE_NAMESPACE",
@@ -292,25 +292,25 @@
       "value": "eagle-admin-console"
     },
     {
-      "name": "NODEJS_CPU_REQUEST",
+      "name": "NGINX_CPU_REQUEST",
       "displayName": "CPU Request",
       "description": "Reserved amount of CPU (in cores) the Node.js container can use.",
       "value": "1m"
     },
     {
-      "name": "NODEJS_MEMORY_REQUEST",
+      "name": "NGINX_MEMORY_REQUEST",
       "displayName": "Memory Request",
       "description": "Reserved amount of memory the Node.js container can use.",
       "value": "80Mi"
     },
     {
-      "name": "NODEJS_CPU_LIMIT",
+      "name": "NGINX_CPU_LIMIT",
       "displayName": "CPU Limit",
       "description": "Maximum amount of CPU (in cores) the Node.js container can use.",
       "value": "10m"
     },
     {
-      "name": "NODEJS_MEMORY_LIMIT",
+      "name": "NGINX_MEMORY_LIMIT",
       "displayName": "Memory Limit",
       "description": "Maximum amount of memory the Node.js container can use.",
       "value": "100Mi"
