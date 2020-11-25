@@ -102,7 +102,7 @@
       "displayName": "Group Name",
       "description": "The name to group all of the frontend objects defined in this template.",
       "required": true,
-      "value": "eagle-admin"
+      "value": "eagle-epic"
     },
     {
       "name": "ANGULAR_BUILDER_IMAGE",
