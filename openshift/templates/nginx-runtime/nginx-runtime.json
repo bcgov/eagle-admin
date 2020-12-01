@@ -34,6 +34,11 @@
           "contextDir": "openshift/templates/nginx-runtime/"
         },
         "strategy": {
+          "dockerStrategy": {
+            "pullSecret": {
+              "name": "artifactory-pull-secret"
+            }
+          },
           "type": "Docker"
         },
         "output": {
