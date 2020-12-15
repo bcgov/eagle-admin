@@ -71,10 +71,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     // Determine if this an add or edit.
     this.route.url.subscribe(segments => {
       segments.map(segment => {
+        this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
         if (segment.path === 'add') {
           this.isAdd = true;
-          this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
-
           if (this.isAdd || !this.projectNotification) {
             this.buildForm({
               'name': '',
@@ -90,7 +89,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
               'centroid': ['', ''],
               'trigger': '',
             });
-          } else {
+          }
+        } else {
 
             if (this.projectNotification.read.includes('public')) {
               this.isPublished = true;
@@ -101,7 +101,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
             this.buildForm(editData);
             this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
-          }
 
           this.projectService.getAll(1, 1000, '+name')
             .takeUntil(this.ngUnsubscribe)
