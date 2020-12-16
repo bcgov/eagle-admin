@@ -71,10 +71,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     // Determine if this an add or edit.
     this.route.url.subscribe(segments => {
       segments.map(segment => {
+        this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
         if (segment.path === 'add') {
           this.isAdd = true;
-          this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
-
           if (this.isAdd || !this.projectNotification) {
             this.buildForm({
               'name': '',
@@ -90,18 +89,17 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
               'centroid': ['', ''],
               'trigger': '',
             });
-          } else {
-
-            if (this.projectNotification.read.includes('public')) {
-              this.isPublished = true;
-            }
-
-            let editData = { ...this.projectNotification  };
-            // new Date(null) will create a date of 31/12/1969, so if decisionDate is null, don't create a date object here.
-            editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
-            this.buildForm(editData);
-            this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
           }
+        } else {
+          if (this.projectNotification.read.includes('public')) {
+            this.isPublished = true;
+          }
+
+          let editData = { ...this.projectNotification  };
+          // new Date(null) will create a date of 31/12/1969, so if decisionDate is null, don't create a date object here.
+          editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
+          this.buildForm(editData);
+          this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
 
           this.projectService.getAll(1, 1000, '+name')
             .takeUntil(this.ngUnsubscribe)
@@ -110,7 +108,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
                 this.projects = res2.data;
               }
             });
-
           this.loading = false;
           this._changeDetectorRef.detectChanges();
         }
