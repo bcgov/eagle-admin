@@ -69,7 +69,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackBar: MatSnackBar,
     private router: Router,
-    private config: ConfigService,
+    private configService: ConfigService,
     private _changeDetectorRef: ChangeDetectorRef,
     private utils: Utils,
     private navigationStackUtils: NavigationStackUtils,
@@ -81,11 +81,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
-    this.config.getRegions().takeUntil(this.ngUnsubscribe).subscribe(
-      (data) => {
-        this.regions = data;
-      }
-    );
+    this.regions = this.configService.regions;
 
     this.route.parent.data
       .takeUntil(this.ngUnsubscribe)
@@ -306,12 +302,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       formData.eaStatusDate = this.utils.convertJSDateToNGBDate(new Date(formData.eaStatusDate));
     }
 
-    if (!formData.decisionDate) {
-      formData.decisionDate = '';
-    } else {
-      formData.decisionDate = this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate));
-    }
-
     if (!formData.centroid) {
       formData.centroid = [-123.3656, 48.4284];
     }
@@ -358,7 +348,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'status': new FormControl(formData.status),
       'projectStatusDate': new FormControl(),
       'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || null),
-      'decisionDate': new FormControl(formData.decisionDate),
+      'decisionDate': new FormControl(formData.decisionDate ? this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
       'substantially': new FormControl(formData.substantially),
       'substantiallyDate': new FormControl(formData.substantiallyDate),
       'dispute': new FormControl(formData.dispute),
@@ -748,22 +738,25 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   register() { }
 
   getLists() {
-    this.config.getLists().subscribe (lists => {
-      lists.map(item => {
-        switch (`${item.type}|${item.legislation}`) {
-          case `eaDecisions|${this.legislationYear}`:
-            this.eacDecisions.push({ ...item });
-            break;
-          case `ceaaInvolvements|${this.legislationYear}`:
-            this.ceaaInvolvements.push({ ...item });
-            break;
-          case `projectPhase|${this.legislationYear}`:
-            this.projectPhases.push({ ...item});
-            break;
-          default:
-            break;
-        }
-      });
+    // List values only have 2002 and 2018 values.
+    // If a project is set to 1996 legislation, make sure
+    // to load the 2002 codes.
+
+    this.configService.lists.forEach(item => {
+      let tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
+      switch (`${item.type}|${item.legislation}`) {
+        case `eaDecisions|${tempLegislationYear}`:
+          this.eacDecisions.push({ ...item });
+          break;
+        case `ceaaInvolvements|${tempLegislationYear}`:
+          this.ceaaInvolvements.push({ ...item });
+          break;
+        case `projectPhase|${tempLegislationYear}`:
+          this.projectPhases.push({ ...item});
+          break;
+        default:
+          break;
+      }
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.

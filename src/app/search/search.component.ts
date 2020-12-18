@@ -20,6 +20,7 @@ import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
+import { ConfigService } from 'app/services/config.service';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -138,58 +139,54 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     private orgService: OrgService,
     public searchService: SearchService, // also used in template
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private configService: ConfigService
   ) { }
 
   // TODO: when clicking on radio buttons, url must change to reflect dataset.
 
   ngOnInit() {
     // Fetch the Lists
-    this.searchService.getFullList('List')
-      .switchMap((res: any) => {
-        if (res.length > 0) {
-          res[0].searchResults.map(item => {
-            switch (item.type) {
-              case 'label':
-                this.milestones.push({ ...item });
-                break;
-              case 'author':
-                this.authors.push({ ...item });
-                break;
-              case 'doctype':
-                this.docTypes.push({ ...item });
-                break;
-              case 'eaDecisions':
-                this.eacDecisions.push({ ...item });
-                break;
-              case 'ceaaInvolvements':
-                this.ceaaInvolvements.push({ ...item });
-                break;
-              case 'projectPhase':
-                this.projectPhases.push({ ...item });
-                break;
-              default:
-                break;
-            }
-          });
-        }
+    this.configService.lists.map(item => {
+      switch (item.type) {
+        case 'label':
+          this.milestones.push({ ...item });
+          break;
+        case 'author':
+          this.authors.push({ ...item });
+          break;
+        case 'doctype':
+          this.docTypes.push({ ...item });
+          break;
+        case 'eaDecisions':
+          this.eacDecisions.push({ ...item });
+          break;
+        case 'ceaaInvolvements':
+          this.ceaaInvolvements.push({ ...item });
+          break;
+        case 'projectPhase':
+          this.projectPhases.push({ ...item });
+          break;
+        default:
+          break;
+      }
+    });
 
-        // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-        // todo how are we handling these lists with legislation year in advanced search? EE-406
-        // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
-        this.docTypes = _.sortBy(this.docTypes, ['legislation', 'listOrder']);
+      // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
+      // todo how are we handling these lists with legislation year in advanced search? EE-406
+      // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
+      this.docTypes = _.sortBy(this.docTypes, ['legislation', 'listOrder']);
 
-        // Sort by legislation.
-        this.milestones = _.sortBy(this.milestones, ['legislation']);
-        this.authors = _.sortBy(this.authors, ['legislation']);
-        this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
-        this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-        this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+      // Sort by legislation.
+      this.milestones = _.sortBy(this.milestones, ['legislation']);
+      this.authors = _.sortBy(this.authors, ['legislation']);
+      this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
+      this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
+      this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
 
-        // Fetch proponents and other collections
-        // TODO: Put all of these into Lists
-        return this.orgService.getByCompanyType('Proponent/Certificate Holder');
-      })
+      // Fetch proponents and other collections
+      // TODO: Put all of these into Lists
+      return this.orgService.getByCompanyType('Proponent/Certificate Holder')
       .switchMap((res: any) => {
         this.proponents = res || [];
 

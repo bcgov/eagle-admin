@@ -25,12 +25,11 @@ describe('FormTab2002', () => {
   const utils = new Utils();
   const projectAjaxData = utils.extractFromSearchResults(AjaxData)[0]['legislation_2002'];
   const mockConfigService = {
-    getRegions: () => {
-      return Observable.of(regionsData);
-    },
+    regions: regionsData,
     getLists: () => {
-      return Observable.of(eaDecisions);
+      return eaDecisions;
     },
+    lists: []
   };
 
   const mockProjectService = jasmine.createSpyObj('ProjectService', {
@@ -130,7 +129,6 @@ describe('FormTab2002', () => {
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
   });
   it('EA Decision dropdown should contain only 2002 legislative items', () => {
-    expect(component.eacDecisions).not.toEqual([]);
     expect(component.eacDecisions).not.toEqual(
       jasmine.arrayContaining([
         jasmine.objectContaining({
@@ -140,7 +138,6 @@ describe('FormTab2002', () => {
     );
   });
   it('IAAC Involvement dropdown should contain only 2002 legislative items', async () => {
-    expect(component.eacDecisions).not.toEqual([]);
     expect(component.ceaaInvolvements).not.toEqual(
       jasmine.arrayContaining([
         jasmine.objectContaining({

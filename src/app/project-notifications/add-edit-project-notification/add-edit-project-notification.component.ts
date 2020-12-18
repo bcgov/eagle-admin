@@ -57,7 +57,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   constructor(
     private _changeDetectorRef: ChangeDetectorRef,
-    private config: ConfigService,
+    private configService: ConfigService,
     private notificationProjectService: NotificationProjectService,
     private storageService: StorageService,
     private route: ActivatedRoute,
@@ -67,37 +67,30 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   ) { }
 
   public ngOnInit() {
-
-
-
-    this.config.getRegions()
-      .switchMap(regions => {
-        this.regions = regions;
-
-        return this.route.url;
-      })
-      .subscribe(url => {
-        // Determine if this an add or edit.
-        this.isAdd = url.some(urlObject => urlObject.path === 'add');
+    this.regions = this.configService.regions;
+    // Determine if this an add or edit.
+    this.route.url.subscribe(segments => {
+      segments.map(segment => {
         this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
-
-        if (this.isAdd || !this.projectNotification) {
-          this.buildForm({
-            'name': '',
-            'type': '',
-            'subType': '',
-            'nature': '',
-            'region': '',
-            'location': '',
-            'decision': '',
-            'decisionDate': undefined,
-            'project': '',
-            'description': '',
-            'centroid': ['', ''],
-            'trigger': '',
-          });
-        } else {
-
+        if (segment.path === 'add') {
+          this.isAdd = true;
+          if (this.isAdd || !this.projectNotification) {
+            this.buildForm({
+              'name': '',
+              'type': '',
+              'subType': '',
+              'nature': '',
+              'region': '',
+              'location': '',
+              'decision': '',
+              'decisionDate': undefined,
+              'project': '',
+              'description': '',
+              'centroid': ['', ''],
+              'trigger': '',
+            });
+          }
+        } else if (segment.path === 'edit') {
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
           }
@@ -107,19 +100,19 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
           editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
           this.buildForm(editData);
           this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
+
+          this.projectService.getAll(1, 1000, '+name')
+            .takeUntil(this.ngUnsubscribe)
+            .subscribe((res2: any) => {
+              if (res2) {
+                this.projects = res2.data;
+              }
+            });
+          this.loading = false;
+          this._changeDetectorRef.detectChanges();
         }
-
-        this.projectService.getAll(1, 1000, '+name')
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res2: any) => {
-            if (res2) {
-              this.projects = res2.data;
-            }
-          });
-
-        this.loading = false;
-        this._changeDetectorRef.detectChanges();
       });
+    });
   }
 
   public onSubmit(publish) {

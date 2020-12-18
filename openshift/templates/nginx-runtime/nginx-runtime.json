@@ -34,6 +34,11 @@
           "contextDir": "openshift/templates/nginx-runtime/"
         },
         "strategy": {
+          "dockerStrategy": {
+            "pullSecret": {
+              "name": "artifactory-pull-secret"
+            }
+          },
           "type": "Docker"
         },
         "output": {
@@ -71,7 +76,7 @@
       "displayName": "Group Name",
       "description": "The name to group all of the frontend objects defined in this template.",
       "required": true,
-      "value": "eagle-admin"
+      "value": "eagle-epic"
     },
     {
       "name": "GIT_REPO_URL",

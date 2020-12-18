@@ -99,8 +99,11 @@ import { ProjectNotificationComponent } from './project-notification/project-not
 import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
 import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 
-export function kcFactory(keycloakService: KeycloakService) {
-  return () => keycloakService.init();
+export function initConfig(configService: ConfigService, keycloakService: KeycloakService) {
+  return async () => {
+    await configService.init();
+    await keycloakService.init();
+  };
 }
 
 @NgModule({
@@ -180,11 +183,10 @@ export function kcFactory(keycloakService: KeycloakService) {
     MatTabsModule,
   ],
   providers: [
-    KeycloakService,
     {
       provide: APP_INITIALIZER,
-      useFactory: kcFactory,
-      deps: [KeycloakService],
+      useFactory: initConfig,
+      deps: [ConfigService, KeycloakService],
       multi: true
     },
     {
@@ -194,10 +196,10 @@ export function kcFactory(keycloakService: KeycloakService) {
     },
     AuthenticationService,
     CanDeactivateGuard,
-
     CommentPeriodService,
     CommentService,
     ConfigService,
+    KeycloakService,
     CookieService,
     CurrencyPipe,
     DecisionService,

@@ -53,7 +53,7 @@ export class UploadComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private documentService: DocumentService,
     private utils: Utils,
-    private config: ConfigService
+    private configService: ConfigService
   ) { }
 
   ngOnInit() {
@@ -85,27 +85,23 @@ export class UploadComponent implements OnInit, OnDestroy {
   }
 
   getLists() {
-    // todo: check if the lists are cashed here, if the are don't subscribe
-    this.config.getLists().subscribe (lists => {
-      lists.map(item => {
-        switch (item.type) {
-          case 'doctype':
-            this.doctypes.push(Object.assign({}, item));
-            break;
-          case 'author':
-            this.authors.push(Object.assign({}, item));
-            break;
-          case 'label':
-            this.labels.push(Object.assign({}, item));
-            break;
-          case 'projectPhase':
-            this.projectPhases.push(Object.assign({}, item));
-            break;
-        }
-      });
-
-      this.populateForm();
+    this.configService.lists.forEach(item => {
+      switch (item.type) {
+        case 'doctype':
+          this.doctypes.push(Object.assign({}, item));
+          break;
+        case 'author':
+          this.authors.push(Object.assign({}, item));
+          break;
+        case 'label':
+          this.labels.push(Object.assign({}, item));
+          break;
+        case 'projectPhase':
+          this.projectPhases.push(Object.assign({}, item));
+          break;
+      }
     });
+    this.populateForm();
   }
 
   populateForm() {
