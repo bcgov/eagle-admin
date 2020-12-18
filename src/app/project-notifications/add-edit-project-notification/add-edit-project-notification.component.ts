@@ -90,7 +90,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
               'trigger': '',
             });
           }
-        } else {
+        } else if (segment.path === 'edit') {
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
           }
