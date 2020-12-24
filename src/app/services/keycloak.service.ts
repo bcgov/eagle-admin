@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { JwtUtil } from 'app/jwt-util';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
-import * as _ from 'lodash';
 import { ConfigService } from './config.service';
 
 declare var Keycloak: any;
@@ -15,7 +14,7 @@ export class KeycloakService {
   private keycloakRealm: string;
   private loggedOut: string;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   isKeyCloakEnabled(): boolean {
     return this.keycloakEnabled;
@@ -46,16 +45,13 @@ export class KeycloakService {
     const self = this;
     if (this.keycloakEnabled) {
       // Bootup KC
-      this.keycloakEnabled = true;
-
-      // TODO fix caching issue improved handling of client id
-      const keycloak_client_id = window.localStorage.getItem('from_admin_server--keycloak_clientid_env');
+      const keycloak_client_id = this.configService.config['KEYCLOAK_CLIENT_ID'];
 
       return new Promise((resolve, reject) => {
         const config = {
           url: this.keycloakUrl,
           realm: this.keycloakRealm,
-          clientId: (_.isEmpty(keycloak_client_id)) ? 'eagle-admin-console' : keycloak_client_id
+          clientId: !keycloak_client_id ? 'eagle-admin-console' : keycloak_client_id
         };
 
         // console.log('KC Auth init.');
@@ -126,7 +122,7 @@ export class KeycloakService {
     const jwt = new JwtUtil().decodeToken(this.getToken());
 
     if (jwt && jwt.realm_access && jwt.realm_access.roles) {
-      return _.includes(jwt.realm_access.roles, 'sysadmin');
+      return jwt.realm_access.roles.includes('systemadmin');
     } else {
       return false;
     }
@@ -168,7 +164,7 @@ export class KeycloakService {
     return new Observable(observer => {
       this.keycloakAuth
         .updateToken(30)
-        .success(function(refreshed) {
+        .success(function (refreshed) {
           console.log('KC refreshed token?:', refreshed);
           observer.next();
           observer.complete();
@@ -178,7 +174,7 @@ export class KeycloakService {
           observer.error();
         });
 
-      return { unsubscribe() {} };
+      return { unsubscribe() { } };
     });
   }
 
