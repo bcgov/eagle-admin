@@ -15,7 +15,6 @@
   window.__env.KEYCLOAK_URL = 'https://oidc.gov.bc.ca/auth';
   window.__env.KEYCLOAK_REALM = 'eagle';
   window.__env.KEYCLOAK_ENABLED = true;
-  window.__env.debugMode = true;
 
   // Add any feature-toggles
   // window.__env.coolFeatureActive = false;
