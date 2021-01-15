@@ -38,7 +38,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
 
     // Get the list types that are needed.
     if (list && list.length > 0) {
-      list.map(item => {
+      list.forEach(item => {
         switch (item.type) {
           case 'label':
             milestones.push({ ...item });
