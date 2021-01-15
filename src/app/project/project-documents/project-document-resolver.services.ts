@@ -7,6 +7,7 @@ import 'rxjs/add/operator/switchMap';
 
 import * as _ from 'lodash';
 
+import { ConfigService } from 'app/services/config.service';
 import { SearchService } from 'app/services/search.service';
 import { StorageService } from 'app/services/storage.service';
 
@@ -16,13 +17,14 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
   private filterForAPI: object = {};
 
   constructor(
+    private configService: ConfigService,
     private searchService: SearchService,
     private storageService: StorageService
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<any> {
     const projectId = route.parent.paramMap.get('projId');
-    const list = route.parent.data.list;
+    const list = this.configService.lists;
     const params = this.storageService.state.projectDocumentTableParams || route.params;
     const pageNum = params.pageNum ? params.pageNum : 1;
     const pageSize = params.pageSize ? params.pageSize : 10;
