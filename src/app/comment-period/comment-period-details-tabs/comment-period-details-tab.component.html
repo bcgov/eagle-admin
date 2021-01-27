@@ -79,6 +79,13 @@
           <span class="cell name" [title]="doc.displayName || ''">
             <span class="cell__txt-content">{{doc.displayName}}</span>
           </span>
+          <span class="cell">
+            <p class="card-text publish-state">
+              <i class="material-icons">
+                {{doc.read.includes("public") ?   'cloud_done' : 'cloud_off' || '-'}}
+              </i>
+            </p>
+          </span>
         </li>
       </ul>
       <div *ngIf="commentPeriodDocs?.length === 0">
