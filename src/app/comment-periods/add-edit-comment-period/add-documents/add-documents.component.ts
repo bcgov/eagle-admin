@@ -101,7 +101,11 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
             this.route.parent.params.subscribe(params => {
               commentPeriodId = params.commentPeriodId;
             });
-            this.router.navigate(['/p', this.currentProject._id, 'cp', commentPeriodId, 'edit']);
+            if (this.currentProject.type === 'currentProjectNotification') {
+              this.router.navigate(['/pn', this.currentProject._id, 'cp', commentPeriodId, 'edit']);
+            } else {
+              this.router.navigate(['/p', this.currentProject._id, 'cp', commentPeriodId, 'edit']);
+            }
             this.loading = false;
           }
           this.currentCommentPeriod = this.storageService.state.currentCommentPeriod.data;
@@ -195,9 +199,17 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
         break;
       case 'submitDocs':
         if (this.isEditing) {
-          this.router.navigate(['/p', this.currentProject.data._id, 'cp', this.currentCommentPeriod._id, 'edit']);
+          if (this.currentProject.type === 'currentProjectNotification') {
+            this.router.navigate(['/pn', this.currentProject.data._id, 'cp', this.currentCommentPeriod._id, 'edit']);
+          } else {
+            this.router.navigate(['/p', this.currentProject.data._id, 'cp', this.currentCommentPeriod._id, 'edit']);
+          }
         } else {
-          this.router.navigate(['/p', this.currentProject.data._id, 'comment-periods', 'add']);
+          if (this.currentProject.type === 'currentProjectNotification') {
+            this.router.navigate(['/pn', this.currentProject.data._id, 'comment-periods', 'add']);
+          } else {
+            this.router.navigate(['/p', this.currentProject.data._id, 'comment-periods', 'add']);
+          }
         }
         break;
     }
@@ -221,9 +233,17 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     params['pageSize'] = this.tableParams.pageSize = 10;
 
     if (this.isEditing) {
-      this.router.navigate(['p', this.currentProject._id, 'cp', this.currentCommentPeriod._id, 'edit', 'add-documents', params]);
+      if (this.currentProject.type === 'currentProjectNotification') {
+        this.router.navigate(['pn', this.currentProject._id, 'cp', this.currentCommentPeriod._id, 'edit', 'add-documents', params]);
+      } else {
+        this.router.navigate(['p', this.currentProject._id, 'cp', this.currentCommentPeriod._id, 'edit', 'add-documents', params]);
+      }
     } else {
-      this.router.navigate(['p', this.currentProject._id, 'comment-periods', 'add', 'add-documents', params]);
+      if (this.currentProject.type === 'currentProjectNotification') {
+        this.router.navigate(['pn', this.currentProject._id, 'comment-periods', 'add', 'add-documents', params]);
+      } else {
+        this.router.navigate(['p', this.currentProject._id, 'comment-periods', 'add', 'add-documents', params]);
+      }
     }
   }
 
