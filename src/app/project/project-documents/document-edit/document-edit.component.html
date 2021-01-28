@@ -109,12 +109,12 @@
           <label *ngIf="multiEdit" for="inputAddress">Document Date</label>
           <div class="input-group">
             <input [required]="!multiEdit" type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePosted"
-              formControlName="datePosted" ngbDatepicker #datePostedPicker="ngbDatepicker" />
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary calendar" (click)="datePostedPicker.toggle()"
+              formControlName="datePosted" ngbDatepicker #datePostedPicker="ngbDatepicker"/>
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary calendar" (click)="datePostedPicker.toggle()"
                 type="button"></button>
+              </div>
             </div>
-          </div>
         </div>
       </div>
       <div *ngIf="!multiEdit" class="form-row">
@@ -137,9 +137,9 @@
   <div class="text-right" >
     <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
     &nbsp;
-    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid || docNameInvalid"  type="submit" (click)="save()">Save</button>
+    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid || docNameInvalid || dateInvalid"  type="submit" (click)="save()">Save</button>
     &nbsp;
-    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid" type="publish" (click)="togglePublish()" *ngIf="!this.isPublished && !this.multiEdit">Save & Publish</button>
-    <button class="btn btn-unpublish" [disabled]="!myForm.valid || docNameInvalid" type="publish" (click)="togglePublish()" *ngIf="this.isPublished && !this.multiEdit">Save & Unpublish</button>
+    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid || dateInvalid" type="publish" (click)="togglePublish()" *ngIf="!this.isPublished && !this.multiEdit">Save & Publish</button>
+    <button class="btn btn-unpublish" [disabled]="!myForm.valid || docNameInvalid || dateInvalid" type="publish" (click)="togglePublish()" *ngIf="this.isPublished && !this.multiEdit">Save & Unpublish</button>
   </div>
 </main>
