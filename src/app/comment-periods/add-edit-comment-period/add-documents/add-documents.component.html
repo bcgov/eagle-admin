@@ -64,7 +64,7 @@
         </button>
       </div>
     </div>
-    <div *ngIf="storageService.state.selectedDocumentsForCP.data.length > 0">
+    <div *ngIf="storageService.state.selectedDocumentsForCP && storageService.state.selectedDocumentsForCP.data.length > 0">
       <p><b>Selected Documents:</b></p>
       <ul class="doc-list mb-3" *ngIf="storageService.state.selectedDocumentsForCP">
         <li *ngFor="let doc of storageService.state.selectedDocumentsForCP.data">

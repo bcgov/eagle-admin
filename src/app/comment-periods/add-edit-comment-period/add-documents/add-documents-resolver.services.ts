@@ -14,8 +14,9 @@ export class AddDocumentsResolver implements Resolve<Observable<object>> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     let projectId;
-    if (this.storageService.state.currentProject) {
-      projectId = this.storageService.state.currentProject.data._id;
+    const currentProject = this.storageService.state.currentProject;
+    if (currentProject) {
+      projectId = currentProject.data._id;
     } else {
       projectId = route.parent.parent.params.projId;
     }
@@ -24,13 +25,23 @@ export class AddDocumentsResolver implements Resolve<Observable<object>> {
     const pageSize = Number(route.queryParams['pageSize'] ? route.queryParams['pageSize'] : 10);
     const sortBy = route.queryParams['sortBy'] ? route.queryParams['sortBy'] : null;
     const keywords = route.params.keywords;
-    return this.searchService.getSearchResults(keywords,
+
+    let queryModifier = {};
+
+    if (currentProject && currentProject.type === 'currentProjectNotification') {
+      queryModifier = { documentSource: 'PROJECT-NOTIFICATION' };
+    } else if (currentProject && currentProject.type === 'currentProject') {
+      queryModifier = { documentSource: 'PROJECT' };
+    }
+
+    return this.searchService.getSearchResults(
+      keywords,
       'Document',
       [{ 'name': 'project', 'value': projectId }],
       pageNum,
       pageSize,
       sortBy,
-      { documentSource: 'PROJECT' },
+      queryModifier,
       false,
       {},
       '');
