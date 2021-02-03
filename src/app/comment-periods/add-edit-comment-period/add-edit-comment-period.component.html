@@ -136,7 +136,7 @@
             </div>
         </div>
 
-        <div class="form-row" *ngIf="this.currentProject.type === 'currentProject'">
+        <div class="form-row" >
             <div class="form-group col-md-12">
                 <label for="documentsSel">Related Documents</label>
                 <ul class="doc-list mb-3" *ngIf="storageService.state.selectedDocumentsForCP">
@@ -160,6 +160,7 @@
                 </div>
             </div>
         </div>
+
         <div *ngIf="currentProject.type === 'currentProject'" class="form-row">
             <div class="form-group col-md-6">
                 <label for="milestoneSel">Content for Comment [Milestones]*</label>
