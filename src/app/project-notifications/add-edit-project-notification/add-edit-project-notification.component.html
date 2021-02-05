@@ -155,21 +155,21 @@
           <span class="info-text" >(Input a value, and the units the value is measured in, based on the triggered threshold)</span>
         </div>
         <div class="label-pair half">
-          <input name="notificationThresholdValue" id="notificationThresholdValue" formControlName="notificationThresholdValue" type="text" class="form-control" />
+          <input name="notificationThresholdValue" id="notificationThresholdValue" formControlName="notificationThresholdValue" type="number" class="form-control" />
           <label class="sub-label" for="notificationThresholdValue">Value <span class="info-text" >e.g. (74.3)</span></label>
         </div>
         <div class="label-pair half">
           <select name="notificationThresholdUnits" id="notificationThresholdUnits" formControlName="notificationThresholdUnits" class="form-control">
             <option *ngFor="let unit of unitsSelected" [ngValue]="unit">{{unit}}</option>
           </select>
-          <label class="sub-label" for="nature">Units <span class="info-text" >e.g. (L/S)</span></label>
+          <label class="sub-label" for="notificationThresholdUnits">Units <span class="info-text" >e.g. (L/S)</span></label>
           <br><span class="info-text sub-label" >(drop down is populated by Type section above)</span>
         </div>
       </div>
 
       <div class="col-xl-5 col-lg-12 non-public-grouping-box">
         <div class="label-pair half">
-          <label for="nature">Notification Received Date*</label>
+          <label for="notificationReceivedDate">Notification Received Date*</label>
           <div class="input-group">
             <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="notificationReceivedDate"
               formControlName="notificationReceivedDate" ngbDatepicker #notificationReceivedDatePicker="ngbDatepicker" />

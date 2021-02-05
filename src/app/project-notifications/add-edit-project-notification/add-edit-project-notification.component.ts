@@ -90,7 +90,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
               'notificationReceivedDate': undefined,
               'project': '',
               'description': '',
-              'notificationThresholdValue': '',
+              'notificationThresholdValue': undefined,
               'notificationThresholdUnits': '',
               'centroid': ['', ''],
               'trigger': '',
