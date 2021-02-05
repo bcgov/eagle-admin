@@ -39,6 +39,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public loading = true;
   public multiEdit = false;
   public docNameInvalid = false;
+  public dateInvalid = false;
   public projectPhases: any[] = [];
   public filteredProjectPhases2002: any[] = [];
   public filteredProjectPhases2018: any[] = [];
@@ -118,6 +119,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       if (this.documents[0].projectPhase) {this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
 
       // init docNameInvalid
+      this.validateDate();
       this.validateChars();
     } else {
       this.multiEdit = true;
@@ -161,6 +163,14 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       this.router.navigate(this.storageService.state.back.url);
     } else {
       this.router.navigate(['/p', this.currentProject._id, 'project-documents']);
+    }
+  }
+
+  public validateDate() {
+    if (!moment(this.myForm.value.datePosted).isValid()) {
+      this.dateInvalid = true;
+    } else {
+      this.dateInvalid = false;
     }
   }
 
