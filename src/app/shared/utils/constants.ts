@@ -133,6 +133,154 @@ export class Constants {
     { code: 'waterManagement', name: 'Water Management' }
   ];
 
+  public static readonly PROJECT_NOTIFICATION_THRESHOLD_UNITS: Object = {
+    'Energy-Electricity': [
+      'Land Based Wind Turbines (turbines)',
+      'Water Based Wind Turbines (turbines)',
+      'In-Stream Tidal Power Rated Nameplate Capacity (MW)',
+      'Rated Nameplate Capacity (MW)',
+      '345 kV+ Transmission Line Length (kilometers)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Energy-Petroleum & Natural Gas': [
+      'LNG Energy Storage Design Capacity (m3/year)',
+      'Energy Storage Design Capacity (PJ)',
+      'Refined Oil Input Capacity (m3/day)',
+      'Sulphur Emissions from Natural Gas Processing Plant (tonnes/day)',
+      '114.3mm or less Transmission Pipeline Length (kilometres)',
+      '114.3 to 323.9mm Transmission Pipeline Length (kilometres)',
+      'Greater than 323.9mm Transmission Pipeline Length (kilometres)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Industrial': [
+      'Organic/Inorganic Chemical Production Capacity (tonnes/year)',
+      'Dangerous Organic/Inorganic Chemical Production Capacity (tonnes/year)',
+      'Non-Metallic Mineral Product Production Capacity (tonnes/year)',
+      'Non-Integrated Paper and Paperboard Production Capacity (tonnes/year)',
+      'Wood Preservation Production Capacity (m3/year)',
+      'Sawmill Production Capacity (board feet/day)',
+      'Plywood or Plywood & Veneer Production Capacity (m3/year)',
+      'Veneer, but not Plywood, Production Capacity (m3/year)',
+      'Particle Board/Fibreboard/Waferboard Production Capacity (m3/year)',
+      'Biopharmaceutical Production Capacity (tonnes/year)',
+      'Non-biopharmaceutical Production Capacity (tonnes/year)',
+      'Artificial and Synthetic Fibre/Filament Production Capacity (tonnes/year)',
+      'Leather & Hide Tanning/Finishing Production Capacity (m2/year)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Mines': [
+      'Clean/Raw Coal Production Capacity (tonnes/year)',
+      'Mineral Ore Production Capacity (tonnes/year)',
+      'One Year Excavated Sand/Gravel Production Capacity (tonnes/year)',
+      'Total Excavated Sand & Gravel Production Capacity (tonnes)',
+      'Placer Mineral Production Capacity (tonnes/year)',
+      'Construction Stone/Industrial Minerals Production Capacity (tonnes/year)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Other': [
+      'Other'
+    ],
+
+    'Tourist Destination Resorts': [
+      'Resort Capacity (beds)',
+      'Golf Resort Developed Area (hectares)',
+      'Marina Resort Linear Moorage (metres)',
+      'Ski Resort Capacity (beds)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Transportation': [
+      'Public Highway Project Length (kilometres)',
+      'Railway Project Length (kilometres)',
+      'Railway Project Rail Speed (kph)',
+      'Outbound Annual Vehicle Throughput Capacity (vehicles)',
+      'Physical Disturbance of Linear Shoreline due to Ferry Terminal (metres)',
+      'Foreshore or Submerged Land due to Ferry Terminal (hectares)',
+      'Physical Disturbance of Linear Shoreline due to Marine Port (metres)',
+      'Foreshore or Submerged Land due to Marine Port (hectares)',
+      'Airport Runway Length (metres)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Waste Disposal': [
+      'Hazardous Waste Daily Maximum Use (litres/day)',
+      'Hazardous Waste Daily Maximum Use (kg/day)',
+      'Hazardous Waste Cumulative Maximum Design Use (litres/day)',
+      'Hazardous Waste Cumulative Maximum Design Use (kg/day)',
+      'Treatment/Disposal of Biomedical Waste Capacity (tonnes/day)',
+      'Hazardous Waste Daily Maximum Design Treatment Capacity (litres/day)',
+      'Hazardous Waste Daily Maximum Design Treatment Capacity (kg/day)',
+      'Hazardous Waste Cumulative Maximum Design Treatment Capacity (litres/day)',
+      'Hazardous Waste Cumulative Maximum Design Treatment Capacity (kg/day)',
+      'Solid Waste Landfill Capacity (tonnes/year)',
+      'Solid Waste Incinerated (tonnes/day)',
+      'Liquid Waste Management Facility Capacity (people served)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+
+    'Water Management': [
+      'Dam Height (metres)',
+      'Dam Reservoir (m3)',
+      'Area Protected from Flooding by Dike (km2)',
+      'Water Diversion Rate (m3/year)',
+      'Groundwater Extraction (litres/second)',
+      'Foreshore or Submerged Land (hectares)',
+      'Physical Disturbance of Linear Shoreline (metres)',
+      'RPR 5(1)(a) - Designated under the IAA (leave Number blank)',
+      'RPR 5(1)(c) - Workforce (employees or contractors)',
+      'RPR 5(1)(d) - GHG Carbon Dioxode Equivalents (tonnes/year)',
+      'RPR 5(1)(e) - Greater Than 230 kV Transmission Line Length (kilometers)',
+      'RPR 5(1)(f)(ii) - Linear Clearance (kilometers)',
+      'RPR 5(1)(f)(i) - Land Clearance Area (hectares)',
+      'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
+    ],
+  };
   public static readonly EA_READINESS_TYPES = (legislationYear: Number): Array<string> => {
     switch (legislationYear) {
       case 2002:

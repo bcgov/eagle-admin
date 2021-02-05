@@ -31,6 +31,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public projectNotification: ProjectNotification = null;
   public regions: any[] = [];
   public subTypeSelected = [];
+  public unitsSelected = [];
   public projects = ['Test'];
 
   // Raw files coming in from file uploader
@@ -47,6 +48,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   public NATURE_OPTIONS: Array<string> = Constants.NOTIFICATION_NATURES;
   public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
+  public PROJECT_NOTIFICATION_THRESHOLD_UNITS: Object = Constants.PROJECT_NOTIFICATION_THRESHOLD_UNITS;
   public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
   public NOTIFICATION_TRIGGERS: Array<Object> = Constants.NOTIFICATION_TRIGGERS;
   public NOTIFICATION_DECISIONS = Constants.NOTIFICATION_DECISIONS;
@@ -79,16 +81,24 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
               'name': '',
               'type': '',
               'subType': '',
+              'proponent': '',
               'nature': '',
               'region': '',
               'location': '',
               'decision': '',
               'decisionDate': undefined,
+              'notificationReceivedDate': undefined,
               'project': '',
               'description': '',
+              'notificationThresholdValue': '',
+              'notificationThresholdUnits': '',
               'centroid': ['', ''],
               'trigger': '',
             });
+
+            this.getAllProjectsList();
+            this.loading = false;
+            this._changeDetectorRef.detectChanges();
           }
         } else if (segment.path === 'edit') {
           if (this.projectNotification.read.includes('public')) {
@@ -98,21 +108,28 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
           let editData = { ...this.projectNotification  };
           // new Date(null) will create a date of 31/12/1969, so if decisionDate is null, don't create a date object here.
           editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
+          editData.notificationReceivedDate = this.projectNotification.notificationReceivedDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.notificationReceivedDate)) : undefined as any;
           this.buildForm(editData);
           this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
+          this.unitsSelected = this.PROJECT_NOTIFICATION_THRESHOLD_UNITS[this.myForm.controls.type.value];
 
-          this.projectService.getAll(1, 1000, '+name')
-            .takeUntil(this.ngUnsubscribe)
-            .subscribe((res2: any) => {
-              if (res2) {
-                this.projects = res2.data;
-              }
-            });
+          this.getAllProjectsList();
           this.loading = false;
           this._changeDetectorRef.detectChanges();
         }
       });
     });
+  }
+
+  // loads all the projects for the projects list
+  public getAllProjectsList () {
+    this.projectService.getAll(1, 1000, '+name')
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res2: any) => {
+        if (res2) {
+          this.projects = res2.data;
+        }
+      });
   }
 
   public onSubmit(publish) {
@@ -142,23 +159,31 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       name: this.myForm.value.name,
       type: this.myForm.value.type,
       subType: this.myForm.value.subType,
+      proponent: this.myForm.value.proponent,
       nature: this.myForm.value.nature,
       trigger: triggerCSV.join(),
       region: this.myForm.value.region,
       location: this.myForm.value.location,
       decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))) : null,
+      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate))) : null,
       decision: this.myForm.value.decision,
       associatedProjectId:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
       associatedProjectName:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
 
       description: this.myForm.value.description,
+      notificationThresholdValue: this.myForm.value.notificationThresholdValue,
+      notificationThresholdUnits: this.myForm.value.notificationThresholdUnits,
       centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
     });
 
-    // Failsafe: if the decisionDate is set to new Date(null) it'll create a date in 1969.
+    // Failsafe: if the dates are set to new Date(null) it'll create a date in 1969.
     // we can assume a date of 31/12/1969@8:00 should actually be null
     if (notificationProject.decisionDate && notificationProject.decisionDate.toISOString() === '1969-12-31T08:00:00.000Z') {
       notificationProject.decisionDate = null;
+    }
+
+    if (notificationProject.notificationReceivedDate && notificationProject.notificationReceivedDate.toISOString() === '1969-12-31T08:00:00.000Z') {
+      notificationProject.notificationReceivedDate = null;
     }
 
     if (this.isAdd) {
@@ -214,12 +239,16 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       'name': new FormControl(data.name),
       'type': new FormControl(data.type),
       'subType': new FormControl(data.subType),
+      'proponent': new FormControl(data.proponent),
       'nature': new FormControl(data.nature),
       'region': new FormControl(data.region),
       'location': new FormControl(data.location),
       'decision': new FormControl(data.decision),
       'decisionDate': new FormControl(data.decisionDate),
+      'notificationReceivedDate': new FormControl(data.notificationReceivedDate),
       'description': new FormControl(data.description),
+      'notificationThresholdValue': new FormControl(data.notificationThresholdValue),
+      'notificationThresholdUnits': new FormControl(data.notificationThresholdUnits),
       'project': new FormControl(data.associatedProjectId),
       'longitude': new FormControl(data.centroid[1]),
       'latitude': new FormControl(data.centroid[0]),
@@ -244,8 +273,13 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    if (!this.myForm.value.proponent) {
+      alert('Notification project proponent cannot be empty.');
+      return false;
+    }
+
     if (this.myForm.get('nature').enabled && !this.myForm.value.nature) {
-      alert('Nature cannot be empty.');
+      alert('Project Nature cannot be empty.');
       return false;
     }
 
@@ -274,6 +308,16 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       return false;
     }
 
+    if (!this.myForm.value.notificationThresholdValue) {
+      alert('Notification Threshold Value cannot be empty.');
+      return false;
+    }
+
+    if (!this.myForm.value.notificationThresholdUnits) {
+      alert('Notification Threshold Units cannot be empty.');
+      return false;
+    }
+
     if (!this.myForm.value.latitude) {
       alert('Latitude cannot be empty.');
       return false;
@@ -299,6 +343,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   public onChangeType() {
     this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
+    this.unitsSelected = this.PROJECT_NOTIFICATION_THRESHOLD_UNITS[this.myForm.controls.type.value];
     this._changeDetectorRef.detectChanges();
   }
 

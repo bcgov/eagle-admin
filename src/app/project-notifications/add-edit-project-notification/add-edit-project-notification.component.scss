@@ -18,3 +18,43 @@
   background-color: red;
   border: none;
 }
+
+.label-pair {
+  @media screen and (min-width: 800px) {
+    &.half {
+      width: 47%;
+      margin-right: 2%;
+    }
+  }
+}
+
+.non-public-grouping-box {
+  padding: 0px;
+}
+
+.sub-headder{
+  margin-top: -15px;
+  color: grey;
+  padding-left: 80px;
+}
+
+.sub-label{
+  padding: 4px 0px 0px 0px;
+  margin: 0px
+}
+
+.info-text {
+  color: grey;
+  font-size: small;
+  font-weight:normal;
+}
+
+.notification-threshold-box {
+  display: inline-block;
+  padding: 0px 0px 4px 0px;
+}
+
+
+hr {
+  border-top: 1px solid  #cecece;
+}
