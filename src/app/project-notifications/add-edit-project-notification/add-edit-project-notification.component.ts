@@ -278,11 +278,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.myForm.get('nature').enabled && !this.myForm.value.nature) {
-      alert('Project Nature cannot be empty.');
-      return false;
-    }
-
     if (this.triggers.length === 0) {
       alert('Trigger cannot be empty.');
       return false;
@@ -315,6 +310,16 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
     if (!this.myForm.value.notificationThresholdUnits) {
       alert('Notification Threshold Units cannot be empty.');
+      return false;
+    }
+
+    if (!this.myForm.value.nature) {
+      alert('Project Nature cannot be empty.');
+      return false;
+    }
+
+    if (!this.myForm.value.notificationReceivedDate) {
+      alert('Notification Received Date cannot be empty.');
       return false;
     }
 
