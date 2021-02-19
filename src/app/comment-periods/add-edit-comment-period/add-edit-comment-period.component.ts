@@ -18,6 +18,8 @@ import { Project } from 'app/models/project';
 import 'tinymce/plugins/advlist';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/link';
+import 'tinymce/icons/default';
+
 
 @Component({
   selector: 'app-add-edit-comment-period',
