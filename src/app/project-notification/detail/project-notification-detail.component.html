@@ -36,8 +36,8 @@
       <p>{{projectNotification.subType || '-'}}</p>
     </div>
     <div class="label-pair">
-      <h3>Nature: </h3>
-      <p>{{projectNotification.nature || '-'}}</p>
+      <h3>Proponent: </h3>
+      <p>{{projectNotification.proponent || '-'}}</p>
     </div>
     <div class="label-pair">
       <h3>Region: </h3>
@@ -67,5 +67,17 @@
       <h3>Notification Decision: </h3>
       <p>{{projectNotification.decision || '-' }} {{projectNotification.decisionDate | date:'longDate'}}</p>
     </div>
-  </section> 
+    <div class="label-pair">
+      <h3>Notification Threshold: </h3>
+      <p>{{projectNotification.notificationThresholdValue || '-'}} {{projectNotification.notificationThresholdUnits || '-' }}</p>
+    </div>
+    <div class="label-pair">
+      <h3>Notification Received Date: </h3>
+      <p>{{projectNotification.notificationReceivedDate | date:'longDate'}}</p>
+    </div>
+    <div class="label-pair">
+      <h3>Project Nature: </h3>
+      <p>{{projectNotification.nature || '-'}}</p>
+    </div>
+  </section>
 </main>

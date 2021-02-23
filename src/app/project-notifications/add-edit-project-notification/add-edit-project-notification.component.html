@@ -29,9 +29,10 @@
   <div class="spinner-container" *ngIf="loading">
     <div class="spinner-new rotating"></div>
   </div>
-  <form *ngIf="myForm" [formGroup]="myForm" novalidate>
+  <form *ngIf="myForm" [formGroup]="myForm">
     <h2 *ngIf="!isEditing">Add Project Notification</h2>
     <h2 *ngIf="isEditing">Edit Project Notification</h2>
+    <p class="sub-headder">INFORMATION IN THIS SECTION DISPLAYS PUBLICLY</p>
 
     <div class="flex-container">
       <div class="label-pair">
@@ -54,10 +55,8 @@
       </div>
 
       <div class="label-pair">
-        <label for="nature">Nature* </label>
-        <select name="nature" id="nature" formControlName="nature" class="form-control" readonly>
-          <option *ngFor="let nature of NATURE_OPTIONS" [ngValue]="nature">{{nature}}</option>
-        </select>
+        <label for="name">Proponent*</label>
+        <input name="proponent" id="name" formControlName="proponent" type="text" class="form-control" />
       </div>
 
       <div class="label-pair">
@@ -95,6 +94,19 @@
 
 
       <div class="label-pair">
+        <label for="location">Location* </label>
+        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+      </div>
+      <div class="label-pair">
+        <label for="latitude">Latitude*</label>
+        <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
+      </div>
+      <div class="label-pair">
+        <label for="longitude">Longitude*</label>
+        <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
+      </div>
+
+      <div class="label-pair">
         <label for="decision">Notification Decision*</label>
         <select name="decision" id="decision" formControlName="decision" class="form-control">
           <option *ngFor="let decision of NOTIFICATION_DECISIONS | keyvalue" [ngValue]="decision.value">{{decision.value}}</option>
@@ -102,7 +114,7 @@
       </div>
 
       <div *ngIf="myForm.value.decision && myForm.value.decision !== 'In Progress'" class="label-pair">
-        <label for="decisionDate">Decision Date*</label>
+        <label for="decisionDate">Decision Date</label>
         <div class="input-group">
           <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
             formControlName="decisionDate" ngbDatepicker #decisionDatePicker="ngbDatepicker" />
@@ -112,40 +124,77 @@
           </div>
         </div>
       </div>
-        <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'"
-          class="label-pair">
-          <label for="project" class="eAPProjectLabel">Associated Environmental Assessment Project*</label>
+
+      <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'" class="label-pair">
+        <label for="project" class="eAPProjectLabel">Associated Environmental Assessment Project</label>
+        <div class="input-group">
+          <select name="project" id="project" formControlName="project" class="form-control">
+            <option value="">None</option>
+            <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-container">
+      <div class="label-pair lrg">
+        <label for="description">Description*</label>
+        <textarea name="description" id="description" formControlName="description" type="text"
+          class="form-control"></textarea>
+      </div>
+    </div>
+
+    <hr>
+    <p class="sub-headder">INFORMATION IN THIS SECTION <u>DOES NOT</u> DISPLAY PUBLICLY, FOR PROJECT TRACKING PURPOSES ONLY</p>
+
+    <div class="flex-container">
+
+      <div class="col-xl-7 col-lg-12 non-public-grouping-box">
+        <div class="notification-threshold-box col-12">
+          <strong>Notification Threshold* </strong>
+          <span class="info-text" >(Input a value, and the units the value is measured in, based on the triggered threshold)</span>
+        </div>
+        <div class="label-pair half">
+          <input name="notificationThresholdValue" id="notificationThresholdValue" formControlName="notificationThresholdValue" type="number" class="form-control" />
+          <label class="sub-label" for="notificationThresholdValue">Value <span class="info-text" >e.g. (74.3)</span></label>
+        </div>
+        <div class="label-pair half">
+          <select name="notificationThresholdUnits" id="notificationThresholdUnits" formControlName="notificationThresholdUnits" class="form-control">
+            <option *ngFor="let unit of unitsSelected" [ngValue]="unit">{{unit}}</option>
+          </select>
+          <label class="sub-label" for="notificationThresholdUnits">Units <span class="info-text" >e.g. (L/S)</span></label>
+          <br><span class="info-text sub-label" >(drop down is populated by Type section above)</span>
+        </div>
+      </div>
+
+      <div class="col-xl-5 col-lg-12 non-public-grouping-box">
+        <div class="label-pair half">
+          <label for="notificationReceivedDate">Notification Received Date*</label>
           <div class="input-group">
-            <select name="project" id="project" formControlName="project" class="form-control">
-              <option value="">None</option>
-              <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
-            </select>
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="notificationReceivedDate"
+              formControlName="notificationReceivedDate" ngbDatepicker #notificationReceivedDatePicker="ngbDatepicker" />
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary calendar" (click)="notificationReceivedDatePicker.toggle()"
+                type="button"></button>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="flex-container">
-        <div class="label-pair">
-          <label for="location">Location* </label>
-          <input name="location" id="location" formControlName="location" type="text" class="form-control" />
-        </div>
-        <div class="label-pair">
-          <label for="latitude">Latitude*</label>
-          <input name="latitude" id="latitude" formControlName="latitude" type="text" class="form-control" />
-        </div>
-        <div class="label-pair">
-          <label for="longitude">Longitude*</label>
-          <input name="longitude" id="longitude" formControlName="longitude" type="text" class="form-control" />
+        <div class="label-pair half">
+          <label for="nature">Project Nature* </label>
+          <select name="nature" id="nature" formControlName="nature" class="form-control" >
+            <option *ngFor="let nature of NATURE_OPTIONS" [ngValue]="nature">{{nature}}</option>
+          </select>
         </div>
       </div>
-
-      <div class="flex-container">
-        <div class="label-pair med">
-          <label for="description">Description*</label>
-          <textarea name="description" id="description" formControlName="description" type="text"
-            class="form-control"></textarea>
-        </div>
-      </div>
+      <p class="info-text" >
+        For example:
+        <br>Greenhouse gas emissions in 'tonnes/year' (value = 130000, units = tonnes/year)
+        <br>Workforce unit as 'employees or contractors' (value = 280, units = employees or contractors)
+        <br>
+        <br>For more complex thresholds, consult the Reviewable Projects Regulation for the correct language.
+        <br>eg. for a Sand and Gravel Pit input the unit as either 'tonne/year of excavated sand or gravel or both during at least one year of its operation' or 'tonnes of excavated sand or gravel or both over a period of < 4 years of operation'.
+      </p>
+    </div>
   </form>
 
   <div class="text-right">
