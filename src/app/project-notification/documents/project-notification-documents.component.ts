@@ -7,11 +7,11 @@ import * as _ from 'lodash';
 import { Document } from 'app/models/document';
 import { ApiService } from 'app/services/api';
 import { DocumentService } from 'app/services/document.service';
+import { SearchService } from 'app/services/search.service';
 import { StorageService } from 'app/services/storage.service';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableDocumentParamsObject } from 'app/shared/components/table-template/table-document-params-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { Utils } from 'app/shared/utils/utils';
 import { Constants } from 'app/shared/utils/constants';
@@ -26,14 +26,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
 
-  private activeLegislationYear: number;
-
   public docsCount = 0;
   public docs: Document[] = [];
 
   public loading = true;
 
-  public tableParams: TableDocumentParamsObject = new TableDocumentParamsObject();
+  public tableParams: TableParamsObject = new TableParamsObject();
 
   public filterForURL: object = {};
   public filterForAPI: object = {};
@@ -43,20 +41,28 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     {
       name: 'select_all_box',
       value: 'select_all_box',
-      width: '35px',
+      width: '5%',
       nosort: true
     },
     {
       name: 'Name',
       value: 'displayName',
-      width: '100%',
-      nosort: true
+      width: '30%',
+    },
+    {
+      name: 'Date',
+      value: 'datePosted',
+      width: '26%',
+    },
+    {
+      name: 'Document Author',
+      value: 'documentAuthor',
+      width: '29%',
     },
     {
       name: 'status',
       value: 'status',
-      width: '200px',
-      nosort: true
+      width: '10%',
     }
   ];
 
@@ -76,14 +82,13 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     private api: ApiService,
     private dialogService: DialogService,
     private documentService: DocumentService,
+    private searchService: SearchService,
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar,
-    private storageService:  StorageService,
+    private storageService: StorageService,
     private utils: Utils
-  ) {
-    this.activeLegislationYear = 2018;
-  }
+  ) { }
 
   ngOnInit() {
     this.route.parent.data
@@ -100,13 +105,15 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       .subscribe(({ documents }: any) => {
         if (documents) {
           if (documents[0].data && documents[0].data.meta.length > 0) {
-            this.tableParams.totalListItemsCategorized = documents[0].data.meta[0].searchResultsTotal;
             this.docs = documents[0].data.searchResults;
           } else {
-            this.tableParams.totalListItemsCategorized = 0;
             this.docs = [];
           }
 
+          this.tableParams.sortBy = '-datePosted';
+          this.tableParams.pageSize = 10;
+          this.tableParams.currentPage = 1;
+          this.tableParams.totalListItems = documents[0].data.meta[0].searchResultsTotal;
           this.setRowData();
 
           this.loading = false;
@@ -208,7 +215,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           title: 'Publish Document(s)',
           message:
             'Click <strong>OK</strong> to publish the selected Documents or <strong>Cancel</strong> to return to the list.',
-            okOnly: false,
+          okOnly: false,
         },
         {
           backdropColor: 'rgba(0, 0, 0, 0.5)'
@@ -229,7 +236,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           }
 
           forkJoin(observables).subscribe(
-            () => {},
+            () => { },
             err => {
               console.log('Error:', err);
             },
@@ -275,7 +282,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           }
 
           forkJoin(observables).subscribe(
-            () => {},
+            () => { },
             err => {
               console.log('Error:', err);
             },
@@ -349,8 +356,9 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   public onSubmit() {
     this.loading = true;
 
-    const params = {};
+    const params = { };
     params['ms'] = new Date().getMilliseconds();
+    params['notificationProjectId'] = this.currentProject._id;
 
     this.router.navigate([
       'pn',
@@ -362,13 +370,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
   setRowData() {
     if (this.docs && this.docs.length > 0) {
-      const documentList: any[] = [];
-
-      this.docs.forEach(document => {
-        documentList.push({
+      const documentList = this.docs.map((document) => {
+        return {
           displayName: document.displayName,
           documentFileName: document.documentFileName,
-          datePosted: new Date(),
+          documentAuthor: document.documentAuthor,
+          datePosted: document.datePosted,
           status: document['status'],
           type: '',
           milestone: '',
@@ -379,44 +386,54 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           isFeatured: false,
           sortOrder: 0,
           publicHitCount: document.publicHitCount,
-          secureHitCount: document.secureHitCount
-        });
+          secureHitCount: document.secureHitCount,
+        };
       });
-
-      const tableParams: TableParamsObject = new TableParamsObject(
-        2,
-        1,
-        2,
-        '',
-        '',
-        ''
-      );
 
       this.documentTableData = new TableObject(
         PnDocumentTableRowsComponent,
         documentList,
-        tableParams,
-        this.activeLegislationYear,
+        this.tableParams
       );
     }
   }
 
-  setColumnSort(docType, column) {
-    if (docType === Constants.documentTypes.CATEGORIZED) {
+  setColumnSort(column) {
 
-      if (this.tableParams.sortByCategorized.charAt(0) === '+') {
-        this.tableParams.sortByCategorized = '-' + column;
-      } else {
-        this.tableParams.sortByCategorized = '+' + column;
-      }
-    } else if (docType === Constants.documentTypes.UNCATEGORIZED) {
-
-      if (this.tableParams.sortByUncategorized.charAt(0) === '+') {
-        this.tableParams.sortByUncategorized = '-' + column;
-      } else {
-        this.tableParams.sortByUncategorized = '+' + column;
-      }
+    if (this.tableParams.sortBy[0] === '+') {
+      this.tableParams.sortBy = `-${column}`;
+    } else {
+      this.tableParams.sortBy = `+${column}`;
     }
+
+    this.getPaginatedDocs(this.tableParams.currentPage);
+  }
+
+  getPaginatedDocs(page) {
+    this.loading = true;
+    this.tableParams.currentPage = page;
+
+    // Use displayName as secondary sort if column has equal values
+    const sortBy = this.tableParams.sortBy.substr(1) === 'displayName' ? this.tableParams.sortBy : `${this.tableParams.sortBy},+displayName`;
+
+    this.searchService.getSearchResults(
+      null,
+      'Document',
+      [],
+      this.tableParams.currentPage,
+      this.tableParams.pageSize,
+      sortBy,
+      { documentSource: 'PROJECT-NOTIFICATION', project: this.currentProject._id })
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res: any) => {
+        this.docs = res[0].data.searchResults;
+        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+
+        this.setRowData();
+
+        this.loading = false;
+        this._changeDetectionRef.detectChanges();
+      });
   }
 
   isEnabled(button) {
@@ -461,7 +478,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     return date && date.year && date.month && date.day;
   }
 
-    // Compares selected options when a dropdown is grouped by legislation.
+  // Compares selected options when a dropdown is grouped by legislation.
   compareDropdownOptions(optionA: any, optionB: any) {
     if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
       return true;
@@ -490,31 +507,15 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     document.body.removeChild(selBox);
   }
 
-    public filterCompareWith(filter: any, filterToCompare: any) {
-      if (filter.hasOwnProperty('code')) {
-        return filter && filterToCompare
-               ? filter.code === filterToCompare.code
-               : filter === filterToCompare;
-      } else if (filter.hasOwnProperty('_id')) {
-        return filter && filterToCompare
-               ? filter._id === filterToCompare._id
-               : filter === filterToCompare;
-      }
-    }
-
-  public onPageLimitClick(pageLimit: number | string) {
-    if (pageLimit === 'all') {
-      this.tableParams.pageSizeCategorized = Math.max(this.tableParams.totalListItemsCategorized, this.tableParams.totalListItemsUncategorized);
-    } else {
-      this.tableParams.pageSizeUncategorized = pageLimit as number;
-    }
-
-    this.onSubmit();
-  }
-
-  public onTabChange(_event) {
-    if (this.documentTableData) {
-      this.documentTableData.extraData = this.activeLegislationYear;
+  public filterCompareWith(filter: any, filterToCompare: any) {
+    if (filter.hasOwnProperty('code')) {
+      return filter && filterToCompare
+        ? filter.code === filterToCompare.code
+        : filter === filterToCompare;
+    } else if (filter.hasOwnProperty('_id')) {
+      return filter && filterToCompare
+        ? filter._id === filterToCompare._id
+        : filter === filterToCompare;
     }
   }
 

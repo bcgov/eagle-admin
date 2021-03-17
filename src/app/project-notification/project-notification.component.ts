@@ -38,7 +38,9 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
       .subscribe(
         (data: any) => {
           if (data.notificationProject) {
-            this.storageService.state.currentProject = { type: 'currentProjectNotification', data: data.notificationProject.data };
+            const docMeta = data.documents[0].data.meta[0];
+            const docTotal = docMeta ? docMeta.searchResultsTotal : 0;
+            this.storageService.state.currentProject = { type: 'currentProjectNotification', data: data.notificationProject.data, docTotal: docTotal };
             this.loading = false;
             this._changeDetectorRef.detectChanges();
           } else {

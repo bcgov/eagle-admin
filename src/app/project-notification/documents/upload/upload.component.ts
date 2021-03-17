@@ -18,6 +18,7 @@ export class UploadComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public currentProject;
+  public docTotal: number;
   public projectFiles: Array<File> = [];
   public documents: Document[] = [];
   public datePosted: NgbDateStruct = null;
@@ -50,6 +51,7 @@ export class UploadComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
+    this.docTotal = this.storageService.state.currentProject.docTotal;
     this.buildForm();
     this.getLists();
   }
@@ -159,8 +161,8 @@ export class UploadComponent implements OnInit, OnDestroy {
   }
 
   public addDocuments(files: FileList) {
-    if (this.documents.length === 2) {
-      this.snackBar.open('Project Notifications can have a maximum of 2 files', null, {
+    if (this.documents.length + this.docTotal >= 20) {
+      this.snackBar.open('Project Notifications can have a maximum of 20 files', null, {
         duration: 2000,
       });
       return false;
