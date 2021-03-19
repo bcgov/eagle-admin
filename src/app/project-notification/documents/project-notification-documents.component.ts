@@ -113,7 +113,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           this.tableParams.sortBy = '-datePosted';
           this.tableParams.pageSize = 10;
           this.tableParams.currentPage = 1;
-          this.tableParams.totalListItems = documents[0].data.meta[0].searchResultsTotal;
+          this.tableParams.totalListItems = documents[0].data.meta[0] ? documents[0].data.meta[0].searchResultsTotal : 0;
           this.setRowData();
 
           this.loading = false;
