@@ -27,7 +27,7 @@
             [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
         <button (click)="selectAction('delete')" class="dropdown-item"
             [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
-        <a *ngIf='currentProject && docs.length < 2' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+        <a *ngIf='currentProject && tableParams.totalListItems < 20' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
             [routerLink]="['/pn', currentProject._id, 'project-notification-documents', 'upload']">
             <button class="dropdown-item" type="button" id="button-upl">
                 Upload Document(s)

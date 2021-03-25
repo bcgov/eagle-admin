@@ -5,7 +5,11 @@
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox'>
   </td>
   <td data-label="Name" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
-  <td data-label="Status" scope="row" [style.width]="!useSmallTable && columns[2].width">
+  <td data-label="Date" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
+    <div *ngIf="document.datePosted !== '1900-01-01T08:00:00.000Z'">{{document.datePosted | date:'longDate'}}</div>
+  </td>
+  <td data-label="Author" scope="row" [style.width]="!useSmallTable && columns[3].width">{{document.documentAuthor | listConverter}}</td>
+  <td data-label="Status" scope="row" [style.width]="!useSmallTable && columns[4].width">
     <p class="card-text publish-state">
       <i class="material-icons">
         {{document.status === 'unpublished' ?   'cloud_off' : 'cloud_done' || '-'}}

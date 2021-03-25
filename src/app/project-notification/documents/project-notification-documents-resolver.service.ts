@@ -24,8 +24,8 @@ export class ProjectNotificationDocumentsResolver implements Resolve<object> {
       'Document',
       [],
       1,
-      1000,
-      null,
+      10,
+      '-datePosted,+displayName',
       { documentSource: 'PROJECT-NOTIFICATION', project: notificationProjectId });
   }
 }
