@@ -8,6 +8,8 @@ import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';
 import { Document } from 'app/models/document';
+import { Utils } from 'app/shared/utils/utils';
+import * as moment from 'moment-timezone';
 
 @Component({
   selector: 'app-upload',
@@ -28,12 +30,10 @@ export class UploadComponent implements OnInit, OnDestroy {
   public docNameInvalid = false;
   public legislationYear = '2018';
   public publishDoc = false;
-  public documentLabel = ['Proponent Project Notification', 'EAO Project Notification Report'];
-  public documentType = ['Project Notification', 'Decision Materials'];
+  public filteredDoctypes2018: any[] = [];
   public documentMilestone = ['Project Notification'];
   public documentAuthor = ['Proponent', 'EAO'];
   public documentPhase = [ 'Project Designation'];
-  public documentTypeID: any[] = [];
   public documentMilestoneID: any[] = [];
   public documentAuthorID: any[] = [];
   public documentPhaseID: any[] = [];
@@ -47,6 +47,7 @@ export class UploadComponent implements OnInit, OnDestroy {
     private documentService: DocumentService,
     private snackBar: MatSnackBar,
     private configService: ConfigService,
+    private utils: Utils
   ) { }
 
   ngOnInit() {
@@ -54,17 +55,16 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.docTotal = this.storageService.state.currentProject.docTotal;
     this.buildForm();
     this.getLists();
+    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
   }
 
   buildForm() {
+
     this.myForm = new FormGroup({
-      'displayName': new FormControl(),
       'description': new FormControl('Project Notification Document'),
-      'label': new FormControl(this.documentLabel[0]),
-      'type' : new FormControl({value: this.documentType[0], disabled: true}),
-      'milestone' : new FormControl({ value: this.documentMilestone[0], disabled: true}),
-      'author' : new FormControl( { value: this.documentAuthor[0] , disabled: true }),
-      'phase' : new FormControl({ value: this.documentPhase[0], disabled: true } )
+      'type' : new FormControl({value: this.filteredDoctypes2018[0]}),
+      'author' : new FormControl({value: this.documentAuthor[0]}),
+      'date': new FormControl({value: new Date()})
     });
     this.loading = false;
   }
@@ -99,20 +99,14 @@ export class UploadComponent implements OnInit, OnDestroy {
     this.loading = true;
     let observables = [];
 
-    let docType = this.myForm.controls.type.value;
-    if (docType === 'Project Notification') {
-      docType = 'Notification';
-    }
-    let docTypeID = this.findID(docType, this.documentTypeID);
-    let milestoneID = this.findID(this.myForm.controls.milestone.value, this.documentMilestoneID);
-
     let docAuthor = this.myForm.controls.author.value;
     if (docAuthor === 'Proponent') {
       docAuthor = 'Proponent/Certificate Holder';
     }
     let authorID = this.findID(docAuthor, this.documentAuthorID);
 
-    let phaseID = this.findID(this.myForm.controls.phase.value, this.documentPhaseID);
+    let milestoneID = this.findID(this.documentMilestone[0], this.documentMilestoneID);
+    let phaseID = this.findID(this.documentPhase[0], this.documentPhaseID);
 
 
     this.documents.map(doc => {
@@ -124,10 +118,10 @@ export class UploadComponent implements OnInit, OnDestroy {
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
       formData.append('displayName', doc.documentFileName );
       formData.append('dateUploaded', new Date().toISOString());
-      formData.append('datePosted', new Date().toISOString());
+      formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value))).toISOString());
       formData.append('milestone', milestoneID);
-      formData.append('type', docTypeID);
-      formData.append('description', this.myForm.value.description);
+      formData.append('type', this.myForm.get('type').value);
+      formData.append('description', this.myForm.get('description').value);
       formData.append('documentAuthorType', null);
       formData.append('documentAuthor', authorID);
       formData.append('projectPhase', phaseID);
@@ -213,41 +207,14 @@ export class UploadComponent implements OnInit, OnDestroy {
     }
   }
 
-  public onChangeLabel() {
-    if (this.myForm.value.label ===  'Proponent Project Notification') {
-      this.myForm.controls.type.setValue(this.documentType[0]);
-      this.myForm.controls.author.setValue(this.documentAuthor[0]);
-      this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
-      this.myForm.controls.phase.setValue(this.documentPhase[0]);
-    } else {
-      this.myForm.controls.type.setValue(this.documentType[1]);
-      this.myForm.controls.author.setValue(this.documentAuthor[1]);
-      this.myForm.controls.milestone.setValue(this.documentMilestone[0]);
-      this.myForm.controls.phase.setValue(this.documentPhase[0]);
-    }
-    this._changeDetectionRef.detectChanges();
-  }
-
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
   }
 
-
-
   getLists() {
     this.configService.lists.forEach(item => {
         switch (item.name) {
-          case 'Notification':
-            if (item.legislation === 2018) {
-              this.documentTypeID.push(Object.assign({}, item));
-            }
-            break;
-          case 'Decision Materials':
-            if (item.legislation === 2018) {
-              this.documentTypeID.push(Object.assign({}, item));
-            }
-            break;
           case 'Proponent/Certificate Holder':
             if (item.legislation === 2018) {
               this.documentAuthorID.push(Object.assign({}, item));
@@ -269,6 +236,14 @@ export class UploadComponent implements OnInit, OnDestroy {
             }
             break;
         }
+        switch (item.type) {
+          case 'doctype':
+            if (item.legislation === 2018) {
+              this.filteredDoctypes2018.push(Object.assign({}, item));
+            }
+            break;
+        }
+
       }, this);
   }
 }
