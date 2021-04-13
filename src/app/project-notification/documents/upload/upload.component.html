@@ -23,23 +23,14 @@
     <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
 
       <div class="form-row">
-        <div class="form-group col-md-4">
-          <label for="region">Document Label* </label>
-          <select required class="form-control" formControlName="label" (change)="onChangeLabel()">
-            <option *ngFor="let label of documentLabel" [ngValue]="label">{{label}}</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group col-md-4">
-          <label for="region">Type* </label>
+        <div class="form-group col-md-6">
+          <label for="type">Document Type* </label>
           <select required class="form-control" formControlName="type">
-            <option *ngFor="let type of documentType" [ngValue]="type">{{type}}</option>
+            <option *ngFor="let type of filteredDoctypes2018" [ngValue]="type._id">{{type.name}}</option>
           </select>
         </div>
-        <div class="form-group col-md-4">
-          <label for="region">Author* </label>
+        <div class="form-group col-md-6">
+          <label for="author">Author* </label>
           <select required class="form-control" formControlName="author">
             <option *ngFor="let author of documentAuthor" [ngValue]="author">{{author}}</option>
           </select>
@@ -48,17 +39,25 @@
 
       <div class="form-row">
         <div class="form-group col-md-4">
-          <label for="region">Milestone* </label>
-          <select required class="form-control" formControlName="milestone">
-            <option *ngFor="let milestone of documentMilestone" [ngValue]="milestone">{{milestone}}</option>
-          </select>
+          <label for="date">Date*</label>
+          <div class="input-group">
+            <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="date"
+              formControlName="date" ngbDatepicker #datePicker="ngbDatepicker" />
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary calendar" (click)="datePicker.toggle()"
+                type="button"></button>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group col-md-4">
-          <label for="region">Phase* </label>
-          <select required class="form-control" formControlName="phase">
-            <option *ngFor="let phase of documentPhase" [ngValue]="phase">{{phase}}</option>
-          </select>
+        <div class="pn-info-block col-md-4">
+            <label>Milestone:</label>
+            <p class="value" [innerHTML]="documentMilestone[0]"></p>
+        </div>
+
+        <div class="pn-info-block col-md-4">
+            <label>Phase:</label>
+            <p class="value" [innerHTML]="documentPhase[0]"></p>
         </div>
       </div>
 
