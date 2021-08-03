@@ -233,8 +233,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // Check description
     this.commentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
     this.commentPeriod.instructions += ` for ${this.currentProject.data.name} Project.`;
-    // let baseInstructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
-    // baseInstructions += ` for ${this.currentProject.data.name} Project.`;
 
     // wrap comment header in h4 tag
 
