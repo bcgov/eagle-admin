@@ -88,7 +88,9 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     private snackBar: MatSnackBar,
     private storageService: StorageService,
     private utils: Utils
-  ) { }
+  ) {
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+  }
 
   ngOnInit() {
     this.route.parent.data
@@ -356,7 +358,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   public onSubmit() {
     this.loading = true;
 
-    const params = { };
+    const params = {};
     params['ms'] = new Date().getMilliseconds();
     params['notificationProjectId'] = this.currentProject._id;
 
