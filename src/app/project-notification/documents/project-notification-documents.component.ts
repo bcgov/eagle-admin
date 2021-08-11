@@ -362,6 +362,9 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     params['ms'] = new Date().getMilliseconds();
     params['notificationProjectId'] = this.currentProject._id;
 
+    this.ngUnsubscribe.next();
+    this.ngUnsubscribe.complete();
+
     this.router.navigate([
       'pn',
       this.currentProject._id,
