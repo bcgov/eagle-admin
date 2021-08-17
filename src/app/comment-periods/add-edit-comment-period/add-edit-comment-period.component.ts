@@ -55,10 +55,10 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     browser_spellcheck: true,
     height: 240,
     plugins: ['lists, advlist, link'],
-    toolbar: [ 'undo redo | formatselect | ' +
-    ' bold italic backcolor | alignleft aligncenter ' +
-    ' alignright alignjustify | bullist numlist outdent indent |' +
-    ' removeformat | help' ]
+    toolbar: ['undo redo | formatselect | ' +
+      ' bold italic backcolor | alignleft aligncenter ' +
+      ' alignright alignjustify | bullist numlist outdent indent |' +
+      ' removeformat | help']
   };
 
   constructor(
@@ -233,10 +233,18 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // Check description
     this.commentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
     this.commentPeriod.instructions += ` for ${this.currentProject.data.name} Project.`;
+
+    // wrap comment header in h4 tag
+
+    this.commentPeriod.instructions = `<h4>${this.commentPeriod.instructions}</h4>`;
+
+    // add description
     this.commentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
 
+
+
     // Check comment tip
-    this.commentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value  ? this.commentPeriodForm.get('commentTipText').value : '';
+    this.commentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value ? this.commentPeriodForm.get('commentTipText').value : '';
 
     if (this.storageService.state.selectedDocumentsForCP) {
       let docIdArray = [];
@@ -326,9 +334,8 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   private extractVarsFromInstructions(instructionString: String, form: FormGroup) {
-    let firstSentance = instructionString.split('.')[0] + '. ';
-    form.controls.infoForCommentText.setValue(firstSentance.split(' for')[0].replace('Comment Period on the ', ''));
-    form.controls.descriptionText.setValue(instructionString.replace(firstSentance, ''));
+    form.controls.infoForCommentText.setValue(instructionString.split(' for')[0].replace('<h4>Comment Period on the ', ''));
+    form.controls.descriptionText.setValue(instructionString.split('</h4>')[1]);
     this.updateDescriptionPreview();
   }
 
