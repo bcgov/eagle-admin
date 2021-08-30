@@ -1,0 +1,89 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - ".github/**"
+      - "openshift/**"
+
+env:
+  OPENSHIFT_NAMESPACE: 6cdc9e-tools
+  IMAGE_NAME: eagle-admin
+  TEST_PROMO_BRANCH: promotion/test
+  TEST_PROMO_PR_BRANCH: promotion/test-pr
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-20.04
+    outputs:
+      SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Use Node.js 10
+        uses: actions/setup-node@v2
+        with:
+          node-version: "10.x"
+      - name: Angular Build
+        run: |
+          npm install
+          npm run build
+      - name: Login to OpenShift registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.OPENSHIFT_REPOSITORY }}
+          username: ${{ secrets.OPENSHIFT_REPOSITORY_USERNAME }}
+          password: ${{ secrets.OPENSHIFT_REPOSITORY_PASSWORD }}
+      - name: Get Short SHA
+        id: short-sha
+        run: echo "::set-output name=SHA::$(git rev-parse --short HEAD)"
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:ci-latest
+          file: Dockerfile.Github
+          labels: |
+            commit.author=${{ github.event.head_commit.author.email }}
+            commit.id=${{ github.event.head_commit.id }}
+            commit.timestamp=${{ github.event.head_commit.timestamp }}
+            commit.message=${{ github.event.head_commit.message }}
+  promotion:
+    name: Create Promotion Pull Request
+    needs: build
+    runs-on: ubuntu-20.04
+    steps:
+      # Update promotion/test-pr with new commit hash
+      - name: Checkout promotion/test
+        uses: actions/checkout@v2
+        with:
+          ref: "${{ env.TEST_PROMO_BRANCH }}"
+      - name: Update state.json
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{github.actor}}@users.noreply.github.com"
+
+          git checkout -B ${{ env.TEST_PROMO_PR_BRANCH }}
+          git reset --hard ${{ env.TEST_PROMO_BRANCH }}
+
+          echo $(jq '.commit="${{ needs.build.outputs.SHORT_SHA }}"' state.json) > state.json
+
+          git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
+          git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ env.TEST_PROMO_PR_BRANCH }}
+          destination_branch: ${{ env.TEST_PROMO_BRANCH }}
+          pr_title: "Deploy to Test Environment"
+          pr_body: |
+            :crown: *An automated PR*
+
+            This PR triggers an deployment to Test once it's fully merged.
+          pr_label: "auto-pr,test env,pipeline"
+          pr_draft: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
