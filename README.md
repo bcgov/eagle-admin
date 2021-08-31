@@ -44,17 +44,11 @@ Run the following two scripts to create your environment
 1. Run `npm run build` to just build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build, like so: `ng serve --prod` to run in production mode.
 1. Run `npm run lint` to just lint your app code using TSLint.
 
-## Pull Request Pipeline
+## CI/CD Pipeline
 
-The EPIC project is built with a Pull Request based pipeline, a full set of builds and deployments will be created in Openshift. A status badge will be updated with a live link to the deployment when the Pull Request has been built and deployed.
+The EPIC project has moved away from PR based pipeline due to complexity and reliability concerns of the PR based pipeline implementation. The current CI/CD pipeline utilizes Github Actions to build Docker images and push them back into the BC Gov OpenShift Docker registry.
 
-    To link PR deployments for features or related code across eagle repositories (admin, public, and api) the branch names for each pull request MUST be the same in each of the repositories.
-
-## PR Cleanup
-
-**Before** closing/merging a pull request the deployment should be cleaned up using the clean-up stage in [Jenkins](https://jenkins-prod-esm.pathfinder.gov.bc.ca/). Alternately a manual cleanup script can be used and is described in the eagle-helper-pods setup and teardown [readme](https://github.com/bcgov/eagle-helper-pods/blob/master/openshift/setup-teardown/README.md)
-
-A full description and guide to the EPIC pipeline and branching strategy is available in the [eagle-dev-guides](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/pull_request_pipeline.md) repository.
+A full description and guide to the EPIC pipeline and branching strategy is available in the [eagle-dev-guides](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/github_action_pipeline.md) repository.
 
 ## Angular Code scaffolding
 
