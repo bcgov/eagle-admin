@@ -114,7 +114,12 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     {
       name: 'Decision',
       value: 'eacDecision',
-      width: '15%'
+      width: '10%'
+    },
+    {
+      name: 'Documents',
+      nosort: true,
+      width: '5%'
     }
   ];
 

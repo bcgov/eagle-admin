@@ -108,17 +108,17 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'datePosted',
-      width: '12%'
+      width: '10%'
     },
     {
       name: 'Type',
       value: 'type',
-      width: '12%'
+      width: '10%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: '11%'
+      width: '10%'
     },
     {
       name: 'Legislation',
@@ -129,6 +129,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       name: 'Feature',
       value: 'isFeatured',
       width: '10%'
+    },
+    {
+      name: 'EditDoc',
+      nosort: true,
+      width: '5%'
     }
   ];
 
@@ -642,6 +647,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       this.categorizedDocs.forEach(document => {
         documentList.push({
           displayName: document.displayName,
+          description: document.description === 'null' ? '' : document.description,
           documentFileName: document.documentFileName,
           datePosted: document.datePosted,
           status: document.read.includes('public')
@@ -656,7 +662,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           isFeatured: document.isFeatured,
           sortOrder: document.sortOrder,
           publicHitCount: document.publicHitCount,
-          secureHitCount: document.secureHitCount
+          secureHitCount: document.secureHitCount,
+          projectPhase: document.projectPhase,
+          documentAuthorType: document.documentAuthorType
         });
       });
 
@@ -684,6 +692,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         documentList.push({
           displayName: document.displayName,
           documentFileName: document.documentFileName,
+          description: document.description === 'null' ? '' : document.description,
           datePosted: document.datePosted,
           status: document.read.includes('public')
             ? 'Published'
@@ -693,7 +702,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           legislation: document.legislation,
           _id: document._id,
           project: document.project,
-          read: document.read
+          read: document.read,
+          projectPhase: document.projectPhase,
+          documentAuthorType: document.documentAuthorType
         });
       });
 
@@ -1114,6 +1125,14 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     } else {
       return 'results';
     }
+  }
+
+  public navigateToProject() {
+    this.router.navigate([
+      'p',
+      this.currentProject._id,
+      'project-details'
+    ]);
   }
 
   ngOnDestroy() {

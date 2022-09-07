@@ -34,4 +34,7 @@ export class ProjectListTableRowsComponent implements OnInit, TableComponent {
     goToProject(project) {
         this.router.navigate([`p/${project._id}/project-details`]);
     }
+    goToDocuments(project) {
+        this.router.navigate([`p/${project._id}/project-documents`]);
+    }
 }

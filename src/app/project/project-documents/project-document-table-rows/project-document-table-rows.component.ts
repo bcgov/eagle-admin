@@ -5,6 +5,7 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { DocumentService } from 'app/services/document.service';
+import { StorageService } from 'app/services/storage.service';
 
 @Component({
   selector: 'tbody[app-document-table-rows]',
@@ -28,7 +29,8 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
     private router: Router,
     private snackBar: MatSnackBar,
     private documentService: DocumentService,
-    private _changeDetectionRef: ChangeDetectorRef
+    private _changeDetectionRef: ChangeDetectorRef,
+    private storageService:  StorageService,
   ) { }
 
   ngOnInit() {
@@ -37,6 +39,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
     this.activeLegislationYear = this.data.extraData;
     this.columns = this.columnData;
     this.useSmallTable = this.smallTable;
+    console.log(this.storageService);
   }
 
   selectItem(item) {
@@ -98,5 +101,22 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
         }
       );
     }
+  }
+
+  editDocument(document) {
+    const selectedDocs = [];
+
+    if (this.documents) {
+      let item = this.documents.filter(p => p._id === document._id)[0];
+      selectedDocs.push(item);
+    }
+
+    // Store and send to the edit page.
+    this.storageService.state.selectedDocs = selectedDocs;
+    // Set labels if doc size === 1
+    if (selectedDocs.length === 1) {
+      this.storageService.state.labels = selectedDocs[0].labels;
+    }
+    this.router.navigate(['p', document.project._id, 'project-documents', 'edit']);
   }
 }

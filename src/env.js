@@ -11,9 +11,9 @@
   window.__env.API_LOCATION = 'http://localhost:3000';
   window.__env.API_PATH = '/api';
   window.__env.API_PUBLIC_PATH = '/api/public';
-  window.__env.KEYCLOAK_CLIENT_ID = 'eagle-admin-console';
-  window.__env.KEYCLOAK_URL = 'https://oidc.gov.bc.ca/auth';
-  window.__env.KEYCLOAK_REALM = 'eagle';
+  window.__env.KEYCLOAK_CLIENT_ID = 'eagle-admin-console';//'forms-flow-web';
+  window.__env.KEYCLOAK_URL = 'https://oidc.gov.bc.ca/auth';//'http://localhost:8080/auth';
+  window.__env.KEYCLOAK_REALM = 'eagle';//'forms-flow-ai';
   window.__env.KEYCLOAK_ENABLED = true;
 
   // Add any feature-toggles
