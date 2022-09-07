@@ -1,11 +1,21 @@
-<tr
-  (click)="goToProject(project)"
-  *ngFor="let project of projects">
-  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{project.name || '-'}}</td>
+<tr *ngFor="let project of projects">
+  <td scope="row" (click)="goToProject(project)" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{project.name || '-'}}</td>
   <!-- TODO: Get proponent name in here. -->
-  <td scope="row" data-label="Proponent" [style.width]="!useSmallTable && columns[1].width">{{project.proponent?.name || '-'}}</td>
-  <td scope="row" data-label="Type" [style.width]="!useSmallTable && columns[2].width">{{project.type || '-'}}</td>
-  <td scope="row" data-label="Region" [style.width]="!useSmallTable && columns[3].width">{{project.region || '-'}}</td>
-  <td scope="row" data-label="Phase" [style.width]="!useSmallTable && columns[4].width">{{project.currentPhaseName?.name || '-'}}</td>
-  <td scope="row" data-label="Decision" [style.width]="!useSmallTable && columns[5].width">{{project.eacDecision?.name || '-'}}</td>
+  <td scope="row" (click)="goToProject(project)" data-label="Proponent" [style.width]="!useSmallTable && columns[1].width">{{project.proponent?.name ||
+    '-'}}</td>
+  <td scope="row" (click)="goToProject(project)" data-label="Type" [style.width]="!useSmallTable && columns[2].width">{{project.type || '-'}}</td>
+  <td scope="row" (click)="goToProject(project)" data-label="Region" [style.width]="!useSmallTable && columns[3].width">{{project.region || '-'}}</td>
+  <td scope="row" (click)="goToProject(project)" data-label="Phase" [style.width]="!useSmallTable && columns[4].width">{{project.currentPhaseName?.name
+    || '-'}}</td>
+  <td scope="row" (click)="goToProject(project)" data-label="Decision" [style.width]="!useSmallTable && columns[5].width">{{project.eacDecision?.name
+    || '-'}}</td>
+  <td data-label="Documents" scope="row" [style.width]="!useSmallTable && columns[6].width">
+    <a [routerLink]="['/p',project._id,'project-documents']" href="/p/{{project._id}}/project-documents">
+      <p class="card-text">
+        <span class="material-icons">
+          description
+          </span>
+        </p>
+      </a>
+  </td>
 </tr>

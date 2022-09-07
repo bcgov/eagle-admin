@@ -184,4 +184,17 @@ export class Utils {
       });
       return matchedItems;
     }
+
+    public createUniqueCollection(inputList, inputItem, uniqCondition = undefined) {
+      if (!inputList || inputList.length === 0) {
+        return inputList;
+      }
+      if (!uniqCondition) {
+        uniqCondition = (input, p) => p.name === input.name;
+      }
+      if (!inputList.some(p => (uniqCondition(inputItem, p)))) {
+        inputList.push(inputItem);
+      }
+      return inputList;
+    }
 }
