@@ -1578,7 +1578,7 @@ export class ApiService {
     type: string
   ): Promise<void> {
     const payload = { objId: obj._id, type: type };
-    const queryString = `favorites/add-to-favorites`;
+    const queryString = `favorites`;
     return this.http
       .post<void>(`${this.pathAPI}/${queryString}`, payload, {})
       .toPromise();
