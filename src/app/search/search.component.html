@@ -57,11 +57,11 @@
                   'btn-outline-dark': !showFilters.pcp && numFilters.pcp == 0}">
                 Public Comment Period<span *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
               </button>
-              <button type="button" (click)="filterForUI.favoritesOnly.includeFavoritesOnly = !filterForUI.favoritesOnly.includeFavoritesOnly;"
+              <button type="button" (click)="filterForUI.favouritesOnly.includeFavouritesOnly = !filterForUI.favouritesOnly.includeFavouritesOnly;"
                 [ngClass]="{'btn': true, 'type-btn': true,
-                  'btn-dark': filterForUI.favoritesOnly.includeFavoritesOnly,
-                  'btn-outline-dark': !filterForUI.favoritesOnly.includeFavoritesOnly}">
-                  Favorites Only
+                  'btn-dark': filterForUI.favouritesOnly.includeFavouritesOnly,
+                  'btn-outline-dark': !filterForUI.favouritesOnly.includeFavouritesOnly}">
+                  Favourites Only
               </button>
               <button type="button" (click)="toggleFilter('more');"
                 [ngClass]="{'btn': true, 'more-btn': true,
@@ -116,11 +116,11 @@
                   Project Phase<span
                       *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
               </button>
-              <button type="button" (click)="filterForUI.favoritesOnly.includeFavoritesOnly = !filterForUI.favoritesOnly.includeFavoritesOnly;"
+              <button type="button" (click)="filterForUI.favouritesOnly.includeFavouritesOnly = !filterForUI.favouritesOnly.includeFavouritesOnly;"
                 [ngClass]="{'btn': true, 'type-btn': true,
-                  'btn-dark': filterForUI.favoritesOnly.includeFavoritesOnly,
-                  'btn-outline-dark': !filterForUI.favoritesOnly.includeFavoritesOnly}">
-                  Favorites Only
+                  'btn-dark': filterForUI.favouritesOnly.includeFavouritesOnly,
+                  'btn-outline-dark': !filterForUI.favouritesOnly.includeFavouritesOnly}">
+                  Favourites Only
               </button>
               <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
             </div>
@@ -591,11 +591,11 @@
               <button class="btn btn-primary view-btn" (click)="api.openDocument(result)">
                 View Document <i class="material-icons">open_in_new</i>
               </button>
-              <button *ngIf="favorites.indexOf(result._id) > -1" class="btn btn-primary view-btn" (click)="removeFavorite(result, 'Document')">
-                Remove Favorite <i class="material-icons">favorite</i>
+              <button *ngIf="favourites.indexOf(result._id) > -1" class="btn btn-primary view-btn" (click)="removeFavourite(result, 'Document')">
+                Remove Favourite <i class="material-icons">favorite</i>
               </button>
-              <button *ngIf="favorites.indexOf(result._id) === -1" class="btn btn-primary view-btn" (click)="addToFavorite(result, 'Document')">
-                Add to Favorites <i class="material-icons">favorite_border</i>
+              <button *ngIf="favourites.indexOf(result._id) === -1" class="btn btn-primary view-btn" (click)="addToFavourite(result, 'Document')">
+                Add to Favourites <i class="material-icons">favorite_border</i>
               </button>
             </header>
             <div class="card-body">
@@ -634,11 +634,11 @@
                 </span>
               </span>
               <div class="right-wrapper">
-                <button *ngIf="favorites.indexOf(result._id) > -1" class="btn btn-primary view-btn" (click)="removeFavorite(result, 'Project')">
-                  Remove Favorite <i class="material-icons">favorite</i>
+                <button *ngIf="favourites.indexOf(result._id) > -1" class="btn btn-primary view-btn" (click)="removeFavourite(result, 'Project')">
+                  Remove Favourite <i class="material-icons">favorite</i>
                 </button>
-                <button *ngIf="favorites.indexOf(result._id) === -1" class="btn btn-primary view-btn" (click)="addToFavorite(result, 'Project')">
-                  Add to Favorites <i class="material-icons">favorite_border</i>
+                <button *ngIf="favourites.indexOf(result._id) === -1" class="btn btn-primary view-btn" (click)="addToFavourite(result, 'Project')">
+                  Add to Favourites <i class="material-icons">favorite_border</i>
                 </button>
                 <a [routerLink]="['/p', result._id]" class="btn btn-primary view-btn">View Project<i class="material-icons">chevron_right</i></a>
               </div>
