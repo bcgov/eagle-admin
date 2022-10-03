@@ -18,4 +18,4 @@
 
   // Add any feature-toggles
   // window.__env.coolFeatureActive = false;
-}(this));
+})(this);

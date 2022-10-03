@@ -57,6 +57,12 @@
                   'btn-outline-dark': !showFilters.pcp && numFilters.pcp == 0}">
                 Public Comment Period<span *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
               </button>
+              <button type="button" (click)="filterForUI.favoritesOnly.includeFavoritesOnly = !filterForUI.favoritesOnly.includeFavoritesOnly;"
+                [ngClass]="{'btn': true, 'type-btn': true,
+                  'btn-dark': filterForUI.favoritesOnly.includeFavoritesOnly,
+                  'btn-outline-dark': !filterForUI.favoritesOnly.includeFavoritesOnly}">
+                  Favorites Only
+              </button>
               <button type="button" (click)="toggleFilter('more');"
                 [ngClass]="{'btn': true, 'more-btn': true,
                   'btn-dark': showFilters.more,
@@ -109,6 +115,12 @@
                   'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
                   Project Phase<span
                       *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
+              </button>
+              <button type="button" (click)="filterForUI.favoritesOnly.includeFavoritesOnly = !filterForUI.favoritesOnly.includeFavoritesOnly;"
+                [ngClass]="{'btn': true, 'type-btn': true,
+                  'btn-dark': filterForUI.favoritesOnly.includeFavoritesOnly,
+                  'btn-outline-dark': !filterForUI.favoritesOnly.includeFavoritesOnly}">
+                  Favorites Only
               </button>
               <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
             </div>
@@ -579,6 +591,12 @@
               <button class="btn btn-primary view-btn" (click)="api.openDocument(result)">
                 View Document <i class="material-icons">open_in_new</i>
               </button>
+              <button *ngIf="favorites.indexOf(result._id) > -1" class="btn btn-primary view-btn" (click)="removeFavorite(result, 'Document')">
+                Remove Favorite <i class="material-icons">favorite</i>
+              </button>
+              <button *ngIf="favorites.indexOf(result._id) === -1" class="btn btn-primary view-btn" (click)="addToFavorite(result, 'Document')">
+                Add to Favorites <i class="material-icons">favorite_border</i>
+              </button>
             </header>
             <div class="card-body">
               <div class="flex-container">
@@ -615,7 +633,15 @@
                   <i class="material-icons">assignment</i> Project
                 </span>
               </span>
-              <a [routerLink]="['/p', result._id]" class="btn btn-primary view-btn">View Project<i class="material-icons">chevron_right</i></a>
+              <div class="right-wrapper">
+                <button *ngIf="favorites.indexOf(result._id) > -1" class="btn btn-primary view-btn" (click)="removeFavorite(result, 'Project')">
+                  Remove Favorite <i class="material-icons">favorite</i>
+                </button>
+                <button *ngIf="favorites.indexOf(result._id) === -1" class="btn btn-primary view-btn" (click)="addToFavorite(result, 'Project')">
+                  Add to Favorites <i class="material-icons">favorite_border</i>
+                </button>
+                <a [routerLink]="['/p', result._id]" class="btn btn-primary view-btn">View Project<i class="material-icons">chevron_right</i></a>
+              </div>
             </header>
             <div class="card-body">
               <h2 class="card-title">{{result.name}}</h2>

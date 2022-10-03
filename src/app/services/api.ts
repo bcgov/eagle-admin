@@ -39,14 +39,13 @@ interface LocalLoginResponse {
 
 @Injectable()
 export class ApiService {
-
   public token: string;
   public isMS: boolean; // IE, Edge, etc
   // private jwtHelper: JwtHelperService;
   public pathAPI: string;
   public params: Params;
-  public env: string;  // Could be anything per Openshift environment variables  but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo' | 'hotfix'
-  public bannerColour: string;  // This is the colour of the banner that you see in the header, and could be anything per Openshift environment variables but must correspond with the css in header.component.scss e.g. red | orange | green | yellow | purple
+  public env: string; // Could be anything per Openshift environment variables  but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo' | 'hotfix'
+  public bannerColour: string; // This is the colour of the banner that you see in the header, and could be anything per Openshift environment variables but must correspond with the css in header.component.scss e.g. red | orange | green | yellow | purple
 
   constructor(
     private http: HttpClient,
@@ -60,29 +59,47 @@ export class ApiService {
     this.isMS = window.navigator.msSaveOrOpenBlob ? true : false;
 
     this.bannerColour = this.configService.config['BANNER_COLOUR'];
-    this.env     = this.configService.config['ENVIRONMENT'];
-    this.pathAPI = this.configService.config['API_LOCATION']
-                   + this.configService.config['API_PATH'];
+    this.env = this.configService.config['ENVIRONMENT'];
+    this.pathAPI =
+      this.configService.config['API_LOCATION'] +
+      this.configService.config['API_PATH'];
   }
 
   handleError(error: any): Observable<never> {
-    const reason = error.message ? (error.error ? `${error.message} - ${error.error.message}` : error.message) : (error.status ? `${error.status} - ${error.statusText}` : 'Server error');
+    const reason = error.message
+      ? error.error
+        ? `${error.message} - ${error.error.message}`
+        : error.message
+      : error.status
+      ? `${error.status} - ${error.statusText}`
+      : 'Server error';
     console.log('API error =', reason);
-    if (error && error.status === 403 && !this.keycloakService.isKeyCloakEnabled()) {
+    if (
+      error &&
+      error.status === 403 &&
+      !this.keycloakService.isKeyCloakEnabled()
+    ) {
       window.location.href = '/admin/login';
     }
     return throwError(error);
   }
 
   login(username: string, password: string): Observable<boolean> {
-    return this.http.post<LocalLoginResponse>(`${this.pathAPI}/login/token`, { username: username, password: password })
-      .map(res => {
+    return this.http
+      .post<LocalLoginResponse>(`${this.pathAPI}/login/token`, {
+        username: username,
+        password: password,
+      })
+      .map((res) => {
         // login successful if there's a jwt token in the response
         if (res && res.accessToken) {
           this.token = res.accessToken;
           window.localStorage.clear();
           // store username and jwt token in local storage to keep user logged in between page refreshes
-          window.localStorage.setItem('currentUser', JSON.stringify({ username: username, token: this.token }));
+          window.localStorage.setItem(
+            'currentUser',
+            JSON.stringify({ username: username, token: this.token })
+          );
 
           return true; // successful login
         }
@@ -99,7 +116,12 @@ export class ApiService {
   //
   // Projects
   //
-  getProjects(pageNum: number, pageSize: number, sortBy: string, populate: Boolean = true): Observable<Object> {
+  getProjects(
+    pageNum: number,
+    pageSize: number,
+    sortBy: string,
+    populate: Boolean = true
+  ): Observable<Object> {
     const fields = [
       'eacDecision',
       'name',
@@ -109,21 +131,33 @@ export class ApiService {
       'code',
       'currentPhaseName',
       'epicProjectID',
-      'decisionDate'
+      'decisionDate',
     ];
 
     let queryString = `project?`;
-    if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
-    if (populate !== null) { queryString += `populate=${populate}&`; }
+    if (pageNum !== null) {
+      queryString += `pageNum=${pageNum - 1}&`;
+    }
+    if (pageSize !== null) {
+      queryString += `pageSize=${pageSize}&`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `sortBy=${sortBy}&`;
+    }
+    if (populate !== null) {
+      queryString += `populate=${populate}&`;
+    }
     queryString += `fields=${this.buildValues(fields)}`;
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // NB: returns array with 1 element
-  getProject(id: string, cpStart: string, cpEnd: string): Observable<Project[]> {
+  getProject(
+    id: string,
+    cpStart: string,
+    cpEnd: string
+  ): Observable<Project[]> {
     const fields = [
       'CEAAInvolvement',
       'CELead',
@@ -193,20 +227,27 @@ export class ApiService {
       'pins',
       'read',
       'write',
-      'delete'
+      'delete',
     ];
     let queryString = `project/${id}?populate=true`;
-    if (cpStart !== null) { queryString += `&cpStart[since]=${cpStart}`; }
-    if (cpEnd !== null) { queryString += `&cpEnd[until]=${cpEnd}`; }
+    if (cpStart !== null) {
+      queryString += `&cpStart[since]=${cpStart}`;
+    }
+    if (cpEnd !== null) {
+      queryString += `&cpEnd[until]=${cpEnd}`;
+    }
     queryString += `&fields=${this.buildValues(fields)}`;
     return this.http.get<Project[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
   getCountProjects(): Observable<number> {
     const queryString = `project`;
-    return this.http.head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
+    return this.http
+      .head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, {
+        observe: 'response',
+      })
       .pipe(
-        map(res => {
+        map((res) => {
           // retrieve the count from the response headers
           return parseInt(res.headers.get('x-total-count'), 10);
         })
@@ -258,7 +299,11 @@ export class ApiService {
 
   addGroupToProject(proj: Project, group: any): Observable<Project> {
     const queryString = `project/${proj._id}/group`;
-    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { group: group }, {});
+    return this.http.post<Project>(
+      `${this.pathAPI}/${queryString}`,
+      { group: group },
+      {}
+    );
   }
 
   deletePin(projId: string, pinId: string): Observable<Project> {
@@ -274,35 +319,78 @@ export class ApiService {
     return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  getProjectPins(id: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
+  getProjectPins(
+    id: string,
+    pageNum: number,
+    pageSize: number,
+    sortBy: any
+  ): Observable<Org> {
     let queryString = `project/${id}/pin`;
-    if (pageNum !== null) { queryString += `?pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
+    if (pageNum !== null) {
+      queryString += `?pageNum=${pageNum - 1}`;
+    }
+    if (pageSize !== null) {
+      queryString += `&pageSize=${pageSize}`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `&sortBy=${sortBy}`;
+    }
     return this.http.get<any>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  getProjectGroupMembers(id: string, groupId: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
+  getProjectGroupMembers(
+    id: string,
+    groupId: string,
+    pageNum: number,
+    pageSize: number,
+    sortBy: any
+  ): Observable<Org> {
     let queryString = `project/${id}/group/${groupId}/members`;
-    if (pageNum !== null) { queryString += `?pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
+    if (pageNum !== null) {
+      queryString += `?pageNum=${pageNum - 1}`;
+    }
+    if (pageSize !== null) {
+      queryString += `&pageSize=${pageSize}`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `&sortBy=${sortBy}`;
+    }
     return this.http.get<any>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  addMembersToGroup(proj: Project, groupId: string, members: any): Observable<Project> {
+  addMembersToGroup(
+    proj: Project,
+    groupId: string,
+    members: any
+  ): Observable<Project> {
     const queryString = `project/${proj._id}/group/${groupId}/members`;
-    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, members, {});
+    return this.http.post<Project>(
+      `${this.pathAPI}/${queryString}`,
+      members,
+      {}
+    );
   }
 
-  deleteMembersFromGroup(projId: string, groupId: string, member: string): Observable<Project> {
+  deleteMembersFromGroup(
+    projId: string,
+    groupId: string,
+    member: string
+  ): Observable<Project> {
     const queryString = `project/${projId}/group/${groupId}/members/${member}`;
     return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  saveGroup(projectId: Project, groupId: any, groupObj: any): Observable<Project> {
+  saveGroup(
+    projectId: Project,
+    groupId: any,
+    groupObj: any
+  ): Observable<Project> {
     const queryString = `project/${projectId}/group/${groupId}`;
-    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, groupObj, {});
+    return this.http.put<Project>(
+      `${this.pathAPI}/${queryString}`,
+      groupObj,
+      {}
+    );
   }
 
   deleteGroup(proj: Project, groupId: string): Observable<Project> {
@@ -317,7 +405,11 @@ export class ApiService {
 
   createProjectCAC(projectId: string, cacEmail: string): Observable<any> {
     const queryString = `project/${projectId}/cac`;
-    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { cacEmail: cacEmail}, {});
+    return this.http.post<Project>(
+      `${this.pathAPI}/${queryString}`,
+      { cacEmail: cacEmail },
+      {}
+    );
   }
 
   deleteProjectCAC(projectId: string): Observable<any> {
@@ -379,38 +471,36 @@ export class ApiService {
   // Decisions
   //
   getDecisionsByAppId(projId: string): Observable<Decision[]> {
-    const fields = [
-      '_addedBy',
-      '_project',
-      'code',
-      'name',
-      'description'
-    ];
-    const queryString = `decision?_project=${projId}&fields=${this.buildValues(fields)}`;
+    const fields = ['_addedBy', '_project', 'code', 'name', 'description'];
+    const queryString = `decision?_project=${projId}&fields=${this.buildValues(
+      fields
+    )}`;
     return this.http.get<Decision[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // NB: returns array with 1 element
   getDecision(id: string): Observable<Decision[]> {
-    const fields = [
-      '_addedBy',
-      '_project',
-      'code',
-      'name',
-      'description'
-    ];
+    const fields = ['_addedBy', '_project', 'code', 'name', 'description'];
     const queryString = `decision/${id}?fields=${this.buildValues(fields)}`;
     return this.http.get<Decision[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
   addDecision(decision: Decision): Observable<Decision> {
     const queryString = `decision/`;
-    return this.http.post<Decision>(`${this.pathAPI}/${queryString}`, decision, {});
+    return this.http.post<Decision>(
+      `${this.pathAPI}/${queryString}`,
+      decision,
+      {}
+    );
   }
 
   saveDecision(decision: Decision): Observable<Decision> {
     const queryString = `decision/${decision._id}`;
-    return this.http.put<Decision>(`${this.pathAPI}/${queryString}`, decision, {});
+    return this.http.put<Decision>(
+      `${this.pathAPI}/${queryString}`,
+      decision,
+      {}
+    );
   }
 
   deleteDecision(decision: Decision): Observable<Decision> {
@@ -420,28 +510,43 @@ export class ApiService {
 
   publishDecision(decision: Decision): Observable<Decision> {
     const queryString = `decision/${decision._id}/publish`;
-    return this.http.put<Decision>(`${this.pathAPI}/${queryString}`, decision, {});
+    return this.http.put<Decision>(
+      `${this.pathAPI}/${queryString}`,
+      decision,
+      {}
+    );
   }
 
   unPublishDecision(decision: Decision): Observable<Decision> {
     const queryString = `decision/${decision._id}/unpublish`;
-    return this.http.put<Decision>(`${this.pathAPI}/${queryString}`, decision, {});
+    return this.http.put<Decision>(
+      `${this.pathAPI}/${queryString}`,
+      decision,
+      {}
+    );
   }
 
   //
   // Comment Periods
   //
-  getPeriodsByProjId(projId: string, pageNum: number, pageSize: number, sortBy: string): Observable<Object> {
-    const fields = [
-      'project',
-      'dateStarted',
-      'dateCompleted'
-    ];
+  getPeriodsByProjId(
+    projId: string,
+    pageNum: number,
+    pageSize: number,
+    sortBy: string
+  ): Observable<Object> {
+    const fields = ['project', 'dateStarted', 'dateCompleted'];
 
     let queryString = `commentperiod?&project=${projId}&`;
-    if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
+    if (pageNum !== null) {
+      queryString += `pageNum=${pageNum - 1}&`;
+    }
+    if (pageSize !== null) {
+      queryString += `pageSize=${pageSize}&`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `sortBy=${sortBy}&`;
+    }
     queryString += `count=true&`;
     queryString += `fields=${this.buildValues(fields)}`;
 
@@ -491,9 +596,11 @@ export class ApiService {
       'updatedBy',
       'userCan',
       'vettedPercent',
-      'vettingRoles'
+      'vettingRoles',
     ];
-    const queryString = `commentperiod/${id}?fields=${this.buildValues(fields)}`;
+    const queryString = `commentperiod/${id}?fields=${this.buildValues(
+      fields
+    )}`;
     return this.http.get<CommentPeriod[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -539,65 +646,87 @@ export class ApiService {
       'updatedBy',
       'userCan',
       'vettedPercent',
-      'vettingRoles'
+      'vettingRoles',
     ];
-    const queryString = `commentperiod/${id}/summary?fields=${this.buildValues(fields)}`;
-    return this.http.get<CommentPeriodSummary>(`${this.pathAPI}/${queryString}`, {});
+    const queryString = `commentperiod/${id}/summary?fields=${this.buildValues(
+      fields
+    )}`;
+    return this.http.get<CommentPeriodSummary>(
+      `${this.pathAPI}/${queryString}`,
+      {}
+    );
   }
 
   addCommentPeriod(period: CommentPeriod): Observable<CommentPeriod> {
     const queryString = `commentperiod/`;
-    return this.http.post<CommentPeriod>(`${this.pathAPI}/${queryString}`, period, {});
+    return this.http.post<CommentPeriod>(
+      `${this.pathAPI}/${queryString}`,
+      period,
+      {}
+    );
   }
 
   saveCommentPeriod(period: CommentPeriod): Observable<CommentPeriod> {
     const queryString = `commentperiod/${period._id}`;
-    return this.http.put<CommentPeriod>(`${this.pathAPI}/${queryString}`, period, {});
+    return this.http.put<CommentPeriod>(
+      `${this.pathAPI}/${queryString}`,
+      period,
+      {}
+    );
   }
 
   deleteCommentPeriod(period: CommentPeriod): Observable<CommentPeriod> {
     const queryString = `commentperiod/${period._id}`;
-    return this.http.delete<CommentPeriod>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.delete<CommentPeriod>(
+      `${this.pathAPI}/${queryString}`,
+      {}
+    );
   }
 
   publishCommentPeriod(period: CommentPeriod): Observable<CommentPeriod> {
     const queryString = `commentperiod/${period._id}/publish`;
-    return this.http.put<CommentPeriod>(`${this.pathAPI}/${queryString}`, period, {});
+    return this.http.put<CommentPeriod>(
+      `${this.pathAPI}/${queryString}`,
+      period,
+      {}
+    );
   }
 
   unPublishCommentPeriod(period: CommentPeriod): Observable<CommentPeriod> {
     const queryString = `commentperiod/${period._id}/unpublish`;
-    return this.http.put<CommentPeriod>(`${this.pathAPI}/${queryString}`, period, {});
+    return this.http.put<CommentPeriod>(
+      `${this.pathAPI}/${queryString}`,
+      period,
+      {}
+    );
   }
 
   //
   // Topics
   //
-  getTopics(pageNum: number, pageSize: number, sortBy: string): Observable<Object> {
-    const fields = [
-      'description',
-      'name',
-      'type',
-      'pillar',
-      'parent'
-    ];
+  getTopics(
+    pageNum: number,
+    pageSize: number,
+    sortBy: string
+  ): Observable<Object> {
+    const fields = ['description', 'name', 'type', 'pillar', 'parent'];
 
     let queryString = `topic?`;
-    if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
+    if (pageNum !== null) {
+      queryString += `pageNum=${pageNum - 1}&`;
+    }
+    if (pageSize !== null) {
+      queryString += `pageSize=${pageSize}&`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `sortBy=${sortBy}&`;
+    }
     queryString += `fields=${this.buildValues(fields)}`;
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
   getTopic(id: string): Observable<Topic[]> {
-    const fields = [
-      'description',
-      'name',
-      'type',
-      'pillar',
-      'parent'
-    ];
+    const fields = ['description', 'name', 'type', 'pillar', 'parent'];
     const queryString = `topic/${id}?fields=${this.buildValues(fields)}`;
     return this.http.get<Topic[]>(`${this.pathAPI}/${queryString}`, {});
   }
@@ -617,23 +746,32 @@ export class ApiService {
     return this.http.delete<Topic>(`${this.pathAPI}/${queryString}`, {});
   }
 
-
   //
   // Comments
   //
   getCountCommentsByPeriodId(periodId: string): Observable<number> {
     // NB: count only pending comments
     const queryString = `comment?isDeleted=false&commentStatus='Pending'&_commentPeriod=${periodId}`;
-    return this.http.head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
+    return this.http
+      .head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, {
+        observe: 'response',
+      })
       .pipe(
-        map(res => {
+        map((res) => {
           // retrieve the count from the response headers
           return parseInt(res.headers.get('x-total-count'), 10);
         })
       );
   }
 
-  getCommentsByPeriodId(periodId: string, pageNum: number, pageSize: number, sortBy: string, count: boolean, filter: object): Observable<Object> {
+  getCommentsByPeriodId(
+    periodId: string,
+    pageNum: number,
+    pageSize: number,
+    sortBy: string,
+    count: boolean,
+    filter: object
+  ): Observable<Object> {
     const fields = [
       '_id',
       'author',
@@ -647,16 +785,24 @@ export class ApiService {
       'eaoStatus',
       'submittedCAC',
       'period',
-      'read'
+      'read',
     ];
 
     let queryString = `comment?&period=${periodId}`;
-    if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
-    if (count !== null) { queryString += `&count=${count}`; }
+    if (pageNum !== null) {
+      queryString += `&pageNum=${pageNum - 1}`;
+    }
+    if (pageSize !== null) {
+      queryString += `&pageSize=${pageSize}`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `&sortBy=${sortBy}`;
+    }
+    if (count !== null) {
+      queryString += `&count=${count}`;
+    }
     if (filter !== {}) {
-      Object.keys(filter).forEach(key => {
+      Object.keys(filter).forEach((key) => {
         queryString += `&${key}=${filter[key]}`;
       });
     }
@@ -690,26 +836,42 @@ export class ApiService {
       'valuedComponents',
       'read',
       'write',
-      'delete'
+      'delete',
     ];
     let queryString = `comment/${id}?fields=${this.buildValues(fields)}`;
-    if (populateNextComment) { queryString += '&populateNextComment=true'; }
-    return this.http.get<any>(`${this.pathAPI}/${queryString}`, { observe: 'response' });
+    if (populateNextComment) {
+      queryString += '&populateNextComment=true';
+    }
+    return this.http.get<any>(`${this.pathAPI}/${queryString}`, {
+      observe: 'response',
+    });
   }
 
   addComment(comment: Comment): Observable<Comment> {
     const queryString = `comment/`;
-    return this.http.post<Comment>(`${this.pathAPI}/${queryString}`, comment, {});
+    return this.http.post<Comment>(
+      `${this.pathAPI}/${queryString}`,
+      comment,
+      {}
+    );
   }
 
   saveComment(comment: Comment): Observable<Comment> {
     const queryString = `comment/${comment._id}`;
-    return this.http.put<Comment>(`${this.pathAPI}/${queryString}`, comment, {});
+    return this.http.put<Comment>(
+      `${this.pathAPI}/${queryString}`,
+      comment,
+      {}
+    );
   }
 
   updateCommentStatus(comment: Comment, status: string): Observable<Comment> {
     const queryString = `comment/${comment._id}/status`;
-    return this.http.put<Comment>(`${this.pathAPI}/${queryString}`, { 'status': status }, {});
+    return this.http.put<Comment>(
+      `${this.pathAPI}/${queryString}`,
+      { status: status },
+      {}
+    );
   }
 
   //
@@ -725,9 +887,11 @@ export class ApiService {
       'isFeatured',
       'sortOrder',
       'secureHitCount',
-      'publicHitCount'
+      'publicHitCount',
     ];
-    const queryString = `document?isDeleted=false&_project=${projId}&fields=${this.buildValues(fields)}`;
+    const queryString = `document?isDeleted=false&_project=${projId}&fields=${this.buildValues(
+      fields
+    )}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -761,9 +925,11 @@ export class ApiService {
       'isFeatured',
       'sortOrder',
       'secureHitCount',
-      'publicHitCount'
+      'publicHitCount',
     ];
-    const queryString = `document?docIds=${this.buildValues(ids)}&fields=${this.buildValues(fields)}`;
+    const queryString = `document?docIds=${this.buildValues(
+      ids
+    )}&fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -796,7 +962,7 @@ export class ApiService {
       'isFeatured',
       'sortOrder',
       'secureHitCount',
-      'publicHitCount'
+      'publicHitCount',
     ];
     const queryString = `document/${id}?fields=${this.buildValues(fields)}`;
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
@@ -804,7 +970,11 @@ export class ApiService {
 
   updateDocument(formData: FormData, _id: any): Observable<Document> {
     const queryString = `document/${_id}`;
-    return this.http.put<Document>(`${this.pathAPI}/${queryString}`, formData, {});
+    return this.http.put<Document>(
+      `${this.pathAPI}/${queryString}`,
+      formData,
+      {}
+    );
   }
 
   deleteDocument(doc: Document): Observable<Document> {
@@ -839,16 +1009,26 @@ export class ApiService {
       'displayName',
       'internalURL',
       'internalMime',
-      'isFeatured'
+      'isFeatured',
     ];
     let queryString = `document?fields=${this.buildValues(fields)}`;
-    if (publish) { queryString += `&publish=${publish}`; }
-    return this.http.post<Document>(`${this.pathAPI}/${queryString}`, formData, {});
+    if (publish) {
+      queryString += `&publish=${publish}`;
+    }
+    return this.http.post<Document>(
+      `${this.pathAPI}/${queryString}`,
+      formData,
+      {}
+    );
   }
 
   private downloadResource(id: string): Promise<Blob> {
     const queryString = `document/${id}/download`;
-    return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    return this.http
+      .get<Blob>(this.pathAPI + '/' + queryString, {
+        responseType: 'blob' as 'json',
+      })
+      .toPromise();
   }
 
   public async downloadDocument(document: Document): Promise<void> {
@@ -875,9 +1055,17 @@ export class ApiService {
     }
   }
 
-  public async exportComments(period: String, projectName: String, format: String) {
+  public async exportComments(
+    period: String,
+    projectName: String,
+    format: String
+  ) {
     const queryString = `comment/export/${period}?format=${format}`;
-    const blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    const blob = await this.http
+      .get<Blob>(this.pathAPI + '/' + queryString, {
+        responseType: 'blob' as 'json',
+      })
+      .toPromise();
 
     projectName = projectName.split(' ').join('_');
     let currentDate = this.utils.formatDate(new Date());
@@ -914,27 +1102,50 @@ export class ApiService {
       filename = document.documentFileName;
     }
     filename = this.utils.encodeString(filename, true);
-    window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
+    window.open(
+      '/api/document/' + document._id + '/fetch/' + filename,
+      '_blank'
+    );
   }
 
-  public downloadElementThumbnail(inspectionId: string, elementId: string, itemId: string): Promise<Blob> {
+  public downloadElementThumbnail(
+    inspectionId: string,
+    elementId: string,
+    itemId: string
+  ): Promise<Blob> {
     const queryString = `inspection/${inspectionId}/${elementId}/${itemId}?thumbnail=true`;
-    return this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+    return this.http
+      .get<Blob>(this.pathAPI + '/' + queryString, {
+        responseType: 'blob' as 'json',
+      })
+      .toPromise();
   }
 
   public async openElementResource(element: any): Promise<void> {
-    let filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
+    let filename = element.internalURL.substring(
+      element.internalURL.lastIndexOf('/') + 1
+    );
     window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
   }
 
-  public async downloadInspectionItem(inspection, elementId, item: any): Promise<void> {
+  public async downloadInspectionItem(
+    inspection,
+    elementId,
+    item: any
+  ): Promise<void> {
     let tempDate = new Date(item.timestamp);
-    let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}`;
+    let filename = `${inspection.name}_${this.utils.getFormattedTime(
+      tempDate
+    )}`;
     filename = filename.replace('.', '-');
     const queryString = `inspection/${inspection._id}/${elementId}/${item._id}?filename=${filename}`;
     let blob = null;
     try {
-      blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+      blob = await this.http
+        .get<Blob>(this.pathAPI + '/' + queryString, {
+          responseType: 'blob' as 'json',
+        })
+        .toPromise();
     } catch {
       alert('An error has occured.');
       throw Error('Unable to download item');
@@ -993,10 +1204,14 @@ export class ApiService {
       );
 
       for (let j = 0; j < element.items.length; j++) {
-        const itemQueryString = `search?dataset=Item&_id=${element.items[j]}&_schemaName=${'InspectionItem'}`;
+        const itemQueryString = `search?dataset=Item&_id=${
+          element.items[j]
+        }&_schemaName=${'InspectionItem'}`;
         let itemSearchResults = null;
         try {
-          itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
+          itemSearchResults = await this.http
+            .get<any[]>(`${this.pathAPI}/${itemQueryString}`, {})
+            .toPromise();
           console.log('SEARCH RES', itemSearchResults);
         } catch {
           alert('An error has occured.');
@@ -1005,11 +1220,17 @@ export class ApiService {
 
         let item = itemSearchResults[0];
         let tempDate = new Date(item.timestamp);
-        let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}.${item.internalExt}`;
+        let filename = `${inspection.name}_${this.utils.getFormattedTime(
+          tempDate
+        )}.${item.internalExt}`;
         const queryString = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
         let blob = null;
         try {
-          blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
+          blob = await this.http
+            .get<Blob>(this.pathAPI + '/' + queryString, {
+              responseType: 'blob' as 'json',
+            })
+            .toPromise();
         } catch {
           alert('An error has occured.');
           throw Error('Unable to get asset.');
@@ -1031,7 +1252,6 @@ export class ApiService {
     } catch {
       alert('An error has occured.');
       throw Error('Unable to generate zip file.');
-
     }
     if (this.isMS) {
       window.navigator.msSaveBlob(content, 'inspection.zip');
@@ -1063,12 +1283,21 @@ export class ApiService {
       'project',
       'stage',
       'title',
-      'type'];
+      'type',
+    ];
     // NB: max 1000 records
     const queryString = `vc?fields=${this.buildValues(fields)}`;
-    return this.http.get<ValuedComponent[]>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<ValuedComponent[]>(
+      `${this.pathAPI}/${queryString}`,
+      {}
+    );
   }
-  getValuedComponentsByProjectId(projectId: String, pageNum: number, pageSize: number, sortBy: string = null): Observable<Object> {
+  getValuedComponentsByProjectId(
+    projectId: String,
+    pageNum: number,
+    pageSize: number,
+    sortBy: string = null
+  ): Observable<Object> {
     const fields = [
       '_id',
       '_schemaName',
@@ -1080,23 +1309,37 @@ export class ApiService {
       'project',
       'stage',
       'title',
-      'type'];
+      'type',
+    ];
 
     let queryString = `vc?projectId=${projectId}`;
-    if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
+    if (pageNum !== null) {
+      queryString += `&pageNum=${pageNum - 1}`;
+    }
+    if (pageSize !== null) {
+      queryString += `&pageSize=${pageSize}`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `&sortBy=${sortBy}`;
+    }
     queryString += `&fields=${this.buildValues(fields)}`;
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
   }
   addVCToProject(vc: any): Observable<ValuedComponent> {
     const queryString = `vc/`;
-    return this.http.post<ValuedComponent>(`${this.pathAPI}/${queryString}`, vc, {});
+    return this.http.post<ValuedComponent>(
+      `${this.pathAPI}/${queryString}`,
+      vc,
+      {}
+    );
   }
   deleteVC(vc: any): Observable<ValuedComponent> {
     const queryString = `vc/${vc._id}`;
-    return this.http.delete<ValuedComponent>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.delete<ValuedComponent>(
+      `${this.pathAPI}/${queryString}`,
+      {}
+    );
   }
 
   //
@@ -1110,33 +1353,55 @@ export class ApiService {
   //
   // Searching
   //
-  searchKeywords(keys: string, schemaName: string, fields: any[], pageNum: number, pageSize: number, projectLegislation: string = null, sortBy: string = null, queryModifier: object = {}, populate = false, filter = {}): Observable<SearchResults[]> {
-    projectLegislation = (projectLegislation === '') ? 'default' : projectLegislation;
+  searchKeywords(
+    keys: string,
+    schemaName: string,
+    fields: any[],
+    pageNum: number,
+    pageSize: number,
+    projectLegislation: string = null,
+    sortBy: string = null,
+    queryModifier: object = {},
+    populate = false,
+    filter = {}
+  ): Observable<SearchResults[]> {
+    projectLegislation =
+      projectLegislation === '' ? 'default' : projectLegislation;
     let queryString = `search?dataset=${schemaName}`;
     if (fields && fields.length > 0) {
-      fields.map(item => {
+      fields.map((item) => {
         queryString += `&${item.name}=${item.value}`;
       });
     }
     if (keys) {
       queryString += `&keywords=${encodeURIComponent(keys)}`;
     }
-    if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
-    if (projectLegislation !== '') { queryString += `&projectLegislation=${projectLegislation}`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
-    if (populate !== null) { queryString += `&populate=${populate}`; }
+    if (pageNum !== null) {
+      queryString += `&pageNum=${pageNum - 1}`;
+    }
+    if (pageSize !== null) {
+      queryString += `&pageSize=${pageSize}`;
+    }
+    if (projectLegislation !== '') {
+      queryString += `&projectLegislation=${projectLegislation}`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `&sortBy=${sortBy}`;
+    }
+    if (populate !== null) {
+      queryString += `&populate=${populate}`;
+    }
     if (queryModifier !== {}) {
-      Object.keys(queryModifier).map(key => {
-        queryModifier[key].split(',').map(item => {
+      Object.keys(queryModifier).map((key) => {
+        queryModifier[key].split(',').map((item) => {
           queryString += `&and[${key}]=${item}`;
         });
       });
     }
     if (filter !== {}) {
       let safeItem;
-      Object.keys(filter).map(key => {
-        filter[key].split(',').map(item => {
+      Object.keys(filter).map((key) => {
+        filter[key].split(',').map((item) => {
           if (item.includes('&')) {
             safeItem = this.utils.encodeString(item, true);
           } else {
@@ -1155,9 +1420,14 @@ export class ApiService {
   //
   // Metrics
   //
-  getMetrics(pageNum: number, pageSize: number, sortBy: string = null): Observable<SearchResults[]> {
+  getMetrics(
+    pageNum: number,
+    pageSize: number,
+    sortBy: string = null
+  ): Observable<SearchResults[]> {
     let queryString = `audit?`;
-    let fields = ['fields',
+    let fields = [
+      'fields',
       'performedBy',
       'deletedBy',
       'updatedBy',
@@ -1167,31 +1437,54 @@ export class ApiService {
       'objId',
       'keywords',
       'timestamp',
-      '_objectSchema'];
+      '_objectSchema',
+    ];
 
-    if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
+    if (pageNum !== null) {
+      queryString += `pageNum=${pageNum - 1}&`;
+    }
+    if (pageSize !== null) {
+      queryString += `pageSize=${pageSize}&`;
+    }
+    if (sortBy !== '' && sortBy !== null) {
+      queryString += `sortBy=${sortBy}&`;
+    }
     queryString += `fields=${this.buildValues(fields)}`;
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // Activity
-  addRecentActivity(recentActivity: RecentActivity): Observable<RecentActivity> {
+  addRecentActivity(
+    recentActivity: RecentActivity
+  ): Observable<RecentActivity> {
     const queryString = `recentActivity/`;
-    return this.http.post<RecentActivity>(`${this.pathAPI}/${queryString}`, recentActivity, {});
+    return this.http.post<RecentActivity>(
+      `${this.pathAPI}/${queryString}`,
+      recentActivity,
+      {}
+    );
   }
 
-  saveRecentActivity(recentActivity: RecentActivity): Observable<RecentActivity> {
+  saveRecentActivity(
+    recentActivity: RecentActivity
+  ): Observable<RecentActivity> {
     const queryString = `recentActivity/${recentActivity._id}`;
-    return this.http.put<RecentActivity>(`${this.pathAPI}/${queryString}`, recentActivity, {});
+    return this.http.put<RecentActivity>(
+      `${this.pathAPI}/${queryString}`,
+      recentActivity,
+      {}
+    );
   }
 
-  deleteRecentActivity(recentActivity: RecentActivity): Observable<RecentActivity> {
+  deleteRecentActivity(
+    recentActivity: RecentActivity
+  ): Observable<RecentActivity> {
     const queryString = `recentActivity/${recentActivity._id}`;
-    return this.http.delete<RecentActivity>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.delete<RecentActivity>(
+      `${this.pathAPI}/${queryString}`,
+      {}
+    );
   }
-
 
   //
   // Users
@@ -1209,21 +1502,16 @@ export class ApiService {
   // Organizations
 
   getOrgsByCompanyType(type: string): Observable<Org[]> {
-    const fields = [
-      'name'
-    ];
+    const fields = ['name'];
 
-    const queryString = `organization?companyType=${type}&sortBy=+name&fields=${this.buildValues(fields)}`;
+    const queryString = `organization?companyType=${type}&sortBy=+name&fields=${this.buildValues(
+      fields
+    )}`;
     return this.http.get<Org[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
   getOrgs(): Observable<Org[]> {
-    const fields = [
-      'displayName',
-      'username',
-      'firstName',
-      'lastName'
-    ];
+    const fields = ['displayName', 'username', 'firstName', 'lastName'];
     const queryString = `organization?fields=${this.buildValues(fields)}`;
     return this.http.get<Org[]>(`${this.pathAPI}/${queryString}`, {});
   }
@@ -1246,19 +1534,32 @@ export class ApiService {
   //
   // Project Notifications
   //
-  saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+  saveNotificationProject(
+    projectNotification: ProjectNotification,
+    publish: boolean
+  ): Observable<ProjectNotification> {
     let queryString = `projectNotification/${projectNotification._id}`;
     if (publish !== null) {
       queryString += `?publish=${publish}`;
     }
-    return this.http.put<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
+    return this.http.put<ProjectNotification>(
+      `${this.pathAPI}/${queryString}`,
+      projectNotification,
+      {}
+    );
   }
 
-  addProjectNotification(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
+  addProjectNotification(
+    projectNotification: ProjectNotification,
+    publish: boolean
+  ): Observable<ProjectNotification> {
     const queryString = `projectNotification?publish=${publish}`;
-    return this.http.post<ProjectNotification>(`${this.pathAPI}/${queryString}`, projectNotification, {});
+    return this.http.post<ProjectNotification>(
+      `${this.pathAPI}/${queryString}`,
+      projectNotification,
+      {}
+    );
   }
-
 
   //
   // Local helpers
@@ -1270,5 +1571,23 @@ export class ApiService {
     });
     // trim the last |
     return values.replace(/\|$/, '');
+  }
+
+  public async addFavorite(
+    obj: Document | Project,
+    type: string
+  ): Promise<void> {
+    const payload = { objId: obj._id, type: type };
+    const queryString = `favorites`;
+    return this.http
+      .post<void>(`${this.pathAPI}/${queryString}`, payload, {})
+      .toPromise();
+  }
+
+  public async removeFavorite(obj: Document | Project): Promise<void> {
+    const queryString = `favorites/${obj._id}`;
+    return this.http
+      .delete<void>(`${this.pathAPI}/${queryString}`, {})
+      .toPromise();
   }
 }

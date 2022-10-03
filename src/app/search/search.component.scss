@@ -306,6 +306,7 @@ $sr-table-row-bg: #f7f8fa;
 
 .card-header {
   display: flex;
+  justify-content: space-between;
 
   .project-name {
     padding-top: 4px;
@@ -339,6 +340,10 @@ $sr-table-row-bg: #f7f8fa;
     background: none;
     color: #fcba18;
     border-color: #fcba18;
+  }
+  .right-wrapper {
+    display: flex;
+    gap: 1rem;
   }
 }
 
