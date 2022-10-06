@@ -18,7 +18,7 @@ export class FavouriteService {
     this.searchService.getSearchResults('', 'Favourite', fields, pageNum, pageSize)
       .subscribe(res => {
         this.favourites.next(res[0].data.favourites);
-      })
+      });
 
   }
 

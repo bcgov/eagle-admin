@@ -130,7 +130,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       value: '',
       nosort: true,
       width: '5%'
-
     }
   ];
 

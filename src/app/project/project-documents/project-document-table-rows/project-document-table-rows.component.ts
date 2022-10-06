@@ -130,7 +130,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
       .then(() => {
         this.updateFavourites.emit({data: {type}, label: 'Update Favourite'});
       }).catch((err) => {
-        console.log('error adding favourite', err)
+        console.log('error adding favourite', err);
       });
   }
 
@@ -139,7 +139,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
       .then(() => {
         this.updateFavourites.emit({data: {type: 'Document'}, label: 'Update Favourite'});
       }).catch((err) => {
-        console.log('error removing favourite', err)
+        console.log('error removing favourite', err);
       });
   }
 }

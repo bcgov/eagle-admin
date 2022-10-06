@@ -130,14 +130,14 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     }
   }
 
-  paramsToCheckboxFilters(params, name, map) {
+  paramsToCheckboxFilters(params, name, dataMap) {
     delete this.filterForAPI[name];
 
     if (params[name]) {
 
       const values = params[name].split(',');
       let apiValues = values.map(value => {
-        return map && map[value] ? map[value] : value;
+        return dataMap && dataMap[value] ? dataMap[value] : value;
       });
       if (apiValues.length) {
         this.filterForAPI[name] = apiValues.join(',');
