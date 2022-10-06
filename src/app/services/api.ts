@@ -1573,19 +1573,19 @@ export class ApiService {
     return values.replace(/\|$/, '');
   }
 
-  public async addFavorite(
+  public async addFavourite(
     obj: Document | Project,
     type: string
   ): Promise<void> {
     const payload = { objId: obj._id, type: type };
-    const queryString = `favorites`;
+    const queryString = `favourites`;
     return this.http
       .post<void>(`${this.pathAPI}/${queryString}`, payload, {})
       .toPromise();
   }
 
-  public async removeFavorite(obj: Document | Project): Promise<void> {
-    const queryString = `favorites/${obj._id}`;
+  public async removeFavourite(obj: Document | Project): Promise<void> {
+    const queryString = `favourites/${obj._id}`;
     return this.http
       .delete<void>(`${this.pathAPI}/${queryString}`, {})
       .toPromise();

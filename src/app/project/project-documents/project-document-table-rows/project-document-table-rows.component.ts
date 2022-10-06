@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
+import { FavouriteService } from 'app/services/favourite.service';
+import { ApiService } from 'app/services/api';
 
 @Component({
   selector: 'tbody[app-document-table-rows]',
@@ -18,6 +20,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  @Output() updateFavourites: EventEmitter<any> = new EventEmitter<any>();
 
   public documents: any;
   public paginationData: any;
@@ -31,6 +34,8 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
     private documentService: DocumentService,
     private _changeDetectionRef: ChangeDetectorRef,
     private storageService:  StorageService,
+    public apiService: ApiService,
+    public favouriteService: FavouriteService,
   ) { }
 
   ngOnInit() {
@@ -118,5 +123,23 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
       this.storageService.state.labels = selectedDocs[0].labels;
     }
     this.router.navigate(['p', document.project._id, 'project-documents', 'edit']);
+  }
+
+  public addToFavourite(item, type: string = 'Document') {
+    this.apiService.addFavourite(item, type)
+      .then(() => {
+        this.updateFavourites.emit({data: {type}, label: 'Update Favourite'});
+      }).catch((err) => {
+        console.log('error adding favourite', err);
+      });
+  }
+
+  public removeFavourite(item) {
+    this.apiService.removeFavourite(item)
+      .then(() => {
+        this.updateFavourites.emit({data: {type: 'Document'}, label: 'Update Favourite'});
+      }).catch((err) => {
+        console.log('error removing favourite', err);
+      });
   }
 }
