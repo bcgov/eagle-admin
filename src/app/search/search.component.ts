@@ -655,7 +655,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   updateFavourites() {
-    this.searchService.getSearchResults('', 'Favourite', [{name: 'type', value: this.terms.dataset}, {name: 'field', value: '_id'}], null, 1000)
+    this.searchService.getSearchResults('', 'Favourite', [{name: 'type', value: this.terms.dataset}], null, 1000)
     .subscribe((res: any) => {
       if (res && res.length > 0) {
         this.favourites = res[0].data.favourites;

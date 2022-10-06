@@ -25,6 +25,7 @@ import { StorageService } from 'app/services/storage.service';
 
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { Constants } from 'app/shared/utils/constants';
+import { FavouriteService } from 'app/services/favourite.service';
 
 
 class ProjectFilterObject {
@@ -39,6 +40,7 @@ class ProjectFilterObject {
     public CEAAInvolvement: Array<string> = [],
     public vc: Array<object> = [],
     public projectPhase: object = {},
+    public favouritesOnly: object = {includeFavouritesOnly: false},
   ) {}
 }
 
@@ -69,6 +71,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   public filterForUI: ProjectFilterObject = new ProjectFilterObject();
 
   public showAdvancedSearch = true;
+  public favourites: Array<Project> = [];
+
 
   public showFilters: object = {
     type: false,
@@ -120,6 +124,13 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       name: 'Documents',
       nosort: true,
       width: '5%'
+    },
+    {
+      name: 'Favourite',
+      value: '',
+      nosort: true,
+      width: '5%'
+
     }
   ];
 
@@ -147,6 +158,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     private searchService: SearchService,
     private storageService: StorageService,
     private configService: ConfigService,
+    public favouriteService: FavouriteService,
     private _changeDetectionRef: ChangeDetectorRef
   ) {}
 
@@ -201,6 +213,8 @@ export class ProjectListComponent implements OnInit, OnDestroy {
           }
           this.setRowData();
           this.loading = false;
+          this.onUpdateFavourites();
+
           this._changeDetectionRef.detectChanges();
         } else {
           alert('Uh-oh, couldn\'t load topics');
@@ -290,6 +304,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
     this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
     this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
+    this.paramsToCheckboxFilters(params, 'favouritesOnly', this.filterForUI.favouritesOnly);
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -342,6 +357,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.collectionFilterToParams(params, 'pcp', 'code');
     this.collectionFilterToParams(params, 'type', 'name');
     this.collectionFilterToParams(params, 'projectPhase', '_id');
+    this.checkboxFilterToParams(params, 'favouritesOnly');
 
     this.dateFilterToParams(params, 'decisionDateStart');
     this.dateFilterToParams(params, 'decisionDateEnd');
@@ -582,5 +598,9 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  onUpdateFavourites() {
+    this.favouriteService.fetchData([{name: 'type', value: 'Project'}], null, 1000);
   }
 }

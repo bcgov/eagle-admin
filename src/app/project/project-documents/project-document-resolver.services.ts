@@ -130,11 +130,28 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     }
   }
 
+  paramsToCheckboxFilters(params, name, map) {
+    delete this.filterForAPI[name];
+
+    if (params[name]) {
+
+      const values = params[name].split(',');
+      let apiValues = values.map(value => {
+        return map && map[value] ? map[value] : value;
+      });
+      if (apiValues.length) {
+        this.filterForAPI[name] = apiValues.join(',');
+      }
+    }
+  }
+
   setFilterFromParams(params, milestones: any[], authors: any[], types: any[], projectPhases: any[]) {
     this.paramsToCollectionFilter(params, 'milestone', milestones, '_id');
     this.paramsToCollectionFilter(params, 'documentAuthorType', authors, '_id');
     this.paramsToCollectionFilter(params, 'type', types, '_id');
     this.paramsToCollectionFilter(params, 'projectPhase', projectPhases, '_id');
+    this.paramsToCheckboxFilters(params, 'favouritesOnly', params.favouritesOnly);
+
 
     this.paramsToDateFilter(params, 'datePostedStart');
     this.paramsToDateFilter(params, 'datePostedEnd');

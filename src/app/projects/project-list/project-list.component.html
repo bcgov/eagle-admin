@@ -59,6 +59,12 @@
                                             Public Comment Period<span
                                                 *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
                                         </button>
+                                        <button type="button" (click)="filterForUI.favouritesOnly.includeFavouritesOnly = !filterForUI.favouritesOnly.includeFavouritesOnly;"
+                                        [ngClass]="{'btn': true, 'type-btn': true,
+                                          'btn-dark': filterForUI.favouritesOnly.includeFavouritesOnly,
+                                          'btn-outline-dark': !filterForUI.favouritesOnly.includeFavouritesOnly}">
+                                          Favourites Only
+                                      </button>
                                         <button type="button" (click)="toggleFilter('more');" [ngClass]="{'btn': true, 'more-btn': true,
                         'btn-dark': showFilters.more,
                         'btn-secondary': !showFilters.more && numFilters.more > 0,
@@ -333,7 +339,8 @@
                     <!-- <p>Total Projects: {{tableParams.totalListItems}}</p> -->
                     <div *ngIf="projects.length > 0">
                         <app-table-template [columns]="projectTableColumns" [data]="projectTableData"
-                            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='getPaginatedProjects($event)'>
+                            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='getPaginatedProjects($event)' 
+                            (updateFavourites)="onUpdateFavourites($event)">
                         </app-table-template>
                     </div>
                 </section>
