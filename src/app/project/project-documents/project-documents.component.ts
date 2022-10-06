@@ -21,6 +21,7 @@ import { TableDocumentTemplateUtils } from 'app/shared/utils/table-document-temp
 import { Utils } from 'app/shared/utils/utils';
 import { Constants } from 'app/shared/utils/constants';
 import { ConfigService } from 'app/services/config.service';
+import { FavouriteService } from 'app/services/favourite.service';
 
 class DocumentFilterObject {
   constructor(
@@ -29,7 +30,8 @@ class DocumentFilterObject {
     public datePostedEnd: object = {},
     public type: Array<string> = [],
     public documentAuthorType: Array<string> = [],
-    public projectPhase: Array<string> = []
+    public projectPhase: Array<string> = [],
+    public favouritesOnly: object = {includeFavouritesOnly: false},
   ) {}
 }
 
@@ -134,6 +136,13 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       name: 'EditDoc',
       nosort: true,
       width: '5%'
+    },
+    {
+      name: 'Favourite',
+      value: '',
+      nosort: true,
+      width: '5%'
+
     }
   ];
 
@@ -160,7 +169,8 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     private configService: ConfigService,
     private storageService:  StorageService,
     private tableDocumentTemplateUtils: TableDocumentTemplateUtils,
-    private utils: Utils
+    private utils: Utils,
+    public favouriteService: FavouriteService,
   ) {}
 
   ngOnInit() {
@@ -246,7 +256,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             this.tableParams.totalListItemsUncategorized = 0;
             this.uncategorizedDocs = [];
           }
-
+          this.onUpdateFavourites();
           this.setRowData();
 
           this.loading = false;
@@ -845,11 +855,32 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  paramsToCheckboxFilters(params, name, map) {
+    this.filterForUI[name] = {};
+    delete this.filterForURL[name];
+    delete this.filterForAPI[name];
+
+    if (params[name]) {
+      this.filterForURL[name] = params[name];
+
+      const values = params[name].split(',');
+      let apiValues = [];
+      values.forEach(value => {
+        this.filterForUI[name][value] = true;
+        apiValues.push(map && map[value] ? map[value] : value);
+      });
+      if (apiValues.length) {
+        this.filterForAPI[name] = apiValues.join(',');
+      }
+    }
+  }
+
   setFiltersFromParams(params) {
     this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
     this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id' );
     this.paramsToCollectionFilters(params, 'type', this.types, '_id');
     this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
+    this.paramsToCheckboxFilters(params, 'favouritesOnly', this.filterForUI.favouritesOnly);
 
     this.paramsToDateFilters(params, 'datePostedStart');
     this.paramsToDateFilters(params, 'datePostedEnd');
@@ -879,11 +910,24 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
+  checkboxFilterToParams(params, name) {
+    let keys = [];
+    Object.keys(this.filterForUI[name]).forEach(key => {
+      if (this.filterForUI[name][key]) {
+        keys.push(key);
+      }
+    });
+    if (keys.length) {
+      params[name] = keys.join(',');
+    }
+  }
+
   setParamsFromFilters(params) {
     this.collectionFilterToParams(params, 'milestone', '_id');
     this.collectionFilterToParams(params, 'documentAuthorType', '_id');
     this.collectionFilterToParams(params, 'type', '_id');
     this.collectionFilterToParams(params, 'projectPhase', '_id');
+    this.checkboxFilterToParams(params, 'favouritesOnly');
 
     this.dateFilterToParams(params, 'datePostedStart');
     this.dateFilterToParams(params, 'datePostedEnd');
@@ -1138,5 +1182,27 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
+  }
+
+  public addToFavourite(object: Document) {
+    this.api.addFavourite(object, 'Document')
+      .then(() => {
+        this.onUpdateFavourites();
+      }).catch((err) => {
+        console.log('error adding favourite', err);
+      });
+  }
+
+  public removeFavourite(object: | Document) {
+    this.api.removeFavourite(object)
+      .then(() => {
+        this.onUpdateFavourites();
+      }).catch((err) => {
+        console.log('error removing favourite', err);
+      });
+  }
+
+  onUpdateFavourites() {
+    this.favouriteService.fetchData([{name: 'type', value: 'Document'}], null, 1000);
   }
 }

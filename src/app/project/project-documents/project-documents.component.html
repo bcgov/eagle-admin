@@ -97,6 +97,12 @@
                             Project Phase<span
                                 *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
                         </button>
+                        <button type="button" (click)="filterForUI.favouritesOnly.includeFavouritesOnly = !filterForUI.favouritesOnly.includeFavouritesOnly;"
+                          [ngClass]="{'btn': true, 'type-btn': true,
+                            'btn-dark': filterForUI.favouritesOnly.includeFavouritesOnly,
+                            'btn-outline-dark': !filterForUI.favouritesOnly.includeFavouritesOnly}">
+                            Favourites Only
+                        </button>
                         <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
                     </div>
                     <div
@@ -311,7 +317,8 @@
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
                                 (onColumnSort)='setColumnSort(constants.documentTypes.CATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
-                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll')">
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll')"
+                                (updateFavourites)="onUpdateFavourites($event)">
                             </app-table-template>
                         </ng-template>
                     </ngb-tab>
@@ -334,7 +341,8 @@
                             <app-table-template *ngIf="!loading && this.tableParams.totalListItemsUncategorized !== 0 && uncategorizedDocumentTableData && uncategorizedDocumentTableData.data.length"
                                 (checkboxChange)='checkChange($event)' [columns]="documentTableColumns" [data]="uncategorizedDocumentTableData"
                                 (onColumnSort)='setColumnSort(constants.documentTypes.UNCATEGORIZED, $event)' (onSelectedRow)='updateSelectedRow(constants.documentTypes.UNCATEGORIZED, $event)'
-                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll', $event)">
+                                (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.UNCATEGORIZED, $event)' (selectAllClicked)="selectAction('selectAll', $event)"
+                                (updateFavourites)="onUpdateFavourites($event)">
                             </app-table-template>
                         </ng-template>
                     </ngb-tab>

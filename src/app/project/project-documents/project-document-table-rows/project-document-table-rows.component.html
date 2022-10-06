@@ -33,4 +33,29 @@
       </p>
     </a>
   </td>
+  <td
+    *ngIf="favouriteService.isFavourite(document._id)"
+    data-label="Favourite"
+    (click)="removeFavourite(document)"
+    class="col-1 d-flex justify-content-center overflow-visible"
+  >
+    <span
+      class="material-icons"
+      tabindex="0"
+      [attr.aria-label]="'Remove favourite button'"
+      >favorite</span
+    >
+  </td>
+  <td
+    *ngIf="!favouriteService.isFavourite(document._id)"
+    data-label="Favourite"
+    (click)="addToFavourite(document)"
+    class="col-1 d-flex justify-content-center overflow-visible"
+  >
+    <span
+      class="material-icons"
+      tabindex="0"
+      [attr.aria-label]="'Add to favourite button'"
+      >favorite_border</span>
+  </td>
 </tr>
