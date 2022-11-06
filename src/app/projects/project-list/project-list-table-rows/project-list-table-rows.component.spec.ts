@@ -5,8 +5,6 @@ import { Router } from '@angular/router';
 import { AjaxDefaultData } from 'app/shared/utils/mock-data';
 import { ProjectListTableRowsComponent } from './project-list-table-rows.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
-import { ApiService } from 'app/services/api';
-import { FavouriteService } from 'app/services/favourite.service';
 
 
 describe('ProjectListTableRowsComponent', () => {
@@ -14,14 +12,6 @@ describe('ProjectListTableRowsComponent', () => {
   let fixture: ComponentFixture<ProjectListTableRowsComponent>;
 
   const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-
-  const mockApiService = jasmine.createSpyObj('ApiService', [
-    'addFavourite', 'removeFavourite'
-  ]);
-
-  const mockFavouriteService = jasmine.createSpyObj('FavouriteService', [
-    'isFavourite',
-  ]);
 
   const paginationData = {
     'currentPage': 1,
@@ -61,18 +51,7 @@ describe('ProjectListTableRowsComponent', () => {
     {
       name: 'Decision',
       value: 'eacDecision',
-      width: '10%'
-    },
-    {
-      name: 'Documents',
-      nosort: true,
-      width: '5%'
-    },
-    {
-      name: 'Favourite',
-      value: '',
-      nosort: true,
-      width: '5%'
+      width: '15%'
     }
   ];
 
@@ -95,9 +74,7 @@ describe('ProjectListTableRowsComponent', () => {
         ProjectListTableRowsComponent
       ],
       providers: [
-        { provide: Router, useValue: routerSpy },
-        { provide: ApiService, useValue: mockApiService },
-        { provide: FavouriteService, useValue: mockFavouriteService },
+        { provide: Router, useValue: routerSpy }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     })
