@@ -14,6 +14,9 @@
     "lint": "ng lint --format=stylish",
     "e2e": "ng e2e"
   },
+  "pre-push": [
+    "lint"
+  ],
   "private": true,
   "dependencies": {
     "@angular/animations": "~8.2.14",

@@ -21,7 +21,6 @@ import { SearchService } from 'app/services/search.service';
 
 import { Constants } from 'app/shared/utils/constants';
 import { ConfigService } from 'app/services/config.service';
-import { Project } from 'app/models/project';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -43,8 +42,7 @@ class SearchFilterObject {
     public docType: Array<string> = [],
     public documentAuthorType: Array<string> = [],
     // both
-    public projectPhase: Array<string> = [],
-    public favouritesOnly: object = {includeFavouritesOnly: false},
+    public projectPhase: Array<string> = []
   ) { }
 }
 
@@ -87,8 +85,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     date: false,
     documentAuthorType: false,
     docType: false,
-    projectPhase: false,
-    favouritesOnly: false,
+    projectPhase: false
   };
 
   public numFilters: object = {
@@ -100,8 +97,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     date: 0,
     documentAuthorType: 0,
     docType: 0,
-    projectPhase: 0,
-    favouritesOnly: 0,
+    projectPhase: 0
   };
 
   public terms = new SearchTerms();
@@ -121,7 +117,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   private togglingOpen = '';
 
   public pageSizeArray: number[];
-  public favourites: Array<Document|Project> = [];
 
   // These values should be moved into Lists instead of being hard-coded all over the place
 
@@ -207,11 +202,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.terms.keywords = params.keywords || null;
         this.terms.dataset = params.dataset || 'Document';
 
-
         this.setFiltersFromParams(params);
 
         this.updateCounts();
-        this.updateFavourites();
 
         this.keywords = this.terms.keywords;
         this.hadFilter = this.hasFilter();
@@ -290,11 +283,10 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.loading = false;
         this.searching = false;
         this.ranSearch = true;
-
+        this._changeDetectionRef.detectChanges();
         const pageSizeTemp = [10, 25, 50, 100, this.count];
         this.pageSizeArray = pageSizeTemp.filter(function(el: number) { return el >= 10; });
         this.pageSizeArray.sort(function(a: number, b: number) { return a - b; });
-        this._changeDetectionRef.detectChanges();
       }, error => {
         console.log('error =', error);
 
@@ -323,7 +315,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   handleRadioChange(value) {
     this.terms.dataset = value;
-    this.updateFavourites();
 
     this.hideAllFilters();
     this.clearAllFilters();
@@ -430,7 +421,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
       this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
       this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
-      this.paramsToCheckboxFilters(params, 'favouritesOnly', this.filterForUI.favouritesOnly);
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -440,7 +430,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
       this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
       this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
-      this.paramsToCheckboxFilters(params, 'favouritesOnly', this.filterForUI.favouritesOnly);
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
@@ -462,7 +451,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   collectionFilterToParams(params, name, identifyBy) {
     if (this.filterForUI[name].length) {
       const values = this.filterForUI[name].map(record => { return record[identifyBy]; });
-      params[(name === 'docType' || name === 'projectType') ? 'type' : name] = typeof values === 'boolean' ? values : values.join(',');
+      params[(name === 'docType' || name === 'projectType') ? 'type' : name] = values.join(',');
     }
   }
 
@@ -487,7 +476,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.collectionFilterToParams(params, 'vc', '_id');
       this.collectionFilterToParams(params, 'projectType', 'name');
       this.collectionFilterToParams(params, 'projectPhase', '_id');
-      this.checkboxFilterToParams(params, 'favouritesOnly');
 
       this.dateFilterToParams(params, 'decisionDateStart');
       this.dateFilterToParams(params, 'decisionDateEnd');
@@ -496,7 +484,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.collectionFilterToParams(params, 'documentAuthorType', '_id');
       this.collectionFilterToParams(params, 'docType', '_id');
       this.collectionFilterToParams(params, 'projectPhase', '_id');
-      this.checkboxFilterToParams(params, 'favouritesOnly');
 
       this.dateFilterToParams(params, 'datePostedStart');
       this.dateFilterToParams(params, 'datePostedEnd');
@@ -634,37 +621,5 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
     this.ngUnsubscribe.next();
     this.ngUnsubscribe.complete();
-  }
-
-  public addToFavourite(object: Document | Project, type: string) {
-    this.api.addFavourite(object, type)
-      .then(() => {
-        this.updateFavourites();
-      }).catch((err) => {
-        console.log('error adding favourite', err);
-      });
-  }
-
-  public removeFavourite(object: Document | Project) {
-    this.api.removeFavourite(object)
-      .then(() => {
-        this.updateFavourites();
-      }).catch((err) => {
-        console.log('error removing favourite', err);
-      });
-  }
-
-  updateFavourites() {
-    this.searchService.getSearchResults('', 'Favourite', [{name: 'type', value: this.terms.dataset}], null, 1000)
-    .subscribe((res: any) => {
-      if (res && res.length > 0) {
-        this.favourites = res[0].data.favourites;
-      }
-      this._changeDetectionRef.detectChanges();
-    }, error => {
-      console.log('error =', error);
-    }, () => { // onCompleted
-      // update variables on completion
-    });
   }
 }
