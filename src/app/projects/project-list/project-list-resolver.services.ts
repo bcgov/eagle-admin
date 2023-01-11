@@ -188,7 +188,6 @@ export class ProjectListResolver implements Resolve<Object> {
     this.paramsToCheckboxFilters(params, 'type', this.TYPE_MAP);
     this.paramsToCheckboxFilters(params, 'eacDecision', this.EAC_DECISIONS_MAP);
     this.paramsToCheckboxFilters(params, 'pcp', this.PCP_MAP);
-    this.paramsToCheckboxFilters(params, 'favouritesOnly', params.favouritesOnly);
 
     this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
     this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'code');

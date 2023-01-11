@@ -1,10 +1,10 @@
-<tr title="{{document.description}}"
+<tr
   *ngFor="let document of documents"
   class="clickable-row" [className]="(!activeLegislationYear || document.legislation === activeLegislationYear) ? ' active' : ' inactive'">
   <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
     <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox' [disabled]="(activeLegislationYear && document.legislation !== activeLegislationYear)">
   </td>
-  <td data-label="Name" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width"><a href="p/{{document.project._id}}/project-documents/detail/{{document._id}}"> {{document.displayName}} </a></td>
+  <td data-label="Name" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width"><a href="/admin/p/{{document.project._id}}/project-documents/detail/{{document._id}}"> {{document.displayName}} </a></td>
   <td data-label="Status" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
     <p class="card-text publish-state">
       <i class="material-icons">
@@ -23,39 +23,5 @@
   <td data-label="Feature" (click)="favoriteDocument(document)" scope="row" [style.width]="!useSmallTable && columns[7].width">
     <i *ngIf="document.isFeatured === true" class="material-icons featured-star" aria-hidden="true">star</i>
     <i *ngIf="document.isFeatured !== true" class="material-icons un-featured-star" aria-hidden="true">star_border</i>
-  </td>
-  <td data-label="EditDoc" scope="row" [style.width]="!useSmallTable && columns[8].width">
-      <a (click)="editDocument(document)">
-      <p class="card-text">
-        <span class="material-icons">
-          edit
-          </span>
-      </p>
-    </a>
-  </td>
-  <td
-    *ngIf="favouriteService.isFavourite(document._id)"
-    data-label="Favourite"
-    (click)="removeFavourite(document)"
-    class="col-1 d-flex justify-content-center overflow-visible"
-  >
-    <span
-      class="material-icons"
-      tabindex="0"
-      [attr.aria-label]="'Remove favourite button'"
-      >favorite</span
-    >
-  </td>
-  <td
-    *ngIf="!favouriteService.isFavourite(document._id)"
-    data-label="Favourite"
-    (click)="addToFavourite(document)"
-    class="col-1 d-flex justify-content-center overflow-visible"
-  >
-    <span
-      class="material-icons"
-      tabindex="0"
-      [attr.aria-label]="'Add to favourite button'"
-      >favorite_border</span>
   </td>
 </tr>

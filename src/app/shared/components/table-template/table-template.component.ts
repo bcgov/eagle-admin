@@ -25,7 +25,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @Output() onSelectedRow: EventEmitter<any> = new EventEmitter();
   @Output() onColumnSort: EventEmitter<any> = new EventEmitter();
   @Output() selectAllClicked: EventEmitter<any> = new EventEmitter();
-  @Output() updateFavourites: EventEmitter<any> = new EventEmitter();
 
   public column: string = null;
   public interval: any;
@@ -91,11 +90,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
         this.onItemClicked.emit(msg);
       });
     }
-    if (componentRef.instance.updateFavourites) {
-      componentRef.instance.updateFavourites.subscribe(msg => {
-        this.updateFavourites.emit(msg);
-      });
-    }
   }
 
   updatePageNumber(pageNum) {
@@ -145,9 +139,5 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
       this.selectAll = itemCount === selectedCount;
     }
-  }
-
-  onUpdateFavourites(data) {
-    this.updateFavourites.emit(data);
   }
 }
