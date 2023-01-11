@@ -92,7 +92,7 @@ export class KeycloakService {
         };
 
         // Initialize.
-        self.keycloakAuth.init({initOptions: {loadUserProfileInStartUp: true}})
+        self.keycloakAuth.init({})
           .success((auth) => {
             // console.log('KC Refresh Success?:', self.keycloakAuth.authServerUrl);
             console.log('KC Success:', auth);
@@ -127,19 +127,7 @@ export class KeycloakService {
       return false;
     }
   }
-  /**
-   * UserProfile is preloaded during the keycloak initilization
-   * Returns the logged in users firstname
-   * @returns logged in user's firstname
-   */
-  getFirstName() {
-    const self = this;
-    return new Promise((resolve, reject) => {
-      self.keycloakAuth.loadUserProfile()
-        .success(userProfile => resolve(userProfile.firstName))
-        .error(err => reject(err));
-    });
-  }
+
   /**
    * Returns the current keycloak auth token.
    *
