@@ -60,13 +60,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) {
     router.events
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(async() => {
+      .subscribe(() => {
         const token = this.keycloakService.getToken();
-        const firstname = await this.keycloakService.getFirstName();
         // TODO: Change this to observe the change in the _api.token
         if (token) {
           const jwt = new JwtUtil().decodeToken(token);
-          this.welcomeMsg = jwt ? ('Hello ' + firstname) : 'Login';
+          this.welcomeMsg = jwt ? ('Hello ' + jwt.preferred_username) : 'Login';
           this.jwt = jwt;
         } else {
           this.welcomeMsg = 'Login';
