@@ -6,12 +6,16 @@ import { CommentPeriod } from 'app/models/commentPeriod';
 
 import { CommentPeriodsTableRowsComponent } from 'app/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
 
+import { ApiService } from 'app/services/api';
 import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { StorageService } from 'app/services/storage.service';
 
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+
+// This enables the functionality to add comment periods on the MET site
+const ADD_TO_MET = false;
 
 @Component({
   selector: 'app-comment-periods',
@@ -65,6 +69,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
 
   constructor(
+    private api: ApiService,
     private _changeDetectionRef: ChangeDetectorRef,
     private commentPeriodService: CommentPeriodService,
     private route: ActivatedRoute,
@@ -141,6 +146,8 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
           dateStarted: commentPeriod.dateStarted,
           dateCompleted: commentPeriod.dateCompleted,
           daysRemaining: commentPeriod.daysRemaining,
+          isMet: commentPeriod.isMet,
+          metURL: commentPeriod.metURL,
           read: isPublished,
           // TODO: Figure out pending, deferred, published, rejected
           // commmentData:
@@ -178,7 +185,17 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
   public addCommentPeriod() {
     this.storageService.state.currentProject = this.currentProject;
-    this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
+
+    if (ADD_TO_MET) {
+      const metURL = this.api.env === 'local' || this.api.env === 'dev'
+        ? 'https://dev.engage.eao.gov.bc.ca/'
+        : this.api.env === 'test'
+        ? 'https://test.engage.eao.gov.bc.ca/'
+        : 'https://engage.eao.gov.bc.ca/';
+      window.open(`${metURL}?project_id=${this.currentProject.data._id}`, '_blank');
+    } else {
+      this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
+    }
   }
 
   ngOnDestroy() {

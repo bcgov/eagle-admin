@@ -435,7 +435,9 @@ export class ApiService {
     const fields = [
       'project',
       'dateStarted',
-      'dateCompleted'
+      'dateCompleted',
+      'isMet',
+      'metURL',
     ];
 
     let queryString = `commentperiod?&project=${projId}&`;
