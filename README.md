@@ -67,5 +67,3 @@ For dev, test, and production builds on OpenShift/Jenkins see [openshift/README.
 ## How to Contribute
 
 Feel free to create pull requests from the default "develop" branch, click here to create one automatically: <https://github.com/bcgov/eagle-admin/pull/new/develop>
-
-
