@@ -121,11 +121,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
+    this.tableParams.sortBy = (this.tableParams.sortBy.startsWith('+') ? '-' : '+') + column;
     this.getPaginatedComments(this.tableParams.currentPage);
   }
 
@@ -189,9 +185,10 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     if (ADD_TO_MET) {
       const metURL = this.api.env === 'local' || this.api.env === 'dev'
         ? 'https://dev.engage.eao.gov.bc.ca/'
-        : this.api.env === 'test'
-        ? 'https://test.engage.eao.gov.bc.ca/'
-        : 'https://engage.eao.gov.bc.ca/';
+        : (this.api.env === 'test'
+          ? 'https://test.engage.eao.gov.bc.ca/'
+          : 'https://engage.eao.gov.bc.ca/'
+        );
       window.open(`${metURL}?project_id=${this.currentProject.data._id}`, '_blank');
     } else {
       this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
