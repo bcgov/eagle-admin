@@ -22,9 +22,11 @@ export class CommentPeriod {
   informationLabel: String;
   instructions: String;
   isClassified: Boolean;
+  isMet: boolean;
   isPublished: Boolean;
   isResolved: Boolean;
   isVetted: String;
+  metURL: string;
   milestone: String;
   openCommentPeriod: String;
   openHouses: Array<Object>;
@@ -76,9 +78,11 @@ export class CommentPeriod {
     this.informationLabel = obj && obj.informationLabel || null;
     this.instructions = obj && obj.instructions || null;
     this.isClassified = obj && obj.isClassified || null;
+    this.isMet = obj && obj.isMet || null;
     this.isPublished = obj && obj.isPublished || null;
     this.isResolved = obj && obj.isResolved || null;
     this.isVetted = obj && obj.isVetted || null;
+    this.metURL = obj && obj.metURL || null;
     this.milestone = obj && obj.milestone || null;
     this.openHouses = obj && obj.openHouses || null;
     this.periodType = obj && obj.periodType || null;

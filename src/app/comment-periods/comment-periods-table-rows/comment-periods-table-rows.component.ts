@@ -34,6 +34,10 @@ export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent 
     }
 
     goToItem(commentPeriod) {
-        this.router.navigate([`${this.baseRouteUrl}/${commentPeriod.project}/cp/${commentPeriod._id}/comment-period-details`]);
+        if (commentPeriod.isMet && commentPeriod.metURL) {
+            window.open(commentPeriod.metURL, '_blank');
+        } else {
+            this.router.navigate([`${this.baseRouteUrl}/${commentPeriod.project}/cp/${commentPeriod._id}/comment-period-details`]);
+        }
     }
 }

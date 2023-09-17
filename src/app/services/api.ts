@@ -57,12 +57,11 @@ export class ApiService {
     // this.jwtHelper = new JwtHelperService();
     const currentUser = JSON.parse(window.localStorage.getItem('currentUser'));
     this.token = currentUser && currentUser.token;
-    this.isMS = window.navigator.msSaveOrOpenBlob ? true : false;
+    this.isMS = !!window.navigator.msSaveOrOpenBlob;
 
     this.bannerColour = this.configService.config['BANNER_COLOUR'];
     this.env     = this.configService.config['ENVIRONMENT'];
-    this.pathAPI = this.configService.config['API_LOCATION']
-                   + this.configService.config['API_PATH'];
+    this.pathAPI = this.configService.config['API_LOCATION'] + this.configService.config['API_PATH'];
   }
 
   handleError(error: any): Observable<never> {
@@ -435,7 +434,9 @@ export class ApiService {
     const fields = [
       'project',
       'dateStarted',
-      'dateCompleted'
+      'dateCompleted',
+      'isMet',
+      'metURL',
     ];
 
     let queryString = `commentperiod?&project=${projId}&`;
@@ -655,11 +656,9 @@ export class ApiService {
     if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
     if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
     if (count !== null) { queryString += `&count=${count}`; }
-    if (filter !== {}) {
-      Object.keys(filter).forEach(key => {
-        queryString += `&${key}=${filter[key]}`;
-      });
-    }
+    Object.keys(filter).forEach(key => {
+      queryString += `&${key}=${filter[key]}`;
+    });
     queryString += `&fields=${this.buildValues(fields)}`;
 
     return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
@@ -1126,26 +1125,22 @@ export class ApiService {
     if (projectLegislation !== '') { queryString += `&projectLegislation=${projectLegislation}`; }
     if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
     if (populate !== null) { queryString += `&populate=${populate}`; }
-    if (queryModifier !== {}) {
-      Object.keys(queryModifier).map(key => {
-        queryModifier[key].split(',').map(item => {
-          queryString += `&and[${key}]=${item}`;
-        });
+    Object.keys(queryModifier).map(key => {
+      queryModifier[key].split(',').map(item => {
+        queryString += `&and[${key}]=${item}`;
       });
-    }
-    if (filter !== {}) {
-      let safeItem;
-      Object.keys(filter).map(key => {
-        filter[key].split(',').map(item => {
-          if (item.includes('&')) {
-            safeItem = this.utils.encodeString(item, true);
-          } else {
-            safeItem = item;
-          }
-          queryString += `&and[${key}]=${safeItem}`;
-        });
+    });
+    let safeItem;
+    Object.keys(filter).map(key => {
+      filter[key].split(',').map(item => {
+        if (item.includes('&')) {
+          safeItem = this.utils.encodeString(item, true);
+        } else {
+          safeItem = item;
+        }
+        queryString += `&and[${key}]=${safeItem}`;
       });
-    }
+    });
     // This step is already done in the if above
     // queryString += `&fields=${this.buildValues(fields)}`;
     queryString = encodeURI(queryString);

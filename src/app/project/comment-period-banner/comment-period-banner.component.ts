@@ -20,15 +20,15 @@ export class CommentPeriodBannerComponent implements OnInit {
 
   ngOnInit() {
     this.projectId = this.storageService.state.currentProject.data._id;
-    if (this.storageService.state.currentProject.data.commentPeriodForBanner) {
-      this.commentPeriod = this.storageService.state.currentProject.data.commentPeriodForBanner;
-    } else {
-      this.commentPeriod = null;
-    }
+    this.commentPeriod = this.storageService.state.currentProject.data.commentPeriodForBanner || null;
   }
 
   goToViewComments() {
-    this.router.navigate(['/p', this.projectId, 'cp', this.commentPeriod._id, 'comment-period-details']);
+    if (this.commentPeriod.isMet && this.commentPeriod.metURL) {
+      window.open(this.commentPeriod.metURL, '_blank');
+    } else {
+      this.router.navigate(['/p', this.projectId, 'cp', this.commentPeriod._id, 'comment-period-details']);
+    }
   }
 
   goToAddComment() {
