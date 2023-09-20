@@ -166,6 +166,7 @@ export class ApiService {
       'eaoMember',
       'epicProjectID',
       'fedElecDist',
+      'hasMetCommentPeriods',
       'isTermsAgreed',
       'overallProgress',
       'primaryContact',
@@ -436,7 +437,7 @@ export class ApiService {
       'dateStarted',
       'dateCompleted',
       'isMet',
-      'metURL',
+      'metURLAdmin',
     ];
 
     let queryString = `commentperiod?&project=${projId}&`;
