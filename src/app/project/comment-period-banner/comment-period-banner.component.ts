@@ -24,8 +24,8 @@ export class CommentPeriodBannerComponent implements OnInit {
   }
 
   goToViewComments() {
-    if (this.commentPeriod.isMet && this.commentPeriod.metURL) {
-      window.open(this.commentPeriod.metURL, '_blank');
+    if (this.commentPeriod.isMet && this.commentPeriod.metURLAdmin) {
+      window.open(this.commentPeriod.metURLAdmin, '_blank');
     } else {
       this.router.navigate(['/p', this.projectId, 'cp', this.commentPeriod._id, 'comment-period-details']);
     }

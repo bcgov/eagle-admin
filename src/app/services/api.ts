@@ -437,7 +437,7 @@ export class ApiService {
       'dateStarted',
       'dateCompleted',
       'isMet',
-      'metURL',
+      'metURLAdmin',
     ];
 
     let queryString = `commentperiod?&project=${projId}&`;

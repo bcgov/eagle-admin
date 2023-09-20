@@ -140,7 +140,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
           dateCompleted: commentPeriod.dateCompleted,
           daysRemaining: commentPeriod.daysRemaining,
           isMet: commentPeriod.isMet,
-          metURL: commentPeriod.metURL,
+          metURLAdmin: commentPeriod.metURLAdmin,
           read: isPublished,
           // TODO: Figure out pending, deferred, published, rejected
           // commmentData:
