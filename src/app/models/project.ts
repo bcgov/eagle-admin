@@ -50,6 +50,7 @@ export class Project {
   eaoMember: String;
   epicProjectID: Number;
   fedElecDist: String;
+  hasMetCommentPeriods: boolean;
   // TODO: intake
   intake: {
     investment: any;
@@ -160,6 +161,7 @@ export class Project {
     this.eaoMember           = obj && obj.eaoMember           || undefined;
     this.epicProjectID       = obj && obj.epicProjectID       || undefined;
     this.fedElecDist         = obj && obj.fedElecDist         || undefined;
+    this.hasMetCommentPeriods = obj && obj.hasMetCommentPeriods || undefined;
     this.isTermsAgreed       = obj && obj.isTermsAgreed       || undefined;
     this.overallProgress     = obj && obj.overallProgress     || undefined;
     this.primaryContact      = obj && obj.primaryContact      || undefined;

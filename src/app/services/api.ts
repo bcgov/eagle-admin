@@ -166,6 +166,7 @@ export class ApiService {
       'eaoMember',
       'epicProjectID',
       'fedElecDist',
+      'hasMetCommentPeriods',
       'isTermsAgreed',
       'overallProgress',
       'primaryContact',

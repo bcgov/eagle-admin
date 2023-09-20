@@ -14,9 +14,6 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 
-// This enables the functionality to add comment periods on the MET site
-const ADD_TO_MET = false;
-
 @Component({
   selector: 'app-comment-periods',
   templateUrl: './comment-periods.component.html',
@@ -182,13 +179,23 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   public addCommentPeriod() {
     this.storageService.state.currentProject = this.currentProject;
 
-    if (ADD_TO_MET) {
-      const metURL = this.api.env === 'local' || this.api.env === 'dev'
-        ? 'https://dev.engage.eao.gov.bc.ca/'
-        : (this.api.env === 'test'
-          ? 'https://test.engage.eao.gov.bc.ca/'
-          : 'https://engage.eao.gov.bc.ca/'
-        );
+    if (this.currentProject.data.hasMetCommentPeriods) {
+      let metURL;
+      switch (this.api.env) {
+        case 'prod':
+        case 'demo':
+        case 'hotfix':
+          metURL = 'https://engage.eao.gov.bc.ca/';
+          break;
+        case 'test':
+          metURL = 'https://test.engage.eao.gov.bc.ca/';
+          break;
+        case 'dev':
+        case 'local':
+        default:
+          metURL = 'https://dev.engage.eao.gov.bc.ca/';
+          break;
+      }
       window.open(`${metURL}?project_id=${this.currentProject.data._id}`, '_blank');
     } else {
       this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
