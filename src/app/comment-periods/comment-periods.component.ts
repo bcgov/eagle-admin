@@ -196,7 +196,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
           metURL = 'https://dev.engage.eao.gov.bc.ca/';
           break;
       }
-      window.open(`${metURL}?project_id=${this.currentProject.data._id}`, '_blank');
+      window.open(`${metURL}engagements/create/form/?project_id=${this.currentProject.data._id}`, '_blank');
     } else {
       this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
     }
