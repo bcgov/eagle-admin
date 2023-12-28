@@ -33,7 +33,6 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
     this.baseRouteUrl = this.currentProject.type === 'currentProjectNotification' ? '/pn' : '/p';
     this.storageService.state.selectedDocumentsForCP = null;
     this.storageService.state.addEditCPForm = null;
-    this.storageService.state.currentVCs = null;
 
     if (this.storageService.state.selectedTab !== null) {
       this.selectedTab = this.storageService.state.selectedTab;

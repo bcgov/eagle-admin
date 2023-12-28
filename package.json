@@ -9,8 +9,8 @@
     "build": "node --max_old_space_size=4096 node_modules/@angular/cli/bin/ng build --prod --deploy-url /admin/ --base-href /admin/",
     "pretest": "",
     "test": "echo 'Test suite should be run with \"`npm run tests` or npm `run tests-ci`\"'",
-    "tests": "ng test --watch=false",
-    "tests-ci": "ng test --watch=false",
+    "tests": "ng test --watch=true",
+    "tests-ci": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "ng lint --format=stylish",
     "e2e": "ng e2e"
   },

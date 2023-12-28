@@ -20,7 +20,6 @@ import { EditorModule } from '@tinymce/tinymce-angular';
 // components
 import { AdministrationComponent } from 'app/administration/administration.component';
 import { AppComponent } from 'app/app.component';
-import { AssetTableRowsComponent } from 'app/project/compliance/submission-detail/asset-table-rows/asset-table-rows.component';
 import { AddCommentComponent } from 'app/comment-period/add-comment/add-comment.component';
 import { AddDocumentTableRowsComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
 import { AddEditCommentPeriodComponent } from 'app/comment-periods/add-edit-comment-period/add-edit-comment-period.component';
@@ -32,8 +31,6 @@ import { CommentPeriodsComponent } from 'app/comment-periods/comment-periods.com
 import { CommentPeriodsTableRowsComponent } from 'app/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
 import { AddDocumentComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-documents.component';
 import { FooterComponent } from 'app/footer/footer.component';
-import { GetValuedComponentsComponent } from 'app/comment-period/review-comment/get-valued-components/get-valued-components.component';
-import { GetValuedComponentTableRowsComponent } from 'app/comment-period/review-comment/get-valued-components/get-valued-component-table-rows/get-valued-component-table-rows.component';
 import { HeaderComponent } from 'app/header/header.component';
 import { ToggleButtonComponent } from 'app/toggle-button/toggle-button.component';
 import { HomeComponent } from 'app/home/home.component';
@@ -62,7 +59,6 @@ import { SearchService } from 'app/services/search.service';
 import { UserService } from 'app/services/user.service';
 import { TopicService } from 'app/services/topic.service';
 import { SideBarService } from 'app/services/sidebar.service';
-import { ValuedComponentService } from './services/valued-component.service';
 
 // feature modules
 import { TokenInterceptor } from 'app/shared/utils/token-interceptor';
@@ -80,7 +76,6 @@ import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-
 import { RecentActivityService } from './services/recent-activity';
 import { SearchHelpComponent } from './search-help/search-help.component';
 import { ActivityDetailTableRowsComponent } from './activity/activity-detail-table-rows/activity-detail-table-rows.component';
-import { CACTableRowsComponent } from './project/project-cac/cac-table-rows/cac-table-rows.component';
 import { PinsTableRowsComponent } from './project/pins-list/pins-table-rows/pins-table-rows.component';
 import { GroupsTableRowsComponent } from './project/project-groups/project-groups-table-rows/project-groups-table-rows.component';
 import { ApplicationSortTableRowsComponent } from './project/project-documents/application-sort/application-sort-table-rows/application-sort-table-rows.component';
@@ -123,7 +118,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     AddLabelComponent,
     AdministrationComponent,
     AppComponent,
-    AssetTableRowsComponent,
     CommentPeriodComponent,
     CommentPeriodDetailsTabComponent,
     CommentPeriodsComponent,
@@ -132,8 +126,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     ContactsComponent,
     DayCalculatorModalComponent,
     FooterComponent,
-    GetValuedComponentsComponent,
-    GetValuedComponentTableRowsComponent,
     GroupTableRowsComponent,
     HeaderComponent,
     HomeComponent,
@@ -153,7 +145,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     ReviewCommentComponent,
     ReviewCommentsTabComponent,
     ReviewCommentsTabTableRowsComponent,
-    CACTableRowsComponent,
     SearchComponent,
     SearchHelpComponent,
     SidebarComponent,
@@ -210,8 +201,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     SearchService,
     SideBarService,
     TopicService,
-    UserService,
-    ValuedComponentService
+    UserService
   ],
   entryComponents: [
     ActivityDetailTableRowsComponent,
@@ -221,13 +211,11 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     AddEditContactComponent,
     AddEditOrganizationComponent,
     AddEditTopicComponent,
-    AssetTableRowsComponent,
     CommentPeriodComponent,
     CommentPeriodsComponent,
     CommentPeriodsTableRowsComponent,
     ConfirmComponent,
     DayCalculatorModalComponent,
-    GetValuedComponentTableRowsComponent,
     GroupsTableRowsComponent,
     ApplicationSortTableRowsComponent,
     GroupTableRowsComponent,
@@ -238,7 +226,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ReviewCommentsTabTableRowsComponent,
-    CACTableRowsComponent,
     TopicTableRowsComponent,
     UploadComponent,
     UserTableRowsComponent
