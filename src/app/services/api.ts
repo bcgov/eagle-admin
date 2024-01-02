@@ -21,7 +21,6 @@ import { User } from 'app/models/user';
 import { Topic } from 'app/models/topic';
 import { Org } from 'app/models/org';
 import { RecentActivity } from 'app/models/recentActivity';
-import { ValuedComponent } from 'app/models/valuedComponent';
 import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
 import { Utils } from 'app/shared/utils/utils';
 import { ProjectNotification } from 'app/models/projectNotification';
@@ -60,7 +59,7 @@ export class ApiService {
     this.isMS = !!window.navigator.msSaveOrOpenBlob;
 
     this.bannerColour = this.configService.config['BANNER_COLOUR'];
-    this.env     = this.configService.config['ENVIRONMENT'];
+    this.env = this.configService.config['ENVIRONMENT'];
     this.pathAPI = this.configService.config['API_LOCATION'] + this.configService.config['API_PATH'];
   }
 
@@ -315,30 +314,6 @@ export class ApiService {
     return this.http.put<Project>(`${this.pathAPI}/${queryString}`, proj, {});
   }
 
-  createProjectCAC(projectId: string, cacEmail: string): Observable<any> {
-    const queryString = `project/${projectId}/cac`;
-    return this.http.post<Project>(`${this.pathAPI}/${queryString}`, { cacEmail: cacEmail}, {});
-  }
-
-  deleteProjectCAC(projectId: string): Observable<any> {
-    const queryString = `project/${projectId}/cac`;
-    return this.http.delete<Project>(`${this.pathAPI}/${queryString}`, {});
-  }
-
-  deleteMemberFromCAC(projectId: string, member: any): Observable<any> {
-    const queryString = `project/${projectId}/cac`;
-    return this.http.put<any>(`${this.pathAPI}/${queryString}`, member, {});
-  }
-
-  publishProjectCAC(projectId: string): Observable<any> {
-    const queryString = `project/${projectId}/cac/publish`;
-    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
-  }
-
-  unpublishProjectCAC(projectId: string): Observable<any> {
-    const queryString = `project/${projectId}/cac/unpublish`;
-    return this.http.put<Project>(`${this.pathAPI}/${queryString}`, {});
-  }
   // //
   // // Features
   // //
@@ -687,7 +662,6 @@ export class ApiService {
       'publishedNotes',
       'rejectedNotes',
       'rejectedReason',
-      'valuedComponents',
       'read',
       'write',
       'delete'
@@ -1046,57 +1020,6 @@ export class ApiService {
       window.URL.revokeObjectURL(url);
       a.remove();
     }
-  }
-
-  //
-  // Valued Component
-  //
-  getValuedComponents(): Observable<ValuedComponent[]> {
-    const fields = [
-      '_id',
-      '_schemaName',
-      'code',
-      'description',
-      'name',
-      'parent',
-      'pillar',
-      'project',
-      'stage',
-      'title',
-      'type'];
-    // NB: max 1000 records
-    const queryString = `vc?fields=${this.buildValues(fields)}`;
-    return this.http.get<ValuedComponent[]>(`${this.pathAPI}/${queryString}`, {});
-  }
-  getValuedComponentsByProjectId(projectId: String, pageNum: number, pageSize: number, sortBy: string = null): Observable<Object> {
-    const fields = [
-      '_id',
-      '_schemaName',
-      'code',
-      'description',
-      'name',
-      'parent',
-      'pillar',
-      'project',
-      'stage',
-      'title',
-      'type'];
-
-    let queryString = `vc?projectId=${projectId}`;
-    if (pageNum !== null) { queryString += `&pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { queryString += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { queryString += `&sortBy=${sortBy}`; }
-    queryString += `&fields=${this.buildValues(fields)}`;
-
-    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
-  }
-  addVCToProject(vc: any): Observable<ValuedComponent> {
-    const queryString = `vc/`;
-    return this.http.post<ValuedComponent>(`${this.pathAPI}/${queryString}`, vc, {});
-  }
-  deleteVC(vc: any): Observable<ValuedComponent> {
-    const queryString = `vc/${vc._id}`;
-    return this.http.delete<ValuedComponent>(`${this.pathAPI}/${queryString}`, {});
   }
 
   //

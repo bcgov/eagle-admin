@@ -7,7 +7,6 @@ import { NgZorroAntdModule } from 'ng-zorro-antd';
 import { Component } from '@angular/core';
 
 import { ReviewCommentComponent } from './review-comment.component';
-import { GetValuedComponentsComponent } from './get-valued-components/get-valued-components.component';
 import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
 
 import { ApiService } from 'app/services/api';
@@ -49,7 +48,6 @@ describe('ReviewCommentComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         ReviewCommentComponent,
-        GetValuedComponentsComponent,
         TableTemplateComponent,
         BlankComponent
       ],

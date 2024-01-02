@@ -20,7 +20,6 @@ export class Comment {
   publishedNotes: string;
   rejectedNotes: string;
   rejectedReason: string;
-  valuedComponents: Array<string>;
   documents: Array<string>;
   submittedCAC: Boolean;
 
@@ -51,7 +50,6 @@ export class Comment {
     this.publishedNotes   = obj && obj.publishedNotes   || null;
     this.rejectedNotes    = obj && obj.rejectedNotes    || null;
     this.rejectedReason   = obj && obj.rejectedReason   || null;
-    this.valuedComponents = obj && obj.valuedComponents || null;
     this.documents        = obj && obj.documents        || null;
     this.documentsList    = obj && obj.documentsList    || [];
     this.submittedCAC     = obj && obj.submittedCAC     || null;

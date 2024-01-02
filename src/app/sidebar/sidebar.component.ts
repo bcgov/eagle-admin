@@ -99,16 +99,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     if (urlArray[0] === 'p') {
       switch (urlArray[2]) {
-        // case 'compliance': {
-        //   break;
-        // }
-        case 'valued-components': {
-          break;
-        }
         case 'project-updates': {
-          break;
-        }
-        case 'project-cac': {
           break;
         }
         case 'project-groups': {

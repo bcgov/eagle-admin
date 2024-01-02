@@ -47,10 +47,6 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    if (this.storageService.state.currentVCs == null) {
-      this.storageService.state.currentVCs = { type: 'currentVCs', data: [] };
-    }
-
     this.currentProject = this.storageService.state.currentProject;
     this.baseRouteUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
 
@@ -127,7 +123,6 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       this.comment.eaoStatus = 'Reset';
     }
     this.comment.proponentNotes = this.addCommentForm.get('proponentResponseText').value;
-    this.comment.valuedComponents = this.storageService.state.currentVCs.data;
 
     this.comment.period = this.commentPeriod._id;
 

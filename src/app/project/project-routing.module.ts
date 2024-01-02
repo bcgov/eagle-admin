@@ -6,14 +6,11 @@ import { AddDocumentComponent } from '../comment-periods/add-edit-comment-period
 import { AddEditCommentPeriodComponent } from '../comment-periods/add-edit-comment-period/add-edit-comment-period.component';
 import { AddEditProjectComponent } from 'app/projects/add-edit-project/add-edit-project.component';
 import { AddLabelComponent } from './project-documents/add-label/add-label.component';
-import { AddVcComponent } from './valued-components/add-vc/add-vc.component';
 import { CommentPeriodComponent } from '../comment-period/comment-period.component';
 import { CommentPeriodsComponent } from '../comment-periods/comment-periods.component';
 import { CommentPeriodsResolver } from '../comment-periods/comment-periods-resolver.services';
-import { ComplianceComponent } from './compliance/compliance.component';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
 import { DocumentApplicationSortComponent } from './project-documents/application-sort/application-sort.component';
-import { InspectionDetailComponent } from './compliance/inspection-detail/inspection-detail.component';
 import { DocumentEditComponent } from './project-documents/document-edit/document-edit.component';
 import { MilestonesComponent } from './milestones/milestones.component';
 import { ProjectComponent } from './project.component';
@@ -22,23 +19,16 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
-import { ProjectCACComponent } from './project-cac/project-cac.component';
 import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
-import { ValuedComponentsComponent } from './valued-components/valued-components.component';
 
 import { AddDocumentsResolver } from '../comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
 import { CommentPeriodResolver } from '../comment-period/comment-period-resolver.service';
 import { DocumentDetailResolver } from './project-documents/detail/document-detail-resolver.service';
-import { InspectionDetailResolver } from './compliance/inspection-detail/inspection-detail-resolver.service';
 import { DocumentsResolver } from './project-documents/project-document-resolver.services';
-import { ComplianceResolver } from './compliance/compliance-resolver.service';
 import { ProjectResolver } from './project-resolver.service';
 import { ReviewCommentResolver } from '../comment-period/review-comment/review-comment-resolver.service';
-import { TopicResolver } from './valued-components/add-vc/topic-resolver.services';
-import { ValuedComponentsResolver } from './valued-components/valued-components-resolver.services';
 import { ProjectUpdatesResolver } from './project-updates/project-updates-resolver.services';
-import { ProjectCACResolver } from './project-cac/project-cac-resolver.services';
 import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
 import { ApplicationSortResolver } from './project-documents/application-sort/application-sort-resolver.service';
@@ -53,7 +43,6 @@ import { GroupContactSelectComponent } from './project-groups/group-contact/grou
 import { LinkOrganizationResolver } from 'app/shared/components/link-organization/link-organization-resolver.services';
 import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
 import { ExtensionComponent } from 'app/shared/components/extension/extension.component';
-import { SubmissionDetailResolver } from './compliance/submission-detail/submission-detail-resolver.service';
 import { ProjectsRoutes } from 'app/projects/projects-routes';
 import { FullProjectResolver } from './full-project-resolver.service';
 
@@ -162,56 +151,10 @@ const routes: Routes = [
         component: AddLabelComponent,
       },
       {
-        path: 'compliance',
-        component: ComplianceComponent,
-        resolve: {
-          compliances: ComplianceResolver
-        }
-      },
-      {
-        path: 'compliance/i/:inspectionId',
-        resolve: {
-          compliance: InspectionDetailResolver
-        },
-        children: [
-          {
-            path: '',
-            redirectTo: 'inspection-details',
-            pathMatch: 'full'
-          },
-          {
-            path: 'inspection-details',
-            component: InspectionDetailComponent
-          },
-        ]
-      },
-      {
-        path: 'valued-components',
-        component: ValuedComponentsComponent,
-        resolve: {
-          valuedComponents: ValuedComponentsResolver
-        }
-      },
-      {
-        path: 'valued-components/add',
-        component: AddVcComponent,
-        resolve: {
-          topics: TopicResolver
-        }
-      },
-      {
         path: 'project-updates',
         component: ProjectUpdatesComponent,
         resolve: {
           documents: ProjectUpdatesResolver
-        }
-      },
-      {
-        path: 'project-cac',
-        component: ProjectCACComponent,
-        resolve: {
-          cacMembers: ProjectCACResolver,
-          project: FullProjectResolver
         }
       },
       {
@@ -345,20 +288,14 @@ const routes: Routes = [
     CommentPeriodsResolver,
     DocumentDetailResolver,
     DocumentsResolver,
-    ComplianceResolver,
     ProjectUpdatesResolver,
-    ProjectCACResolver,
-    InspectionDetailResolver,
-    TopicResolver,
     ProjectResolver,
     FullProjectResolver,
     ReviewCommentResolver,
-    ValuedComponentsResolver,
     PinsComponentResolver,
     ProjectContactsResolver,
     ApplicationSortResolver,
-    LinkOrganizationResolver,
-    SubmissionDetailResolver
+    LinkOrganizationResolver
   ]
 })
 

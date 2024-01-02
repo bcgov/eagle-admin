@@ -15,10 +15,6 @@
         <input class="form-check-input" type="radio" [checked]="terms.dataset === 'Project'"
           (click)='handleRadioChange("Project")'>Projects
       </label>
-      <label class="form-check-inline">
-        <input class="form-check-input" type="radio" [checked]="terms.dataset === 'Vc'"
-          (click)='handleRadioChange("Vc")'>Valued Components
-      </label>
 
       <div class="search-area">
         <div class="input-group main-search-field">
@@ -622,24 +618,6 @@
               <p class="card-text"><label>Type: </label> {{result.type}} / {{result.sector}}</p>
               <p class="card-text"><label>Location: </label> {{result.location}}</p>
               <a [routerLink]="['/p', result._id]" class="btn btn-primary"><i class="material-icons">open_in_new</i> View {{result.name}}</a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="terms.dataset === 'Vc'">
-        <div class="app-details" *ngFor="let result of results">
-          <div class="card">
-            <header class="card-header">
-              <span class="project-name">
-                <span class="tag">
-                  <i class="material-icons">switch_camera</i> Valued Component | {{result.project.name}}
-                </span>
-              </span>
-              <a [routerLink]="['/p', result.project._id, 'valued-components']" class="btn btn-primary view-btn">View Project VCs<i class="material-icons">chevron_right</i></a>
-            </header>
-            <div class="card-body">
-              <h2 class="card-title">{{result.name}}</h2>
-              <p class="card-text">{{result.description}}</p>
             </div>
           </div>
         </div>

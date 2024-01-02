@@ -6,13 +6,10 @@
         Project Details
       </a>
       <a [ngClass]="{'active': showProjectDetails && currentMenu === 'comment-periods'}" class="project-menu" id="comment-periods" [routerLink]="['p', mainRouteId, 'comment-periods']"><i class="material-icons">comment</i>Comment Periods</a>
-      <a *ngIf="isInspectorRole" [ngClass]="{'active': showProjectDetails && currentMenu === 'compliance'}" class="project-menu" id="compliance" [routerLink]="['p', mainRouteId, 'compliance']"><i class="material-icons">event_note</i>Compliance</a>
       <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-documents'}" class="project-menu" id="documents" (click)="goToDocuments(mainRouteId)" [routerLink]="['p', mainRouteId, 'project-documents']"><i class="material-icons">event_note</i>Documents</a>
       <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-groups'}" class="project-menu" id="groups" [routerLink]="['p', mainRouteId, 'project-groups']"><i class="material-icons">person</i>Project Groups</a>
       <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-pins'}" class="project-menu" id="pins" [routerLink]="['p', mainRouteId, 'project-pins']"><i class="material-icons">person</i>Indigenous Nations</a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-cac'}" class="project-menu" id="updates" [routerLink]="['p', currentProjectId, 'project-cac']"><i class="material-icons">group_work</i>Project CAC</a>
       <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-updates'}" class="project-menu" id="updates" [routerLink]="['p', mainRouteId, 'project-updates']"><i class="material-icons">fiber_new</i>Project Updates</a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'valued-components'}" class="project-menu" id="value-components" [routerLink]="['p', mainRouteId, 'valued-components']"><i class="material-icons">view_list</i>Valued Components</a>
       <a *ngIf="isArchive" [ngClass]="{'active': showProjectDetails && currentMenu === 'project-archived-detail'}" class="project-menu" id="project-archived-detail" [routerLink]="['p', mainRouteId, 'project-archived-detail']"><i class="material-icons">access_time</i>Archived Project Details</a>
     </section>
     <a [ngClass]="{'active': mainRouteId === 'project-notifications' || mainRouteId === 'pn'}" id="notificationProjects" [routerLink]="['/project-notifications']"><i class="material-icons mr-3">view_module</i>Project Notifications</a>
