@@ -5,8 +5,6 @@ import { AddEditContactComponent } from './contacts/add-edit-contact/add-edit-co
 import { LoginComponent } from './login/login.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { SearchComponent } from './search/search.component';
-import { AdministrationComponent } from './administration/administration.component';
-import { TopicsComponent } from './administration/topics/topics.component';
 import { MapComponent } from './map/map.component';
 import { MetricsComponent } from './metrics/metrics.component';
 import { ContactsComponent } from './contacts/contacts.component';
@@ -16,7 +14,6 @@ import { ContactsResolver } from './contacts/contacts-resolver.service';
 import { ActivityComponentResolver } from './activity/activity-component-resolver.services';
 import { CanDeactivateGuard } from 'app/services/can-deactivate-guard.service';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
-import { TopicsResolver } from './administration/topics/topics-resolver.services';
 import { PinsGlobalComponentResolver } from './project/pins-list/pins-global-resolver.service';
 import { ProjectGroupResolver } from './project/project-groups/project-group-resolver.services';
 import { ProjectContactsGroupResolver } from './project/project-groups/project-contact-group-resolver.services';
@@ -40,11 +37,6 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
-  },
-  {
-    path: 'administration',
-    component: AdministrationComponent,
-    canActivate: [AuthGuard],
   },
   {
     path: 'o/:orgId/edit',
@@ -81,14 +73,6 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     resolve: {
       organizations: LinkOrganizationResolver
-    }
-  },
-  {
-    path: 'administration/topics',
-    component: TopicsComponent,
-    canActivate: [AuthGuard],
-    resolve: {
-      topics: TopicsResolver
     }
   },
   {
@@ -250,7 +234,6 @@ const routes: Routes = [
     PinsGlobalComponentResolver,
     ProjectContactsGroupResolver,
     ProjectGroupResolver,
-    TopicsResolver,
     ProjectNotificationDocumentsResolver,
     AuthGuard,
   ]
