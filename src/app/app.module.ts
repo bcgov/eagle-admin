@@ -18,7 +18,6 @@ import { SharedModule } from './shared/shared.module';
 import { EditorModule } from '@tinymce/tinymce-angular';
 
 // components
-import { AdministrationComponent } from 'app/administration/administration.component';
 import { AppComponent } from 'app/app.component';
 import { AddCommentComponent } from 'app/comment-period/add-comment/add-comment.component';
 import { AddDocumentTableRowsComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
@@ -42,7 +41,6 @@ import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-t
 import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { SearchComponent } from 'app/search/search.component';
 import { SidebarComponent } from 'app/sidebar/sidebar.component';
-import { TopicsComponent } from 'app/administration/topics/topics.component';
 import { UploadComponent } from 'app/project/project-documents/upload/upload.component';
 
 // services
@@ -57,17 +55,14 @@ import { KeycloakService } from 'app/services/keycloak.service';
 import { ProjectService } from 'app/services/project.service';
 import { SearchService } from 'app/services/search.service';
 import { UserService } from 'app/services/user.service';
-import { TopicService } from 'app/services/topic.service';
 import { SideBarService } from 'app/services/sidebar.service';
 
 // feature modules
 import { TokenInterceptor } from 'app/shared/utils/token-interceptor';
 import { DayCalculatorModalComponent } from './day-calculator-modal/day-calculator-modal.component';
-import { AddEditTopicComponent } from 'app/administration/topics/add-edit-topic/add-edit-topic.component';
 import { MapComponent } from './map/map.component';
 import { MetricsComponent } from './metrics/metrics.component';
 import { ActivityComponent } from './activity/activity.component';
-import { TopicTableRowsComponent } from './administration/topics/topic-table-rows/topic-table-rows.component';
 import { ContactsComponent } from './contacts/contacts.component';
 import { UserTableRowsComponent } from './contacts/user-table-rows/user-table-rows.component';
 import { ActivityTableRowsComponent } from 'app/activity/activity-table-rows/activity-table-rows.component';
@@ -114,9 +109,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     AddEditContactComponent,
     AddEditProjectNotificationComponent,
     AddEditOrganizationComponent,
-    AddEditTopicComponent,
     AddLabelComponent,
-    AdministrationComponent,
     AppComponent,
     CommentPeriodComponent,
     CommentPeriodDetailsTabComponent,
@@ -149,8 +142,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     SearchHelpComponent,
     SidebarComponent,
     ToggleButtonComponent,
-    TopicsComponent,
-    TopicTableRowsComponent,
     UploadComponent,
     UserTableRowsComponent
   ],
@@ -200,7 +191,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     RecentActivityService,
     SearchService,
     SideBarService,
-    TopicService,
     UserService
   ],
   entryComponents: [
@@ -210,7 +200,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     AddEditActivityComponent,
     AddEditContactComponent,
     AddEditOrganizationComponent,
-    AddEditTopicComponent,
     CommentPeriodComponent,
     CommentPeriodsComponent,
     CommentPeriodsTableRowsComponent,
@@ -226,7 +215,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ReviewCommentsTabTableRowsComponent,
-    TopicTableRowsComponent,
     UploadComponent,
     UserTableRowsComponent
   ],
