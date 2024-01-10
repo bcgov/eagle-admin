@@ -167,7 +167,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   public validateDate() {
-    if (!moment(this.myForm.value.datePosted).isValid()) {
+    if (!moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.datePosted)).isValid()) {
       this.dateInvalid = true;
     } else {
       this.dateInvalid = false;
