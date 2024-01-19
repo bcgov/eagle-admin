@@ -131,7 +131,7 @@
   </div>
 
   <div class="form-group mb-0">
-    <app-file-upload [maxFiles]="50" [maxSize]="300" [showInfo]="false" [showList]="false" [files]="projectFiles"
+    <app-file-upload [maxFiles]="50" [maxSize]="3000" [showInfo]="false" [showList]="false" [files]="projectFiles"
       (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
     <br>
     <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
