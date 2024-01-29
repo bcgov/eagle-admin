@@ -1,6 +1,12 @@
 <tr *ngFor="let contact of contacts"
     class="clickable-row">
-    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{contact.displayName || '-'}}</td>
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{
+         (contact.lastName || contact.firstName) ?
+             (contact.lastName ? 
+                contact.firstName ? contact.lastName + ', '  + contact.firstName : contact.lastName
+             : contact.firstName ? contact.firstName : '-' )
+         : '-'
+        }}</td>
     <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[1].width">{{contact?.org?.name || '-' }}</td>
     <td scope="row" data-label="Phone" [style.width]="!useSmallTable && columns[2].width">{{contact.phoneNumber || '-'}}</td>
     <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[3].width">{{contact.email || '-'}}</td>
