@@ -61,6 +61,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
             'content': '',
             'dateAdded': new Date(),
             'project': '',
+            'projectLocation': '',
             'active': '',
             'pinned': false,
             'notificationName': '',
@@ -163,6 +164,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       this.myForm.get('project').enable();
       if (this.projectIsSelected) {
         this.loadPcpsForProject(this.myForm.get('project').value);
+        this.loadProjectLocation(this.myForm.get('project').value);
       }
     } else if (this.myForm.get('type').value === this.activityTypes[1]) {
       this.typeIsNotification = true;
@@ -187,8 +189,20 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       if (this.typeIsPCP) {
         this.loadPcpsForProject(currentProjectId);
       }
+      this.loadProjectLocation(currentProjectId);
     }
     this._changeDetectorRef.detectChanges();
+  }
+
+  public loadProjectLocation(projectId) {
+    this.projectService.getById(projectId)
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res: any) => {
+        if (res) {
+          this.myForm.controls['projectLocation'].setValue(res.location);
+          this._changeDetectorRef.detectChanges();
+        }
+      });
   }
 
   public loadPcpsForProject(projectId) {
@@ -212,6 +226,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       'content': new FormControl(data.content),
       'dateAdded': new FormControl(this.utils.convertJSDateToNGBDate(new Date(data.dateAdded))),
       'project': new FormControl(data.project),
+      'projectLocation': new FormControl({ value: data.projectLocation, disabled: true }),
       'active': new FormControl(data.active ? 'yes' : 'no'),
       'type': new FormControl(data.type),
       'pcp': new FormControl({ value: data.pcp, disabled: true }),

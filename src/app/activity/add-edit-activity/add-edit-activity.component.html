@@ -34,10 +34,11 @@
     <div class="flex-container" *ngIf="typeIsNotification">
       <div class="label-pair">
         <label for="type">Project Notification Name*</label>
-        <input [required]="typeIsNotification" name="notificationName" id="notificationName" formControlName="notificationName" type="text" class="form-control" />
+        <input [required]="typeIsNotification" name="notificationName" id="notificationName"
+          formControlName="notificationName" type="text" class="form-control" />
       </div>
     </div>
-    <div class ="flex-container">
+    <div class="flex-container">
       <div class="label-pair lrg">
         <label for="headline">Headline* </label>
         <input required name="headline" id="headline" formControlName="headline" type="text" class="form-control" />
@@ -63,7 +64,12 @@
           <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
         </select>
       </div>
-
+    </div>
+    <div class="flex-container">
+      <div class="label-pair med">
+        <label for="projectLocation">Project Location</label>
+        <input disabled type="text" class="form-control" formControlName="projectLocation" value="" readonly>
+      </div>
     </div>
     <div class="flex-container">
       <div class="label-pair">
@@ -83,7 +89,8 @@
         <select [required]="typeIsPCP" class="form-control" formControlName="pcp">
           <!-- this default value is so that when you are switching between projects and this PCP selector is being populated it doesn't default to the first PCP -->
           <option disabled hidden [ngValue]=""></option>
-          <option *ngFor="let period of periods" [ngValue]="period._id" >{{period.dateStarted | date: 'MMMM d'}} - {{period.dateCompleted | date}}</option>
+          <option *ngFor="let period of periods" [ngValue]="period._id">{{period.dateStarted | date: 'MMMM d'}} -
+            {{period.dateCompleted | date}}</option>
         </select>
       </div>
     </div>
@@ -91,8 +98,8 @@
       <div class="label-pair lrg">
         <label *ngIf="!typeIsNotification" for="documentUrl">Document URL</label>
         <label *ngIf="typeIsNotification" for="documentUrl">URL to Public Comment Period*</label>
-        <input [required]="typeIsNotification" documentUrl="documentUrl" id="documentUrl" formControlName="documentUrl" type="text"
-          class="form-control" />
+        <input [required]="typeIsNotification" documentUrl="documentUrl" id="documentUrl" formControlName="documentUrl"
+          type="text" class="form-control" />
       </div>
     </div>
     <div class="flex-container">
