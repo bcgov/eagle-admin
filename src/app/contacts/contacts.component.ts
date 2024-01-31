@@ -25,7 +25,7 @@ export class ContactsComponent implements OnInit, OnDestroy {
   public documentTableColumns: any[] = [
     {
       name: 'Name',
-      value: 'displayName',
+      value: 'lastName,+firstName',
       width: '25%'
     },
     {
@@ -68,6 +68,16 @@ export class ContactsComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = '+lastName,+firstName';
+          this.tableTemplateUtils.updateUrl(
+            this.tableParams.sortBy,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            undefined,
+            this.tableParams.keywords
+          );
+        }
         this.route.data
           .takeUntil(this.ngUnsubscribe)
           .subscribe((res: any) => {

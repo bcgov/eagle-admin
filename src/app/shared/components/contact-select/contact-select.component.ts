@@ -29,7 +29,7 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   public tableColumns: any[] = [
     {
       name: 'Name',
-      value: 'displayName',
+      value: 'lastName,+firstName',
       width: '25%'
     },
     {

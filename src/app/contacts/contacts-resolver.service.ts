@@ -16,8 +16,13 @@ export class ContactsResolver implements Resolve<object> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     let tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params);
-    if (tableParams.sortBy === '' && this.storageService.state.sortBy) {
-      tableParams.sortBy = this.storageService.state.sortBy;
+    if (tableParams.sortBy === '') {
+      if (this.storageService.state.sortBy) {
+        tableParams.sortBy = this.storageService.state.sortBy;
+      } else {
+        tableParams.sortBy = '+lastName,+firstName';
+        this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, undefined, tableParams.keywords);
+      }
     }
 
     return this.searchService.getSearchResults(
