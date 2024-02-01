@@ -98,8 +98,7 @@ export class Constants {
   ];
 
   public static readonly documentTypes = {
-    CATEGORIZED: 'categorized',
-    UNCATEGORIZED: 'uncategorized',
+    CATEGORIZED: 'categorized'
   };
 
   public static readonly buildToNature: BuildNature[] = [

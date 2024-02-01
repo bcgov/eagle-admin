@@ -70,7 +70,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
   public selectedCount = {
     categorized: 0,
-    uncategorized: 0,
     total: 0,
   };
   public currentProject;

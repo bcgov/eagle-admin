@@ -11,21 +11,17 @@ export class TableDocumentTemplateUtils {
     private router: Router
   ) { }
 
-  public updateUrl(sortByCategorized, sortByUncategorized, currentPageCategorized, currentPageUncategorized, pageSizeCategorized, pageSizeUncategorized, filter = null, keywords = '') {
+  public updateUrl(sortByCategorized, currentPageCategorized, pageSizeCategorized, filter = null, keywords = '') {
     let currentUrl = this.router.url;
     currentUrl = (this.platformLocation as any).getBaseHrefFromDOM() + currentUrl.slice(1);
     currentUrl = currentUrl.split(';')[0];
 
-    currentUrl += `;currentPageCategorized=${currentPageCategorized};currentPageUncategorized=${currentPageUncategorized};pageSizeCategorized=${pageSizeCategorized};pageSizeUncategorized=${pageSizeUncategorized}`;
+    currentUrl += `;currentPageCategorized=${currentPageCategorized};pageSizeCategorized=${pageSizeCategorized}`;
 
     if (keywords !== '') { currentUrl += `;keywords=${keywords}`; }
 
     if (sortByCategorized !== '' && sortByCategorized !== null) {
       currentUrl += `;sortByCategorized=${sortByCategorized}`;
-    }
-
-    if (sortByUncategorized !== '' && sortByUncategorized !== null) {
-      currentUrl += `;sortByUncategorized=${sortByUncategorized}`;
     }
 
     if (filter !== null && filter !== {}) {
@@ -48,19 +44,13 @@ export class TableDocumentTemplateUtils {
 
   public getParamsFromUrl(params, filter = null, defaultPageSize = null, filterFieldList = []) {
     let pageSizeCategorized = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
-    let pageSizeUncategorized = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
     if (defaultPageSize !== null) {
       pageSizeCategorized = +defaultPageSize;
-      pageSizeUncategorized = +defaultPageSize;
     } else if (params.pageSizeCategorized) {
       pageSizeCategorized = +params.pageSizeCategorized;
-    } else if (params.pageSizeUncategorized) {
-      pageSizeUncategorized = +params.pageSizeUncategorized;
     }
     let currentPageCategorized = params.currentPageCategorized ? +params.currentPageCategorized : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
-    let currentPageUncategorized = params.currentPageUncategorized ? +params.currentPageUncategorized : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
     let sortByCategorized = params.sortByCategorized ? params.sortByCategorized : Constants.tableDefaults.DEFAULT_SORT_BY;
-    let sortByUncategorized = params.sortByUncategorized ? params.sortByUncategorized : Constants.tableDefaults.DEFAULT_SORT_BY;
 
     let keywords = params.keywords ? params.keywords : Constants.tableDefaults.DEFAULT_KEYWORDS;
     if (filter == null) {
@@ -72,17 +62,13 @@ export class TableDocumentTemplateUtils {
       }
     });
 
-    this.updateUrl(sortByCategorized, sortByUncategorized, currentPageCategorized, currentPageUncategorized, pageSizeCategorized, pageSizeUncategorized, filter, keywords);
+    this.updateUrl(sortByCategorized, currentPageCategorized, pageSizeCategorized, filter, keywords);
 
     return new TableDocumentParamsObject(
       pageSizeCategorized,
-      pageSizeUncategorized,
       currentPageCategorized,
-      currentPageUncategorized,
-      0,
       0,
       sortByCategorized,
-      sortByUncategorized,
       keywords,
       filter
     );
@@ -91,8 +77,6 @@ export class TableDocumentTemplateUtils {
   public updateTableParams(documentType: string, tableParams: TableDocumentParamsObject, pageNumber: number) {
     if (documentType === Constants.documentTypes.CATEGORIZED) {
       tableParams.currentPageCategorized = pageNumber;
-    } else if (documentType === Constants.documentTypes.UNCATEGORIZED) {
-      tableParams.currentPageUncategorized = pageNumber;
     }
 
     return tableParams;
