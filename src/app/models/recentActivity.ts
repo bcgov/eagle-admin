@@ -4,13 +4,14 @@ export class RecentActivity {
     type: string;
     pcp: any;
     dateAdded: string;
-    active: string;
+    active: boolean;
     headline: string;
     content: string;
     documentUrl: string;
     contentUrl: string;
     notificationName: string;
     pinned: boolean;
+    complianceAndEnforcement: boolean;
 
     constructor(obj?: any) {
         this._id = obj && obj._id || null;
@@ -25,5 +26,6 @@ export class RecentActivity {
         this.headline = obj && obj.headline || null;
         this.active = obj && obj.active || null;
         this.pinned = obj && obj.pinned || null;
+        this.complianceAndEnforcement = obj && obj.complianceAndEnforcement || null;
     }
 }

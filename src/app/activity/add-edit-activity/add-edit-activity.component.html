@@ -17,11 +17,6 @@
     <div class="spinner-new rotating"></div>
   </div>
   <form [formGroup]="myForm" (ngSubmit)="register()" novalidate>
-    <div class="text-right">
-      <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
-      &nbsp;
-      <button [disabled]="!myForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
-    </div>
     <h2>Activity Post</h2>
     <div class="flex-container">
       <div class="label-pair">
@@ -68,7 +63,7 @@
     <div class="flex-container">
       <div class="label-pair med">
         <label for="projectLocation">Project Location</label>
-        <input disabled type="text" class="form-control" formControlName="projectLocation" value="" readonly>
+        <input type="text" class="form-control" formControlName="projectLocation" value="" readonly>
       </div>
     </div>
     <div class="flex-container">
@@ -104,18 +99,19 @@
     </div>
     <div class="flex-container">
       <div class="label-pair">
-        <label for="active">Published* </label>
-        <div name="active" class="radio-group">
-          <div class="radio">
-            <input type="radio" id="yes" value="yes" formControlName="active" name="active" />
-            <label for="yes">Yes</label>
-          </div>
-          <div class="radio">
-            <input type="radio" id="no" value="no" formControlName="active" name="active" />
-            <label for="no">No</label>
-          </div>
-        </div>
+        <mat-slide-toggle formControlName="complianceAndEnforcement"></mat-slide-toggle>
+        &nbsp;
+        <label for="complianceAndEnforcement">This is a C&E Announcement</label>
       </div>
     </div>
   </form>
+  &nbsp;
+  <div class="text-right" >
+    <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+    &nbsp;
+    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid"  type="submit" (click)="onSubmit()">Save</button>
+    &nbsp;
+    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()" *ngIf="!this.isPublished">Save & Publish</button>
+    <button class="btn btn-unpublish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()" *ngIf="this.isPublished">Save & Unpublish</button>
+  </div>
 </main>

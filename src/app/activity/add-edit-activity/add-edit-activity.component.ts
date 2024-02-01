@@ -28,6 +28,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   public typeIsNotification = false;
   public projectIsSelected = false;
   public snackBarTimeout = 1500;
+  public isPublished = false;
 
   public tinyMceSettings = {
     skin: false,
@@ -56,25 +57,26 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       .takeUntil(this.ngUnsubscribe)
       .subscribe(res => {
         if (Object.keys(res).length === 0 && res.constructor === Object) {
+          this.isPublished = false;
           this.buildForm({
             'headline': '',
             'content': '',
             'dateAdded': new Date(),
             'project': '',
             'projectLocation': '',
-            'active': '',
             'pinned': false,
             'notificationName': '',
             'type': '',
             'pcp': '',
             'contentUrl': '',
-            'documentUrl': ''
+            'documentUrl': '',
+            'complianceAndEnforcement': false
           });
         } else {
           this.isEditing = true;
           this.buildForm(res.activity.data);
           this.activity = res.activity.data;
-
+          this.isPublished = res.activity.data.active ? true : false;
           // init flags
           this.updateProject();
           this.updateType();
@@ -121,8 +123,9 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
 
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
-        active: this.myForm.controls.active.value === 'yes' ? true : false,
-        pinned: this.activity.pinned
+        active: this.isPublished,
+        pinned: this.activity.pinned,
+        complianceAndEnforcement: this.myForm.controls.complianceAndEnforcement.value
       });
 
       // ensure pinned is not null. If it is null, set to false
@@ -145,7 +148,8 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         pinned: false,
-        active: this.myForm.controls.active.value === 'yes' ? true : false
+        active: this.isPublished,
+        complianceAndEnforcement: this.myForm.controls.complianceAndEnforcement.value
       });
 
       this.recentActivityService.add(activity)
@@ -154,6 +158,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
           window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });
     }
+  }
+
+  public togglePublish() {
+    this.isPublished = !this.isPublished;
+    this.onSubmit();
   }
 
   public updateType() {
@@ -227,13 +236,13 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       'dateAdded': new FormControl(this.utils.convertJSDateToNGBDate(new Date(data.dateAdded))),
       'project': new FormControl(data.project),
       'projectLocation': new FormControl({ value: data.projectLocation, disabled: true }),
-      'active': new FormControl(data.active ? 'yes' : 'no'),
       'type': new FormControl(data.type),
       'pcp': new FormControl({ value: data.pcp, disabled: true }),
       'notificationName': new FormControl(data.notificationName),
       'contentUrl': new FormControl(data.contentUrl),
       // For project notification this is the url
-      'documentUrl': new FormControl(data.documentUrl)
+      'documentUrl': new FormControl(data.documentUrl),
+      'complianceAndEnforcement': new FormControl(data.complianceAndEnforcement ? true : false),
     });
   }
 
