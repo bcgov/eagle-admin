@@ -8,6 +8,7 @@ import { NgModule, APP_INITIALIZER, ApplicationRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatTabsModule, MatMenuModule } from '@angular/material';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 
 // modules
 import { AppRoutingModule } from 'app/app-routing.module';
@@ -163,6 +164,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     NgSelectModule,
     MatMenuModule,
     MatTabsModule,
+    MatSlideToggleModule
   ],
   providers: [
     {
