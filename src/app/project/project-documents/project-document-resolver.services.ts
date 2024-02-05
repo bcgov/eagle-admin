@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import 'rxjs/add/operator/switchMap';
 
@@ -28,7 +27,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     const params = this.storageService.state.projectDocumentTableParams || route.params;
     const pageNum = params.pageNum ? params.pageNum : 1;
     const pageSize = params.pageSize ? params.pageSize : 10;
-    const sortBy = params.sortBy ? params.sortBy : '-datePosted';
+    const sortBy = params.sortBy ? params.sortBy : '-datePosted,+displayName';
     const keywords = params.keywords || '';
 
     const milestones: any[] = [];
@@ -77,30 +76,12 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
       ''
     );
 
-    const uncategorizedObs = this.searchService.getSearchResults(
-      keywords,
-      'Document',
-      [
-        { name: 'project', value: projectId },
-        { name: 'categorized', value: false }
-      ],
-      pageNum,
-      pageSize,
-      sortBy,
-      { documentSource: 'PROJECT' },
-      true,
-      this.filterForAPI,
-      ''
-    );
-
-    const join =  forkJoin(categorizedObs, uncategorizedObs).pipe(map(responses => (
+    return categorizedObs.map(res => (
       {
-        categorized: responses[0][0],
-        uncategorized: responses[1][0],
+        categorized: res[0],
       }
-    )));
+    ));
 
-    return join;
   }
 
   paramsToCollectionFilter(params, name, collection, identifyBy) {
