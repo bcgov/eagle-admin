@@ -41,6 +41,7 @@ import { ReviewCommentComponent } from 'app/comment-period/review-comment/review
 import { ReviewCommentsTabComponent } from 'app/comment-period/review-comments-tab/review-comments-tab.component';
 import { ReviewCommentsTabTableRowsComponent } from 'app/comment-period/review-comments-tab/review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { SearchComponent } from 'app/search/search.component';
+import { SearchDocumentTableRowsComponent } from './search/search-document-table-rows/search-document-table-rows.component';
 import { SidebarComponent } from 'app/sidebar/sidebar.component';
 import { UploadComponent } from 'app/project/project-documents/upload/upload.component';
 
@@ -140,6 +141,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     ReviewCommentsTabComponent,
     ReviewCommentsTabTableRowsComponent,
     SearchComponent,
+    SearchDocumentTableRowsComponent,
     SearchHelpComponent,
     SidebarComponent,
     ToggleButtonComponent,
@@ -217,6 +219,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
     ReviewCommentsTabTableRowsComponent,
+    SearchDocumentTableRowsComponent,
     UploadComponent,
     UserTableRowsComponent
   ],

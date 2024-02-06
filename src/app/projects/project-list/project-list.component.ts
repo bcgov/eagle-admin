@@ -120,19 +120,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
-  // These values should be moved into Lists instead of being hard-coded all over the place
-  private REGIONS_COLLECTION: Array<object> = [
-    { code: 'Cariboo', name: 'Cariboo' },
-    { code: 'Kootenay', name: 'Kootenay' },
-    { code: 'Lower Mainland', name: 'Lower Mainland' },
-    { code: 'Okanagan', name: 'Okanagan' },
-    { code: 'Omineca', name: 'Omineca' },
-    { code: 'Peace', name: 'Peace' },
-    { code: 'Skeena', name: 'Skeena' },
-    { code: 'Thompson-Nicola', name: 'Thompson-Nicola' },
-    { code: 'Vancouver Island', name: 'Vancouver Island' }
-  ];
-
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -150,7 +137,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       .switchMap((res: any) => {
         this.proponents = res || [];
 
-        this.regions = this.REGIONS_COLLECTION;
         this.commentPeriods = Constants.PCP_COLLECTION;
         this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
@@ -538,6 +524,9 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         case 'projectPhase':
           this.projectPhases.push({ ...item});
           break;
+        case 'region':
+          this.regions.push({ ...item});
+          break;
         default:
           break;
       }
@@ -547,6 +536,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
     this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
     this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
+    this.regions = _.sortBy(this.regions, ['legislation', 'listOrder']);
   }
 
     // Compares selected options when a dropdown is grouped by legislation.

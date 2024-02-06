@@ -11,13 +11,18 @@ import 'rxjs/add/operator/takeUntil';
 import * as _ from 'lodash';
 import * as moment from 'moment';
 
-import { Document } from 'app/models/document';
 import { Org } from 'app/models/org';
 import { SearchTerms } from 'app/models/search';
 
 import { ApiService } from 'app/services/api';
 import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
+
+import { TableObject } from 'app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
+import { ProjectListTableRowsComponent } from 'app/projects/project-list/project-list-table-rows/project-list-table-rows.component';
 
 import { Constants } from 'app/shared/utils/constants';
 import { ConfigService } from 'app/services/config.service';
@@ -100,7 +105,76 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     projectPhase: 0
   };
 
+  public projectTableData: TableObject;
+  public projectTableColumns: any[] = [
+    {
+      name: 'Project Name',
+      value: 'name',
+      width: '20%'
+    },
+    {
+      name: 'Proponent',
+      value: 'proponent.name',
+      width: '20%'
+    },
+    {
+      name: 'Type',
+      value: 'type',
+      width: '15%'
+    },
+    {
+      name: 'Region',
+      value: 'region',
+      width: '15%'
+    },
+    {
+      name: 'Phase',
+      value: 'currentPhaseName',
+      width: '15%'
+    },
+    {
+      name: 'Decision',
+      value: 'eacDecision',
+      width: '15%'
+    }
+  ];
+
+  public documentTableData: TableObject;
+  public documentTableColumns: any[] = [
+    {
+      name: 'Document Name',
+      value: 'displayName',
+      width: '37%'
+    },
+    {
+      name: 'Status',
+      value: 'status',
+      width: '8%'
+    },
+    {
+      name: 'Date',
+      value: 'datePosted',
+      width: '15%'
+    },
+    {
+      name: 'Type',
+      value: 'type',
+      width: '15%'
+    },
+    {
+      name: 'Milestone',
+      value: 'milestone',
+      width: '15%'
+    },
+    {
+      name: 'Legislation',
+      value: 'legislation',
+      width: '10%'
+    }
+  ];
+
   public terms = new SearchTerms();
+  public tableParams: TableParamsObject = new TableParamsObject();
   private ngUnsubscribe = new Subject<boolean>();
 
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
@@ -118,26 +192,13 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   public pageSizeArray: number[];
 
-  // These values should be moved into Lists instead of being hard-coded all over the place
-
-  private REGIONS_COLLECTION: Array<object> = [
-    { code: 'Cariboo', name: 'Cariboo' },
-    { code: 'Kootenay', name: 'Kootenay' },
-    { code: 'Lower Mainland', name: 'Lower Mainland' },
-    { code: 'Okanagan', name: 'Okanagan' },
-    { code: 'Omineca', name: 'Omineca' },
-    { code: 'Peace', name: 'Peace' },
-    { code: 'Skeena', name: 'Skeena' },
-    { code: 'Thompson-Nicola', name: 'Thompson-Nicola' },
-    { code: 'Vancouver Island', name: 'Vancouver Island' }
-  ];
-
   constructor(
     public snackBar: MatSnackBar,
     private _changeDetectionRef: ChangeDetectorRef,
     public api: ApiService,
     private orgService: OrgService,
     public searchService: SearchService, // also used in template
+    private tableTemplateUtils: TableTemplateUtils,
     private router: Router,
     private route: ActivatedRoute,
     private configService: ConfigService
@@ -167,6 +228,9 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         case 'projectPhase':
           this.projectPhases.push({ ...item });
           break;
+        case 'region':
+          this.regions.push({ ...item });
+          break;
         default:
           break;
       }
@@ -183,6 +247,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
       this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
       this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
+      this.regions = _.sortBy(this.regions, ['legislation', 'listOrder']);
+
 
       // Fetch proponents and other collections
       // TODO: Put all of these into Lists
@@ -190,7 +256,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       .switchMap((res: any) => {
         this.proponents = res || [];
 
-        this.regions = this.REGIONS_COLLECTION;
         this.commentPeriods = Constants.PCP_COLLECTION;
         this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
@@ -226,6 +291,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.count = 0;
         this.currentPage = params.currentPage ? params.currentPage : 1;
         this.pageSize = params.pageSize ? parseInt(params.pageSize, 10) : 25;
+        this.tableParams.currentPage = this.currentPage;
+        this.tableParams.pageSize = this.pageSize;
 
         // remove doc and project types
         // The UI filters are remapping document and project type to the single 'Type' value
@@ -268,18 +335,12 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
         if (res && res[0].data.meta.length > 0) {
           this.count = res[0].data.meta[0].searchResultsTotal;
-          let items = res[0].data.searchResults;
-          items.map(item => {
-            if (this.terms.dataset === 'Document') {
-              this.results.push(new Document(item));
-            } else {
-              this.results.push(item);
-            }
-          });
+          this.results = res[0].data.searchResults;
         } else {
           this.count = 0;
           this.results = [];
         }
+        this.setRowData();
         this.loading = false;
         this.searching = false;
         this.ranSearch = true;
@@ -311,6 +372,70 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         this.togglingOpen = '';
       }
     }
+  }
+
+  setRowData() {
+    let itemList = [];
+    this.tableParams.pageSize = this.pageSize;
+    this.tableParams.currentPage = this.currentPage;
+    this.tableParams.totalListItems = this.count;
+    this.tableParams.sortBy = this.terms.sortBy ? this.terms.sortBy : '';
+
+    if (this.results && this.results.length > 0) {
+      if (this.terms.dataset === 'Document') {
+        this.results.forEach(document => {
+          itemList.push({
+            displayName: document.displayName,
+            documentFileName: document.documentFileName,
+            datePosted: document.datePosted,
+            status: document.read.includes('public')
+              ? 'Published'
+              : 'Not Published',
+            type: document.type,
+            milestone: document.milestone,
+            legislation: document.legislation,
+            _id: document._id,
+            project: document.project,
+            sortOrder: document.sortOrder,
+          });
+        });
+
+        this.documentTableData = new TableObject(
+          SearchDocumentTableRowsComponent,
+          itemList,
+          this.tableParams
+        );
+      } else {
+        this.results.forEach(project => {
+          itemList.push({
+            _id: project._id,
+            name: project.name,
+            proponent: project.proponent,
+            type: project.type,
+            region: project.region,
+            currentPhaseName: project.currentPhaseName,
+            eacDecision: project.eacDecision
+          });
+        });
+
+        this.projectTableData = new TableObject(
+          ProjectListTableRowsComponent,
+          itemList,
+          this.tableParams
+        );
+      }
+    }
+  }
+
+  setColumnSort(column) {
+      if (this.tableParams.sortBy.startsWith('+')) {
+        this.terms.sortBy = '-' + column;
+        this.tableParams.sortBy = '-' + column;
+      } else {
+        this.terms.sortBy = '+' + column;
+        this.tableParams.sortBy = '+' + column;
+      }
+      this.getPaginatedResults(this.tableParams.currentPage);
   }
 
   handleRadioChange(value) {
@@ -569,6 +694,71 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.updateCount('documentAuthorType');
     this.updateCount('docType');
     this.updateCount('projectPhase');
+  }
+
+  getPaginatedResults(pageNumber) {
+    // Go to top of page after clicking to a different page.
+    window.scrollTo(0, 0);
+    this.loading = true;
+
+    this.tableParams = this.tableTemplateUtils.updateTableParams(
+      this.tableParams,
+      pageNumber,
+      this.terms.sortBy
+    );
+    this.pageSize = this.tableParams.pageSize;
+    this.currentPage = this.tableParams.currentPage;
+
+    // if we're searching for projects, replace projectPhase with currentPhaseName
+    // The code is called projectPhase, but the db column on projects is currentPhaseName
+    // so the rename is required to pass in the correct query
+    if (this.filterForAPI.hasOwnProperty('projectPhase')) {
+      this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
+      delete this.filterForAPI['projectPhase'];
+    }
+
+    this.searchService
+      .getSearchResults(
+        this.terms.keywords,
+        this.terms.dataset,
+        null,
+        pageNumber,
+        this.tableParams.pageSize,
+        this.tableParams.sortBy,
+        {},
+        true,
+        this.filterForAPI,
+        ''
+      )
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res: any) => {
+        // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
+        // the change so the UI can function as normal
+        if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
+          this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
+          delete this.filterForAPI['currentPhaseName'];
+        }
+
+        if (res[0].data) {
+          this.count = res[0].data.meta[0].searchResultsTotal;
+          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+          this.results = res[0].data.searchResults;
+          this.tableTemplateUtils.updateUrl(
+            this.tableParams.sortBy,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.filterForURL,
+            this.terms.keywords
+          );
+          this.setRowData();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        } else {
+          alert('Uh-oh, couldn\'t load topics');
+          // project not found --> navigate back to search
+          this.router.navigate(['/']);
+        }
+      });
   }
 
   // reload page with current search terms
