@@ -557,88 +557,22 @@
     </form>
 
     <div *ngIf="count > 0">
-      <!-- NOT ALL -->
-      <div *ngIf="terms.dataset === 'Document'">
-        <div class="app-details" *ngFor="let result of results">
-          <div class="card">
-            <header class="card-header">
-              <span class="project-name">
-                <span class="tag">
-                  <i class="material-icons">picture_as_pdf</i> Document
-                </span>
-              </span>
-              <div class="document-actions">
-                <button class="btn btn-primary btn-sm" (click)="api.downloadDocument(result)">
-                  <i class="material-icons">get_app</i>Download
-                </button>
-              </div>
-              <button class="btn btn-primary view-btn" (click)="api.openDocument(result)">
-                View Document <i class="material-icons">open_in_new</i>
-              </button>
-            </header>
-            <div class="card-body">
-              <div class="flex-container">
-                <p *ngIf="result.project" class="card-text"><label>Project:</label> {{result.project.name}}</p>
-                <p class="card-text"><label>Date:</label> {{result.datePosted | date:'medium'}}</p>
-              </div>
-              <p class="card-text publish-state">
-                <i class="material-icons">
-                  {{result.read.includes('public') !== true ?   'cloud_off' : 'cloud_done' || '-'}}
-                </i>
-
-                {{result.read.includes('public') !== true ?  'Not Published' : 'Published' || '-'}}
-              </p>
-
-              <h2 class="card-title">{{result.displayName}}</h2>
-              <p *ngIf="result.milestone" class="card-text">Milestone: {{result.milestone | listConverter}}</p>
-              <p *ngIf="result.description" class="card-text">Description: {{result.description}}</p>
-              <a *ngIf="result.project" [routerLink]="['/p', result.project._id]" class="btn btn-primary"> View {{result.project.name}} Project <i class="material-icons">chevron_right</i></a>
-              <div class="label-pair badge-container">
-                <div *ngFor="let label of result.labels">
-                  <div class="mr-2 badge badge-pill badge-info">{{label}}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div *ngIf="terms.dataset === 'Project'">
-        <div class="app-details" *ngFor="let result of results">
-          <div class="card">
-            <header class="card-header">
-              <span class="project-name">
-                <span class="tag">
-                  <i class="material-icons">assignment</i> Project
-                </span>
-              </span>
-              <a [routerLink]="['/p', result._id]" class="btn btn-primary view-btn">View Project<i class="material-icons">chevron_right</i></a>
-            </header>
-            <div class="card-body">
-              <h2 class="card-title">{{result.name}}</h2>
-              <p class="card-text"><label>Type: </label> {{result.type}} / {{result.sector}}</p>
-              <p class="card-text"><label>Location: </label> {{result.location}}</p>
-              <a [routerLink]="['/p', result._id]" class="btn btn-primary"><i class="material-icons">open_in_new</i> View {{result.name}}</a>
-            </div>
-          </div>
+        <div *ngIf="results.length > 0">
+          <app-table-template [columns]="projectTableColumns" [data]="projectTableData"
+            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='getPaginatedResults($event)'>
+          </app-table-template>
+        </div>
+       
+      </div>
+      <div *ngIf="terms.dataset === 'Document'">
+        <div *ngIf="results.length > 0">
+          <app-table-template [columns]="documentTableColumns" [data]="documentTableData"
+            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='getPaginatedResults($event)'>
+          </app-table-template>
         </div>
       </div>
-    </div>
-
-    <div *ngIf="ranSearch && !searching && count != 0" class="page-controls text-center pt-3">
-      <nz-pagination
-        *ngIf="count > 10"
-        [nzPageIndex]="currentPage"
-        (nzPageIndexChange)="updatePageNumber($event)"
-        (nzPageSizeChange)="updatePageSize($event)"
-        [nzShowSizeChanger]="true"
-        [nzPageSize]="pageSize"
-        [nzTotal]="count"
-        [nzPageSizeOptions]="pageSizeArray"
-        [nzShowTotal]="totalTemplate">
-      </nz-pagination>
-      <ng-template #totalTemplate let-total>{{total}} result<span *ngIf="total != 1">s</span> found
-        <button nz-button nzType="primary" class="show_all_btn" (click)="updatePageSize(count)">Show All</button>
-      </ng-template>
+    
     </div>
   </div>
 </div>
