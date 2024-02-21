@@ -1,5 +1,71 @@
 /* Ref: https://fonts.googleapis.com/icon?family=Material+Icons */
 
+
+// Material Symbols
+@font-face{
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  src: local('Symbols Outlined'),
+  url(assets/fonts/MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].woff2) format('woff2'),
+  url(assets/fonts/MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf) format('truetype');
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+/* Recommended icon sizes */
+.material-symbols-outlined.size-20 {
+  font-size: 20px;
+  font-variation-settings: 'OPSZ' 20;
+}
+.material-symbols-outlined.size-24 {
+  font-size: 24px;
+  font-variation-settings: 'OPSZ' 24;
+}
+.material-symbols-outlined.size-28 {
+  font-size: 28px;
+  font-variation-settings: 'OPSZ' 28, 'wght' 300;
+}
+
+.material-symbols-outlined.size-32 {
+  font-size: 32px;
+  font-variation-settings: 'OPSZ' 32,'wght' 300;
+}
+
+.material-symbols-outlined.size-40 {
+  font-size: 40px;
+  font-variation-settings: 'OPSZ' 40;
+}
+.material-symbols-outlined.size-48 {
+  font-size: 48px;
+  font-variation-settings: 'OPSZ' 48;
+}
+
+/* Rules for using icons as black on a light background. */
+.material-symbols-outlined.dark {
+  background: black;
+  color: rgba(255, 255, 255, 1);
+  font-variation-settings: 'GRAD' -25;
+}
+.material-symbols-outlined.dark-inactive {
+  background: black;
+  color: rgba(255, 255, 255, 0.3);
+  font-variation-settings: 'GRAD' -25;
+}
+
+
+
 // Material Icons
 @font-face {
     font-family: 'Material Icons';
