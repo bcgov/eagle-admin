@@ -29,16 +29,16 @@ import { Constants } from 'app/shared/utils/constants';
 
 class ProjectFilterObject {
   constructor(
-    public type: object = {},
-    public eacDecision: object = {},
+    public type: Array<object> = [],
+    public eacDecision: Array<object> = [],
     public decisionDateStart: object = {},
     public decisionDateEnd: object = {},
-    public pcp: object = {},
+    public pcp: Array<object> = [],
     public proponent: Array<Org> = [],
-    public region: Array<string> = [],
-    public CEAAInvolvement: Array<string> = [],
+    public region: Array<object> = [],
+    public CEAAInvolvement: Array<any> = [],
     public vc: Array<object> = [],
-    public projectPhase: object = {},
+    public projectPhase: Array<object> = [],
   ) {}
 }
 
@@ -51,12 +51,14 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   public readonly constants = Constants;
   public projects: Array<Project> = [];
   public proponents: Array<Org> = [];
-  public regions: Array<object> = [];
+  public regions: Array<any> = [];
   public ceaaInvolvements: Array<object> = [];
   public eacDecisions: Array<object> = [];
   public commentPeriods: Array<object> = [];
   public projectTypes: Array<object> = [];
   public projectPhases: Array<object> = [];
+  public placeholderDateRangeModel: Array<object>;
+  public dateRangeItems: Array<object> = [ {} ];
 
   public loading = true;
 
@@ -361,7 +363,24 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         }
       }
     });
+    this.clearDateRange();
     this.updateCounts();
+  }
+
+  isUiFiltered() {
+    if (this.isDateRangeSet()) {
+      return true;
+    } else {
+      let count = 0;
+      Object.keys(this.filterForUI).forEach(key => {
+        if (this.filterForUI[key]) {
+          if (Array.isArray(this.filterForUI[key])) {
+            count += this.filterForUI[key].length;
+          }
+        }
+      });
+      return (count > 0);
+    }
   }
 
   updateCount(name) {
@@ -548,8 +567,51 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    clearSelectedItem(filter: string, item: any) {
-      this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+  // If date is cleared and other date in range is not set clear placeholder model
+  changeDate(event: any, date: string) {
+    if (date === 'start') {
+      this.filterForUI.decisionDateStart = event;
+      if (event === null && (this.filterForUI.decisionDateEnd === null || Object.keys(this.filterForUI.decisionDateEnd).length === 0)) {
+        this.clearDateRange();
+        this.placeholderDateRangeModel = [];
+      }
+    } else if (date === 'end') {
+      this.filterForUI.decisionDateEnd = event;
+      if (event === null && (this.filterForUI.decisionDateStart === null || Object.keys(this.filterForUI.decisionDateStart).length === 0)) {
+        this.clearDateRange();
+        this.placeholderDateRangeModel = [];
+      }
+    }
+  }
+
+  changeDateRange() {
+    // if date range is not set with valid values, clear placeholder model.
+    if (this.isDateRangeSet()) {
+      this.placeholderDateRangeModel = [{}];
+    } else {
+      this.placeholderDateRangeModel = [];
+    }
+  }
+
+  clearDateRange() {
+    this.filterForUI.decisionDateEnd = {};
+    this.filterForUI.decisionDateStart = {};
+    this.placeholderDateRangeModel = [];
+  }
+
+  isDateRangeSet() {
+    const startSet = (this.filterForUI.decisionDateStart != null && this.isNGBDate(this.filterForUI.decisionDateStart));
+    const endSet = (this.filterForUI.decisionDateEnd != null && this.isNGBDate(this.filterForUI.decisionDateEnd));
+    return (startSet || endSet);
+  }
+
+    clearSelectedItem(filterType: string, item: any) {
+      console.log('clear selected items: ', filterType, ' item: ', item);
+      if (filterType === 'eacDecision' || filterType === 'projectPhase' || filterType === 'CEAAInvolvement') {
+        this.filterForUI[filterType] = this.filterForUI[filterType].filter(option => option._id !== item._id);
+      } else {
+        this.filterForUI[filterType] = this.filterForUI[filterType].filter(option => option.name !== item.name);
+      }
     }
 
     public filterCompareWith(filter: any, filterToCompare: any) {

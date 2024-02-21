@@ -30,123 +30,192 @@
                                     [(ngModel)]="tableParams.keywords" autofocus />
                                 <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
                                     <!-- prevent searching if input is empty or we're already searching -->
-                                    <button class="btn btn-primary" type="submit">
+                                    <button class="btn btn-primary search-button" type="submit">
                                         <span>Search</span>
                                     </button>
                                 </div>
                             </div>
-                            <div class="advanced-search">
-                                <div class="row">
-                                    <div *ngIf="showAdvancedSearch" class="col-md-9">
-                                        <button type="button" (click)="toggleFilter('type');" [ngClass]="{'btn': true, 'type-btn': true,
-                        'btn-dark': showFilters.type,
-                        'btn-secondary': !showFilters.type && numFilters.type > 0,
-                        'btn-outline-dark': !showFilters.type && numFilters.type == 0}">
-                                            Project Type<span
-                                                *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
+                            <div class="advanced-filter">
+                                <div class="row filter-row">
+
+                                    <div class="filter-badges col-md-11 first">
+                                        <div class="filter-label">
+                                            <p>Filters:</p>
+                                        </div>
+                                        <button *ngFor="let filter of filterForUI.type" class="btn filter-badge type">
+                                            <span class="ng-value-label">{{filter.name}} </span>
+                                            <span class="ng-value-icon left" (click)="clearSelectedItem('type', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
                                         </button>
-                                        <button type="button" (click)="toggleFilter('eacDecision');" [ngClass]="{'btn': true, 'decision-btn': true,
-                        'btn-dark': showFilters.eacDecision,
-                        'btn-secondary': !showFilters.eacDecision && numFilters.eacDecision > 0,
-                        'btn-outline-dark': !showFilters.eacDecision && numFilters.eacDecision == 0}">
-                                            EA Decision<span
-                                                *ngIf="numFilters.eacDecision > 0 && !showFilters.eacDecision">&nbsp;({{ numFilters.eacDecision }})</span>
+                                        <button *ngFor="let filter of filterForUI.pcp" class="btn filter-badge pcp">
+                                            <span class="ng-value-label">{{filter.name}} </span>
+                                            <span class="ng-value-icon left" (click)="clearSelectedItem('pcp', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
                                         </button>
-                                        <button type="button" (click)="toggleFilter('pcp');" [ngClass]="{'btn': true, 'pcp-btn': true,
-                        'btn-dark': showFilters.pcp,
-                        'btn-secondary': !showFilters.pcp && numFilters.pcp > 0,
-                        'btn-outline-dark': !showFilters.pcp && numFilters.pcp == 0}">
-                                            Public Comment Period<span
-                                                *ngIf="numFilters.pcp > 0 && !showFilters.pcp">&nbsp;({{ numFilters.pcp }})</span>
+                                        <button *ngFor="let filter of filterForUI.eacDecision"
+                                            class="btn filter-badge eacDecision">
+                                            <span class="ng-value-label">{{filter.name}} ({{filter.legislation}})
+                                            </span>
+                                            <span class="ng-value-icon left"
+                                                (click)="clearSelectedItem('eacDecision', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
                                         </button>
-                                        <button type="button" (click)="toggleFilter('more');" [ngClass]="{'btn': true, 'more-btn': true,
-                        'btn-dark': showFilters.more,
-                        'btn-secondary': !showFilters.more && numFilters.more > 0,
-                        'btn-outline-dark': !showFilters.more && numFilters.more == 0}">
-                                            More Filters&hellip;<span
-                                                *ngIf="numFilters.more > 0 && !showFilters.more">&nbsp;({{ numFilters.more }})</span>
+                                        <button *ngIf="isDateRangeSet()" class="btn filter-badge eacDecisionDate">
+                                            <span class="ng-value-label">EA Date Range </span>
+                                            <span class="ng-value-icon left" (click)="clearDateRange()"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
                                         </button>
-                                        <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear
-                                            All</button>
+                                        <button *ngFor="let filter of filterForUI.proponent"
+                                            class="btn filter-badge proponent">
+                                            <span class="ng-value-label">{{filter.name}} </span>
+                                            <span class="ng-value-icon left"
+                                                (click)="clearSelectedItem('proponent', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
+                                        </button>
+                                        <button *ngFor="let filter of filterForUI.projectPhase"
+                                            class="btn filter-badge projectPhase">
+                                            <span class="ng-value-label">{{filter.name}} ({{filter.legislation}})
+                                            </span>
+                                            <span class="ng-value-icon left"
+                                                (click)="clearSelectedItem('projectPhase', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
+                                        </button>
+                                        <button *ngFor="let filter of filterForUI.CEAAInvolvement"
+                                            class="btn filter-badge CEAAInvolvement">
+                                            <span class="ng-value-label">{{filter.name}} ({{filter.legislation}})
+                                            </span>
+                                            <span class="ng-value-icon left"
+                                                (click)="clearSelectedItem('CEAAInvolvement', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
+                                        </button>
+                                        <button *ngFor="let filter of filterForUI.region"
+                                            class="btn filter-badge region">
+                                            <span class="ng-value-label">{{filter.name}} </span>
+                                            <span class="ng-value-icon left"
+                                                (click)="clearSelectedItem('region', filter)"
+                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                    clear
+                                                </i></span>
+                                        </button>
+
+                                        <button *ngIf="isUiFiltered()" class="btn filter-badge btn-outline-dark"
+                                            type="button" (click)="clearAll();">
+                                            <span class="ng-value-label">Clear Filters </span>&nbsp;
+                                            <i class="material-symbols-outlined size-20">
+                                                filter_alt_off
+                                            </i>
+                                        </button>
                                     </div>
-                                    <div
-                                        [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
-                                        <button class="btn btn-secondary" type="button"
+                                    <div class="col-md-2 last" [ngClass]="{'show-advanced-search-button': true }">
+                                        <button class="btn btn-secondary btn-show-advanced" type="button"
                                             (click)="showAdvancedSearch = !showAdvancedSearch;">
                                             <span *ngIf="showAdvancedSearch">Hide Advanced Search</span>
                                             <span *ngIf="!showAdvancedSearch">Show Advanced Search</span>
                                         </button>
                                     </div>
                                 </div>
-                                <div *ngIf="showAdvancedSearch && showFilters.type"
-                                    class="type-filters project-filter row">
-                                    <div class="col-md-6 filter-border">
-                                        <div class="col-md-12">
-                                            <div class="row">
-                                              <b>Project Type</b>
-                                            </div>
-                                          </div>
-                                          <div class="row">
-                                            <div class="col-md-12">
-                                              <ng-select
-                                                id="type"
-                                                name="type"
-                                                multiple="true"
-                                                bindLabel="name"
-                                                placeholder="Type Project Type"
-                                                [items]="projectTypes"
-                                                [closeOnSelect]="false"
-                                                [(ngModel)]="filterForUI.type"
-                                                [compareWith]="filterCompareWith"
-                                              >
-                                              </ng-select>
-                                            </div>
-                                          </div>
-                                    </div>
-                                </div>
-                                <div *ngIf="showAdvancedSearch && showFilters.eacDecision"
-                                    class="decision-filters project-filter row">
-                                    <div class="col-md-8 filter-border">
-                                        <div class="col-md-12">
-                                            <div class="row">
-                                              <b>EA Decision</b>
-                                            </div>
-                                            <div class="row">
-                                              <div class="form-group">
-                                                <ng-select
-                                                  id="eacDecision"
-                                                  name="eacDecision"
-                                                  multiple="true"
-                                                  groupBy="legislation"
-                                                  bindLabel="name"
-                                                  placeholder="Type EA Decision"
-                                                  [items]="eacDecisions"
-                                                  [closeOnSelect]="false"
-                                                  [markFirst]="false"
-                                                  [(ngModel)]="filterForUI.eacDecision"
-                                                  [compareWith]="filterCompareWith"
-                                                >
-                                                    <ng-template ng-label-tmp let-item="item">
-                                                        <span class="ng-value-icon left" (click)="clearSelectedItem('eacDecision', item)" aria-hidden="true">×</span>
-                                                        <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
-                                                    </ng-template>
-                                                    <ng-template ng-optgroup-tmp let-item="item" let-index="index">
-                                                        {{item.legislation}} Act Terms
-                                                    </ng-template>
-                                                </ng-select>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        <div>
-                                            <div class="row date">
-                                                <b>Decision Date</b>
-                                            </div>
-                                            <div class="row date-range">
-                                                <div class="col-md-6">
-                                                    <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="yyyy-mm-dd"
+
+                                <div *ngIf="showAdvancedSearch" class="row filter-row"
+                                    [ngClass]="{'filters-hidden': !showAdvancedSearch}">
+                                    <div class="project-filter first col-md-11">
+                                        <div class="type-filters filter">
+                                            <ng-select id="type" name="type" multiple="true" bindLabel="name"
+                                                placeholder="&nbsp;Project Type" [items]="projectTypes"
+                                                [closeOnSelect]="false" [searchable]="false"
+                                                [(ngModel)]="filterForUI.type" [compareWith]="filterCompareWith">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:inline" class="ng-placeholder custom"><i
+                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            work
+                                                        </i>&nbsp;Project Type
+                                                        ({{filterForUI.type.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    &nbsp;{{item.name}}
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                        <div class="pcp-filters filter">
+                                            <ng-select id="pcp" name="pcp" multiple="true" bindLabel="name"
+                                                placeholder="&nbsp;Comment Period" [items]="commentPeriods"
+                                                [closeOnSelect]="false" [searchable]="false"
+                                                [(ngModel)]="filterForUI.pcp" [compareWith]="filterCompareWith">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:inline" class="ng-placeholder"><i
+                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            comment
+                                                        </i>&nbsp;Comment Period
+                                                        ({{filterForUI.pcp.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    &nbsp;{{item.name}}
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                        <div class="form-group decision-filters filter">
+                                            <ng-select id="eacDecision" name="eacDecision" multiple="true"
+                                                groupBy="legislation" bindLabel="name" placeholder="&nbsp;EA Decision"
+                                                [items]="eacDecisions" [closeOnSelect]="false" [markFirst]="false"
+                                                [searchable]="false" [(ngModel)]="filterForUI.eacDecision"
+                                                [compareWith]="filterCompareWith">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:inline" class="ng-placeholder custom"><i
+                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            mark_as_unread
+                                                        </i>&nbsp;EA Decision
+                                                        ({{filterForUI.eacDecision.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    {{item.name}} ({{item.legislation}})
+                                                </ng-template>
+                                                <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                    {{item.legislation}} Act Terms
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                        <div class="eaDate filter">
+                                            <ng-select #dateRange id="dateRange" name="dateRange" [multiple]="false"
+                                                bindLabel="name" placeholder="&nbsp;EA Decision Date"
+                                                [items]="dateRangeItems" [closeOnSelect]="false" [searchable]="false"
+                                                [clearOnBackspace]="false" [compareWith]="filterCompareWith"
+                                                (clear)="clearDateRange()" [ngModel]="placeholderDateRangeModel"
+                                                (ngModelChange)="changeDateRange()">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:inline" class="ng-placeholder"><i
+                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            date_range
+                                                        </i>&nbsp;EA Decision Date</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp>
+                                                    <div class="date-input date-range">
+                                                        <input id="decisionDateStart" type="text" class="form-control"
+                                                            placeholder="yyyy-mm-dd"
+                                                            (ngModelChange)="changeDate($event, 'start')"
                                                             name="decisionDateStart"
-                                                            [(ngModel)]="filterForUI.decisionDateStart" ngbDatepicker
+                                                            [ngModel]="filterForUI.decisionDateStart" ngbDatepicker
                                                             #decisionDateStartPicker="ngbDatepicker"
                                                             [minDate]="constants.minPickerDate"
                                                             [maxDate]="constants.maxPickerDate">
@@ -157,16 +226,15 @@
                                                                 <i class="material-icons">date_range</i>
                                                             </button>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="yyyy-mm-dd"
+                                                        &nbsp;to&nbsp;
+                                                        <input id="decisionDateEnd" type="text" class="form-control"
+                                                            placeholder="yyyy-mm-dd"
+                                                            (ngModelChange)="changeDate($event, 'end')"
                                                             name="decisionDateEnd"
-                                                            [(ngModel)]="filterForUI.decisionDateEnd" ngbDatepicker
+                                                            [ngModel]="filterForUI.decisionDateEnd" ngbDatepicker
                                                             #decisionDateEndPicker="ngbDatepicker"
                                                             [minDate]="constants.minPickerDate"
-                                                            [maxDate]="constants.maxPickerDate">
+                                                            [maxDate]="constants.maxPickerDate" />
                                                         <div class="input-group-append">
                                                             <button class="btn btn-outline-secondary calendar"
                                                                 (click)="decisionDateEndPicker.toggle()" type="button">
@@ -174,154 +242,110 @@
                                                             </button>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div *ngIf="showAdvancedSearch && showFilters.pcp"
-                                    class="pcp-filters project-filter row">
-                                    <div class="col-md-3 filter-border">
-                                        <div class="col-md-12">
-                                          <div class="row">
-                                            <b>Public Comment Period</b>
-                                          </div>
-                                        </div>
-                                        <div class="row">
-                                          <div class="col-md-12">
-                                            <ng-select
-                                              id="pcp"
-                                              name="pcp"
-                                              multiple="true"
-                                              bindLabel="name"
-                                              placeholder="Type Comment Period"
-                                              [items]="commentPeriods"
-                                              [closeOnSelect]="false"
-                                              [(ngModel)]="filterForUI.pcp"
-                                              [compareWith]="filterCompareWith"
-                                            >
+                                                </ng-template>
                                             </ng-select>
-                                          </div>
                                         </div>
-                                      </div>
-                                </div>
-                                <div *ngIf="showAdvancedSearch && showFilters.more"
-                                    class="more-filters project-filter row">
-                                    <div class="col-md-11 filter-border">
-                                        <div class="row sub-filters">
-                                            <div class="col-md-12">
-                                                <div class="row">
-                                                    <b>Proponent</b>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="form-group">
-                                                        <ng-select
-                                                            id="proponent"
-                                                            name="proponent"
-                                                            multiple="true"
-                                                            bindLabel="name"
-                                                            placeholder="Type Proponent Name"
-                                                            [items]="proponents"
-                                                            [closeOnSelect]="false"
-                                                            [(ngModel)]="filterForUI.proponent"
-                                                            [compareWith]="filterCompareWith"
-                                                        >
-                                                        </ng-select>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <hr />
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <b>Region</b>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="form-group">
-                                                        <ng-select
-                                                            id="region"
-                                                            name="region"
-                                                            multiple="true"
-                                                            bindLabel="name"
-                                                            placeholder="Type Region Name"
-                                                            [items]="regions"
-                                                            [closeOnSelect]="false"
-                                                            [(ngModel)]="filterForUI.region"
-                                                            [compareWith]="filterCompareWith"
-                                                        >
-                                                        </ng-select>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <hr />
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <b>IAAC Involvement</b>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="form-group">
-                                                        <ng-select
-                                                            id="ceaaInvolvement"
-                                                            name="ceaaInvolvement"
-                                                            groupBy="legislation"
-                                                            multiple="true"
-                                                            bindLabel="name"
-                                                            placeholder="Type Involvement"
-                                                            [items]="ceaaInvolvements"
-                                                            [closeOnSelect]="false"
-                                                            [markFirst]="false"
-                                                            [(ngModel)]="filterForUI.CEAAInvolvement"
-                                                            [compareWith]="filterCompareWith"
-                                                        >
-                                                            <ng-template ng-label-tmp let-item="item">
-                                                                <span class="ng-value-icon left" (click)="clearSelectedItem('CEAAInvolvement', item)" aria-hidden="true">×</span>
-                                                                <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
-                                                            </ng-template>
-                                                            <ng-template ng-optgroup-tmp let-item="item" let-index="index">
-                                                                {{item.legislation}} Act Terms
-                                                            </ng-template>
-                                                        </ng-select>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                  <div class="col-md-12">
-                                                      <hr />
-                                                  </div>
-                                              </div>
-                                              <div class="row">
-                                                  <b>Project Phase</b>
-                                              </div>
-                                              <div class="row">
-                                                  <div class="form-group">
-                                                      <ng-select
-                                                          id="projectPhase"
-                                                          name="projectPhase"
-                                                          multiple="true"
-                                                          groupBy="legislation"
-                                                          bindLabel="name"
-                                                          placeholder="Type Project Phase"
-                                                          [items]="projectPhases"
-                                                          [closeOnSelect]="false"
-                                                          [markFirst]="false"
-                                                          [(ngModel)]="filterForUI.projectPhase"
-                                                      >
-                                                          <ng-template ng-label-tmp let-item="item">
-                                                              <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)" aria-hidden="true">×</span>
-                                                              <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
-                                                          </ng-template>
-                                                          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
-                                                              {{item.legislation}} Act Terms
-                                                          </ng-template>
-                                                      </ng-select>
-                                                  </div>
-                                              </div>
-                                            </div>
+                                        <div *ngIf="showAdvancedSearch && showFilters.more" class="more-filters filter">
+                                            <ng-select id="proponent" name="proponent" multiple="true" bindLabel="name"
+                                                placeholder="&nbsp;Proponent" [items]="proponents"
+                                                [closeOnSelect]="false" [(ngModel)]="filterForUI.proponent"
+                                                [compareWith]="filterCompareWith" [searchable]="false">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:block" class="ng-placeholder"><i
+                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            domain
+                                                        </i>&nbsp;Proponent ({{filterForUI.proponent.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    &nbsp;{{item.name}}
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                        <div *ngIf="showAdvancedSearch && showFilters.more" class="more-filters filter">
+                                            <ng-select id="projectPhase" name="projectPhase" multiple="true"
+                                                groupBy="legislation" bindLabel="name" placeholder="&nbsp;Project Phase"
+                                                [items]="projectPhases" [closeOnSelect]="false" [markFirst]="false"
+                                                [(ngModel)]="filterForUI.projectPhase" [searchable]="false">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:block" class="ng-placeholder"><i
+                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            view_timeline
+                                                        </i>&nbsp;Project Phase
+                                                        ({{filterForUI.projectPhase.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    &nbsp;{{item.name}}
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                        <div *ngIf="showAdvancedSearch && showFilters.more" class="more-filters filter">
+                                            <ng-select id="ceaaInvolvement" name="ceaaInvolvement" groupBy="legislation"
+                                                multiple="true" bindLabel="name" placeholder="&nbsp; IAAC Involvement"
+                                                [items]="ceaaInvolvements" [closeOnSelect]="false" [markFirst]="false"
+                                                [(ngModel)]="filterForUI.CEAAInvolvement"
+                                                [compareWith]="filterCompareWith" [searchable]="false">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:block" class="ng-placeholder"><i
+                                                            class="material-symbols-outlined size-28 center-icon">
+                                                            hub
+                                                        </i>&nbsp; IAAC Involvement
+                                                        ({{filterForUI.CEAAInvolvement.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    &nbsp;{{item.name}}
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+
+                                        <div *ngIf="showAdvancedSearch && showFilters.more" class="more-filters filter">
+                                            <ng-select id="region" name="region" multiple="true" bindLabel="name"
+                                                placeholder="&nbsp;Region" [items]="regions" [closeOnSelect]="false"
+                                                [(ngModel)]="filterForUI.region" [compareWith]="filterCompareWith"
+                                                [searchable]="false">
+                                                <ng-template ng-multi-label-tmp>
+                                                    <span style="display:block" class="ng-placeholder">
+                                                        <i class="material-symbols-outlined size-32 center-icon">
+                                                            distance
+                                                        </i>&nbsp;Region ({{filterForUI.region.length}})</span>
+                                                </ng-template>
+                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                                                    let-index="index">
+                                                    <input id="item-{{index}}" type="checkbox"
+                                                        [ngModel]="item$.selected" name="item-{{index}}" />
+                                                    &nbsp;{{item.name}}
+                                                </ng-template>
+                                            </ng-select>
+                                        </div>
+                                        <div *ngIf="showAdvancedSearch && showFilters.more" class="eaDate filter">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2 last">
+                                        <div class="row controls">
+                                            <button *ngIf="showAdvancedSearch" type="button"
+                                                (click)="toggleFilter('more');"
+                                                [ngClass]="{'btn': true, 'more-btn': true,
+                                                                                    'btn-dark': showFilters.more,
+                                                                                    'btn-secondary': !showFilters.more && numFilters.more > 0,
+                                                                                    'btn-outline-dark': !showFilters.more && numFilters.more == 0}">
+                                                More Filters&hellip;<span
+                                                    *ngIf="numFilters.more > 0 && !showFilters.more">&nbsp;({{
+                                                    numFilters.more }})</span>
+                                            </button>
+
                                         </div>
                                     </div>
                                 </div>
+
                                 <button *ngIf="showAdvancedSearch && isShowingFilter()"
                                     class="btn btn-primary search-button" type="submit">
                                     <span>Search</span>

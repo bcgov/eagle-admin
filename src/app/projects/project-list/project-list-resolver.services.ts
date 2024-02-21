@@ -13,6 +13,8 @@ import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { OrgService } from 'app/services/org.service';
 import { SearchService } from 'app/services/search.service';
 
+import { Constants } from 'app/shared/utils/constants';
+
 @Injectable()
 export class ProjectListResolver implements Resolve<Object> {
   public proponents: Array<Org> = [];
@@ -51,11 +53,7 @@ export class ProjectListResolver implements Resolve<Object> {
     notReviewable: 'Not Designated Reviewable'
   };
 
-  private PCP_MAP: object = {
-    pending: 'pending',
-    open: 'open',
-    closed: 'closed'
-  };
+  private PCP_MAP: object = Constants.PCP_COLLECTION;
 
   private REGIONS_COLLECTION: Array<object> = [
     { code: 'Cariboo', name: 'Cariboo' },

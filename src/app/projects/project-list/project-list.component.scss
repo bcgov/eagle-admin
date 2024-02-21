@@ -162,13 +162,23 @@
   padding: 8px;
 }
 
-.show-advanced-search-button .btn {
-  float: right;
-  margin-right: 8px !important;
-  width: 200px;
+.search-button{
+  min-width: 10rem;
+  font-weight: 700;
+  background: #fcba18;
+  color: #212529;
+  border: none;
 }
 
-.advanced-search {
+.search-button:hover{
+  min-width: 10rem;
+  font-weight: 700;
+  background: #0069d9;
+  color: #fff;
+  border: none;
+}
+
+.advanced-filter {
   position: relative;
 
   hr {
@@ -177,77 +187,80 @@
   }
 
   .project-filter {
-    margin-left: 15px;
-    margin-top: 10px;
-    margin-right: 15px;
-    margin-bottom: 10px;
-  }
+    margin-top: 2px;
+    margin-bottom: 6px;
+    padding-left: 0px;
+    display: flex;
+    flex-wrap:wrap;
+    gap: 6px 12px;
 
-  .filter-border {
-    border: solid 1px lightgray;
-    padding: 15px;
-    min-width: 155px;
-  }
-
-  .type-filters {
-    margin-left: 8px;
-  }
-
-  .decision-filters {
-    margin-left: 172px;
-  }
-
-  .pcp-filters {
-    margin-left: 335px;
-
-    .filter-border {
-      min-width: 230px;
+    .filter{
+      min-width: 225px;
+      max-width: 300px;
+      flex: 1 0 calc(22% - 58px);
+      margin-bottom: 0px;
+    }
+    .eaDate{
+      flex: 1 0 calc(35% - 58px);
+      max-width: 450px;
     }
   }
 
   .more-filters {
-    margin-left: 8px;
-    margin-right: 8px;
+    margin-left: 0px;
+    margin-right: 0px;
+  }
 
-    .sub-filters {
-      margin-left: 0px;
+  .controls{
+    display: flex;
+    margin-right: 0px;
+    margin-top: 15px;
+    align-content: flex-end;
+  }
 
-      hr {
-        margin-left: -1rem;
-      }
-    }
+  .show-advanced-search-button button{
+    float: right;
+    margin: 0px 0px 6px auto;
+    width: 200px;
   }
 
   .btn {
     margin: 8px 0px 8px 8px;
   }
 
-  .type-btn {
-    width: 155px;
-  }
-
-  .decision-btn {
-    width: 155px;
-  }
-
-  .pcp-btn {
-    width: 230px;
+  .more-btn{
+    margin: 0px;
+    float:right;
+    margin-left:auto;
   }
 
   .calendar {
     margin: 0px;
   }
 
-  .date {
-    margin-left: 0px;
-  }
-
   .date-range {
-    margin-left: -15px;
-    margin-top: 15px;
-
+    width:100%;
+    margin-left: 0px;
+    .date-from{
+      padding-right:10px;
+      max-width: 300px;
+      flex: 1 0 calc(50% - 20px);
+    }
+    .date-to{
+      padding-left:10px;
+      max-width: 300px;
+      flex: 1 0 calc(50% - 20px);
+    }
+    
     .form-control {
       z-index: 0px !important;
+      height: 2rem;
+    }
+    .input-group-append{
+      height: 2rem;
+    }
+    .calendar {
+      padding-top: 0px;
     }
   }
 
@@ -261,25 +274,182 @@
     right: 8px;
     bottom: -8px;
   }
-}
 
-.results {
-  color: black;
-}
-
-.btn-group-toggle > .btn {
-    margin-bottom: 0;
-    background: none;
-    color: #13477b;
-    border: 1px solid #858b99;
-    font-weight: 600;
-
-    &:hover {
-      background: #fcb118;
+    ng-select {
+      width: 100%;
     }
 
-    &.active {
+    #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host{
+      overflow: visible;
+    }
+
+    ::ng-deep .ng-select.ng-select-single .ng-select-container{
+      height: 46px;
+    }
+
+    .date-input{
+      display:flex;
+    }
+  
+    .ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
+      color: #585858;
+      display: flex;
+      align-items: center;
+    }
+  
+    .ng-select ::ng-deep .ng-placeholder {
+      color: #585858;
+    }
+  
+    .center-icon {
+      vertical-align: middle;
+    }
+  
+    // set icons in placeholders
+    .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\e943";
+    }
+  
+    .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\e24c";
+    }
+  
+    .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\e9bc";
+    }
+
+    .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\e916";
+    }
+  
+    .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\e7ee";
+    }
+  
+    .ng-select#projectPhase ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\eb85";
+    }
+  
+    .ng-select#ceaaInvolvement ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 28px;
+      font-variation-settings: 'OPSZ' 28, 'wght' 300;
+      content: "\e9f4";
+    }
+  
+    .ng-select#region ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+      font-family: 'Material Symbols Outlined';
+      font-size: 32px;
+      font-variation-settings: 'OPSZ' 32, 'wght' 300;
+      content: "\f6ea";
+    }
+  
+    .ng-select ::ng-deep .ng-placeholder.custom::before {
+      content: none;
+    }
+  
+    .ng-placeholder {
+      font-weight: 600;
+    }
+  
+    .filter-label {
+      display: flex;
+  
+      p {
+        margin: 0px;
+        align-self: center;
+      }
+    }
+  
+    .filter-row {
+      position: relative;
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+  
+    .filters-hidden {
+      flex-direction: row-reverse;
+    }
+  
+    .filter-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0px 4px;
+      margin-top: 0px;
+  
+      .type,
+      .proponent,
+      .region {
+        background: #FEEBAB;
+        color: #553402;
+      }
+  
+      .pcp,
+      .projectPhase {
+        background: #E3EBFF;
+        color: #022170;
+      }
+  
+      .eacDecision, .eacDecisionDate,
+      .CEAAInvolvement {
+        background: #e9ecef;
+        color: #495057;
+      }
+    }
+  
+    .filter-badge {
+      border-radius: 4px;
+      margin-top: 2px;
+      padding: .3rem .6rem;
+    }
+  
+    .last {
+      padding-right: 0px;
+      flex: 0 1 230px;
+    }
+  
+    .first {
+      padding-left: 0px;
+      flex: 1 0 calc(100% - 230px);
+    }
+  
+    }
+  
+    .results {
+      color: black;
+    }
+  
+    .btn-group-toggle>.btn {
+      margin-bottom: 0;
+      background: none;
+      color: #13477b;
+      border: 1px solid #858b99;
+      font-weight: 600;
+  
+      &:hover {
+        background: #fcb118;
+      }
+  
+      &.active {
         background: #235383;
         color: #fff;
+      }
     }
-  }
