@@ -92,9 +92,9 @@ export class Constants {
 
   // This order matters for the activity component
   public static readonly activityTypes = [
-    'Public Comment Period',
-    'Project Notification Public Comment Period',
-    'News'
+    { code: 'pcp', name: 'Public Comment Period' },
+    { code: 'notification', name: 'Project Notification Public Comment Period' },
+    { code: 'news', name: 'News' }
   ];
 
   public static readonly documentTypes = {

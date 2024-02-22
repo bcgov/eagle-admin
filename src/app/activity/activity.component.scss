@@ -51,10 +51,11 @@ h2 {
 }
 
 form {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .main-search-field {
+  padding:8px;
   input {
     height: 3rem;
     color: #000;
@@ -75,10 +76,214 @@ form {
   }
 }
 
+.search-area {
+  background-color: white;
+  border: 1px solid lightgray;
+}
+
+.search-button{
+  min-width: 10rem;
+  font-weight: 700;
+  background: #fcba18;
+  color: #212529;
+  border: none;
+}
+
+.search-button:hover{
+  min-width: 10rem;
+  font-weight: 700;
+  background: #0069d9;
+  color: #fff;
+  border: none;
+}
+
 .form-text {
   margin-top: 0.55rem;
   font-size: 0.85rem;
 }
+
+
+// Filters
+.advanced-filter {
+  position: relative;
+
+  hr {
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .activity-filter {
+    margin-top: 2px;
+    margin-bottom: 6px;
+    padding-left: 0px;
+    display: flex;
+    flex-wrap:wrap;
+    gap: 6px 12px;
+
+    .filter{
+      min-width: 225px;
+      max-width: 300px;
+      flex: 1 0 22%;
+      margin-bottom: 0px;
+    }
+    .datePosted{
+      flex: 1 0 30%;
+      max-width: 550px;
+    }
+  }
+
+  .more-filters {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
+.date-range {
+  width:100%;
+  margin-left: 0px;
+  .date-from{
+    padding-right:10px;
+    max-width: 300px;
+    flex: 1 0 calc(50% - 20px);
+  }
+  .date-to{
+    padding-left:10px;
+    max-width: 300px;
+    flex: 1 0 calc(50% - 20px);
+  }
+  
+  .form-control {
+    z-index: 0px !important;
+    height: 2rem;
+  }
+  .input-group-append{
+    height: 2rem;
+  }
+  .calendar {
+    padding-top: 0px;
+    margin: 0px;
+  }
+}
+
+#dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host{
+  overflow: visible;
+}
+
+::ng-deep .ng-select.ng-select-single .ng-select-container{
+  height: 46px;
+}
+
+.date-input{
+  display:flex;
+}
+
+
+// Filter badges
+.filter-label {
+  display: flex;
+
+  p {
+    margin: 0px;
+    align-self: center;
+  }
+}
+
+.filter-row {
+  position: relative;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.filter-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0px 4px;
+  margin-top: 0px;
+
+  .project, .cAndE
+  {
+    background: #FEEBAB;
+    color: #553402;
+  }
+
+  .type {
+    background: #E3EBFF;
+    color: #022170;
+  }
+
+  .dateAddedRange {
+    background: #e9ecef;
+    color: #495057;
+  }
+
+  .filter-badge {
+    border-radius: 4px;
+    margin-top: 2px;
+    padding: .3rem .6rem;
+  }
+}
+
+.btn {
+  margin: 8px 0px 8px 8px;
+}
+
+.last {
+  padding-right: 0px;
+  flex: 0 1 230px;
+}
+
+.first {
+  padding-left: 0px;
+  flex: 1 0 calc(100% - 230px);
+}
+
+
+// Set icons in filter placeholders
+.ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Symbols Outlined';
+  font-size: 32px;
+  font-variation-settings: 'OPSZ' 32, 'wght' 300;
+  content: "\e24c";
+}
+
+.ng-select#projects ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Symbols Outlined';
+  font-size: 32px;
+  font-variation-settings: 'OPSZ' 32, 'wght' 300;
+  content: "\e943";
+}
+
+.ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Symbols Outlined';
+  font-size: 32px;
+  font-variation-settings: 'OPSZ' 32, 'wght' 300;
+  content: "\e916";
+}
+
+.ng-select ::ng-deep .ng-placeholder.custom::before {
+  content: none;
+}
+
+.ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
+  color: #585858;
+  display: flex;
+  align-items: center;
+}
+
+.ng-select ::ng-deep .ng-placeholder {
+  color: #585858;
+}
+
+.ng-placeholder {
+  font-weight: 600;
+}
+
+.center-icon {
+  vertical-align: middle;
+}
+
+}
+
+
 
 // Search Results Table
 $sr-table-row-bg: #f7f8fa;

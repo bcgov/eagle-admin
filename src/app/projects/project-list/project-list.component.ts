@@ -226,6 +226,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   paramsToCollectionFilters(params, name, collection, identifyBy) {
+    this.filterForUI[name] = [];
     delete this.filterForURL[name];
     delete this.filterForAPI[name];
 
@@ -237,6 +238,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         const record = _.find(collection, [ identifyBy, value ]);
         if (record) {
           confirmedValues.push(value);
+          this.filterForUI[name].push(record);
         }
       });
       if (confirmedValues.length) {

@@ -10,6 +10,22 @@ import { TableObject } from 'app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { SearchTerms } from 'app/models/search';
+import { Project } from 'app/models/project';
+import { ProjectService } from 'app/services/project.service';
+import { Constants } from 'app/shared/utils/constants';
+import * as moment from 'moment';
+import * as _ from 'lodash';
+
+class ActivityFilterObject {
+  constructor(
+    public type: Array<object> = [],
+    public dateAddedStart: object = {},
+    public dateAddedEnd: object = {},
+    public project: Array<Project> = [],
+    public complianceAndEnforcement: boolean = false,
+  ) {}
+}
+
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
@@ -17,6 +33,7 @@ import { SearchTerms } from 'app/models/search';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ActivityComponent implements OnInit, OnDestroy {
+  public readonly constants = Constants;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
 
@@ -25,9 +42,17 @@ export class ActivityComponent implements OnInit, OnDestroy {
   public entries: RecentActivity[] = null;
   public terms = new SearchTerms();
   public searchForm = null;
-  public typeFilters = [];
-  public filterPublicCommentPeriod = false;
-  public filterNews = false;
+  public projects: Array<Project> = [];
+  public activityTypes: Array<object> = [];
+  public placeholderDateRangeModel: Array<object>;
+  public dateRangeItems: Array<object> = [ {} ];
+
+  public dateRangeSet = false;
+
+  public filterForURL: object = {};
+  public filterForAPI: object = {};
+
+  public filterForUI: ActivityFilterObject = new ActivityFilterObject();
 
   public tableColumns: any[] = [
     {
@@ -53,12 +78,12 @@ export class ActivityComponent implements OnInit, OnDestroy {
     {
       name: 'Date',
       value: 'dateAdded',
-      width: '10%'
+      width: '12%'
     },
     {
       name: 'Status',
       value: 'active',
-      width: '10%'
+      width: '8%'
     },
     {
       name: 'Delete',
@@ -66,49 +91,52 @@ export class ActivityComponent implements OnInit, OnDestroy {
       nosort: true
     }
   ];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private projectService: ProjectService,
     private _changeDetectionRef: ChangeDetectorRef,
     private tableTemplateUtils: TableTemplateUtils,
   ) { }
 
   ngOnInit() {
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
-        if (params.type != null) {
-          this.typeFilters = params.type.split(',');
-          if (this.typeFilters.includes('publicCommentPeriod')) { this.filterPublicCommentPeriod = true; }
-          if (this.typeFilters.includes('news')) { this.filterNews = true; }
-        }
+    this.projectService.getAll(1, 1000, '+name')
+      .switchMap((res: any) => {
+        this.projects = res.data || [];
+        this.activityTypes = Constants.activityTypes;
 
-        let filterForUrl = params.type == null ? null : { 'type': params.type };
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, filterForUrl);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = '-dateAdded';
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, filterForUrl, this.tableParams.keywords);
+        return this.route.params;
+      })
+      .switchMap((res: any) => {
+        let params = { ...res };
+
+        this.setFiltersFromParams(params);
+
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
+          params,
+          this.filterForURL
+        );
+        return this.route.data;
+      })
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res: any) => {
+        if (res) {
+          if (res.activities && res.activities[0].data.meta && res.activities[0].data.meta.length > 0) {
+            this.tableParams.totalListItems = res.activities[0].data.meta[0].searchResultsTotal;
+            this.entries = res.activities[0].data.searchResults;
+          } else {
+            this.tableParams.totalListItems = 0;
+            this.entries = [];
+          }
+          this.setRowData();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        } else {
+          alert('Uh-oh, couldn\'t load valued components');
+          // project not found --> navigate back to search
+          this.router.navigate(['/search']);
         }
-        this.route.data
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res: any) => {
-            if (res) {
-              if (res.activities[0].data.meta && res.activities[0].data.meta.length > 0) {
-                this.tableParams.totalListItems = res.activities[0].data.meta[0].searchResultsTotal;
-                this.entries = res.activities[0].data.searchResults;
-              } else {
-                this.tableParams.totalListItems = 0;
-                this.entries = [];
-              }
-              this.setRowData();
-              this.loading = false;
-              this._changeDetectionRef.detectChanges();
-            } else {
-              alert('Uh-oh, couldn\'t load valued components');
-              // project not found --> navigate back to search
-              this.router.navigate(['/search']);
-            }
-          });
       });
   }
 
@@ -155,7 +183,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
     this.onSubmit(this.tableParams.currentPage);
   }
 
-  public onSubmit(pageNumber = 1, reset = false) {
+  public onSubmit(pageNumber = 1) {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
@@ -166,31 +194,203 @@ export class ActivityComponent implements OnInit, OnDestroy {
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
+    params['sortBy'] = this.tableParams.sortBy = '';
+    params['keywords'] = this.tableParams.keywords;
+    params['pageSize'] = this.tableParams.pageSize;
 
-    if (reset) {
-      this.tableParams.sortBy = '';
-      this.tableParams.pageSize = 10;
-      this.tableParams.keywords = '';
-      // this.filter.dateAddedStart = '';
-      // this.filter.dateAddedEnd = '';
-      this.typeFilters = [];
-    } else {
-      params['sortBy'] = this.tableParams.sortBy;
-      params['pageSize'] = this.tableParams.pageSize;
-      params['keywords'] = this.tableParams.keywords;
-      // params['dateAddedStart'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedStart).toISOString();
-      // params['dateAddedEnd'] = this.utils.convertFormGroupNGBDateToJSDate(this.filter.dateAddedEnd).toISOString();
-    }
-
-    if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
+    this.setParamsFromFilters(params);
     this.router.navigate(['activity', params]);
   }
 
-  public toggleFilter(filterItem) {
-    if (this.typeFilters.includes(filterItem)) {
-      this.typeFilters = this.typeFilters.filter(item => item !== filterItem);
+  setParamsFromFilters(params) {
+    this.collectionFilterToParams(params, 'project', '_id');
+    this.collectionFilterToParams(params, 'type', 'code');
+    this.toggleFilterToParams(params, 'complianceAndEnforcement');
+    this.dateFilterToParams(params, 'dateAddedStart');
+    this.dateFilterToParams(params, 'dateAddedEnd');
+  }
+
+  collectionFilterToParams(params, name, identifyBy) {
+    if (this.filterForUI[name].length) {
+      const values = this.filterForUI[name].map(record => {
+        return record[identifyBy];
+      });
+      params[name] = values.join(',');
+    }
+  }
+
+  toggleFilterToParams(params, name) {
+    if (this.filterForUI[name]) {
+      params[name] = this.filterForUI[name];
+    }
+  }
+
+  isNGBDate(date) {
+    return date && date.year && date.month && date.day;
+  }
+
+  dateFilterToParams(params, name) {
+    if (this.isNGBDate(this.filterForUI[name])) {
+      const date = new Date(
+        this.filterForUI[name].year,
+        this.filterForUI[name].month - 1,
+        this.filterForUI[name].day
+      );
+      params[name] = moment(date).format('YYYY-MM-DD');
+    }
+  }
+
+  paramsToDateFilters(params, name) {
+    this.filterForUI[name] = null;
+    delete this.filterForURL[name];
+    delete this.filterForAPI[name];
+
+    if (params[name]) {
+      this.filterForURL[name] = params[name];
+      this.filterForAPI[name] = params[name];
+      // NGB Date
+      const date = moment(params[name]).toDate();
+      this.filterForUI[name] = {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        day: date.getDate()
+      };
+    }
+  }
+
+  paramsToToggleFilters(params, name) {
+    delete this.filterForURL[name];
+    delete this.filterForAPI[name];
+
+    if (params[name]) {
+      this.filterForUI[name] = params[name];
+      this.filterForAPI[name] = params[name];
+    }
+  }
+
+  paramsToCollectionFilters(params, name, collection, identifyBy) {
+    this.filterForUI[name] = [];
+    delete this.filterForURL[name];
+    delete this.filterForAPI[name];
+
+    if (params[name] && collection) {
+      let confirmedValues = [];
+      // look up each value in collection
+      const values = params[name].split(',');
+      values.forEach(value => {
+        const record = _.find(collection, [ identifyBy, value ]);
+        if (record) {
+          confirmedValues.push(value);
+          this.filterForUI[name].push(record);
+        }
+      });
+      if (confirmedValues.length) {
+        this.filterForURL[name] = confirmedValues.join(',');
+        this.filterForAPI[name] = confirmedValues.join(',');
+      }
+    }
+  }
+
+  setFiltersFromParams(params) {
+    this.paramsToCollectionFilters(params, 'project', this.projects, '_id');
+    this.paramsToCollectionFilters(params, 'type', this.activityTypes, 'code');
+    this.paramsToToggleFilters(params, 'complianceAndEnforcement');
+    this.paramsToDateFilters(params, 'dateAddedStart');
+    this.paramsToDateFilters(params, 'dateAddedEnd');
+  }
+
+  clearSelectedItem(filter: string, item: any) {
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+  }
+
+  isUiFiltered() {
+    if (this.filterForUI.complianceAndEnforcement) {
+      return true;
+    }
+    if (this.isDateRangeSet()) {
+      return true;
     } else {
-      this.typeFilters.push(filterItem);
+      let count = 0;
+      Object.keys(this.filterForUI).forEach(key => {
+        if (this.filterForUI[key]) {
+          if (Array.isArray(this.filterForUI[key])) {
+            count += this.filterForUI[key].length;
+          }
+        }
+      });
+      return (count > 0);
+    }
+  }
+
+  isDateSet(date) {
+    return date ? Object.keys(date).length !== 0 : false;
+  }
+
+  isDateRangeSet() {
+    const startSet = (this.filterForUI.dateAddedStart != null && this.isNGBDate(this.filterForUI.dateAddedStart));
+    const endSet = (this.filterForUI.dateAddedEnd != null && this.isNGBDate(this.filterForUI.dateAddedEnd));
+    return (startSet || endSet);
+  }
+
+  // If date is cleared and other date in range is not set clear placeholder model
+  changeDate(event: any, date: string) {
+    if (date === 'start') {
+      this.filterForUI.dateAddedStart = event;
+      if (event === null && (this.filterForUI.dateAddedEnd === null || Object.keys(this.filterForUI.dateAddedEnd).length === 0)) {
+        this.clearDateRange();
+        this.placeholderDateRangeModel = [];
+      }
+    } else if (date === 'end') {
+      this.filterForUI.dateAddedEnd = event;
+      if (event === null && (this.filterForUI.dateAddedStart === null || Object.keys(this.filterForUI.dateAddedStart).length === 0)) {
+        this.clearDateRange();
+        this.placeholderDateRangeModel = [];
+      }
+    }
+  }
+
+  changeDateRange() {
+    // if date range is not set with valid values, clear placeholder model.
+    if (this.isDateRangeSet()) {
+      this.placeholderDateRangeModel = [{}];
+    } else {
+      this.placeholderDateRangeModel = [];
+    }
+  }
+
+  clearDateRange() {
+    this.filterForUI.dateAddedEnd = {};
+    this.filterForUI.dateAddedStart = {};
+    this.placeholderDateRangeModel = [];
+  }
+
+  clearCAndE() {
+    this.filterForUI.complianceAndEnforcement = false;
+  }
+
+  clearAll() {
+    Object.keys(this.filterForUI).forEach(key => {
+      if (this.filterForUI[key]) {
+        if (Array.isArray(this.filterForUI[key])) {
+          this.filterForUI[key] = [];
+        } else if (typeof this.filterForUI[key] === 'object') {
+          this.filterForUI[key] = {};
+        } else if (typeof this.filterForUI[key] === 'boolean') {
+          this.filterForUI[key] = false;
+        }
+      }
+    });
+  }
+
+  public filterCompareWith(filter: any, filterToCompare: any) {
+    if (filter.hasOwnProperty('code')) {
+      return filter && filterToCompare
+             ? filter.code === filterToCompare.code
+             : filter === filterToCompare;
+    } else if (filter.hasOwnProperty('_id')) {
+      return filter && filterToCompare
+             ? filter._id === filterToCompare._id
+             : filter === filterToCompare;
     }
   }
 

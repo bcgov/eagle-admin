@@ -21,7 +21,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   public loading = true;
   public projects = [];
   public types = [];
-  public activityTypes = Constants.activityTypes;
+  public activityTypes = Constants.activityTypes.map(type => type.name);
   public periods = [];
   public activity: any;
   public typeIsPCP = false;
