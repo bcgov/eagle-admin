@@ -394,24 +394,29 @@
       flex-wrap: wrap;
       gap: 0px 4px;
       margin-top: 0px;
-  
+
       .type,
-      .proponent,
-      .region {
+      .proponent {
         background: #FEEBAB;
         color: #553402;
       }
-  
+
       .pcp,
       .projectPhase {
         background: #E3EBFF;
         color: #022170;
       }
-  
-      .eacDecision, .eacDecisionDate,
+
+      .eacDecision,
       .CEAAInvolvement {
-        background: #e9ecef;
-        color: #495057;
+        background: #FFF8E8;
+        color: #593F00;
+      }
+
+      .eacDecisionDate,
+      .region {
+        background: #F1F8FF;
+        color: #323130;
       }
     }
   
