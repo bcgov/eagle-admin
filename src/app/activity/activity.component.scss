@@ -199,7 +199,7 @@ form {
   gap: 0px 4px;
   margin-top: 0px;
 
-  .project, .cAndE
+  .project
   {
     background: #FEEBAB;
     color: #553402;
@@ -211,8 +211,13 @@ form {
   }
 
   .dateAddedRange {
-    background: #e9ecef;
-    color: #495057;
+    background: #FFF8E8;
+    color: #593F00;
+  }
+
+  .cAndE {
+    background: #F1F8FF;
+    color: #323130;
   }
 
   .filter-badge {
