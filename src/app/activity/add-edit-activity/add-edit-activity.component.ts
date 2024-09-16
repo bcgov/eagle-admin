@@ -3,7 +3,7 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { ProjectService } from 'app/services/project.service';
-import { NotificationProjectService } from 'app/services/notification-project.service'
+import { NotificationProjectService } from 'app/services/notification-project.service';
 import { RecentActivityService } from 'app/services/recent-activity';
 import { RecentActivity } from 'app/models/recentActivity';
 import { Utils } from 'app/shared/utils/utils';
@@ -114,7 +114,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
               this.projectNotifications = res3.data;
             }
 
-          })
+          });
       });
   }
 
