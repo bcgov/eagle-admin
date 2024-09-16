@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { ProjectService } from 'app/services/project.service';
 import { NotificationProjectService } from 'app/services/notification-project.service';
 import { RecentActivityService } from 'app/services/recent-activity';
@@ -18,6 +18,8 @@ import { MatSnackBar } from '@angular/material';
 export class AddEditActivityComponent implements OnInit, OnDestroy {
   public myForm: FormGroup;
   public isEditing = false;
+  // private subscriptions: Subscription[] = [];
+  private subscriptions = new Subscription();
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
   public projects = [];
@@ -56,11 +58,10 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     private _changeDetectorRef: ChangeDetectorRef
   ) { }
 
-  ngOnInit() {
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(res => {
-        if (Object.keys(res).length === 0 && res.constructor === Object) {
+    ngOnInit() {
+      this.subscriptions.add(
+        this.route.data.subscribe(res => {
+          if (Object.keys(res).length === 0 && res.constructor === Object) {
           this.isPublished = false;
           this.buildForm({
             'headline': '',
@@ -85,10 +86,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
           this.updateProject();
           this.updateType();
         }
+        })
+      );
 
-        this.projectService.getAll(1, 1000, '+name')
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res2: any) => {
+      this.subscriptions.add(
+        this.projectService.getAll(1, 1000, '+name').subscribe((res2: any) => {
             if (res2) {
               this.projects = res2.data;
               // TODO: Later
@@ -105,18 +107,17 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
 
             this.loading = false;
             this._changeDetectorRef.detectChanges();
-          });
+        })
+      );
 
-        this.notificationProjectService.getAll(1, 1000, '+name')
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res3: any) => {
+      this.subscriptions.add(
+        this.notificationProjectService.getAll(1, 1000, '+name').subscribe((res3: any) => {
             if (res3) {
               this.projectNotifications = res3.data;
             }
-
-          });
-      });
-  }
+        })
+      );
+    }
 
   onCancel() {
     this.router.navigate(['/activity']);
@@ -267,7 +268,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }
