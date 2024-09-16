@@ -1,6 +1,7 @@
 export class RecentActivity {
     _id: string;
     project: any;
+    projectNotification: any;
     type: string;
     pcp: any;
     dateAdded: string;
@@ -18,6 +19,7 @@ export class RecentActivity {
         this.type = obj && obj.type || null;
         this.pcp = obj && obj.pcp || null;
         this.project = obj && obj.project || null;
+        this.projectNotification = obj && obj.projectNotification || null;
         this.dateAdded = obj && obj.dateAdded || null;
         this.content = obj && obj.content || null;
         this.documentUrl = obj && obj.documentUrl || null;

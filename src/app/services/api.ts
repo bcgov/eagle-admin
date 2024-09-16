@@ -1165,6 +1165,24 @@ export class ApiService {
   //
   // Project Notifications
   //
+
+  getProjectNotifications(pageNum: number, pageSize: number, sortBy: string, populate: Boolean = true): Observable<Object> {
+    const fields = [
+      'name',
+      'epicProjectID',
+      'location',
+      'decisionDate'
+    ];
+
+    let queryString = `projectNotification?`;
+    if (pageNum !== null) { queryString += `pageNum=${pageNum - 1}&`; }
+    if (pageSize !== null) { queryString += `pageSize=${pageSize}&`; }
+    if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
+    if (populate !== null) { queryString += `populate=${populate}&`; }
+    queryString += `fields=${this.buildValues(fields)}`;
+    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+  }
+
   saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {
     let queryString = `projectNotification/${projectNotification._id}`;
     if (publish !== null) {

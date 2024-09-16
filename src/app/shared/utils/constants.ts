@@ -94,7 +94,8 @@ export class Constants {
   public static readonly activityTypes = [
     { code: 'pcp', name: 'Public Comment Period' },
     { code: 'notification', name: 'Project Notification Public Comment Period' },
-    { code: 'news', name: 'News' }
+    { code: 'news', name: 'News' },
+    { code: 'projectNotificationNews', name: 'Project Notification News' }
   ];
 
   public static readonly documentTypes = {
