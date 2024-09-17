@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { ProjectService } from 'app/services/project.service';
+import { NotificationProjectService } from 'app/services/notification-project.service';
 import { RecentActivityService } from 'app/services/recent-activity';
 import { RecentActivity } from 'app/models/recentActivity';
 import { Utils } from 'app/shared/utils/utils';
@@ -17,15 +18,19 @@ import { MatSnackBar } from '@angular/material';
 export class AddEditActivityComponent implements OnInit, OnDestroy {
   public myForm: FormGroup;
   public isEditing = false;
+  // private subscriptions: Subscription[] = [];
+  private subscriptions = new Subscription();
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
   public projects = [];
+  public projectNotifications = [];
   public types = [];
   public activityTypes = Constants.activityTypes.map(type => type.name);
   public periods = [];
   public activity: any;
   public typeIsPCP = false;
   public typeIsNotification = false;
+  public typeIsProjectNotificationNews = false;
   public projectIsSelected = false;
   public snackBarTimeout = 1500;
   public isPublished = false;
@@ -48,15 +53,15 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private recentActivityService: RecentActivityService,
     private projectService: ProjectService,
+    private notificationProjectService: NotificationProjectService,
     private commentPeriodService: CommentPeriodService,
     private _changeDetectorRef: ChangeDetectorRef
   ) { }
 
-  ngOnInit() {
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(res => {
-        if (Object.keys(res).length === 0 && res.constructor === Object) {
+    ngOnInit() {
+      this.subscriptions.add(
+        this.route.data.subscribe(res => {
+          if (Object.keys(res).length === 0 && res.constructor === Object) {
           this.isPublished = false;
           this.buildForm({
             'headline': '',
@@ -81,10 +86,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
           this.updateProject();
           this.updateType();
         }
+        })
+      );
 
-        this.projectService.getAll(1, 1000, '+name')
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res2: any) => {
+      this.subscriptions.add(
+        this.projectService.getAll(1, 1000, '+name').subscribe((res2: any) => {
             if (res2) {
               this.projects = res2.data;
               // TODO: Later
@@ -101,9 +107,17 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
 
             this.loading = false;
             this._changeDetectorRef.detectChanges();
-          });
-      });
-  }
+        })
+      );
+
+      this.subscriptions.add(
+        this.notificationProjectService.getAll(1, 1000, '+name').subscribe((res3: any) => {
+            if (res3) {
+              this.projectNotifications = res3.data;
+            }
+        })
+      );
+    }
 
   onCancel() {
     this.router.navigate(['/activity']);
@@ -120,7 +134,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         type: this.myForm.get('type').value,
         pcp: this.myForm.get('pcp').value,
         notificationName: this.myForm.get('type').value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
-
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         active: this.isPublished,
@@ -169,6 +182,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     if (this.myForm.get('type').value === this.activityTypes[0]) {
       this.typeIsPCP = true;
       this.typeIsNotification = false;
+      this.typeIsProjectNotificationNews = false;
       this.myForm.get('pcp').enable();
       this.myForm.get('project').enable();
       if (this.projectIsSelected) {
@@ -180,9 +194,16 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       this.myForm.controls['project'].reset({ value: '', disabled: true });
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
       this.typeIsPCP = false;
+    } else if (this.myForm.get('type').value === this.activityTypes[3]) { //  projectNotificationNews
+      this.typeIsNotification = false;
+      this.typeIsPCP = false;
+      this.typeIsProjectNotificationNews = true;
+      this.myForm.get('project').enable();
+      this.myForm.controls['pcp'].reset({ value: '', disabled: true });
     } else {
       this.typeIsPCP = false;
       this.typeIsNotification = false;
+      this.typeIsProjectNotificationNews = false;
       this.myForm.get('project').enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
     }
@@ -247,7 +268,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

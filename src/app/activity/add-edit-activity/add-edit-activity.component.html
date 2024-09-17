@@ -48,15 +48,25 @@
     <div *ngIf="typeIsPCP && !projectIsSelected" class="alert alert-warning" role="alert">
       Please select a project.
     </div>
+    <div *ngIf="typeIsProjectNotificationNews && !projectIsSelected" class="alert alert-warning" role="alert">
+      Please select a Project Notification.
+    </div>
     <div *ngIf="typeIsPCP && projectIsSelected && periods.length === 0" class="alert alert-warning" role="alert">
       No public comment periods exist for selected project.
     </div>
-    <div class="flex-container">
+    <div class="flex-container"> 
       <div class="label-pair med">
-        <label *ngIf="!typeIsPCP" for="project">Project </label>
+        <label *ngIf="!typeIsPCP && !typeIsProjectNotificationNews" for="project">Project </label>
         <label *ngIf="typeIsPCP" for="project">Project* </label>
-        <select [required]="typeIsPCP" class="form-control" formControlName="project" (change)="updateProject()">
-          <option *ngFor="let project of projects" [ngValue]="project._id">{{project.name}}</option>
+        <label *ngIf="typeIsProjectNotificationNews" for="project">Project Notification* </label>
+        <select [required]="typeIsPCP || typeIsProjectNotificationNews" 
+                class="form-control" 
+                formControlName="project" 
+                (change)="updateProject()">
+          <option *ngFor="let item of (typeIsPCP ? projects : (typeIsProjectNotificationNews ? projectNotifications : []))" 
+                  [ngValue]="item._id">
+            {{item.name}}
+          </option>
         </select>
       </div>
     </div>
