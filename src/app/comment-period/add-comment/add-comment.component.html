@@ -91,7 +91,7 @@
         <div class="form-row">
           <div class="form-group col-md-12">
             <label for="attachments"><b>Attachments</b></label>
-            <app-file-upload [maxFiles]="50" [maxSize]="300" [showInfo]="false" [showList]="false" [files]="commentFiles"
+            <app-file-upload [maxFiles]="50" [maxSize]="3000" [showInfo]="false" [showList]="false" [files]="commentFiles"
               (filesChange)="addDocuments($event); commentFiles = []"></app-file-upload>
             <br>
             <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
