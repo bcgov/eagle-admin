@@ -8,7 +8,7 @@ import * as moment from 'moment-timezone';
 import { ConfigService } from 'app/services/config.service';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Document } from 'app/models/document';
 import { Utils } from 'app/shared/utils/utils';
 

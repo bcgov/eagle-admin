@@ -12,7 +12,7 @@ import { StorageService } from 'app/services/storage.service';
 import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ProjectService } from 'app/services/project.service';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ExcelService } from 'app/services/excel.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 

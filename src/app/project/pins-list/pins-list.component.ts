@@ -12,7 +12,7 @@ import { StorageService } from 'app/services/storage.service';
 import { Org } from 'app/models/org';
 import { ProjectService } from 'app/services/project.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-pins-list',

@@ -3,7 +3,7 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DocumentService } from 'app/services/document.service';
 import { StorageService } from 'app/services/storage.service';
 import { ConfigService } from 'app/services/config.service';

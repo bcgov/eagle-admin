@@ -3,7 +3,7 @@ import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef } fro
 import { TableComponent } from 'app/shared/components/table-template/table.component';
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { DocumentService } from 'app/services/document.service';
 
 @Component({
