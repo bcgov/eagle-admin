@@ -4,7 +4,7 @@ import { DialogComponent, DialogService } from 'ng2-bootstrap-modal';
 export interface DataModel {
   title: string;
   message: string;
-  okOnly: boolean;
+  okOnly?: boolean;
 }
 
 @Component({
