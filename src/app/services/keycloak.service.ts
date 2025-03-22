@@ -14,7 +14,13 @@ export class KeycloakService {
   private keycloakRealm: string;
   private loggedOut: string;
 
-  constructor(private configService: ConfigService) { }
+  public readonly idpHintEnum = {
+    IDIR: 'idir',
+  };
+
+  constructor(
+    private configService: ConfigService
+  ) { }
 
   isKeyCloakEnabled(): boolean {
     return this.keycloakEnabled;
@@ -42,12 +48,11 @@ export class KeycloakService {
 
     this.loggedOut = this.getParameterByName('loggedout');
 
-    const self = this;
     if (this.keycloakEnabled) {
       // Bootup KC
       const keycloak_client_id = this.configService.config['KEYCLOAK_CLIENT_ID'];
 
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         const config = {
           url: this.keycloakUrl,
           realm: this.keycloakRealm,
@@ -56,59 +61,59 @@ export class KeycloakService {
 
         // console.log('KC Auth init.');
 
-        self.keycloakAuth = new Keycloak(config);
+        this.keycloakAuth = new Keycloak(config);
 
-        self.keycloakAuth.onAuthSuccess = function () {
+        this.keycloakAuth.onAuthSuccess = function () {
           // console.log('onAuthSuccess');
         };
 
-        self.keycloakAuth.onAuthError = function () {
+        this.keycloakAuth.onAuthError = function () {
           console.log('onAuthError');
         };
 
-        self.keycloakAuth.onAuthRefreshSuccess = function () {
+        this.keycloakAuth.onAuthRefreshSuccess = function () {
           // console.log('onAuthRefreshSuccess');
         };
 
-        self.keycloakAuth.onAuthRefreshError = function () {
+        this.keycloakAuth.onAuthRefreshError = function () {
           console.log('onAuthRefreshError');
-          self.keycloakAuth.login({ idpHint: 'idir' });
+          this.keycloakAuth.login({ idpHint: this.idpHintEnum.IDIR });
         };
 
-        self.keycloakAuth.onAuthLogout = function () {
+        this.keycloakAuth.onAuthLogout = () => {
           // console.log('onAuthLogout');
         };
 
         // Try to get refresh tokens in the background
-        self.keycloakAuth.onTokenExpired = function () {
-          self.keycloakAuth.updateToken(180)
-            .success(function (refreshed) {
+        this.keycloakAuth.onTokenExpired = () => {
+          this.keycloakAuth
+            .updateToken()
+            .then((refreshed) => {
               console.log('KC refreshed token?:', refreshed);
             })
-            .error((err) => {
+            .catch((err) => {
               console.log('onTokenExpired:KC refresh error:', err);
-              self.keycloakAuth.login({ idpHint: 'idir' });
             });
         };
 
         // Initialize.
-        self.keycloakAuth.init({})
-          .success((auth) => {
-            // console.log('KC Refresh Success?:', self.keycloakAuth.authServerUrl);
-            console.log('KC Success:', auth);
-            if (!auth) {
-              if (this.loggedOut === 'true') {
-                // Don't do anything, they wanted to remain logged out.
-                resolve();
-              } else {
-                self.keycloakAuth.login({ idpHint: 'idir' });
-              }
-            } else {
-              resolve();
-            }
+        this.keycloakAuth
+          .init({
+            onLoad: 'login-required',
+            pkceMethod: 'S256',
           })
-          .error((err) => {
-            console.log('KC error2:', err);
+          .then((auth) => {
+            console.log('KC Success:', auth);
+            resolve();
+          })
+          .catch((err) => {
+            if (this.loggedOut === 'true') {
+              // Don't do anything, they wanted to remain logged out.
+              resolve();
+            } else {
+              console.log('KC error2:', err);
+              reject();
+            }
             reject();
           });
       });
@@ -161,16 +166,16 @@ export class KeycloakService {
    * @memberof KeycloakService
    */
   refreshToken(): Observable<any> {
-    return new Observable(observer => {
+    return new Observable((observer) => {
       this.keycloakAuth
         .updateToken(30)
-        .success(function (refreshed) {
-          console.log('KC refreshed token?:', refreshed);
+        .then((refreshed) => {
+          console.log(`KC refreshed token?: ${refreshed}`);
           observer.next();
           observer.complete();
         })
-        .error(err => {
-          console.log('KC refresh error:', err);
+        .catch((err) => {
+          console.log(`KC refresh error: ${err}`);
           observer.error();
         });
 
