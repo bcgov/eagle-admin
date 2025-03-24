@@ -16,7 +16,7 @@ import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ExcelService } from 'app/services/excel.service';
 import { SearchService } from 'app/services/search.service';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 
 @Component({

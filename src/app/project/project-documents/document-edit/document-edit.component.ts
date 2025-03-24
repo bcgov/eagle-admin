@@ -5,7 +5,7 @@ import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { ConfigService } from 'app/services/config.service';
 import { DocumentService } from 'app/services/document.service';

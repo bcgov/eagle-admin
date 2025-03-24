@@ -9,7 +9,7 @@ import { RecentActivity } from 'app/models/recentActivity';
 import { Utils } from 'app/shared/utils/utils';
 import { CommentPeriodService } from 'app/services/commentperiod.service';
 import { Constants } from 'app/shared/utils/constants';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-add-edit-activity',
   templateUrl: './add-edit-activity.component.html',

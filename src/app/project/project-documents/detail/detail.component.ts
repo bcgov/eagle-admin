@@ -6,7 +6,7 @@ import { Project } from 'app/models/project';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { DocumentService } from 'app/services/document.service';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Utils } from 'app/shared/utils/utils';
 
 @Component({

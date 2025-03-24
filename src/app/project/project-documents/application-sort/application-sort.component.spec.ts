@@ -7,7 +7,7 @@ import { StorageService } from 'app/services/storage.service';
 import { SearchService } from 'app/services/search.service';
 import { DocumentService } from 'app/services/document.service';
 import { ConfigService } from 'app/services/config.service';
-import { MatSnackBarModule } from '@angular/material';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Utils } from 'app/shared/utils/utils';
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { AjaxData } from 'app/shared/utils/mock-data';

@@ -4,7 +4,7 @@ import { FormGroup, FormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
 import { Utils } from 'app/shared/utils/utils';
-import { MatSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import * as _ from 'lodash';
 
 import { StorageService } from 'app/services/storage.service';
