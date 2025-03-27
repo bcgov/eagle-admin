@@ -179,7 +179,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   public updateType() {
-    if (this.myForm.get('type').value === this.activityTypes[0]) {
+    if (this.myForm.get('type').value === this.activityTypes[0]) { // PCP
       this.typeIsPCP = true;
       this.typeIsNotification = false;
       this.typeIsProjectNotificationNews = false;
@@ -189,7 +189,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         this.loadPcpsForProject(this.myForm.get('project').value);
         this.loadProjectLocation(this.myForm.get('project').value);
       }
-    } else if (this.myForm.get('type').value === this.activityTypes[1]) {
+    } else if (this.myForm.get('type').value === this.activityTypes[1]) { // Notification
       this.typeIsNotification = true;
       this.myForm.controls['project'].reset({ value: '', disabled: true });
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
@@ -200,7 +200,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       this.typeIsProjectNotificationNews = true;
       this.myForm.get('project').enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
-    } else {
+    } else { // News
       this.typeIsPCP = false;
       this.typeIsNotification = false;
       this.typeIsProjectNotificationNews = false;
