@@ -54,17 +54,16 @@
     <div *ngIf="typeIsPCP && projectIsSelected && periods.length === 0" class="alert alert-warning" role="alert">
       No public comment periods exist for selected project.
     </div>
-    <div class="flex-container"> 
+    <div class="flex-container">
       <div class="label-pair med">
         <label *ngIf="!typeIsPCP && !typeIsProjectNotificationNews" for="project">Project </label>
         <label *ngIf="typeIsPCP" for="project">Project* </label>
         <label *ngIf="typeIsProjectNotificationNews" for="project">Project Notification* </label>
-        <select [required]="typeIsPCP || typeIsProjectNotificationNews" 
-                class="form-control" 
-                formControlName="project" 
-                (change)="updateProject()">
-          <option *ngFor="let item of (typeIsPCP ? projects : (typeIsProjectNotificationNews ? projectNotifications : []))" 
-                  [ngValue]="item._id">
+        <select [required]="typeIsPCP || typeIsProjectNotificationNews" class="form-control" formControlName="project"
+          (change)="updateProject()">
+          <option
+            *ngFor="let item of (typeIsPCP ? projects : (typeIsProjectNotificationNews ? projectNotifications : (!typeIsProjectNotificationNews ? projects :[])))"
+            [ngValue]="item._id">
             {{item.name}}
           </option>
         </select>
@@ -116,12 +115,14 @@
     </div>
   </form>
   &nbsp;
-  <div class="text-right" >
+  <div class="text-right">
     <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
     &nbsp;
-    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid"  type="submit" (click)="onSubmit()">Save</button>
+    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid" type="submit" (click)="onSubmit()">Save</button>
     &nbsp;
-    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()" *ngIf="!this.isPublished">Save & Publish</button>
-    <button class="btn btn-unpublish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()" *ngIf="this.isPublished">Save & Unpublish</button>
+    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()"
+      *ngIf="!this.isPublished">Save & Publish</button>
+    <button class="btn btn-unpublish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()"
+      *ngIf="this.isPublished">Save & Unpublish</button>
   </div>
 </main>
