@@ -13,7 +13,8 @@ export class FileUploadComponent {
   public dragDropClass = 'dragarea';
   @Input() fileExt = 'jpg, jpeg, gif, png, bmp, doc, docx, xls, xlsx, ppt, pptx, pdf, txt';
   @Input() maxFiles = 50;
-  @Input() maxSize = 300; // in MB
+  @Input() maxSize = 3000; // in MB
+  // increase from 300 to 3000 01/19/2023 MS
   @Input() files: Array<File> = [];
   @Input() showInfo = true;
   @Input() showList = true;
