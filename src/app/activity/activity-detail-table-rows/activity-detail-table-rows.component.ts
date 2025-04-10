@@ -46,10 +46,11 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
   deleteActivity(activity) {
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static',
+      centered: true,
     });
     modalRef.componentInstance.title = 'Delete Activity';
     modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.';
-    modalRef.componentInstance.okOnly = true;
+    modalRef.componentInstance.okOnly = false;
 
     modalRef.result
        .then(isConfirmed => {
