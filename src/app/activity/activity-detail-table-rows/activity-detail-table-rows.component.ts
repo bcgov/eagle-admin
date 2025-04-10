@@ -49,7 +49,7 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
       centered: true,
     });
     modalRef.componentInstance.title = 'Delete Activity';
-    modalRef.componentInstance.message = 'Cldfdfdick <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
     modalRef.result
