@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { DialogComponent, DialogService } from 'ng2-bootstrap-modal';
+import { Component, Input } from '@angular/core';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 export interface DataModel {
   title: string;
@@ -8,23 +8,22 @@ export interface DataModel {
 }
 
 @Component({
+  selector: 'app-confirm',
   templateUrl: './confirm.component.html',
   styleUrls: ['./confirm.component.scss']
 })
+export class ConfirmComponent {
+  @Input() title: string;
+  @Input() message: string;
+  @Input() okOnly: boolean;
 
-export class ConfirmComponent extends DialogComponent<DataModel, boolean> implements DataModel {
-  title = 'Confirm';
-  message = 'Are you sure?';
-  okOnly = false;
-
-  constructor(public dialogService: DialogService) {
-    super(dialogService);
-  }
+  constructor(public activeModal: NgbActiveModal) {}
 
   confirm() {
-    // we set dialog result as true on click of confirm button
-    // then we can get dialog result from caller code
-    this.result = true;
-    this.close();
+    this.activeModal.close(true);
+  }
+
+  cancel() {
+    this.activeModal.dismiss(false);
   }
 }

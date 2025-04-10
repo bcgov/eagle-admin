@@ -9,7 +9,7 @@ import { TableParamsObject } from 'app/shared/components/table-template/table-pa
 import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { StorageService } from 'app/services/storage.service';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ProjectService } from 'app/services/project.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -66,7 +66,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
 
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
-    private dialogService: DialogService,
+    private modalService: NgbModal,
     private excelService: ExcelService,
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
@@ -358,37 +358,42 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteItems() {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Remove Contact',
-        message: 'Click <strong>OK</strong> to remove or <strong>Cancel</strong> to return to the list.'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.loading = true;
-            // Delete the Document(s)
-            let itemsToDelete = [];
-            this.tableData.data.map((item) => {
-              if (item.checkbox === true) {
-                itemsToDelete.push({ promise: this.projectService.deleteGroupMembers(this.currentProject._id, this.groupId, item._id).toPromise(), item: item });
-              }
-            });
-            this.loading = false;
-            return Promise.all(itemsToDelete).then(() => {
-              // Reload page.
-              const params = this.terms.getParams();
-              params['ms'] = new Date().getMilliseconds();
-              this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', params]);
+  public deleteItems() {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static', // Prevent closing when clicking outside
+      centered: true, // Center the modal
+    });
+    modalRef.componentInstance.title = 'Remove Contact';
+    modalRef.componentInstance.message =
+      'Click <strong>OK</strong> to remove or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = false;
+
+    modalRef.result.then((isConfirmed) => {
+      if (isConfirmed) {
+        this.loading = true;
+        let itemsToDelete = [];
+        this.tableData.data.map((item) => {
+          if (item.checkbox === true) {
+            itemsToDelete.push({
+              promise: this.projectService.deleteGroupMembers(this.currentProject._id, this.groupId, item._id).toPromise(),
+              item: item
             });
           }
-          this.loading = false;
-        }
-      );
+        });
+
+        this.loading = false;
+
+        return Promise.all(itemsToDelete).then(() => {
+          // Reload page.
+          const params = this.terms.getParams();
+          params['ms'] = new Date().getMilliseconds();
+          this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', params]);
+        });
+      }
+      this.loading = false;
+    }).catch(() => {
+      // Handle error
+    });
   }
 
   getPaginatedContacts(pageNumber) {
@@ -399,7 +404,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     // refresh the page
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
-    this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, null || '');
+    this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, '');
 
     this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
     .takeUntil(this.ngUnsubscribe)

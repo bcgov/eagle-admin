@@ -165,7 +165,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.commentPeriodForm.controls.publishedStateSel.setValue(this.commentPeriod.isPublished ? 'published' : 'unpublished');
 
     // Instructions
-    this.extractVarsFromInstructions(this.commentPeriod.instructions, this.commentPeriodForm);
+    this.extractVarsFromInstructions(this.commentPeriod.instructions as string, this.commentPeriodForm);
 
     // Comment Tip
     this.commentPeriodForm.controls.commentTipText.setValue(this.commentPeriod.commentTip);
@@ -333,9 +333,39 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     console.log(this.commentPeriodForm);
   }
 
-  private extractVarsFromInstructions(instructionString: String, form: FormGroup) {
-    form.controls.infoForCommentText.setValue(instructionString.split(' for')[0].replace('<h4>Comment Period on the ', ''));
-    form.controls.descriptionText.setValue(instructionString.split('</h4>')[1]);
+  private extractVarsFromInstructions(instructionString: string, form: FormGroup): void {
+    if (!instructionString || (!form && !form.controls)) {
+      console.warn('Missing instruction string or form controls');
+      return;
+    }
+
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = instructionString;
+
+    const h4 = tempContainer.querySelector('h4');
+    const h4Text = h4 && h4.textContent ? h4.textContent : '';
+
+    let infoForCommentText = '';
+    if (h4Text.includes(' for')) {
+      infoForCommentText = h4Text
+        .split(' for')[0]
+        .replace('Comment Period on the ', '')
+        .trim();
+    } else {
+      infoForCommentText = h4Text.trim();
+    }
+
+    const splitContent = instructionString.split('</h4>');
+    const descriptionText = splitContent.length > 1 ? splitContent[1].trim() : '';
+
+    if (form.controls.infoForCommentText) {
+      form.controls.infoForCommentText.setValue(infoForCommentText);
+    }
+
+    if (form.controls.descriptionText) {
+      form.controls.descriptionText.setValue(descriptionText);
+    }
+
     this.updateDescriptionPreview();
   }
 

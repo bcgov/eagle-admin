@@ -46,3 +46,8 @@
 
 // For the ng-select multiselect component.
 @import "~@ng-select/ng-select/themes/default.theme.css";
+
+.modal-backdrop.custom-backdrop {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+  }
+  

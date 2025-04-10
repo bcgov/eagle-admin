@@ -6,8 +6,9 @@ import { Utils } from 'app/shared/utils/utils';
 import { StorageService } from 'app/services/storage.service';
 import { ApiService } from 'app/services/api';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { DialogService } from 'ng2-bootstrap-modal';
-import { Subject } from 'rxjs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { from, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-extension',
@@ -27,7 +28,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private navigationStackUtils: NavigationStackUtils,
-    private dialogService: DialogService,
+    private modalService: NgbModal,
     public api: ApiService,
     private storageService: StorageService,
     private utils: Utils,
@@ -62,31 +63,30 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   }
 
   public onDelete() {
-    let self = this;
-    console.log(self.storageService.state.project, self.storageService.state.extension);
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: `Delete ${self.extensionType}`,
-        message: `Click <strong>OK</strong> to delete this ${self.extensionType}`
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            // Delete the Activity
-            self.api.deleteExtension(self.storageService.state.project, self.storageService.state.extension)
-              .subscribe(
-                () => {
-                  self.goBack();
-                },
-                error => {
-                  console.log('error =', error);
-                });
-          }
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+      backdropClass: 'custom-backdrop',
+      centered: true
+    });
+
+    modalRef.componentInstance.title = `Delete ${this.extensionType}`;
+    modalRef.componentInstance.message = `Click <strong>OK</strong> to delete this ${this.extensionType}`;
+    modalRef.componentInstance.okOnly = false;
+
+    from(modalRef.result).pipe(takeUntil(this.ngUnsubscribe)).subscribe(
+      (isConfirmed: boolean) => {
+        if (isConfirmed) {
+          this.api.deleteExtension(this.storageService.state.project, this.storageService.state.extension)
+            .subscribe(
+              () => this.goBack(),
+              error => console.log('error =', error)
+            );
         }
-      );
+      },
+      () => {
+        // Modal dismissed, do nothing
+      }
+    );
   }
 
   onSubmit() {

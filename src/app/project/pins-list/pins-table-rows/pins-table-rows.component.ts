@@ -4,10 +4,11 @@ import { TableComponent } from 'app/shared/components/table-template/table.compo
 import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { DialogService } from 'ng2-bootstrap-modal';
-import { Subject } from 'rxjs';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { from, Subject } from 'rxjs';
 import { RecentActivityService } from 'app/services/recent-activity';
 import { ProjectService } from 'app/services/project.service';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'tbody[app-pins-table-rows]',
@@ -33,7 +34,7 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
     private router: Router,
-    private dialogService: DialogService,
+    private modalService: NgbModal,
     private recentActivityService: RecentActivityService,
     private projectService: ProjectService
   ) { }
@@ -47,30 +48,34 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   }
 
   removeFromProject(pin) {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Delete Participating Indigenous Nation',
-        message: 'Click <strong>OK</strong> to delete this Participating Indigenous Nation or <strong>Cancel</strong> to return to the list.',
-        okOnly: false
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.projectService.deletePin(this.projectId, pin._id)
-              .subscribe(
-                () => {
-                  this.contacts.splice(this.contacts.indexOf(pin), 1);
-                  this._changeDetectionRef.detectChanges();
-                },
-                error => {
-                  console.log('error =', error);
-                });
-          }
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+      backdropClass: 'custom-backdrop',
+      centered: true
+    });
+
+    modalRef.componentInstance.title = 'Delete Participating Indigenous Nation';
+    modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Participating Indigenous Nation or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = false;
+
+    from(modalRef.result).pipe(takeUntil(this.ngUnsubscribe)).subscribe(
+      (isConfirmed: boolean) => {
+        if (isConfirmed) {
+          this.projectService.deletePin(this.projectId, pin._id)
+            .subscribe(
+              () => {
+                this.contacts.splice(this.contacts.indexOf(pin), 1);
+                this._changeDetectionRef.detectChanges();
+              },
+              error => {
+                console.log('error =', error);
+              });
         }
-      );
+      },
+      () => {
+        // Modal dismissed
+      }
+    );
   }
 
   togglePin(activity) {

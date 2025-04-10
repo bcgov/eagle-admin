@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/concat';
@@ -48,7 +48,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
     public snackBar: MatSnackBar,
     public api: ApiService, // also used in template
     private _changeDetectorRef: ChangeDetectorRef,
-    private dialogService: DialogService,
+    private modalService: NgbModal,
     public projectService: ProjectService, // also used in template
     public commentPeriodService: CommentPeriodService,
     public decisionService: DecisionService,
@@ -105,33 +105,30 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
 
   public deleteProject() {
     if (this.project['numComments'] > 0) {
-      this.dialogService.addDialog(ConfirmComponent,
-        {
-          title: 'Cannot Delete Project',
-          message: 'An project with submitted comments cannot be deleted.',
-          okOnly: true
-        }, {
-          backdropColor: 'rgba(0, 0, 0, 0.5)'
-        })
-        .takeUntil(this.ngUnsubscribe);
+      const modalRefCannotDelete = this.modalService.open(ConfirmComponent, {
+        backdrop: 'static',
+        centered: true,
+      });
+      modalRefCannotDelete.componentInstance.title = 'Cannot Delete Project';
+      modalRefCannotDelete.componentInstance.message = 'A project with submitted comments cannot be deleted.';
+      modalRefCannotDelete.componentInstance.okOnly = true;
       return;
     }
 
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Confirm Deletion',
-        message: 'Do you really want to delete this project?'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.internalDeleteProject();
-          }
-        }
-      );
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+      centered: true,
+    });
+    modalRef.componentInstance.title = 'Confirm Deletion';
+    modalRef.componentInstance.message = 'Do you really want to delete this project?';
+
+    modalRef.result.then((result) => {
+      if (result) {
+        this.internalDeleteProject();
+      }
+    }).catch(() => {
+      // Handle error
+    });
   }
 
   private internalDeleteProject() {
@@ -160,21 +157,21 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   }
 
   public publishProject() {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Confirm Publish',
-        message: 'Publishing this project will make it visible to the public. Are you sure you want to proceed?'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.internalPublishProject();
-          }
-        }
-      );
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+      centered: true,
+    });
+    modalRef.componentInstance.title = 'Confirm Publish';
+    modalRef.componentInstance.message = 'Publishing this project will make it visible to the public. Are you sure you want to proceed?';
+    modalRef.componentInstance.okOnly = false; // If you need both OK and Cancel options, set okOnly to false.
+
+    modalRef.result.then((result) => {
+      if (result) {
+        this.internalPublishProject();
+      }
+    }).catch(() => {
+      // Handle error
+    });
   }
 
   private internalPublishProject() {

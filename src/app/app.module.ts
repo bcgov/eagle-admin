@@ -1,4 +1,3 @@
-import { BootstrapModalModule } from 'ng2-bootstrap-modal';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { CookieService } from 'ngx-cookie-service';
@@ -163,7 +162,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters
     NgbModule,
-    BootstrapModalModule.forRoot({ container: document.body }),
     NgSelectModule,
     MatMenuModule,
     MatTabsModule,

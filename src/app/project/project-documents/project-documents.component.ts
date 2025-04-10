@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, forkJoin } from 'rxjs';
 import * as moment from 'moment';
 import * as _ from 'lodash';
@@ -142,7 +142,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
     private api: ApiService,
-    private dialogService: DialogService,
+    private modalService: NgbModal,
     private documentService: DocumentService,
     private route: ActivatedRoute,
     private router: Router,
@@ -346,141 +346,127 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/search-help']);
   }
 
-  publishDocument() {
-    this.dialogService
-      .addDialog(
-        ConfirmComponent,
-        {
-          title: 'Publish Document(s)',
-          message:
-            'Click <strong>OK</strong> to publish the selected Documents or <strong>Cancel</strong> to return to the list.',
-            okOnly: false,
-        },
-        {
-          backdropColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(isConfirmed => {
-        if (isConfirmed) {
-          this.loading = true;
-          let observables = [];
+  public publishDocument() {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static', // Prevent closing when clicking outside the modal
+      centered: true, // Center the modal on the screen
+    });
+    modalRef.componentInstance.title = 'Publish Document(s)';
+    modalRef.componentInstance.message =
+      'Click <strong>OK</strong> to publish the selected Documents or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = false; // Set okOnly to false for both OK and Cancel buttons
 
-          if (this.categorizedDocumentTableData) {
-            this.categorizedDocumentTableData.data.map(item => {
-              if (item.checkbox && !item.read.includes('public')) {
-                observables.push(this.documentService.publish(item._id));
-              }
-            });
-          }
+    modalRef.result.then((isConfirmed) => {
+      if (isConfirmed) {
+        this.loading = true;
+        let observables = [];
 
-
-          forkJoin(observables).subscribe(
-            () => {},
-            err => {
-              console.log('Error:', err);
-            },
-            () => {
-              this.loading = false;
-              this.canUnpublish = false;
-              this.canPublish = false;
-              this.onSubmit();
+        if (this.categorizedDocumentTableData) {
+          this.categorizedDocumentTableData.data.map(item => {
+            if (item.checkbox && !item.read.includes('public')) {
+              observables.push(this.documentService.publish(item._id));
             }
-          );
-        } else {
-          this.loading = false;
-        }
-      });
-  }
-
-  unpublishDocument() {
-    this.dialogService
-      .addDialog(
-        ConfirmComponent,
-        {
-          title: 'Unpublish Document(s)',
-          message:
-            'Click <strong>OK</strong> to unpublish the selected Documents or <strong>Cancel</strong> to return to the list.',
-          okOnly: false,
-        },
-        {
-          backdropColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(isConfirmed => {
-        if (isConfirmed) {
-          this.loading = true;
-          let observables = [];
-
-          if (this.categorizedDocumentTableData) {
-            this.categorizedDocumentTableData.data.map(item => {
-              if (item.checkbox && item.read.includes('public')) {
-                observables.push(this.documentService.unPublish(item._id));
-              }
-            });
-          }
-
-
-          forkJoin(observables).subscribe(
-            () => {},
-            err => {
-              console.log('Error:', err);
-            },
-            () => {
-              this.loading = false;
-              this.canUnpublish = false;
-              this.canPublish = false;
-              this.onSubmit();
-            }
-          );
-        } else {
-          this.loading = false;
-        }
-      });
-  }
-
-  deleteDocument() {
-    this.dialogService
-      .addDialog(
-        ConfirmComponent,
-        {
-          title: 'Delete Document',
-          message:
-            'Click <strong>OK</strong> to delete this Document or <strong>Cancel</strong> to return to the list.',
-          okOnly: false,
-        },
-        {
-          backdropColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(isConfirmed => {
-        if (isConfirmed) {
-          this.loading = true;
-          // Delete the Document(s)
-          const itemsToDelete = [];
-
-          if (this.categorizedDocumentTableData) {
-            this.categorizedDocumentTableData.data.map(item => {
-              if (item.checkbox === true) {
-                itemsToDelete.push({
-                  promise: this.documentService.delete(item).toPromise(),
-                  item: item
-                });
-              }
-            });
-          }
-
-
-          this.loading = false;
-
-          return Promise.all(itemsToDelete).then(() => {
-            // Reload main page.
-            this.onSubmit();
           });
         }
-      });
+
+        forkJoin(observables).subscribe(
+          () => {},
+          err => {
+            console.log('Error:', err);
+          },
+          () => {
+            this.loading = false;
+            this.canUnpublish = false;
+            this.canPublish = false;
+            this.onSubmit();
+          }
+        );
+      } else {
+        this.loading = false;
+      }
+    }).catch(() => {
+      // Handle error
+    });
+  }
+
+  public unpublishDocument() {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static', // Prevent closing when clicking outside
+      centered: true, // Center the modal
+    });
+    modalRef.componentInstance.title = 'Unpublish Document(s)';
+    modalRef.componentInstance.message =
+      'Click <strong>OK</strong> to unpublish the selected Documents or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = false;
+
+    modalRef.result.then((isConfirmed) => {
+      if (isConfirmed) {
+        this.loading = true;
+        let observables = [];
+
+        if (this.categorizedDocumentTableData) {
+          this.categorizedDocumentTableData.data.map(item => {
+            if (item.checkbox && item.read.includes('public')) {
+              observables.push(this.documentService.unPublish(item._id));
+            }
+          });
+        }
+
+        forkJoin(observables).subscribe(
+          () => {},
+          err => {
+            console.log('Error:', err);
+          },
+          () => {
+            this.loading = false;
+            this.canUnpublish = false;
+            this.canPublish = false;
+            this.onSubmit();
+          }
+        );
+      } else {
+        this.loading = false;
+      }
+    }).catch(() => {
+      // Handle error
+    });
+  }
+
+  public deleteDocument() {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static', // Prevent closing when clicking outside
+      centered: true, // Center the modal
+    });
+    modalRef.componentInstance.title = 'Delete Document';
+    modalRef.componentInstance.message =
+      'Click <strong>OK</strong> to delete this Document or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = false;
+
+    modalRef.result.then((isConfirmed) => {
+      if (isConfirmed) {
+        this.loading = true;
+        const itemsToDelete = [];
+
+        if (this.categorizedDocumentTableData) {
+          this.categorizedDocumentTableData.data.map(item => {
+            if (item.checkbox === true) {
+              itemsToDelete.push({
+                promise: this.documentService.delete(item).toPromise(),
+                item: item
+              });
+            }
+          });
+        }
+
+        this.loading = false;
+
+        return Promise.all(itemsToDelete).then(() => {
+          this.onSubmit(); // Reload main page
+        });
+      }
+    }).catch(() => {
+      // Handle error
+    });
   }
 
   public onNumItems(numItems) {
