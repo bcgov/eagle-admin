@@ -20,7 +20,7 @@ import { Constants } from 'app/shared/utils/constants';
 
 import { flatMap } from 'rxjs/operators';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'form-tab-2002',
@@ -64,16 +64,16 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public published: boolean;
 
   constructor(
-    private route: ActivatedRoute,
-    private snackBar: MatSnackBar,
-    private router: Router,
-    private configService: ConfigService,
     private _changeDetectorRef: ChangeDetectorRef,
-    private utils: Utils,
+    private configService: ConfigService,
+    private modalService: NgbModal,
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private snackBar: MatSnackBar,
     private storageService: StorageService,
-    private dialogService: DialogService,
+    private utils: Utils,
   ) {
   }
 
@@ -471,16 +471,30 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
-  confirmGuard(message: string): Observable<boolean> {
-    return this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Confirm Action',
-        message: message,
-        okOnly: false
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
+    confirmGuard(message: string): Observable<boolean> {
+      const modalRef = this.modalService.open(ConfirmComponent, {
+        backdrop: 'static',
+        backdropClass: 'custom-backdrop',
+        centered: true
       });
-  }
+
+      modalRef.componentInstance.title = 'Confirm Action';
+      modalRef.componentInstance.message = message;
+      modalRef.componentInstance.okOnly = false;
+
+      return new Observable<boolean>(observer => {
+        modalRef.result.then(
+          (result) => {
+            observer.next(result === true);
+            observer.complete();
+          },
+          () => {
+            observer.next(false); // If dismissed, treat as "Cancel"
+            observer.complete();
+          }
+        );
+      });
+    }
 
   onUnpublish(): void {
     this.confirmGuard(`Are you sure you want to <strong>Un-Publish</strong> this project entirely?`)
@@ -509,7 +523,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           }
         }
       );
-
   }
 
   onPublish(): void {

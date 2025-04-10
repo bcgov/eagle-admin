@@ -12,7 +12,6 @@ import { GroupsTableRowsComponent } from './project-groups-table-rows/project-gr
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { InputModalComponent } from 'app/input-modal/input-modal.component';
 import { ProjectService } from 'app/services/project.service';
-import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { ExcelService } from 'app/services/excel.service';
 import { SearchService } from 'app/services/search.service';
@@ -55,7 +54,6 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   ];
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
-    private dialogService: DialogService,
     private excelService: ExcelService,
     private modalService: NgbModal,
     private navigationStackUtils: NavigationStackUtils,
@@ -268,35 +266,44 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     return;
   }
 
-  async deleteItems() {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Delete Groups',
-        okOnly: false,
-        message: 'Click <strong>OK</strong> to delete selected Group or <strong>Cancel</strong> to return to the list.'
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
-          if (isConfirmed) {
-            this.loading = true;
-            let itemsToDelete = [];
-            this.tableData.data.map((item) => {
-              if (item.checkbox === true) {
-                itemsToDelete.push({ promise: this.projectService.deleteGroup(this.currentProject, item._id).toPromise(), item: item });
-              }
-            });
-            this.loading = false;
-            return Promise.all(itemsToDelete).then(() => {
-              // Reload main page.
-              this.onSubmit();
+  public async deleteItems() {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static', // Prevent closing when clicking outside
+      centered: true, // Center the modal
+    });
+
+    modalRef.componentInstance.title = 'Delete Groups';
+    modalRef.componentInstance.message =
+      'Click <strong>OK</strong> to delete selected Group or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = false;
+
+    try {
+      const isConfirmed = await modalRef.result;
+
+      if (isConfirmed) {
+        this.loading = true;
+        let itemsToDelete = [];
+        this.tableData.data.map((item) => {
+          if (item.checkbox === true) {
+            itemsToDelete.push({
+              promise: this.projectService.deleteGroup(this.currentProject, item._id).toPromise(),
+              item: item
             });
           }
-          this.loading = false;
-        }
-      );
+        });
+
+        this.loading = false;
+
+        await Promise.all(itemsToDelete);
+        // Reload main page.
+        this.onSubmit();
+      }
+
+      this.loading = false;
+    } catch (error) {
+      // Handle modal dismiss or any other errors if necessary
+      this.loading = false;
+    }
   }
 
   isEnabled(button) {

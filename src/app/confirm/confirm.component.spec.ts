@@ -1,7 +1,6 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { ConfirmComponent } from './confirm.component';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 describe('ConfirmComponent', () => {
   let component: ConfirmComponent;
@@ -11,10 +10,10 @@ describe('ConfirmComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ConfirmComponent],
       providers: [
-        { provide: DialogService }
+        { provide: NgbActiveModal, useValue: {} }
       ]
     })
-      .compileComponents();
+    .compileComponents();
   }));
 
   beforeEach(() => {

@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { ApiService } from 'app/services/api';
 import { JwtUtil } from 'app/jwt-util';
 import { KeycloakService } from 'app/services/keycloak.service';
-import { DialogService } from 'ng2-bootstrap-modal';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 
 import { DayCalculatorModalComponent } from 'app/day-calculator-modal/day-calculator-modal.component';
@@ -53,7 +52,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private api: ApiService,
-    private dialogService: DialogService,
     private keycloakService: KeycloakService,
     private modalService: NgbModal,
     public router: Router
@@ -82,16 +80,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     let isIEOrEdge = /msie\s|trident\/|edge\//i.test(window.navigator.userAgent);
     if (isIEOrEdge) {
-      this.dialogService.addDialog(ConfirmComponent,
-        {
-          title: 'Browser Incompatible',
-          message: '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.',
-          okOnly: true,
-        }, {
-          backdropColor: 'rgba(0, 0, 0, 0.5)'
-        });
+      const modalRef = this.modalService.open(ConfirmComponent);
+      modalRef.componentInstance.title = 'Browser Incompatible';
+      modalRef.componentInstance.message =  '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.';
+      modalRef.componentInstance.okOnly = true;
     }
-
     this.envName = this.api.env;
     this.bannerColour = this.api.bannerColour;
     // no-banner-colour-set is the default if no banner colour is defined in the openshift environment variables.

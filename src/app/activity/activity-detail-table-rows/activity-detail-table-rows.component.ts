@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 
@@ -32,7 +32,7 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
     private router: Router,
-    private dialogService: DialogService,
+    private modalService: NgbModal,
     private recentActivityService: RecentActivityService,
   ) { }
 
@@ -44,19 +44,16 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
   }
 
   deleteActivity(activity) {
-    this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Delete Activity',
-        message: 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.',
-        okOnly: true,
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        isConfirmed => {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+    });
+    modalRef.componentInstance.title = 'Delete Activity';
+    modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.okOnly = true;
+
+    modalRef.result
+       .then(isConfirmed => {
           if (isConfirmed) {
-            // Delete the Activity
             this.recentActivityService.delete(activity)
               .subscribe(
                 () => {
@@ -67,8 +64,10 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
                   console.log('error =', error);
                 });
           }
-        }
-      );
+        })
+        .catch(() => {
+          // Modal dismissed
+        });
   }
 
   togglePin(activity) {

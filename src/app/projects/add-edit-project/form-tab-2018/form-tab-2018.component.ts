@@ -16,7 +16,7 @@ import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-s
 import { ISearchResults } from 'app/models/search';
 import { FullProject } from 'app/models/fullProject';
 import { flatMap } from 'rxjs/operators';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { Constants } from 'app/shared/utils/constants';
 
@@ -66,16 +66,16 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public only2018: boolean;
 
   constructor(
-    private route: ActivatedRoute,
-    private snackBar: MatSnackBar,
-    private router: Router,
-    private configService: ConfigService,
     private _changeDetectorRef: ChangeDetectorRef,
-    private utils: Utils,
+    private configService: ConfigService,
+    private modalService: NgbModal,
     private navigationStackUtils: NavigationStackUtils,
     private projectService: ProjectService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private snackBar: MatSnackBar,
     private storageService: StorageService,
-    private dialogService: DialogService,
+    private utils: Utils,
   ) {
   }
 
@@ -507,14 +507,28 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   confirmGuard(message: string): Observable<boolean> {
-    return this.dialogService.addDialog(ConfirmComponent,
-      {
-        title: 'Confirm Action',
-        message: message,
-        okOnly: false
-      }, {
-        backdropColor: 'rgba(0, 0, 0, 0.5)'
-      });
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+      backdropClass: 'custom-backdrop',
+      centered: true
+    });
+
+    modalRef.componentInstance.title = 'Confirm Action';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.okOnly = false;
+
+    return new Observable<boolean>(observer => {
+      modalRef.result.then(
+        (result) => {
+          observer.next(result === true);
+          observer.complete();
+        },
+        () => {
+          observer.next(false); // If dismissed, treat as "Cancel"
+          observer.complete();
+        }
+      );
+    });
   }
 
   onUnpublish(): void {

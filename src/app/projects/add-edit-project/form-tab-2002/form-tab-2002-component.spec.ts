@@ -12,7 +12,7 @@ import { AjaxData, regionsData, eaDecisions } from 'app/shared/utils/mock-data';
 import { ConfigService } from 'app/services/config.service';
 import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'app/services/project.service';
-import { DialogService } from 'ng2-bootstrap-modal';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
@@ -32,24 +32,27 @@ describe('FormTab2002', () => {
     lists: []
   };
 
-  const mockProjectService = jasmine.createSpyObj('ProjectService', {
-    'unPublish': Observable.of({}),
-    'Publish': Observable.of({}),
-    'add': Observable.of({}),
-    'save': Observable.of({}),
-  });
+  const mockProjectService = jasmine.createSpyObj('ProjectService', [
+      'unPublish',
+      'Publish',
+      'add',
+      'save'
+    ]);
+  mockProjectService.unPublish.and.returnValue(Observable.of({}));
+  mockProjectService.Publish.and.returnValue(Observable.of({}));
+  mockProjectService.add.and.returnValue(Observable.of({}));
+  mockProjectService.save.and.returnValue(Observable.of({}));
 
   const mockStorageService = jasmine.createSpyObj('StorageService', [
     'state'
   ]);
-  const mockDialogService = jasmine.createSpyObj('DialogService', [
-    'addDialog'
-  ]);
+
   const mockActivatedRoute = {
     parent: {
       data: Observable.of({ fullProject: AjaxData })
     }
   };
+
   const mockNavigationStackUtils = jasmine.createSpyObj('NavigationStackUtils', [
     'state'
   ]);
@@ -75,7 +78,7 @@ describe('FormTab2002', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: StorageService, useValue: mockStorageService },
         { provide: ProjectService, useValue: mockProjectService },
-        { provide: DialogService, useValue: mockDialogService },
+        { provide: NgbActiveModal, useValue: {} },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: NavigationStackUtils, useValue: mockNavigationStackUtils },
         { provide: Utils, useValue: utils }
