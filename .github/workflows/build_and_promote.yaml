@@ -23,23 +23,35 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Use Node.js 10
+
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: "10.x"
+          node-version: "16.x"
+
       - name: Angular Build
         run: |
-          npm install
+          npm install --legacy-peer-deps
           npm run build
+  
+      - name: Install OpenShift CLI
+        run: |
+          curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz"
+          tar -xvzf openshift-client-linux.tar.gz
+          sudo mv oc /usr/local/bin/
+          rm -f openshift-client-linux.tar.gz
+
       - name: Login to OpenShift registry
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.OPENSHIFT_REPOSITORY }}
           username: ${{ secrets.OPENSHIFT_REPOSITORY_USERNAME }}
           password: ${{ secrets.OPENSHIFT_REPOSITORY_PASSWORD }}
+
       - name: Get Short SHA
         id: short-sha
         run: echo "::set-output name=SHA::$(git rev-parse --short HEAD)"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
