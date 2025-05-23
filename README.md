@@ -35,14 +35,14 @@ Run the following two scripts to create your environment
 ## Fork, Build and Run
 
 1. After installing Node and Yarn, you can fork or straight download a copy of this application to start your own app.
-1. Run `npm start` to start the webpack server to run the application on port 4200.
+2. Run `npm start` to start the webpack server to run the application on port 4200.
 
     Go to <http://localhost:4200> to verify that the application is running.
 
     :bulb: To change the default port, open `.angular-cli.json`, change the value on `defaults.serve.port`.
 
-1. Run `npm run build` to just build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build, like so: `ng serve --prod` to run in production mode.
-1. Run `npm run lint` to just lint your app code using TSLint.
+3. Run `npm run build` to just build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build, like so: `ng serve --prod` to run in production mode.
+4. Run `npm run lint` to just lint your app code using TSLint.
 
 ## CI/CD Pipeline
 
