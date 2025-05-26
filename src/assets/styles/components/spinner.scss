@@ -6,14 +6,14 @@
   height: $spinner-lg;
   margin-top: calc(-#{$spinner-lg} / 1.5);
   margin-left: calc(-#{$spinner-lg} / 2);
-  background-image: url(assets/images/spinner.png);
+  background-image: url("../../images/spinner.png");
 }
 
 .spinner {
   position: absolute;
   top: 50%;
   left: 50%;
-  background-image: url(assets/images/spinner.png);
+  background-image: url("../../images/spinner.png");
   background-size: 100%;
 
   &.spinner-sm {
@@ -58,7 +58,7 @@
     background: $spinner-invert-bg;
 
     .spinner-new {
-      background-image: url(assets/images/spinner.png)
+      background-image: url("../../images/spinner.png")
     }
   }
 
@@ -78,35 +78,37 @@
 
 @-webkit-keyframes rotating {
   from {
-  -ms-transform: rotate(0deg);
-  -moz-transform: rotate(0deg);
-  -webkit-transform: rotate(0deg);
-  -o-transform: rotate(0deg);
-  transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
   }
+
   to {
-  -ms-transform: rotate(360deg);
-  -moz-transform: rotate(360deg);
-  -webkit-transform: rotate(360deg);
-  -o-transform: rotate(360deg);
-  transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
 @keyframes rotating {
   from {
-  -ms-transform: rotate(0deg);
-  -moz-transform: rotate(0deg);
-  -webkit-transform: rotate(0deg);
-  -o-transform: rotate(0deg);
-  transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
   }
+
   to {
-  -ms-transform: rotate(360deg);
-  -moz-transform: rotate(360deg);
-  -webkit-transform: rotate(360deg);
-  -o-transform: rotate(360deg);
-  transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
@@ -128,7 +130,7 @@
     margin-top: -0.1rem;
     margin-right: 0.5rem;
     display: inline-block;
-    background-image: url(assets/images/spinner-inverted.png);
+    background-image: url("../../images/spinner-inverted.png");
     width: 1rem;
     height: 1rem;
   }

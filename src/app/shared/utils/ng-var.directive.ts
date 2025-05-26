@@ -10,13 +10,13 @@ import { Directive, Input, ViewContainerRef, TemplateRef } from '@angular/core';
 })
 
 export class VarDirective {
+  context: any = {};
+
   @Input()
   set ngVar(context: any) {
     this.context.$implicit = this.context.ngVar = context;
     this.updateView();
   }
-
-  context: any = {};
 
   constructor(private vcRef: ViewContainerRef, private templateRef: TemplateRef<any>) { }
 

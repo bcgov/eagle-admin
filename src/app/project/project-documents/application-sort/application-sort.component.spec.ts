@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
-import { NgZorroAntdModule } from 'ng-zorro-antd';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { ApiService } from 'app/services/api';
 import { StorageService } from 'app/services/storage.service';
 import { SearchService } from 'app/services/search.service';
@@ -58,7 +58,7 @@ describe('DocumentApplicationSortComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         RouterTestingModule,
-        NgZorroAntdModule,
+        NzPaginationModule,
         MatSnackBarModule
       ],
       declarations: [

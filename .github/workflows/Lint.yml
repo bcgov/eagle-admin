@@ -1,4 +1,4 @@
-name: Front-End linting
+name: Front-End linting and testing
 
 on: [pull_request]
 
@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [12.x]
 
     steps:
     - uses: actions/checkout@v1
@@ -23,3 +23,6 @@ jobs:
         npm run lint
       env:
         CI: true
+    - name: npm test
+      run: |
+        npm run test-ci
