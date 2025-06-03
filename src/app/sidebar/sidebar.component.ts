@@ -4,7 +4,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { SideBarService } from 'app/services/sidebar.service';
 import { filter } from 'rxjs/operators';
 import { StorageService } from 'app/services/storage.service';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 import { KeycloakService } from 'app/services/keycloak.service';
 
 @Component({

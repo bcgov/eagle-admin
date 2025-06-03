@@ -9,7 +9,7 @@ import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { DayCalculatorModalComponent } from 'app/day-calculator-modal/day-calculator-modal.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DayCalculatorModalResult } from 'app/day-calculator-modal/day-calculator-modal.component';
-import { Subject } from 'rxjs/Subject';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-header',
