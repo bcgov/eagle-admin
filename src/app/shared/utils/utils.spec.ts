@@ -4,7 +4,7 @@ import 'zone.js/dist/async-test.js';
 import 'zone.js/dist/proxy.js';
 import 'zone.js/dist/sync-test';
 import 'zone.js/dist/jasmine-patch';
-import { async } from '@angular/core/testing';
+import { waitForAsync } from '@angular/core/testing';
 
 describe('Utils', () => {
   let utilsComponent: Utils;
@@ -12,7 +12,7 @@ describe('Utils', () => {
   let filenameWithSlashes = 'Ajax Lead/Silver/Zinc Mine';
   let filenameWithParens = 'Ajax (Mine)';
   let filennameWithMixed = 'Ajax (Mine) Lead/Silver {Tag}';
-  beforeEach(async(() => {}));
+  beforeEach(waitForAsync(() => { }));
 
   beforeEach(() => {
     utilsComponent = new Utils();

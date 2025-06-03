@@ -3,7 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { NgZorroAntdModule } from 'ng-zorro-antd';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { Component } from '@angular/core';
 
 import { ReviewCommentComponent } from './review-comment.component';
@@ -59,7 +59,7 @@ describe('ReviewCommentComponent', () => {
         ReactiveFormsModule,
         NgbModule,
         MatSnackBarModule,
-        NgZorroAntdModule,
+        NzPaginationModule,
       ],
       providers: [
         { provide: ApiService, useValue: mockApiService },

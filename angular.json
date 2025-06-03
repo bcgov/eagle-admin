@@ -7,13 +7,18 @@
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
-      "targets": {
+      "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "customWebpackConfig": {
-              "path": "./extra-webpack.config.js"
-            },
+            "allowedCommonJsDependencies": [
+              "rxjs",
+              "lodash",
+              "moment-timezone",
+              "xlsx",
+              "tinymce",
+              "jszip"
+            ],
             "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -31,15 +36,18 @@
               }
             ],
             "styles": [
-              "src/styles.scss",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
               "node_modules/leaflet/dist/leaflet.css",
               "src/assets/fonts/BCSans.css",
+              "src/styles.scss",
               "src/ant-design-custom.less"
             ],
             "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/popper.js/dist/umd/popper.min.js",
+              "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/tinymce/tinymce.min.js",
               "node_modules/moment/min/moment.min.js",
               "node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
@@ -49,9 +57,6 @@
           },
           "configurations": {
             "production": {
-              "customWebpackConfig": {
-                "path": "./extra-webpack.config.js"
-              },
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -96,6 +101,9 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.spec.json",
             "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/popper.js/dist/umd/popper.min.js",
+              "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/moment/min/moment.min.js",
               "node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
               "node_modules/keycloak-js/dist/keycloak.min.js",
@@ -112,7 +120,12 @@
             "assets": [
               "src/assets",
               "src/favicon.ico",
-              "src/env.js"
+              "src/env.js",
+              {
+                "glob": "**/*",
+                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
+                "output": "/assets/"
+              }
             ]
           }
         },
@@ -132,7 +145,7 @@
       "root": "e2e",
       "sourceRoot": "e2e",
       "projectType": "application",
-      "targets": {
+      "architect": {
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
