@@ -36,13 +36,15 @@
               }
             ],
             "styles": [
+              "node_modules/ng-zorro-antd/button/style/index.css",
+              "node_modules/ng-zorro-antd/pagination/style/index.css",
+              "node_modules/ng-zorro-antd/select/style/index.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
               "node_modules/leaflet/dist/leaflet.css",
               "src/assets/fonts/BCSans.css",
-              "src/styles.scss",
-              "src/ant-design-custom.less"
+              "src/styles.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",

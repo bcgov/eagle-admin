@@ -6,6 +6,9 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ApiService } from 'app/services/api';
 import { KeycloakService } from 'app/services/keycloak.service';
 import { Router } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ConfigService } from 'app/services/config.service';
+import { Utils } from 'app/shared/utils/utils';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -24,11 +27,13 @@ describe('LoginComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [LoginComponent],
-      imports: [FormsModule, RouterTestingModule],
+      imports: [FormsModule, RouterTestingModule, HttpClientTestingModule],
       providers: [
         { provide: ApiService },
         { provide: KeycloakService, useValue: mockKeycloakService },
         { provide: Router, useValue: routerSpy },
+        ConfigService,
+        Utils
       ]
     })
       .compileComponents();

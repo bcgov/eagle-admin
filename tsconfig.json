@@ -19,8 +19,5 @@
     /* replaces deprecated no-use-before-declare */
     "noUnusedLocals": true, /* Report errors on unused locals. */
     "noUnusedParameters": true /* Report errors on unused parameters. */
-  },
-  "angularCompilerOptions": {
-    "enableIvy": false /* Must be false until we replace ng-zorro https://github.com/NG-ZORRO/ng-zorro-antd/issues/3975 */
   }
 }

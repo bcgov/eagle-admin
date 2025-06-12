@@ -9,19 +9,17 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTabsModule } from '@angular/material/tabs';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 // modules
 import { AppRoutingModule } from 'app/app-routing.module';
 import { ProjectModule } from 'app/project/project.module';
-import { ProjectNotificationModule } from 'app/project-notification/project-notification.module';
 import { ProjectsModule } from 'app/projects/projects.module';
 import { SharedModule } from './shared/shared.module';
 import { EditorModule } from '@tinymce/tinymce-angular';
 
 // components
 import { AppComponent } from 'app/app.component';
-import { AddCommentComponent } from 'app/comment-period/add-comment/add-comment.component';
 import { AddDocumentTableRowsComponent } from 'app/comment-periods/add-edit-comment-period/add-documents/add-document-table-rows/add-document-table-rows.component';
 import { AddEditCommentPeriodComponent } from 'app/comment-periods/add-edit-comment-period/add-edit-comment-period.component';
 import { AddLabelComponent } from 'app/project/project-documents/add-label/add-label.component';
@@ -91,6 +89,7 @@ import { NotificationProjectService } from './services/notification-project.serv
 import { ProjectNotificationComponent } from './project-notification/project-notification.component';
 import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
 import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
+import { AddCommentComponent } from './comment-period/add-comment/add-comment.component';
 
 export function initConfig(configService: ConfigService, keycloakService: KeycloakService) {
   return async () => {
@@ -101,10 +100,10 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
 
 @NgModule({
   declarations: [
+    AddCommentComponent,
     ActivityComponent,
     ActivityDetailTableRowsComponent,
     ActivityTableRowsComponent,
-    AddCommentComponent,
     AddDocumentComponent,
     AddDocumentTableRowsComponent,
     AddEditActivityComponent,
@@ -156,9 +155,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     ReactiveFormsModule,
     HttpClientModule,
     ProjectModule,
-    ProjectNotificationModule,
     ProjectsModule,
-    ProjectNotificationModule,
     SharedModule,
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters

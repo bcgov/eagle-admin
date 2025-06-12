@@ -33,7 +33,7 @@ import { NavigationStackUtils } from './utils/navigation-stack-utils';
 import { ContactSelectTableRowsComponent } from './components/contact-select-table-rows/contact-select-table-rows.component';
 import { ExtensionComponent } from './components/extension/extension.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
-
+import { NzButtonModule } from 'ng-zorro-antd/button';
 
 @NgModule({
   imports: [
@@ -46,7 +46,8 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
     ReactiveFormsModule,
     MatMenuModule,
     NgbModule,
-    NzPaginationModule
+    NzPaginationModule,
+    NzButtonModule,
   ],
   declarations: [
     CommentStatsComponent,
