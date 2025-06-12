@@ -18,31 +18,70 @@ These projects comprise EAO EPIC:
 
 ## Pre-requisites
 
-Note: The following commands work in MacOS bash (not zsh which now default in Catalina). The scripts are currently not fully working in Windows and Linux, so you may need to look at the source of the scripts and manually apply the commands in a right order.
+Before setting up the project, ensure you have **Node.js 12** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) for easy Node.js version management.
 
-Run the following two scripts to create your environment
-
-```bash
-#!/bin/bash
-.\install_prerequisites.sh
-```
+To install nvm and Node.js 12 on Debian-based systems:
 
 ```bash
-#!/bin/bash
-.\setup_project.sh
+# Install nvm if you don't have it
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+# Load nvm (you may need to restart your terminal or run these commands)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# Install and use Node.js 12
+nvm install 12
+nvm use 12
+
+# Verify Node.js version
+node -v  # Should output v12.x.x
 ```
 
-## Fork, Build and Run
+Once Node.js 12 is active, install project dependencies using:
 
-1. After installing Node and Yarn, you can fork or straight download a copy of this application to start your own app.
-2. Run `npm start` to start the webpack server to run the application on port 4200.
+```bash
+npm i --legacy-peer-deps
+```
 
-    Go to <http://localhost:4200> to verify that the application is running.
+## Build, Lint, Test, and Run
 
-    :bulb: To change the default port, open `.angular-cli.json`, change the value on `defaults.serve.port`.
+After installing Node.js 12 and project dependencies, you can use the following commands to work with the project:
 
-3. Run `npm run build` to just build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build, like so: `ng serve --prod` to run in production mode.
-4. Run `npm run lint` to just lint your app code using TSLint.
+### Start the Development Server
+
+```bash
+npm start
+```
+This will start the webpack development server on port 4200. Visit [http://localhost:4200](http://localhost:4200) to view the application.
+
+### Build the Project
+
+```bash
+npm run build
+```
+This will build the project for production. The build artifacts will be stored in the `dist/` directory.
+
+### Lint the Code
+
+```bash
+npm run lint
+```
+This will lint your app code using TSLint and output any issues in a stylish format.
+
+### Run Unit Tests
+
+```bash
+npm run test
+```
+This will run the unit tests in watch mode using Karma and Jasmine.
+
+To run tests once in a CI environment (headless):
+
+```bash
+npm run test-ci
+```
 
 ## CI/CD Pipeline
 
@@ -54,15 +93,6 @@ A full description and guide to the EPIC pipeline and branching strategy is avai
 
 A brief guide to Angular CLI's code scaffolding can be found in [eagle-dev-guides](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/angular_scaffolding.md)
 
-## Testing
-
-An overview of the EPIC test stack can be found in our documentation guides: [EPIC Test Stack](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/testing_components.md).
-
-Instructions on how running tests unit tests and end-to-end tests can be found in our [test documentation](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/angular_scaffolding.md#running-tests).
-
-## Build and Deployment
-
-For dev, test, and production builds on OpenShift/Jenkins see [openshift/README.md](https://github.com/bcgov/eagle-admin/blob/master/openshift/README.md) for detailed instructions on how to setup in an OpenShift environment using [nginx](https://www.nginx.com/).
 
 ## How to Contribute
 
