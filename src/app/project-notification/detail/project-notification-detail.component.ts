@@ -44,7 +44,6 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
           this.projectNotification = res.notificationProject.data;
           // Set as the current project. A project notification is treated the same as a project.
           this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
-
           if (this.projectNotification.read.includes('public')) {
             this.isPublished = true;
           }

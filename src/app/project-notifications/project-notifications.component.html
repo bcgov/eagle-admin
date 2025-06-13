@@ -25,8 +25,8 @@
         </div>
     </form>
     <div *ngIf="tableParams.totalListItems > 0">
-        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
-            [columns]="documentTableColumns" [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
+        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="documentTableColumns"
+            [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
             (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
         </app-table-template>
     </div>

@@ -8,7 +8,7 @@ import { SearchService } from 'app/services/search.service';
 export class ProjectNotificationDocumentsResolver implements Resolve<object> {
   constructor(
     private searchService: SearchService,
-    private storageService:  StorageService
+    private storageService: StorageService
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {

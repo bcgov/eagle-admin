@@ -284,10 +284,8 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     switch (button) {
       case 'copyLink':
         return this.selectedCount === 1;
-        break;
       default:
         return this.selectedCount > 0;
-        break;
     }
   }
 

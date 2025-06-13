@@ -121,9 +121,6 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     }
   }
 
-  public checkChange() {
-  }
-
   setRowData() {
     if (this.users && this.users.length > 0) {
       const list = [...this.users];
@@ -407,16 +404,16 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, '');
 
     this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe((res: any) => {
-      // Incoming users
-      this.tableParams.totalListItems = res[0].total_items;
-      this.users = res[0].results;
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe((res: any) => {
+        // Incoming users
+        this.tableParams.totalListItems = res[0].total_items;
+        this.users = res[0].results;
 
-      this.setRowData();
-      this.loading = false;
-      this._changeDetectionRef.detectChanges();
-    });
+        this.setRowData();
+        this.loading = false;
+        this._changeDetectionRef.detectChanges();
+      });
   }
 
   async saveName() {

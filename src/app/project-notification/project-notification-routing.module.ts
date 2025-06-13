@@ -49,9 +49,6 @@ const routes: Routes = [
       {
         path: 'project-notification-documents',
         component: ProjectNotificationDocumentsComponent,
-        resolve: {
-          documents: ProjectNotificationDocumentsResolver,
-        },
         canActivate: [AuthGuard],
       },
       {
@@ -134,7 +131,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, {onSameUrlNavigation: 'reload'})
+    RouterModule.forRoot(routes, { onSameUrlNavigation: 'reload' })
   ],
   exports: [
     RouterModule
