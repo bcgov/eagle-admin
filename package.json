@@ -12,9 +12,6 @@
     "lint": "ng lint --format=stylish",
     "e2e": "ng e2e"
   },
-  "pre-push": [
-    "lint"
-  ],
   "private": true,
   "dependencies": {
     "@angular/animations": "~10.2.5",
@@ -78,7 +75,6 @@
     "karma-coverage-istanbul-reporter": "~3.0.2",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
-    "pre-push": "~0.1.1",
     "protractor": "~7.0.0",
     "puppeteer": "~2.1.1",
     "tree-kill": "~1.2.2",
