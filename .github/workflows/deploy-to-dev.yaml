@@ -9,6 +9,10 @@ on:
       - "openshift/**"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   OPENSHIFT_NAMESPACE: 6cdc9e-tools
   IMAGE_NAME: eagle-admin
