@@ -9,9 +9,7 @@ on:
       - "openshift/**"
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: write-all
 
 env:
   OPENSHIFT_NAMESPACE: 6cdc9e-tools
