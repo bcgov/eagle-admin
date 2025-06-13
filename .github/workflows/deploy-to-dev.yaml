@@ -103,5 +103,5 @@ jobs:
           --body ":crown: *An automated PR*\n\nThis PR triggers an deployment to Test once it's fully merged." \
           --label "auto-pr,test env,pipeline" \
           --draft
-          env:
-            GH_TOKEN: ${{ github.token }}
+        env:
+          GH_TOKEN: ${{ github.token }}
