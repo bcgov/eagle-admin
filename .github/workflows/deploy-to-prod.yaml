@@ -5,6 +5,8 @@ on:
     # Trigger from repository dispatch workflow in promotion/prod branch
     types: [trigger-prod-deploy]
 
+permissions: write-all
+
 env:
   OPENSHIFT_NAMESPACE: 6cdc9e-tools
   IMAGE_NAME: eagle-admin
@@ -12,18 +14,18 @@ env:
 jobs:
   deploy:
     name: Deploy to Prod
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       COMMIT_SHA: ${{ steps.read-hash.outputs.SHA }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "promotion/prod"
 
       - name: Retrieve previous commit hash
         id: read-hash
-        run: echo "::set-output name=SHA::`jq -r '.commit' state.json`"
+        run: echo "SHA=$(jq -r '.commit' state.json)" >> $GITHUB_OUTPUT
 
       - name: Install OpenShift CLI
         run: |
@@ -44,18 +46,13 @@ jobs:
           oc -n ${{ env.OPENSHIFT_NAMESPACE }} tag --reference-policy='local' ${{ env.IMAGE_NAME }}:prod ${{ env.IMAGE_NAME }}:prod-backup
           oc -n ${{ env.OPENSHIFT_NAMESPACE }} tag --reference-policy='local' ${{ env.IMAGE_NAME }}:test ${{ env.IMAGE_NAME }}:prod
 
-      - name: Notify Rocket.Chat
-        run: |
-          curl -X POST -H 'Content-Type: application/json' \
-            --data '{"alias":"Bot","avatar": "https://github.githubassets.com/images/modules/logos_page/Octocat.png","text":"Commit ${{ steps.read-hash.outputs.SHA }} deployed to ${{ env.IMAGE_NAME }} Prod"}' \
-            ${{ secrets.ROCKET_CHAT_URL }}
   sync-main-branch:
     name: Rebase Prod
     needs: deploy
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "main"
       - run: |
