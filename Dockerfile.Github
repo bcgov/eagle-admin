@@ -2,4 +2,4 @@ FROM image-registry.apps.silver.devops.gov.bc.ca/6cdc9e-tools/eagle-admin-nginx-
 
 COPY dist /tmp/app/dist/admin
 
-CMD  /usr/libexec/s2i/run
+CMD ["/usr/libexec/s2i/run"]
