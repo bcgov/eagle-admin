@@ -1,4 +1,4 @@
-name: Build
+name: Deploy to Dev
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths-ignore:
       - ".github/**"
       - "openshift/**"
+  workflow_dispatch:
 
 env:
   OPENSHIFT_NAMESPACE: 6cdc9e-tools
@@ -17,20 +18,25 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
     outputs:
       SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Use Node.js 12
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: "12.x"
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm install --legacy-peer-deps
+
       - name: Angular Build
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
+        run: npm run build
   
       - name: Install OpenShift CLI
         run: |
@@ -40,7 +46,7 @@ jobs:
           rm -f openshift-client-linux.tar.gz
 
       - name: Login to OpenShift registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.OPENSHIFT_REPOSITORY }}
           username: ${{ secrets.OPENSHIFT_REPOSITORY_USERNAME }}
@@ -48,10 +54,10 @@ jobs:
 
       - name: Get Short SHA
         id: short-sha
-        run: echo "::set-output name=SHA::$(git rev-parse --short HEAD)"
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -62,14 +68,18 @@ jobs:
             commit.id=${{ github.event.head_commit.id }}
             commit.timestamp=${{ github.event.head_commit.timestamp }}
             commit.message=${{ github.event.head_commit.message }}
+
   promotion:
     name: Create Promotion Pull Request
     needs: build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
     steps:
       # Update promotion/test-pr with new commit hash
       - name: Checkout promotion/test
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "${{ env.TEST_PROMO_BRANCH }}"
       - name: Update state.json
@@ -85,15 +95,13 @@ jobs:
           git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
           git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
       - name: Create Pull Request
-        uses: repo-sync/pull-request@v2
-        with:
-          source_branch: ${{ env.TEST_PROMO_PR_BRANCH }}
-          destination_branch: ${{ env.TEST_PROMO_BRANCH }}
-          pr_title: "Deploy to Test Environment"
-          pr_body: |
-            :crown: *An automated PR*
-
-            This PR triggers an deployment to Test once it's fully merged.
-          pr_label: "auto-pr,test env,pipeline"
-          pr_draft: true
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+          --base "${{ env.TEST_PROMO_BRANCH }}" \
+          --head "${{ env.TEST_PROMO_PR_BRANCH }}" \
+          --title "Deploy to Test Environment" \
+          --body ":crown: *An automated PR*\n\nThis PR triggers an deployment to Test once it's fully merged." \
+          --label "auto-pr,test env,pipeline" \
+          --draft
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
