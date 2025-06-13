@@ -94,14 +94,16 @@ jobs:
 
           git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
           git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
-      - name: Create Pull Request
+      - name: Create Pull Request if not exists
         run: |
+          gh pr list --base "${{ env.TEST_PROMO_BRANCH }}" --head "${{ env.TEST_PROMO_PR_BRANCH }}" --json number --jq '.[0]' | grep -q null && \
           gh pr create \
           --base "${{ env.TEST_PROMO_BRANCH }}" \
           --head "${{ env.TEST_PROMO_PR_BRANCH }}" \
           --title "Deploy to Test Environment" \
           --body ":crown: *An automated PR*\n\nThis PR triggers an deployment to Test once it's fully merged." \
           --label "auto-pr,test env,pipeline" \
-          --draft
+          --draft || \
+            echo "PR already exists, skipping creation."
         env:
           GH_TOKEN: ${{ github.token }}
