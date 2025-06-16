@@ -40,32 +40,33 @@
           <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1"
             [disabled]="!isEnabled('delete')" type="button" id="button-d"><i
               class="material-icons">delete</i>Remove</button>
-          <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('export')"
-            type="button" id="button-e"><i class="material-icons">import_export</i>Export</button>
-          <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
-            type="button" id="button-ce"><i class="material-icons">import_export</i>Copy Emails</button>
+          <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1"
+            [disabled]="!isEnabled('export')" type="button" id="button-e"><i
+              class="material-icons">import_export</i>Export</button>
+          <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1"
+            [disabled]="!isEnabled('copyEmail')" type="button" id="button-ce"><i
+              class="material-icons">import_export</i>Copy Emails</button>
           <div class="col mb-2">
-              <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-                  <div class="btn-toolbar mb-2" class="text-right" role="toolbar"
-                      aria-label="Toolbar with button groups">
-                      <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
-                          <a href="javascript:void(0);" role="button" class="btn btn-primary"
-                              (click)="tableParams.pageSize=this.tableParams.totalListItems; getPaginatedContacts(1);"
-                              aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
-                              [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
-                              All Group Members</a>
-                      </div>
-                  </div>
+            <div *ngIf="!loading && this.tableParams.totalListItems > 10">
+              <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
+                  <a href="javascript:void(0);" role="button" class="btn btn-primary"
+                    (click)="tableParams.pageSize=this.tableParams.totalListItems; getPaginatedContacts(1);"
+                    aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"
+                    [ngClass]="{'active': this.tableParams.pageSize === this.tableParams.totalListItems}">Show
+                    All Group Members</a>
+                </div>
               </div>
+            </div>
           </div>
         </div>
       </div>
       <br>
 
       <div *ngIf="!loading && tableParams.totalListItems != 0">
-        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange()'
-          [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-          (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedContacts($event, null, null)'>
+        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns"
+          [data]="tableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
+          (onPageNumUpdate)='getPaginatedContacts($event, null, null)'>
         </app-table-template>
       </div>
 

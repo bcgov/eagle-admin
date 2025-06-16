@@ -29,8 +29,9 @@
         Group</button>
       <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('export')"
         type="button" id="button-ex"><i class="material-icons">import_export</i>Export</button>
-      <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1" [disabled]="!isEnabled('copyEmail')"
-        type="button" id="button-ce"><i class="material-icons">import_export</i>Copy Emails</button>
+      <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1"
+        [disabled]="!isEnabled('copyEmail')" type="button" id="button-ce"><i
+          class="material-icons">import_export</i>Copy Emails</button>
     </div>
   </div>
   <br>
@@ -39,13 +40,7 @@
     No project groups found.
   </div>
 
-  <app-table-template
-    *ngIf="!loading && tableParams.totalListItems != 0"
-    (checkboxChange)='checkChange($event)'
-    [columns]="tableColumns"
-    [data]="tableData"
-    (onColumnSort)='setColumnSort($event)'
-    (onSelectedRow)='updateSelectedRow($event)'
-    (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
+    (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'>
   </app-table-template>
 </div>

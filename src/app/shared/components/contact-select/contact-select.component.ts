@@ -49,9 +49,9 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     }
   ];
   constructor(
-    private navigationStackUtils: NavigationStackUtils,
+    public navigationStackUtils: NavigationStackUtils,
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
     private tableTemplateUtils: TableTemplateUtils,
     public storageService: StorageService

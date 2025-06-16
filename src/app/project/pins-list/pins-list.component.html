@@ -26,7 +26,7 @@
     No Participating Indigenous Nations found.
   </div>
 
-  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
   [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
   (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event, null, null)'>
   </app-table-template>

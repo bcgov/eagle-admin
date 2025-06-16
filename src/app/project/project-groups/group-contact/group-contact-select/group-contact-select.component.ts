@@ -31,9 +31,9 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private _changeDetectionRef: ChangeDetectorRef,
-    private navigationStackUtils: NavigationStackUtils,
+    public navigationStackUtils: NavigationStackUtils,
     private tableTemplateUtils: TableTemplateUtils,
     public storageService: StorageService
   ) { }

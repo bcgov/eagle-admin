@@ -117,7 +117,7 @@
     </div>
 
     <div *ngIf="tableParams.totalListItems > 0">
-        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
+        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
             [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
             (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
         </app-table-template>

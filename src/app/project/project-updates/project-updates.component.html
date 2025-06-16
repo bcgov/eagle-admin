@@ -21,9 +21,9 @@
         </button>
       </div>
     </div>
-    <div class="results">
+    <div class="results my-2">
       <p *ngIf="!loading && tableParams.totalListItems == 0">
-        No result<span *ngIf="count != 1">s</span> found for "{{keywords}}"
+        No results found for "{{keywords}}"
       </p>
       <div *ngIf="!loading && tableParams.totalListItems > 0">
         {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
@@ -35,13 +35,7 @@
     <div class="spinner-new rotating"></div>
   </div>
 
-  <app-table-template
-    *ngIf="!loading && tableParams.totalListItems != 0"
-    (checkboxChange)='checkChange($event)'
-    [columns]="tableColumns"
-    [data]="tableData"
-    (onColumnSort)='setColumnSort($event)'
-    (onSelectedRow)='updateSelectedRow($event)'
+  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
     (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
   </app-table-template>
 </div>

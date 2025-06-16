@@ -1,7 +1,8 @@
 <nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
   <ol *ngIf="navigationObject" class="breadcrumb">
     <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
-      <a href="javascript:void(0);" (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
+      <a href="javascript:void(0);"
+        (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
     </li>
     <li *ngIf="!isParentCompany" class="breadcrumb-item active" aria-current="page">
       Link Organization
@@ -29,7 +30,7 @@
     </div>
     <div class="mb-2">
       <p *ngIf="tableParams.totalListItems == 0">
-        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
+        No results found for "{{tableParams.keywords}}"
       </p>
       <div *ngIf="tableParams.totalListItems > 0">
         {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
@@ -46,7 +47,8 @@
   <p><i>Click on the organization table row that you would like to add the contact to:</i></p>
 
   <app-table-template *ngIf="tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
-  (checkboxChange)='checkChange($event)'  (onSelectedRow)='updateSelectedRow($event)' (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
+    (onSelectedRow)='updateSelectedRow($event)' (onColumnSort)='setColumnSort($event)'
+    (onPageNumUpdate)='onSubmit($event)'>
   </app-table-template>
 
   <div class="btn-group" role="group" aria-label="Action Buttons" *ngIf="!loading && tableParams.totalListItems != 0">

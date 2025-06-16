@@ -67,7 +67,7 @@ import { ActivityComponent } from './activity/activity.component';
 import { ContactsComponent } from './contacts/contacts.component';
 import { UserTableRowsComponent } from './contacts/user-table-rows/user-table-rows.component';
 import { ActivityTableRowsComponent } from 'app/activity/activity-table-rows/activity-table-rows.component';
-import { CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { AddEditActivityComponent } from './activity/add-edit-activity/add-edit-activity.component';
 import { RecentActivityService } from './services/recent-activity';
 import { SearchHelpComponent } from './search-help/search-help.component';
@@ -86,10 +86,9 @@ import { LinkOrganizationTableRowsComponent } from './shared/components/link-org
 import { ProjectNotificationsComponent } from './project-notifications/project-notifications.component';
 import { AddEditProjectNotificationComponent } from './project-notifications/add-edit-project-notification/add-edit-project-notification.component';
 import { NotificationProjectService } from './services/notification-project.service';
-import { ProjectNotificationComponent } from './project-notification/project-notification.component';
 import { ProjectNotificationTableRowsComponent } from './project-notifications/project-notifications-table-rows/project-notifications-table-rows.component';
-import { ProjectNotificationDetailComponent } from './project-notification/detail/project-notification-detail.component';
 import { AddCommentComponent } from './comment-period/add-comment/add-comment.component';
+import { ProjectNotificationModule } from './project-notification/project-notification.module';
 
 export function initConfig(configService: ConfigService, keycloakService: KeycloakService) {
   return async () => {
@@ -129,10 +128,8 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     MapComponent,
     MetricsComponent,
     NotAuthorizedComponent,
-    ProjectNotificationDetailComponent,
     ProjectNotificationsComponent,
     ProjectNotificationTableRowsComponent,
-    ProjectNotificationComponent,
     OrganizationsComponent,
     OrganizationsTableRowsComponent,
     PinsTableRowsComponent,
@@ -151,11 +148,13 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
     ProjectModule,
     ProjectsModule,
+    ProjectNotificationModule,
     SharedModule,
     EditorModule,
     AppRoutingModule, // <-- module import order matters - https://angular.io/guide/router#module-import-order-matters
@@ -164,7 +163,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
     NgSelectModule,
     MatMenuModule,
     MatTabsModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
   ],
   providers: [
     {

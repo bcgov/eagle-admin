@@ -10,42 +10,44 @@
     </ol>
 </nav>
 <div class="container-fluid-padding">
-  <h1>
-    <div class="row">
-      <div>Documents</div>
-      <div class="ml-auto" ngbDropdown placement="bottom-right">
-        <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
-        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button (click)="selectAction('edit')" class="dropdown-item"
-              [disabled]="!isEnabled('edit')" type="button" id="button-e">Edit</button>
-          <button (click)="selectAction('publish')" class="dropdown-item"
-              [disabled]="!isEnabled('publish')" type="button" id="button-p">Publish</button>
-          <button (click)="selectAction('unpublish')" class="dropdown-item"
-              [disabled]="!isEnabled('unpublish')" type="button" id="button-u">Unpublish</button>
-          <button (click)="selectAction('copyLink')" class="dropdown-item"
-              [disabled]="!isEnabled('copyLink')" type="button" id="button-cl">Link</button>
-          <button (click)="selectAction('download')" class="dropdown-item"
-              [disabled]="!isEnabled('download')" type="button" id="button-dl">Download</button>
-          <button (click)="selectAction('delete')" class="dropdown-item"
-              [disabled]="!isEnabled('delete')" type="button" id="button-d">Delete</button>
+    <h1>
+        <div class="row">
+            <div>Documents</div>
+            <div class="ml-auto" ngbDropdown placement="bottom-right">
+                <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
+                <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+                    <button (click)="selectAction('edit')" class="dropdown-item" [disabled]="!isEnabled('edit')"
+                        type="button" id="button-e">Edit</button>
+                    <button (click)="selectAction('publish')" class="dropdown-item" [disabled]="!isEnabled('publish')"
+                        type="button" id="button-p">Publish</button>
+                    <button (click)="selectAction('unpublish')" class="dropdown-item"
+                        [disabled]="!isEnabled('unpublish')" type="button" id="button-u">Unpublish</button>
+                    <button (click)="selectAction('copyLink')" class="dropdown-item" [disabled]="!isEnabled('copyLink')"
+                        type="button" id="button-cl">Link</button>
+                    <button (click)="selectAction('download')" class="dropdown-item" [disabled]="!isEnabled('download')"
+                        type="button" id="button-dl">Download</button>
+                    <button (click)="selectAction('delete')" class="dropdown-item" [disabled]="!isEnabled('delete')"
+                        type="button" id="button-d">Delete</button>
 
-          <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-              [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">
-              <button class="dropdown-item" type="button" id="button-as">
-                Sort Applications
-              </button>
-          </a>
+                    <a *ngIf='currentProject' class="upload-docs"
+                        [ngClass]="{'active': currentProject._id === 'activity'}"
+                        [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">
+                        <button class="dropdown-item" type="button" id="button-as">
+                            Sort Applications
+                        </button>
+                    </a>
 
-          <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-              [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
-              <button class="dropdown-item" type="button" id="button-upl">
-                  Upload Document(s)
-              </button>
-          </a>
+                    <a *ngIf='currentProject' class="upload-docs"
+                        [ngClass]="{'active': currentProject._id === 'activity'}"
+                        [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
+                        <button class="dropdown-item" type="button" id="button-upl">
+                            Upload Document(s)
+                        </button>
+                    </a>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </h1>
+    </h1>
     <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
         <div class="search-area">
             <div class="input-group main-search-field">
@@ -65,36 +67,38 @@
                 'btn-dark': showFilters.milestone,
                 'btn-secondary': !showFilters.milestone && numFilters.milestone > 0,
                 'btn-outline-dark': !showFilters.milestone && numFilters.milestone == 0}">
-                            Milestone<span
-                                *ngIf="numFilters.milestone > 0 && !showFilters.milestone">&nbsp;({{ numFilters.milestone }})</span>
+                            Milestone<span *ngIf="numFilters.milestone > 0 && !showFilters.milestone">&nbsp;({{
+                                numFilters.milestone }})</span>
                         </button>
                         <button type="button" (click)="toggleFilter('date');" [ngClass]="{'btn': true, 'date-btn': true,
                 'btn-dark': showFilters.date,
                 'btn-secondary': !showFilters.date && numFilters.date > 0,
                 'btn-outline-dark': !showFilters.date && numFilters.date == 0}">
-                            Document Date<span
-                                *ngIf="numFilters.date > 0 && !showFilters.date">&nbsp;({{ numFilters.date }})</span>
+                            Document Date<span *ngIf="numFilters.date > 0 && !showFilters.date">&nbsp;({{
+                                numFilters.date }})</span>
                         </button>
                         <button type="button" (click)="toggleFilter('documentAuthorType');" [ngClass]="{'btn': true, 'author-btn': true,
                 'btn-dark': showFilters.documentAuthorType,
                 'btn-secondary': !showFilters.documentAuthorType && numFilters.documentAuthorType > 0,
                 'btn-outline-dark': !showFilters.documentAuthorType && numFilters.documentAuthorType == 0}">
                             Document Author<span
-                                *ngIf="numFilters.documentAuthorType > 0 && !showFilters.documentAuthorType">&nbsp;({{ numFilters.documentAuthorType }})</span>
+                                *ngIf="numFilters.documentAuthorType > 0 && !showFilters.documentAuthorType">&nbsp;({{
+                                numFilters.documentAuthorType }})</span>
                         </button>
                         <button type="button" (click)="toggleFilter('type');" [ngClass]="{'btn': true, 'type-btn': true,
                 'btn-dark': showFilters.type,
                 'btn-secondary': !showFilters.type && numFilters.type > 0,
                 'btn-outline-dark': !showFilters.type && numFilters.type == 0}">
-                            Document Type<span
-                                *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{ numFilters.type }})</span>
+                            Document Type<span *ngIf="numFilters.type > 0 && !showFilters.type">&nbsp;({{
+                                numFilters.type }})</span>
                         </button>
                         <button type="button" (click)="toggleFilter('projectPhase');" [ngClass]="{'btn': true, 'type-btn': true,
                 'btn-dark': showFilters.projectPhase,
                 'btn-secondary': !showFilters.projectPhase && numFilters.projectPhase > 0,
                 'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
                             Project Phase<span
-                                *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{ numFilters.projectPhase }})</span>
+                                *ngIf="numFilters.projectPhase > 0 && !showFilters.projectPhase">&nbsp;({{
+                                numFilters.projectPhase }})</span>
                         </button>
                         <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
                     </div>
@@ -119,21 +123,15 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <ng-select
-                                            id="milestone"
-                                            name="milestone"
-                                            multiple="true"
-                                            bindLabel="name"
-                                            groupBy="legislation"
-                                            placeholder="Type Milestone"
-                                            [items]="milestones"
-                                            [markFirst]="false"
-                                            [closeOnSelect]="false"
-                                            [(ngModel)]="filterForUI.milestone"
-                                            [compareWith]="filterCompareWith"
-                                        >
+                                        <ng-select id="milestone" name="milestone" multiple="true" bindLabel="name"
+                                            groupBy="legislation" placeholder="Type Milestone" [items]="milestones"
+                                            [markFirst]="false" [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.milestone" [compareWith]="filterCompareWith">
                                             <ng-template ng-label-tmp let-item="item">
-                                                <span class="ng-value-icon left" (click)="clearSelectedItem('milestone', item)" aria-hidden="true">×</span>
+                                                <span class="ng-value-icon left"
+                                                    (click)="clearSelectedItem('milestone', item)"
+                                                    (keydown)="clearSelectedItem('milestone', item)"
+                                                    aria-hidden="true">×</span>
                                                 <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                                             </ng-template>
                                             <ng-template ng-optgroup-tmp let-item="item" let-index="index">
@@ -161,8 +159,7 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" placeholder="yyyy-mm-dd"
                                         name="datePostedStart" [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker
-                                        #datePostedStartPicker="ngbDatepicker"
-                                        [minDate]="constants.minPickerDate"
+                                        #datePostedStartPicker="ngbDatepicker" [minDate]="constants.minPickerDate"
                                         [maxDate]="constants.maxPickerDate">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary calendar"
@@ -176,8 +173,7 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" placeholder="yyyy-mm-dd"
                                         name="datePostedEnd" [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker
-                                        #datePostedEndPicker="ngbDatepicker"
-                                        [minDate]="constants.minPickerDate"
+                                        #datePostedEndPicker="ngbDatepicker" [minDate]="constants.minPickerDate"
                                         [maxDate]="constants.maxPickerDate">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary calendar"
@@ -200,19 +196,11 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <ng-select
-                                            id="documentAuthorType"
-                                            name="documentAuthorType"
-                                            multiple="true"
-                                            bindLabel="name"
-                                            groupBy="legislation"
-                                            placeholder="Type Document Author"
-                                            [items]="authors"
-                                            [markFirst]="false"
-                                            [closeOnSelect]="false"
+                                        <ng-select id="documentAuthorType" name="documentAuthorType" multiple="true"
+                                            bindLabel="name" groupBy="legislation" placeholder="Type Document Author"
+                                            [items]="authors" [markFirst]="false" [closeOnSelect]="false"
                                             [(ngModel)]="filterForUI.documentAuthorType"
-                                            [compareWith]="filterCompareWith"
-                                        >
+                                            [compareWith]="filterCompareWith">
                                         </ng-select>
                                     </div>
                                 </div>
@@ -229,21 +217,15 @@
                                 </div>
                                 <div class="row">
                                     <div class="form-group">
-                                        <ng-select
-                                            id="type"
-                                            name="type"
-                                            multiple="true"
-                                            bindLabel="name"
-                                            groupBy="legislation"
-                                            placeholder="Type Document Type"
-                                            [items]="types"
-                                            [markFirst]="false"
-                                            [closeOnSelect]="false"
-                                            [(ngModel)]="filterForUI.type"
-                                            [compareWith]="filterCompareWith"
-                                        >
+                                        <ng-select id="type" name="type" multiple="true" bindLabel="name"
+                                            groupBy="legislation" placeholder="Type Document Type" [items]="types"
+                                            [markFirst]="false" [closeOnSelect]="false" [(ngModel)]="filterForUI.type"
+                                            [compareWith]="filterCompareWith">
                                             <ng-template ng-label-tmp let-item="item">
-                                                <span class="ng-value-icon left" (click)="clearSelectedItem('type', item)" aria-hidden="true">×</span>
+                                                <span class="ng-value-icon left"
+                                                    (click)="clearSelectedItem('type', item)"
+                                                    (keydown)="clearSelectedItem('type', item)"
+                                                    aria-hidden="true">×</span>
                                                 <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                                             </ng-template>
                                             <ng-template ng-optgroup-tmp let-item="item" let-index="index">
@@ -256,42 +238,37 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="showAdvancedSearch && showFilters.projectPhase" class="projectPhase-filters project-filter row">
-                  <div class="col-md-12 filter-border">
-                      <div class="row sub-filter">
-                          <div class="col-md-12">
-                              <div class="row">
-                                  <b>Phase</b>
-                              </div>
-                              <div class="row">
-                                  <div class="form-group">
-                                      <ng-select
-                                          id="projectPhase"
-                                          name="projectPhase"
-                                          multiple="true"
-                                          bindLabel="name"
-                                          groupBy="legislation"
-                                          placeholder="Type Project Phase"
-                                          [items]="projectPhases"
-                                          [markFirst]="false"
-                                          [closeOnSelect]="false"
-                                          [(ngModel)]="filterForUI.projectPhase"
-                                          [compareWith]="filterCompareWith"
-                                      >
-                                          <ng-template ng-label-tmp let-item="item">
-                                              <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)" aria-hidden="true">×</span>
-                                              <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
-                                          </ng-template>
-                                          <ng-template ng-optgroup-tmp let-item="item" let-index="index">
-                                              {{item.legislation}} Act Terms
-                                          </ng-template>
-                                      </ng-select>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
+                <div *ngIf="showAdvancedSearch && showFilters.projectPhase"
+                    class="projectPhase-filters project-filter row">
+                    <div class="col-md-12 filter-border">
+                        <div class="row sub-filter">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <b>Phase</b>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group">
+                                        <ng-select id="projectPhase" name="projectPhase" multiple="true"
+                                            bindLabel="name" groupBy="legislation" placeholder="Type Project Phase"
+                                            [items]="projectPhases" [markFirst]="false" [closeOnSelect]="false"
+                                            [(ngModel)]="filterForUI.projectPhase" [compareWith]="filterCompareWith">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                <span class="ng-value-icon left"
+                                                    (click)="clearSelectedItem('projectPhase', item)"
+                                                    (keydown)="clearSelectedItem('projectPhase', item)"
+                                                    aria-hidden="true">×</span>
+                                                <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
+                                            </ng-template>
+                                            <ng-template ng-optgroup-tmp let-item="item" let-index="index">
+                                                {{item.legislation}} Act Terms
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <button *ngIf="showAdvancedSearch && isShowingFilter()" class="btn btn-primary search-button"
                     type="submit">
                     <span>Search</span>
@@ -304,8 +281,7 @@
         <div *ngIf="this.tableParams.totalListItemsCategorized > 0">
             <app-table-template
                 *ngIf="!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData && categorizedDocumentTableData.data.length"
-                (checkboxChange)='checkChange($event)' [columns]="documentTableColumns"
-                [data]="categorizedDocumentTableData"
+                [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
                 (onColumnSort)='setColumnSort(constants.documentTypes.CATEGORIZED, $event)'
                 (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
                 (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)'
@@ -321,5 +297,5 @@
             <div class="spinner-new rotating"></div>
         </div>
     </div>
-    
+
 </div>

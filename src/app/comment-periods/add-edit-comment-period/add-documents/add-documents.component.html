@@ -3,7 +3,8 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
         <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
-        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All
+          Project Notifications</a>
       </li>
       <li class="breadcrumb-item">
         <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
@@ -23,17 +24,20 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
         <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
-        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All
+          Project Notifications</a>
       </li>
       <li class="breadcrumb-item">
         <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'comment-periods'])" [routerLink]="">Comment
+        <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'comment-periods'])"
+          [routerLink]="">Comment
           Periods</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="[baseRouteUrl, projectId, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted | date: 'LLLL'}}
+        <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted
+          | date: 'LLLL'}}
           -
           {{currentCommentPeriod.dateCompleted | date}}</a>
       </li>
@@ -64,7 +68,8 @@
         </button>
       </div>
     </div>
-    <div *ngIf="storageService.state.selectedDocumentsForCP && storageService.state.selectedDocumentsForCP.data.length > 0">
+    <div
+      *ngIf="storageService.state.selectedDocumentsForCP && storageService.state.selectedDocumentsForCP.data.length > 0">
       <p><b>Selected Documents:</b></p>
       <ul class="doc-list mb-3" *ngIf="storageService.state.selectedDocumentsForCP">
         <li *ngFor="let doc of storageService.state.selectedDocumentsForCP.data">
@@ -84,7 +89,7 @@
     </div>
     <div class="mb-2">
       <p *ngIf="tableParams.totalListItems == 0">
-        No result<span *ngIf="count != 1">s</span> found for "{{tableParams.keywords}}"
+        No results found for "{{tableParams.keywords}}"
       </p>
       <div *ngIf="tableParams.totalListItems > 0">
         {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
@@ -105,8 +110,8 @@
         class="material-icons">cloud_upload</i>&nbsp;Attach {{selectedCount}} document(s) to Comment Period</button>
   </div>
 
-  <app-table-template *ngIf="tableParams.totalListItems != 0" (checkboxChange)='checkChange($event)'
-    [columns]="documentTableColumns" [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
-    (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+  <app-table-template *ngIf="tableParams.totalListItems != 0" [columns]="documentTableColumns"
+    [data]="documentTableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
+    (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
   </app-table-template>
 </div>

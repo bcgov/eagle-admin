@@ -93,20 +93,17 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
   ngOnInit() {
     this.route.parent.data
-      .switchMap(() => {
-        return this.route.params;
-      })
-      .switchMap(() => {
-        this.currentProject = this.storageService.state.currentProject.data;
-        this._changeDetectionRef.detectChanges();
-
-        return this.route.data;
-      })
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(({ documents }: any) => {
-        if (documents) {
-          if (documents[0].data && documents[0].data.meta.length > 0) {
-            this.docs = documents[0].data.searchResults;
+      .subscribe((res: any) => {
+        this.currentProject = this.storageService.state.currentProject?.data;
+        if (!this.currentProject) {
+          this.storageService.state.currentProject = res.notificationProject;
+          this.currentProject = this.storageService.state.currentProject?.data;
+        }
+
+        if (res.documents) {
+          if (res.documents[0].data && res.documents[0].data.meta.length > 0) {
+            this.docs = res.documents[0].data.searchResults;
           } else {
             this.docs = [];
           }
@@ -114,9 +111,8 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           this.tableParams.sortBy = '-datePosted';
           this.tableParams.pageSize = 10;
           this.tableParams.currentPage = 1;
-          this.tableParams.totalListItems = documents[0].data.meta[0] ? documents[0].data.meta[0].searchResultsTotal : 0;
+          this.tableParams.totalListItems = res.documents[0].data.meta[0] ? res.documents[0].data.meta[0].searchResultsTotal : 0;
           this.setRowData();
-
           this.loading = false;
           this._changeDetectionRef.detectChanges();
         } else {
@@ -235,7 +231,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           }
 
           forkJoin(observables).subscribe(
-            () => {},
+            () => { },
             err => {
               console.log('Error:', err);
             },
@@ -283,7 +279,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           }
 
           forkJoin(observables).subscribe(
-            () => {},
+            () => { },
             err => console.log('Error:', err),
             () => {
               this.loading = false;
