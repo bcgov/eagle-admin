@@ -1,26 +1,51 @@
-<div class="sidebar" [ngClass]="{'isOpen': isOpen === true}" >
+<div class="sidebar" [ngClass]="{'isOpen': isOpen === true}">
   <section class="full-nav">
-    <a [ngClass]="{'active': mainRouteId === 'projects'}" id="allProjects" [routerLink]="['/projects']"><i class="material-icons mr-3">view_list</i>All Projects</a>
+    <a [ngClass]="{'active': mainRouteId === 'projects'}" id="allProjects" [routerLink]="['/projects']"><i
+        class="material-icons mr-3">view_list</i>All Projects</a>
     <section class="project-nav" *ngIf="showProjectDetails === true">
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-details'}" class="dropdown-btn " [routerLink]="['p', mainRouteId]">
+      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-details'}" class="dropdown-btn "
+        [routerLink]="['/p', mainRouteId]">
         Project Details
       </a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'comment-periods'}" class="project-menu" id="comment-periods" [routerLink]="['p', mainRouteId, 'comment-periods']"><i class="material-icons">comment</i>Comment Periods</a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-documents'}" class="project-menu" id="documents" (click)="goToDocuments(mainRouteId)" [routerLink]="['p', mainRouteId, 'project-documents']"><i class="material-icons">event_note</i>Documents</a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-groups'}" class="project-menu" id="groups" [routerLink]="['p', mainRouteId, 'project-groups']"><i class="material-icons">person</i>Project Groups</a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-pins'}" class="project-menu" id="pins" [routerLink]="['p', mainRouteId, 'project-pins']"><i class="material-icons">person</i>Indigenous Nations</a>
-      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-updates'}" class="project-menu" id="updates" [routerLink]="['p', mainRouteId, 'project-updates']"><i class="material-icons">fiber_new</i>Project Updates</a>
-      <a *ngIf="isArchive" [ngClass]="{'active': showProjectDetails && currentMenu === 'project-archived-detail'}" class="project-menu" id="project-archived-detail" [routerLink]="['p', mainRouteId, 'project-archived-detail']"><i class="material-icons">access_time</i>Archived Project Details</a>
+      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'comment-periods'}" class="project-menu"
+        id="comment-periods" [routerLink]="['/p', mainRouteId, 'comment-periods']"><i
+          class="material-icons">comment</i>Comment Periods</a>
+      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-documents'}" class="project-menu"
+        id="documents" (click)="goToDocuments(mainRouteId)" [routerLink]><i
+          class="material-icons">event_note</i>Documents</a>
+      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-groups'}" class="project-menu" id="groups"
+        [routerLink]="['/p', mainRouteId, 'project-groups']"><i class="material-icons">person</i>Project Groups</a>
+      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-pins'}" class="project-menu" id="pins"
+        [routerLink]="['/p', mainRouteId, 'project-pins']"><i class="material-icons">person</i>Indigenous Nations</a>
+      <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-updates'}" class="project-menu"
+        id="updates" [routerLink]="['/p', mainRouteId, 'project-updates']"><i
+          class="material-icons">fiber_new</i>Project
+        Updates</a>
+      <a *ngIf="isArchive" [ngClass]="{'active': showProjectDetails && currentMenu === 'project-archived-detail'}"
+        class="project-menu" id="project-archived-detail"
+        [routerLink]="['/p', mainRouteId, 'project-archived-detail']"><i class="material-icons">access_time</i>Archived
+        Project Details</a>
     </section>
-    <a [ngClass]="{'active': mainRouteId === 'project-notifications' || mainRouteId === 'pn'}" id="notificationProjects" [routerLink]="['/project-notifications']"><i class="material-icons mr-3">view_module</i>Project Notifications</a>
+    <a [ngClass]="{'active': mainRouteId === 'project-notifications' || mainRouteId === 'pn'}" id="notificationProjects"
+      [routerLink]="['/project-notifications']"><i class="material-icons mr-3">view_module</i>Project Notifications</a>
     <section class="project-nav" *ngIf="showProjectNotificationDetails === true">
-      <a [ngClass]="{'active': showProjectNotificationDetails && (currentMenu === 'details' || currentMenu === 'edit')}" class="project-menu" id="pn-details" [routerLink]="['pn', mainRouteId, 'details']"><i class="material-icons">assignment</i>Details</a>
-      <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'project-notification-documents'}" class="project-menu" id="pn-documents" (click)="goToPnDocuments(mainRouteId)" [routerLink]="['pn', mainRouteId, 'project-notification-documents']"><i class="material-icons">event_note</i>Documents</a>
-      <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'comment-periods'}" class="project-menu" id="documents" [routerLink]="['pn', mainRouteId, 'comment-periods']"><i class="material-icons">comment</i>Comment Period</a>
+      <a [ngClass]="{'active': showProjectNotificationDetails && (currentMenu === 'details' || currentMenu === 'edit')}"
+        class="project-menu" id="pn-details" [routerLink]="['/pn', mainRouteId, 'details']"><i
+          class="material-icons">assignment</i>Details</a>
+      <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'project-notification-documents'}"
+        class="project-menu" id="pn-documents" (click)="goToPnDocuments(mainRouteId)" [routerLink]><i
+          class="material-icons">event_note</i>Documents</a>
+      <a [ngClass]="{'active': showProjectNotificationDetails && currentMenu === 'comment-periods'}"
+        class="project-menu" id="comment-periods" [routerLink]="['/pn', mainRouteId, 'comment-periods']"><i
+          class="material-icons">comment</i>Comment Period</a>
     </section>
-    <a [ngClass]="{'active': mainRouteId === 'activity'}" id="activityPosts" [routerLink]="['/activity']"><i class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>
-    <a [ngClass]="{'active': mainRouteId.includes('contacts') || mainRouteId === 'c'}" id="contacts" [routerLink]="['/contacts']"><i class="material-icons mr-3 ">contacts</i>Contacts</a>
-    <a [ngClass]="{'active': mainRouteId.includes('orgs') || mainRouteId === 'o'}" id="orgs" [routerLink]="['/orgs']"><i class="material-icons mr-3 ">business</i>Organizations</a>
-    <a  href="https://intranet.gov.bc.ca/eao/our-work/eguide-2018" id="eguide" target="_blank"><i class="material-icons mr-3 ">chrome_reader_mode</i>E-Guide</a>
+    <a [ngClass]="{'active': mainRouteId === 'activity'}" id="activityPosts" [routerLink]="['/activity']"><i
+        class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>
+    <a [ngClass]="{'active': mainRouteId.includes('contacts') || mainRouteId === 'c'}" id="contacts"
+      [routerLink]="['/contacts']"><i class="material-icons mr-3 ">contacts</i>Contacts</a>
+    <a [ngClass]="{'active': mainRouteId.includes('orgs') || mainRouteId === 'o'}" id="orgs" [routerLink]="['/orgs']"><i
+        class="material-icons mr-3 ">business</i>Organizations</a>
+    <a href="https://intranet.gov.bc.ca/eao/our-work/eguide-2018" id="eguide" target="_blank"><i
+        class="material-icons mr-3 ">chrome_reader_mode</i>E-Guide</a>
   </section>
 </div>

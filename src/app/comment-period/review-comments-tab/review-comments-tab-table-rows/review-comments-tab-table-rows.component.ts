@@ -1,11 +1,9 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-
-import { Comment } from 'app/models/comment';
-import { StorageService } from 'app/services/storage.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
   selector: 'tbody[app-review-comments-tab-table-rows]',

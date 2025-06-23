@@ -8,23 +8,21 @@ import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import * as JSZip from 'jszip';
 
-import { KeycloakService } from 'app/services/keycloak.service';
-
-import { Project } from 'app/models/project';
-import { Comment } from 'app/models/comment';
-import { CommentPeriod } from 'app/models/commentPeriod';
-import { Decision } from 'app/models/decision';
-import { Document } from 'app/models/document';
-// import { Feature } from 'app/models/recentActivity';
-import { SearchResults } from 'app/models/search';
-import { User } from 'app/models/user';
-import { Topic } from 'app/models/topic';
-import { Org } from 'app/models/org';
-import { RecentActivity } from 'app/models/recentActivity';
-import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
-import { Utils } from 'app/shared/utils/utils';
-import { ProjectNotification } from 'app/models/projectNotification';
 import { ConfigService } from './config.service';
+import { CommentPeriod } from '../models/commentPeriod';
+import { CommentPeriodSummary } from '../models/commentPeriodSummary';
+import { Decision } from '../models/decision';
+import { Org } from '../models/org';
+import { Project } from '../models/project';
+import { ProjectNotification } from '../models/projectNotification';
+import { RecentActivity } from '../models/recentActivity';
+import { SearchResults } from '../models/search';
+import { Topic } from '../models/topic';
+import { User } from '../models/user';
+import { Utils } from '../shared/utils/utils';
+import { KeycloakService } from './keycloak.service';
+import { Comment } from '../models/comment';
+import { Document } from '../models/document';
 
 interface LocalLoginResponse {
   _id: string;
@@ -56,7 +54,7 @@ export class ApiService {
     // this.jwtHelper = new JwtHelperService();
     const currentUser = JSON.parse(window.localStorage.getItem('currentUser'));
     this.token = currentUser && currentUser.token;
-    this.isMS = !!window.navigator.msSaveOrOpenBlob;
+    this.isMS = !!(window.navigator as any).msSaveOrOpenBlob;
 
     this.bannerColour = this.configService.config['BANNER_COLOUR'];
     this.env = this.configService.config['ENVIRONMENT'];
@@ -835,7 +833,7 @@ export class ApiService {
     }
     filename = this.utils.encodeString(filename, false);
     if (this.isMS) {
-      window.navigator.msSaveBlob(blob, filename);
+      (window.navigator as any).msSaveBlob(blob, filename);
     } else {
       const url = window.URL.createObjectURL(blob);
       const a = window.document.createElement('a');
@@ -866,7 +864,7 @@ export class ApiService {
 
     filename = this.utils.encodeString(filename, true);
     if (this.isMS) {
-      window.navigator.msSaveBlob(blob, filename);
+      (window.navigator as any).msSaveBlob(blob, filename);
     } else {
       const url = window.URL.createObjectURL(blob);
       const a = window.document.createElement('a');
@@ -914,7 +912,7 @@ export class ApiService {
       throw Error('Unable to download item');
     }
     if (this.isMS) {
-      window.navigator.msSaveBlob(blob, filename);
+      (window.navigator as any).msSaveBlob(blob, filename);
     } else {
       const url = window.URL.createObjectURL(blob);
       const a = window.document.createElement('a');
@@ -1008,7 +1006,7 @@ export class ApiService {
 
     }
     if (this.isMS) {
-      window.navigator.msSaveBlob(content, 'inspection.zip');
+      (window.navigator as any).msSaveBlob(content, 'inspection.zip');
     } else {
       const url = window.URL.createObjectURL(content);
       const a = window.document.createElement('a');

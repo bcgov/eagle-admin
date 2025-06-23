@@ -6,12 +6,10 @@ import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
-import { ConfigService } from 'app/services/config.service';
-import { DocumentService } from 'app/services/document.service';
-import { StorageService } from 'app/services/storage.service';
-
-import { Utils } from 'app/shared/utils/utils';
+import { ConfigService } from 'src/app/services/config.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'app-document-edit',

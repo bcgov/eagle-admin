@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
-import { Topic } from 'app/models/topic';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { User } from 'app/models/user';
-import { UserService } from 'app/services/user.service';
-import { StorageService } from 'app/services/storage.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { Topic } from 'src/app/models/topic';
+import { User } from 'src/app/models/user';
+import { StorageService } from 'src/app/services/storage.service';
+import { UserService } from 'src/app/services/user.service';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 export interface DataModel {
   title: string;

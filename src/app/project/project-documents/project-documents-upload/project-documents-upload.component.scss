@@ -1,4 +1,4 @@
-@import "assets/styles/components/add-edit.scss";
+@import "src/assets/styles/components/add-edit.scss";
 
 .label-pair {
     width: 100%;
@@ -35,12 +35,4 @@
 
 .legislation-label {
     font-weight: 400;
-}
-
-.pn-info-block {
-    padding: 20px;
-
-    @media (max-width: 960px) {
-        padding: 20px 0px;
-    }
 }

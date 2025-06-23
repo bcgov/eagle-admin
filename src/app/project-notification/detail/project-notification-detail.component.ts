@@ -4,12 +4,11 @@ import { Subject } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/concat';
-
-import { ApiService } from 'app/services/api';
-import { NotificationProjectService } from 'app/services/notification-project.service';
-import { StorageService } from 'app/services/storage.service';
-import { DocumentService } from 'app/services/document.service';
-import { ProjectNotification } from 'app/models/projectNotification';
+import { ProjectNotification } from 'src/app/models/projectNotification';
+import { ApiService } from 'src/app/services/api';
+import { DocumentService } from 'src/app/services/document.service';
+import { NotificationProjectService } from 'src/app/services/notification-project.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   selector: 'app-notification-project',

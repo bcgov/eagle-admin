@@ -5,22 +5,22 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, forkJoin } from 'rxjs';
 import * as moment from 'moment';
 import * as _ from 'lodash';
-
-import { Document } from 'app/models/document';
-import { SearchTerms } from 'app/models/search';
-import { ApiService } from 'app/services/api';
-import { DocumentService } from 'app/services/document.service';
-import { SearchService } from 'app/services/search.service';
-import { StorageService } from 'app/services/storage.service';
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { SearchTerms } from 'src/app/models/search';
+import { ApiService } from 'src/app/services/api';
+import { ConfigService } from 'src/app/services/config.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { SearchService } from 'src/app/services/search.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableDocumentParamsObject } from 'src/app/shared/components/table-template/table-document-params-object';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { Constants } from 'src/app/shared/utils/constants';
+import { TableDocumentTemplateUtils } from 'src/app/shared/utils/table-document-template-utils';
+import { Utils } from 'src/app/shared/utils/utils';
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableDocumentParamsObject } from 'app/shared/components/table-template/table-document-params-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableDocumentTemplateUtils } from 'app/shared/utils/table-document-template-utils';
-import { Utils } from 'app/shared/utils/utils';
-import { Constants } from 'app/shared/utils/constants';
-import { ConfigService } from 'app/services/config.service';
+import { Document } from 'src/app/models/document';
+
 
 class DocumentFilterObject {
   constructor(

@@ -1,9 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-user-table-rows',

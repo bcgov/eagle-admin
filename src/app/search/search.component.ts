@@ -2,30 +2,25 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestro
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/takeUntil';
 
 import * as _ from 'lodash';
 import * as moment from 'moment';
-
-import { Org } from 'app/models/org';
-import { SearchTerms } from 'app/models/search';
-
-import { ApiService } from 'app/services/api';
-import { OrgService } from 'app/services/org.service';
-import { SearchService } from 'app/services/search.service';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { Org } from '../models/org';
+import { SearchTerms } from '../models/search';
+import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
+import { ApiService } from '../services/api';
+import { ConfigService } from '../services/config.service';
+import { OrgService } from '../services/org.service';
+import { SearchService } from '../services/search.service';
+import { TableObject } from '../shared/components/table-template/table-object';
+import { TableParamsObject } from '../shared/components/table-template/table-params-object';
+import { Constants } from '../shared/utils/constants';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
-import { ProjectListTableRowsComponent } from 'app/projects/project-list/project-list-table-rows/project-list-table-rows.component';
-
-import { Constants } from 'app/shared/utils/constants';
-import { ConfigService } from 'app/services/config.service';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -278,11 +273,10 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         // query string. Previously these were ignored on a refresh
         let filterKeys = Object.keys(this.filterForAPI);
         let hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
-
         if (_.isEmpty(this.terms.getParams())
-            && !this.hasFilter()
-            && !hasFilterFromQueryString) {
-          return Observable.of(null);
+          && !this.hasFilter()
+        && !hasFilterFromQueryString) {
+          return of(null);
         }
 
         this.results = [];

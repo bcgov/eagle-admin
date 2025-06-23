@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ISearchResults } from 'app/models/search';
-import {Constants} from './constants';
+import { Constants } from './constants';
+import { ISearchResults } from 'src/app/models/search';
 
 const encode = encodeURIComponent;
 window['encodeURIComponent'] = (component: string) => {
@@ -96,92 +96,92 @@ export class Utils {
     let s = date.getSeconds();
     return y + '-' + m + '-' + d + '-' + h + '-' + mi + '-' + s;
   }
-    // This function will take in a ISearchResults of some type and return an array of that same type
-    public extractFromSearchResults<T>(results: ISearchResults<T>[]): T[] {
-      if (!results) {return null; }
-      const data = results[0].data;
-      if (!data) { return null; }
-      return <T[]>data.searchResults;
-    }
+  // This function will take in a ISearchResults of some type and return an array of that same type
+  public extractFromSearchResults<T>(results: ISearchResults<T>[]): T[] {
+    if (!results) { return null; }
+    const data = results[0].data;
+    if (!data) { return null; }
+    return <T[]>data.searchResults;
+  }
 
-    public isEmptyObject(object: Object): boolean {
-      if (!object) {
-        return true;
-      }
-      for (let i in object) {
-        if (object.hasOwnProperty(i)) { return false; }
-      }
+  public isEmptyObject(object: Object): boolean {
+    if (!object) {
       return true;
     }
-
-    // Mapping the build database field to the human readable nature field
-    public natureBuildMapper(key: string): string {
-      if (!key) {
-        return '';
-      }
-      const natureObj = Constants.buildToNature.find(obj => obj.build === key);
-      return (natureObj) ? natureObj.nature : key;
+    for (let i in object) {
+      if (object.hasOwnProperty(i)) { return false; }
     }
+    return true;
+  }
 
-    public createProjectTabModifiers(list: Array<any>) {
-      let types: Array<object>;
-      let milestones: Array<object>;
-      let phases: string;
+  // Mapping the build database field to the human readable nature field
+  public natureBuildMapper(key: string): string {
+    if (!key) {
+      return '';
+    }
+    const natureObj = Constants.buildToNature.find(obj => obj.build === key);
+    return (natureObj) ? natureObj.nature : key;
+  }
 
-      types = [
-        { legislation: 2002, name: 'Application Materials' },
-        { legislation: 2018, name: 'Application Materials' },
-        { legislation: 2002, name: 'Scientific Memo' },
-        { legislation: 2018, name: 'Independent Memo' }
-      ];
-      milestones = [
-        { legislation: 2002, name: 'Application Review' },
-        { legislation: 2018, name: 'Revised EAC Application' },
-      ];
+  public createProjectTabModifiers(list: Array<any>) {
+    let types: Array<object>;
+    let milestones: Array<object>;
+    let phases: string;
 
-      const applications = [
-        { legislation: 2002, name: 'Post Decision - Amendment' },
-        { legislation: 2018, name: 'Post Decision - Amendment' }
-      ];
+    types = [
+      { legislation: 2002, name: 'Application Materials' },
+      { legislation: 2018, name: 'Application Materials' },
+      { legislation: 2002, name: 'Scientific Memo' },
+      { legislation: 2018, name: 'Independent Memo' }
+    ];
+    milestones = [
+      { legislation: 2002, name: 'Application Review' },
+      { legislation: 2018, name: 'Revised EAC Application' },
+    ];
 
-      // Special case for phases.
-      const amendmentPhaseIds = this.getIdsByName(applications, list).map(type => type.id);
+    const applications = [
+      { legislation: 2002, name: 'Post Decision - Amendment' },
+      { legislation: 2018, name: 'Post Decision - Amendment' }
+    ];
 
-      // Get all phase list items excluding the matched applications.
-      phases = list.filter(item => {
-        if (item.type === 'projectPhase' && !amendmentPhaseIds.includes(item._id)) {
-          return true;
-        }
+    // Special case for phases.
+    const amendmentPhaseIds = this.getIdsByName(applications, list).map(type => type.id);
 
-        return false;
-      })
+    // Get all phase list items excluding the matched applications.
+    phases = list.filter(item => {
+      if (item.type === 'projectPhase' && !amendmentPhaseIds.includes(item._id)) {
+        return true;
+      }
+
+      return false;
+    })
       .map(item => item._id)
       .join(',');
 
-      const typeIds = this.getIdsByName(types, list).map(type => type.id).join(',');
-      const milestoneIds = this.getIdsByName(milestones, list).map(milestone => milestone.id).join(',');
+    const typeIds = this.getIdsByName(types, list).map(type => type.id).join(',');
+    const milestoneIds = this.getIdsByName(milestones, list).map(milestone => milestone.id).join(',');
 
-      const queryModifier = {
-        documentSource: 'PROJECT',
-        type: typeIds,
-        milestone: milestoneIds,
+    const queryModifier = {
+      documentSource: 'PROJECT',
+      type: typeIds,
+      milestone: milestoneIds,
+    };
+
+    if (phases) {
+      queryModifier['projectPhase'] = phases;
+    }
+
+    return queryModifier;
+  }
+
+  public getIdsByName(terms: Array<any>, list: Array<any>) {
+    const matchedItems = terms.map(term => {
+      const listItem = list.find(item => item.name === term.name && item.legislation === term.legislation);
+      return {
+        name: term.name,
+        id: listItem._id
       };
-
-      if (phases) {
-        queryModifier['projectPhase'] = phases;
-      }
-
-      return queryModifier;
-    }
-
-    public getIdsByName(terms: Array<any>, list: Array<any>) {
-      const matchedItems = terms.map(term => {
-        const listItem = list.find(item => item.name === term.name && item.legislation === term.legislation);
-        return {
-          name: term.name,
-          id: listItem._id
-        };
-      });
-      return matchedItems;
-    }
+    });
+    return matchedItems;
+  }
 }

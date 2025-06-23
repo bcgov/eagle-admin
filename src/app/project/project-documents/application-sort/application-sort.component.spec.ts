@@ -1,17 +1,17 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
-import { ApiService } from 'app/services/api';
-import { StorageService } from 'app/services/storage.service';
-import { SearchService } from 'app/services/search.service';
-import { DocumentService } from 'app/services/document.service';
-import { ConfigService } from 'app/services/config.service';
+import { ApiService } from 'src/app/services/api';
+import { StorageService } from 'src/app/services/storage.service';
+import { SearchService } from 'src/app/services/search.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { ConfigService } from 'src/app/services/config.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { Utils } from 'app/shared/utils/utils';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { AjaxData } from 'app/shared/utils/mock-data';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
+import { Utils } from 'src/app/shared/utils/utils';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { AjaxData } from 'src/app/shared/utils/mock-data';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 
 import { DocumentApplicationSortComponent } from './application-sort.component';
 

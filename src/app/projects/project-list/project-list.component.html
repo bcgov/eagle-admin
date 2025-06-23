@@ -27,7 +27,7 @@
                             <div class="input-group main-search-field">
                                 <input class="form-control" type="text" name="keywordInput"
                                     placeholder="Enter keywords to search..." id="keywordInput"
-                                    [(ngModel)]="tableParams.keywords" autofocus />
+                                    [(ngModel)]="tableParams.keywords"  />
                                 <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
                                     <!-- prevent searching if input is empty or we're already searching -->
                                     <button class="btn btn-primary search-button" type="submit">

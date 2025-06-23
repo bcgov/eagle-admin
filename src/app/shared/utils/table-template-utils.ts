@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 import { TableParamsObject } from '../components/table-template/table-params-object';
-import { Constants } from 'app/shared/utils/constants';
+import { Constants } from './constants';
 
 @Injectable()
 export class TableTemplateUtils {
@@ -18,7 +18,7 @@ export class TableTemplateUtils {
     currentUrl += `;currentPage=${currentPage};pageSize=${pageSize}`;
     if (keywords !== '') { currentUrl += `;keywords=${keywords}`; }
     if (sortString !== '' && sortString !== null) { currentUrl += `;sortBy=${sortString}`; }
-    if (filter !== null && filter !== {}) {
+    if (filter !== null && Object.keys(filter).length > 0) {
       Object.keys(filter).forEach(key => {
         if (filter[key] === true || filter[key] === false) {
           currentUrl += `;${key}=${filter[key]}`;

@@ -8,12 +8,13 @@ import * as _ from 'lodash';
 
 import { ApiService } from './api';
 
-import { Project } from 'app/models/project';
-import { CommentPeriod } from 'app/models/commentPeriod';
-import { Org } from 'app/models/org';
 import { SearchService } from './search.service';
-import { FullProject } from 'app/models/fullProject';
-import { Utils } from 'app/shared/utils/utils';
+import { CommentPeriod } from '../models/commentPeriod';
+import { FullProject } from '../models/fullProject';
+import { Org } from '../models/org';
+import { Project } from '../models/project';
+import { Utils } from '../shared/utils/utils';
+
 
 interface GetParameters {
   getresponsibleEPD?: boolean;

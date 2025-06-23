@@ -1,10 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-
-import { CommentPeriod } from 'app/models/commentPeriod';
-
-import { StorageService } from 'app/services/storage.service';
+import { CommentPeriod } from '../models/commentPeriod';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-comment-period',

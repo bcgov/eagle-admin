@@ -1,20 +1,18 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
-
-import { RecentActivity } from 'app/models/recentActivity';
-
-import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { SearchTerms } from 'app/models/search';
-import { Project } from 'app/models/project';
-import { ProjectService } from 'app/services/project.service';
-import { Constants } from 'app/shared/utils/constants';
 import * as moment from 'moment';
 import * as _ from 'lodash';
+
+import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
+import { Project } from '../models/project';
+import { RecentActivity } from '../models/recentActivity';
+import { SearchTerms } from '../models/search';
+import { ProjectService } from '../services/project.service';
+import { TableObject } from '../shared/components/table-template/table-object';
+import { TableParamsObject } from '../shared/components/table-template/table-params-object';
+import { Constants } from '../shared/utils/constants';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 class ActivityFilterObject {
   constructor(

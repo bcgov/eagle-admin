@@ -1,8 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
     selector: 'tbody[app-project-list-table-rows]',

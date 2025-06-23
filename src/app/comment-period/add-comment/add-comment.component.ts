@@ -4,16 +4,13 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
-
-import { Utils } from 'app/shared/utils/utils';
-
-import { Comment } from 'app/models/comment';
-import { CommentPeriod } from 'app/models/commentPeriod';
-import { Document } from 'app/models/document';
-
-import { ApiService } from 'app/services/api';
-import { CommentService } from 'app/services/comment.service';
-import { StorageService } from 'app/services/storage.service';
+import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { ApiService } from 'src/app/services/api';
+import { CommentService } from 'src/app/services/comment.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
+import { Comment } from 'src/app/models/comment';
+import { Document } from 'src/app/models/document';
 
 @Component({
   selector: 'app-add-comment',
@@ -67,7 +64,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
   private initForm() {
     this.addCommentForm = new FormGroup({
-      'authorText': new FormControl({value: this.anonymousName, disabled: true}),
+      'authorText': new FormControl({ value: this.anonymousName, disabled: true }),
       'commentText': new FormControl(),
       'dateAdded': new FormControl(),
       'datePosted': new FormControl({ value: '', disabled: true }),
@@ -98,7 +95,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       }
 
       );
-    }
+  }
 
   public onSubmit() {
     this.loading = true;
@@ -134,7 +131,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.commentService.add(this.comment, documentsForm)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
-        () => {},
+        () => { },
         error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t add comment');

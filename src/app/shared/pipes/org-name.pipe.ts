@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { ConfigService } from 'app/services/config.service';
+import { ConfigService } from 'src/app/services/config.service';
 
 @Pipe({
   name: 'orgName'

@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, ComponentFactoryResolver, OnDestroy, ViewChild, Output, EventEmitter, SimpleChanges, OnChanges, ViewEncapsulation } from '@angular/core';
-import {MediaMatcher} from '@angular/cdk/layout';
+import { MediaMatcher } from '@angular/cdk/layout';
 import { TableDirective } from './table.directive';
 import { TableObject } from './table-object';
 import { TableComponent } from './table.component';
-import { Constants } from 'app/shared/utils/constants';
+import { Constants } from '../../utils/constants';
 
 @Component({
   selector: 'app-table-template',
@@ -17,7 +17,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @Input() pageSizeArray: number[];
   @Input() activePageSize: number;
   @Input() activePage: number = Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
-  @ViewChild(TableDirective, {static: true}) tableHost: TableDirective;
+  @ViewChild(TableDirective, { static: true }) tableHost: TableDirective;
 
   @Output() onPageNumUpdate: EventEmitter<any> = new EventEmitter();
   @Output() onUpdatePageSize: EventEmitter<any> = new EventEmitter();
@@ -33,19 +33,19 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   private mobileQueryListener: () => void;
 
   constructor(private componentFactoryResolver: ComponentFactoryResolver,
-              private media: MediaMatcher) {
+    private media: MediaMatcher) {
     // Detect when the app displays in mobile mode and reload the component.
     this.mobileQuery = this.media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => this.loadComponent();
-    this.mobileQuery.addListener(this.mobileQueryListener);
-   }
+    this.mobileQuery.addEventListener('change', this.mobileQueryListener);
+  }
 
   ngOnInit() {
     this.loadComponent();
     this.activePageSize = parseInt(this.data.paginationData.pageSize, 10);
     const pageSizeTemp = [10, 25, 50, 100, parseInt(this.data.paginationData.totalListItems, 10)];
-    this.pageSizeArray = pageSizeTemp.filter(function(el: number) { return el >= 10; });
-    this.pageSizeArray.sort(function(a: number, b: number) { return a - b; });
+    this.pageSizeArray = pageSizeTemp.filter(function (el: number) { return el >= 10; });
+    this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
     if (this.activePage !== parseInt(this.data.paginationData.currentPage, 10)) {
       this.activePage = parseInt(this.data.paginationData.currentPage, 10);
     }
@@ -103,7 +103,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnDestroy() {
     clearInterval(this.interval);
-    this.mobileQuery.removeListener(this.mobileQueryListener);
+    this.mobileQuery.removeEventListener('change', this.mobileQueryListener);
   }
 
   public selectAction() {
@@ -123,7 +123,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
 
-    this.selectAllClicked.emit({ selectAll: this.selectAll});
+    this.selectAllClicked.emit({ selectAll: this.selectAll });
   }
 
   public selectAllInit() {

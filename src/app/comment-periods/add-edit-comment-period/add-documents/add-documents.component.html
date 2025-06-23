@@ -60,7 +60,7 @@
   <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
     <div class="input-group main-search-field mb-2">
       <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-        id="keywordInput" [(ngModel)]="tableParams.keywords" autofocus />
+        id="keywordInput" [(ngModel)]="tableParams.keywords"  />
       <div class="input-group-append">
         <!-- prevent searching if input is empty or we're already searching -->
         <button class="btn btn-primary" type="submit">

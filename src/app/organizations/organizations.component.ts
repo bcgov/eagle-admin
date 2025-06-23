@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { SearchTerms } from 'app/models/search';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { StorageService } from 'app/services/storage.service';
 import { OrganizationsTableRowsComponent } from './organizations-table-rows/organizations-table-rows.component';
-import { Org } from 'app/models/org';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { Org } from '../models/org';
+import { SearchTerms } from '../models/search';
+import { StorageService } from '../services/storage.service';
+import { TableObject } from '../shared/components/table-template/table-object';
+import { TableParamsObject } from '../shared/components/table-template/table-params-object';
+import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Component({
   selector: 'app-organizations',

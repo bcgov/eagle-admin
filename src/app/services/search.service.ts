@@ -6,7 +6,7 @@ import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { SearchResults } from 'app/models/search';
+import { SearchResults } from '../models/search';
 
 @Injectable()
 export class SearchService {

@@ -3,16 +3,13 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
-
-import { ApiService } from 'app/services/api';
-import { CommentService } from 'app/services/comment.service';
-import { StorageService } from 'app/services/storage.service';
-
-import { Comment } from 'app/models/comment';
-import { CommentPeriod } from 'app/models/commentPeriod';
-import { Document } from 'app/models/document';
-
-import { Utils } from 'app/shared/utils/utils';
+import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { ApiService } from 'src/app/services/api';
+import { CommentService } from 'src/app/services/comment.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
+import { Comment } from 'src/app/models/comment';
+import { Document } from 'src/app/models/document';
 
 @Component({
   selector: 'app-review-comment',

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-
-import { SearchService } from 'app/services/search.service';
+import { of } from 'rxjs';
+import { SearchService } from 'src/app/services/search.service';
 
 @Injectable()
 export class EditOrganizationResolver implements Resolve<Observable<object>> {
@@ -19,10 +19,10 @@ export class EditOrganizationResolver implements Resolve<Observable<object>> {
         return organization ? organization : null;
       })
       .mergeMap(org => {
-        if (!org) { return Observable.of(null); }
+        if (!org) { return of(null); }
 
         if (org.parentCompany === '' || org.parentCompany == null) {
-          return Observable.of(org);
+          return of(org);
         }
 
         // now get the decision documents

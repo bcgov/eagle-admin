@@ -3,12 +3,12 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
-import { ApiService } from 'app/services/api';
-import { KeycloakService } from 'app/services/keycloak.service';
+import { ApiService } from 'src/app/services/api';
+import { KeycloakService } from 'src/app/services/keycloak.service';
 import { Router } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ConfigService } from 'app/services/config.service';
-import { Utils } from 'app/shared/utils/utils';
+import { ConfigService } from 'src/app/services/config.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;

@@ -5,15 +5,11 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
 
 import * as _ from 'lodash';
-
-import { Org } from 'app/models/org';
-
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-
-import { OrgService } from 'app/services/org.service';
-import { SearchService } from 'app/services/search.service';
-
-import { Constants } from 'app/shared/utils/constants';
+import { Org } from 'src/app/models/org';
+import { OrgService } from 'src/app/services/org.service';
+import { SearchService } from 'src/app/services/search.service';
+import { Constants } from 'src/app/shared/utils/constants';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Injectable()
 export class ProjectListResolver implements Resolve<Object> {

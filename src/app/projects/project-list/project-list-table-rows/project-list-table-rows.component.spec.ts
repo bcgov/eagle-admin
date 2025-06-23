@@ -2,9 +2,9 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AjaxDefaultData } from 'app/shared/utils/mock-data';
+import { AjaxDefaultData } from 'src/app/shared/utils/mock-data';
 import { ProjectListTableRowsComponent } from './project-list-table-rows.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
 
 
 describe('ProjectListTableRowsComponent', () => {

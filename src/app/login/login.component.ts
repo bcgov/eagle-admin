@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api';
-import { KeycloakService } from 'app/services/keycloak.service';
 import { Subject } from 'rxjs';
+import { KeycloakService } from '../services/keycloak.service';
 
 @Component({
   selector: 'app-login',

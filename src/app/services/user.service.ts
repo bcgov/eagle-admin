@@ -4,7 +4,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
 import { ApiService } from './api';
-import { User } from 'app/models/user';
+import { User } from '../models/user';
 
 @Injectable()
 export class UserService {

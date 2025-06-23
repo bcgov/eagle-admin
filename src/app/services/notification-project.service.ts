@@ -4,7 +4,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
 import { ApiService } from './api';
-import { ProjectNotification } from 'app/models/projectNotification';
+import { ProjectNotification } from '../models/projectNotification';
 
 @Injectable()
 export class NotificationProjectService {

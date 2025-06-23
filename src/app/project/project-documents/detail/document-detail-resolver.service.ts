@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-
-import { DocumentService } from 'app/services/document.service';
+import { DocumentService } from 'src/app/services/document.service';
 
 @Injectable()
 export class DocumentDetailResolver implements Resolve<Observable<object>> {

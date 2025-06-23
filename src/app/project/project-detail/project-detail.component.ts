@@ -6,20 +6,18 @@ import { Subject } from 'rxjs';
 import 'rxjs/add/operator/takeUntil';
 import 'rxjs/add/operator/concat';
 import { of } from 'rxjs';
-
-import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { Project, ProjectPublishState } from 'app/models/project';
-import { ApiService } from 'app/services/api';
-import { ProjectService } from 'app/services/project.service';
-import { CommentPeriodService } from 'app/services/commentperiod.service';
-import { DecisionService } from 'app/services/decision.service';
-import { DocumentService } from 'app/services/document.service';
-import { StorageService } from 'app/services/storage.service';
-import { ISearchResults } from 'app/models/search';
-import { Utils } from 'app/shared/utils/utils';
-import { SideBarService } from 'app/services/sidebar.service';
-import { FullProject } from 'app/models/fullProject';
-
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { FullProject } from 'src/app/models/fullProject';
+import { Project, ProjectPublishState } from 'src/app/models/project';
+import { ISearchResults } from 'src/app/models/search';
+import { ApiService } from 'src/app/services/api';
+import { CommentPeriodService } from 'src/app/services/commentperiod.service';
+import { DecisionService } from 'src/app/services/decision.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { SideBarService } from 'src/app/services/sidebar.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'app-project-detail',

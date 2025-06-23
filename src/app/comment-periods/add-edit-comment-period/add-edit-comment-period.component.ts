@@ -4,21 +4,20 @@ import { FormGroup, FormControl, FormBuilder, FormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import * as moment from 'moment';
-import { CommentPeriod } from 'app/models/commentPeriod';
-
-import { CommentPeriodService } from 'app/services/commentperiod.service';
-import { ConfigService } from 'app/services/config.service';
-import { DocumentService } from 'app/services/document.service';
-import { StorageService } from 'app/services/storage.service';
-
-import { Utils } from 'app/shared/utils/utils';
-import { Project } from 'app/models/project';
 
 // tiny mce imports for plugins
 import 'tinymce/plugins/advlist';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/link';
 import 'tinymce/icons/default';
+
+import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { Project } from 'src/app/models/project';
+import { CommentPeriodService } from 'src/app/services/commentperiod.service';
+import { ConfigService } from 'src/app/services/config.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'app-add-edit-comment-period',

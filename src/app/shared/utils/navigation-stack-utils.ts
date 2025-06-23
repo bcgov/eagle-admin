@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { StorageService } from 'app/services/storage.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Injectable()
 export class NavigationStackUtils {

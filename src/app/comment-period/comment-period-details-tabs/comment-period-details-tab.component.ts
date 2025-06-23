@@ -2,13 +2,11 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-
-import { CommentPeriod } from 'app/models/commentPeriod';
-
-import { ApiService } from 'app/services/api';
-import { CommentPeriodService } from 'app/services/commentperiod.service';
-import { StorageService } from 'app/services/storage.service';
-import { DocumentService } from 'app/services/document.service';
+import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { ApiService } from 'src/app/services/api';
+import { CommentPeriodService } from 'src/app/services/commentperiod.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   selector: 'app-comment-period-details-tab',

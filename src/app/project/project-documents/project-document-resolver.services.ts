@@ -1,14 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-
 import 'rxjs/add/operator/switchMap';
-
 import * as _ from 'lodash';
-
-import { ConfigService } from 'app/services/config.service';
-import { SearchService } from 'app/services/search.service';
-import { StorageService } from 'app/services/storage.service';
+import { ConfigService } from 'src/app/services/config.service';
+import { SearchService } from 'src/app/services/search.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 
 @Injectable()

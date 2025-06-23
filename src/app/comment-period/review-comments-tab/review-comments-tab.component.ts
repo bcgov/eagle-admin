@@ -1,17 +1,13 @@
 import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
-
-import { CommentService } from 'app/services/comment.service';
-import { StorageService } from 'app/services/storage.service';
-
-import { Comment } from 'app/models/comment';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { CommentService } from 'src/app/services/comment.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { Comment } from 'src/app/models/comment';
 
 @Component({
   selector: 'app-review-comments-tab',

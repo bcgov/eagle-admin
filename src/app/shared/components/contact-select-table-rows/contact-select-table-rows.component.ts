@@ -1,9 +1,9 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from '../table-template/table-object';
-import { StorageService } from 'app/services/storage.service';
 import { Router } from '@angular/router';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { StorageService } from 'src/app/services/storage.service';
+import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
+import { TableObject } from '../table-template/table-object';
+import { TableComponent } from '../table-template/table.component';
 
 @Component({
   selector: 'app-contact-select-table-rows',

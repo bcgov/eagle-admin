@@ -3,24 +3,22 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
-import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import * as _ from 'lodash';
 
-import { StorageService } from 'app/services/storage.service';
-import { ConfigService } from 'app/services/config.service';
-import { ProjectService } from 'app/services/project.service';
-import { Project, ProjectPublishState } from 'app/models/project';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
-import { ISearchResults } from 'app/models/search';
-import { FullProject } from 'app/models/fullProject';
-
-import { Constants } from 'app/shared/utils/constants';
-
 import { flatMap } from 'rxjs/operators';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { FullProject } from 'src/app/models/fullProject';
+import { Project, ProjectPublishState } from 'src/app/models/project';
+import { ISearchResults } from 'src/app/models/search';
+import { ConfigService } from 'src/app/services/config.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { ContactSelectTableRowsComponent } from 'src/app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { Constants } from 'src/app/shared/utils/constants';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'form-tab-2002',

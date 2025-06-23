@@ -12,66 +12,35 @@ module.exports = function (config) {
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
-      require('karma-coverage-istanbul-reporter'),
+      require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     client: {
-      clearContext: false, // leave Jasmine Spec Runner output visible in browser
+      jasmine: {
+        // you can add configuration options for Jasmine here
+        // the possible options are listed at https://jasmine.github.io/api/edge/Configuration.html
+        // for example, you can disable the random execution with `random: false`
+        // or set a specific seed with `seed: 4321`
+      },
     },
-    files: [
-
-    ],
-    preprocessors: {
-
+    jasmineHtmlReporter: {
+      suppressAll: true // removes the duplicated traces
     },
-    mime: {
-      'text/x-typescript': ['ts', 'tsx']
+    coverageReporter: {
+      dir: require('path').join(__dirname, './coverage/eagle-admin'),
+      subdir: '.',
+      reporters: [
+        { type: 'html' },
+        { type: 'text-summary' }
+      ]
     },
-    coverageIstanbulReporter: {
-      dir: require('path').join(__dirname, 'coverage'), reports: ['html', 'lcovonly'],
-      fixWebpackSourcePaths: true
-    },
-
-    reporters: config.angularCli && config.angularCli.codeCoverage
-      ? ['progress', 'coverage-istanbul']
-      : ['progress', 'kjhtml'],
-    port: 9876,
-    colors: true,
-    logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ['ChromeHeadless'],
+    reporters: ['progress', 'kjhtml'],
+    browsers: ['ChromeHeadlessNoSandbox'],
     customLaunchers: {
-        ChromeHeadlessNoSandbox: {
-            base: 'ChromeHeadless',
-            flags: [
-              '--no-sandbox', // required to run without privileges in docker
-              '--user-data-dir=/tmp/chrome-test-profile',
-              '--disable-web-security',
-              '--disable-gpu',
-              '--disable-background-networking',
-              '--disable-default-apps',
-              '--disable-extensions',
-              '--disable-sync',
-              '--disable-translate',
-              '--headless',
-              '--hide-scrollbars',
-              '--metrics-recording-only',
-              '--mute-audio',
-              '--no-first-run',
-              '--safebrowsing-disable-auto-update',
-              '--ignore-certificate-errors',
-              '--ignore-ssl-errors',
-              '--ignore-certificate-errors-spki-list',
-              '--remote-debugging-port=9222',
-              '--remote-debugging-address=0.0.0.0',
-              '--disable-dev-shm-usage',
-              '--disable-setuid-sandbox',
-              '--disable-namespace-sandbox',
-              '--window-size=800x600',
-              '--disable-background-timer-throttling',
-              '--disable-renderer-backgrounding'
-            ]
-        }
-    }
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+      }
+    },
   });
 };

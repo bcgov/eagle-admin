@@ -18,9 +18,9 @@ These projects comprise EAO EPIC:
 
 ## Pre-requisites
 
-Before setting up the project, ensure you have **Node.js 12** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) for easy Node.js version management.
+Before setting up the project, ensure you have **Node.js 14** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) for easy Node.js version management.
 
-To install nvm and Node.js 12 on Debian-based systems:
+To install nvm and Node.js 14 on Debian-based systems:
 
 ```bash
 # Install nvm if you don't have it
@@ -31,23 +31,23 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
-# Install and use Node.js 12
-nvm install 12
-nvm use 12
+# Install and use Node.js 14
+nvm install 14
+nvm use 14
 
 # Verify Node.js version
-node -v  # Should output v12.x.x
+node -v  # Should output v14.x.x
 ```
 
-Once Node.js 12 is active, install project dependencies using:
+Once Node.js 14 is active, install project dependencies using:
 
 ```bash
-npm i --legacy-peer-deps
+npm i
 ```
 
 ## Build, Lint, Test, and Run
 
-After installing Node.js 12 and project dependencies, you can use the following commands to work with the project:
+After installing Node.js 14 and project dependencies, you can use the following commands to work with the project:
 
 ### Start the Development Server
 

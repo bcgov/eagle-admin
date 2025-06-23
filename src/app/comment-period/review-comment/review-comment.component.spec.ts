@@ -7,12 +7,12 @@ import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { Component } from '@angular/core';
 
 import { ReviewCommentComponent } from './review-comment.component';
-import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
-import { ApiService } from 'app/services/api';
-import { CommentService } from 'app/services/comment.service';
-import { StorageService } from 'app/services/storage.service';
-import { Utils } from 'app/shared/utils/utils';
+import { ApiService } from 'src/app/services/api';
+import { CommentService } from 'src/app/services/comment.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
 // Added the declaration of BlankComponent to be used for test routing
 @Component({ selector: 'test-blank', template: `` })

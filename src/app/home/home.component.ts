@@ -1,8 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import 'rxjs/add/operator/takeUntil';
-
-import { ProjectService } from 'app/services/project.service';
+import { ProjectService } from '../services/project.service';
 
 @Component({
   selector: 'app-home',

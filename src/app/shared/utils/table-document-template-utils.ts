@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 import { TableDocumentParamsObject } from '../components/table-template/table-document-params-object';
-import { Constants } from 'app/shared/utils/constants';
+import { Constants } from './constants';
 
 @Injectable()
 export class TableDocumentTemplateUtils {
@@ -24,7 +24,7 @@ export class TableDocumentTemplateUtils {
       currentUrl += `;sortByCategorized=${sortByCategorized}`;
     }
 
-    if (filter !== null && filter !== {}) {
+    if (filter !== null && Object.keys(filter).length > 0) {
       Object.keys(filter).forEach(key => {
         if (filter[key] === true || filter[key] === false) {
           currentUrl += `;${key}=${filter[key]}`;

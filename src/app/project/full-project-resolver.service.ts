@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-
-import { SearchService } from 'app/services/search.service';
-import { ProjectService } from 'app/services/project.service';
+import { ProjectService } from '../services/project.service';
+import { SearchService } from '../services/search.service';
 
 @Injectable()
 export class FullProjectResolver implements Resolve<Object> {

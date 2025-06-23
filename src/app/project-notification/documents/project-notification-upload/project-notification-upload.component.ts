@@ -4,19 +4,19 @@ import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DocumentService } from 'app/services/document.service';
-import { StorageService } from 'app/services/storage.service';
-import { ConfigService } from 'app/services/config.service';
-import { Document } from 'app/models/document';
-import { Utils } from 'app/shared/utils/utils';
 import * as moment from 'moment-timezone';
+import { ConfigService } from 'src/app/services/config.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
+import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-upload',
-  templateUrl: './upload.component.html',
-  styleUrls: ['./upload.component.scss']
+  selector: 'app-project-notification-upload',
+  templateUrl: './project-notification-upload.component.html',
+  styleUrls: ['./project-notification-upload.component.scss']
 })
-export class UploadComponent implements OnInit, OnDestroy {
+export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public currentProject;
@@ -33,7 +33,7 @@ export class UploadComponent implements OnInit, OnDestroy {
   public filteredDoctypes2018: any[] = [];
   public documentMilestone = ['Project Notification'];
   public documentAuthor = ['Proponent', 'EAO'];
-  public documentPhase = [ 'Project Designation'];
+  public documentPhase = ['Project Designation'];
   public documentMilestoneID: any[] = [];
   public documentAuthorID: any[] = [];
   public documentPhaseID: any[] = [];
@@ -62,9 +62,9 @@ export class UploadComponent implements OnInit, OnDestroy {
 
     this.myForm = new FormGroup({
       'description': new FormControl('Project Notification Document'),
-      'type' : new FormControl({value: this.filteredDoctypes2018[0]}),
-      'author' : new FormControl({value: this.documentAuthor[0]}),
-      'date': new FormControl({value: new Date()})
+      'type': new FormControl({ value: this.filteredDoctypes2018[0] }),
+      'author': new FormControl({ value: this.documentAuthor[0] }),
+      'date': new FormControl({ value: new Date() })
     });
     this.loading = false;
   }
@@ -84,9 +84,9 @@ export class UploadComponent implements OnInit, OnDestroy {
   }
 
 
-  public findID( name, objArr) {
+  public findID(name, objArr) {
     let id = 'null';
-    for ( let i = 0; i < objArr.length; i++ ) {
+    for (let i = 0; i < objArr.length; i++) {
       if (objArr[i].name === name) {
         id = objArr[i]._id;
         break;
@@ -109,14 +109,14 @@ export class UploadComponent implements OnInit, OnDestroy {
     let phaseID = this.findID(this.documentPhase[0], this.documentPhaseID);
 
 
-    this.documents.map(doc => {
+    this.documents.forEach(doc => {
       const formData = new FormData();
 
       formData.append('upfile', doc.upfile);
       formData.append('project', this.currentProject._id);
       formData.append('documentFileName', doc.documentFileName);
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
-      formData.append('displayName', doc.documentFileName );
+      formData.append('displayName', doc.documentFileName);
       formData.append('dateUploaded', new Date().toISOString());
       formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value))).toISOString());
       formData.append('milestone', milestoneID);
@@ -214,36 +214,36 @@ export class UploadComponent implements OnInit, OnDestroy {
 
   getLists() {
     this.configService.lists.forEach(item => {
-        switch (item.name) {
-          case 'Proponent/Certificate Holder':
-            if (item.legislation === 2018) {
-              this.documentAuthorID.push(Object.assign({}, item));
-            }
-            break;
-          case 'EAO':
-            if (item.legislation === 2018) {
-              this.documentAuthorID.push(Object.assign({}, item));
-            }
-            break;
-          case 'Project Notification':
-            if (item.legislation === 2018) {
-              this.documentMilestoneID.push(Object.assign({}, item));
-            }
-            break;
-          case 'Project Designation':
-            if (item.legislation === 2018) {
-              this.documentPhaseID.push(Object.assign({}, item));
-            }
-            break;
-        }
-        switch (item.type) {
-          case 'doctype':
-            if (item.legislation === 2018) {
-              this.filteredDoctypes2018.push(Object.assign({}, item));
-            }
-            break;
-        }
+      switch (item.name) {
+        case 'Proponent/Certificate Holder':
+          if (item.legislation === 2018) {
+            this.documentAuthorID.push(Object.assign({}, item));
+          }
+          break;
+        case 'EAO':
+          if (item.legislation === 2018) {
+            this.documentAuthorID.push(Object.assign({}, item));
+          }
+          break;
+        case 'Project Notification':
+          if (item.legislation === 2018) {
+            this.documentMilestoneID.push(Object.assign({}, item));
+          }
+          break;
+        case 'Project Designation':
+          if (item.legislation === 2018) {
+            this.documentPhaseID.push(Object.assign({}, item));
+          }
+          break;
+      }
+      switch (item.type) {
+        case 'doctype':
+          if (item.legislation === 2018) {
+            this.filteredDoctypes2018.push(Object.assign({}, item));
+          }
+          break;
+      }
 
-      }, this);
+    }, this);
   }
 }

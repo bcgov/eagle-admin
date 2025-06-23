@@ -4,7 +4,7 @@ import 'zone.js/dist/proxy.js';
 import 'zone.js/dist/sync-test';
 import 'zone.js/dist/jasmine-patch';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Utils } from 'app/shared/utils/utils';
+import { Utils } from 'src/app/shared/utils/utils';
 import { async } from '@angular/core/testing';
 // import {
 //   BrowserDynamicTestingModule,
