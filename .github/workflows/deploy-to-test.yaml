@@ -81,17 +81,25 @@ jobs:
           echo $(jq '.commit="${{ needs.deploy.outputs.COMMIT_SHA }}"' state.json) > state.json
           git commit -am "Promote commit ${{ needs.deploy.outputs.COMMIT_SHA }} to Production"
           git push --force origin ${{ env.PROD_PROMO_PR_BRANCH }}
-      - name: Create Pull Request if not exists
+      - name: Create or Update Pull Request
         run: |
-          gh pr list --base "${{ env.PROD_PROMO_BRANCH }}" --head "${{ env.PROD_PROMO_PR_BRANCH }}" --json number --jq '.[0]' | grep -q null && \
+          PR_NUMBER=$(gh pr list --base "${{ env.PROD_PROMO_BRANCH }}" --head "${{ env.PROD_PROMO_PR_BRANCH }}" --json number --jq '.[0].number')
+          if [ -z "$PR_NUMBER" ]; then
           gh pr create \
-          --base "${{ env.PROD_PROMO_BRANCH }}" \
-          --head "${{ env.PROD_PROMO_PR_BRANCH }}" \
-          --title "Deploy to Prod Environment" \
-          --body ":crown: *An automated PR*\n\nThis PR triggers an deployment to Production once it's fully merged." \
-          --label "auto-pr,prod env,pipeline" \
-          --draft || \
-            echo "PR already exists, skipping creation."
+            --base "${{ env.PROD_PROMO_BRANCH }}" \
+            --head "${{ env.PROD_PROMO_PR_BRANCH }}" \
+            --title "Deploy to Prod Environment" \
+            --body ":crown: *An automated PR*\n\nThis PR triggers a deployment to Production once it's fully merged." \
+            --label "auto-pr,prod env,pipeline" \
+            --draft
+            else
+          gh pr edit "$PR_NUMBER" \
+            --title "Deploy to Prod Environment" \
+            --body ":crown: *An automated PR*\n\nThis PR triggers a deployment to Production once it's fully merged." \
+            --add-label "auto-pr,prod env,pipeline" \
+            --draft
+          echo "PR #$PR_NUMBER updated."
+            fi
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
