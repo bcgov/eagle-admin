@@ -12,34 +12,34 @@
 @import "~bootstrap/dist/css/bootstrap.css";
 
 // Base
-@import "assets/styles/base/base.scss";
+@import "src/assets/styles/base/base.scss";
 
 // Helpers
-@import "assets/styles/base/helpers.scss";
+@import "src/assets/styles/base/helpers.scss";
 
 // Layout
-@import "assets/styles/layout/layout.scss";
+@import "src/assets/styles/layout/layout.scss";
 
 // Typography
-@import "assets/styles/base/typography.scss";
+@import "src/assets/styles/base/typography.scss";
 
 // Components
-@import "assets/styles/components/accordion.scss";
-@import "assets/styles/components/aside.scss";
-@import "assets/styles/components/badge.scss";
-@import "assets/styles/components/buttons.scss";
-@import "assets/styles/components/card.scss";
-@import "assets/styles/components/doc-list.scss";
-@import "assets/styles/components/filter-bar.scss";
-@import "assets/styles/components/form-elements.scss";
-@import "assets/styles/components/lists.scss";
-@import "assets/styles/components/material.scss";
-@import "assets/styles/components/modal.scss";
-@import "assets/styles/components/multi-select.scss";
-@import "assets/styles/components/pagination.scss";
-@import "assets/styles/components/spinner.scss";
-@import "assets/styles/components/tab-nav.scss";
-@import "assets/styles/components/table.scss";
+@import "src/assets/styles/components/accordion.scss";
+@import "src/assets/styles/components/aside.scss";
+@import "src/assets/styles/components/badge.scss";
+@import "src/assets/styles/components/buttons.scss";
+@import "src/assets/styles/components/card.scss";
+@import "src/assets/styles/components/doc-list.scss";
+@import "src/assets/styles/components/filter-bar.scss";
+@import "src/assets/styles/components/form-elements.scss";
+@import "src/assets/styles/components/lists.scss";
+@import "src/assets/styles/components/material.scss";
+@import "src/assets/styles/components/modal.scss";
+@import "src/assets/styles/components/multi-select.scss";
+@import "src/assets/styles/components/pagination.scss";
+@import "src/assets/styles/components/spinner.scss";
+@import "src/assets/styles/components/tab-nav.scss";
+@import "src/assets/styles/components/table.scss";
 
 
 
@@ -51,6 +51,5 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
 
 .modal-backdrop.custom-backdrop {
-    background-color: rgba(0, 0, 0, 0.5) !important;
-  }
-  
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}

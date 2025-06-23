@@ -4,7 +4,7 @@ import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { Decision } from 'app/models/decision';
+import { Decision } from '../models/decision';
 
 @Injectable()
 export class DecisionService {

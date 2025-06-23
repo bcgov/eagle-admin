@@ -1,15 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router } from '@angular/router';
-import { ApiService } from 'app/services/api';
-import { JwtUtil } from 'app/jwt-util';
-import { KeycloakService } from 'app/services/keycloak.service';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
-
-import { DayCalculatorModalComponent } from 'app/day-calculator-modal/day-calculator-modal.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { DayCalculatorModalResult } from 'app/day-calculator-modal/day-calculator-modal.component';
 import { Subject } from 'rxjs';
+import { ConfirmComponent } from '../confirm/confirm.component';
+import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
+import { JwtUtil } from '../jwt-util';
+import { ApiService } from '../services/api';
+import { KeycloakService } from '../services/keycloak.service';
 
 @Component({
   selector: 'app-header',

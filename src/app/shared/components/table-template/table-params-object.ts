@@ -1,4 +1,4 @@
-import { Constants } from 'app/shared/utils/constants';
+import { Constants } from '../../utils/constants';
 
 export class TableParamsObject {
   constructor(

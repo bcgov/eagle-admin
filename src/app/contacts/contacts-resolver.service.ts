@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-
-import { SearchService } from 'app/services/search.service';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { StorageService } from 'app/services/storage.service';
+import { SearchService } from '../services/search.service';
+import { StorageService } from '../services/storage.service';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
 export class ContactsResolver implements Resolve<object> {

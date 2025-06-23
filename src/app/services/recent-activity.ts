@@ -3,7 +3,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
 import { ApiService } from './api';
-import { RecentActivity } from 'app/models/recentActivity';
+import { RecentActivity } from '../models/recentActivity';
 
 @Injectable()
 export class RecentActivityService {

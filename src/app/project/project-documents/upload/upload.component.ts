@@ -4,13 +4,12 @@ import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import * as moment from 'moment-timezone';
-
-import { ConfigService } from 'app/services/config.service';
-import { DocumentService } from 'app/services/document.service';
-import { StorageService } from 'app/services/storage.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Document } from 'app/models/document';
-import { Utils } from 'app/shared/utils/utils';
+import { ConfigService } from 'src/app/services/config.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
+import { Document } from 'src/app/models/document';
 
 @Component({
   selector: 'app-upload',

@@ -1,11 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Project } from 'app/models/project';
 import { Subject } from 'rxjs';
-import { SideBarService } from 'app/services/sidebar.service';
-import { StorageService } from 'app/services/storage.service';
-import { Utils } from 'app/shared/utils/utils';
-import { ISearchResults } from 'app/models/search';
+import { Project } from '../models/project';
+import { ISearchResults } from '../models/search';
+import { SideBarService } from '../services/sidebar.service';
+import { StorageService } from '../services/storage.service';
+import { Utils } from '../shared/utils/utils';
 
 @Component({
   selector: 'app-project',

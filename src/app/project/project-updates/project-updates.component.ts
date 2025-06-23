@@ -1,14 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-
-import { StorageService } from 'app/services/storage.service';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router, ActivatedRoute } from '@angular/router';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
 import { Subject } from 'rxjs';
-import { SearchTerms } from 'app/models/search';
-import { ActivityDetailTableRowsComponent } from 'app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
-import { Utils } from 'app/shared/utils/utils';
+import { ActivityDetailTableRowsComponent } from 'src/app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
+import { SearchTerms } from 'src/app/models/search';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'app-project-updates',

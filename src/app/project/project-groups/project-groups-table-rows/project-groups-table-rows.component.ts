@@ -1,7 +1,6 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
-
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
   selector: 'tbody[app-groups-table-rows]',

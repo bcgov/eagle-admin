@@ -1,8 +1,7 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
-
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { StorageService } from 'app/services/storage.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
   selector: 'tbody[app-application-sort-table-rows]',
@@ -35,7 +34,7 @@ export class ApplicationSortTableRowsComponent implements OnInit, TableComponent
 
   updateSelectedCount(editedDoc: any): void {
     this.selectedCount.emit(editedDoc);
-    if (this.storageService.state.editedDocs || this.storageService.state.editedDocs === []) {
+    if (Array.isArray(this.storageService.state.editedDocs)) {
       // check if it exists already
       let docWasEditedPreviously = false;
       this.storageService.state.editedDocs.forEach((previouslyEditedDoc: any) => {

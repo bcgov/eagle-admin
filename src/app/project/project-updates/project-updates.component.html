@@ -13,7 +13,7 @@
   <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
     <div class="input-group main-search-field">
       <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-        id="keywordInput" [(ngModel)]="keywords" autofocus />
+        id="keywordInput" [(ngModel)]="keywords"  />
       <div class="input-group-append">
         <!-- prevent searching if input is empty or we're already searching -->
         <button class="btn btn-primary" type="submit">

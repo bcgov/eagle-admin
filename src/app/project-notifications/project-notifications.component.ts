@@ -1,12 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { ProjectNotificationTableRowsComponent } from './project-notifications-table-rows/project-notifications-table-rows.component';
-import { SearchTerms } from 'app/models/search';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { ProjectNotification } from 'app/models/projectNotification';
+import { ProjectNotification } from '../models/projectNotification';
+import { SearchTerms } from '../models/search';
+import { TableObject } from '../shared/components/table-template/table-object';
+import { TableParamsObject } from '../shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Component({
   selector: 'app-notification-projects',

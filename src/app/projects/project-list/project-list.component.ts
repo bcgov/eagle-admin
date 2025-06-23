@@ -7,24 +7,20 @@ import 'rxjs/add/operator/takeUntil';
 
 import * as moment from 'moment';
 import * as _ from 'lodash';
-
-import { Org } from 'app/models/org';
-import { Project } from 'app/models/project';
-import { SearchTerms } from 'app/models/search';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-
+import { Org } from 'src/app/models/org';
+import { Project } from 'src/app/models/project';
+import { SearchTerms } from 'src/app/models/search';
+import { ConfigService } from 'src/app/services/config.service';
+import { OrgService } from 'src/app/services/org.service';
+import { SearchService } from 'src/app/services/search.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { Constants } from 'src/app/shared/utils/constants';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 
-import { ConfigService } from 'app/services/config.service';
-import { OrgService } from 'app/services/org.service';
-import { SearchService } from 'app/services/search.service';
-import { StorageService } from 'app/services/storage.service';
-
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { Constants } from 'app/shared/utils/constants';
 
 
 class ProjectFilterObject {

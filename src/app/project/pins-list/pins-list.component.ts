@@ -1,18 +1,17 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { SearchTerms } from 'app/models/search';
-import { StorageService } from 'app/services/storage.service';
-import { Org } from 'app/models/org';
-import { ProjectService } from 'app/services/project.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Org } from 'src/app/models/org';
+import { SearchTerms } from 'src/app/models/search';
+import { ProjectService } from 'src/app/services/project.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
   selector: 'app-pins-list',

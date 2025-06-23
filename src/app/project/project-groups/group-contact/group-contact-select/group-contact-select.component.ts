@@ -1,13 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { User } from 'app/models/user';
-import { SearchTerms } from 'app/models/search';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { StorageService } from 'app/services/storage.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { SearchTerms } from 'src/app/models/search';
+import { User } from 'src/app/models/user';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
   selector: 'app-group-contact-select',

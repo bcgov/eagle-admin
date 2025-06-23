@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Document } from 'app/models/document';
+import { Document } from './document';
 
 export class Comment {
   _id: string;

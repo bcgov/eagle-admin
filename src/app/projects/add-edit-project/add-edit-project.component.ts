@@ -1,17 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FullProject } from 'src/app/models/fullProject';
+import { Project } from 'src/app/models/project';
+import { IAddEditTab } from 'src/app/models/ProjectDetails';
+import { ISearchResults } from 'src/app/models/search';
+import { ConfigService } from 'src/app/services/config.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
-import { StorageService } from 'app/services/storage.service';
-import { ConfigService } from 'app/services/config.service';
-import { Project } from 'app/models/project';
-import { FullProject } from 'app/models/fullProject';
-
-import { ISearchResults } from 'app/models/search';
-import { IAddEditTab } from 'app/models/ProjectDetails';
-import { ProjectService } from 'app/services/project.service';
 @Component({
   selector: 'app-add-edit-project',
   templateUrl: './add-edit-project.component.html',

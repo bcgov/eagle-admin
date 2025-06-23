@@ -5,13 +5,6 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { OrderByPipe } from 'app/shared/pipes/order-by.pipe';
-import { NewlinesPipe } from 'app/shared/pipes/newlines.pipe';
-import { PublishedPipe } from 'app/shared/pipes/published.pipe';
-import { ObjectFilterPipe } from 'app/shared/pipes/object-filter.pipe';
-import { VarDirective } from 'app/shared/utils/ng-var.directive';
-import { FileUploadComponent } from 'app/file-upload/file-upload.component';
-import { TableTemplateComponent } from 'app/shared/components/table-template/table-template.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { en_US, NZ_I18N } from 'ng-zorro-antd/i18n';
 
@@ -34,6 +27,13 @@ import { ContactSelectTableRowsComponent } from './components/contact-select-tab
 import { ExtensionComponent } from './components/extension/extension.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { NzButtonModule } from 'ng-zorro-antd/button';
+import { FileUploadComponent } from '../file-upload/file-upload.component';
+import { TableTemplateComponent } from './components/table-template/table-template.component';
+import { NewlinesPipe } from './pipes/newlines.pipe';
+import { ObjectFilterPipe } from './pipes/object-filter.pipe';
+import { OrderByPipe } from './pipes/order-by.pipe';
+import { PublishedPipe } from './pipes/published.pipe';
+import { VarDirective } from './utils/ng-var.directive';
 
 @NgModule({
   imports: [

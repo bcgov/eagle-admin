@@ -4,17 +4,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, forkJoin } from 'rxjs';
 import * as _ from 'lodash';
-import { Document } from 'app/models/document';
-import { ApiService } from 'app/services/api';
-import { DocumentService } from 'app/services/document.service';
-import { SearchService } from 'app/services/search.service';
-import { StorageService } from 'app/services/storage.service';
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { ApiService } from 'src/app/services/api';
+import { DocumentService } from 'src/app/services/document.service';
+import { SearchService } from 'src/app/services/search.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { Constants } from 'src/app/shared/utils/constants';
+import { Utils } from 'src/app/shared/utils/utils';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { Utils } from 'app/shared/utils/utils';
-import { Constants } from 'app/shared/utils/constants';
+import { Document } from 'src/app/models/document';
 
 @Component({
   selector: 'app-project-notification-documents',

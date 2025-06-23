@@ -1,9 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { StorageService } from 'app/services/storage.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-organizations-table-rows',

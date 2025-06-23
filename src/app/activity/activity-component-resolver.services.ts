@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-
-import { SearchService } from 'app/services/search.service';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { Constants } from 'app/shared/utils/constants';
-import { Project } from 'app/models/project';
-import { ProjectService } from 'app/services/project.service';
 import * as _ from 'lodash';
+import { Project } from '../models/project';
+import { ProjectService } from '../services/project.service';
+import { SearchService } from '../services/search.service';
+import { Constants } from '../shared/utils/constants';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
 export class ActivityComponentResolver implements Resolve<Observable<object>> {

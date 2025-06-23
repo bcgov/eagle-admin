@@ -1,5 +1,5 @@
 
-import { SearchResults } from 'app/models/search';
+import { SearchResults } from '../../models/search';
 
 export const AjaxData: SearchResults[] = [{
          _schemaName: '0',

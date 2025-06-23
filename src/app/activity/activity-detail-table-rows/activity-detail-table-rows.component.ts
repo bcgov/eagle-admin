@@ -2,13 +2,10 @@ import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
-
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
-
-import { RecentActivityService } from 'app/services/recent-activity';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { RecentActivityService } from 'src/app/services/recent-activity';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
   selector: 'tbody[app-activity-detail-table-rows]',

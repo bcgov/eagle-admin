@@ -1,18 +1,14 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-
-import { CommentPeriod } from 'app/models/commentPeriod';
-
-import { CommentPeriodsTableRowsComponent } from 'app/comment-periods/comment-periods-table-rows/comment-periods-table-rows.component';
-
-import { ApiService } from 'app/services/api';
-import { CommentPeriodService } from 'app/services/commentperiod.service';
-import { StorageService } from 'app/services/storage.service';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
+import { CommentPeriod } from '../models/commentPeriod';
+import { ApiService } from '../services/api';
+import { CommentPeriodService } from '../services/commentperiod.service';
+import { StorageService } from '../services/storage.service';
+import { TableObject } from '../shared/components/table-template/table-object';
+import { TableParamsObject } from '../shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/comment-periods-table-rows.component';
 
 @Component({
   selector: 'app-comment-periods',

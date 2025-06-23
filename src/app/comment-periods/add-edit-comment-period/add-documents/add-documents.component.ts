@@ -2,19 +2,15 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrateg
 import { PlatformLocation } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-
-import { Document } from 'app/models/document';
-import { SearchTerms } from 'app/models/search';
-
-import { ApiService } from 'app/services/api';
-import { SearchService } from 'app/services/search.service';
-import { StorageService } from 'app/services/storage.service';
-
 import { AddDocumentTableRowsComponent } from './add-document-table-rows/add-document-table-rows.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { encode } from 'punycode';
+import { SearchTerms } from 'src/app/models/search';
+import { ApiService } from 'src/app/services/api';
+import { SearchService } from 'src/app/services/search.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
+import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { Document } from 'src/app/models/document';
 
 @Component({
   selector: 'app-add-documents',
@@ -229,7 +225,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy = '';
-    params['keywords'] = encode(this.tableParams.keywords = this.tableParams.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
+    params['keywords'] = encodeURIComponent(this.tableParams.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
     params['pageSize'] = this.tableParams.pageSize = 10;
 
     if (this.isEditing) {

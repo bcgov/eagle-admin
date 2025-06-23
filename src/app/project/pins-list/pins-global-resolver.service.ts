@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-
-import { SearchService } from 'app/services/search.service';
+import { SearchService } from 'src/app/services/search.service';
 
 @Injectable()
 export class PinsGlobalComponentResolver implements Resolve<Observable<object>> {

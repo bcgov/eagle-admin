@@ -2,7 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Dictionary } from 'lodash';
 import * as moment from 'moment';
-import { Utils } from 'app/shared/utils/utils';
+import { Utils } from '../shared/utils/utils';
 
 export enum DayCalculatorModalResult {
   Dismissed,

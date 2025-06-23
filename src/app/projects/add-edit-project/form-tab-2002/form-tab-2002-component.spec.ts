@@ -5,15 +5,15 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { ApiService } from 'app/services/api';
-import { StorageService } from 'app/services/storage.service';
-import { Utils } from 'app/shared/utils/utils';
-import { AjaxData, regionsData, eaDecisions } from 'app/shared/utils/mock-data';
-import { ConfigService } from 'app/services/config.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { ProjectService } from 'app/services/project.service';
+import { ApiService } from 'src/app/services/api';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
+import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
+import { ConfigService } from 'src/app/services/config.service';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { ProjectService } from 'src/app/services/project.service';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
 describe('FormTab2002', () => {
@@ -38,10 +38,10 @@ describe('FormTab2002', () => {
       'add',
       'save'
     ]);
-  mockProjectService.unPublish.and.returnValue(Observable.of({}));
-  mockProjectService.Publish.and.returnValue(Observable.of({}));
-  mockProjectService.add.and.returnValue(Observable.of({}));
-  mockProjectService.save.and.returnValue(Observable.of({}));
+  mockProjectService.unPublish.and.returnValue(of({}));
+  mockProjectService.Publish.and.returnValue(of({}));
+  mockProjectService.add.and.returnValue(of({}));
+  mockProjectService.save.and.returnValue(of({}));
 
   const mockStorageService = jasmine.createSpyObj('StorageService', [
     'state'
@@ -49,7 +49,7 @@ describe('FormTab2002', () => {
 
   const mockActivatedRoute = {
     parent: {
-      data: Observable.of({ fullProject: AjaxData })
+      data: of({ fullProject: AjaxData })
     }
   };
 

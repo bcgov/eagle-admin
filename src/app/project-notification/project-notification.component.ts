@@ -1,9 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Project } from 'app/models/project';
 import { Subject } from 'rxjs';
-import { SideBarService } from 'app/services/sidebar.service';
-import { StorageService } from 'app/services/storage.service';
+import { StorageService } from '../services/storage.service';
+import { Project } from '../models/project';
+import { SideBarService } from '../services/sidebar.service';
 
 @Component({
   selector: 'app-project-notification',

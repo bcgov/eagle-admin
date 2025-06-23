@@ -1,9 +1,8 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { TableComponent } from 'app/shared/components/table-template/table.component';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
   selector: 'app-notification-project-table-rows',

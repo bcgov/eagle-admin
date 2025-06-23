@@ -4,7 +4,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgModule } from '@angular/core';
 import { ProjectNotificationRoutingModule } from './project-notification-routing.module';
-import { SharedModule } from 'app/shared/shared.module';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 // components
@@ -12,11 +11,12 @@ import { ProjectNotificationComponent } from './project-notification.component';
 import { PnDocumentTableRowsComponent } from './documents/project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { UploadComponent } from './documents/upload/upload.component';
 // services
-import { ApiService } from 'app/services/api';
-import { ExcelService } from 'app/services/excel.service';
-import { StorageService } from 'app/services/storage.service';
 import { ProjectNotificationDetailComponent } from './detail/project-notification-detail.component';
 import { ProjectNotificationDocumentsComponent } from './documents/project-notification-documents.component';
+import { ApiService } from '../services/api';
+import { ExcelService } from '../services/excel.service';
+import { StorageService } from '../services/storage.service';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [
@@ -26,14 +26,14 @@ import { ProjectNotificationDocumentsComponent } from './documents/project-notif
     ProjectNotificationRoutingModule,
     ReactiveFormsModule,
     SharedModule,
-    NgSelectModule
+    NgSelectModule,
   ],
   declarations: [
-    ProjectNotificationComponent,
+    UploadComponent,
     ProjectNotificationDetailComponent,
+    ProjectNotificationComponent,
     ProjectNotificationDocumentsComponent,
     PnDocumentTableRowsComponent,
-    UploadComponent
   ],
   entryComponents: [
     ProjectNotificationComponent,

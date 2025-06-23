@@ -1,11 +1,10 @@
 import { Component, HostBinding, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-
-import { SideBarService } from 'app/services/sidebar.service';
 import { filter } from 'rxjs/operators';
-import { StorageService } from 'app/services/storage.service';
 import { Subject } from 'rxjs';
-import { KeycloakService } from 'app/services/keycloak.service';
+import { KeycloakService } from '../services/keycloak.service';
+import { SideBarService } from '../services/sidebar.service';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -50,10 +49,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.sideBarService.archiveChange
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe(isArchive => {
-      this.isArchive = isArchive;
-    });
+      .takeUntil(this.ngUnsubscribe)
+      .subscribe(isArchive => {
+        this.isArchive = isArchive;
+      });
 
     this.sideBarService.toggleChange
       .takeUntil(this.ngUnsubscribe)
@@ -75,6 +74,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     // The first element will be empty, so shift in order to remove it.
     urlArray.shift();
+    console.log(urlArray)
     const [mainRoute, mainRouteId, currentMenu] = urlArray;
 
     this.mainRouteId = mainRouteId;
@@ -96,7 +96,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.showProjectNotificationDetails = false;
         this.showProjectDetails = false;
     }
-
     if (urlArray[0] === 'p') {
       switch (urlArray[2]) {
         case 'project-updates': {
@@ -157,7 +156,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   goToPnDocuments(currentProjectId) {
     this.storageService.state.projectDocumentTableParams = null;
-    this.router.navigate(['pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId}]);
+    this.router.navigate(['pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId }]);
   }
 
   ngOnDestroy() {

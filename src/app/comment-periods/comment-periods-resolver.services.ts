@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
+import { CommentPeriodService } from '../services/commentperiod.service';
 
-import { CommentPeriodService } from 'app/services/commentperiod.service';
 
 @Injectable()
 export class CommentPeriodsResolver implements Resolve<Object> {
@@ -12,6 +12,7 @@ export class CommentPeriodsResolver implements Resolve<Object> {
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
+    console.log('CommentPeriodsResolver.resolve() called');
     const projectId = route.parent.paramMap.get('projId') || route.parent.paramMap.get('notificationProjectId');
     const pageNum = route.params.pageNum ? route.params.pageNum : 1;
     const pageSize = route.params.pageSize ? route.params.pageSize : 10;

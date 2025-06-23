@@ -2,12 +2,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-
-import { StorageService } from 'app/services/storage.service';
-
-import { Org } from 'app/models/org';
-import { OrgService } from 'app/services/org.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { Org } from 'src/app/models/org';
+import { OrgService } from 'src/app/services/org.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
   templateUrl: './add-edit-organization.component.html',

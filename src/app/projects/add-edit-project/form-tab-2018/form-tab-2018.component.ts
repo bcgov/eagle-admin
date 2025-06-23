@@ -3,22 +3,21 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
-import { Utils } from 'app/shared/utils/utils';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import * as _ from 'lodash';
-
-import { StorageService } from 'app/services/storage.service';
-import { ConfigService } from 'app/services/config.service';
-import { ProjectService } from 'app/services/project.service';
-import { Project, ProjectPublishState } from 'app/models/project';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { ContactSelectTableRowsComponent } from 'app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
-import { ISearchResults } from 'app/models/search';
-import { FullProject } from 'app/models/fullProject';
-import { flatMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
-import { Constants } from 'app/shared/utils/constants';
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { FullProject } from 'src/app/models/fullProject';
+import { Project, ProjectPublishState } from 'src/app/models/project';
+import { ISearchResults } from 'src/app/models/search';
+import { ConfigService } from 'src/app/services/config.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { ContactSelectTableRowsComponent } from 'src/app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
+import { Constants } from 'src/app/shared/utils/constants';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { Utils } from 'src/app/shared/utils/utils';
+import { takeUntil, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'form-tab-2018',
@@ -634,14 +633,18 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       );
       if (postFunction) {
         this.projectService.add(project)
-        .takeUntil(this.ngUnsubscribe).pipe(flatMap(apiRes => postFunction(project, apiRes) ))
-          .takeUntil(this.ngUnsubscribe)
+          .pipe(
+            switchMap(apiRes => postFunction(project, apiRes)),
+            takeUntil(this.ngUnsubscribe)
+          )
           .subscribe(
             ...postSubscribe
           );
       } else {
         this.projectService.add(project)
-          .takeUntil(this.ngUnsubscribe)
+          .pipe(
+            takeUntil(this.ngUnsubscribe)
+          )
           .subscribe(
             ...postSubscribe
           );
@@ -658,16 +661,21 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
       if (putFunction) {
         this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe).pipe(flatMap(__ => putFunction(project) ))
-        .subscribe(
-          ...putSubscribe
-        );
+          .pipe(
+            switchMap(__ => putFunction(project)),
+            takeUntil(this.ngUnsubscribe)
+          )
+          .subscribe(
+            ...putSubscribe
+          );
       } else {
         this.projectService.save(project)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          ...putSubscribe
-        );
+          .pipe(
+            takeUntil(this.ngUnsubscribe)
+          )
+          .subscribe(
+            ...putSubscribe
+          );
       }
 
     }

@@ -4,9 +4,9 @@ import {
   HttpRequest
 } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { KeycloakService } from 'app/services/keycloak.service';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, switchMap, tap } from 'rxjs/operators';
+import { KeycloakService } from 'src/app/services/keycloak.service';
 
 /**
  * Intercepts all http requests and allows for the request and/or response to be manipulated.

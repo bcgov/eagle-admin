@@ -1,7 +1,6 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
-
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { StorageService } from 'app/services/storage.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
 
 @Component({
   selector: 'app-group-table-rows',

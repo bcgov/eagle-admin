@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { KeycloakService } from 'app/services/keycloak.service';
+import { KeycloakService } from './keycloak.service';
 
 
 @Injectable()

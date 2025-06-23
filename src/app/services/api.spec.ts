@@ -1,7 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ApiService } from './api';
 import { ConfigService } from './config.service';
-import { Utils } from 'app/shared/utils/utils';
+import { Utils } from 'src/app/shared/utils/utils';
 import { TestBed } from '@angular/core/testing';
 describe('api', () => {
   let keys = '';

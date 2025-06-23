@@ -1,14 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
 import { Router } from '@angular/router';
 import { FormGroup, FormControl } from '@angular/forms';
-import { Utils } from 'app/shared/utils/utils';
-import { StorageService } from 'app/services/storage.service';
-import { ApiService } from 'app/services/api';
-import { ConfirmComponent } from 'app/confirm/confirm.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { from, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { ApiService } from 'src/app/services/api';
+import { StorageService } from 'src/app/services/storage.service';
+import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
+import { Utils } from '../../utils/utils';
 
 @Component({
   selector: 'app-extension',

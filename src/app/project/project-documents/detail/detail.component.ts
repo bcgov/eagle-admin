@@ -1,13 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
-import { Document } from 'app/models/document';
-import { Project } from 'app/models/project';
-import { ApiService } from 'app/services/api';
-import { StorageService } from 'app/services/storage.service';
-import { DocumentService } from 'app/services/document.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Utils } from 'app/shared/utils/utils';
+import { Project } from 'src/app/models/project';
+import { ApiService } from 'src/app/services/api';
+import { DocumentService } from 'src/app/services/document.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Utils } from 'src/app/shared/utils/utils';
+import { Document } from 'src/app/models/document';
 
 @Component({
   selector: 'app-detail',

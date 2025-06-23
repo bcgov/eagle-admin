@@ -5,8 +5,8 @@ import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { CommentPeriod } from 'app/models/commentPeriod';
-import { CommentPeriodSummary } from 'app/models/commentPeriodSummary';
+import { CommentPeriod } from '../models/commentPeriod';
+import { CommentPeriodSummary } from '../models/commentPeriodSummary';
 
 @Injectable()
 export class CommentPeriodService {

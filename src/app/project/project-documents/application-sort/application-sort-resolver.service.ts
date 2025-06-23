@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
-import { SearchService } from 'app/services/search.service';
-import { ConfigService } from 'app/services/config.service';
-import { Utils } from 'app/shared/utils/utils';
+import { ConfigService } from 'src/app/services/config.service';
+import { SearchService } from 'src/app/services/search.service';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Injectable()
 export class ApplicationSortResolver implements Resolve<Observable<object>> {

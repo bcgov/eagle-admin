@@ -2,16 +2,15 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrateg
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 
-import { SearchTerms } from 'app/models/search';
-
-import { StorageService } from 'app/services/storage.service';
-
 import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
-import { TableParamsObject } from 'app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'app/shared/utils/table-template-utils';
-import { Org } from 'app/models/org';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
+import { Org } from 'src/app/models/org';
+import { SearchTerms } from 'src/app/models/search';
+import { StorageService } from 'src/app/services/storage.service';
+import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
+import { TableTemplateUtils } from '../../utils/table-template-utils';
+import { TableObject } from '../table-template/table-object';
+import { TableParamsObject } from '../table-template/table-params-object';
+
 
 @Component({
   selector: 'app-link-organization',

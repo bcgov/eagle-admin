@@ -1,14 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+// Components
 import { AddCommentComponent } from '../comment-period/add-comment/add-comment.component';
 import { AddDocumentComponent } from '../comment-periods/add-edit-comment-period/add-documents/add-documents.component';
 import { AddEditCommentPeriodComponent } from '../comment-periods/add-edit-comment-period/add-edit-comment-period.component';
-import { AddEditProjectComponent } from 'app/projects/add-edit-project/add-edit-project.component';
 import { AddLabelComponent } from './project-documents/add-label/add-label.component';
 import { CommentPeriodComponent } from '../comment-period/comment-period.component';
 import { CommentPeriodsComponent } from '../comment-periods/comment-periods.component';
-import { CommentPeriodsResolver } from '../comment-periods/comment-periods-resolver.services';
 import { DocumentDetailComponent } from './project-documents/detail/detail.component';
 import { DocumentApplicationSortComponent } from './project-documents/application-sort/application-sort.component';
 import { DocumentEditComponent } from './project-documents/document-edit/document-edit.component';
@@ -19,11 +18,20 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { ProjectArchivedDetailComponent } from './project-archived-detail/project-archived-detail.component';
 import { ProjectDocumentsComponent } from './project-documents/project-documents.component';
 import { ProjectUpdatesComponent } from './project-updates/project-updates.component';
-import { ReviewCommentComponent } from 'app/comment-period/review-comment/review-comment.component';
 import { UploadComponent } from './project-documents/upload/upload.component';
+import { PinsListComponent } from './pins-list/pins-list.component';
+import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
+import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
+import { ReviewCommentComponent } from '../comment-period/review-comment/review-comment.component';
+import { AddEditProjectComponent } from '../projects/add-edit-project/add-edit-project.component';
+import { ContactSelectComponent } from '../shared/components/contact-select/contact-select.component';
+import { ExtensionComponent } from '../shared/components/extension/extension.component';
+import { LinkOrganizationComponent } from '../shared/components/link-organization/link-organization.component';
 
+// Resolvers
 import { AddDocumentsResolver } from '../comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
 import { CommentPeriodResolver } from '../comment-period/comment-period-resolver.service';
+import { CommentPeriodsResolver } from '../comment-periods/comment-periods-resolver.services';
 import { DocumentDetailResolver } from './project-documents/detail/document-detail-resolver.service';
 import { DocumentsResolver } from './project-documents/project-document-resolver.services';
 import { ProjectResolver } from './project-resolver.service';
@@ -32,19 +40,15 @@ import { ProjectUpdatesResolver } from './project-updates/project-updates-resolv
 import { PinsComponentResolver } from './pins-list/pins-component-resolver.services';
 import { ProjectContactsResolver } from './project-groups/project-groups-resolver.services';
 import { ApplicationSortResolver } from './project-documents/application-sort/application-sort-resolver.service';
-import { PinsListComponent } from './pins-list/pins-list.component';
-import { ContactsResolver } from 'app/contacts/contacts-resolver.service';
-import { ContactSelectComponent } from 'app/shared/components/contact-select/contact-select.component';
 import { PinsGlobalComponentResolver } from './pins-list/pins-global-resolver.service';
 import { ProjectGroupResolver } from './project-groups/project-group-resolver.services';
-import { GroupContactComponent } from './project-groups/group-contact/group-contact.component';
 import { ProjectContactsGroupResolver } from './project-groups/project-contact-group-resolver.services';
-import { GroupContactSelectComponent } from './project-groups/group-contact/group-contact-select/group-contact-select.component';
-import { LinkOrganizationResolver } from 'app/shared/components/link-organization/link-organization-resolver.services';
-import { LinkOrganizationComponent } from 'app/shared/components/link-organization/link-organization.component';
-import { ExtensionComponent } from 'app/shared/components/extension/extension.component';
-import { ProjectsRoutes } from 'app/projects/projects-routes';
 import { FullProjectResolver } from './full-project-resolver.service';
+import { ContactsResolver } from '../contacts/contacts-resolver.service';
+import { LinkOrganizationResolver } from '../shared/components/link-organization/link-organization-resolver.services';
+
+// Routes
+import { ProjectsRoutes } from '../projects/projects-routes';
 
 const routes: Routes = [
   {

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { ApiService } from 'app/services/api';
 import { Subject } from 'rxjs';
+import { ApiService } from 'src/app/services/api';
 
 @Component({
   selector: 'app-comment-stats',

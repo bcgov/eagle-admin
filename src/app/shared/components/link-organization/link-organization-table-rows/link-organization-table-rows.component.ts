@@ -1,11 +1,10 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
-
-import { TableComponent } from 'app/shared/components/table-template/table.component';
-import { TableObject } from 'app/shared/components/table-template/table-object';
 import { Router } from '@angular/router';
-import { StorageService } from 'app/services/storage.service';
-import { NavigationStackUtils } from 'app/shared/utils/navigation-stack-utils';
-import { Org } from 'app/models/org';
+import { Org } from 'src/app/models/org';
+import { StorageService } from 'src/app/services/storage.service';
+import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { TableObject } from '../../table-template/table-object';
+import { TableComponent } from '../../table-template/table.component';
 
 @Component({
   selector: 'tbody[app-link-organization-table-rows]',
@@ -46,7 +45,7 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
 
   selectItem(item: Org): void {
     item.checkbox = !item.checkbox;
-    if (this.storageService.state.selectedOrgs || this.storageService.state.selectedOrgs === []) {
+    if (Array.isArray(this.storageService.state.selectedOrgs)) {
       if (item.checkbox) {
         this.storageService.state.selectedOrgs.push(item);
       } else {

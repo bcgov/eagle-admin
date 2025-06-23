@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { JwtUtil } from 'app/jwt-util';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { ConfigService } from './config.service';
+import { JwtUtil } from '../jwt-util';
 
 declare var Keycloak: any;
 

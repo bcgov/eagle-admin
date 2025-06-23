@@ -19,7 +19,7 @@
       <div class="search-area">
         <div class="input-group main-search-field">
           <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-            id="keywordInput" [(ngModel)]="terms.keywords" [disabled]="searching" autofocus />
+            id="keywordInput" [(ngModel)]="terms.keywords" [disabled]="searching"  />
           <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
             <!-- prevent searching if input is empty or we're already searching -->
             <button class="btn btn-primary" type="submit" [disabled]="!(terms.keywords || hasFilter()) || searching">

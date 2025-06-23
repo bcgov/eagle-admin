@@ -4,7 +4,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
 import { ApiService } from './api';
-import { Document } from 'app/models/document';
+import { Document } from '../models/document';
 
 @Injectable()
 export class DocumentService {

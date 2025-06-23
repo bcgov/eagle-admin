@@ -6,10 +6,11 @@ import 'rxjs/add/operator/catch';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
-import { Comment } from 'app/models/comment';
 import { DocumentService } from './document.service';
 import { flatMap, mergeMap } from 'rxjs/operators';
 import { of, forkJoin } from 'rxjs';
+
+import { Comment } from '../models/comment';
 
 @Injectable()
 export class CommentService {

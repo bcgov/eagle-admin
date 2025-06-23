@@ -4,16 +4,13 @@ import { FormGroup, FormControl } from '@angular/forms';
 
 import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
-
-import { Document } from 'app/models/document';
-import { ProjectNotification } from 'app/models/projectNotification';
-
-import { ConfigService } from 'app/services/config.service';
-import { StorageService } from 'app/services/storage.service';
-import { Constants } from 'app/shared/utils/constants';
-import { NotificationProjectService } from 'app/services/notification-project.service';
-import { Utils } from 'app/shared/utils/utils';
-import { ProjectService } from 'app/services/project.service';
+import { ProjectNotification } from 'src/app/models/projectNotification';
+import { ConfigService } from 'src/app/services/config.service';
+import { NotificationProjectService } from 'src/app/services/notification-project.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { StorageService } from 'src/app/services/storage.service';
+import { Constants } from 'src/app/shared/utils/constants';
+import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'app-add-edit-notification-project',

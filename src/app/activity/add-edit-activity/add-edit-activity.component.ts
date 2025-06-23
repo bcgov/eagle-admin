@@ -2,14 +2,15 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
-import { ProjectService } from 'app/services/project.service';
-import { NotificationProjectService } from 'app/services/notification-project.service';
-import { RecentActivityService } from 'app/services/recent-activity';
-import { RecentActivity } from 'app/models/recentActivity';
-import { Utils } from 'app/shared/utils/utils';
-import { CommentPeriodService } from 'app/services/commentperiod.service';
-import { Constants } from 'app/shared/utils/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { RecentActivity } from 'src/app/models/recentActivity';
+import { CommentPeriodService } from 'src/app/services/commentperiod.service';
+import { NotificationProjectService } from 'src/app/services/notification-project.service';
+import { ProjectService } from 'src/app/services/project.service';
+import { RecentActivityService } from 'src/app/services/recent-activity';
+import { Constants } from 'src/app/shared/utils/constants';
+import { Utils } from 'src/app/shared/utils/utils';
+
 @Component({
   selector: 'app-add-edit-activity',
   templateUrl: './add-edit-activity.component.html',
