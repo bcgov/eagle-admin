@@ -75,9 +75,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     // The first element will be empty, so shift in order to remove it.
     urlArray.shift();
     const [mainRoute, mainRouteId, currentMenu] = urlArray;
-    console.log('SetActiveSidebarItem', urlArray, mainRoute, mainRouteId, currentMenu);
     this.mainRouteId = mainRouteId;
-    console.log(mainRouteId);
     this.currentMenu = currentMenu && currentMenu.split(';')[0];
 
     switch (mainRoute) {
