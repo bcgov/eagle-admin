@@ -12,22 +12,25 @@ input {
   &.form-control {
     height: $fc-height;
   }
+
   &[type="text"],
   &[type="email"],
   &[type="number"] {
     @include placeholder {
       color: $fc-placeholder-color;
     }
+
     height: $fc-height;
     padding: 0.75rem;
     box-shadow: $fc-inner-shadow inset;
   }
 }
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-  -webkit-appearance: none; 
-  margin: 0; 
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
 }
 
 select {
@@ -43,6 +46,7 @@ textarea {
   @include placeholder {
     color: $fc-placeholder-color;
   }
+
   resize: vertical;
   box-shadow: $fc-inner-shadow inset;
 }
@@ -51,16 +55,16 @@ textarea {
   vertical-align: middle;
 
   em {
-  font-size: 0.875rem;
-  vertical-align: top;
+    font-size: 0.875rem;
+    vertical-align: top;
   }
 }
 
 fieldset {
-  + fieldset {
-  margin-top: 2.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid #ddd;
+  +fieldset {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid #ddd;
   }
 }
 
@@ -103,7 +107,7 @@ label {
   }
 }
 
-.is-invalid ~ .invalid-feedback {
+.is-invalid~.invalid-feedback {
   display: inline-block;
 }
 

@@ -12,7 +12,6 @@ export class CommentPeriodsResolver implements Resolve<Object> {
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
-    console.log('CommentPeriodsResolver.resolve() called');
     const projectId = route.parent.paramMap.get('projId') || route.parent.paramMap.get('notificationProjectId');
     const pageNum = route.params.pageNum ? route.params.pageNum : 1;
     const pageSize = route.params.pageSize ? route.params.pageSize : 10;

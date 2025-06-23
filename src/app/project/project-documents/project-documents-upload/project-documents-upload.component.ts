@@ -12,11 +12,11 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-upload',
-  templateUrl: './upload.component.html',
-  styleUrls: ['./upload.component.scss']
+  selector: 'app-project-documents-upload',
+  templateUrl: './project-documents-upload.component.html',
+  styleUrls: ['./project-documents-upload.component.scss']
 })
-export class UploadComponent implements OnInit, OnDestroy {
+export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public authorsel: any;

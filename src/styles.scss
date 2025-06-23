@@ -41,8 +41,6 @@
 @import "src/assets/styles/components/tab-nav.scss";
 @import "src/assets/styles/components/table.scss";
 
-
-
 // Third-party Components
 // Required for Angular Material styling: (ref: https://material.angular.io/guide/theming)
 @import "~@angular/material/prebuilt-themes/deeppurple-amber.css";
@@ -52,4 +50,10 @@
 
 .modal-backdrop.custom-backdrop {
   background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+@import 'assets/fonts/BCSans.css';
+
+body {
+  font-family: 'BCSans', Arial, sans-serif;
 }

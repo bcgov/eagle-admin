@@ -74,10 +74,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     // The first element will be empty, so shift in order to remove it.
     urlArray.shift();
-    console.log(urlArray)
     const [mainRoute, mainRouteId, currentMenu] = urlArray;
-
+    console.log('SetActiveSidebarItem', urlArray, mainRoute, mainRouteId, currentMenu);
     this.mainRouteId = mainRouteId;
+    console.log(mainRouteId);
     this.currentMenu = currentMenu && currentMenu.split(';')[0];
 
     switch (mainRoute) {
@@ -151,12 +151,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   goToDocuments(currentProjectId) {
     this.storageService.state.projectDocumentTableParams = null;
-    this.router.navigate(['p', currentProjectId, 'project-documents']);
+    this.router.navigate(['/p', currentProjectId, 'project-documents']);
   }
 
   goToPnDocuments(currentProjectId) {
     this.storageService.state.projectDocumentTableParams = null;
-    this.router.navigate(['pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId }]);
+    this.router.navigate(['/pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId }]);
   }
 
   ngOnDestroy() {
