@@ -109,7 +109,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     let phaseID = this.findID(this.documentPhase[0], this.documentPhaseID);
 
 
-    this.documents.map(doc => {
+    this.documents.forEach(doc => {
       const formData = new FormData();
 
       formData.append('upfile', doc.upfile);

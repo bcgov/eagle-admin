@@ -162,7 +162,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
 
     // NB: If multi upload, then switch to use documentFileName as displayName
 
-    this.documents.map(doc => {
+    this.documents.forEach(doc => {
       const formData = new FormData();
       formData.append('upfile', doc.upfile);
       formData.append('project', this.currentProject._id);

@@ -55,7 +55,8 @@
                                         <button *ngIf="isDateRangeSet()" class="btn filter-badge dateAddedRange">
                                             <span class="ng-value-label">Date Range </span>
                                             <span class="ng-value-icon left" (click)="clearDateRange()"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                (keydown)="clearDateRange()" aria-hidden="true">&nbsp;<i
+                                                    class="material-symbols-outlined size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -64,7 +65,8 @@
                                             <span class="ng-value-label">C&E Announcement
                                             </span>
                                             <span class="ng-value-icon left" (click)="clearCAndE()"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                (keydown)="clearCAndE()" aria-hidden="true">&nbsp;<i
+                                                    class="material-symbols-outlined size-20">
                                                     clear
                                                 </i></span>
                                         </button>
