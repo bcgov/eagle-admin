@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
@@ -25,7 +25,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   public documents: Document[] = [];
   public datePosted: NgbDateStruct = null;
   public dateUploaded: NgbDateStruct = null;
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public loading = true;
   public docNameInvalid = false;
   public legislationYear = '2018';
@@ -60,11 +60,11 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
 
   buildForm() {
 
-    this.myForm = new FormGroup({
-      'description': new FormControl('Project Notification Document'),
-      'type': new FormControl({ value: this.filteredDoctypes2018[0] }),
-      'author': new FormControl({ value: this.documentAuthor[0] }),
-      'date': new FormControl({ value: new Date() })
+    this.myForm = new UntypedFormGroup({
+      'description': new UntypedFormControl('Project Notification Document'),
+      'type': new UntypedFormControl({ value: this.filteredDoctypes2018[0] }),
+      'author': new UntypedFormControl({ value: this.documentAuthor[0] }),
+      'date': new UntypedFormControl({ value: new Date() })
     });
     this.loading = false;
   }
@@ -73,7 +73,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     this.loading = false;
   }
 
-  register(myForm: FormGroup) {
+  register(myForm: UntypedFormGroup) {
     console.log('Successful registration');
     console.log(myForm);
   }

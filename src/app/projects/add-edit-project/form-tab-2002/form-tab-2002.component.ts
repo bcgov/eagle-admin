@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
 import { Subject, Observable } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -27,7 +27,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public documents: any[] = [];
   public back: any = {};
   public regions: any[] = [];
@@ -175,38 +175,38 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.myForm = this.buildFormFromData(this.project);
       this.onChangeType();
     } else {
-      this.myForm = new FormGroup({
-        'name': new FormControl(),
-        'proponent': new FormControl(),
-        'currentPhaseName': new FormControl(this.projectPhases[0]),
-        'build': new FormControl(),
-        'type': new FormControl(),
-        'sector': new FormControl(),
-        'description': new FormControl(),
-        'location': new FormControl(),
-        'region': new FormControl(),
-        'lat': new FormControl([]),
-        'lon': new FormControl([]),
-        'addFile': new FormControl(),
-        'CEAAInvolvement': new FormControl(),
-        'CEAALink': new FormControl(),
-        'ea': new FormControl(),
-        'capital': new FormControl(),
-        'notes': new FormControl(),
-        'eaStatus': new FormControl(),
-        'eaStatusDate': new FormControl(),
-        'status': new FormControl(this.PROJECT_STATUS[2]),
-        'projectStatusDate': new FormControl(),
-        'eacDecision': new FormControl(this.eacDecisions[0]),
-        'decisionDate': new FormControl(),
-        'substantially': new FormControl(),
-        'substantiallyDate': new FormControl(),
-        'activeStatus': new FormControl(),
-        'activeDate': new FormControl(),
-        'responsibleEPDId': new FormControl(),
-        'responsibleEPD': new FormControl(),
-        'projectLeadId': new FormControl(),
-        'projectLead': new FormControl(),
+      this.myForm = new UntypedFormGroup({
+        'name': new UntypedFormControl(),
+        'proponent': new UntypedFormControl(),
+        'currentPhaseName': new UntypedFormControl(this.projectPhases[0]),
+        'build': new UntypedFormControl(),
+        'type': new UntypedFormControl(),
+        'sector': new UntypedFormControl(),
+        'description': new UntypedFormControl(),
+        'location': new UntypedFormControl(),
+        'region': new UntypedFormControl(),
+        'lat': new UntypedFormControl([]),
+        'lon': new UntypedFormControl([]),
+        'addFile': new UntypedFormControl(),
+        'CEAAInvolvement': new UntypedFormControl(),
+        'CEAALink': new UntypedFormControl(),
+        'ea': new UntypedFormControl(),
+        'capital': new UntypedFormControl(),
+        'notes': new UntypedFormControl(),
+        'eaStatus': new UntypedFormControl(),
+        'eaStatusDate': new UntypedFormControl(),
+        'status': new UntypedFormControl(this.PROJECT_STATUS[2]),
+        'projectStatusDate': new UntypedFormControl(),
+        'eacDecision': new UntypedFormControl(this.eacDecisions[0]),
+        'decisionDate': new UntypedFormControl(),
+        'substantially': new UntypedFormControl(),
+        'substantiallyDate': new UntypedFormControl(),
+        'activeStatus': new UntypedFormControl(),
+        'activeDate': new UntypedFormControl(),
+        'responsibleEPDId': new UntypedFormControl(),
+        'responsibleEPD': new UntypedFormControl(),
+        'projectLeadId': new UntypedFormControl(),
+        'projectLead': new UntypedFormControl(),
       });
     }
   }
@@ -289,38 +289,38 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       };
     }
 
-    const theForm = new FormGroup({
-      'name': new FormControl(formData.name),
-      'proponent': new FormControl(formData.proponent),
-      'build': new FormControl(formData.build),
-      'type': new FormControl(formData.type),
-      'currentPhaseName': new FormControl(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
-      'sector': new FormControl(formData.sector),
-      'description': new FormControl(formData.description),
-      'location': new FormControl(formData.location),
-      'region': new FormControl(formData.region),
-      'lat': new FormControl(formData.centroid[1]),
-      'lon': new FormControl(formData.centroid[0]),
-      'addFile': new FormControl(formData.addFile),
-      'CEAAInvolvement': new FormControl(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
-      'CEAALink': new FormControl(formData.CEAALink),
-      'ea': new FormControl(formData.ea),
-      'capital': new FormControl(formData.intake.investment),
-      'notes': new FormControl(formData.intake.investmentNotes),
-      'eaStatus': new FormControl(formData.eaStatus),
-      'eaStatusDate': new FormControl(),
-      'status': new FormControl(formData.status || this.PROJECT_STATUS[2]),
-      'projectStatusDate': new FormControl(),
-      'eacDecision': new FormControl(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
-      'decisionDate': new FormControl(formData.decisionDate ? this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
-      'substantially': new FormControl(formData.substantially),
-      'substantiallyDate': new FormControl(),
-      'activeStatus': new FormControl(formData.activeStatus),
-      'activeDate': new FormControl(),
-      'responsibleEPDId': new FormControl(formData.responsibleEPDObj._id),
-      'responsibleEPD': new FormControl(formData.responsibleEPDObj.displayName),
-      'projectLeadId': new FormControl(formData.projectLeadObj._id),
-      'projectLead': new FormControl(formData.projectLeadObj.displayName),
+    const theForm = new UntypedFormGroup({
+      'name': new UntypedFormControl(formData.name),
+      'proponent': new UntypedFormControl(formData.proponent),
+      'build': new UntypedFormControl(formData.build),
+      'type': new UntypedFormControl(formData.type),
+      'currentPhaseName': new UntypedFormControl(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
+      'sector': new UntypedFormControl(formData.sector),
+      'description': new UntypedFormControl(formData.description),
+      'location': new UntypedFormControl(formData.location),
+      'region': new UntypedFormControl(formData.region),
+      'lat': new UntypedFormControl(formData.centroid[1]),
+      'lon': new UntypedFormControl(formData.centroid[0]),
+      'addFile': new UntypedFormControl(formData.addFile),
+      'CEAAInvolvement': new UntypedFormControl(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
+      'CEAALink': new UntypedFormControl(formData.CEAALink),
+      'ea': new UntypedFormControl(formData.ea),
+      'capital': new UntypedFormControl(formData.intake.investment),
+      'notes': new UntypedFormControl(formData.intake.investmentNotes),
+      'eaStatus': new UntypedFormControl(formData.eaStatus),
+      'eaStatusDate': new UntypedFormControl(),
+      'status': new UntypedFormControl(formData.status || this.PROJECT_STATUS[2]),
+      'projectStatusDate': new UntypedFormControl(),
+      'eacDecision': new UntypedFormControl(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
+      'decisionDate': new UntypedFormControl(formData.decisionDate ? this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
+      'substantially': new UntypedFormControl(formData.substantially),
+      'substantiallyDate': new UntypedFormControl(),
+      'activeStatus': new UntypedFormControl(formData.activeStatus),
+      'activeDate': new UntypedFormControl(),
+      'responsibleEPDId': new UntypedFormControl(formData.responsibleEPDObj._id),
+      'responsibleEPD': new UntypedFormControl(formData.responsibleEPDObj.displayName),
+      'projectLeadId': new UntypedFormControl(formData.projectLeadObj._id),
+      'projectLead': new UntypedFormControl(formData.projectLeadObj.displayName),
       // 'review180Start': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.review180Start))),
       // 'review45Start': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.review45Start)))
     });

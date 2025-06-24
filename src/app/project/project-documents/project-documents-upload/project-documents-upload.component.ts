@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
@@ -35,7 +35,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   public dateUploaded: NgbDateStruct = null;
   public doctypes: any[] = [];
   public milestones: any[] = [];  // Get this from the project's data.
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public loading = true;
   public docNameInvalid = false;
   public projectPhases: any[] = [];
@@ -62,16 +62,16 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   }
 
   buildForm() {
-    this.myForm = new FormGroup({
-      'docLegislationRadio': new FormControl(this.legislationYear),
-      'doctypesel': new FormControl(),
-      'authorsel': new FormControl(),
-      'labelsel': new FormControl(),
-      'datePosted': new FormControl(),
-      'dateUploaded': new FormControl(),
-      'displayName': new FormControl(),
-      'description': new FormControl(),
-      'projectphasesel': new FormControl()
+    this.myForm = new UntypedFormGroup({
+      'docLegislationRadio': new UntypedFormControl(this.legislationYear),
+      'doctypesel': new UntypedFormControl(),
+      'authorsel': new UntypedFormControl(),
+      'labelsel': new UntypedFormControl(),
+      'datePosted': new UntypedFormControl(),
+      'dateUploaded': new UntypedFormControl(),
+      'displayName': new UntypedFormControl(),
+      'description': new UntypedFormControl(),
+      'projectphasesel': new UntypedFormControl()
     });
     const today = new Date();
     const todayObj = {
@@ -144,7 +144,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
     this.router.navigate(['/p', this.currentProject._id, 'project-documents', 'upload', 'add-label']);
   }
 
-  register(myForm: FormGroup) {
+  register(myForm: UntypedFormGroup) {
     console.log('Successful registration');
     console.log(myForm);
   }

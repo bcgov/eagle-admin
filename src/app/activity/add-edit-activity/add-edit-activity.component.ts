@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,7 +17,7 @@ import { Utils } from 'src/app/shared/utils/utils';
   styleUrls: ['./add-edit-activity.component.scss']
 })
 export class AddEditActivityComponent implements OnInit, OnDestroy {
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public isEditing = false;
   // private subscriptions: Subscription[] = [];
   private subscriptions = new Subscription();
@@ -249,19 +249,19 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   buildForm(data) {
-    this.myForm = new FormGroup({
-      'headline': new FormControl(data.headline),
-      'content': new FormControl(data.content),
-      'dateAdded': new FormControl(this.utils.convertJSDateToNGBDate(new Date(data.dateAdded))),
-      'project': new FormControl(data.project),
-      'projectLocation': new FormControl({ value: data.projectLocation, disabled: true }),
-      'type': new FormControl(data.type),
-      'pcp': new FormControl({ value: data.pcp, disabled: true }),
-      'notificationName': new FormControl(data.notificationName),
-      'contentUrl': new FormControl(data.contentUrl),
+    this.myForm = new UntypedFormGroup({
+      'headline': new UntypedFormControl(data.headline),
+      'content': new UntypedFormControl(data.content),
+      'dateAdded': new UntypedFormControl(this.utils.convertJSDateToNGBDate(new Date(data.dateAdded))),
+      'project': new UntypedFormControl(data.project),
+      'projectLocation': new UntypedFormControl({ value: data.projectLocation, disabled: true }),
+      'type': new UntypedFormControl(data.type),
+      'pcp': new UntypedFormControl({ value: data.pcp, disabled: true }),
+      'notificationName': new UntypedFormControl(data.notificationName),
+      'contentUrl': new UntypedFormControl(data.contentUrl),
       // For project notification this is the url
-      'documentUrl': new FormControl(data.documentUrl),
-      'complianceAndEnforcement': new FormControl(data.complianceAndEnforcement ? true : false),
+      'documentUrl': new UntypedFormControl(data.documentUrl),
+      'complianceAndEnforcement': new UntypedFormControl(data.complianceAndEnforcement ? true : false),
     });
   }
 

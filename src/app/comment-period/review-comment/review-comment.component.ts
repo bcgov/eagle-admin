@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
@@ -26,7 +26,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   public commentPeriod: CommentPeriod;
   public loading = true;
   public isRejectedRequired = false;
-  public commentReviewForm: FormGroup;
+  public commentReviewForm: UntypedFormGroup;
   public pendingCommentCount = 0;
   public nextCommentId;
 
@@ -80,17 +80,17 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   }
 
   private initForm() {
-    this.commentReviewForm = new FormGroup({
-      'dateAdded': new FormControl({ value: '', disabled: true }),
-      'datePosted': new FormControl({ value: '', disabled: true }),
-      'deferralNotesText': new FormControl(),
-      'isNamePublic': new FormControl({ value: false, disabled: true }),
-      'isDeferred': new FormControl(),
-      'isPublished': new FormControl(),
-      'isRejected': new FormControl(),
-      'proponentResponseText': new FormControl(),
-      'publishedNotesText': new FormControl(),
-      'rejectionNotesText': new FormControl()
+    this.commentReviewForm = new UntypedFormGroup({
+      'dateAdded': new UntypedFormControl({ value: '', disabled: true }),
+      'datePosted': new UntypedFormControl({ value: '', disabled: true }),
+      'deferralNotesText': new UntypedFormControl(),
+      'isNamePublic': new UntypedFormControl({ value: false, disabled: true }),
+      'isDeferred': new UntypedFormControl(),
+      'isPublished': new UntypedFormControl(),
+      'isRejected': new UntypedFormControl(),
+      'proponentResponseText': new UntypedFormControl(),
+      'publishedNotesText': new UntypedFormControl(),
+      'rejectionNotesText': new UntypedFormControl()
     });
 
     this.setEaoStatus(this.comment.eaoStatus);

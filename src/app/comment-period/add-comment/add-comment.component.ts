@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
@@ -30,7 +30,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   public documents: Document[] = [];
   public loading = true;
 
-  public addCommentForm: FormGroup;
+  public addCommentForm: UntypedFormGroup;
   public anonymousName = 'Anonymous';
 
   constructor(
@@ -63,20 +63,20 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   }
 
   private initForm() {
-    this.addCommentForm = new FormGroup({
-      'authorText': new FormControl({ value: this.anonymousName, disabled: true }),
-      'commentText': new FormControl(),
-      'dateAdded': new FormControl(),
-      'datePosted': new FormControl({ value: '', disabled: true }),
-      'deferralNotesText': new FormControl(),
-      'isNamePublic': new FormControl(),
-      'isDeferred': new FormControl(),
-      'isPublished': new FormControl(),
-      'isRejected': new FormControl(),
-      'locationText': new FormControl(),
-      'proponentResponseText': new FormControl(),
-      'rejectionNotesText': new FormControl(),
-      'publishedNotesText': new FormControl()
+    this.addCommentForm = new UntypedFormGroup({
+      'authorText': new UntypedFormControl({ value: this.anonymousName, disabled: true }),
+      'commentText': new UntypedFormControl(),
+      'dateAdded': new UntypedFormControl(),
+      'datePosted': new UntypedFormControl({ value: '', disabled: true }),
+      'deferralNotesText': new UntypedFormControl(),
+      'isNamePublic': new UntypedFormControl(),
+      'isDeferred': new UntypedFormControl(),
+      'isPublished': new UntypedFormControl(),
+      'isRejected': new UntypedFormControl(),
+      'locationText': new UntypedFormControl(),
+      'proponentResponseText': new UntypedFormControl(),
+      'rejectionNotesText': new UntypedFormControl(),
+      'publishedNotesText': new UntypedFormControl()
     });
     this.addCommentForm.controls.isNamePublic.setValue(false);
     this.addCommentForm.controls.dateAdded.setValue(this.utils.convertJSDateToNGBDate(new Date()));

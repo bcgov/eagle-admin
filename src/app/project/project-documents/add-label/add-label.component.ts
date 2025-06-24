@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
 
@@ -12,7 +12,7 @@ import { StorageService } from 'src/app/services/storage.service';
 export class AddLabelComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public currentProjectId: string;
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public labels: any[] = [];
   public back: any = {};
 
@@ -29,16 +29,16 @@ export class AddLabelComponent implements OnInit, OnDestroy {
         this.currentProjectId = params.get('projId');
       });
 
-    this.myForm = new FormGroup({
-      'doctypesel': new FormControl(),
-      'authorsel': new FormControl(),
-      'labelsel': new FormControl(),
-      'milestonesel': new FormControl(),
-      'datePosted': new FormControl(),
-      'dateUploaded': new FormControl(),
-      'displayName': new FormControl(),
-      'description': new FormControl(),
-      'projectphasesel': new FormControl()
+    this.myForm = new UntypedFormGroup({
+      'doctypesel': new UntypedFormControl(),
+      'authorsel': new UntypedFormControl(),
+      'labelsel': new UntypedFormControl(),
+      'milestonesel': new UntypedFormControl(),
+      'datePosted': new UntypedFormControl(),
+      'dateUploaded': new UntypedFormControl(),
+      'displayName': new UntypedFormControl(),
+      'description': new UntypedFormControl(),
+      'projectphasesel': new UntypedFormControl()
     });
 
     this.labels = this.storageService.state.labels;
@@ -51,7 +51,7 @@ export class AddLabelComponent implements OnInit, OnDestroy {
     this.storageService.state.labels = this.labels;
   }
 
-  register(myForm: FormGroup) {
+  register(myForm: UntypedFormGroup) {
     console.log('Successful registration');
     console.log(myForm);
   }

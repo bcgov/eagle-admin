@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl, FormBuilder, FormArray } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import * as moment from 'moment';
@@ -42,7 +42,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public descriptionPreview = '%description%';
 
   public publishedState = 'unpublished';
-  public commentPeriodForm: FormGroup;
+  public commentPeriodForm: UntypedFormGroup;
 
   public startMeridian = true;
 
@@ -67,7 +67,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     private commentPeriodService: CommentPeriodService,
     private configService: ConfigService,
     private documentService: DocumentService,
-    private formBuilder: FormBuilder,
+    private formBuilder: UntypedFormBuilder,
     private router: Router,
     private snackBar: MatSnackBar,
     public storageService: StorageService,
@@ -127,16 +127,16 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private initForm() {
     if (this.storageService.state.addEditCPForm == null) {
       // Prep comment period form.
-      this.commentPeriodForm = new FormGroup({
-        'startDate': new FormControl(),
-        'startTime': new FormControl(),
-        'endDate': new FormControl(),
-        'endTime': new FormControl(),
-        'publishedStateSel': new FormControl(),
-        'infoForCommentText': new FormControl(),
-        'descriptionText': new FormControl(),
-        'commentTipText': new FormControl(),
-        'milestoneSel': new FormControl(),
+      this.commentPeriodForm = new UntypedFormGroup({
+        'startDate': new UntypedFormControl(),
+        'startTime': new UntypedFormControl(),
+        'endDate': new UntypedFormControl(),
+        'endTime': new UntypedFormControl(),
+        'publishedStateSel': new UntypedFormControl(),
+        'infoForCommentText': new UntypedFormControl(),
+        'descriptionText': new UntypedFormControl(),
+        'commentTipText': new UntypedFormControl(),
+        'milestoneSel': new UntypedFormControl(),
         openHouses: this.formBuilder.array([])
       });
       if (this.isEditing) {
@@ -331,7 +331,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     console.log(this.commentPeriodForm);
   }
 
-  private extractVarsFromInstructions(instructionString: string, form: FormGroup): void {
+  private extractVarsFromInstructions(instructionString: string, form: UntypedFormGroup): void {
     if (!instructionString || (!form && !form.controls)) {
       console.warn('Missing instruction string or form controls');
       return;
@@ -367,7 +367,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.updateDescriptionPreview();
   }
 
-  private initOpenHouseRow(): FormGroup {
+  private initOpenHouseRow(): UntypedFormGroup {
     return this.formBuilder.group({
       eventDate: null,
       description: null
@@ -375,17 +375,17 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   public addOpenHouseRow(): void {
-    const openHouseArray = <FormArray>this.commentPeriodForm.controls['openHouses'];
+    const openHouseArray = <UntypedFormArray>this.commentPeriodForm.controls['openHouses'];
     openHouseArray.push(this.initOpenHouseRow());
   }
 
   public addOpenHouseRowWithFields(openHouse): void {
-    const openHouseArray = <FormArray>this.commentPeriodForm.controls['openHouses'];
+    const openHouseArray = <UntypedFormArray>this.commentPeriodForm.controls['openHouses'];
     openHouseArray.push(openHouse);
   }
 
   public removeOpenHouseRow(rowIndex: number): void {
-    const openHousesArray = <FormArray>this.commentPeriodForm.controls['openHouses'];
+    const openHousesArray = <UntypedFormArray>this.commentPeriodForm.controls['openHouses'];
     if (openHousesArray.length > 1) {
       openHousesArray.removeAt(rowIndex);
     } else {

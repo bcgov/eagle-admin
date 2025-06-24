@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
@@ -18,7 +18,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   public isEditing = false;
   public loading = false;
   public navigationObject;
-  public orgForm: FormGroup;
+  public orgForm: UntypedFormGroup;
   public orgId = '';
   public parentOrganizationName = '';
   public parentOrgId = '';
@@ -98,19 +98,19 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   }
 
   private buildForm(data) {
-    this.orgForm = new FormGroup({
-      description: new FormControl(data.description),
-      name: new FormControl(data.name),
-      country: new FormControl(data.country),
-      postal: new FormControl(data.postal),
-      province: new FormControl(data.province),
-      city: new FormControl(data.city),
-      address1: new FormControl(data.address1),
-      address2: new FormControl(data.address2),
-      companyType: new FormControl(data.companyType),
-      parentCompany: new FormControl(this.parentOrgId),
-      companyLegal: new FormControl(data.companyLegal),
-      company: new FormControl(data.company)
+    this.orgForm = new UntypedFormGroup({
+      description: new UntypedFormControl(data.description),
+      name: new UntypedFormControl(data.name),
+      country: new UntypedFormControl(data.country),
+      postal: new UntypedFormControl(data.postal),
+      province: new UntypedFormControl(data.province),
+      city: new UntypedFormControl(data.city),
+      address1: new UntypedFormControl(data.address1),
+      address2: new UntypedFormControl(data.address2),
+      companyType: new UntypedFormControl(data.companyType),
+      parentCompany: new UntypedFormControl(this.parentOrgId),
+      companyLegal: new UntypedFormControl(data.companyLegal),
+      company: new UntypedFormControl(data.company)
     });
   }
 
