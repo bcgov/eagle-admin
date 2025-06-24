@@ -96,7 +96,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     // hide tabs corresponding to old legislations on new project edit
     this.tabLinks = this.tabLinks.filter((tab: IAddEditTab) => {
       // keep tab if at least one if its years is not in emptyOldYears
-      return tab.years.reduce((res: Boolean, year: string) => Boolean(res || !emptyOldYears.includes(year)), false);
+      return tab.years.reduce((res: boolean, year: string) => Boolean(res || !emptyOldYears.includes(year)), false);
     });
   }
 
@@ -128,8 +128,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
       duration: 2000,
     });
   }
-
-  register() { }
 
   ngOnDestroy() {
     this.ngUnsubscribe.next();

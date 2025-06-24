@@ -30,14 +30,14 @@ export class CommentService {
       .catch(error => this.api.handleError(error));
   }
 
-  getById(commentId: string, populateNextComment: boolean = false): Observable<Comment> {
+  getById(commentId: string, populateNextComment = false): Observable<Comment> {
     return this.api.getComment(commentId, populateNextComment)
       .pipe(
         flatMap(res => {
           this.pendingCommentCount = res.headers.get('x-pending-comment-count');
           this.nextCommentId = res.headers.get('x-next-comment-id');
 
-          let comments = res.body;
+          const comments = res.body;
           if (!comments || comments.length === 0) {
             return of(null as Comment);
           }
@@ -76,7 +76,7 @@ export class CommentService {
   save(comment: Comment): Observable<Comment> {
     if (comment.documentsList && comment.documentsList.length > 0) {
       // Update documents publish status.
-      let observables = [];
+      const observables = [];
       comment.documentsList.map(document => {
         if (document.eaoStatus === 'Published') {
           observables.push(this.documentService.publish(document._id));
@@ -127,7 +127,7 @@ export class CommentService {
   }
 
   // get all comments for the specified comment period id
-  getByPeriodId(periodId: string, pageNum: number = null, pageSize: number = null, sortBy: string = '', count: boolean = true, filter: Object = {}): Observable<Object> {
+  getByPeriodId(periodId: string, pageNum: number = null, pageSize: number = null, sortBy = '', count = true, filter: Object = {}): Observable<Object> {
     return this.api.getCommentsByPeriodId(periodId, pageNum, pageSize, sortBy, count, filter)
       .map((res: any) => {
         if (res) {

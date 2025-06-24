@@ -7,13 +7,13 @@ describe('api', () => {
   let keys = '';
   let schemaName = '';
   let fields = [];
-  let pageNum = 1;
+  const pageNum = 1;
   let pageSize = 1;
   let projectLegislation = '';
   let sortBy = '';
   let queryModifier = {};
   let populate = false;
-  let filter = {};
+  const filter = {};
   const httpMock2 = jasmine.createSpyObj('HttpClient', [
     'get'
   ]);

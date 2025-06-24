@@ -148,7 +148,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
       case 'copyLink':
         this.documentTableData.data.map((item) => {
           if (item.checkbox === true) {
-            let selBox = document.createElement('textarea');
+            const selBox = document.createElement('textarea');
             selBox.style.position = 'fixed';
             selBox.style.left = '0';
             selBox.style.top = '0';
@@ -183,7 +183,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
         this._changeDetectionRef.detectChanges();
         break;
       case 'download':
-        let promises = [];
+        const promises = [];
         this.documentTableData.data.map((item) => {
           if (item.checkbox === true) {
             promises.push(this.api.downloadDocument(this.documents.filter(d => d._id === item._id)[0]));
@@ -244,7 +244,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
   }
 
   setDocumentRowData() {
-    let documentList = [];
+    const documentList = [];
     if (this.documents && this.documents.length > 0) {
       this.documents.forEach(document => {
         documentList.push(

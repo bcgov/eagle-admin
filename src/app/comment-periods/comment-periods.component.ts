@@ -119,7 +119,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   }
 
   setCPRowData() {
-    let cpList = [];
+    const cpList = [];
     this.commentPeriods.forEach(commentPeriod => {
       // Determine if the CP is published by checking in read is Public
       let isPublished = 'Not Published';

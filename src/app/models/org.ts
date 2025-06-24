@@ -1,21 +1,19 @@
-import * as _ from 'lodash';
-
 export class Org {
-  _id: String;
-  description: String;
-  name: String;
-  updatedBy: String;
-  dateAdded: String;
-  country: String;
-  postal: String;
-  province: String;
-  city: String;
-  address1: String;
-  address2: String;
-  companyType: String;
+  _id: string;
+  description: string;
+  name: string;
+  updatedBy: string;
+  dateAdded: string;
+  country: string;
+  postal: string;
+  province: string;
+  city: string;
+  address1: string;
+  address2: string;
+  companyType: string;
   parentCompany: any;
-  companyLegal: String;
-  company: String;
+  companyLegal: string;
+  company: string;
   checkbox: boolean;
 
   constructor(obj?: any) {

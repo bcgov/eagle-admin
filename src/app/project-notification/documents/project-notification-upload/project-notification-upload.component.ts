@@ -97,16 +97,16 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
 
   public uploadDocuments() {
     this.loading = true;
-    let observables = [];
+    const observables = [];
 
     let docAuthor = this.myForm.controls.author.value;
     if (docAuthor === 'Proponent') {
       docAuthor = 'Proponent/Certificate Holder';
     }
-    let authorID = this.findID(docAuthor, this.documentAuthorID);
+    const authorID = this.findID(docAuthor, this.documentAuthorID);
 
-    let milestoneID = this.findID(this.documentMilestone[0], this.documentMilestoneID);
-    let phaseID = this.findID(this.documentPhase[0], this.documentPhaseID);
+    const milestoneID = this.findID(this.documentMilestone[0], this.documentMilestoneID);
+    const phaseID = this.findID(this.documentPhase[0], this.documentPhaseID);
 
 
     this.documents.forEach(doc => {
@@ -118,7 +118,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
       formData.append('displayName', doc.documentFileName);
       formData.append('dateUploaded', new Date().toISOString());
-      formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value))).toISOString());
+      formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value)).toDate().toISOString());
       formData.append('milestone', milestoneID);
       formData.append('type', this.myForm.get('type').value);
       formData.append('description', this.myForm.get('description').value);

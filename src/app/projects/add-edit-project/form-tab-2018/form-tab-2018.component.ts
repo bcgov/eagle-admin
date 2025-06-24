@@ -46,7 +46,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public pageIsEditing = false;
 
   public fullProject: FullProject;
-  public legislationYear: Number = 2018;
+  public legislationYear = 2018;
   public publishedLegislation: string;
 
   public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
@@ -113,7 +113,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         this.oldProject = this.fullProject['legislation_1996'];
       }
       this.project = this.fullProject['legislation_2018'];
-      this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
+      this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
       // When we save the project legislation_2018 is saved to the database with no values in each key. So our isEditing logic is not working properly. Need to check the name key on project aswell
       // tslint:disable-next-line: triple-equals
       this.tabIsEditing = !this.utils.isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
@@ -261,7 +261,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   buildFormFromData(formData) {
     // Preselector for region.
     if (formData.region) {
-      let theRegion = this.regions.filter((region: any) => {
+      const theRegion = this.regions.filter((region: any) => {
         if (region.id === formData.region) {
           return true;
         }
@@ -324,12 +324,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       };
     }
 
-    let theForm = new FormGroup({
+    const theForm = new FormGroup({
       'name': new FormControl(formData.name),
       'proponent': new FormControl(formData.proponent),
       'build': new FormControl(formData.build),
       'type': new FormControl(formData.type),
-      'currentPhaseName': new FormControl( formData.currentPhaseName ? formData.currentPhaseName._id : ''),
+      'currentPhaseName': new FormControl(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
       'sector': new FormControl(formData.sector),
       'description': new FormControl(formData.description),
       'location': new FormControl(formData.location),
@@ -389,9 +389,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   check2018() {
     this.only2018 =
       this.fullProject ?
-      this.fullProject.legislationYearList.length === 1
-      && this.fullProject.legislationYearList[0] === 2018
-      : true;
+        this.fullProject.legislationYearList.length === 1
+        && this.fullProject.legislationYearList[0] === 2018
+        : true;
   }
 
   convertFormToProject(form) {
@@ -412,17 +412,17 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'ea': form.controls.ea.value,
       'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
       'eaStatus': form.controls.eaStatus.value,
-      'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
+      'eaStatusDate': form.get('eaStatusDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value)).toDate().toISOString() : null,
       'status': form.controls.status.value,
-      // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
+      // 'projectStatusDate': form.get('projectStatusDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value)).toDate().toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
-      'decisionDate': form.get('decisionDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value))).toISOString() : null,
+      'decisionDate': form.get('decisionDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value)).toDate().toISOString() : null,
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
-      'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
+      'substantiallyDate': form.get('substantiallyDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value)).toDate().toISOString() : null,
       'dispute': form.controls.dispute.value === 'yes' ? true : false,
-      'disputeDate': form.get('disputeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('disputeDate').value))).toISOString() : null,
+      'disputeDate': form.get('disputeDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('disputeDate').value)).toDate().toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
-      // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
+      // 'activeDate': form.get('activeDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value)).toDate().toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
       'projectLeadId': form.controls.projectLeadId.value,
     };
@@ -570,7 +570,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
               // POST
               (project: Project, apiRes: Project): Observable<Project> => {
                 this.clearStorageService();
-                project = {...project, _id: apiRes._id};
+                project = { ...project, _id: apiRes._id };
                 return this.projectService.publish(project);
               },
               // PUT
@@ -584,8 +584,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
                 (data) => {
                   this.projectId = data._id;
                 },
-                () => {
-                },
+                null,
                 () => {
                   this.published = true;
                   this.loading = false;
@@ -596,10 +595,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
               ],
               // PUT SUBSCRIBE
               [
-                () => {
-                },
-                () => {
-                },
+                null,
+                null,
                 () => {
                   this.published = true;
                   this.loading = false;
@@ -625,7 +622,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     if (!this.pageIsEditing) {
       // POST
       // Make sure to add the legislationYear to the project
-      let project = new Project(
+      const project = new Project(
         {
           ...this.convertFormToProject(this.myForm),
           legislationYear: this.legislationYear
@@ -653,7 +650,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     } else {
       // PUT
       // need to add on legislation year so that we can know where to put it on the root object
-      let project = (new Project({
+      const project = (new Project({
         ...this.convertFormToProject(this.myForm),
         legislationYear: this.legislationYear,
         _id: this.projectId
@@ -662,7 +659,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       if (putFunction) {
         this.projectService.save(project)
           .pipe(
-            switchMap(__ => putFunction(project)),
+            switchMap(() => putFunction(project)),
             takeUntil(this.ngUnsubscribe)
           )
           .subscribe(
@@ -690,8 +687,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         (data) => {
           this.projectId = data._id;
         },
-        () => {
-        },
+        null,
         () => {
           this.clearStorageService();
           this.loading = false;
@@ -701,10 +697,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       ],
       // PUT SUBSCRIBE
       [
-        () => {
-        },
-        () => {
-        },
+        null,
+        null,
         () => {
           this.clearStorageService();
           this.loading = false;
@@ -757,15 +751,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     });
   }
 
-  register() { }
-
   getLists() {
     // List values only have 2002 and 2018 values.
     // If a project is set to 1996 legislation, make sure
     // to load the 2002 codes.
 
     this.configService.lists.forEach(item => {
-      let tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
+      const tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
       switch (`${item.type}|${item.legislation}`) {
         case `eaDecisions|${tempLegislationYear}`:
           this.eacDecisions.push({ ...item });
@@ -774,7 +766,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           this.ceaaInvolvements.push({ ...item });
           break;
         case `projectPhase|${tempLegislationYear}`:
-          this.projectPhases.push({ ...item});
+          this.projectPhases.push({ ...item });
           break;
         default:
           break;

@@ -50,3 +50,5 @@ Thumbs.db
 /setup_helper.sh
 /project_installer.sh
 /shell_helper.sh
+
+/.angular

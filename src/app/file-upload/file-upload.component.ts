@@ -21,8 +21,6 @@ export class FileUploadComponent {
   @Output() filesChange = new EventEmitter();
   public errors: Array<string> = [];
 
-  constructor() { }
-
   @HostListener('dragover', ['$event']) onDragOver(event) {
     this.dragDropClass = 'droparea';
     event.preventDefault();

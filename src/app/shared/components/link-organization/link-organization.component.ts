@@ -111,13 +111,13 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
 
   save() {
     this.storageService.state.selectedOrgs.forEach((org: Org) => {
-      let arr: Org[] = [];
+      const arr: Org[] = [];
       arr.push(org);
       this.storageService.state.add(arr, this.storageService.state.component);
     });
     this.storageService.state.selectedOrganization = null;
     this.storageService.state.add = null;
-    let url = this.navigationStackUtils.getLastBackUrl();
+    const url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
     this.router.navigate(url);
   }
@@ -155,7 +155,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let dataList = [];
+    const dataList = [];
     if (this.organizations && this.organizations.length > 0) {
       this.organizations.forEach(organization => {
         dataList.push(
@@ -191,9 +191,9 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   private setBreadcrumbs() {
-    let nextBackUrl = [...this.navigationObject.backUrl];
+    const nextBackUrl = [...this.navigationObject.backUrl];
     nextBackUrl.push('link-org');
-    let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+    const nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
     nextBreadcrumbs.push(
       {
         route: nextBackUrl,
@@ -207,7 +207,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    let url = this.navigationStackUtils.getLastBackUrl();
+    const url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
     this.router.navigate(url);
   }

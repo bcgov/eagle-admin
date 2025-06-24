@@ -102,7 +102,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
             this.isPublished = true;
           }
 
-          let editData = { ...this.projectNotification  };
+          const editData = { ...this.projectNotification };
           // new Date(null) will create a date of 31/12/1969, so if decisionDate is null, don't create a date object here.
           editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
           editData.notificationReceivedDate = this.projectNotification.notificationReceivedDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.notificationReceivedDate)) : undefined as any;
@@ -119,7 +119,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   }
 
   // loads all the projects for the projects list
-  public getAllProjectsList () {
+  public getAllProjectsList() {
     this.projectService.getAll(1, 1000, '+name')
       .takeUntil(this.ngUnsubscribe)
       .subscribe((res2: any) => {
@@ -141,18 +141,18 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     }
 
     let associatedProjectName;
-    for (let project in this.projects) {
-      if ( this.projects[project]['_id'] === this.myForm.value.project ) {
+    for (const project in this.projects) {
+      if (this.projects[project]['_id'] === this.myForm.value.project) {
         associatedProjectName = this.projects[project]['name'];
         break;
       }
     }
-    let triggerCSV = [];
+    const triggerCSV = [];
     this.triggers.forEach(trigger => {
       triggerCSV.push(trigger.name);
     });
 
-    let notificationProject = new ProjectNotification({
+    const notificationProject = new ProjectNotification({
       name: this.myForm.value.name,
       type: this.myForm.value.type,
       subType: this.myForm.value.subType,
@@ -161,11 +161,11 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       trigger: triggerCSV.join(),
       region: this.myForm.value.region,
       location: this.myForm.value.location,
-      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate))) : null,
-      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate))) : null,
+      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate)).toDate() : null,
+      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate)).toDate() : null,
       decision: this.myForm.value.decision,
-      associatedProjectId:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
-      associatedProjectName:  this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
+      associatedProjectId: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
+      associatedProjectName: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
 
       description: this.myForm.value.description,
       notificationThresholdValue: this.myForm.value.notificationThresholdValue,
@@ -186,27 +186,24 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     if (this.isAdd) {
       this.notificationProjectService.add(notificationProject, publish)
         .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          () => { },
-          () => {
+        .subscribe({
+          error: () => {
             alert('An error has occurred.');
           },
-          () => { this.router.navigate(['/project-notifications']); }
-        );
+          complete: () => { this.router.navigate(['/project-notifications']); }
+        });
     } else {
       notificationProject._id = this.projectNotification._id;
-
       this.notificationProjectService.save(notificationProject, publish)
         .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          () => { },
-          () => {
+        .subscribe({
+          error: () => {
             alert('An error has occurred.');
           },
-          () => {
+          complete: () => {
             this.router.navigate(['/pn', this.projectNotification._id, 'details']);
           }
-        );
+        });
     }
   }
 
@@ -224,7 +221,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     // also, trigger the natureDisabled flag as needed
 
     this.triggers = [];
-    let dataTriggers =  data.trigger.split(',');
+    const dataTriggers = data.trigger.split(',');
 
     Constants.NOTIFICATION_TRIGGERS.forEach(trigger => {
       if (dataTriggers.includes(trigger.name)) {
@@ -367,9 +364,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   }
 
   public filterCompareWith(filter: any, filterToCompare: any) {
-      return filter && filterToCompare
-             ? filter.name === filterToCompare.name
-             : filter === filterToCompare;
+    return filter && filterToCompare
+      ? filter.name === filterToCompare.name
+      : filter === filterToCompare;
   }
 
   public ngOnDestroy() {

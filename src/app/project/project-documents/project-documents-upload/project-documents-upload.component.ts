@@ -73,8 +73,8 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
       'description': new FormControl(),
       'projectphasesel': new FormControl()
     });
-    let today = new Date();
-    let todayObj = {
+    const today = new Date();
+    const todayObj = {
       year: today.getFullYear(),
       month: today.getMonth() + 1,
       day: today.getDate()
@@ -158,7 +158,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     // go through and upload one at a time.
-    let observables = [];
+    const observables = [];
 
     // NB: If multi upload, then switch to use documentFileName as displayName
 
@@ -173,8 +173,8 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
 
       formData.append('displayName', this.documents.length > 1 ? doc.documentFileName : this.myForm.value.displayName);
       formData.append('milestone', this.myForm.value.labelsel);
-      formData.append('dateUploaded', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateUploaded').value))).toISOString());
-      formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value))).toISOString());
+      formData.append('dateUploaded', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateUploaded').value)).toDate().toISOString());
+      formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toDate().toISOString());
       formData.append('type', this.myForm.value.doctypesel);
       formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', this.myForm.value.authorsel);

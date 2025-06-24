@@ -281,7 +281,7 @@ export class Constants {
       'RPR 5(3) - GHG Carbon Dioxode Equivalents (tonnes/year)'
     ],
   };
-  public static readonly EA_READINESS_TYPES = (legislationYear: Number): Array<string> => {
+  public static readonly EA_READINESS_TYPES = (legislationYear: number): Array<string> => {
     switch (legislationYear) {
       case 2002:
         return [
@@ -298,7 +298,7 @@ export class Constants {
       ];
     }
   }
-  public static readonly CEAA_INVOLVEMENT = (legislationYear: Number): Array<string> => {
+  public static readonly CEAA_INVOLVEMENT = (legislationYear: number): Array<string> => {
     switch (legislationYear) {
       case 2002:
         return [
@@ -328,7 +328,7 @@ export class Constants {
       ];
     }
   }
-  public static readonly EAC_DECISIONS = (legislationYear: Number): Array<string> => {
+  public static readonly EAC_DECISIONS = (legislationYear: number): Array<string> => {
     switch (legislationYear) {
       case 2002:
         return [
@@ -362,7 +362,7 @@ export class Constants {
     }
   }
 
-  public static readonly PROJECT_NATURE = (legislationYear: Number): Array<string> => {
+  public static readonly PROJECT_NATURE = (legislationYear: number): Array<string> => {
     switch (legislationYear) {
       case 2002:
         return [
@@ -379,7 +379,7 @@ export class Constants {
     }
   }
 
-  public static readonly PROJECT_STATUS = (legislationYear: Number): Array<string> => {
+  public static readonly PROJECT_STATUS = (legislationYear: number): Array<string> => {
     switch (legislationYear) {
       case 2002:
         return [
@@ -424,7 +424,7 @@ export class Constants {
       }
     }
 
-  public static readonly PROJECT_TYPES = (legislationYear: Number): Array<string> => {
+  public static readonly PROJECT_TYPES = (legislationYear: number): Array<string> => {
     switch (legislationYear) {
       case 2002:
         return [
@@ -455,7 +455,7 @@ export class Constants {
     }
   }
 
-  public static readonly PROJECT_SUBTYPES = (legislationYear: Number): Object => {
+  public static readonly PROJECT_SUBTYPES = (legislationYear: number): Object => {
     switch (legislationYear) {
       case 2002:
       return {

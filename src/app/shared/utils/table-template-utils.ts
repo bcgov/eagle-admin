@@ -42,9 +42,9 @@ export class TableTemplateUtils {
     } else if (params.pageSize) {
       pageSize = +params.pageSize;
     }
-    let currentPage = params.currentPage ? +params.currentPage : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
-    let sortBy = params.sortBy ? params.sortBy : Constants.tableDefaults.DEFAULT_SORT_BY;
-    let keywords = params.keywords ? params.keywords : Constants.tableDefaults.DEFAULT_KEYWORDS;
+    const currentPage = params.currentPage ? +params.currentPage : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
+    const sortBy = params.sortBy ? params.sortBy : Constants.tableDefaults.DEFAULT_SORT_BY;
+    const keywords = params.keywords ? params.keywords : Constants.tableDefaults.DEFAULT_KEYWORDS;
     if (filter == null) {
       filter = {};
     }

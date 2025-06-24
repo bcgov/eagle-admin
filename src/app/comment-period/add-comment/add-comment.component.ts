@@ -130,18 +130,17 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
     this.commentService.add(this.comment, documentsForm)
       .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        () => { },
-        error => {
+      .subscribe({
+        error: error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t add comment');
         },
-        () => { // onCompleted
+        complete: () => { // onCompleted
           this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
           this.loading = false;
           this.openSnackBar('This comment was updated successfuly.', 'Close');
         }
-      );
+      });
   }
 
   public onCancel() {
@@ -205,7 +204,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     });
   }
 
-  public toggleDocumentPublish(document: any, action: String) {
+  public toggleDocumentPublish(document: any, action: string) {
     if (action === 'Published' && !this.addCommentForm.get('isRejected').value) {
       document.eaoStatus = 'Published';
     } else if (action === 'Rejected' && !this.addCommentForm.get('isRejected').value) {
@@ -214,7 +213,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   }
 
   private setDocumentForm() {
-    let docForms = [];
+    const docForms = [];
     this.documents.map(doc => {
       const formData = new FormData();
       formData.append('upfile', doc.upfile);
@@ -222,8 +221,8 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       formData.append('documentFileName', doc.documentFileName);
       formData.append('internalOriginalName', doc.internalOriginalName);
       formData.append('documentSource', 'COMMENT');
-      formData.append('dateUploaded', moment());
-      formData.append('datePosted', moment());
+      formData.append('dateUploaded', moment().toISOString());
+      formData.append('datePosted', moment().toISOString());
       formData.append('documentAuthor', this.addCommentForm.get('authorText').value);
 
       if (this.currentProject.type === 'currentProject') {

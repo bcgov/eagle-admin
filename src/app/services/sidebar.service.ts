@@ -10,8 +10,6 @@ export class SideBarService {
   isOpen = false;
   isArchive = false;
 
-  constructor() { }
-
   toggle() {
     this.isOpen = !this.isOpen;
     this.toggleChange.emit(this.isOpen);

@@ -101,7 +101,7 @@ export class ProjectListResolver implements Resolve<Object> {
 
         this.setFiltersFromParams(route.params);
 
-        let tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
+        const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
         if (tableParams.sortBy === '') {
           tableParams.sortBy = '+name';
           this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
@@ -138,7 +138,7 @@ export class ProjectListResolver implements Resolve<Object> {
       this.filterForURL[name] = params[name];
 
       const values = params[name].split(',');
-      let apiValues = values.map(value => {
+      const apiValues = values.map(value => {
         return map && map[value] ? map[value] : value;
       });
       if (apiValues.length) {
@@ -152,7 +152,7 @@ export class ProjectListResolver implements Resolve<Object> {
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {

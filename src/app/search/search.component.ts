@@ -257,7 +257,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         return this.route.params;
       })
       .switchMap((res: any) => {
-        let params = { ...res };
+        const params = { ...res };
 
         this.terms.keywords = params.keywords || null;
         this.terms.dataset = params.dataset || 'Document';
@@ -271,8 +271,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
         // additional check to see if we have any filter elements applied to the
         // query string. Previously these were ignored on a refresh
-        let filterKeys = Object.keys(this.filterForAPI);
-        let hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
+        const filterKeys = Object.keys(this.filterForAPI);
+        const hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
         if (_.isEmpty(this.terms.getParams())
           && !this.hasFilter()
         && !hasFilterFromQueryString) {
@@ -360,7 +360,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   ngDoCheck() {
     if (this.togglingOpen) {
       // Focus on designated input when pane is opened
-      let input = document.getElementById(this.togglingOpen + '_input');
+      const input = document.getElementById(this.togglingOpen + '_input');
       if (input) {
         input.focus();
         this.togglingOpen = '';
@@ -369,7 +369,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   setRowData() {
-    let itemList = [];
+    const itemList = [];
     this.tableParams.pageSize = this.pageSize;
     this.tableParams.currentPage = this.currentPage;
     this.tableParams.totalListItems = this.count;
@@ -466,7 +466,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.filterForURL[paramname] = params[paramname];
 
       const values = params[paramname].split(',');
-      let apiValues = [];
+      const apiValues = [];
       values.forEach(value => {
         this.filterForUI[name][value] = true;
         apiValues.push(map && map[value] ? map[value] : value);
@@ -484,7 +484,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     // The UI filters are remapping document and project type to the single 'Type' value
     // this means that whenever we map back to the filters, we need to revert them
     // from 'type', to the appropriate type.
-    let optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
+    const optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
            this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
 
     if (optionName !== name) {
@@ -493,7 +493,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     }
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
@@ -556,7 +556,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   checkboxFilterToParams(params, name) {
-    let keys = [];
+    const keys = [];
     Object.keys(this.filterForUI[name]).forEach(key => {
       if (this.filterForUI[name][key]) {
         keys.push(key);
@@ -763,7 +763,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
-    let params = this.terms.getParams();
+    const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.currentPage ? this.currentPage : 1;

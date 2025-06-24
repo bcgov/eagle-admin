@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 export class Document {
   _id: string;
   notificationProject: string;
@@ -9,7 +7,7 @@ export class Document {
   internalURL: string;
   passedAVCheck: boolean;
   internalMime: string;
-  internalSize: Number;
+  internalSize: number;
   documentSource: string;
   displayName: string;
   milestone: string;
@@ -34,7 +32,7 @@ export class Document {
   publicHitCount = 0;
   sortOrder = 0;
 
-  read: Array<String> = [];
+  read: Array<string> = [];
 
   constructor(obj?: any) {
     this._id = obj && obj._id || null;

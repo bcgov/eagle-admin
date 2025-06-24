@@ -32,7 +32,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public project: Project = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-  public currentLeg: String;
+  public currentLeg: string;
   public currentLegYear: number;
   public showArchivedButton = false;
   public legislationYearList;
@@ -133,7 +133,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   private internalDeleteProject() {
     this.isDeleting = true;
 
-    let observables = of(null);
+    const observables = of(null);
 
     observables
       .takeUntil(this.ngUnsubscribe)

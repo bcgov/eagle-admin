@@ -95,7 +95,7 @@ export class ApiService {
   //
   // Projects
   //
-  getProjects(pageNum: number, pageSize: number, sortBy: string, populate: Boolean = true): Observable<Object> {
+  getProjects(pageNum: number, pageSize: number, sortBy: string, populate = true): Observable<Object> {
     const fields = [
       'eacDecision',
       'name',
@@ -703,7 +703,7 @@ export class ApiService {
     return this.http.get<Document[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  getDocumentsByMultiId(ids: Array<String>): Observable<Document[]> {
+  getDocumentsByMultiId(ids: Array<string>): Observable<Document[]> {
     const fields = [
       '_id',
       'eaoStatus',
@@ -784,27 +784,27 @@ export class ApiService {
     return this.http.delete<Document>(`${this.pathAPI}/${queryString}`, {});
   }
 
-  publishDocument(docId: String): Observable<Document> {
+  publishDocument(docId: string): Observable<Document> {
     const queryString = `document/${docId}/publish`;
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
-  unPublishDocument(docId: String): Observable<Document> {
+  unPublishDocument(docId: string): Observable<Document> {
     const queryString = `document/${docId}/unpublish`;
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
-  featureDocument(docId: String): Observable<Document> {
+  featureDocument(docId: string): Observable<Document> {
     const queryString = `document/${docId}/feature`;
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
-  unFeatureDocument(docId: String): Observable<Document> {
+  unFeatureDocument(docId: string): Observable<Document> {
     const queryString = `document/${docId}/unfeature`;
     return this.http.put<Document>(`${this.pathAPI}/${queryString}`, {}, {});
   }
 
-  uploadDocument(formData: FormData, publish: Boolean): Observable<Document> {
+  uploadDocument(formData: FormData, publish: boolean): Observable<Document> {
     const fields = [
       'documentFileName',
       'internalOriginalName',
@@ -847,12 +847,12 @@ export class ApiService {
     }
   }
 
-  public async exportComments(period: String, projectName: String, format: String) {
+  public async exportComments(period: string, projectName: string, format: string) {
     const queryString = `comment/export/${period}?format=${format}`;
     const blob = await this.http.get<Blob>(this.pathAPI + '/' + queryString, { responseType: 'blob' as 'json' }).toPromise();
 
     projectName = projectName.split(' ').join('_');
-    let currentDate = this.utils.formatDate(new Date());
+    const currentDate = this.utils.formatDate(new Date());
     let filename = '';
     if (format === 'staff') {
       filename = projectName + '-eao-' + currentDate + '.csv';
@@ -895,12 +895,12 @@ export class ApiService {
   }
 
   public async openElementResource(element: any): Promise<void> {
-    let filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
+    const filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
     window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
   }
 
   public async downloadInspectionItem(inspection, elementId, item: any): Promise<void> {
-    let tempDate = new Date(item.timestamp);
+    const tempDate = new Date(item.timestamp);
     let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}`;
     filename = filename.replace('.', '-');
     const queryString = `inspection/${inspection._id}/${elementId}/${item._id}?filename=${filename}`;
@@ -938,7 +938,7 @@ export class ApiService {
     //   -voice.rec
     // - Element3
 
-    let zip = new JSZip();
+    const zip = new JSZip();
     zip.file(
       `inspection.txt`,
       `
@@ -952,8 +952,8 @@ export class ApiService {
     );
 
     for (let i = 0; i < inspection.elements.length; i++) {
-      let element = inspection.elements[i];
-      let elementFolder = zip.folder(element.title);
+      const element = inspection.elements[i];
+      const elementFolder = zip.folder(element.title);
       elementFolder.file(
         `element-${element.title}.txt`,
         `
@@ -975,9 +975,9 @@ export class ApiService {
           throw Error('Unable to find inspection item.');
         }
 
-        let item = itemSearchResults[0];
-        let tempDate = new Date(item.timestamp);
-        let filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}.${item.internalExt}`;
+        const item = itemSearchResults[0];
+        const tempDate = new Date(item.timestamp);
+        const filename = `${inspection.name}_${this.utils.getFormattedTime(tempDate)}.${item.internalExt}`;
         const queryString = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
         let blob = null;
         try {
@@ -1024,7 +1024,7 @@ export class ApiService {
   // Get Item via search endpoint
   //
   getItem(_id: string, schema: string): Observable<SearchResults[]> {
-    let queryString = `search?dataset=Item&_id=${_id}&_schemaName=${schema}`;
+    const queryString = `search?dataset=Item&_id=${_id}&_schemaName=${schema}`;
     return this.http.get<SearchResults[]>(`${this.pathAPI}/${queryString}`, {});
   }
 
@@ -1074,7 +1074,7 @@ export class ApiService {
   //
   getMetrics(pageNum: number, pageSize: number, sortBy: string = null): Observable<SearchResults[]> {
     let queryString = `audit?`;
-    let fields = ['fields',
+    const fields = ['fields',
       'performedBy',
       'deletedBy',
       'updatedBy',
@@ -1164,7 +1164,7 @@ export class ApiService {
   // Project Notifications
   //
 
-  getProjectNotifications(pageNum: number, pageSize: number, sortBy: string, populate: Boolean = true): Observable<Object> {
+  getProjectNotifications(pageNum: number, pageSize: number, sortBy: string, populate = true): Observable<Object> {
     const fields = [
       'name',
       'epicProjectID',

@@ -49,10 +49,10 @@ export class TableDocumentTemplateUtils {
     } else if (params.pageSizeCategorized) {
       pageSizeCategorized = +params.pageSizeCategorized;
     }
-    let currentPageCategorized = params.currentPageCategorized ? +params.currentPageCategorized : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
-    let sortByCategorized = params.sortByCategorized ? params.sortByCategorized : Constants.tableDefaults.DEFAULT_SORT_BY;
+    const currentPageCategorized = params.currentPageCategorized ? +params.currentPageCategorized : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
+    const sortByCategorized = params.sortByCategorized ? params.sortByCategorized : Constants.tableDefaults.DEFAULT_SORT_BY;
 
-    let keywords = params.keywords ? params.keywords : Constants.tableDefaults.DEFAULT_KEYWORDS;
+    const keywords = params.keywords ? params.keywords : Constants.tableDefaults.DEFAULT_KEYWORDS;
     if (filter == null) {
       filter = {};
     }

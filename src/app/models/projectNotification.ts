@@ -11,7 +11,7 @@ export class ProjectNotification {
   decisionDate: Date;
   notificationReceivedDate: Date;
   description: string;
-  notificationThresholdValue: Number;
+  notificationThresholdValue: number;
   notificationThresholdUnits: string;
   centroid: Array<string>;
   trigger: string;

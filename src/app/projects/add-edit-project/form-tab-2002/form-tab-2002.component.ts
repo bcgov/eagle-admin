@@ -6,7 +6,7 @@ import { Subject, Observable } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import * as _ from 'lodash';
 
-import { flatMap } from 'rxjs/operators';
+import { mergeMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
@@ -35,7 +35,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public projectPhases: Array<any> = [];
   public proponentName = '';
   public proponentId = '';
-  public legislationYear: Number = 2002;
+  public legislationYear = 2002;
   public ceaaInvolvements: Array<any> = [];
   public eacDecisions: Array<any> = [];
 
@@ -111,8 +111,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         this.legislationYear = 1996;
         this.project = this.fullProject['legislation_1996'];
       }
-      this.publishedLegislation =  this.fullProject.currentLegislationYear.toString();
-      this.tabIsEditing =  !this.utils.isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
+      this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
+      this.tabIsEditing = !this.utils.isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
       this.pageIsEditing = this.storageService.state.pageIsEditing;
       this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
@@ -208,7 +208,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         'projectLeadId': new FormControl(),
         'projectLead': new FormControl(),
       });
-    }}
+    }
+  }
 
   private setNavigation() {
     if (!this.pageIsEditing) {
@@ -249,7 +250,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   buildFormFromData(formData) {
     // Preselector for region.
     if (formData.region) {
-      let theRegion = this.regions.filter((region: any) => {
+      const theRegion = this.regions.filter((region: any) => {
         if (region.id === formData.region) {
           return true;
         }
@@ -288,7 +289,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       };
     }
 
-    let theForm = new FormGroup({
+    const theForm = new FormGroup({
       'name': new FormControl(formData.name),
       'proponent': new FormControl(formData.proponent),
       'build': new FormControl(formData.build),
@@ -352,8 +353,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
   private getDecisionDate(value) {
     // nb: isNaN(undefined) returns true, while isNaN(null) returns false
-    let date = value === null ? undefined : value.day;
-    return isNaN(date) ? null : new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(value))).toISOString();
+    const date = value === null ? undefined : value.day;
+    return isNaN(date) ? null : moment(this.utils.convertFormGroupNGBDateToJSDate(value)).toDate().toISOString();
   }
   convertFormToProject(form) {
     return {
@@ -405,7 +406,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.storageService.state.form2002 = this.myForm;
     this.setNavigation();
     if (!this.pageIsEditing) {
-      this.router.navigate(['/projects', 'add', 'form-2002' , 'link-org']);
+      this.router.navigate(['/projects', 'add', 'form-2002', 'link-org']);
     } else {
       this.router.navigate(['/p', this.projectId, 'edit', 'form-2002', 'link-org']);
     }
@@ -457,7 +458,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
       alert('You must select a project lead');
       return false;
-    }  else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
+    } else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
       alert('You must select an EA Decision');
       return false;
     } else {
@@ -469,30 +470,30 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
-    confirmGuard(message: string): Observable<boolean> {
-      const modalRef = this.modalService.open(ConfirmComponent, {
-        backdrop: 'static',
-        backdropClass: 'custom-backdrop',
-        centered: true
-      });
+  confirmGuard(message: string): Observable<boolean> {
+    const modalRef = this.modalService.open(ConfirmComponent, {
+      backdrop: 'static',
+      backdropClass: 'custom-backdrop',
+      centered: true
+    });
 
-      modalRef.componentInstance.title = 'Confirm Action';
-      modalRef.componentInstance.message = message;
-      modalRef.componentInstance.okOnly = false;
+    modalRef.componentInstance.title = 'Confirm Action';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.okOnly = false;
 
-      return new Observable<boolean>(observer => {
-        modalRef.result.then(
-          (result) => {
-            observer.next(result === true);
-            observer.complete();
-          },
-          () => {
-            observer.next(false); // If dismissed, treat as "Cancel"
-            observer.complete();
-          }
-        );
-      });
-    }
+    return new Observable<boolean>(observer => {
+      modalRef.result.then(
+        (result) => {
+          observer.next(result === true);
+          observer.complete();
+        },
+        () => {
+          observer.next(false); // If dismissed, treat as "Cancel"
+          observer.complete();
+        }
+      );
+    });
+  }
 
   onUnpublish(): void {
     this.confirmGuard(`Are you sure you want to <strong>Un-Publish</strong> this project entirely?`)
@@ -546,8 +547,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                 (data) => {
                   this.projectId = data._id;
                 },
-                () => {
-                },
+                null,
                 () => {
                   this.published = true;
                   this.loading = false;
@@ -558,10 +558,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
               ],
               // PUT SUBSCRIBE
               [
-                () => {
-                },
-                () => {
-                },
+                null,
+                null,
                 () => {
                   this.published = true;
                   this.loading = false;
@@ -586,7 +584,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
     if (!this.pageIsEditing) {
       // POST
-      let project = new Project(
+      const project = new Project(
         this.convertFormToProject(this.myForm)
       );
 
@@ -603,14 +601,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     } else {
       // PUT
       // need to add on legislation year so that we can know where to put it on the root object
-      let project = (new Project({
+      const project = (new Project({
         ...this.convertFormToProject(this.myForm),
         legislationYear: this.legislationYear,
         _id: this.projectId
       }));
       if (putFunction) {
         this.projectService.save(project)
-          .takeUntil(this.ngUnsubscribe).pipe(flatMap(__ => putFunction(project) ))
+          .takeUntil(this.ngUnsubscribe).pipe(mergeMap(() => putFunction(project)))
           .subscribe(
             ...putSubscribe
           );
@@ -633,8 +631,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         (data) => {
           this.projectId = data._id;
         },
-        () => {
-        },
+        null,
         () => {
           this.clearStorageService();
           this.loading = false;
@@ -644,10 +641,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       ],
       // PUT SUBSCRIBE
       [
-        () => {
-        },
-        () => {
-        },
+        null,
+        null,
         () => {
           this.clearStorageService();
           this.loading = false;
@@ -687,7 +682,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.storageService.state.componentModel = 'User';
     this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
     if (this.tabIsEditing) {
-      this.router.navigate(['/p', this.storageService.state.currentProject.data._id, 'edit', 'form-2002' , 'link-contact', { pageSize: 25 }]);
+      this.router.navigate(['/p', this.storageService.state.currentProject.data._id, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
     } else {
       this.router.navigate(['/projects', 'add', 'form-2002', 'link-contact', { pageSize: 25 }]);
     }
@@ -699,13 +694,11 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     });
   }
 
-  register() { }
-
   getLists() {
     // List values only have 2002 and 2018 values.
     // If a project is set to 1996 legislation, make sure
     // to load the 2002 codes.
-    let tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
+    const tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
 
     this.configService.lists.forEach(item => {
       switch (`${item.type}|${item.legislation}`) {
@@ -716,7 +709,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.ceaaInvolvements.push({ ...item });
           break;
         case `projectPhase|${tempLegislationYear}`:
-          this.projectPhases.push({ ...item});
+          this.projectPhases.push({ ...item });
           break;
         default:
           break;

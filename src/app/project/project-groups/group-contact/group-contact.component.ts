@@ -179,23 +179,23 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   }
 
   async copyEmail() {
-    let itemsToExport = [];
+    const itemsToExport = [];
     this.tableData.data.map((item) => {
       if (item.checkbox === true) {
         itemsToExport.push(item);
       }
     });
-    let list = [];
+    const list = [];
     itemsToExport.map(member => {
       list.push(member);
     });
 
-    let filteredArray = list.reduce((unique, item) => {
+    const filteredArray = list.reduce((unique, item) => {
       return unique.includes(item) ? unique : [...unique, item];
     }, []);
 
     // Get all the user emails
-    let csvData = [];
+    const csvData = [];
     filteredArray.map((item) => {
       csvData.push(
         this.searchService.getItem(item._id, 'User').toPromise()
@@ -209,7 +209,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         data.map(p => {
           userData += p.data.email + ';';
         });
-        let selBox = document.createElement('textarea');
+        const selBox = document.createElement('textarea');
         selBox.style.position = 'fixed';
         selBox.style.left = '0';
         selBox.style.top = '0';
@@ -225,23 +225,23 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   }
 
   async exportItems() {
-    let itemsToExport = [];
+    const itemsToExport = [];
     this.tableData.data.map((item) => {
       if (item.checkbox === true) {
         itemsToExport.push(item);
       }
     });
-    let list = [];
+    const list = [];
     itemsToExport.map(member => {
       list.push(member);
     });
 
-    let filteredArray = list.reduce((unique, item) => {
+    const filteredArray = list.reduce((unique, item) => {
       return unique.includes(item) ? unique : [...unique, item];
     }, []);
 
     // Get all the user emails
-    let csvData = [];
+    const csvData = [];
     filteredArray.map((item) => {
       csvData.push(
         this.searchService.getItem(item._id, 'User').toPromise()
@@ -251,7 +251,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     return Promise.all(csvData)
       .then((data) => {
         // Reload main page.
-        let userData = [];
+        const userData = [];
         data.map(p => {
           userData.push({
             name: p.data.firstName + ' ' + p.data.lastName,
@@ -308,9 +308,9 @@ export class GroupContactComponent implements OnInit, OnDestroy {
 
   update(contacts, component) {
     // Determine the members to add.
-    let membersToAdd = [];
+    const membersToAdd = [];
     contacts.filter((thing) => {
-      let idx = component.users.findIndex((t) => {
+      const idx = component.users.findIndex((t) => {
         return (t._id === thing._id);
       });
       if (idx === -1) {
@@ -319,9 +319,9 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     });
 
     // Determine the members to remove.
-    let membersToRemove = [];
+    const membersToRemove = [];
     component.users.filter((thing) => {
-      let idx = contacts.findIndex((t) => {
+      const idx = contacts.findIndex((t) => {
         return (t._id === thing._id);
       });
       if (idx === -1) {
@@ -329,7 +329,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
       }
     });
 
-    let observables = [];
+    const observables = [];
     if (membersToAdd.length > 0) {
       observables.push(component.projectService.addGroupMembers(component.currentProject, component.groupId, membersToAdd));
     }
@@ -368,7 +368,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     modalRef.result.then((isConfirmed) => {
       if (isConfirmed) {
         this.loading = true;
-        let itemsToDelete = [];
+        const itemsToDelete = [];
         this.tableData.data.map((item) => {
           if (item.checkbox === true) {
             itemsToDelete.push({
@@ -417,7 +417,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   }
 
   async saveName() {
-    let groupObj = { name: this.tempGroupName };
+    const groupObj = { name: this.tempGroupName };
     await this.projectService.saveGroup(this.currentProject._id, this.group._id, groupObj).toPromise();
     this.group.name = this.tempGroupName;
     this.openSnackBar('Group name has been updated', 'Close');

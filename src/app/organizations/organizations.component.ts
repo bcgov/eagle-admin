@@ -169,7 +169,7 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
   }
 
   setFilterButtons() {
-    let typeFiltersFromRoute = this.tableParams.filter.companyType.split(',');
+    const typeFiltersFromRoute = this.tableParams.filter.companyType.split(',');
 
     this.orgTypeFilter.indigenousGroup = typeFiltersFromRoute.includes('indigenousGroup');
     this.orgTypeFilter.proponent = typeFiltersFromRoute.includes('proponent');

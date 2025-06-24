@@ -97,7 +97,7 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.forEach((item: any) => {
         // Switch between the two contact/org components.
@@ -112,7 +112,7 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    let url = this.navigationStackUtils.getLastBackUrl();
+    const url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
     this.router.navigate(url);
   }
@@ -151,7 +151,7 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    let arr = [...this.navigationObject.backUrl];
+    const arr = [...this.navigationObject.backUrl];
     arr.push('link-contact');
     arr.push(params);
     this.router.navigate(arr);
@@ -161,8 +161,8 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     this.storageService.state.contactForm = null;
     this.storageService.state.selectedOrganization = null;
 
-    let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
-    let nextRoute = [...this.navigationObject.breadcrumbs[this.navigationObject.breadcrumbs.length - 1].route];
+    const nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+    const nextRoute = [...this.navigationObject.breadcrumbs[this.navigationObject.breadcrumbs.length - 1].route];
     nextRoute.push('link-contact');
     nextRoute.push({ 'pageSize': 25 });
     nextBreadcrumbs.push(

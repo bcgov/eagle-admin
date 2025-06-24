@@ -83,7 +83,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.map((item: any) => {
         item.checkbox = this.storageService.state.selectedUsers.some(element => {
@@ -100,7 +100,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    let backUrl = this.navigationStackUtils.getLastBackUrl();
+    const backUrl = this.navigationStackUtils.getLastBackUrl();
     if (backUrl === null) {
       this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
     } else {
@@ -111,7 +111,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
 
   save() {
     // Add these records to the group list.
-    let items = [];
+    const items = [];
     this.storageService.state.selectedUsers.map((item) => {
       items.push(item);
     });
@@ -144,7 +144,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
         this.storageService.state.contactForm = null;
         this.storageService.state.selectedOrganization = null;
 
-        let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+        const nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
         nextBreadcrumbs.push(
           {
             route: ['/p', this.currentProject._id, 'project-groups', 'g', this.storageService.state.groupId, 'members', 'select'],
@@ -192,7 +192,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     params['keywords'] = this.tableParams.keywords;
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    let arr = [...this.navigationObject.backUrl];
+    const arr = [...this.navigationObject.backUrl];
     arr.push('select');
     arr.push(params);
     this.router.navigate(arr);

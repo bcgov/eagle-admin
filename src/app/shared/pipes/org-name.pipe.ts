@@ -16,7 +16,7 @@ export class OrgNamePipe implements PipeTransform {
       return '-';
     }
     // Grab the item from the constant lists, returning the name field of the object.
-    let item = this.configService.lists.filter(listItem => listItem._id === objectid);
+    const item = this.configService.lists.filter(listItem => listItem._id === objectid);
     if (item.length !== 0) {
       return item[0].orgName;
     } else {

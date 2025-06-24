@@ -7,6 +7,7 @@ import { ApiService } from 'src/app/services/api';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-comment-period-details-tab',
@@ -107,20 +108,20 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
     if (confirm(`Are you sure you want to delete this comment period?`)) {
       this.loading = true;
       this.commentPeriodService.delete(this.commentPeriod)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          () => { },
-          () => {
+        .pipe(takeUntil(this.ngUnsubscribe))
+        .subscribe({
+          error: () => {
             alert('Uh-oh, couldn\'t delete comment period');
+            this.loading = false;
           },
-          () => { // onCompleted
+          complete: () => {
             // delete succeeded --> navigate back to search
             // Clear out the document state that was stored previously.
             this.loading = false;
             this.openSnackBar('This comment period has been deleted', 'Close');
             this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
           }
-        );
+        });
     }
   }
 
@@ -133,7 +134,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
     this.openSnackBar('Download Initiated', 'Close');
     this.api.exportComments(this.commentPeriod._id, this.projectName, 'staff');
   }
-  public   exportCommentsForProponents() {
+  public exportCommentsForProponents() {
     // Export comments with fields relevant to proponents to CSV
     this.openSnackBar('Download Initiated', 'Close');
     this.api.exportComments(this.commentPeriod._id, this.projectName, 'proponent');

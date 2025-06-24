@@ -13,12 +13,12 @@ export class DocumentService {
   constructor(private api: ApiService) { }
 
   // get a specific document by its id
-  getByMultiId(ids: Array<String>): Observable<Array<Document>> {
+  getByMultiId(ids: Array<string>): Observable<Array<Document>> {
     return this.api.getDocumentsByMultiId(ids)
       .map(res => {
         if (res && res.length > 0) {
           // return the first (only) document
-          let docs = [];
+          const docs = [];
           res.forEach(doc => {
             docs.push(new Document(doc));
           });
@@ -42,7 +42,7 @@ export class DocumentService {
       .catch(error => this.api.handleError(error));
   }
 
-  add(formData: FormData, publish: boolean = false): Observable<Document> {
+  add(formData: FormData, publish = false): Observable<Document> {
     return this.api.uploadDocument(formData, publish)
       .catch(error => this.api.handleError(error));
   }

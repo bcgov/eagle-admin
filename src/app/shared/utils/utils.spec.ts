@@ -8,37 +8,36 @@ import { waitForAsync } from '@angular/core/testing';
 
 describe('Utils', () => {
   let utilsComponent: Utils;
-  let filenameWithSpaces = 'Ajax Mine - Information Bulletin.pdf';
-  let filenameWithSlashes = 'Ajax Lead/Silver/Zinc Mine';
-  let filenameWithParens = 'Ajax (Mine)';
-  let filennameWithMixed = 'Ajax (Mine) Lead/Silver {Tag}';
-  beforeEach(waitForAsync(() => { }));
+  const filenameWithSpaces = 'Ajax Mine - Information Bulletin.pdf';
+  const filenameWithSlashes = 'Ajax Lead/Silver/Zinc Mine';
+  const filenameWithParens = 'Ajax (Mine)';
+  const filennameWithMixed = 'Ajax (Mine) Lead/Silver {Tag}';
 
-  beforeEach(() => {
+  beforeEach(waitForAsync(() => {
     utilsComponent = new Utils();
-  });
+  }));
 
   it('TEST1: spaces in document links', () => {
-    let encodedFilename = utilsComponent.encodeString(filenameWithSpaces, true);
-    let expectedFilename = 'Ajax%20Mine%20-%20Information%20Bulletin.pdf';
+    const encodedFilename = utilsComponent.encodeString(filenameWithSpaces, true);
+    const expectedFilename = 'Ajax%20Mine%20-%20Information%20Bulletin.pdf';
     expect(encodedFilename).toBe(expectedFilename);
   });
 
   it('TEST2: slashes in document links', () => {
-    let encodedFilename = utilsComponent.encodeString(filenameWithSlashes, true);
-    let expectedFilename = 'Ajax%20Lead_Silver_Zinc%20Mine';
+    const encodedFilename = utilsComponent.encodeString(filenameWithSlashes, true);
+    const expectedFilename = 'Ajax%20Lead_Silver_Zinc%20Mine';
     expect(encodedFilename).toBe(expectedFilename);
   });
 
   it('TEST3: parens in document links', () => {
-    let encodedFilename = utilsComponent.encodeString(filenameWithParens, true);
-    let expectedFilename = 'Ajax%20%28Mine%29';
+    const encodedFilename = utilsComponent.encodeString(filenameWithParens, true);
+    const expectedFilename = 'Ajax%20%28Mine%29';
     expect(encodedFilename).toBe(expectedFilename);
   });
 
   it('TEST4: multiple replacements in document links', () => {
-    let encodedFilename = utilsComponent.encodeString(filennameWithMixed, true);
-    let expectedFilename = 'Ajax%20%28Mine%29%20Lead_Silver%20%7BTag%7D';
+    const encodedFilename = utilsComponent.encodeString(filennameWithMixed, true);
+    const expectedFilename = 'Ajax%20%28Mine%29%20Lead_Silver%20%7BTag%7D';
     expect(encodedFilename).toBe(expectedFilename);
   });
 });

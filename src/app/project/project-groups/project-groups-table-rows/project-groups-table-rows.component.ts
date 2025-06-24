@@ -19,9 +19,6 @@ export class GroupsTableRowsComponent implements OnInit, TableComponent {
   public columns: any;
   public useSmallTable: boolean;
 
-  constructor(
-  ) { }
-
   ngOnInit() {
     this.items = this.data.data;
     this.paginationData = this.data.paginationData;

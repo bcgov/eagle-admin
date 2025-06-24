@@ -184,7 +184,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   multiEditGetUpdatedValue(formValue: string | NgbDate, docValue, isDate = false) {
     if (formValue !== null) {
       if (isDate) {
-        return new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(formValue))).toISOString();
+        return moment(this.utils.convertFormGroupNGBDateToJSDate(formValue)).toDate().toISOString();
       } else {
         return formValue;
       }
@@ -193,7 +193,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  applyChangesIfAny(formData: FormData, fieldName: string, formValue: string | NgbDate, docValue, isDate: boolean = false): void {
+  applyChangesIfAny(formData: FormData, fieldName: string, formValue: string | NgbDate, docValue, isDate = false): void {
     const value = this.multiEditGetUpdatedValue(formValue, docValue, isDate);
     if (value) {
       formData.append(fieldName, value);
@@ -206,9 +206,9 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     // Save all the elements to all the documents.
     console.log('this.myForm:', this.myForm);
     // go through and upload one at a time.
-    let observables = [];
+    const observables = [];
 
-    let theLabels = this.labels.filter(label => {
+    const theLabels = this.labels.filter(label => {
       return label.selected === true;
     });
 
@@ -223,7 +223,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         if (this.myForm.value.displayName) {formData.append('displayName', this.myForm.value.displayName); }
 
         formData.append('milestone', this.myForm.value.labelsel);
-        formData.append('datePosted', new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value))).toISOString());
+        formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toDate().toISOString());
         formData.append('type', this.myForm.value.doctypesel);
         formData.append('documentAuthorType', this.myForm.value.authorsel);
         formData.append('projectPhase', this.myForm.value.projectphasesel);
@@ -286,7 +286,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
 
   public togglePublish() {
     this.isPublished = !this.isPublished;
-    let observables = [];
+    const observables = [];
     this.documents.map(doc => {
       if (this.isPublished) {
         observables.push(this.documentService.publish(doc._id));

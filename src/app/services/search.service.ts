@@ -3,7 +3,6 @@ import { Observable } from 'rxjs';
 import { of } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
-import * as _ from 'lodash';
 
 import { ApiService } from './api';
 import { SearchResults } from '../models/search';
@@ -26,7 +25,7 @@ export class SearchService {
     }
     const searchResults = this.api.getItem(_id, schema)
       .map(res => {
-        let allResults = <any>[];
+        const allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
           allResults.push(r);
@@ -46,13 +45,13 @@ export class SearchService {
     return searchResults;
   }
 
-  getSearchResults(keys: string, dataset: string, fields: any[], pageNum: number = 1, pageSize: number = 10, sortBy: string = null, queryModifier: object = {}, populate: boolean = false, filter: object = {}, projectLegislation: string = ''): Observable<SearchResults[]> {
+  getSearchResults(keys: string, dataset: string, fields: any[], pageNum = 1, pageSize = 10, sortBy: string = null, queryModifier: object = {}, populate = false, filter: object = {}, projectLegislation = ''): Observable<SearchResults[]> {
     if (sortBy === '') {
       sortBy = null;
     }
     const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter)
       .map(res => {
-        let allResults = <any>[];
+        const allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
           allResults.push(r);
