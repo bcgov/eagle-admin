@@ -80,7 +80,7 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.recentActivities && this.recentActivities.length > 0) {
       this.recentActivities.forEach(document => {
         list.push(

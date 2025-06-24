@@ -1,8 +1,8 @@
 export class CommentPeriodSummary {
-  Pending: Number;
-  Deferred: Number;
-  Published: Number;
-  Rejected: Number;
+  Pending: number;
+  Deferred: number;
+  Published: number;
+  Rejected: number;
 
   constructor(obj?: any) {
     this.Pending = obj && obj.Pending || null;

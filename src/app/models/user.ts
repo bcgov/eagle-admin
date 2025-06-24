@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 export class User {
   _id: string;
   firstName: string;

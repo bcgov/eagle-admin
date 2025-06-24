@@ -1,28 +1,25 @@
-
-
 import { Utils } from './utils';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 describe('sdfasdfas', () => {
-  let myInstance = new Utils();
-  let inputJSDate = new Date(2010, 6, 14);
-  let inputJSDate2 = new Date(2019, 11, 31);
-  let inputJSDate3 = new Date(2020, 0, 1);
-  let inputJSDate4 = new Date(2016, 6, 27, 13, 30, 0);
-  let NGBdate: NgbDateStruct = { year: 2010, month: 7, day: 14 };
-  let NGBdate2: NgbDateStruct = { year: 2019, month: 12, day: 31 };
-  let NGBdate3: NgbDateStruct = { year: 2020, month: 1, day: 1 };
-  let NGBdate4: NgbDateStruct = { year: 2016, month: 7, day: 27 };
-  let calculated1, calculated2, calculated3, calculated4, calculated5, calculated6, calculated7;
-      calculated1 = myInstance.convertJSDateToNGBDate(inputJSDate);
-      calculated2 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate);
-      calculated3 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate2);
-      calculated4 = myInstance.convertJSDateToNGBDate(inputJSDate2);
-      calculated5 = myInstance.convertJSDateToNGBDate(inputJSDate3);
-      calculated6 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate3);
-      calculated7 = myInstance.convertJSDateToNGBDate(inputJSDate4);
-       console.log('calculated  NGBdate is :', calculated7 );
-       console.log('Expected JSdate is : ', inputJSDate4);
+  const myInstance = new Utils();
+  const inputJSDate = new Date(2010, 6, 14);
+  const inputJSDate2 = new Date(2019, 11, 31);
+  const inputJSDate3 = new Date(2020, 0, 1);
+  const inputJSDate4 = new Date(2016, 6, 27, 13, 30, 0);
+  const NGBdate: NgbDateStruct = { year: 2010, month: 7, day: 14 };
+  const NGBdate2: NgbDateStruct = { year: 2019, month: 12, day: 31 };
+  const NGBdate3: NgbDateStruct = { year: 2020, month: 1, day: 1 };
+  const NGBdate4: NgbDateStruct = { year: 2016, month: 7, day: 27 };
+  const calculated1 = myInstance.convertJSDateToNGBDate(inputJSDate);
+  const calculated2 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate);
+  const calculated3 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate2);
+  const calculated4 = myInstance.convertJSDateToNGBDate(inputJSDate2);
+  const calculated5 = myInstance.convertJSDateToNGBDate(inputJSDate3);
+  const calculated6 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate3);
+  const calculated7 = myInstance.convertJSDateToNGBDate(inputJSDate4);
+  console.log('calculated  NGBdate is :', calculated7 );
+  console.log('Expected JSdate is : ', inputJSDate4);
 
   it('Test 1: should create a NGB date 2010 july 14', () => {
     // console.debug('calculated NGBDate is:' , calculated1);

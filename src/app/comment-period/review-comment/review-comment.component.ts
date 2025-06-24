@@ -127,7 +127,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
     }
     this.comment.proponentNotes = this.commentReviewForm.get('proponentResponseText').value;
 
-    let previousCommentId = this.comment.commentId;
+    const previousCommentId = this.comment.commentId;
     this.commentService.save(this.comment)
       .takeUntil(this.ngUnsubscribe)
       .subscribe(
@@ -216,7 +216,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
     });
   }
 
-  public toggleDocumentPublish(document: any, action: String) {
+  public toggleDocumentPublish(document: any, action: string) {
     if (action === 'Published' && !this.commentReviewForm.get('isRejected').value) {
       document.eaoStatus = 'Published';
     } else if (action === 'Rejected' && !this.commentReviewForm.get('isRejected').value) {

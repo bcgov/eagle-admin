@@ -36,13 +36,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public bannerColour: string;
   public showBanner = false;
   public isNavMenuOpen = false;
-  public welcomeMsg: String;
+  public welcomeMsg: string;
   public jwt: {
-    username: String,
+    username: string,
     realm_access: {
-      roles: Array<String>
+      roles: Array<string>
     }
-    scopes: Array<String>
+    scopes: Array<string>
   };
   private dayCalculatorModal: NgbModalRef = null;
   public showDayCalculatorModal = false;
@@ -76,7 +76,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.router.navigate(['/not-authorized']);
     }
 
-    let isIEOrEdge = /msie\s|trident\/|edge\//i.test(window.navigator.userAgent);
+    const isIEOrEdge = /msie\s|trident\/|edge\//i.test(window.navigator.userAgent);
     if (isIEOrEdge) {
       const modalRef = this.modalService.open(ConfirmComponent);
       modalRef.componentInstance.title = 'Browser Incompatible';
@@ -114,7 +114,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return;
   }
 
-  renderMenu(route: String) {
+  renderMenu(route: string) {
     // Sysadmin's get administration.
     if (route === 'administration') {
       return (this.jwt && this.jwt.realm_access && this.jwt.realm_access.roles.find(x => x === 'sysadmin') && this.jwt.username === 'admin');

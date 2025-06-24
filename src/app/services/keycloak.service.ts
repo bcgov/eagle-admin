@@ -4,7 +4,7 @@ import 'rxjs/add/observable/of';
 import { ConfigService } from './config.service';
 import { JwtUtil } from '../jwt-util';
 
-declare var Keycloak: any;
+declare let Keycloak: any;
 
 @Injectable()
 export class KeycloakService {
@@ -179,7 +179,7 @@ export class KeycloakService {
           observer.error();
         });
 
-      return { unsubscribe() { } };
+      return { unsubscribe() { console.log('Unsubscribed from refresh token'); } };
     });
   }
 

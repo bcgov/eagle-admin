@@ -37,7 +37,7 @@ export class ProjectService {
   }
 
   // get all projects
-  getAll(pageNum: number = 1, pageSize: number = 20, sortBy: string = null): Observable<Object> {
+  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<Object> {
     return this.api.getProjects(pageNum, pageSize, sortBy)
       .map((res: any) => {
         if (res) {
@@ -69,7 +69,7 @@ export class ProjectService {
       })
       .pipe(
         flatMap(res => {
-          let project = res;
+          const project = res;
           if (!project) {
             return of(null as Project);
           }
@@ -116,8 +116,8 @@ export class ProjectService {
     if (!fullProject) {
       return of(data);
     }
-    const projectKeys: Number[] = fullProject.legislationYearList;
-    let peopleObjs: Observable<any>[] = [];
+    const projectKeys: number[] = fullProject.legislationYearList;
+    const peopleObjs: Observable<any>[] = [];
     projectKeys.forEach(key => {
       const project = fullProject[`legislation_${key.toString()}`];
       if (!project || Object.keys(project).length === 0 || !project.name) {

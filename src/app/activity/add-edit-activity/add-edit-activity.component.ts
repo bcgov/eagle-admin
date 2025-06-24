@@ -41,10 +41,10 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     browser_spellcheck: true,
     height: 240,
     plugins: ['lists, advlist, link'],
-    toolbar: [ 'undo redo | formatselect | ' +
-    ' bold italic backcolor | alignleft aligncenter ' +
-    ' alignright alignjustify | bullist numlist outdent indent |' +
-    ' removeformat | help' ]
+    toolbar: ['undo redo | formatselect | ' +
+      ' bold italic backcolor | alignleft aligncenter ' +
+      ' alignright alignjustify | bullist numlist outdent indent |' +
+      ' removeformat | help']
   };
 
   constructor(
@@ -59,10 +59,10 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     private _changeDetectorRef: ChangeDetectorRef
   ) { }
 
-    ngOnInit() {
-      this.subscriptions.add(
-        this.route.data.subscribe(res => {
-          if (Object.keys(res).length === 0 && res.constructor === Object) {
+  ngOnInit() {
+    this.subscriptions.add(
+      this.route.data.subscribe(res => {
+        if (Object.keys(res).length === 0 && res.constructor === Object) {
           this.isPublished = false;
           this.buildForm({
             'headline': '',
@@ -87,38 +87,38 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
           this.updateProject();
           this.updateType();
         }
-        })
-      );
+      })
+    );
 
-      this.subscriptions.add(
-        this.projectService.getAll(1, 1000, '+name').subscribe((res2: any) => {
-            if (res2) {
-              this.projects = res2.data;
-              // TODO: Later
-              // Types
-              // this.types = this.configService.lists.filter(item => {
-              //   return item.type === 'headlineType';
-              // });
-            }
+    this.subscriptions.add(
+      this.projectService.getAll(1, 1000, '+name').subscribe((res2: any) => {
+        if (res2) {
+          this.projects = res2.data;
+          // TODO: Later
+          // Types
+          // this.types = this.configService.lists.filter(item => {
+          //   return item.type === 'headlineType';
+          // });
+        }
 
-            // if the pcp selector is populated, try to set the saved value.
-            if (this.typeIsPCP) {
-              this.myForm.controls['pcp'].setValue(this.activity.pcp);
-            }
+        // if the pcp selector is populated, try to set the saved value.
+        if (this.typeIsPCP) {
+          this.myForm.controls['pcp'].setValue(this.activity.pcp);
+        }
 
-            this.loading = false;
-            this._changeDetectorRef.detectChanges();
-        })
-      );
+        this.loading = false;
+        this._changeDetectorRef.detectChanges();
+      })
+    );
 
-      this.subscriptions.add(
-        this.notificationProjectService.getAll(1, 1000, '+name').subscribe((res3: any) => {
-            if (res3) {
-              this.projectNotifications = res3.data;
-            }
-        })
-      );
-    }
+    this.subscriptions.add(
+      this.notificationProjectService.getAll(1, 1000, '+name').subscribe((res3: any) => {
+        if (res3) {
+          this.projectNotifications = res3.data;
+        }
+      })
+    );
+  }
 
   onCancel() {
     this.router.navigate(['/activity']);
@@ -126,7 +126,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.isEditing) {
-      let activity = new RecentActivity({
+      const activity = new RecentActivity({
         _id: this.activity._id,
         headline: this.myForm.controls.headline.value,
         content: this.myForm.controls.content.value,
@@ -147,11 +147,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
 
       this.recentActivityService.save(activity)
         .subscribe(() => {
-          this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout});
+          this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout });
           window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });
     } else {
-      let activity = new RecentActivity({
+      const activity = new RecentActivity({
         headline: this.myForm.controls.headline.value,
         content: this.myForm.controls.content.value,
         dateAdded: new Date(),
@@ -168,7 +168,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
 
       this.recentActivityService.add(activity)
         .subscribe(() => {
-          this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout});
+          this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout });
           window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
         });
     }
@@ -212,7 +212,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   public updateProject() {
-    let currentProjectId = this.myForm.get('project').value;
+    const currentProjectId = this.myForm.get('project').value;
     if (currentProjectId === undefined) {
       this.projectIsSelected = false;
     } else {
@@ -246,9 +246,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
           this._changeDetectorRef.detectChanges();
         }
       });
-  }
-
-  register() {
   }
 
   buildForm(data) {

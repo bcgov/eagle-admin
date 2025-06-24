@@ -12,7 +12,7 @@ export class LinkOrganizationResolver implements Resolve<Observable<object>> {
   ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
-    let tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, null, 10);
+    const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, null, 10);
     if (tableParams.sortBy === '') {
       tableParams.sortBy = '+name';
       this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, null, tableParams.keywords);

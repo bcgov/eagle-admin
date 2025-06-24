@@ -85,7 +85,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {

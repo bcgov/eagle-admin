@@ -9,8 +9,6 @@ import * as XLSX from 'xlsx';
 @Injectable()
 export class ExcelService {
 
-  constructor() { }
-
   // data: array of objects (flattened)
   // excelFileName: filename without extension
   // columnOrder: array of keys

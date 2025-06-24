@@ -59,7 +59,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
   togglePublish() {
     if (this.publishText === 'Publish') {
       this.documentService.publish(this.document._id).subscribe(
-        () => { },
+        null,
         error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t update document');
@@ -71,7 +71,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
       this.publishText = 'Unpublish';
     } else {
       this.documentService.unPublish(this.document._id).subscribe(
-        () => { },
+        null,
         error => {
           console.log('error =', error);
           alert('Uh-oh, couldn\'t update document');

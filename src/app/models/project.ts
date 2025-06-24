@@ -8,76 +8,76 @@ export class Project {
   // this field is still used for saving the project
   _id: string;
   CEAAInvolvement: any;
-  CELead: String;
-  CELeadEmail: String;
-  CELeadPhone: String;
+  CELead: string;
+  CELeadEmail: string;
+  CELeadPhone: string;
   centroid: any[] = [];
-  description: String;
+  description: string;
   eacDecision: any;
-  location: String;
+  location: string;
   legislation: string;
   legislationYear: number;
-  name: String;
+  name: string;
   projectLeadObj: any;
-  projectLeadId: String;
-  projectLead: String;
-  projectLeadEmail: String;
-  projectLeadPhone: String;
+  projectLeadId: string;
+  projectLead: string;
+  projectLeadEmail: string;
+  projectLeadPhone: string;
   proponent: any;
-  region: String;
+  region: string;
   responsibleEPDObj: any;
-  responsibleEPDId: String;
-  responsibleEPD: String;
-  responsibleEPDEmail: String;
-  responsibleEPDPhone: String;
-  type: String;
+  responsibleEPDId: string;
+  responsibleEPD: string;
+  responsibleEPDEmail: string;
+  responsibleEPDPhone: string;
+  type: string;
 
   // Everything else
-  addedBy: String;
-  build: String;
-  nature: String;
-  CEAALink: String;
-  code: String;
-  commodity: String;
+  addedBy: string;
+  build: string;
+  nature: string;
+  CEAALink: string;
+  code: string;
+  commodity: string;
   commentPeriods: CommentPeriod[];
   currentPhaseName: any;
   phaseHistory: any[];
-  dateAdded: String;
-  dateUpdated: String;
-  decisionDate: String;
-  duration: String;
+  dateAdded: string;
+  dateUpdated: string;
+  decisionDate: string;
+  duration: string;
   // TODO: directoryStructure
-  eaoMember: String;
-  epicProjectID: Number;
-  fedElecDist: String;
+  eaoMember: string;
+  epicProjectID: number;
+  fedElecDist: string;
   hasMetCommentPeriods: boolean;
   // TODO: intake
   intake: {
     investment: any;
     investmentNotes: any;
   };
-  isTermsAgreed: Boolean;
-  overallProgress: Number;
-  primaryContact: String;
-  proMember: String;
-  provElecDist: String;
-  sector: String;
-  shortName: String;
-  status: String;
-  substitution: Boolean;
-  updatedBy: String;
+  isTermsAgreed: boolean;
+  overallProgress: number;
+  primaryContact: string;
+  proMember: string;
+  provElecDist: string;
+  sector: string;
+  shortName: string;
+  status: string;
+  substitution: boolean;
+  updatedBy: string;
 
   eaDecision: any;
   operational: any;
   // TODO: New Stuff?
   eaStatus: any;
-  eaStatusDate: String;
-  projectStatusDate: String;
-  substantiallyDate: String;
+  eaStatusDate: string;
+  projectStatusDate: string;
+  substantiallyDate: string;
   substantially: any;
   dispute: any;
-  disputeDate: String;
-  activeDate: String;
+  disputeDate: string;
+  activeDate: string;
   activeStatus: any;
 
   // Project contacts
@@ -92,9 +92,9 @@ export class Project {
   reviewExtensions: any;
 
   // Permissions
-  read: Array<String> = [];
-  write: Array<String> = [];
-  delete: Array<String> = [];
+  read: Array<string> = [];
+  write: Array<string> = [];
+  delete: Array<string> = [];
 
   pins: any[] = [];
 
@@ -216,7 +216,7 @@ export class Project {
     if (obj && obj.currentPeriods) {
       this.commentPeriods.push(obj.currentPeriods);
 
-      let now = moment('YYYY-MM-DD');
+      const now = moment('YYYY-MM-DD');
 
       this.commentPeriods.forEach(period => {
         // TODO: Update comment period model. Should actually be period.dateEnded or something.

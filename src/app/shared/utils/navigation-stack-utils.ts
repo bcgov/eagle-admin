@@ -14,7 +14,7 @@ export class NavigationStackUtils {
     }
 
     public getLastBackUrl() {
-        let stack = this.getNavigationStack();
+        const stack = this.getNavigationStack();
         if (stack) {
             return stack[stack.length - 1].backUrl;
         } else {
@@ -23,7 +23,7 @@ export class NavigationStackUtils {
     }
 
     public getLastNavigationObject() {
-        let stack = this.getNavigationStack();
+        const stack = this.getNavigationStack();
         if (stack) {
             return stack[stack.length - 1];
         } else {
@@ -52,13 +52,13 @@ export class NavigationStackUtils {
         }
     ]
     */
-    public pushNavigationStack(backUrl: Array<String>, breadcrumbs: Array<Object>, componentId: String = null) {
-        let navigationObject = {
+    public pushNavigationStack(backUrl: Array<string>, breadcrumbs: Array<Object>, componentId: string = null) {
+        const navigationObject = {
             backUrl: backUrl,
             breadcrumbs: breadcrumbs,
             componentId: componentId
         };
-        let stack = this.getNavigationStack();
+        const stack = this.getNavigationStack();
         if (stack) {
             stack.push(navigationObject);
             this.storageService.state.navigationStack = stack;
@@ -68,7 +68,7 @@ export class NavigationStackUtils {
     }
 
     public popNavigationStack() {
-        let stack = this.getNavigationStack();
+        const stack = this.getNavigationStack();
         if (stack) {
             let stackObject = stack.pop();
             if (stack.length === 0) {
@@ -85,7 +85,7 @@ export class NavigationStackUtils {
     }
 
     public navigateBreadcrumb(breadcrumb, router) {
-        let stack = this.getNavigationStack();
+        const stack = this.getNavigationStack();
         let poppedItem = null;
         let isPopping = true;
         if (stack) {

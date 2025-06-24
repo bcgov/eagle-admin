@@ -14,8 +14,8 @@ export class FullProjectResolver implements Resolve<Object> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
     const projId = route.pathFromRoot[1].paramMap.get('projId');
-    let start = new Date();
-    let end = new Date();
+    const start = new Date();
+    const end = new Date();
     start.setDate(start.getDate() - 7);
     end.setDate(end.getDate() + 7);
     return this.searchService.getSearchResults(

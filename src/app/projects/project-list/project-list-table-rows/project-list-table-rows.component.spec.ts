@@ -55,7 +55,7 @@ describe('ProjectListTableRowsComponent', () => {
     }
   ];
 
-  let projectList = [];
+  const projectList = [];
 
   projectList.push({
     _id: AjaxDefaultData._id,
@@ -94,12 +94,12 @@ describe('ProjectListTableRowsComponent', () => {
   });
 
   it('table displays project text values', () => {
-    let name = fixture.nativeElement.querySelector('[data-label=Name]');
-    let proponent = fixture.nativeElement.querySelector('[data-label=Proponent]');
-    let projType = fixture.nativeElement.querySelector('[data-label=Type]');
-    let region = fixture.nativeElement.querySelector('[data-label=Region]');
-    let phase = fixture.nativeElement.querySelector('[data-label=Phase]');
-    let decision = fixture.nativeElement.querySelector('[data-label=Decision]');
+    const name = fixture.nativeElement.querySelector('[data-label=Name]');
+    const proponent = fixture.nativeElement.querySelector('[data-label=Proponent]');
+    const projType = fixture.nativeElement.querySelector('[data-label=Type]');
+    const region = fixture.nativeElement.querySelector('[data-label=Region]');
+    const phase = fixture.nativeElement.querySelector('[data-label=Phase]');
+    const decision = fixture.nativeElement.querySelector('[data-label=Decision]');
     expect(name.innerHTML).toBe('Ajax Mine');
     expect(proponent.innerHTML).toBe('KGHM Ajax Mining Incorporated');
     expect(projType.innerHTML).toBe('Mines');
@@ -109,7 +109,7 @@ describe('ProjectListTableRowsComponent', () => {
   });
 
   it('click on project navigates to project page', () => {
-    let row = fixture.nativeElement.querySelector('[data-label=Name]');
+    const row = fixture.nativeElement.querySelector('[data-label=Name]');
     row.click();
 
     const id = component.projects[0]._id;

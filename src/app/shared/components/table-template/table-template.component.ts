@@ -69,11 +69,11 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   loadComponent() {
-    let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.data.component);
-    let viewContainerRef = this.tableHost.viewContainerRef;
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.data.component);
+    const viewContainerRef = this.tableHost.viewContainerRef;
     viewContainerRef.clear();
 
-    let componentRef = viewContainerRef.createComponent(componentFactory);
+    const componentRef = viewContainerRef.createComponent(componentFactory);
     (<TableComponent>componentRef.instance).data = this.data;
     (<TableComponent>componentRef.instance).columnData = this.columns;
     (<TableComponent>componentRef.instance).smallTable = this.mobileQuery.matches;
@@ -128,7 +128,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   public selectAllInit() {
     if (this.data.data) {
-      let itemCount = this.data.data.length;
+      const itemCount = this.data.data.length;
       let selectedCount = 0;
 
       this.data.data.forEach(item => {

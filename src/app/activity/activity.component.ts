@@ -107,7 +107,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
         return this.route.params;
       })
       .switchMap((res: any) => {
-        let params = { ...res };
+        const params = { ...res };
 
         this.setFiltersFromParams(params);
 
@@ -149,7 +149,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.forEach(item => {
         list.push(
@@ -272,7 +272,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {

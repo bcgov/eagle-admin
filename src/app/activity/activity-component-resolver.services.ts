@@ -34,7 +34,7 @@ export class ActivityComponentResolver implements Resolve<Observable<object>> {
 
           this.setFiltersFromParams(route.params);
 
-          let tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
+          const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
           if (tableParams.sortBy === '') {
             tableParams.sortBy = '-dateAdded';
             this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
@@ -79,7 +79,7 @@ export class ActivityComponentResolver implements Resolve<Observable<object>> {
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {

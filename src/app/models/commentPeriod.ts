@@ -2,59 +2,59 @@ import * as moment from 'moment';
 
 export class CommentPeriod {
   _id: string;
-  _schemaName: String;
-  addedBy: String;
-  additionalText: String;
-  ceaaAdditionalText: String;
-  ceaaInformationLabel: String;
-  ceaaRelatedDocuments: String;
-  classificationRoles: String;
-  classifiedPercent: Number;
-  commenterRoles: String;
-  commentTip: String;
+  _schemaName: string;
+  addedBy: string;
+  additionalText: string;
+  ceaaAdditionalText: string;
+  ceaaInformationLabel: string;
+  ceaaRelatedDocuments: string;
+  classificationRoles: string;
+  classifiedPercent: number;
+  commenterRoles: string;
+  commentTip: string;
   dateAdded: Date;
   dateCompleted: Date;
   dateCompletedEst: Date;
   dateStarted: Date;
   dateStartedEst: Date;
   dateUpdated: Date;
-  downloadRoles: String;
-  informationLabel: String;
-  instructions: String;
-  isClassified: Boolean;
+  downloadRoles: string;
+  informationLabel: string;
+  instructions: string;
+  isClassified: boolean;
   isMet: boolean;
-  isPublished: Boolean;
-  isResolved: Boolean;
-  isVetted: String;
+  isPublished: boolean;
+  isResolved: boolean;
+  isVetted: string;
   metURLAdmin: string;
-  milestone: String;
-  openCommentPeriod: String;
+  milestone: string;
+  openCommentPeriod: string;
   openHouses: Array<Object>;
-  periodType: String;
-  phase: String;
-  phaseName: String;
-  project: String;
-  publishedPercent: Number;
-  rangeOption: String;
-  rangeType: String;
-  relatedDocuments: Array<String>;
-  resolvedPercent: Number;
-  updatedBy: String;
-  userCan: String;
-  vettedPercent: Number;
-  vettingRoles: String;
+  periodType: string;
+  phase: string;
+  phaseName: string;
+  project: string;
+  publishedPercent: number;
+  rangeOption: string;
+  rangeType: string;
+  relatedDocuments: Array<string>;
+  resolvedPercent: number;
+  updatedBy: string;
+  userCan: string;
+  vettedPercent: number;
+  vettingRoles: string;
 
   // Attached
   summary: any;
 
   // Permissions
-  read: Array<String> = [];
-  write: Array<String> = [];
-  delete: Array<String> = [];
+  read: Array<string> = [];
+  write: Array<string> = [];
+  delete: Array<string> = [];
 
   // Not from API
-  commentPeriodStatus: String;
-  daysRemaining: String;
+  commentPeriodStatus: string;
+  daysRemaining: string;
   currentPage: number;
   pageSize: number;
   totalComments: number;
@@ -132,7 +132,7 @@ export class CommentPeriod {
 
       if (moment(now).isBetween(dateStarted, dateCompleted)) {
         this.commentPeriodStatus = 'Open';
-        let days = dateCompleted.diff(moment(now), 'days');
+        const days = dateCompleted.diff(moment(now), 'days');
         this.daysRemaining = days + (days === 1 ? ' Day ' : ' Days ') + 'Remaining';
       } else if (moment(now).isAfter(dateCompleted)) {
         this.commentPeriodStatus = 'Closed';

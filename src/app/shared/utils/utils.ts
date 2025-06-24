@@ -13,14 +13,13 @@ window['encodeURIComponent'] = (component: string) => {
 
 @Injectable()
 export class Utils {
-  constructor() { }
 
   public formatDate(date) {
     if (date) {
-      let d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
+      const d = new Date(date);
+      let month = '' + (d.getMonth() + 1);
+      let day = '' + d.getDate();
+      const year = d.getFullYear();
 
       if (month.length < 2) { month = '0' + month; }
       if (day.length < 2) { day = '0' + day; }
@@ -87,13 +86,13 @@ export class Utils {
   }
 
   public getFormattedTime(date) {
-    let y = date.getFullYear();
+    const y = date.getFullYear();
     // JavaScript months are 0-based.
-    let m = date.getMonth() + 1;
-    let d = date.getDate();
-    let h = date.getHours();
-    let mi = date.getMinutes();
-    let s = date.getSeconds();
+    const m = date.getMonth() + 1;
+    const d = date.getDate();
+    const h = date.getHours();
+    const mi = date.getMinutes();
+    const s = date.getSeconds();
     return y + '-' + m + '-' + d + '-' + h + '-' + mi + '-' + s;
   }
   // This function will take in a ISearchResults of some type and return an array of that same type
@@ -108,7 +107,7 @@ export class Utils {
     if (!object) {
       return true;
     }
-    for (let i in object) {
+    for (const i in object) {
       if (object.hasOwnProperty(i)) { return false; }
     }
     return true;
@@ -124,17 +123,13 @@ export class Utils {
   }
 
   public createProjectTabModifiers(list: Array<any>) {
-    let types: Array<object>;
-    let milestones: Array<object>;
-    let phases: string;
-
-    types = [
+    const types: Array<object> = [
       { legislation: 2002, name: 'Application Materials' },
       { legislation: 2018, name: 'Application Materials' },
       { legislation: 2002, name: 'Scientific Memo' },
       { legislation: 2018, name: 'Independent Memo' }
     ];
-    milestones = [
+    const milestones: Array<object> = [
       { legislation: 2002, name: 'Application Review' },
       { legislation: 2018, name: 'Revised EAC Application' },
     ];
@@ -148,11 +143,10 @@ export class Utils {
     const amendmentPhaseIds = this.getIdsByName(applications, list).map(type => type.id);
 
     // Get all phase list items excluding the matched applications.
-    phases = list.filter(item => {
+    const phases = list.filter(item => {
       if (item.type === 'projectPhase' && !amendmentPhaseIds.includes(item._id)) {
         return true;
       }
-
       return false;
     })
       .map(item => item._id)

@@ -120,7 +120,7 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.documents && this.documents.length > 0) {
       this.documents.forEach((item: any) => {
         list.push(item);
@@ -134,7 +134,7 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   }
 
   onSave() {
-    let formData = new FormData();
+    const formData = new FormData();
     this.storageService.state.editedDocs.forEach((document: any) =>  {
       // document service put id and sort order
       formData.set('sortOrder', document.sortOrder);

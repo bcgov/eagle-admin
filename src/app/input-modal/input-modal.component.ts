@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -6,16 +6,13 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './input-modal.component.html',
   styleUrls: ['./input-modal.component.scss']
 })
-export class InputModalComponent implements OnInit {
+export class InputModalComponent {
 
   groupName = '';
 
   constructor(
     public activeModal: NgbActiveModal // also used in template
   ) { }
-
-  ngOnInit() {
-  }
 
   public cancel() {
     this.activeModal.close(null);

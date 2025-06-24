@@ -1,6 +1,4 @@
 import { Params } from '@angular/router';
-import * as _ from 'lodash';
-
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 export class SearchResults {
@@ -10,8 +8,8 @@ export class SearchResults {
 
   constructor(search?: any, hostname?: any) {
     this._schemaName = search && search._schemaName || 0;
-    this.data        = search && search.data        || 0;
-    this.hostname    = hostname || null;
+    this.data = search && search.data || 0;
+    this.hostname = hostname || null;
   }
 }
 
@@ -64,13 +62,13 @@ export class SearchTerms {
   sortDirection: number;
 
   constructor(obj?: any) {
-    this.keywords  = obj && obj.keywords  || null;
+    this.keywords = obj && obj.keywords || null;
     this.dateStart = obj && obj.dateStart || null;
-    this.dateEnd   = obj && obj.dateEnd   || null;
-    this.dataset   = obj && obj.dataset   || null;
-    this.currentPage   = obj && obj.currentPage   || null;
-    this.sortBy   = obj && obj.sortBy   || null;
-    this.sortDirection   = obj && obj.sortDirection   || null;
+    this.dateEnd = obj && obj.dateEnd || null;
+    this.dataset = obj && obj.dataset || null;
+    this.currentPage = obj && obj.currentPage || null;
+    this.sortBy = obj && obj.sortBy || null;
+    this.sortDirection = obj && obj.sortDirection || null;
   }
 
   getParams(): Params {

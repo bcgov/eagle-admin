@@ -64,7 +64,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
 
   publish() {
     this.loading = true;
-    let observables = [];
+    const observables = [];
 
     // Publish the documents
     this.documents.forEach(item => {
@@ -85,7 +85,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
 
   unPublish() {
     this.loading = true;
-    let observables = [];
+    const observables = [];
 
     // Un-publish the documents
     this.documents.forEach(item => {

@@ -68,7 +68,7 @@ This will build the project for production. The build artifacts will be stored i
 ```bash
 npm run lint
 ```
-This will lint your app code using TSLint and output any issues in a stylish format.
+This will lint your app code using ESLint and output any issues in a stylish format.
 
 ### Run Unit Tests
 

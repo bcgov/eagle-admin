@@ -15,7 +15,7 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   public commentPeriod: CommentPeriod;
-  public loading: Boolean = true;
+  public loading = true;
   public currentProject;
   public baseRouteUrl: string;
   public selectedTab = 0;

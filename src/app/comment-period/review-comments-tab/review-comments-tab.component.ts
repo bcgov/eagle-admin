@@ -122,7 +122,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
 
             // If there is a published comment, we are not allowed to delete the comment period.
             let canDelete = true;
-            for (let comment of this.comments) {
+            for (const comment of this.comments) {
               if (comment.eaoStatus === 'Published') {
                 canDelete = false;
                 break;
@@ -161,7 +161,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   }
 
   setCommentRowData() {
-    let commentList = [];
+    const commentList = [];
     this.comments.map(comment => {
       commentList.push(
         {

@@ -176,7 +176,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
     this.route.params
       .switchMap((res: any) => {
-        let params = { ...res };
+        const params = { ...res };
 
         this.setFiltersFromParams(params);
 
@@ -246,7 +246,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   public selectAction(action) {
-    let promises = [];
+    const promises = [];
 
     // select all documents
     switch (action) {
@@ -358,7 +358,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     modalRef.result.then((isConfirmed) => {
       if (isConfirmed) {
         this.loading = true;
-        let observables = [];
+        const observables = [];
 
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
@@ -368,18 +368,17 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        forkJoin(observables).subscribe(
-          () => { },
-          err => {
+        forkJoin(observables).subscribe({
+          error: err => {
             console.log('Error:', err);
           },
-          () => {
+          complete: () => {
             this.loading = false;
             this.canUnpublish = false;
             this.canPublish = false;
             this.onSubmit();
           }
-        );
+        });
       } else {
         this.loading = false;
       }
@@ -401,7 +400,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     modalRef.result.then((isConfirmed) => {
       if (isConfirmed) {
         this.loading = true;
-        let observables = [];
+        const observables = [];
 
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
@@ -411,18 +410,17 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           });
         }
 
-        forkJoin(observables).subscribe(
-          () => { },
-          err => {
+        forkJoin(observables).subscribe({
+          error: err => {
             console.log('Error:', err);
           },
-          () => {
+          complete: () => {
             this.loading = false;
             this.canUnpublish = false;
             this.canPublish = false;
             this.onSubmit();
           }
-        );
+        });
       } else {
         this.loading = false;
       }
@@ -609,7 +607,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     this.canPublish = false;
     this.canUnpublish = false;
 
-    for (let document of this.categorizedDocumentTableData.data) {
+    for (const document of this.categorizedDocumentTableData.data) {
       if (document.checkbox) {
         if (document.read.includes('public')) {
           this.canUnpublish = true;
@@ -630,7 +628,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
@@ -831,7 +829,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   private createRowCopy(item): void {
-    let selBox = document.createElement('textarea');
+    const selBox = document.createElement('textarea');
     selBox.style.position = 'fixed';
     selBox.style.left = '0';
     selBox.style.top = '0';

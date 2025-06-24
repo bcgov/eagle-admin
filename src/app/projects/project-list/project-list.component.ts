@@ -143,7 +143,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         return this.route.params;
       })
       .switchMap((res: any) => {
-        let params = { ...res };
+        const params = { ...res };
 
         this.setFiltersFromParams(params);
 
@@ -210,7 +210,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       this.filterForURL[name] = params[name];
 
       const values = params[name].split(',');
-      let apiValues = [];
+      const apiValues = [];
       values.forEach(value => {
         this.filterForUI[name][value] = true;
         apiValues.push(map && map[value] ? map[value] : value);
@@ -227,7 +227,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     delete this.filterForAPI[name];
 
     if (params[name] && collection) {
-      let confirmedValues = [];
+      const confirmedValues = [];
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
@@ -277,7 +277,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   checkboxFilterToParams(params, name) {
-    let keys = [];
+    const keys = [];
     Object.keys(this.filterForUI[name]).forEach(key => {
       if (this.filterForUI[name][key]) {
         keys.push(key);
@@ -414,7 +414,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let projectList = [];
+    const projectList = [];
     if (this.projects && this.projects.length > 0) {
       this.projects.forEach(project => {
         projectList.push({

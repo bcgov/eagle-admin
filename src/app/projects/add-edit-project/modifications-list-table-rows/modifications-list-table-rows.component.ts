@@ -19,8 +19,6 @@ export class ModificationsListTableRowsComponent implements OnInit, TableCompone
     public columns: any;
     public useSmallTable: boolean;
 
-    constructor() { }
-
     ngOnInit() {
         this.items = this.data.data;
         this.paginationData = this.data.paginationData;
@@ -29,6 +27,6 @@ export class ModificationsListTableRowsComponent implements OnInit, TableCompone
     }
 
     itemClicked(item) {
-      this.onItemClicked.emit(item);
+        this.onItemClicked.emit(item);
     }
 }

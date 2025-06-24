@@ -17,7 +17,7 @@ import { KeycloakService } from 'src/app/services/keycloak.service';
  */
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
-  private refreshTokenInProgress: Boolean = false;
+  private refreshTokenInProgress = false;
 
   private tokenRefreshedSource = new Subject();
   private tokenRefreshed$ = this.tokenRefreshedSource.asObservable();

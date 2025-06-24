@@ -102,7 +102,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.forEach((item: any) => {
         list.push(item);
@@ -140,7 +140,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
         break;
       case 'edit':
         this.navigationStackUtils.clearNavigationStack();
-        let selected = this.tableData.data.filter(item => item.checkbox === true);
+        const selected = this.tableData.data.filter(item => item.checkbox === true);
         this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', selected[0]._id, 'members']);
         break;
       case 'add':
@@ -156,25 +156,25 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   }
 
   async copyEmail() {
-    let itemsToExport = [];
+    const itemsToExport = [];
     this.tableData.data.map((item) => {
       if (item.checkbox === true) {
         itemsToExport.push(item);
       }
     });
-    let list = [];
+    const list = [];
     itemsToExport.map(group => {
       group.members.map(member => {
         list.push(member);
       });
     });
 
-    let filteredArray = list.reduce((unique, item) => {
+    const filteredArray = list.reduce((unique, item) => {
       return unique.includes(item) ? unique : [...unique, item];
     }, []);
 
     // Get all the user emails
-    let csvData = [];
+    const csvData = [];
     filteredArray.map((item) => {
       csvData.push(
         this.searchService.getItem(item, 'User').toPromise()
@@ -189,7 +189,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
           userData += p.data.email + ';';
         });
         console.log(userData);
-        let selBox = document.createElement('textarea');
+        const selBox = document.createElement('textarea');
         selBox.style.position = 'fixed';
         selBox.style.left = '0';
         selBox.style.top = '0';
@@ -205,25 +205,25 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   }
 
   async exportItems() {
-    let itemsToExport = [];
+    const itemsToExport = [];
     this.tableData.data.map((item) => {
       if (item.checkbox === true) {
         itemsToExport.push(item);
       }
     });
-    let list = [];
+    const list = [];
     itemsToExport.map(group => {
       group.members.map(member => {
         list.push(member);
       });
     });
 
-    let filteredArray = list.reduce((unique, item) => {
+    const filteredArray = list.reduce((unique, item) => {
       return unique.includes(item) ? unique : [...unique, item];
     }, []);
 
     // Get all the user emails
-    let csvData = [];
+    const csvData = [];
     filteredArray.map((item) => {
       csvData.push(
         this.searchService.getItem(item, 'User').toPromise()
@@ -232,7 +232,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     this.loading = false;
     return Promise.all(csvData)
       .then((data) => {
-        let userData = [];
+        const userData = [];
         data.map(p => {
           userData.push({
             name: p.data.firstName + ' ' + p.data.lastName,
@@ -281,7 +281,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
 
       if (isConfirmed) {
         this.loading = true;
-        let itemsToDelete = [];
+        const itemsToDelete = [];
         this.tableData.data.map((item) => {
           if (item.checkbox === true) {
             itemsToDelete.push({
@@ -324,9 +324,9 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
 
   // Called via storage service in shared module.
   add(contacts, component) {
-    let filteredPins = [];
+    const filteredPins = [];
     contacts.filter((thing) => {
-      let idx = component.entries.findIndex((t) => {
+      const idx = component.entries.findIndex((t) => {
         return (t._id === thing._id);
       });
       if (idx === -1) {

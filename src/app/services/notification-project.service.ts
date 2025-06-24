@@ -14,7 +14,7 @@ export class NotificationProjectService {
 
   // get all project notifications
 
-  getAll(pageNum: number = 1, pageSize: number = 20, sortBy: string = null): Observable<Object> {
+  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<Object> {
     return this.api.getProjectNotifications(pageNum, pageSize, sortBy)
       .map((res: any) => {
         if (res) {
@@ -34,7 +34,7 @@ export class NotificationProjectService {
       .catch(error => this.api.handleError(error));
   }
 
-  add(projectNotification: ProjectNotification, publish: boolean = false): Observable<ProjectNotification> {
+  add(projectNotification: ProjectNotification, publish = false): Observable<ProjectNotification> {
     return this.api.addProjectNotification(projectNotification, publish)
       .catch(error => this.api.handleError(error));
   }

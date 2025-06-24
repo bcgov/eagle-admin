@@ -152,7 +152,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
     }
   }
   setRowData() {
-    let list = [];
+    const list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.forEach(item => {
         list.push(item);
@@ -184,9 +184,9 @@ export class PinsListComponent implements OnInit, OnDestroy {
 
   // Called via storage service in shared module.
   add(contacts, component) {
-    let filteredPins = [];
+    const filteredPins = [];
     contacts.filter((thing) => {
-      let idx = component.entries.findIndex((t) => {
+      const idx = component.entries.findIndex((t) => {
         return (t._id === thing._id);
       });
       if (idx === -1) {

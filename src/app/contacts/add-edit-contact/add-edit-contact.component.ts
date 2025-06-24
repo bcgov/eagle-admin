@@ -111,7 +111,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       if (this.navigationObject) {
         // We're coming from a different component so we have to preserve our nav stack.
         console.log('nav object', this.navigationObject);
-        let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+        const nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
         nextBreadcrumbs.push(
           {
             route: ['/contacts', 'add'],
@@ -196,7 +196,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let user = new User({
+    const user = new User({
       firstName: this.contactForm.controls.firstName.value,
       middleName: this.contactForm.controls.middleName.value,
       lastName: this.contactForm.controls.lastName.value,
@@ -260,7 +260,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
 
   public onCancel() {
     this.clearStorageService();
-    let backUrl = this.navigationStackUtils.getLastBackUrl();
+    const backUrl = this.navigationStackUtils.getLastBackUrl();
     if (backUrl === null) {
       this.router.navigate(['/contacts']);
     } else {

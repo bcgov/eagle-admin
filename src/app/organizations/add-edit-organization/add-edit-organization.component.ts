@@ -122,7 +122,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   private setBreadCrumbs() {
     if (!this.isEditing) {
       if (this.navigationObject) {
-        let nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
+        const nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
         nextBreadcrumbs.push(
           {
             route: ['/orgs', 'add'],
@@ -193,7 +193,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let org = new Org({
+    const org = new Org({
       description: this.orgForm.controls.description.value,
       name: this.orgForm.controls.name.value,
       country: this.orgForm.controls.country.value,

@@ -247,7 +247,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     this.commentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value ? this.commentPeriodForm.get('commentTipText').value : '';
 
     if (this.storageService.state.selectedDocumentsForCP) {
-      let docIdArray = [];
+      const docIdArray = [];
       if (this.storageService.state.selectedDocumentsForCP.data) {
         this.storageService.state.selectedDocumentsForCP.data.map(element => {
           docIdArray.push(element._id);
@@ -278,32 +278,30 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     if (this.isEditing) {
       this.commentPeriodService.save(this.commentPeriod)
         .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          () => { },
-          () => {
+        .subscribe({
+          error: () => {
             alert('Uh-oh, couldn\'t edit comment period');
           },
-          () => { // onCompleted
+          complete: () => { // onCompleted
             this.loading = false;
             this.openSnackBar('This comment period was created successfully.', 'Close');
             this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
           }
-        );
+        });
     } else {
       this.commentPeriod.project = this.currentProject.data._id;
       this.commentPeriodService.add(this.commentPeriod)
         .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          () => { },
-          () => {
+        .subscribe({
+          error: () => {
             alert('Uh-oh, couldn\'t add new comment period');
           },
-          () => { // onCompleted
+          complete: () => { // onCompleted
             this.loading = false;
             this.openSnackBar('This comment period was created successfully.', 'Close');
             this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
           }
-        );
+        });
     }
     this.storageService.state.selectedDocumentsForCP = null;
   }

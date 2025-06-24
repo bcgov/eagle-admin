@@ -5,7 +5,6 @@ import { Directive, Input, ViewContainerRef, TemplateRef } from '@angular/core';
 //
 
 @Directive({
-  // tslint:disable-next-line:directive-selector
   selector: '[ngVar]'
 })
 

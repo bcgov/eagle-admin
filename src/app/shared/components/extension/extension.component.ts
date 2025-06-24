@@ -96,18 +96,18 @@ export class ExtensionComponent implements OnInit, OnDestroy {
     if (this.storageService.state.extension) {
       // Editing mode
       // PUT project specific to extensions.
-      let newExtension = {
+      const newExtension = {
         type: this.extensionType,
         appliedTo: this.extensionForm.value.appliedTo,
         start: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.start),
         end: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
       };
-      let extensionObj = {
+      const extensionObj = {
         new: newExtension,
         old: this.storageService.state.extension
       };
       console.log('Update: ', extensionObj);
-      let self = this;
+      const self = this;
       this.api.editExtension(this.storageService.state.project, extensionObj)
       .subscribe(res => {
         console.log('res:', res);
@@ -117,14 +117,14 @@ export class ExtensionComponent implements OnInit, OnDestroy {
       });
     } else {
       // New
-      let newExtension = {
+      const newExtension = {
         type: this.extensionType,
         appliedTo: this.extensionForm.value.appliedTo,
         start: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.start),
         end: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
       };
       console.log('Adding ', newExtension.type, ':', newExtension);
-      let self = this;
+      const self = this;
       this.api.addExtension(this.storageService.state.project, newExtension)
       .subscribe(res => {
         console.log('res:', res);
@@ -138,7 +138,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   goBack() {
     this.storageService.state.extension = null;
     this.storageService.state.extensionType = null;
-    let url = this.navigationStackUtils.getLastBackUrl();
+    const url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
     this.router.navigate(url);
   }

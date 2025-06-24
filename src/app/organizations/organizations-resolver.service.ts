@@ -45,8 +45,8 @@ export class OrganizationsResolver implements Resolve<object> {
   }
 
   getfiltersForApi(typeFilterString) {
-    let typeFiltersFromRoute = typeFilterString.split(',');
-    let typeFiltersForApi = [];
+    const typeFiltersFromRoute = typeFilterString.split(',');
+    const typeFiltersForApi = [];
 
     if (typeFiltersFromRoute.includes('indigenousGroup')) {
       typeFiltersForApi.push('Indigenous Group');

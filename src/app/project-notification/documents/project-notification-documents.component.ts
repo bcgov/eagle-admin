@@ -3,7 +3,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, forkJoin } from 'rxjs';
-import * as _ from 'lodash';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
 import { DocumentService } from 'src/app/services/document.service';
@@ -132,7 +131,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   }
 
   public selectAction(action) {
-    let promises = [];
+    const promises = [];
 
     // select all documents
     switch (action) {
@@ -230,18 +229,17 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
             });
           }
 
-          forkJoin(observables).subscribe(
-            () => { },
-            err => {
+          forkJoin(observables).subscribe({
+            error: err => {
               console.log('Error:', err);
             },
-            () => {
+            complete: () => {
               this.loading = false;
               this.canUnpublish = false;
               this.canPublish = false;
               this.onSubmit();
             }
-          );
+          });
         } else {
           this.loading = false;
         }
@@ -278,16 +276,17 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
             });
           }
 
-          forkJoin(observables).subscribe(
-            () => { },
-            err => console.log('Error:', err),
-            () => {
+          forkJoin(observables).subscribe({
+            error: err => {
+              console.log('Error:', err);
+            },
+            complete: () => {
               this.loading = false;
               this.canUnpublish = false;
               this.canPublish = false;
               this.onSubmit();
             }
-          );
+          });
         } else {
           this.loading = false;
         }
@@ -463,7 +462,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     this.canPublish = false;
     this.canUnpublish = false;
 
-    for (let document of this.documentTableData.data) {
+    for (const document of this.documentTableData.data) {
       if (document.checkbox) {
         if (document.read.includes('public')) {
           this.canUnpublish = true;
@@ -492,7 +491,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   }
 
   private createRowCopy(item): void {
-    let selBox = document.createElement('textarea');
+    const selBox = document.createElement('textarea');
     selBox.style.position = 'fixed';
     selBox.style.left = '0';
     selBox.style.top = '0';

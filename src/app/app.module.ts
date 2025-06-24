@@ -85,7 +85,6 @@ import { UserTableRowsComponent } from './contacts/user-table-rows/user-table-ro
 
 // Services
 import { ApiService } from './services/api';
-import { AuthenticationService } from './services/authentication.service';
 import { CanDeactivateGuard } from './services/can-deactivate-guard.service';
 import { CommentPeriodService } from './services/commentperiod.service';
 import { CommentService } from './services/comment.service';
@@ -217,7 +216,6 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
   ],
   providers: [
     ApiService,
-    AuthenticationService,
     CanDeactivateGuard,
     CommentPeriodService,
     CommentService,
