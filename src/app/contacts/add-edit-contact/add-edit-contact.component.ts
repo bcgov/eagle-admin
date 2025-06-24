@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { Topic } from 'src/app/models/topic';
 import { User } from 'src/app/models/user';
@@ -27,7 +27,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   private navigationObject;
 
   public currentProject;
-  public contactForm: FormGroup;
+  public contactForm: UntypedFormGroup;
   public isEditing = false;
   public loading = false;
   public contactOrganizationName = '';
@@ -155,25 +155,25 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
 
   private buildForm(data) {
-    this.contactForm = new FormGroup({
-      'firstName': new FormControl(data.firstName),
-      'middleName': new FormControl(data.middleName),
-      'lastName': new FormControl(data.lastName),
-      'email': new FormControl(data.email),
-      'org': new FormControl(data.org),
-      'title': new FormControl(data.title),
-      'phoneNumber': new FormControl(data.phoneNumber),
-      'salutation': new FormControl(data.salutation),
-      'department': new FormControl(data.department),
-      'faxNumber': new FormControl(data.faxNumber),
-      'cellPhoneNumber': new FormControl(data.cellPhoneNumber),
-      'address1': new FormControl(data.address1),
-      'address2': new FormControl(data.address2),
-      'city': new FormControl(data.city),
-      'province': new FormControl(data.province),
-      'country': new FormControl(data.country),
-      'postalCode': new FormControl(data.postalCode),
-      'notes': new FormControl(data.notes),
+    this.contactForm = new UntypedFormGroup({
+      'firstName': new UntypedFormControl(data.firstName),
+      'middleName': new UntypedFormControl(data.middleName),
+      'lastName': new UntypedFormControl(data.lastName),
+      'email': new UntypedFormControl(data.email),
+      'org': new UntypedFormControl(data.org),
+      'title': new UntypedFormControl(data.title),
+      'phoneNumber': new UntypedFormControl(data.phoneNumber),
+      'salutation': new UntypedFormControl(data.salutation),
+      'department': new UntypedFormControl(data.department),
+      'faxNumber': new UntypedFormControl(data.faxNumber),
+      'cellPhoneNumber': new UntypedFormControl(data.cellPhoneNumber),
+      'address1': new UntypedFormControl(data.address1),
+      'address2': new UntypedFormControl(data.address2),
+      'city': new UntypedFormControl(data.city),
+      'province': new UntypedFormControl(data.province),
+      'country': new UntypedFormControl(data.country),
+      'postalCode': new UntypedFormControl(data.postalCode),
+      'notes': new UntypedFormControl(data.notes),
     });
   }
 

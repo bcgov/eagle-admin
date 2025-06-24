@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDate } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 import { Router } from '@angular/router';
@@ -22,7 +22,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
 
   public documents: any[] = [];
   public currentProject;
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public doctypes: any[] = [];
   public filteredDoctypes2002: any[] = [];
   public filteredDoctypes2018: any[] = [];
@@ -68,15 +68,15 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   buildForm() {
-    this.myForm = new FormGroup({
-      'docLegislationRadio': new FormControl(this.legislationYear),
-      'doctypesel': new FormControl(),
-      'authorsel': new FormControl(),
-      'labelsel': new FormControl(),
-      'datePosted': new FormControl(),
-      'displayName': new FormControl(),
-      'description': new FormControl(),
-      'projectphasesel': new FormControl()
+    this.myForm = new UntypedFormGroup({
+      'docLegislationRadio': new UntypedFormControl(this.legislationYear),
+      'doctypesel': new UntypedFormControl(),
+      'authorsel': new UntypedFormControl(),
+      'labelsel': new UntypedFormControl(),
+      'datePosted': new UntypedFormControl(),
+      'displayName': new UntypedFormControl(),
+      'description': new UntypedFormControl(),
+      'projectphasesel': new UntypedFormControl()
     });
   }
 
@@ -318,7 +318,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  register(myForm: FormGroup) {
+  register(myForm: UntypedFormGroup) {
     console.log('Successful registration');
     console.log(myForm);
   }

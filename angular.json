@@ -49,7 +49,7 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/popper.js/dist/umd/popper.min.js",
+                "node_modules/@popperjs/core/dist/umd/popper.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/tinymce/tinymce.min.js",
               "node_modules/moment/min/moment.min.js",
@@ -107,7 +107,7 @@
             "inlineStyleLanguage": "scss",
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/popper.js/dist/umd/popper.min.js",
+                "node_modules/@popperjs/core/dist/umd/popper.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/moment/min/moment.min.js",
               "node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
@@ -146,7 +146,6 @@
       }
     }
   },
-  "defaultProject": "base-app2",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { from, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,7 +21,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   public extensionType = 'Extension';
   public extensionOperation = 'Add';
   public navigationObject;
-  public extensionForm: FormGroup;
+  public extensionForm: UntypedFormGroup;
   public isEditing = false;
   private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
@@ -46,18 +46,18 @@ export class ExtensionComponent implements OnInit, OnDestroy {
 
     if (this.storageService.state.extension) {
       this.isEditing = true;
-      this.extensionForm = new FormGroup({
-        'appliedTo': new FormControl(this.storageService.state.extension.appliedTo),
-        'start': new FormControl(),
-        'end': new FormControl()
+      this.extensionForm = new UntypedFormGroup({
+        'appliedTo': new UntypedFormControl(this.storageService.state.extension.appliedTo),
+        'start': new UntypedFormControl(),
+        'end': new UntypedFormControl()
       });
       this.extensionForm.controls.start.setValue(this.utils.convertJSDateToNGBDate(new Date(this.storageService.state.extension.start)));
       this.extensionForm.controls.end.setValue(this.utils.convertJSDateToNGBDate(new Date(this.storageService.state.extension.end)));
     } else {
-      this.extensionForm = new FormGroup({
-        'appliedTo': new FormControl(),
-        'start': new FormControl(),
-        'end': new FormControl()
+      this.extensionForm = new UntypedFormGroup({
+        'appliedTo': new UntypedFormControl(),
+        'start': new UntypedFormControl(),
+        'end': new UntypedFormControl()
       });
     }
   }

@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { FormGroup, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 
 import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
@@ -24,7 +24,7 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public isAdd = false;
   public isPublished = false;
   public loading = false;
-  public myForm: FormGroup;
+  public myForm: UntypedFormGroup;
   public projectNotification: ProjectNotification = null;
   public regions: any[] = [];
   public subTypeSelected = [];
@@ -229,24 +229,24 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.myForm = new FormGroup({
-      'name': new FormControl(data.name),
-      'type': new FormControl(data.type),
-      'subType': new FormControl(data.subType),
-      'proponent': new FormControl(data.proponent),
-      'nature': new FormControl(data.nature),
-      'region': new FormControl(data.region),
-      'location': new FormControl(data.location),
-      'decision': new FormControl(data.decision),
-      'decisionDate': new FormControl(data.decisionDate),
-      'notificationReceivedDate': new FormControl(data.notificationReceivedDate),
-      'description': new FormControl(data.description),
-      'notificationThresholdValue': new FormControl(data.notificationThresholdValue),
-      'notificationThresholdUnits': new FormControl(data.notificationThresholdUnits),
-      'project': new FormControl(data.associatedProjectId),
-      'longitude': new FormControl(data.centroid[1]),
-      'latitude': new FormControl(data.centroid[0]),
-      'trigger': new FormControl(this.triggers)
+    this.myForm = new UntypedFormGroup({
+      'name': new UntypedFormControl(data.name),
+      'type': new UntypedFormControl(data.type),
+      'subType': new UntypedFormControl(data.subType),
+      'proponent': new UntypedFormControl(data.proponent),
+      'nature': new UntypedFormControl(data.nature),
+      'region': new UntypedFormControl(data.region),
+      'location': new UntypedFormControl(data.location),
+      'decision': new UntypedFormControl(data.decision),
+      'decisionDate': new UntypedFormControl(data.decisionDate),
+      'notificationReceivedDate': new UntypedFormControl(data.notificationReceivedDate),
+      'description': new UntypedFormControl(data.description),
+      'notificationThresholdValue': new UntypedFormControl(data.notificationThresholdValue),
+      'notificationThresholdUnits': new UntypedFormControl(data.notificationThresholdUnits),
+      'project': new UntypedFormControl(data.associatedProjectId),
+      'longitude': new UntypedFormControl(data.centroid[1]),
+      'latitude': new UntypedFormControl(data.centroid[0]),
+      'trigger': new UntypedFormControl(this.triggers)
     });
   }
 
