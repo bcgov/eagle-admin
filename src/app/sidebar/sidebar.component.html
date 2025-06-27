@@ -1,7 +1,7 @@
 <div class="sidebar" [ngClass]="{'isOpen': isOpen === true}">
   <section class="full-nav">
     <a [ngClass]="{'active': mainRouteId === 'projects'}" id="allProjects" [routerLink]="['/projects']"><i
-        class="material-icons mr-3">view_list</i>All Projects</a>
+        class="material-icons me-3">view_list</i>All Projects</a>
     <section class="project-nav" *ngIf="showProjectDetails === true">
       <a [ngClass]="{'active': showProjectDetails && currentMenu === 'project-details'}" class="dropdown-btn "
         [routerLink]="['/p', mainRouteId]">
@@ -26,7 +26,7 @@
         Project Details</a>
     </section>
     <a [ngClass]="{'active': mainRouteId === 'project-notifications' || mainRouteId === 'pn'}" id="notificationProjects"
-      [routerLink]="['/project-notifications']"><i class="material-icons mr-3">view_module</i>Project Notifications</a>
+      [routerLink]="['/project-notifications']"><i class="material-icons me-3">view_module</i>Project Notifications</a>
     <section class="project-nav" *ngIf="showProjectNotificationDetails === true">
       <a [ngClass]="{'active': showProjectNotificationDetails && (currentMenu === 'details' || currentMenu === 'edit')}"
         class="project-menu" id="pn-details" [routerLink]="['/pn', mainRouteId, 'details']"><i
@@ -39,12 +39,12 @@
           class="material-icons">comment</i>Comment Period</a>
     </section>
     <a [ngClass]="{'active': mainRouteId === 'activity'}" id="activityPosts" [routerLink]="['/activity']"><i
-        class="material-icons mr-3 ">notifications_active</i>Activity Posts</a>
+        class="material-icons me-3 ">notifications_active</i>Activity Posts</a>
     <a [ngClass]="{'active': mainRouteId.includes('contacts') || mainRouteId === 'c'}" id="contacts"
-      [routerLink]="['/contacts']"><i class="material-icons mr-3 ">contacts</i>Contacts</a>
+      [routerLink]="['/contacts']"><i class="material-icons me-3 ">contacts</i>Contacts</a>
     <a [ngClass]="{'active': mainRouteId.includes('orgs') || mainRouteId === 'o'}" id="orgs" [routerLink]="['/orgs']"><i
-        class="material-icons mr-3 ">business</i>Organizations</a>
+        class="material-icons me-3 ">business</i>Organizations</a>
     <a href="https://intranet.gov.bc.ca/eao/our-work/eguide-2018" id="eguide" target="_blank"><i
-        class="material-icons mr-3 ">chrome_reader_mode</i>E-Guide</a>
+        class="material-icons me-3 ">chrome_reader_mode</i>E-Guide</a>
   </section>
 </div>

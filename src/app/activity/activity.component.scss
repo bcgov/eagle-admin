@@ -1,6 +1,6 @@
 @import "src/assets/styles/components/add-edit.scss";
 
-.btn-group-toggle > .btn {
+.btn-group-toggle>.btn {
   margin-bottom: 0;
   border-radius: 24px;
   background: none;
@@ -13,8 +13,8 @@
   }
 
   &.active {
-  	background: #003367;
-  	color: #fff;
+    background: #003367;
+    color: #fff;
   }
 }
 
@@ -31,10 +31,6 @@ h2 {
   strong {
     font-weight: 400;
   }
-}
-
-.breadcrumb {
-  margin-bottom: 0;
 }
 
 .btn-sm {
@@ -55,7 +51,8 @@ form {
 }
 
 .main-search-field {
-  padding:8px;
+  padding: 8px;
+
   input {
     height: 3rem;
     color: #000;
@@ -81,7 +78,7 @@ form {
   border: 1px solid lightgray;
 }
 
-.search-button{
+.search-button {
   min-width: 10rem;
   font-weight: 700;
   background: #fcba18;
@@ -89,7 +86,7 @@ form {
   border: none;
 }
 
-.search-button:hover{
+.search-button:hover {
   min-width: 10rem;
   font-weight: 700;
   background: #0069d9;
@@ -117,16 +114,17 @@ form {
     margin-bottom: 6px;
     padding-left: 0px;
     display: flex;
-    flex-wrap:wrap;
+    flex-wrap: wrap;
     gap: 6px 12px;
 
-    .filter{
+    .filter {
       min-width: 225px;
       max-width: 300px;
       flex: 1 0 22%;
       margin-bottom: 0px;
     }
-    .datePosted{
+
+    .datePosted {
       flex: 1 0 30%;
       max-width: 550px;
     }
@@ -137,154 +135,162 @@ form {
     margin-right: 0px;
   }
 
-.date-range {
-  width:100%;
-  margin-left: 0px;
-  .date-from{
-    padding-right:10px;
-    max-width: 300px;
-    flex: 1 0 calc(50% - 20px);
-  }
-  .date-to{
-    padding-left:10px;
-    max-width: 300px;
-    flex: 1 0 calc(50% - 20px);
-  }
-  
-  .form-control {
-    z-index: 0px !important;
-    height: 2rem;
-  }
-  .input-group-append{
-    height: 2rem;
-  }
-  .calendar {
-    padding-top: 0px;
-    margin: 0px;
-  }
-}
+  .date-range {
+    width: 100%;
+    margin-left: 0px;
 
-#dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host{
-  overflow: visible;
-}
+    .date-from {
+      padding-right: 10px;
+      max-width: 300px;
+      flex: 1 0 calc(50% - 20px);
+    }
 
-::ng-deep .ng-select.ng-select-single .ng-select-container{
-  height: 46px;
-}
+    .date-to {
+      padding-left: 10px;
+      max-width: 300px;
+      flex: 1 0 calc(50% - 20px);
+    }
 
-.date-input{
-  display:flex;
-}
+    .form-control {
+      z-index: 0px !important;
+      height: 2rem;
+    }
 
-
-// Filter badges
-.filter-label {
-  display: flex;
-
-  p {
-    margin: 0px;
-    align-self: center;
-  }
-}
-
-.filter-row {
-  position: relative;
-  margin-left: 10px;
-  margin-right: 10px;
-}
-
-.filter-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0px 4px;
-  margin-top: 0px;
-
-  .project
-  {
-    background: #FEEBAB;
-    color: #553402;
+    .calendar {
+      padding-top: 0px;
+      margin: 0px;
+    }
   }
 
-  .type {
-    background: #E3EBFF;
-    color: #022170;
+  #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
+    overflow: visible;
   }
 
-  .dateAddedRange {
-    background: #FFF8E8;
-    color: #593F00;
+  ::ng-deep .ng-select.ng-select-single .ng-select-container {
+    height: 46px;
   }
 
-  .cAndE {
-    background: #F1F8FF;
-    color: #323130;
+  .date-input {
+    display: flex;
   }
 
-  .filter-badge {
-    border-radius: 4px;
-    margin-top: 2px;
-    padding: .3rem .6rem;
+
+  // Filter badges
+  .filter-label {
+    display: flex;
+
+    p {
+      margin: 0px;
+      align-self: center;
+    }
   }
-}
 
-.btn {
-  margin: 8px 0px 8px 8px;
-}
+  .filter-row {
+    position: relative;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
 
-.last {
-  padding-right: 0px;
-  flex: 0 1 230px;
-}
+  .filter-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0px 4px;
+    margin-top: 0px;
 
-.first {
-  padding-left: 0px;
-  flex: 1 0 calc(100% - 230px);
-}
+    .project {
+      background: #FEEBAB;
+      color: #553402;
+    }
+
+    .type {
+      background: #E3EBFF;
+      color: #022170;
+    }
+
+    .dateAddedRange {
+      background: #FFF8E8;
+      color: #593F00;
+    }
+
+    .cAndE {
+      background: #F1F8FF;
+      color: #323130;
+    }
+
+    .filter-badge {
+      border-radius: 4px;
+      margin-top: 2px;
+      padding: .3rem .6rem;
+    }
+  }
+
+  .btn {
+    margin: 8px 0px 8px 8px;
+  }
+
+  .last {
+    padding-right: 0px;
+    flex: 0 1 230px;
+  }
+
+  .first {
+    padding-left: 0px;
+    flex: 1 0 calc(100% - 230px);
+  }
 
 
-// Set icons in filter placeholders
-.ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined';
-  font-size: 32px;
-  font-variation-settings: 'OPSZ' 32, 'wght' 300;
-  content: "\e24c";
-}
+  // Set icons in filter placeholders
+  .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    font-style: normal;
+    content: "comment";
+    vertical-align: middle;
+    margin-right: 0.3em;
+  }
 
-.ng-select#projects ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined';
-  font-size: 32px;
-  font-variation-settings: 'OPSZ' 32, 'wght' 300;
-  content: "\e943";
-}
+  .ng-select#projects ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    font-style: normal;
+    content: "work";
+    vertical-align: middle;
+    margin-right: 0.3em;
+  }
 
-.ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined';
-  font-size: 32px;
-  font-variation-settings: 'OPSZ' 32, 'wght' 300;
-  content: "\e916";
-}
+  .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    font-style: normal;
+    content: "date_range";
+    vertical-align: middle;
+    margin-right: 0.3em;
+  }
 
-.ng-select ::ng-deep .ng-placeholder.custom::before {
-  content: none;
-}
+  .ng-select ::ng-deep .ng-placeholder.custom::before {
+    content: none;
+  }
 
-.ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
-  color: #585858;
-  display: flex;
-  align-items: center;
-}
+  .ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
+    color: #585858;
+    display: flex;
+    align-items: center;
+  }
 
-.ng-select ::ng-deep .ng-placeholder {
-  color: #585858;
-}
+  .ng-select ::ng-deep .ng-placeholder {
+    color: #585858;
+  }
 
-.ng-placeholder {
-  font-weight: 600;
-}
+  .ng-placeholder {
+    font-weight: 600;
+  }
 
-.center-icon {
-  vertical-align: middle;
-}
+  .center-icon {
+    vertical-align: middle;
+  }
 
 }
 
@@ -328,7 +334,7 @@ $sr-table-row-bg: #f7f8fa;
 
   .cl-arrow {
     top: -0.55rem; // Offset top padding
-    left: -1rem;  // Offset left padding
+    left: -1rem; // Offset left padding
   }
 }
 
@@ -369,7 +375,7 @@ $sr-table-row-bg: #f7f8fa;
   }
 
   span {
-    + .loading-comment-info {
+    +.loading-comment-info {
       display: none;
     }
   }
@@ -449,23 +455,28 @@ $cl-arrow-font-color: #fff;
 .table {
   border: none;
 
-  thead th{
+  thead th {
     background-color: #eef3f7;
     padding: .75rem 0.5rem .5rem;
     border: none;
   }
+
   th,
   td {
     border: none;
+
     &.type {
       max-width: 24%;
     }
+
     &.date {
       max-width: 10%;
     }
+
     &.priority {
       text-align: center;
     }
+
     &.delete {
       .btn {
         margin: 0;
@@ -480,6 +491,7 @@ $cl-arrow-font-color: #fff;
     td {
       padding: 0.25rem 0.5rem;
     }
+
     tr {
       padding: 2px 0;
     }
@@ -498,6 +510,7 @@ $cl-arrow-font-color: #fff;
 
   thead {
     border-bottom: none;
+
     .pin i {
       top: -8px;
     }
@@ -514,19 +527,19 @@ $cl-arrow-font-color: #fff;
   font-size: .8rem;
 }
 
-.btn-group-pagination > .btn {
-    margin-bottom: 0;
-    background: none;
-    color: #13477b;
-    border: 1px solid #858b99;
-    font-weight: 600;
+.btn-group-pagination>.btn {
+  margin-bottom: 0;
+  background: none;
+  color: #13477b;
+  border: 1px solid #858b99;
+  font-weight: 600;
 
-    &:hover {
-      background: #fcb118;
-    }
-
-    &.active {
-        background: #235383;
-        color: #fff;
-    }
+  &:hover {
+    background: #fcb118;
   }
+
+  &.active {
+    background: #235383;
+    color: #fff;
+  }
+}

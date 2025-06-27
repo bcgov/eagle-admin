@@ -15,8 +15,7 @@
         <a [routerLink]="['/project-notifications']">All Project Notifications</a>
       </li>
       <li class="breadcrumb-item" aria-current="page">
-        <a
-          [routerLink]="['/pn', projectNotification._id, 'details']">{{projectNotification.name}}</a>
+        <a [routerLink]="['/pn', projectNotification._id, 'details']">{{projectNotification.name}}</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">
         Edit
@@ -61,19 +60,9 @@
 
       <div class="label-pair">
         <label for="trigger">Trigger* </label>
-        <ng-select
-          id="trigger"
-          name="trigger"
-          multiple="true"
-          placeholder="Type Trigger"
-          bindLabel="name"
-          groupBy="header"
-          [items]="NOTIFICATION_TRIGGERS"
-          [closeOnSelect]="false"
-          [markFirst]="false"
-          [(ngModel)]="triggers"
-          [compareWith]="filterCompareWith"
-          [ngModelOptions]="{standalone: true}"
+        <ng-select id="trigger" name="trigger" multiple="true" placeholder="Type Trigger" bindLabel="name"
+          groupBy="header" [items]="NOTIFICATION_TRIGGERS" [closeOnSelect]="false" [markFirst]="false"
+          [(ngModel)]="triggers" [compareWith]="filterCompareWith" [ngModelOptions]="{standalone: true}"
           (change)="onChangeTrigger()">
           <ng-template ng-label-tmp let-item="item">
             <span class="ng-value-icon left" (click)="clearSelectedItem(item)" aria-hidden="true">×</span>
@@ -109,7 +98,8 @@
       <div class="label-pair">
         <label for="decision">Notification Decision*</label>
         <select name="decision" id="decision" formControlName="decision" class="form-control">
-          <option *ngFor="let decision of NOTIFICATION_DECISIONS | keyvalue" [ngValue]="decision.value">{{decision.value}}</option>
+          <option *ngFor="let decision of NOTIFICATION_DECISIONS | keyvalue" [ngValue]="decision.value">
+            {{decision.value}}</option>
         </select>
       </div>
 
@@ -118,14 +108,13 @@
         <div class="input-group">
           <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
             formControlName="decisionDate" ngbDatepicker #decisionDatePicker="ngbDatepicker" />
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
-              type="button"></button>
-          </div>
+          <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
+            type="button"></button>
         </div>
       </div>
 
-      <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'" class="label-pair">
+      <div *ngIf="myForm.value.decision && myForm.value.decision === 'Referred to Minister for Designation Decision'"
+        class="label-pair">
         <label for="project" class="eAPProjectLabel">Associated Environmental Assessment Project</label>
         <div class="input-group">
           <select name="project" id="project" formControlName="project" class="form-control">
@@ -145,25 +134,31 @@
     </div>
 
     <hr>
-    <p class="sub-headder">INFORMATION IN THIS SECTION <u>DOES NOT</u> DISPLAY PUBLICLY, FOR PROJECT TRACKING PURPOSES ONLY</p>
+    <p class="sub-headder">INFORMATION IN THIS SECTION <u>DOES NOT</u> DISPLAY PUBLICLY, FOR PROJECT TRACKING PURPOSES
+      ONLY</p>
 
     <div class="flex-container">
 
       <div class="col-xl-7 col-lg-12 non-public-grouping-box">
         <div class="notification-threshold-box col-12">
           <strong>Notification Threshold* </strong>
-          <span class="info-text" >(Input a value, and the units the value is measured in, based on the triggered threshold)</span>
+          <span class="info-text">(Input a value, and the units the value is measured in, based on the triggered
+            threshold)</span>
         </div>
         <div class="label-pair half">
-          <input name="notificationThresholdValue" id="notificationThresholdValue" formControlName="notificationThresholdValue" type="number" class="form-control" />
-          <label class="sub-label" for="notificationThresholdValue">Value <span class="info-text" >e.g. (74.3)</span></label>
+          <input name="notificationThresholdValue" id="notificationThresholdValue"
+            formControlName="notificationThresholdValue" type="number" class="form-control" />
+          <label class="sub-label" for="notificationThresholdValue">Value <span class="info-text">e.g.
+              (74.3)</span></label>
         </div>
         <div class="label-pair half">
-          <select name="notificationThresholdUnits" id="notificationThresholdUnits" formControlName="notificationThresholdUnits" class="form-control">
+          <select name="notificationThresholdUnits" id="notificationThresholdUnits"
+            formControlName="notificationThresholdUnits" class="form-control">
             <option *ngFor="let unit of unitsSelected" [ngValue]="unit">{{unit}}</option>
           </select>
-          <label class="sub-label" for="notificationThresholdUnits">Units <span class="info-text" >e.g. (L/S)</span></label>
-          <br><span class="info-text sub-label" >(drop down is populated by Type section above)</span>
+          <label class="sub-label" for="notificationThresholdUnits">Units <span class="info-text">e.g.
+              (L/S)</span></label>
+          <br><span class="info-text sub-label">(drop down is populated by Type section above)</span>
         </div>
       </div>
 
@@ -172,32 +167,32 @@
           <label for="notificationReceivedDate">Notification Received Date*</label>
           <div class="input-group">
             <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="notificationReceivedDate"
-              formControlName="notificationReceivedDate" ngbDatepicker #notificationReceivedDatePicker="ngbDatepicker" />
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary calendar" (click)="notificationReceivedDatePicker.toggle()"
-                type="button"></button>
-            </div>
+              formControlName="notificationReceivedDate" ngbDatepicker
+              #notificationReceivedDatePicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="notificationReceivedDatePicker.toggle()"
+              type="button"></button>
           </div>
         </div>
         <div class="label-pair half">
           <label for="nature">Project Nature* </label>
-          <select name="nature" id="nature" formControlName="nature" class="form-control" >
+          <select name="nature" id="nature" formControlName="nature" class="form-control">
             <option *ngFor="let nature of NATURE_OPTIONS" [ngValue]="nature">{{nature}}</option>
           </select>
         </div>
       </div>
-      <p class="info-text" >
+      <p class="info-text">
         For example:
         <br>Greenhouse gas emissions in 'tonnes/year' (value = 130000, units = tonnes/year)
         <br>Workforce unit as 'employees or contractors' (value = 280, units = employees or contractors)
         <br>
         <br>For more complex thresholds, consult the Reviewable Projects Regulation for the correct language.
-        <br>eg. for a Sand and Gravel Pit input the unit as either 'tonne/year of excavated sand or gravel or both during at least one year of its operation' or 'tonnes of excavated sand or gravel or both over a period of < 4 years of operation'.
-      </p>
+        <br>eg. for a Sand and Gravel Pit input the unit as either 'tonne/year of excavated sand or gravel or both
+        during at least one year of its operation' or 'tonnes of excavated sand or gravel or both over a period of < 4
+          years of operation'. </p>
     </div>
   </form>
 
-  <div class="text-right">
+  <div class="text-end">
     <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
     &nbsp;
     <button class="btn btn-primary" type="submit" (click)="onSubmit(null)">Save</button>

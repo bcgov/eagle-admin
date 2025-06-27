@@ -11,9 +11,9 @@
 </nav>
 <div class="container-fluid-padding">
     <h1>
-        <div class="row">
+        <div class="d-flex">
             <div>Documents</div>
-            <div class="ml-auto" ngbDropdown placement="bottom-right">
+            <div class="ms-auto" ngbDropdown placement="bottom-right">
                 <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
                 <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
                     <button (click)="selectAction('edit')" class="dropdown-item" [disabled]="!isEnabled('edit')"
@@ -52,13 +52,11 @@
         <div class="search-area">
             <div class="input-group main-search-field">
                 <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-                    id="keywordInput" [(ngModel)]="tableParams.keywords"  />
-                <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
-                    <!-- prevent searching if input is empty or we're already searching -->
-                    <button class="btn btn-primary" type="submit">
-                        <span>Search</span>
-                    </button>
-                </div>
+                    id="keywordInput" [(ngModel)]="tableParams.keywords" />
+                <!-- prevent searching if input is empty or we're already searching -->
+                <button *ngIf="!showAdvancedSearch || !isShowingFilter()" class="btn btn-primary" type="submit">
+                    <span>Search</span>
+                </button>
             </div>
             <div *ngIf="!loading" class="advanced-search">
                 <div class="row">
@@ -161,12 +159,10 @@
                                         name="datePostedStart" [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker
                                         #datePostedStartPicker="ngbDatepicker" [minDate]="constants.minPickerDate"
                                         [maxDate]="constants.maxPickerDate">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary calendar"
-                                            (click)="datePostedStartPicker.toggle()" type="button">
-                                            <i class="material-icons">date_range</i>
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-outline-secondary calendar"
+                                        (click)="datePostedStartPicker.toggle()" type="button">
+                                        <i class="material-icons">date_range</i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -175,12 +171,10 @@
                                         name="datePostedEnd" [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker
                                         #datePostedEndPicker="ngbDatepicker" [minDate]="constants.minPickerDate"
                                         [maxDate]="constants.maxPickerDate">
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary calendar"
-                                            (click)="datePostedEndPicker.toggle()" type="button">
-                                            <i class="material-icons">date_range</i>
-                                        </button>
-                                    </div>
+                                    <button class="btn btn-outline-secondary calendar"
+                                        (click)="datePostedEndPicker.toggle()" type="button">
+                                        <i class="material-icons">date_range</i>
+                                    </button>
                                 </div>
                             </div>
                         </div>

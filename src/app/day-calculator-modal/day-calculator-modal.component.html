@@ -20,10 +20,8 @@
             <div class="input-group">
               <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="startDP" [(ngModel)]="startDate"
                 ngbDatepicker #startDatePicker="ngbDatepicker" (change)="updateStartDateAlert()" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="startDatePicker.toggle()"
-                  type="button"></button>
-              </div>
+              <button class="btn btn-outline-secondary calendar" (click)="startDatePicker.toggle()"
+                type="button"></button>
             </div>
           </div>
           <div *ngIf="startDateAlert" role="alert">
@@ -38,10 +36,8 @@
             <div class="input-group">
               <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="endDP" [(ngModel)]="endDate"
                 ngbDatepicker #endDatePicker="ngbDatepicker" (change)="updateEndDateAlert()" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="endDatePicker.toggle()"
-                  type="button"></button>
-              </div>
+              <button class="btn btn-outline-secondary calendar" (click)="endDatePicker.toggle()"
+                type="button"></button>
             </div>
           </div>
           <div *ngIf="endDateAlert" role="alert">
@@ -58,10 +54,8 @@
               <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="suspendDP"
                 [(ngModel)]="suspendDate" ngbDatepicker #suspendDatePicker="ngbDatepicker"
                 (change)="updateSuspendDateAlert()" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="suspendDatePicker.toggle()"
-                  type="button"></button>
-              </div>
+              <button class="btn btn-outline-secondary calendar" (click)="suspendDatePicker.toggle()"
+                type="button"></button>
             </div>
           </div>
           <div *ngIf="suspendDateAlert" role="alert">
@@ -75,10 +69,8 @@
             <div class="input-group">
               <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="resumeDP" [(ngModel)]="resumeDate"
                 ngbDatepicker #resumeDatePicker="ngbDatepicker" (change)="updateResumeDateAlert()" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="resumeDatePicker.toggle()"
-                  type="button"></button>
-              </div>
+              <button class="btn btn-outline-secondary calendar" (click)="resumeDatePicker.toggle()"
+                type="button"></button>
             </div>
           </div>
           <div *ngIf="resumeDateAlert" role="alert">

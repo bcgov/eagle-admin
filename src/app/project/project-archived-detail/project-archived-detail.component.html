@@ -15,7 +15,7 @@
         <app-comment-period-banner></app-comment-period-banner>
     </section>
     <section>
-        <i class="material-icons mr-2 md-36 float-left" display="inline-block">access_time</i>
+        <i class="material-icons me-2 md-36 float-start" display="inline-block">access_time</i>
         <h2 class="mb-1" display="inline">Archived Project Information </h2>
         <span class="badge bg-success badge-published" *ngIf="isPublished">Published</span>
         <div>
@@ -110,21 +110,21 @@
         <div class="col" *ngIf="!project.projectLeadObj">
             <h3 for="project-lead">Project Lead</h3>
             <p id="project-lead">
-                <i class="material-icons mr-3" role="presentation">person</i>{{project.projectLead || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">phone</i>
+                <i class="material-icons me-3" role="presentation">person</i>{{project.projectLead || '-'}}<br />
+                <i class="material-icons me-3" role="presentation">phone</i>
                 {{project.projectLeadPhone || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">email</i>
+                <i class="material-icons me-3" role="presentation">email</i>
                 <a href="mailTo:{{project.projectLeadEmail}}">{{project.projectLeadEmail || '-'}}</a>
             </p>
         </div>
         <div class="col" *ngIf="project.projectLeadObj">
             <h3 for="project-lead">Project Lead</h3>
             <p id="project-lead">
-                <i class="material-icons mr-3"
+                <i class="material-icons me-3"
                     role="presentation">person</i>{{project.projectLeadObj.displayName || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">phone</i>
+                <i class="material-icons me-3" role="presentation">phone</i>
                 {{project.projectLeadObj.phoneNumber || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">email</i>
+                <i class="material-icons me-3" role="presentation">email</i>
                 <a href="mailTo:{{project.projectLeadObj.email}}">{{project.projectLeadObj.email || '-'}}</a>
             </p>
         </div>
@@ -132,21 +132,21 @@
         <div class="col" *ngIf="!project.responsibleEPDObj">
             <h3 for="epd">Executive Project Director</h3>
             <p id="epd">
-                <i class="material-icons mr-3" role="presentation">person</i>{{project.responsibleEPD || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">phone</i>
+                <i class="material-icons me-3" role="presentation">person</i>{{project.responsibleEPD || '-'}}<br />
+                <i class="material-icons me-3" role="presentation">phone</i>
                 {{project.responsibleEPDPhone || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">email</i>
+                <i class="material-icons me-3" role="presentation">email</i>
                 <a href="mailTo:{{project.responsibleEPDEmail}}">{{project.responsibleEPDEmail || '-'}}</a>
             </p>
         </div>
         <div class="col" *ngIf="project.responsibleEPDObj">
             <h3 for="epd">Executive Project Director</h3>
             <p id="epd">
-                <i class="material-icons mr-3"
+                <i class="material-icons me-3"
                     role="presentation">person</i>{{project.responsibleEPDObj.displayName || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">phone</i>
+                <i class="material-icons me-3" role="presentation">phone</i>
                 {{project.responsibleEPDObj.phoneNumber || '-'}}<br />
-                <i class="material-icons mr-3" role="presentation">email</i>
+                <i class="material-icons me-3" role="presentation">email</i>
                 <a href="mailTo:{{project.responsibleEPDObj.email}}">{{project.responsibleEPDObj.email || '-'}}</a>
             </p>
         </div>
@@ -154,10 +154,10 @@
         <div class="col">
             <h3 for="ce-lead">Compliance & Enforcement Lead</h3>
             <p id="ce-lead">
-                <i class="material-icons mr-3" role="presentation">person</i>Compliance & Enforcement Branch<br />
-                <i class="material-icons mr-3" role="presentation">phone</i>
+                <i class="material-icons me-3" role="presentation">person</i>Compliance & Enforcement Branch<br />
+                <i class="material-icons me-3" role="presentation">phone</i>
                 250-387-0131<br />
-                <i class="material-icons mr-3" role="presentation">email</i>
+                <i class="material-icons me-3" role="presentation">email</i>
                 <a href="mailTo:eao.compliance@gov.bc.ca">eao.compliance@gov.bc.ca</a>
             </p>
         </div>

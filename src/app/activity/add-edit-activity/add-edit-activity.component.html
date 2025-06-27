@@ -81,10 +81,7 @@
         <div class="input-group">
           <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="dateAdded"
             formControlName="dateAdded" ngbDatepicker #dateAddedPicker="ngbDatepicker" />
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary calendar" (click)="dateAddedPicker.toggle()"
-              type="button"></button>
-          </div>
+          <button class="btn btn-outline-secondary calendar" (click)="dateAddedPicker.toggle()" type="button"></button>
         </div>
       </div>
       <div class="label-pair">
@@ -115,10 +112,10 @@
     </div>
   </form>
   &nbsp;
-  <div class="text-right">
+  <div class="me-">
     <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
     &nbsp;
-    <button class="btn btn-primary mr-1" [disabled]="!myForm.valid" type="submit" (click)="onSubmit()">Save</button>
+    <button class="btn btn-primary me-1" [disabled]="!myForm.valid" type="submit" (click)="onSubmit()">Save</button>
     &nbsp;
     <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()"
       *ngIf="!this.isPublished">Save & Publish</button>

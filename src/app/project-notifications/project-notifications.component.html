@@ -4,7 +4,7 @@
     </ol>
     <button type="button" id="add-notification-project" class="btn btn-primary create-button" (click)="addNP()">
         <i class="material-icons">add</i>
-        Add New Notification Project
+        Add Project Notification
     </button>
 </nav>
 
@@ -15,13 +15,11 @@
     <form #f="ngForm" class="search-form ui form mb-3" (ngSubmit)="onSubmit(1)">
         <div class="input-group main-search-field mb-2">
             <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-                id="keywordInput" [(ngModel)]="tableParams.keywords"  />
-            <div class="input-group-append">
-                <!-- prevent searching if input is empty or we're already searching -->
-                <button class="btn btn-primary" type="submit" id="search">
-                    <span>Search</span>
-                </button>
-            </div>
+                id="keywordInput" [(ngModel)]="tableParams.keywords" />
+            <!-- prevent searching if input is empty or we're already searching -->
+            <button class="btn btn-primary" type="submit" id="search">
+                <span>Search</span>
+            </button>
         </div>
     </form>
     <div *ngIf="tableParams.totalListItems > 0">

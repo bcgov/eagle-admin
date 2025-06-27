@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
 import { JwtUtil } from '../jwt-util';
@@ -46,7 +46,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   };
   private dayCalculatorModal: NgbModalRef = null;
   public showDayCalculatorModal = false;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   constructor(
     private api: ApiService,
@@ -54,8 +54,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private modalService: NgbModal,
     public router: Router
   ) {
-    router.events
-      .takeUntil(this.ngUnsubscribe)
+    this.subscriptions.add(router.events
       .subscribe(() => {
         const token = this.keycloakService.getToken();
         // TODO: Change this to observe the change in the _api.token
@@ -67,7 +66,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
           this.welcomeMsg = 'Login';
           this.jwt = null;
         }
-      });
+      }));
   }
 
   ngOnInit() {
@@ -80,13 +79,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (isIEOrEdge) {
       const modalRef = this.modalService.open(ConfirmComponent);
       modalRef.componentInstance.title = 'Browser Incompatible';
-      modalRef.componentInstance.message =  '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.';
+      modalRef.componentInstance.message = '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.';
       modalRef.componentInstance.okOnly = true;
     }
     this.envName = this.api.env;
     this.bannerColour = this.api.bannerColour;
     // no-banner-colour-set is the default if no banner colour is defined in the openshift environment variables.
-    if ( this.envName && this.bannerColour && this.bannerColour !== 'no-banner-colour-set') {
+    if (this.envName && this.bannerColour && this.bannerColour !== 'no-banner-colour-set') {
       this.showBanner = true;
     }
   }
@@ -136,7 +135,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -13,9 +13,9 @@
 </nav>
 <main class="container-fluid-padding" *ngIf="document">
   <h1>
-    <div class="row">
+    <div class="d-flex">
       <div>Details</div>
-      <div class="ml-auto" ngbDropdown placement="bottom-right">
+      <div class="ms-auto" ngbDropdown placement="bottom-right">
         <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
           <button class="dropdown-item" (click)="onEdit()">Edit</button>
@@ -58,7 +58,7 @@
     <div *ngIf="document.labels" class="label-pair">
       <h3 for="tags">Labels: </h3>
       <div *ngFor="let label of document.labels">
-        <div class="mr-2 badge badge-pill badge-info">{{label}}</div>
+        <div class="me-2 badge badge-pill badge-info">{{label}}</div>
       </div>
     </div>
   </section>

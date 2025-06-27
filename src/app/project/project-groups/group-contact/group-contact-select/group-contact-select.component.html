@@ -46,10 +46,10 @@
   </form>
 
   <div class="input-group-prepend">
-    <button (click)="selectAction('createContact')" class="btn btn-outline-primary mr-1" type="button" id="button-cc">
+    <button (click)="selectAction('createContact')" class="btn btn-outline-primary me-1" type="button" id="button-cc">
       Create New Contact
     </button>
-    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1" type="button"
+    <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary me-1" type="button"
       id="button-sa">Select All</button>
   </div>
 
@@ -64,11 +64,11 @@
 
   <div class="btn-group" role="group" aria-label="Action Buttons" *ngIf="!loading && tableParams.totalListItems != 0">
     <div class="input-group-prepend">
-      <button class="btn btn-outline-primary mr-1" type="button" id="button-cl" (click)="goBack()"><i
+      <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
           class="material-icons">arrow_back</i>Back</button>
     </div>
     <div class="input-group-prepend">
-      <button (click)="save()" class="btn btn-primary mr-1" type="submit" id="button-s">Save</button>
+      <button (click)="save()" class="btn btn-primary me-1" type="submit" id="button-s">Save</button>
     </div>
   </div>
 </div>

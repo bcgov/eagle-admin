@@ -4,6 +4,7 @@
   &__options {
     @include flex(0 0 auto);
     padding: 1rem 0rem;
+
     mat-slide-toggle {
       white-space: normal;
     }
@@ -18,13 +19,17 @@
   .accordion__collapse-header {
     background: transparent;
   }
+
   &__project-details {
     font-size: 0.85rem;
+
     &--links {
       padding-top: 1.5rem;
     }
+
     &--description {
       margin-bottom: 1.25rem;
+
       &::ng-deep {
         p {
           margin: 0;
@@ -33,19 +38,23 @@
         }
       }
     }
+
     &--list {
       li {
         @include align-items(start);
+
         +li {
           border-top: 1px solid $white;
         }
       }
+
       .name,
       .value {
         margin: 0;
         padding: 0.25rem 0.75rem;
         width: 50%;
       }
+
       .name {
         font-weight: bold;
       }
@@ -56,43 +65,51 @@
 @media (max-width: 767px) {
   .project-table {
     table-layout: auto;
+
     thead {
       display: block;
       width: 100%;
+
       tr {
         @include flex-box();
       }
+
       th {
         border-top: none;
         padding-left: 0.75rem;
         padding-right: 0.75rem;
+
         &.project-table__name-col {
           @include flex(1 1 auto);
         }
       }
     }
-    &__name-col {
-      // width: 45%;
-    }
+
     &__cl_file-col {
       width: 25%;
     }
+
     &__purpose-col {
       display: none;
     }
+
     &__region-col {
       display: none;
     }
+
     &__status-col {
       width: 30%;
     }
+
     &__commenting-col {
       display: none;
     }
+
     &__project-details {
       &--links {
         .btn {
           width: 100%;
+
           +.btn {
             margin-top: 0.5rem;
           }
@@ -103,53 +120,60 @@
 }
 
 @media (min-width: 768px) {
-    .project-table {
-        &__name-col {
-            // width: 20%;
-        }
-        &__cl_file-col {
-            width: 12.5%;
-        }
-        &__purpose-col {
-            width: 25%;
-        }
-        &__region-col {
-            width: 12.5%;
-        }
-        &__status-col {
-            width: 14%;
-        }
-        &__commenting-col {
-            width: 16%;
-        }
-        &__project-details {
-            font-size: 0.9375rem;
-            &--description {
-                &::ng-deep {
-                    p {
-                        line-height: calc(0.9375rem * 1.5);
-                        font-size: 0.9375rem;
-                    }
-                }
-            }
-            &--list {
-                list-style-type: none;
-                .name {
-                    width: 15rem;
-                }
-                .value {
-                    width: auto;
-                }
-            }
-            &--links {
-                .btn {
-                    +.btn {
-                        margin-left: 0.5rem;
-                    }
-                }
-            }
-        }
+  .project-table {
+    &__cl_file-col {
+      width: 12.5%;
     }
+
+    &__purpose-col {
+      width: 25%;
+    }
+
+    &__region-col {
+      width: 12.5%;
+    }
+
+    &__status-col {
+      width: 14%;
+    }
+
+    &__commenting-col {
+      width: 16%;
+    }
+
+    &__project-details {
+      font-size: 0.9375rem;
+
+      &--description {
+        &::ng-deep {
+          p {
+            line-height: calc(0.9375rem * 1.5);
+            font-size: 0.9375rem;
+          }
+        }
+      }
+
+      &--list {
+        list-style-type: none;
+
+        .name {
+          width: 15rem;
+        }
+
+        .value {
+          width: auto;
+        }
+      }
+
+      &--links {
+        .btn {
+          +.btn {
+            margin-left: 0.5rem;
+          }
+        }
+      }
+    }
+  }
 }
 
 .search-area {
@@ -162,7 +186,7 @@
   padding: 8px;
 }
 
-.search-button{
+.search-button {
   min-width: 10rem;
   font-weight: 700;
   background: #fcba18;
@@ -170,7 +194,7 @@
   border: none;
 }
 
-.search-button:hover{
+.search-button:hover {
   min-width: 10rem;
   font-weight: 700;
   background: #0069d9;
@@ -191,16 +215,17 @@
     margin-bottom: 6px;
     padding-left: 0px;
     display: flex;
-    flex-wrap:wrap;
+    flex-wrap: wrap;
     gap: 6px 12px;
 
-    .filter{
+    .filter {
       min-width: 225px;
       max-width: 300px;
       flex: 1 0 calc(22% - 58px);
       margin-bottom: 0px;
     }
-    .eaDate{
+
+    .eaDate {
       flex: 1 0 calc(35% - 58px);
       max-width: 450px;
     }
@@ -211,14 +236,14 @@
     margin-right: 0px;
   }
 
-  .controls{
+  .controls {
     display: flex;
     margin-right: 0px;
     margin-top: 15px;
     align-content: flex-end;
   }
 
-  .show-advanced-search-button button{
+  .show-advanced-search-button button {
     float: right;
     margin: 0px 0px 6px auto;
     width: 200px;
@@ -228,10 +253,10 @@
     margin: 8px 0px 8px 8px;
   }
 
-  .more-btn{
+  .more-btn {
     margin: 0px;
-    float:right;
-    margin-left:auto;
+    float: right;
+    margin-left: auto;
   }
 
   .calendar {
@@ -239,26 +264,30 @@
   }
 
   .date-range {
-    width:100%;
+    width: 100%;
     margin-left: 0px;
-    .date-from{
-      padding-right:10px;
+
+    .date-from {
+      padding-right: 10px;
       max-width: 300px;
       flex: 1 0 calc(50% - 20px);
     }
-    .date-to{
-      padding-left:10px;
+
+    .date-to {
+      padding-left: 10px;
       max-width: 300px;
       flex: 1 0 calc(50% - 20px);
     }
-    
+
     .form-control {
       z-index: 0px !important;
       height: 2rem;
     }
-    .input-group-append{
+
+    .btn-append {
       height: 2rem;
     }
+
     .calendar {
       padding-top: 0px;
     }
@@ -275,186 +304,194 @@
     bottom: -8px;
   }
 
-    ng-select {
-      width: 100%;
+  ng-select {
+    width: 100%;
+  }
+
+  #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
+    overflow: visible;
+  }
+
+  ::ng-deep .ng-select.ng-select-single .ng-select-container {
+    height: 46px;
+  }
+
+  .date-input {
+    display: flex;
+  }
+
+  .ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
+    color: #585858;
+    display: flex;
+    align-items: center;
+  }
+
+  .ng-select ::ng-deep .ng-placeholder {
+    color: #585858;
+  }
+
+  .center-icon {
+    vertical-align: middle;
+  }
+
+  // set icons in placeholders
+  .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "work";
+    vertical-align: middle;
+  }
+
+  .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "comment";
+    vertical-align: middle;
+  }
+
+  .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "mark_as_unread";
+    vertical-align: middle;
+  }
+
+  .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "date_range";
+    vertical-align: middle;
+  }
+
+  .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "domain";
+    vertical-align: middle;
+  }
+
+  .ng-select#projectPhase ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "view_timeline";
+    vertical-align: middle;
+  }
+
+  .ng-select#ceaaInvolvement ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "hub";
+    vertical-align: middle;
+  }
+
+  .ng-select#region ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+    font-family: 'Material Icons';
+    font-size: 20px;
+    font-weight: normal;
+    content: "explore";
+    vertical-align: middle;
+  }
+
+  .ng-select ::ng-deep .ng-placeholder.custom::before {
+    content: none;
+  }
+
+  .ng-placeholder {
+    font-weight: 600;
+  }
+
+  .filter-label {
+    display: flex;
+
+    p {
+      margin: 0px;
+      align-self: center;
+    }
+  }
+
+  .filter-row {
+    position: relative;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .filters-hidden {
+    flex-direction: row-reverse;
+  }
+
+  .filter-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0px 4px;
+    margin-top: 0px;
+
+    .type,
+    .proponent {
+      background: #FEEBAB;
+      color: #553402;
     }
 
-    #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host{
-      overflow: visible;
+    .pcp,
+    .projectPhase {
+      background: #E3EBFF;
+      color: #022170;
     }
 
-    ::ng-deep .ng-select.ng-select-single .ng-select-container{
-      height: 46px;
+    .eacDecision,
+    .CEAAInvolvement {
+      background: #FFF8E8;
+      color: #593F00;
     }
 
-    .date-input{
-      display:flex;
+    .eacDecisionDate,
+    .region {
+      background: #F1F8FF;
+      color: #323130;
     }
-  
-    .ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
-      color: #585858;
-      display: flex;
-      align-items: center;
-    }
-  
-    .ng-select ::ng-deep .ng-placeholder {
-      color: #585858;
-    }
-  
-    .center-icon {
-      vertical-align: middle;
-    }
-  
-    // set icons in placeholders
-    .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\e943";
-    }
-  
-    .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\e24c";
-    }
-  
-    .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\e9bc";
-    }
+  }
 
-    .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\e916";
-    }
-  
-    .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\e7ee";
-    }
-  
-    .ng-select#projectPhase ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\eb85";
-    }
-  
-    .ng-select#ceaaInvolvement ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 28px;
-      font-variation-settings: 'OPSZ' 28, 'wght' 300;
-      content: "\e9f4";
-    }
-  
-    .ng-select#region ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-      font-family: 'Material Symbols Outlined';
-      font-size: 32px;
-      font-variation-settings: 'OPSZ' 32, 'wght' 300;
-      content: "\f6ea";
-    }
-  
-    .ng-select ::ng-deep .ng-placeholder.custom::before {
-      content: none;
-    }
-  
-    .ng-placeholder {
-      font-weight: 600;
-    }
-  
-    .filter-label {
-      display: flex;
-  
-      p {
-        margin: 0px;
-        align-self: center;
-      }
-    }
-  
-    .filter-row {
-      position: relative;
-      margin-left: 10px;
-      margin-right: 10px;
-    }
-  
-    .filters-hidden {
-      flex-direction: row-reverse;
-    }
-  
-    .filter-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0px 4px;
-      margin-top: 0px;
+  .filter-badge {
+    border-radius: 4px;
+    margin-top: 2px;
+    padding: .3rem .6rem;
+  }
 
-      .type,
-      .proponent {
-        background: #FEEBAB;
-        color: #553402;
-      }
+  .last {
+    padding-right: 0px;
+    flex: 0 1 230px;
+  }
 
-      .pcp,
-      .projectPhase {
-        background: #E3EBFF;
-        color: #022170;
-      }
+  .first {
+    padding-left: 0px;
+    flex: 1 0 calc(100% - 230px);
+  }
 
-      .eacDecision,
-      .CEAAInvolvement {
-        background: #FFF8E8;
-        color: #593F00;
-      }
+}
 
-      .eacDecisionDate,
-      .region {
-        background: #F1F8FF;
-        color: #323130;
-      }
-    }
-  
-    .filter-badge {
-      border-radius: 4px;
-      margin-top: 2px;
-      padding: .3rem .6rem;
-    }
-  
-    .last {
-      padding-right: 0px;
-      flex: 0 1 230px;
-    }
-  
-    .first {
-      padding-left: 0px;
-      flex: 1 0 calc(100% - 230px);
-    }
-  
-    }
-  
-    .results {
-      color: black;
-    }
-  
-    .btn-group-toggle>.btn {
-      margin-bottom: 0;
-      background: none;
-      color: #13477b;
-      border: 1px solid #858b99;
-      font-weight: 600;
-  
-      &:hover {
-        background: #fcb118;
-      }
-  
-      &.active {
-        background: #235383;
-        color: #fff;
-      }
-    }
+.results {
+  color: black;
+}
+
+.btn-group-toggle>.btn {
+  margin-bottom: 0;
+  background: none;
+  color: #13477b;
+  border: 1px solid #858b99;
+  font-weight: 600;
+
+  &:hover {
+    background: #fcb118;
+  }
+
+  &.active {
+    background: #235383;
+    color: #fff;
+  }
+}

@@ -1,252 +1,245 @@
 <form *ngIf="myForm && !loading" [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
 
-    <section>
-      <h2>Basic Information
-        &nbsp;
-      </h2>
-
-      <div class="flex-container">
-          <div class="label-pair">
-          <label for="name">Project Name* </label>
-          <input name="name" id="name" formControlName="name" type="text" class="form-control" />
-        </div>
-
-        <div class="label-pair">
-          <label for="build">Project Nature*</label>
-          <select name="build" id="build" formControlName="build" class="form-control">
-              <option *ngFor="let natureObj of PROJECT_NATURE_OBJECT" [ngValue]="natureObj.build" [selected]='isNatureSelected(natureObj.build)'>{{natureObj.nature}}</option>
-            </select>
-        </div>
-        <div class="label-pair add-row">
-            <label for="proponent">Proponent*</label>
-            <div *ngIf="proponentName === '' || proponentName == null">
-              <button class="btn btn-primary" id="orgLink" type="button" (click)="linkOrganization()">Link Organization</button>
-            </div>
-            <div *ngIf="proponentName !== '' && proponentName">
-              <span class="cell icon">
-                <i class="material-icons">business</i>
-              </span>
-              &nbsp;
-              <span class="cell name" [title]="proponentName || ''">
-                <span class="cell__txt-content">{{proponentName}}</span>
-              </span>
-              <span class="cell actions">
-                <button class="btn btn-icon" type="button" title="Delete this organization"
-                  (click)="removeSelectedOrganization()">
-                  <i class="material-icons">delete</i>
-                </button>
-              </span>
-            </div>
-          </div>
-        <div class="label-pair">
-          <label for="type">Type* </label>
-          <select name="type" id="type" formControlName="type" class="form-control" (change)="onChangeType()">
-            <option *ngFor="let type of PROJECT_TYPES" [ngValue]="type">{{type}}</option>
-          </select>
-        </div>
-        <div class="label-pair">
-          <label for="sector">Sub-Type* </label>
-          <select name="sector" id="sector" formControlName="sector" class="form-control">
-            <option *ngFor="let sector of sectorsSelected" [ngValue]="sector">{{sector}}</option>
-
-          </select>
-        </div>
-        <div class="label-pair">
-          <label for="currentPhaseName">Project Phase* </label>
-          <select name="currentPhaseName" id="currentPhaseName" formControlName="currentPhaseName" class="form-control">
-            <option *ngFor="let projectPhase of projectPhases" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
-
-          </select>
-        </div>
-        <div class="label-pair med">
-          <label for="description">Description* </label>
-          <textarea name="description" id="description" formControlName="description" class="form-control"></textarea>
-        </div>
-      </div>
-    </section>
-    <section>
-      <h2>Location</h2>
-      <div class="flex-container">
-        <div class="label-pair med">
-          <label for="location">Location* </label>
-          <input name="location" id="location" formControlName="location" type="text" class="form-control" />
-        </div>
-        <div class="label-pair">
-          <label for="region">Region* </label>
-          <select required class="form-control" formControlName="region">
-            <option *ngFor="let region of regions" [ngValue]="region">{{region}}</option>
-          </select>
-        </div>
-        <div class="label-pair sm">
-          <label for="lat">Lat* </label>
-          <input name="lat" id="lat" formControlName="lat" type="text" class="form-control" />
-        </div>
-        <div class="label-pair sm">
-          <label for="lon">Long* </label>
-          <input name="lon" id="lon" formControlName="lon" type="text" class="form-control" />
-        </div>
-      </div>
-    </section>
-    <section>
-      <h2>Supplementary Information</h2>
-      <div class="flex-container">
-        <div class="label-pair">
-          <label for="CEAAInvolvement">IAAC Involvement </label>
-          <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
-              <option value=''>---Select---</option>
-              <option *ngFor="let involvement of ceaaInvolvements" [ngValue]="involvement._id">{{involvement.name}}</option>
-            </select>
-        </div>
-        <div class="label-pair med">
-          <label for="CEAALink">IAAC URL </label>
-          <input name="CEAALink" id="CEAALink" formControlName="CEAALink" type="text" class="form-control" />
-        </div>
-        <div class="label-pair">
-          <label for="capital">Capital Investment </label>
-          <div class="money">
-            <i class="material-icons mr-3" role="add">attach_money</i>
-            <input name="capital" id="capital" formControlName="capital" type="text" class="form-control" />
-          </div>
-        </div>
-        <div class="label-pair med">
-          <label for="notes">Notes </label>
-          <textarea name="notes" id="notes" formControlName="notes" type="text" class="form-control"></textarea>
-        </div>
-      </div>
-    </section>
-    <section>
-      <h2>Overall Project Status</h2>
-      <div class="flex-container">
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="eaStatus">EA Readiness Determination </label>
-            <select name="eaStatus" id="eaStatus" formControlName="eaStatus" class="form-control">
-              <option value=''>---Select---</option>
-              <option *ngFor="let ea of EA_READINESS_TYPES" [ngValue]="ea">{{ea}}</option>
-            </select>
-          </div>
-          <div class="label-pair">
-            <label for="eaStatusDate">Determination Date </label>
-            <div  class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="eaStatusDate"
-                formControlName="eaStatusDate" ngbDatepicker #eaStatusDatePicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="eaStatusDatePicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="status">Project Status </label>
-            <select name="status" id="status" formControlName="status" class="form-control">
-              <option value=''>---Select---</option>
-              <option *ngFor="let status of PROJECT_STATUS" [ngValue]="status">{{status}}</option>
-            </select>
-          </div>
-        </fieldset>
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="eacDecision">EA Decision* </label>
-            <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
-              <option value=''>---Select---</option>
-              <option *ngFor="let eacDecision of eacDecisions" [ngValue]="eacDecision._id">{{eacDecision.name}}</option>
-            </select>
-          </div>
-          <div class="label-pair">
-            <label for="decisionDate">EA Decision Date </label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
-                formControlName="decisionDate" ngbDatepicker #decisionDatePicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="substantially">Substantially Started </label>
-            <div name="substantially" class="radio-group">
-              <div class="radio">
-                <input type="radio" id="yes" value="yes" formControlName="substantially" name="substantially" />
-                <label for="yes">Yes</label>
-              </div>
-              <div class="radio">
-                <input type="radio" id="no" value="no" formControlName="substantially" name="substantially" />
-                <label for="no">No</label>
-              </div>
-            </div>
-          </div>
-          <div class="label-pair">
-            <label for="substantiallyDate">Substantially Started Date </label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd"
-                name="substantiallyDate" formControlName="substantiallyDate" ngbDatepicker
-                #substantiallyDatePicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="substantiallyDatePicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="dispute">Dispute Resolution </label>
-            <div name="dispute" class="radio-group">
-              <div class="radio">
-                <input type="radio" id="yes" value="yes" formControlName="dispute" name="dispute" />
-                <label for="yes">Yes</label>
-              </div>
-              <div class="radio">
-                <input type="radio" id="no" value="no" formControlName="dispute" name="dispute" />
-                <label for="no">No</label>
-              </div>
-            </div>
-          </div>
-          <div class="label-pair">
-            <label for="disputeDate">Dispute Resolution Date </label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd"
-                name="disputeDate" formControlName="disputeDate" ngbDatepicker
-                #disputeDatePicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="disputeDatePicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-      </div>
-    </section>
-    <section class="people">
-      <h2>People</h2>
-      <div class="flex-container">
-        <div class="label-pair add-row">
-          <label for="projectLead">Project Lead*</label>
-          <input [readonly]='true' name="projectLead" id="projectLead" formControlName="projectLead" type="text"
-            class="form-control override-read-only" />
-          <button class="add-btn" type="button" (click)="linkContact('lead')"><i class="material-icons"
-              role="add">add_box</i></button>
-        </div>
-        <div class="label-pair add-row">
-          <label for="responsibleEPD">Project EPD*</label>
-          <input [readonly]='true' name="responsibleEPD" id="responsibleEPD" formControlName="responsibleEPD"
-            type="text" class="form-control override-read-only" />
-          <button class="add-btn" type="button" (click)="linkContact('epd')"><i class="material-icons"
-              role="add">add_box</i></button>
-        </div>
-      </div>
-    </section>
-    <div class="text-right">
-      <button class="btn btn-cancel" type="cancel" (click)="onCancel()">Cancel</button>
+  <section>
+    <h2>Basic Information
       &nbsp;
-      <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
-      &nbsp;
-      <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()" *ngIf="!this.published">Save & Publish</button>
-      <button class="btn btn-unpublish" type="publish" (click)="onUnpublish()" *ngIf="this.published">Unpublish</button>
+    </h2>
+
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="name">Project Name* </label>
+        <input name="name" id="name" formControlName="name" type="text" class="form-control" />
+      </div>
+
+      <div class="label-pair">
+        <label for="build">Project Nature*</label>
+        <select name="build" id="build" formControlName="build" class="form-control">
+          <option *ngFor="let natureObj of PROJECT_NATURE_OBJECT" [ngValue]="natureObj.build"
+            [selected]='isNatureSelected(natureObj.build)'>{{natureObj.nature}}</option>
+        </select>
+      </div>
+      <div class="label-pair add-row">
+        <label for="proponent">Proponent*</label>
+        <div *ngIf="proponentName === '' || proponentName == null">
+          <button class="btn btn-primary" id="orgLink" type="button" (click)="linkOrganization()">Link
+            Organization</button>
+        </div>
+        <div *ngIf="proponentName !== '' && proponentName">
+          <span class="cell icon">
+            <i class="material-icons">business</i>
+          </span>
+          &nbsp;
+          <span class="cell name" [title]="proponentName || ''">
+            <span class="cell__txt-content">{{proponentName}}</span>
+          </span>
+          <span class="cell actions">
+            <button class="btn btn-icon" type="button" title="Delete this organization"
+              (click)="removeSelectedOrganization()">
+              <i class="material-icons">delete</i>
+            </button>
+          </span>
+        </div>
+      </div>
+      <div class="label-pair">
+        <label for="type">Type* </label>
+        <select name="type" id="type" formControlName="type" class="form-control" (change)="onChangeType()">
+          <option *ngFor="let type of PROJECT_TYPES" [ngValue]="type">{{type}}</option>
+        </select>
+      </div>
+      <div class="label-pair">
+        <label for="sector">Sub-Type* </label>
+        <select name="sector" id="sector" formControlName="sector" class="form-control">
+          <option *ngFor="let sector of sectorsSelected" [ngValue]="sector">{{sector}}</option>
+
+        </select>
+      </div>
+      <div class="label-pair">
+        <label for="currentPhaseName">Project Phase* </label>
+        <select name="currentPhaseName" id="currentPhaseName" formControlName="currentPhaseName" class="form-control">
+          <option *ngFor="let projectPhase of projectPhases" [ngValue]="projectPhase._id">{{projectPhase.name}}</option>
+
+        </select>
+      </div>
+      <div class="label-pair med">
+        <label for="description">Description* </label>
+        <textarea name="description" id="description" formControlName="description" class="form-control"></textarea>
+      </div>
     </div>
-  </form>
+  </section>
+  <section>
+    <h2>Location</h2>
+    <div class="flex-container">
+      <div class="label-pair med">
+        <label for="location">Location* </label>
+        <input name="location" id="location" formControlName="location" type="text" class="form-control" />
+      </div>
+      <div class="label-pair">
+        <label for="region">Region* </label>
+        <select required class="form-control" formControlName="region">
+          <option *ngFor="let region of regions" [ngValue]="region">{{region}}</option>
+        </select>
+      </div>
+      <div class="label-pair sm">
+        <label for="lat">Lat* </label>
+        <input name="lat" id="lat" formControlName="lat" type="text" class="form-control" />
+      </div>
+      <div class="label-pair sm">
+        <label for="lon">Long* </label>
+        <input name="lon" id="lon" formControlName="lon" type="text" class="form-control" />
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Supplementary Information</h2>
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="CEAAInvolvement">IAAC Involvement </label>
+        <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
+          <option value=''>---Select---</option>
+          <option *ngFor="let involvement of ceaaInvolvements" [ngValue]="involvement._id">{{involvement.name}}</option>
+        </select>
+      </div>
+      <div class="label-pair med">
+        <label for="CEAALink">IAAC URL </label>
+        <input name="CEAALink" id="CEAALink" formControlName="CEAALink" type="text" class="form-control" />
+      </div>
+      <div class="label-pair">
+        <label for="capital">Capital Investment </label>
+        <div class="money">
+          <i class="material-icons me-3" role="add">attach_money</i>
+          <input name="capital" id="capital" formControlName="capital" type="text" class="form-control" />
+        </div>
+      </div>
+      <div class="label-pair med">
+        <label for="notes">Notes </label>
+        <textarea name="notes" id="notes" formControlName="notes" type="text" class="form-control"></textarea>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h2>Overall Project Status</h2>
+    <div class="flex-container">
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="eaStatus">EA Readiness Determination </label>
+          <select name="eaStatus" id="eaStatus" formControlName="eaStatus" class="form-control">
+            <option value=''>---Select---</option>
+            <option *ngFor="let ea of EA_READINESS_TYPES" [ngValue]="ea">{{ea}}</option>
+          </select>
+        </div>
+        <div class="label-pair">
+          <label for="eaStatusDate">Determination Date </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="eaStatusDate"
+              formControlName="eaStatusDate" ngbDatepicker #eaStatusDatePicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="eaStatusDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="status">Project Status </label>
+          <select name="status" id="status" formControlName="status" class="form-control">
+            <option value=''>---Select---</option>
+            <option *ngFor="let status of PROJECT_STATUS" [ngValue]="status">{{status}}</option>
+          </select>
+        </div>
+      </fieldset>
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="eacDecision">EA Decision* </label>
+          <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
+            <option value=''>---Select---</option>
+            <option *ngFor="let eacDecision of eacDecisions" [ngValue]="eacDecision._id">{{eacDecision.name}}</option>
+          </select>
+        </div>
+        <div class="label-pair">
+          <label for="decisionDate">EA Decision Date </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
+              formControlName="decisionDate" ngbDatepicker #decisionDatePicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="substantially">Substantially Started </label>
+          <div name="substantially" class="radio-group">
+            <div class="radio">
+              <input type="radio" id="yes" value="yes" formControlName="substantially" name="substantially" />
+              <label for="yes">Yes</label>
+            </div>
+            <div class="radio">
+              <input type="radio" id="no" value="no" formControlName="substantially" name="substantially" />
+              <label for="no">No</label>
+            </div>
+          </div>
+        </div>
+        <div class="label-pair">
+          <label for="substantiallyDate">Substantially Started Date </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="substantiallyDate"
+              formControlName="substantiallyDate" ngbDatepicker #substantiallyDatePicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="substantiallyDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </fieldset>
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="dispute">Dispute Resolution </label>
+          <div name="dispute" class="radio-group">
+            <div class="radio">
+              <input type="radio" id="yes" value="yes" formControlName="dispute" name="dispute" />
+              <label for="yes">Yes</label>
+            </div>
+            <div class="radio">
+              <input type="radio" id="no" value="no" formControlName="dispute" name="dispute" />
+              <label for="no">No</label>
+            </div>
+          </div>
+        </div>
+        <div class="label-pair">
+          <label for="disputeDate">Dispute Resolution Date </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="disputeDate"
+              formControlName="disputeDate" ngbDatepicker #disputeDatePicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="disputeDatePicker.toggle()"
+              type="button"></button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+  </section>
+  <section class="people">
+    <h2>People</h2>
+    <div class="flex-container">
+      <div class="label-pair add-row">
+        <label for="projectLead">Project Lead*</label>
+        <input [readonly]='true' name="projectLead" id="projectLead" formControlName="projectLead" type="text"
+          class="form-control override-read-only" />
+        <button class="add-btn" type="button" (click)="linkContact('lead')"><i class="material-icons"
+            role="add">add_box</i></button>
+      </div>
+      <div class="label-pair add-row">
+        <label for="responsibleEPD">Project EPD*</label>
+        <input [readonly]='true' name="responsibleEPD" id="responsibleEPD" formControlName="responsibleEPD" type="text"
+          class="form-control override-read-only" />
+        <button class="add-btn" type="button" (click)="linkContact('epd')"><i class="material-icons"
+            role="add">add_box</i></button>
+      </div>
+    </div>
+  </section>
+  <div class="text-end">
+    <button class="btn btn-cancel" type="cancel" (click)="onCancel()">Cancel</button>
+    &nbsp;
+    <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
+    &nbsp;
+    <button class="btn btn-primary btn-publish" type="publish" (click)="onPublish()" *ngIf="!this.published">Save &
+      Publish</button>
+    <button class="btn btn-unpublish" type="publish" (click)="onUnpublish()" *ngIf="this.published">Unpublish</button>
+  </div>
+</form>
