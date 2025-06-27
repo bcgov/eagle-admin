@@ -39,7 +39,7 @@
     "ng-zorro-antd": "17.4.1",
     "ngx-cookie-service": "^17.1.0",
     "rxjs": "^7.8.2",
-    "tinymce": "^5.10.9",
+    "tinymce": "^7.2.0",
     "tslib": "^2.0.0",
     "web-animations-js": "^2.3.2",
     "xlsx": "^0.18.5",
