@@ -77,7 +77,8 @@ describe('ReviewCommentComponent', () => {
     fixture.detectChanges();
   });
 
-  // it('should create', () => {
-  //   expect(component).toBeTruthy();
-  // });
+  it('should create', () => {
+    const component = fixture.componentInstance;
+    expect(component).toBeTruthy();
+  });
 });

@@ -33,11 +33,11 @@ describe('FormTab2002', () => {
   };
 
   const mockProjectService = jasmine.createSpyObj('ProjectService', [
-      'unPublish',
-      'Publish',
-      'add',
-      'save'
-    ]);
+    'unPublish',
+    'Publish',
+    'add',
+    'save'
+  ]);
   mockProjectService.unPublish.and.returnValue(of({}));
   mockProjectService.Publish.and.returnValue(of({}));
   mockProjectService.add.and.returnValue(of({}));
@@ -102,18 +102,6 @@ describe('FormTab2002', () => {
     component.buildForm();
     expect(component.validateForm()).toBeFalsy();
   });
-  /*
-  /// Broken test
-  /// This test will fail on certain seeds due to random order, which means
-  /// the tests here are not isolatable. This test will need to be re-written
-  /// but more likely, the underlying code is potentially breakable and should be fixed
-  it('should display alert on empty EPD', () => {
-    component.myForm = component.buildFormFromData(projectAjaxData);
-    // Check to see that the alert box popped up
-    spyOn(window, 'alert');
-    component.onSubmit();
-    expect(window.alert).toHaveBeenCalledWith('You must select an EPD');
-  }); */
   it('should display alert on empty EA Decision', () => {
     // This test will not work because the EPD and lead are not being pre-populated. Need to add those in manually
     projectAjaxData.responsibleEPDObj = {
