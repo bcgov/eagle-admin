@@ -3,7 +3,6 @@ import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import * as _ from 'lodash';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
 import { SearchService } from 'src/app/services/search.service';
@@ -11,7 +10,7 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Injectable()
-export class ProjectListResolver  {
+export class ProjectListResolver {
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
@@ -20,7 +19,7 @@ export class ProjectListResolver  {
   public filterForURL: object = {};
   public filterForAPI: object = {};
 
- // These values should be moved into Lists instead of being hard-coded all over the place
+  // These values should be moved into Lists instead of being hard-coded all over the place
 
   private TYPE_MAP: object = {
     energyElectricity: 'Energy-Electricity',
@@ -157,7 +156,7 @@ export class ProjectListResolver  {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }

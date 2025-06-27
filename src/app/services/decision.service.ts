@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import * as _ from 'lodash';
 
 import { ApiService } from './api';
 import { Decision } from '../models/decision';
@@ -15,7 +14,7 @@ export class DecisionService {
 
   add(orig: Decision): Observable<Decision> {
     // make a (deep) copy of the passed-in decision so we don't change it
-    const decision = _.cloneDeep(orig);
+    const decision = JSON.parse(JSON.stringify(orig));
 
     // ID must not exist on POST
     delete decision._id;
@@ -35,7 +34,7 @@ export class DecisionService {
 
   save(orig: Decision): Observable<Decision> {
     // make a (deep) copy of the passed-in decision so we don't change it
-    const decision = _.cloneDeep(orig);
+    const decision = JSON.parse(JSON.stringify(orig));
 
     // don't send documents
     delete decision.documents;

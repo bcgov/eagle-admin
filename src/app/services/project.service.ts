@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, forkJoin, merge } from 'rxjs';
 import { flatMap, map, catchError } from 'rxjs/operators';
-import * as _ from 'lodash';
 
 import { ApiService } from './api';
 
@@ -162,7 +161,7 @@ export class ProjectService {
   // update existing project
   save(orig: Project): Observable<Project> {
     // make a (deep) copy of the passed-in project so we don't change it
-    const proj = _.cloneDeep(orig);
+    const proj = JSON.parse(JSON.stringify(orig));
 
     // replace newlines with \\n (JSON format)
     if (proj.description) {

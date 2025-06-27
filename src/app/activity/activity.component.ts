@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as moment from 'moment';
-import * as _ from 'lodash';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
 import { Project } from '../models/project';
@@ -278,7 +277,7 @@ export class ActivityComponent implements OnDestroy {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
           this.filterForUI[name].push(record);

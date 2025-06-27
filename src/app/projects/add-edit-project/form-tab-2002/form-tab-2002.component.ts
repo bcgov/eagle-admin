@@ -4,7 +4,6 @@ import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
 import { Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import * as _ from 'lodash';
 
 import { mergeMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -725,9 +724,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.
-    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-    this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
+    this.eacDecisions.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);
+    this.ceaaInvolvements.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);
+    this.projectPhases.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);
   }
 
   ngOnDestroy() {

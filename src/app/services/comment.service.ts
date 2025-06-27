@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, forkJoin } from 'rxjs';
 import { mergeMap, map, catchError, flatMap } from 'rxjs/operators';
-import * as _ from 'lodash';
 
 import { ApiService } from './api';
 import { DocumentService } from './document.service';
@@ -86,7 +85,7 @@ export class CommentService {
         }
       });
       comment.documentsList = null;
-      const newComment = _.cloneDeep(comment);
+      const newComment = JSON.parse(JSON.stringify(comment));
       observables.push(this.api.saveComment(newComment));
       return forkJoin(observables)
         .pipe(
@@ -100,7 +99,7 @@ export class CommentService {
       comment.documentsList = null;
 
       // make a (deep) copy of the passed-in comment so we don't change it
-      const newComment = _.cloneDeep(comment);
+      const newComment = JSON.parse(JSON.stringify(comment));
 
       return this.api.saveComment(newComment)
         .pipe(

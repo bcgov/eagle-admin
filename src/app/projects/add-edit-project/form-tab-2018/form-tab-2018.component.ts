@@ -4,7 +4,6 @@ import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import * as moment from 'moment-timezone';
 import { Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import * as _ from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
@@ -782,9 +781,24 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.
-    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-    this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
+    this.eacDecisions = this.eacDecisions.slice().sort((a, b) => {
+      if (a.legislation !== b.legislation) {
+        return (a.legislation || 0) - (b.legislation || 0);
+      }
+      return (a.listOrder || 0) - (b.listOrder || 0);
+    });
+    this.ceaaInvolvements = this.ceaaInvolvements.slice().sort((a, b) => {
+      if (a.legislation !== b.legislation) {
+        return (a.legislation || 0) - (b.legislation || 0);
+      }
+      return (a.listOrder || 0) - (b.listOrder || 0);
+    });
+    this.projectPhases = this.projectPhases.slice().sort((a, b) => {
+      if (a.legislation !== b.legislation) {
+        return (a.legislation || 0) - (b.legislation || 0);
+      }
+      return (a.listOrder || 0) - (b.listOrder || 0);
+    });
   }
 
   ngOnDestroy() {

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import * as _ from 'lodash';
 import { Project } from '../models/project';
 import { ProjectService } from '../services/project.service';
 import { SearchService } from '../services/search.service';
@@ -86,7 +85,7 @@ export class ActivityComponentResolver {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }

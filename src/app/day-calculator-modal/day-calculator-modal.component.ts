@@ -1,6 +1,5 @@
 import { Component, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Dictionary } from 'lodash';
 import * as moment from 'moment';
 import { Utils } from '../shared/utils/utils';
 
@@ -37,7 +36,7 @@ export class DayCalculatorModalComponent {
 
   showRules = false;
 
-  types: Array<Dictionary<string>> = [
+  types: Array<{ displayName: string; value: string }> = [
     { displayName: 'Day Zero', value: 'dayZero' },
     { displayName: 'Calendar', value: 'regular' },
     { displayName: 'Suspension', value: 'suspended' }

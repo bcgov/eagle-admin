@@ -4,7 +4,6 @@ import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import * as moment from 'moment';
-import * as _ from 'lodash';
 import { Org } from 'src/app/models/org';
 import { Project } from 'src/app/models/project';
 import { SearchTerms } from 'src/app/models/search';
@@ -220,7 +219,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
           this.filterForUI[name].push(record);
@@ -535,10 +534,38 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.
-    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-    this.projectPhases = _.sortBy(this.projectPhases, ['legislation', 'listOrder']);
-    this.regions = _.sortBy(this.regions, ['legislation', 'listOrder']);
+    this.eacDecisions = this.eacDecisions.sort((a, b) => {
+      if (a["legislation"] === b["legislation"]) {
+        return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+      }
+      if (a["legislation"] < b["legislation"]) return -1;
+      if (a["legislation"] > b["legislation"]) return 1;
+      return 0;
+    });
+    this.ceaaInvolvements = this.ceaaInvolvements.sort((a, b) => {
+      if (a["legislation"] === b["legislation"]) {
+        return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+      }
+      if (a["legislation"] < b["legislation"]) return -1;
+      if (a["legislation"] > b["legislation"]) return 1;
+      return 0;
+    });
+    this.projectPhases = this.projectPhases.sort((a, b) => {
+      if (a["legislation"] === b["legislation"]) {
+        return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+      }
+      if (a["legislation"] < b["legislation"]) return -1;
+      if (a["legislation"] > b["legislation"]) return 1;
+      return 0;
+    });
+    this.regions = this.regions.sort((a, b) => {
+      if (a["legislation"] === b["legislation"]) {
+        return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+      }
+      if (a["legislation"] < b["legislation"]) return -1;
+      if (a["legislation"] > b["legislation"]) return 1;
+      return 0;
+    });
   }
 
   // Compares selected options when a dropdown is grouped by legislation.

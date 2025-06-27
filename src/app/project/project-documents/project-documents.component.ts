@@ -5,7 +5,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription, forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import * as moment from 'moment';
-import * as _ from 'lodash';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { SearchTerms } from 'src/app/models/search';
 import { ApiService } from 'src/app/services/api';
@@ -157,22 +156,40 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     if (this.milestones.length === 0) {
       const milestones = this.configService.lists.filter(item => item.type === 'label');
-      this.milestones = _.sortBy(milestones, ['legislation']);
+      this.milestones = milestones.slice().sort((a, b) => {
+        if (a.legislation < b.legislation) return -1;
+        if (a.legislation > b.legislation) return 1;
+        return 0;
+      });
     }
 
     if (this.authors.length === 0) {
       const authors = this.configService.lists.filter(item => item.type === 'author');
-      this.authors = _.sortBy(authors, ['legislation']);
+      this.authors = authors.slice().sort((a, b) => {
+        if (a.legislation < b.legislation) return -1;
+        if (a.legislation > b.legislation) return 1;
+        return 0;
+      });
     }
 
     if (this.types.length === 0) {
       const types = this.configService.lists.filter(item => item.type === 'doctype');
-      this.types = _.sortBy(types, ['legislation', 'listOrder']);
+      this.types = types.slice().sort((a, b) => {
+        if (a.legislation < b.legislation) return -1;
+        if (a.legislation > b.legislation) return 1;
+        if (a.listOrder < b.listOrder) return -1;
+        if (a.listOrder > b.listOrder) return 1;
+        return 0;
+      });
     }
 
     if (this.projectPhases.length === 0) {
       const projectPhases = this.configService.lists.filter(item => item.type === 'projectPhase');
-      this.projectPhases = _.sortBy(projectPhases, ['legislation']);
+      this.projectPhases = projectPhases.slice().sort((a, b) => {
+        if (a.legislation < b.legislation) return -1;
+        if (a.legislation > b.legislation) return 1;
+        return 0;
+      });
     }
     this.subscriptions.add(
       this.route.params
@@ -635,7 +652,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }

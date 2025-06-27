@@ -6,7 +6,6 @@ import { of, Subscription } from 'rxjs';
 
 import { switchMap } from 'rxjs/operators';
 
-import * as _ from 'lodash';
 import * as moment from 'moment';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
@@ -233,15 +232,35 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
     // todo how are we handling these lists with legislation year in advanced search? EE-406
     // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
-    this.docTypes = _.sortBy(this.docTypes, ['legislation', 'listOrder']);
+    this.docTypes = this.docTypes.sort((a, b) => {
+      if (a.legislation !== b.legislation) {
+        return (a.legislation || 0) - (b.legislation || 0);
+      }
+      return (a.listOrder || 0) - (b.listOrder || 0);
+    });
 
     // Sort by legislation.
-    this.milestones = _.sortBy(this.milestones, ['legislation']);
-    this.authors = _.sortBy(this.authors, ['legislation']);
-    this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
-    this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-    this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-    this.regions = _.sortBy(this.regions, ['legislation', 'listOrder']);
+    this.milestones = this.milestones.sort((a, b) => (a.legislation || 0) - (b.legislation || 0));
+    this.authors = this.authors.sort((a, b) => (a.legislation || 0) - (b.legislation || 0));
+    this.projectPhases = this.projectPhases.sort((a, b) => (a.legislation || 0) - (b.legislation || 0));
+    this.eacDecisions = this.eacDecisions.sort((a, b) => {
+      if ((a["legislation"] || 0) !== (b["legislation"] || 0)) {
+        return (a["legislation"] || 0) - (b["legislation"] || 0);
+      }
+      return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+    });
+    this.ceaaInvolvements = this.ceaaInvolvements.sort((a, b) => {
+      if ((a["legislation"] || 0) !== (b["legislation"] || 0)) {
+        return (a["legislation"] || 0) - (b["legislation"] || 0);
+      }
+      return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+    });
+    this.regions = this.regions.sort((a, b) => {
+      if ((a["legislation"] || 0) !== (b["legislation"] || 0)) {
+        return (a["legislation"] || 0) - (b["legislation"] || 0);
+      }
+      return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+    });
 
     // Fetch proponents and other collections
     // TODO: Put all of these into Lists
@@ -273,7 +292,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
             // query string. Previously these were ignored on a refresh
             const filterKeys = Object.keys(this.filterForAPI);
             const hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
-            if (_.isEmpty(this.terms.getParams())
+            if (Object.keys(this.terms.getParams()).length === 0
               && !this.hasFilter()
               && !hasFilterFromQueryString) {
               return of(null);
@@ -502,7 +521,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }

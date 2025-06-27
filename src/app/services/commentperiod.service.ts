@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import * as _ from 'lodash';
 
 import { ApiService } from './api';
 import { CommentPeriod } from '../models/commentPeriod';
@@ -85,7 +84,7 @@ export class CommentPeriodService {
 
   save(orig: CommentPeriod): Observable<CommentPeriod> {
     // make a (deep) copy of the passed-in comment period so we don't change it
-    const period = _.cloneDeep(orig);
+    const period = JSON.parse(JSON.stringify(orig));
 
     return this.api.saveCommentPeriod(period)
       .pipe(

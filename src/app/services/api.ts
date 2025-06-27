@@ -3,7 +3,6 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
-import * as _ from 'lodash';
 import * as JSZip from 'jszip';
 
 import { ConfigService } from './config.service';
@@ -1200,9 +1199,9 @@ export class ApiService {
   //
   private buildValues(collection: any[]): string {
     let values = '';
-    _.each(collection, function (a) {
+    for (const a of collection) {
       values += a + '|';
-    });
+    }
     // trim the last |
     return values.replace(/\|$/, '');
   }

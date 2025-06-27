@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import * as _ from 'lodash';
 import { ConfigService } from 'src/app/services/config.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -87,7 +86,7 @@ export class DocumentsResolver {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [identifyBy, value]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }
