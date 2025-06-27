@@ -1,8 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectorRef, EventEmitter, Output, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { from, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { from, Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
@@ -21,14 +20,14 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   @Input() smallTable: boolean;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
 
+  private subscriptions = new Subscription();
+
   public contacts: any;
   public paginationData: any;
   public dropdownItems = ['Edit', 'Delete'];
   public columns: any;
   public useSmallTable: boolean;
   public projectId: string;
-
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
@@ -57,37 +56,44 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
     modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Participating Indigenous Nation or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
-    from(modalRef.result).pipe(takeUntil(this.ngUnsubscribe)).subscribe(
-      (isConfirmed: boolean) => {
-        if (isConfirmed) {
-          this.projectService.deletePin(this.projectId, pin._id)
-            .subscribe(
-              () => {
-                this.contacts.splice(this.contacts.indexOf(pin), 1);
-                this._changeDetectionRef.detectChanges();
-              },
-              error => {
-                console.log('error =', error);
-              });
+    this.subscriptions.add(
+      from(modalRef.result).subscribe({
+        next: (isConfirmed: boolean) => {
+          if (isConfirmed) {
+            this.subscriptions.add(
+              this.projectService.deletePin(this.projectId, pin._id)
+                .subscribe({
+                  next: () => {
+                    this.contacts.splice(this.contacts.indexOf(pin), 1);
+                    this._changeDetectionRef.detectChanges();
+                  },
+                  error: error => {
+                    console.log('error =', error);
+                  }
+                })
+            );
+          }
+        },
+        error: () => {
+          // Modal dismissed
         }
-      },
-      () => {
-        // Modal dismissed
-      }
+      })
     );
   }
 
   togglePin(activity) {
     activity.pinned === true ? activity.pinned = false : activity.pinned = true;
-    this.recentActivityService.save(activity)
-      .subscribe(
-        () => {
-          this._changeDetectionRef.detectChanges();
-        },
-        error => {
-          console.log('error =', error);
-        }
-      );
+    this.subscriptions.add(
+      this.recentActivityService.save(activity)
+        .subscribe({
+          next: () => {
+            this._changeDetectionRef.detectChanges();
+          },
+          error: error => {
+            console.log('error =', error);
+          }
+        })
+    );
   }
 
   goToItem(activity) {
@@ -108,7 +114,6 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

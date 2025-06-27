@@ -1,10 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { ActivatedRouteSnapshot } from '@angular/router';
+import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
-import 'rxjs/add/operator/switchMap';
-
-import * as _ from 'lodash';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
 import { SearchService } from 'src/app/services/search.service';
@@ -12,7 +10,7 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Injectable()
-export class ProjectListResolver implements Resolve<Object> {
+export class ProjectListResolver {
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
@@ -21,7 +19,7 @@ export class ProjectListResolver implements Resolve<Object> {
   public filterForURL: object = {};
   public filterForAPI: object = {};
 
- // These values should be moved into Lists instead of being hard-coded all over the place
+  // These values should be moved into Lists instead of being hard-coded all over the place
 
   private TYPE_MAP: object = {
     energyElectricity: 'Energy-Electricity',
@@ -93,41 +91,43 @@ export class ProjectListResolver implements Resolve<Object> {
     // Fetch proponents and other collections
     // TODO: Put all of these into Lists
     return this.orgService.getByCompanyType('Proponent/Certificate Holder')
-      .switchMap((res: any) => {
-        this.proponents = res || [];
+      .pipe(
+        switchMap((res: any) => {
+          this.proponents = res || [];
 
-        this.regions = this.REGIONS_COLLECTION;
-        this.ceaaInvolvements = this.CEAA_INVOLVEMENTS_COLLECTION;
+          this.regions = this.REGIONS_COLLECTION;
+          this.ceaaInvolvements = this.CEAA_INVOLVEMENTS_COLLECTION;
 
-        this.setFiltersFromParams(route.params);
+          this.setFiltersFromParams(route.params);
 
-        const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
-        if (tableParams.sortBy === '') {
-          tableParams.sortBy = '+name';
-          this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
-        }
+          const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
+          if (tableParams.sortBy === '') {
+            tableParams.sortBy = '+name';
+            this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
+          }
 
-        // if we're searching for projects, replace projectPhase with currentPhaseName
-        // The code is called projectPhase, but the db column on projects is currentPhaseName
-        // so the rename is required to pass in the correct query
-        if (route.params.hasOwnProperty('projectPhase')) {
-          this.filterForAPI['currentPhaseName'] = route.params['projectPhase'];
-          delete this.filterForAPI['projectPhase'];
-        }
+          // if we're searching for projects, replace projectPhase with currentPhaseName
+          // The code is called projectPhase, but the db column on projects is currentPhaseName
+          // so the rename is required to pass in the correct query
+          if (route.params.hasOwnProperty('projectPhase')) {
+            this.filterForAPI['currentPhaseName'] = route.params['projectPhase'];
+            delete this.filterForAPI['projectPhase'];
+          }
 
-        return this.searchService.getSearchResults(
-          tableParams.keywords,
-          'Project',
-          null,
-          tableParams.currentPage,
-          tableParams.pageSize,
-          tableParams.sortBy,
-          {},
-          true,
-          this.filterForAPI,
-          ''
-        );
-      });
+          return this.searchService.getSearchResults(
+            tableParams.keywords,
+            'Project',
+            null,
+            tableParams.currentPage,
+            tableParams.pageSize,
+            tableParams.sortBy,
+            {},
+            true,
+            this.filterForAPI,
+            ''
+          );
+        })
+      );
   }
 
   paramsToCheckboxFilters(params, name, map) {
@@ -156,7 +156,7 @@ export class ProjectListResolver implements Resolve<Object> {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }

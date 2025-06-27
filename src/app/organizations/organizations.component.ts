@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { OrganizationsTableRowsComponent } from './organizations-table-rows/organizations-table-rows.component';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
@@ -17,7 +17,7 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 })
 export class OrganizationsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public organizations: Org[] = null;
   public loading = true;
 
@@ -75,39 +75,41 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedProject = null;
 
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
-        if (this.storageService.state.orgTableParams) {
-          this.tableParams = this.storageService.state.orgTableParams;
-          this.storageService.state.orgTableParams = null;
-        } else {
-          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, null, ['companyType']);
-          if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = '+name';
-          }
-        }
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.filter, this.tableParams.keywords);
-
-        if (this.tableParams.filter && this.tableParams.filter.companyType) {
-          this.setFilterButtons();
-        }
-
-        this.route.data
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res: any) => {
-            if (res && res.orgs && res.orgs[0].data.meta && res.orgs[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.orgs[0].data.meta[0].searchResultsTotal;
-              this.organizations = res.orgs[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.organizations = [];
+    this.subscriptions.add(
+      this.route.params
+        .subscribe(params => {
+          if (this.storageService.state.orgTableParams) {
+            this.tableParams = this.storageService.state.orgTableParams;
+            this.storageService.state.orgTableParams = null;
+          } else {
+            this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, null, ['companyType']);
+            if (this.tableParams.sortBy === '') {
+              this.tableParams.sortBy = '+name';
             }
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          });
-      });
+          }
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.filter, this.tableParams.keywords);
+
+          if (this.tableParams.filter && this.tableParams.filter.companyType) {
+            this.setFilterButtons();
+          }
+
+          this.subscriptions.add(
+            this.route.data
+              .subscribe((res: any) => {
+                if (res && res.orgs && res.orgs[0].data.meta && res.orgs[0].data.meta.length > 0) {
+                  this.tableParams.totalListItems = res.orgs[0].data.meta[0].searchResultsTotal;
+                  this.organizations = res.orgs[0].data.searchResults;
+                } else {
+                  this.tableParams.totalListItems = 0;
+                  this.organizations = [];
+                }
+                this.setRowData();
+                this.loading = false;
+                this._changeDetectionRef.detectChanges();
+              })
+          );
+        })
+    );
   }
 
   public onSubmit(currentPage = 1) {
@@ -219,7 +221,6 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

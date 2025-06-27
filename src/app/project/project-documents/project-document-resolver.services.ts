@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-import 'rxjs/add/operator/switchMap';
-import * as _ from 'lodash';
+import { map } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 
 
 @Injectable()
-export class DocumentsResolver implements Resolve<Observable<object>> {
+export class DocumentsResolver {
   private filterForAPI: object = {};
 
   constructor(
@@ -72,13 +71,11 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
       this.filterForAPI,
       ''
     );
-
-    return categorizedObs.map(res => (
-      {
+    return categorizedObs.pipe(
+      map(res => ({
         categorized: res[0],
-      }
-    ));
-
+      }))
+    );
   }
 
   paramsToCollectionFilter(params, name, collection, identifyBy) {
@@ -89,7 +86,7 @@ export class DocumentsResolver implements Resolve<Observable<object>> {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }

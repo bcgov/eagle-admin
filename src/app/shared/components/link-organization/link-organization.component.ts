@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
 import { Org } from 'src/app/models/org';
@@ -20,7 +20,7 @@ import { TableParamsObject } from '../table-template/table-params-object';
 })
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public organizations: Org[] = null;
   public loading = true;
 
@@ -73,9 +73,8 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     }
 
     // get data from route resolver
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
+    this.subscriptions.add(
+      this.route.params.subscribe(params => {
         if (params.contactId) {
           this.contactId = params.contactId;
           this.isEditing = true;
@@ -85,11 +84,11 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           this.tableParams.sortBy = '+name';
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
-      });
+      })
+    );
 
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
+    this.subscriptions.add(
+      this.route.data.subscribe((res: any) => {
         if (res) {
           if (res.organizations[0].data.meta && res.organizations[0].data.meta.length > 0) {
             this.tableParams.totalListItems = res.organizations[0].data.meta[0].searchResultsTotal;
@@ -106,7 +105,8 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           // project not found --> navigate back to search
           this.router.navigate(['/search']);
         }
-      });
+      })
+    );
   }
 
   save() {
@@ -214,7 +214,6 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.storageService.state.showOrgTableCheckboxes = false;
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

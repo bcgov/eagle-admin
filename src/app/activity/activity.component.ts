@@ -1,8 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import * as moment from 'moment';
-import * as _ from 'lodash';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
 import { Project } from '../models/project';
@@ -21,7 +21,7 @@ class ActivityFilterObject {
     public dateAddedEnd: object = {},
     public project: Array<Project> = [],
     public complianceAndEnforcement: boolean = false,
-  ) {}
+  ) { }
 }
 
 @Component({
@@ -30,9 +30,9 @@ class ActivityFilterObject {
   styleUrls: ['./activity.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ActivityComponent implements OnInit, OnDestroy {
+export class ActivityComponent implements OnDestroy {
+  private subscriptions = new Subscription();
   public readonly constants = Constants;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
 
   public tableParams: TableParamsObject = new TableParamsObject();
@@ -43,7 +43,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
   public projects: Array<Project> = [];
   public activityTypes: Array<object> = [];
   public placeholderDateRangeModel: Array<object>;
-  public dateRangeItems: Array<object> = [ {} ];
+  public dateRangeItems: Array<object> = [{}];
 
   public dateRangeSet = false;
 
@@ -96,46 +96,47 @@ export class ActivityComponent implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private _changeDetectionRef: ChangeDetectorRef,
     private tableTemplateUtils: TableTemplateUtils,
-  ) { }
+  ) {
+    this.subscriptions.add(
+      this.projectService.getAll(1, 1000, '+name')
+        .pipe(
+          switchMap((res: any) => {
+            this.projects = res.data || [];
+            this.activityTypes = Constants.activityTypes;
 
-  ngOnInit() {
-    this.projectService.getAll(1, 1000, '+name')
-      .switchMap((res: any) => {
-        this.projects = res.data || [];
-        this.activityTypes = Constants.activityTypes;
+            return this.route.params;
+          }),
+          switchMap((res: any) => {
+            const params = { ...res };
 
-        return this.route.params;
-      })
-      .switchMap((res: any) => {
-        const params = { ...res };
+            this.setFiltersFromParams(params);
 
-        this.setFiltersFromParams(params);
-
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
-          params,
-          this.filterForURL
-        );
-        return this.route.data;
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          if (res.activities && res.activities[0].data.meta && res.activities[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = res.activities[0].data.meta[0].searchResultsTotal;
-            this.entries = res.activities[0].data.searchResults;
+            this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
+              params,
+              this.filterForURL
+            );
+            return this.route.data;
+          })
+        )
+        .subscribe((res: any) => {
+          if (res) {
+            if (res.activities && res.activities[0].data.meta && res.activities[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res.activities[0].data.meta[0].searchResultsTotal;
+              this.entries = res.activities[0].data.searchResults;
+            } else {
+              this.tableParams.totalListItems = 0;
+              this.entries = [];
+            }
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
-            this.tableParams.totalListItems = 0;
-            this.entries = [];
+            alert('Uh-oh, couldn\'t load valued components');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
           }
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load valued components');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
   }
 
   public selectAction(action) {
@@ -276,7 +277,7 @@ export class ActivityComponent implements OnInit, OnDestroy {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
           this.filterForUI[name].push(record);
@@ -383,17 +384,16 @@ export class ActivityComponent implements OnInit, OnDestroy {
   public filterCompareWith(filter: any, filterToCompare: any) {
     if (filter.hasOwnProperty('code')) {
       return filter && filterToCompare
-             ? filter.code === filterToCompare.code
-             : filter === filterToCompare;
+        ? filter.code === filterToCompare.code
+        : filter === filterToCompare;
     } else if (filter.hasOwnProperty('_id')) {
       return filter && filterToCompare
-             ? filter._id === filterToCompare._id
-             : filter === filterToCompare;
+        ? filter._id === filterToCompare._id
+        : filter === filterToCompare;
     }
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -2,7 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import * as moment from 'moment-timezone';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
 import { ApiService } from 'src/app/services/api';
@@ -20,7 +20,7 @@ import { Document } from 'src/app/models/document';
 
 export class AddCommentComponent implements OnInit, OnDestroy {
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public currentProject;
   public baseRouteUrl: string;
@@ -47,19 +47,19 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.currentProject = this.storageService.state.currentProject;
     this.baseRouteUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
 
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: any) => {
-        if (data) {
-          this.commentPeriod = data.commentPeriod;
-          this.initForm();
-        } else {
-          alert('Uh-oh, couldn\'t load comment period');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-        this.loading = false;
-      });
+    this.subscriptions.add(
+      this.route.data
+        .subscribe((data: any) => {
+          if (data) {
+            this.commentPeriod = data.commentPeriod;
+            this.initForm();
+          } else {
+            alert('Uh-oh, couldn\'t load comment period');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
+          }
+          this.loading = false;
+        }));
   }
 
   private initForm() {
@@ -128,19 +128,20 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.comment.documentsList = [];
     this.comment.documents = [];
 
-    this.commentService.add(this.comment, documentsForm)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe({
-        error: error => {
-          console.log('error =', error);
-          alert('Uh-oh, couldn\'t add comment');
-        },
-        complete: () => { // onCompleted
-          this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
-          this.loading = false;
-          this.openSnackBar('This comment was updated successfuly.', 'Close');
-        }
-      });
+    this.subscriptions.add(
+      this.commentService.add(this.comment, documentsForm)
+        .subscribe({
+          error: error => {
+            console.log('error =', error);
+            alert('Uh-oh, couldn\'t add comment');
+          },
+          complete: () => { // onCompleted
+            this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
+            this.loading = false;
+            this.openSnackBar('This comment was updated successfuly.', 'Close');
+          }
+        })
+    );
   }
 
   public onCancel() {
@@ -280,7 +281,6 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

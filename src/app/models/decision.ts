@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Document } from './document';
 
 export class Decision {
@@ -14,11 +13,11 @@ export class Decision {
   isPublished = false; // depends on tags; see below
 
   constructor(obj?: any) {
-    this._id          = obj && obj._id          || null;
-    this._addedBy     = obj && obj._addedBy     || null;
+    this._id = obj && obj._id || null;
+    this._addedBy = obj && obj._addedBy || null;
     this._application = obj && obj._application || null;
-    this.code         = obj && obj.code         || null;
-    this.name         = obj && obj.name         || null;
+    this.code = obj && obj.code || null;
+    this.name = obj && obj.name || null;
 
     // replace \\n (JSON format) with newlines
     if (obj && obj.description) {
@@ -35,7 +34,7 @@ export class Decision {
     // wrap isPublished around the tags we receive for this object
     if (obj && obj.tags) {
       for (const tag of obj.tags) {
-        if (_.includes(tag, 'public')) {
+        if (typeof tag === 'string' && tag.includes('public')) {
           this.isPublished = true;
           break;
         }

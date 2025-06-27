@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { CanDeactivate } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+
+import { Observable } from 'rxjs';
 
 //
 // ref: https://angular.io/guide/router#candeactivate-handling-unsaved-changes
@@ -11,7 +11,7 @@ export interface CanComponentDeactivate {
 }
 
 @Injectable()
-export class CanDeactivateGuard implements CanDeactivate<CanComponentDeactivate> {
+export class CanDeactivateGuard  {
   canDeactivate(component: CanComponentDeactivate) {
     return component.canDeactivate ? component.canDeactivate() : true;
   }

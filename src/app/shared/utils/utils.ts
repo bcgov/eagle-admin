@@ -178,4 +178,31 @@ export class Utils {
     });
     return matchedItems;
   }
+
+  public sortBy<T>(array: T[], iteratee: ((item: T) => any) | string): T[] {
+    if (!Array.isArray(array)) {
+      return [];
+    }
+    let getValue: (item: T) => any;
+    if (typeof iteratee === 'function') {
+      getValue = iteratee;
+    } else if (typeof iteratee === 'string') {
+      getValue = (item: T) => {
+        // Support nested properties like 'a.b.c'
+        return iteratee.split('.').reduce((obj, key) => obj && obj[key], item);
+      };
+    } else {
+      getValue = (item: T) => item;
+    }
+    return array.slice().sort((a, b) => {
+      const valA = getValue(a);
+      const valB = getValue(b);
+      if (valA === undefined && valB !== undefined) return 1;
+      if (valA !== undefined && valB === undefined) return -1;
+      if (valA === undefined && valB === undefined) return 0;
+      if (valA < valB) return -1;
+      if (valA > valB) return 1;
+      return 0;
+    });
+  }
 }

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { ProjectNotification } from '../models/projectNotification';
@@ -15,8 +14,8 @@ export class NotificationProjectService {
   // get all project notifications
 
   getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<Object> {
-    return this.api.getProjectNotifications(pageNum, pageSize, sortBy)
-      .map((res: any) => {
+    return this.api.getProjectNotifications(pageNum, pageSize, sortBy).pipe(
+      map((res: any) => {
         if (res) {
           this.projectNotificationList = [];
           res.forEach(projectNotification => {
@@ -25,17 +24,20 @@ export class NotificationProjectService {
           return { totalCount: res.length, data: this.projectNotificationList };
         }
         return {};
-      })
-      .catch(error => this.api.handleError(error));
+      }),
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   save(notificationProject: ProjectNotification, publish: boolean = null): Observable<ProjectNotification> {
-    return this.api.saveNotificationProject(notificationProject, publish)
-      .catch(error => this.api.handleError(error));
+    return this.api.saveNotificationProject(notificationProject, publish).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   add(projectNotification: ProjectNotification, publish = false): Observable<ProjectNotification> {
-    return this.api.addProjectNotification(projectNotification, publish)
-      .catch(error => this.api.handleError(error));
+    return this.api.addProjectNotification(projectNotification, publish).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 }

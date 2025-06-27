@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { of } from 'rxjs';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { SearchResults } from '../models/search';
@@ -23,8 +21,8 @@ export class SearchService {
       // TODO: Revisit this but for now its disabled
       return of(this._cachedItems[_id]);
     }
-    const searchResults = this.api.getItem(_id, schema)
-      .map(res => {
+    return this.api.getItem(_id, schema).pipe(
+      map(res => {
         const allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
@@ -36,33 +34,33 @@ export class SearchService {
         } else {
           return {};
         }
-      })
-      .catch(() => {
+      }),
+      catchError(() => {
         this.isError = true;
         // if call fails, return null results
         return of(null as SearchResults);
-      });
-    return searchResults;
+      })
+    );
   }
 
   getSearchResults(keys: string, dataset: string, fields: any[], pageNum = 1, pageSize = 10, sortBy: string = null, queryModifier: object = {}, populate = false, filter: object = {}, projectLegislation = ''): Observable<SearchResults[]> {
     if (sortBy === '') {
       sortBy = null;
     }
-    const searchResults = this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter)
-      .map(res => {
+    return this.api.searchKeywords(keys, dataset, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter).pipe(
+      map(res => {
         const allResults = <any>[];
         res.forEach(item => {
           const r = new SearchResults({ type: item._schemaName, data: item });
           allResults.push(r);
         });
         return allResults;
-      })
-      .catch(() => {
+      }),
+      catchError(() => {
         this.isError = true;
         // if call fails, return null results
         return of(null as SearchResults);
-      });
-    return searchResults;
+      })
+    );
   }
 }

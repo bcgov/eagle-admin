@@ -1,9 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ApplicationSortTableRowsComponent } from './application-sort-table-rows/application-sort-table-rows.component';
-import 'rxjs/add/operator/switchMap';
 import { Project } from 'src/app/models/project';
 import { User } from 'src/app/models/user';
 import { ApiService } from 'src/app/services/api';
@@ -23,7 +23,7 @@ import { Utils } from 'src/app/shared/utils/utils';
   styleUrls: ['./application-sort.component.scss']
 })
 export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public currentProject: Project = null;
   public loading = true;
   public documents: User[] = null;
@@ -87,36 +87,38 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
     this.storageService.state.editedDocs = [];
+    this.subscriptions.add(
+      this.route.params
+        .pipe(
+          switchMap(params => {
+            this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
+            if (this.tableParams.sortBy === '') {
+              this.tableParams.sortBy = '+sortOrder,-datePosted,+displayName';
+              this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
+            }
+            this._changeDetectionRef.detectChanges();
 
-    this.route.params
-      .switchMap( params => {
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = '+sortOrder,-datePosted,+displayName';
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-        }
-        this._changeDetectionRef.detectChanges();
-
-        return this.route.data;
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          if (res.documents && res.documents[0].data.meta && res.documents[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = res.documents[0].data.meta[0].searchResultsTotal;
-            this.documents = res.documents[0].data.searchResults;
+            return this.route.data;
+          }),
+        )
+        .subscribe((res: any) => {
+          if (res) {
+            if (res.documents && res.documents[0].data.meta && res.documents[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res.documents[0].data.meta[0].searchResultsTotal;
+              this.documents = res.documents[0].data.searchResults;
+            } else {
+              this.tableParams.totalListItems = 0;
+              this.documents = [];
+            }
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
-            this.tableParams.totalListItems = 0;
-            this.documents = [];
+            this.openSnackBar('Uh-oh, couldn\'t load documents', 'Close');
+            this.router.navigate(['/search']);
           }
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          this.openSnackBar('Uh-oh, couldn\'t load documents', 'Close');
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
   }
 
   setRowData() {
@@ -135,12 +137,13 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
 
   onSave() {
     const formData = new FormData();
-    this.storageService.state.editedDocs.forEach((document: any) =>  {
+    this.storageService.state.editedDocs.forEach((document: any) => {
       // document service put id and sort order
       formData.set('sortOrder', document.sortOrder);
-      this.documentService.update( formData, document._id )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe();
+      this.subscriptions.add(
+        this.documentService.update(formData, document._id)
+          .subscribe()
+      );
     });
     this.openSnackBar('Successfully updated sort order.', 'Close');
     this.router.navigate(['/p/' + this.currentProject._id + '/project-documents']);
@@ -173,46 +176,47 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     const keywords = this.tableParams.keywords ? this.tableParams.keywords : '';
 
     const tabModifier = this.utils.createProjectTabModifiers(this.configService.lists);
-    return this.searchService.getSearchResults(
-      keywords,
-      'Document',
-      [{ 'name': 'project', 'value': projectId }],
-      currentPage,
-      pageSize,
-      sortBy,
-      tabModifier,
-      true)
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe((res: any) => {
-      if (res && res[0].data.meta && res[0].data.meta.length > 0) {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.documents = res[0].data.searchResults;
-        // update values that have been edited previously
-        this.documents.forEach((document: any) => {
-          if (this.storageService.state.editedDocs && this.storageService.state.editedDocs.length > 0) {
-            this.storageService.state.editedDocs.forEach((editedDocument: any) => {
-              if (document._id === editedDocument._id) {
-                document.sortOrder = editedDocument.sortOrder;
+    this.subscriptions.add(
+      this.searchService.getSearchResults(
+        keywords,
+        'Document',
+        [{ 'name': 'project', 'value': projectId }],
+        currentPage,
+        pageSize,
+        sortBy,
+        tabModifier,
+        true)
+        .subscribe((res: any) => {
+          if (res && res[0].data.meta && res[0].data.meta.length > 0) {
+            this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+            this.documents = res[0].data.searchResults;
+            // update values that have been edited previously
+            this.documents.forEach((document: any) => {
+              if (this.storageService.state.editedDocs && this.storageService.state.editedDocs.length > 0) {
+                this.storageService.state.editedDocs.forEach((editedDocument: any) => {
+                  if (document._id === editedDocument._id) {
+                    document.sortOrder = editedDocument.sortOrder;
+                  }
+                });
               }
             });
+            this.tableTemplateUtils.updateUrl(
+              sortBy,
+              currentPage,
+              pageSize,
+              null,
+              keywords
+            );
+            this.setRowData();
+          } else {
+            this.openSnackBar('Uh-oh, couldn\'t load documents', 'Close');
+            this.tableParams.totalListItems = 0;
+            this.documents = [];
           }
-        });
-        this.tableTemplateUtils.updateUrl(
-          sortBy,
-          currentPage,
-          pageSize,
-          null,
-          keywords
-        );
-        this.setRowData();
-      } else {
-        this.openSnackBar('Uh-oh, couldn\'t load documents', 'Close');
-        this.tableParams.totalListItems = 0;
-        this.documents = [];
-      }
-      this.loading = false;
-      this._changeDetectionRef.detectChanges();
-    });
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   public openSnackBar(message: string, action: string) {
@@ -222,7 +226,6 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

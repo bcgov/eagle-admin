@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/throw';
-import { throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
-import * as _ from 'lodash';
 import * as JSZip from 'jszip';
 
 import { ConfigService } from './config.service';
@@ -72,18 +69,20 @@ export class ApiService {
 
   login(username: string, password: string): Observable<boolean> {
     return this.http.post<LocalLoginResponse>(`${this.pathAPI}/login/token`, { username: username, password: password })
-      .map(res => {
-        // login successful if there's a jwt token in the response
-        if (res && res.accessToken) {
-          this.token = res.accessToken;
-          window.localStorage.clear();
-          // store username and jwt token in local storage to keep user logged in between page refreshes
-          window.localStorage.setItem('currentUser', JSON.stringify({ username: username, token: this.token }));
+      .pipe(
+        map(res => {
+          // login successful if there's a jwt token in the response
+          if (res && res.accessToken) {
+            this.token = res.accessToken;
+            window.localStorage.clear();
+            // store username and jwt token in local storage to keep user logged in between page refreshes
+            window.localStorage.setItem('currentUser', JSON.stringify({ username: username, token: this.token }));
 
-          return true; // successful login
-        }
-        return false; // failed login
-      });
+            return true; // successful login
+          }
+          return false; // failed login
+        })
+      );
   }
 
   logout() {
@@ -1200,9 +1199,9 @@ export class ApiService {
   //
   private buildValues(collection: any[]): string {
     let values = '';
-    _.each(collection, function (a) {
+    for (const a of collection) {
       values += a + '|';
-    });
+    }
     // trim the last |
     return values.replace(/\|$/, '');
   }

@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,13 +22,14 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
   styleUrls: ['./group-contact.component.scss']
 })
 export class GroupContactComponent implements OnInit, OnDestroy {
+  private groupId: any = null;
+  private subscritions = new Subscription();
+
   public currentProject;
   public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public users: User[] = null;
   public group: any = null;
   public loading = true;
-  private groupId: any = null;
   public tempGroupName = '';
 
   public tableData: TableObject;
@@ -86,31 +87,32 @@ export class GroupContactComponent implements OnInit, OnDestroy {
       this.groupId = params.get('groupId');
     });
 
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        // Incoming users
-        if (res && res.users[0] && res.users[0].total_items > 0) {
-          this.tableParams.totalListItems = res.users[0].total_items;
-          this.tableParams.pageSize = 10; // force to default on init
-          this.users = res.users[0].results;
-        } else {
-          this.tableParams.totalListItems = 0;
-          this.users = [];
-        }
+    this.subscritions.add(
+      this.route.data
+        .subscribe((res: any) => {
+          // Incoming users
+          if (res && res.users[0] && res.users[0].total_items > 0) {
+            this.tableParams.totalListItems = res.users[0].total_items;
+            this.tableParams.pageSize = 10; // force to default on init
+            this.users = res.users[0].results;
+          } else {
+            this.tableParams.totalListItems = 0;
+            this.users = [];
+          }
 
-        // Incoming group
-        if (res && res.group && res.group[0].data && res.group[0].data.meta && res.group[0].data.meta.length > 0) {
-          this.group = res.group[0].data.searchResults[0];
-          this.tempGroupName = this.group.name;
-        } else {
-          // Something wrong
-          this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
-        }
-        this.setRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+          // Incoming group
+          if (res && res.group && res.group[0].data && res.group[0].data.meta && res.group[0].data.meta.length > 0) {
+            this.group = res.group[0].data.searchResults[0];
+            this.tempGroupName = this.group.name;
+          } else {
+            // Something wrong
+            this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
+          }
+          this.setRowData();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   isEnabled(button) {
@@ -403,17 +405,18 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
     this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, '');
 
-    this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        // Incoming users
-        this.tableParams.totalListItems = res[0].total_items;
-        this.users = res[0].results;
+    this.subscritions.add(
+      this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
+        .subscribe((res: any) => {
+          // Incoming users
+          this.tableParams.totalListItems = res[0].total_items;
+          this.users = res[0].results;
 
-        this.setRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+          this.setRowData();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   async saveName() {
@@ -430,7 +433,6 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscritions.unsubscribe();
   }
 }

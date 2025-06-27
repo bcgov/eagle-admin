@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { UserTableRowsComponent } from './user-table-rows/user-table-rows.component';
 import { SearchTerms } from '../models/search';
 import { User } from '../models/user';
@@ -17,7 +17,7 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public users: User[] = null;
   public loading = true;
 
@@ -64,9 +64,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
+    this.subscriptions.add(
+      this.route.params.subscribe(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+lastName,+firstName';
@@ -78,9 +77,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
             this.tableParams.keywords
           );
         }
-        this.route.data
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res: any) => {
+        this.subscriptions.add(
+          this.route.data.subscribe((res: any) => {
             if (res && res.users && res.users[0].data.meta && res.users[0].data.meta.length > 0) {
               this.tableParams.totalListItems = res.users[0].data.meta[0].searchResultsTotal;
               this.users = res.users[0].data.searchResults;
@@ -91,8 +89,10 @@ export class ContactsComponent implements OnInit, OnDestroy {
             this.setDocumentRowData();
             this.loading = false;
             this._changeDetectionRef.detectChanges();
-          });
-      });
+          })
+        );
+      })
+    );
   }
 
   public onSubmit(currentPage = 1) {
@@ -148,7 +148,6 @@ export class ContactsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

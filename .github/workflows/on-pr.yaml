@@ -18,8 +18,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm install --legacy-peer-deps
+          cache: "yarn"
+      - run: yarn install --silent --frozen-lockfile
 
   lint:
     name: Lint
@@ -37,9 +37,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm install --legacy-peer-deps
-      - run: npm run lint
+          cache: "yarn"
+      - run: yarn install --silent --frozen-lockfile
+      - run: yarn lint
 
   test:
     name: Test
@@ -57,7 +57,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm install --legacy-peer-deps
+          cache: "yarn"
+      - run: yarn install --silent --frozen-lockfile
 
-      - run: npm run test-ci
+      - run: yarn test-ci

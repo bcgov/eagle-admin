@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { ActivatedRouteSnapshot } from '@angular/router';
+import { Observable } from 'rxjs';
 import { forkJoin, from } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { CommentPeriodService } from '../services/commentperiod.service';
 import { CommentPeriod } from '../models/commentPeriod';
 
 @Injectable()
-export class CommentPeriodResolver implements Resolve<Object> {
+export class CommentPeriodResolver {
 
   constructor(
     private commentPeriodService: CommentPeriodService
@@ -14,13 +15,14 @@ export class CommentPeriodResolver implements Resolve<Object> {
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
     const commentPeriodId = route.paramMap.get('commentPeriodId');
-    // force-reload so we always have latest data
-    return forkJoin(
+    return forkJoin([
       from(this.commentPeriodService.getSummaryById(commentPeriodId)),
       from(this.commentPeriodService.getById(commentPeriodId))
-    ).map(([summary, commentPeriod]) => {
-      commentPeriod.summary = summary;
-      return new CommentPeriod(commentPeriod);
-    });
+    ]).pipe(
+      map(([summary, commentPeriod]) => {
+        commentPeriod.summary = summary;
+        return new CommentPeriod(commentPeriod);
+      })
+    );
   }
 }

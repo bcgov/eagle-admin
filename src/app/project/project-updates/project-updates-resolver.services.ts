@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { ActivatedRouteSnapshot } from '@angular/router';
+import { Observable } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
 
 @Injectable()
-export class ProjectUpdatesResolver implements Resolve<Observable<object>> {
+export class ProjectUpdatesResolver  {
   constructor(
     private searchService: SearchService
   ) { }

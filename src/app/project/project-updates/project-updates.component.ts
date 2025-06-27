@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ActivityDetailTableRowsComponent } from 'src/app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
@@ -15,10 +15,10 @@ import { Utils } from 'src/app/shared/utils/utils';
   styleUrls: ['./project-updates.component.scss']
 })
 export class ProjectUpdatesComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   public terms = new SearchTerms();
   public currentProject;
   public loading = true;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public keywords;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -49,34 +49,35 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
+    this.subscriptions.add(
+      this.route.params
+        .subscribe(params => {
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+          this.tableParams.sortBy = '-dateUpdated';
+        })
+    );
 
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        this.tableParams.sortBy = '-dateUpdated';
-      });
-
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: any) => {
-        if (data) {
-          if (data.documents && data.documents[0].data.meta && data.documents[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = data.documents[0].data.meta[0].searchResultsTotal;
-            this.recentActivities = data.documents[0].data.searchResults;
+    this.subscriptions.add(
+      this.route.data
+        .subscribe((data: any) => {
+          if (data) {
+            if (data.documents && data.documents[0].data.meta && data.documents[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = data.documents[0].data.meta[0].searchResultsTotal;
+              this.recentActivities = data.documents[0].data.searchResults;
+            } else {
+              this.tableParams.totalListItems = 0;
+              this.recentActivities = [];
+            }
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
-            this.tableParams.totalListItems = 0;
-            this.recentActivities = [];
+            alert('Uh-oh, couldn\'t load valued components');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
           }
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load valued components');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
   }
 
   setRowData() {
@@ -124,7 +125,6 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

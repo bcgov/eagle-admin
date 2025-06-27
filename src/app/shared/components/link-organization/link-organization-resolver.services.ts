@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { ActivatedRouteSnapshot } from '@angular/router';
+import { Observable } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
 import { TableTemplateUtils } from '../../utils/table-template-utils';
 
 @Injectable()
-export class LinkOrganizationResolver implements Resolve<Observable<object>> {
+export class LinkOrganizationResolver {
   constructor(
     private searchService: SearchService,
     private tableTemplateUtils: TableTemplateUtils

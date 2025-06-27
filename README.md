@@ -39,10 +39,10 @@ nvm use 18
 node -v  # Should output v18.x.x
 ```
 
-Once Node.js 18 is active, install project dependencies using the legacy peer dependencies flag:
+Once Node.js 18 is active, install project dependencies using Yarn:
 
 ```bash
-npm i --legacy-peer-deps
+yarn install
 ```
 
 ## Build, Lint, Test, and Run
@@ -52,35 +52,35 @@ After installing Node.js 18 and project dependencies, you can use the following 
 ### Start the Development Server
 
 ```bash
-npm start
+yarn start
 ```
 This will start the webpack development server on port 4200. Visit [http://localhost:4200](http://localhost:4200) to view the application.
 
 ### Build the Project
 
 ```bash
-npm run build
+yarn build
 ```
 This will build the project for production. The build artifacts will be stored in the `dist/` directory.
 
 ### Lint the Code
 
 ```bash
-npm run lint
+yarn lint
 ```
 This will lint your app code using ESLint and output any issues in a stylish format.
 
 ### Run Unit Tests
 
 ```bash
-npm run test
+yarn test
 ```
 This will run the unit tests in watch mode using Karma and Jasmine.
 
 To run tests once in a CI environment (headless):
 
 ```bash
-npm run test-ci
+yarn test-ci
 ```
 
 ## CI/CD Pipeline

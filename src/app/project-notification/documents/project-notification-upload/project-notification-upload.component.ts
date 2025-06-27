@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
-import { Subject, forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import * as moment from 'moment-timezone';
 import { ConfigService } from 'src/app/services/config.service';
@@ -17,7 +17,7 @@ import { Document } from 'src/app/models/document';
   styleUrls: ['./project-notification-upload.component.scss']
 })
 export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public currentProject;
   public docTotal: number;
@@ -133,25 +133,22 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     this.storageService.state = { type: 'form', data: null };
     this.storageService.state = { type: 'documents', data: null };
 
-    forkJoin(observables)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        () => { // onNext
-          // do nothing here - see onCompleted() function below
-        },
-        error => {
-          console.log('error =', error);
-          alert('Document upload failed due to a service error.');
-          this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
-          this.loading = false;
-        },
-        () => { // onCompleted
-          // delete succeeded --> navigate back to search
-          // Clear out the document state that was stored previously.
-          this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
-          this.loading = false;
-        }
-      );
+    this.subscriptions.add(
+      forkJoin(observables)
+        .subscribe({
+          next: () => { /* onNext */ },
+          error: error => {
+            console.log('error =', error);
+            alert('Document upload failed due to a service error.');
+            this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
+            this.loading = false;
+          },
+          complete: () => {
+            this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
+            this.loading = false;
+          }
+        })
+    );
   }
 
   public addDocuments(files: FileList) {
@@ -208,8 +205,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 
   getLists() {

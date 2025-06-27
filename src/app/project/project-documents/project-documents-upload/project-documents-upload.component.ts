@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
-import { Subject, forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import * as moment from 'moment-timezone';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'src/app/services/config.service';
@@ -17,7 +17,7 @@ import { Document } from 'src/app/models/document';
   styleUrls: ['./project-documents-upload.component.scss']
 })
 export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public authorsel: any;
   public currentProject;
@@ -127,7 +127,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
     this.filteredProjectPhases2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
   }
 
-  public changeLegislation (event) {
+  public changeLegislation(event) {
     this.legislationYear = event.target.value;
 
     this.myForm.controls.doctypesel.setValue(null);
@@ -187,36 +187,37 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
     this.storageService.state = { type: 'documents', data: null };
     this.storageService.state = { type: 'labels', data: null };
 
-    forkJoin(observables)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        () => { // onNext
-          // do nothing here - see onCompleted() function below
-        },
-        error => {
-          console.log('error =', error);
-          // Add in api error message
-          const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
-          this.snackBar.open(message, 'Close', { duration: this.snackBarTimeout});
-          this.loading = false;
-          // TODO: should fully reload project here so we have latest non-deleted objects
-        },
-        () => { // onCompleted
-          // delete succeeded --> navigate back to search
-          // Clear out the document state that was stored previously.
-          this.snackBar.open('Uploaded Successfully!', 'Close', { duration: this.snackBarTimeout});
-          this.router.navigate(['p', this.currentProject._id, 'project-documents']);
-          this.loading = false;
-        }
-      );
+    this.subscriptions.add(
+      forkJoin(observables)
+        .subscribe({
+          next: () => {
+            // do nothing here - see complete below
+          },
+          error: error => {
+            console.log('error =', error);
+            // Add in api error message
+            const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
+            this.snackBar.open(message, 'Close', { duration: this.snackBarTimeout });
+            this.loading = false;
+            // TODO: should fully reload project here so we have latest non-deleted objects
+          },
+          complete: () => {
+            // delete succeeded --> navigate back to search
+            // Clear out the document state that was stored previously.
+            this.snackBar.open('Uploaded Successfully!', 'Close', { duration: this.snackBarTimeout });
+            this.router.navigate(['p', this.currentProject._id, 'project-documents']);
+            this.loading = false;
+          }
+        })
+    );
   }
 
-public docNameExists() {
-  // Doc name "exists" if the form has a value, or if the form has more than one document
-  // this does not check name validity (validateChars does that)
-  return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) ||
-         (this.documents && this.documents.length > 1);
-}
+  public docNameExists() {
+    // Doc name "exists" if the form has a value, or if the form has more than one document
+    // this does not check name validity (validateChars does that)
+    return (this.myForm.value.displayName && this.myForm.value.displayName.length > 0) ||
+      (this.documents && this.documents.length > 1);
+  }
 
   public validateChars() {
     if (this.myForm.value.displayName.match(/[\/|\\:*?"<>]/g)) {
@@ -272,7 +273,6 @@ public docNameExists() {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

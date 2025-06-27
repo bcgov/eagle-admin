@@ -13,7 +13,6 @@
           "options": {
             "allowedCommonJsDependencies": [
               "rxjs",
-              "lodash",
               "moment",
               "moment-timezone",
               "xlsx",
@@ -47,7 +46,6 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
-              "node_modules/leaflet/dist/leaflet.css",
               "src/assets/fonts/BCSans.css",
               "src/styles.scss"
             ],
@@ -122,7 +120,6 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
-              "node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"
             ],
             "assets": [

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import * as _ from 'lodash';
+import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { Decision } from '../models/decision';
@@ -15,7 +14,7 @@ export class DecisionService {
 
   add(orig: Decision): Observable<Decision> {
     // make a (deep) copy of the passed-in decision so we don't change it
-    const decision = _.cloneDeep(orig);
+    const decision = JSON.parse(JSON.stringify(orig));
 
     // ID must not exist on POST
     delete decision._id;
@@ -28,13 +27,14 @@ export class DecisionService {
       decision.description = decision.description.replace(/\n/g, '\\n');
     }
 
-    return this.api.addDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.addDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   save(orig: Decision): Observable<Decision> {
     // make a (deep) copy of the passed-in decision so we don't change it
-    const decision = _.cloneDeep(orig);
+    const decision = JSON.parse(JSON.stringify(orig));
 
     // don't send documents
     delete decision.documents;
@@ -44,23 +44,27 @@ export class DecisionService {
       decision.description = decision.description.replace(/\n/g, '\\n');
     }
 
-    return this.api.saveDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.saveDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   delete(decision: Decision): Observable<Decision> {
-    return this.api.deleteDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.deleteDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   publish(decision: Decision): Observable<Decision> {
-    return this.api.publishDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.publishDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   unPublish(decision: Decision): Observable<Decision> {
-    return this.api.unPublishDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.unPublishDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
 }

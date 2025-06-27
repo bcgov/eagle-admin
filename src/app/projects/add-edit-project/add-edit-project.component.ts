@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project } from 'src/app/models/project';
@@ -25,7 +25,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
     { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
   ];
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public documents: any[] = [];
   public back: any = {};
   public regions: any[] = [];
@@ -101,26 +101,27 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   }
 
   initProject() {
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-        const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
-        this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-        if (this.pageIsEditing) {
-          this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
-          if (this.publishedLegislation) {
-            this.project = this.fullProject[this.publishedLegislation];
-          }
-          if (this.project) {
-            // we don't have ids on project here, have to use id from fullProject
-            this.storageService.state.projectDetailId = this.fullProject._id;
-            this.storageService.state.projectDetailName = this.project.name;
+    this.subscriptions.add(
+      this.route.data
+        .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+          const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+          this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+          if (this.pageIsEditing) {
+            this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
+            if (this.publishedLegislation) {
+              this.project = this.fullProject[this.publishedLegislation];
+            }
+            if (this.project) {
+              // we don't have ids on project here, have to use id from fullProject
+              this.storageService.state.projectDetailId = this.fullProject._id;
+              this.storageService.state.projectDetailName = this.project.name;
 
-            this.initTabs();
+              this.initTabs();
+            }
           }
-        }
-        this.loading = false;
-      });
+          this.loading = false;
+        })
+    );
   }
 
   public openSnackBar(message: string, action: string) {
@@ -130,7 +131,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

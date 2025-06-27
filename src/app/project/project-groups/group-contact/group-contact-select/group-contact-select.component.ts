@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchTerms } from 'src/app/models/search';
 import { User } from 'src/app/models/user';
@@ -15,7 +15,7 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
   styleUrls: ['./group-contact-select.component.scss']
 })
 export class GroupContactSelectComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public navigationObject;
 
   public currentProject;
@@ -49,37 +49,39 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
       return this.router.navigate(['/p', this.currentProject._id]);
     }
 
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = this.storageService.state.sortBy;
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-        }
-        this._changeDetectionRef.detectChanges();
-      });
-
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          if (res.contacts && res.contacts.length > 0 && res.contacts[0].data.meta && res.contacts[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = res.contacts[0].data.meta[0].searchResultsTotal;
-            this.entries = res.contacts[0].data.searchResults;
-          } else {
-            this.tableParams.totalListItems = 0;
-            this.entries = [];
+    this.subscriptions.add(
+      this.route.params
+        .subscribe(params => {
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = this.storageService.state.sortBy;
+            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           }
-          this.setRowData();
-          this.loading = false;
           this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load contacts/orgs');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
+
+    this.subscriptions.add(
+      this.route.data
+        .subscribe((res: any) => {
+          if (res) {
+            if (res.contacts && res.contacts.length > 0 && res.contacts[0].data.meta && res.contacts[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res.contacts[0].data.meta[0].searchResultsTotal;
+              this.entries = res.contacts[0].data.searchResults;
+            } else {
+              this.tableParams.totalListItems = 0;
+              this.entries = [];
+            }
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
+          } else {
+            alert('Uh-oh, couldn\'t load contacts/orgs');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
+          }
+        })
+    );
   }
 
   setRowData() {
@@ -211,7 +213,6 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

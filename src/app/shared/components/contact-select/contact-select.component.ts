@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableObject } from '../table-template/table-object';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,7 +16,7 @@ import { TableTemplateUtils } from '../../utils/table-template-utils';
   styleUrls: ['./contact-select.component.scss']
 })
 export class ContactSelectComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public loading = true;
   public entries: User[] = null;
   public terms = new SearchTerms();
@@ -65,17 +65,15 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
       this.router.navigate(['/']);
     }
 
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
+    this.subscriptions.add(
+      this.route.params.subscribe(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
         if (this.tableParams.sortBy === '' && this.storageService.state.sortBy) {
           this.tableParams.sortBy = this.storageService.state.sortBy;
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
-        this.route.data
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res: any) => {
+        this.subscriptions.add(
+          this.route.data.subscribe((res: any) => {
             if (res) {
               if (res.contacts && res.contacts.length > 0 && res.contacts[0].data.meta && res.contacts[0].data.meta.length > 0) {
                 this.tableParams.totalListItems = res.contacts[0].data.meta[0].searchResultsTotal;
@@ -92,8 +90,10 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
             }
             this._changeDetectionRef.detectChanges();
             this.loading = false;
-          });
-      });
+          })
+        );
+      })
+    );
   }
 
   setRowData() {
@@ -179,7 +179,6 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

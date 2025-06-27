@@ -2,12 +2,10 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestro
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { of, Subject } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 
-import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/takeUntil';
+import { switchMap } from 'rxjs/operators';
 
-import * as _ from 'lodash';
 import * as moment from 'moment';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
@@ -170,8 +168,8 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   public terms = new SearchTerms();
   public tableParams: TableParamsObject = new TableParamsObject();
-  private ngUnsubscribe = new Subject<boolean>();
 
+  private subscriptions = new Subscription();
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
 
   public searching = false;
@@ -231,130 +229,156 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       }
     });
 
-      // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-      // todo how are we handling these lists with legislation year in advanced search? EE-406
-      // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
-      this.docTypes = _.sortBy(this.docTypes, ['legislation', 'listOrder']);
+    // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
+    // todo how are we handling these lists with legislation year in advanced search? EE-406
+    // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
+    this.docTypes = this.docTypes.sort((a, b) => {
+      if (a.legislation !== b.legislation) {
+        return (a.legislation || 0) - (b.legislation || 0);
+      }
+      return (a.listOrder || 0) - (b.listOrder || 0);
+    });
 
-      // Sort by legislation.
-      this.milestones = _.sortBy(this.milestones, ['legislation']);
-      this.authors = _.sortBy(this.authors, ['legislation']);
-      this.projectPhases = _.sortBy(this.projectPhases, ['legislation']);
-      this.eacDecisions = _.sortBy(this.eacDecisions, ['legislation', 'listOrder']);
-      this.ceaaInvolvements = _.sortBy(this.ceaaInvolvements, ['legislation', 'listOrder']);
-      this.regions = _.sortBy(this.regions, ['legislation', 'listOrder']);
+    // Sort by legislation.
+    this.milestones = this.milestones.sort((a, b) => (a.legislation || 0) - (b.legislation || 0));
+    this.authors = this.authors.sort((a, b) => (a.legislation || 0) - (b.legislation || 0));
+    this.projectPhases = this.projectPhases.sort((a, b) => (a.legislation || 0) - (b.legislation || 0));
+    this.eacDecisions = this.eacDecisions.sort((a, b) => {
+      if ((a["legislation"] || 0) !== (b["legislation"] || 0)) {
+        return (a["legislation"] || 0) - (b["legislation"] || 0);
+      }
+      return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+    });
+    this.ceaaInvolvements = this.ceaaInvolvements.sort((a, b) => {
+      if ((a["legislation"] || 0) !== (b["legislation"] || 0)) {
+        return (a["legislation"] || 0) - (b["legislation"] || 0);
+      }
+      return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+    });
+    this.regions = this.regions.sort((a, b) => {
+      if ((a["legislation"] || 0) !== (b["legislation"] || 0)) {
+        return (a["legislation"] || 0) - (b["legislation"] || 0);
+      }
+      return (a["listOrder"] || 0) - (b["listOrder"] || 0);
+    });
 
+    // Fetch proponents and other collections
+    // TODO: Put all of these into Lists
+    this.subscriptions.add(
+      this.orgService.getByCompanyType('Proponent/Certificate Holder')
+        .pipe(
+          switchMap((res: any) => {
+            this.proponents = res || [];
 
-      // Fetch proponents and other collections
-      // TODO: Put all of these into Lists
-      return this.orgService.getByCompanyType('Proponent/Certificate Holder')
-      .switchMap((res: any) => {
-        this.proponents = res || [];
+            this.commentPeriods = Constants.PCP_COLLECTION;
+            this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
-        this.commentPeriods = Constants.PCP_COLLECTION;
-        this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
+            return this.route.params;
+          }),
+          switchMap((res: any) => {
+            const params = { ...res };
 
-        return this.route.params;
-      })
-      .switchMap((res: any) => {
-        const params = { ...res };
+            this.terms.keywords = params.keywords || null;
+            this.terms.dataset = params.dataset || 'Document';
 
-        this.terms.keywords = params.keywords || null;
-        this.terms.dataset = params.dataset || 'Document';
+            this.setFiltersFromParams(params);
 
-        this.setFiltersFromParams(params);
+            this.updateCounts();
 
-        this.updateCounts();
+            this.keywords = this.terms.keywords;
+            this.hadFilter = this.hasFilter();
 
-        this.keywords = this.terms.keywords;
-        this.hadFilter = this.hasFilter();
+            // additional check to see if we have any filter elements applied to the
+            // query string. Previously these were ignored on a refresh
+            const filterKeys = Object.keys(this.filterForAPI);
+            const hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
+            if (Object.keys(this.terms.getParams()).length === 0
+              && !this.hasFilter()
+              && !hasFilterFromQueryString) {
+              return of(null);
+            }
 
-        // additional check to see if we have any filter elements applied to the
-        // query string. Previously these were ignored on a refresh
-        const filterKeys = Object.keys(this.filterForAPI);
-        const hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
-        if (_.isEmpty(this.terms.getParams())
-          && !this.hasFilter()
-        && !hasFilterFromQueryString) {
-          return of(null);
-        }
+            this.results = [];
 
-        this.results = [];
+            this.searching = true;
+            this.count = 0;
+            this.currentPage = params.currentPage ? params.currentPage : 1;
+            this.pageSize = params.pageSize ? parseInt(params.pageSize, 10) : 25;
+            this.tableParams.currentPage = this.currentPage;
+            this.tableParams.pageSize = this.pageSize;
 
-        this.searching = true;
-        this.count = 0;
-        this.currentPage = params.currentPage ? params.currentPage : 1;
-        this.pageSize = params.pageSize ? parseInt(params.pageSize, 10) : 25;
-        this.tableParams.currentPage = this.currentPage;
-        this.tableParams.pageSize = this.pageSize;
+            // remove doc and project types
+            // The UI filters are remapping document and project type to the single 'Type' value
+            // this means that whenever we map back to the filters, we need to revert them
+            // from 'type', to the appropriate type. Additionally, the API will fail if we
+            // send "docType" ir "projectType" as a filter, so we need to ensure these are
+            // stripped from the filterForAPI
+            delete this.filterForAPI['docType'];
+            delete this.filterForAPI['projectType'];
 
-        // remove doc and project types
-        // The UI filters are remapping document and project type to the single 'Type' value
-        // this means that whenever we map back to the filters, we need to revert them
-        // from 'type', to the appropriate type. Additionally, the API will fail if we
-        // send "docType" ir "projectType" as a filter, so we need to ensure these are
-        // stripped from the filterForAPI
-        delete this.filterForAPI['docType'];
-        delete this.filterForAPI['projectType'];
+            // if we're searching for projects, replace projectPhase with currentPhaseName
+            // The code is called projectPhase, but the db column on projects is currentPhaseName
+            // so the rename is required to pass in the correct query
+            if (this.filterForAPI.hasOwnProperty('projectPhase') && this.terms.dataset === 'Project') {
+              this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
+              delete this.filterForAPI['projectPhase'];
+            }
 
-        // if we're searching for projects, replace projectPhase with currentPhaseName
-        // The code is called projectPhase, but the db column on projects is currentPhaseName
-        // so the rename is required to pass in the correct query
-        if (this.filterForAPI.hasOwnProperty('projectPhase') && this.terms.dataset === 'Project') {
-          this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
-          delete this.filterForAPI['projectPhase'];
-        }
+            return this.searchService.getSearchResults(
+              this.terms.keywords,
+              this.terms.dataset,
+              null,
+              this.currentPage,
+              this.pageSize,
+              null,
+              {},
+              true,
+              this.filterForAPI,
+              ''
+            );
+          })
+        )
+        .subscribe({
+          next: (res: any) => {
+            // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
+            // the change so the UI can function as normal
+            if (this.filterForAPI.hasOwnProperty('currentPhaseName') && this.terms.dataset === 'Project') {
+              this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
+              delete this.filterForAPI['currentPhaseName'];
+            }
 
-        return this.searchService.getSearchResults(
-          this.terms.keywords,
-          this.terms.dataset,
-          null,
-          this.currentPage,
-          this.pageSize,
-          null,
-          {},
-          true,
-          this.filterForAPI,
-          ''
-        );
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
-        // the change so the UI can function as normal
-        if (this.filterForAPI.hasOwnProperty('currentPhaseName') && this.terms.dataset === 'Project') {
-          this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
-          delete this.filterForAPI['currentPhaseName'];
-        }
+            if (res && res[0].data.meta.length > 0) {
+              this.count = res[0].data.meta[0].searchResultsTotal;
+              this.results = res[0].data.searchResults;
+            } else {
+              this.count = 0;
+              this.results = [];
+            }
+            this.setRowData();
+            this.loading = false;
+            this.searching = false;
+            this.ranSearch = true;
+            this._changeDetectionRef.detectChanges();
+            const pageSizeTemp = [10, 25, 50, 100, this.count];
+            this.pageSizeArray = pageSizeTemp.filter(function (el: number) { return el >= 10; });
+            this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
+          },
+          error: (error) => {
+            console.log('error =', error);
 
-        if (res && res[0].data.meta.length > 0) {
-          this.count = res[0].data.meta[0].searchResultsTotal;
-          this.results = res[0].data.searchResults;
-        } else {
-          this.count = 0;
-          this.results = [];
-        }
-        this.setRowData();
-        this.loading = false;
-        this.searching = false;
-        this.ranSearch = true;
-        this._changeDetectionRef.detectChanges();
-        const pageSizeTemp = [10, 25, 50, 100, this.count];
-        this.pageSizeArray = pageSizeTemp.filter(function(el: number) { return el >= 10; });
-        this.pageSizeArray.sort(function(a: number, b: number) { return a - b; });
-      }, error => {
-        console.log('error =', error);
+            // update variables on error
+            this.loading = false;
+            this.searching = false;
+            this.ranSearch = true;
 
-        // update variables on error
-        this.loading = false;
-        this.searching = false;
-        this.ranSearch = true;
-
-        this.snackBarRef = this.snackBar.open('Error searching projects ...', 'RETRY');
-        this.snackBarRef.onAction().subscribe(() => this.onSubmit());
-      }, () => { // onCompleted
-        // update variables on completion
-      });
+            this.snackBarRef = this.snackBar.open('Error searching projects ...', 'RETRY');
+            this.subscriptions.add(
+              this.snackBarRef.onAction().subscribe(() => this.onSubmit())
+            );
+          }
+          // No need for complete handler
+        })
+    );
   }
 
   ngDoCheck() {
@@ -422,14 +446,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   }
 
   setColumnSort(column) {
-      if (this.tableParams.sortBy.startsWith('+')) {
-        this.terms.sortBy = '-' + column;
-        this.tableParams.sortBy = '-' + column;
-      } else {
-        this.terms.sortBy = '+' + column;
-        this.tableParams.sortBy = '+' + column;
-      }
-      this.getPaginatedResults(this.tableParams.currentPage);
+    if (this.tableParams.sortBy.startsWith('+')) {
+      this.terms.sortBy = '-' + column;
+      this.tableParams.sortBy = '-' + column;
+    } else {
+      this.terms.sortBy = '+' + column;
+      this.tableParams.sortBy = '+' + column;
+    }
+    this.getPaginatedResults(this.tableParams.currentPage);
   }
 
   handleRadioChange(value) {
@@ -485,7 +509,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     // this means that whenever we map back to the filters, we need to revert them
     // from 'type', to the appropriate type.
     const optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
-           this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
+      this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
 
     if (optionName !== name) {
       delete this.filterForURL[optionName];
@@ -497,14 +521,14 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = collection.find(item => item[identifyBy] === value);
         if (record) {
           confirmedValues.push(value);
         }
       });
       if (confirmedValues.length) {
         if (optionName !== name) {
-          this.filterForURL[optionName] =  encodeURI(confirmedValues.join(','));
+          this.filterForURL[optionName] = encodeURI(confirmedValues.join(','));
           this.filterForAPI[optionName] = confirmedValues.join(',');
         }
 
@@ -711,48 +735,52 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       delete this.filterForAPI['projectPhase'];
     }
 
-    this.searchService
-      .getSearchResults(
-        this.terms.keywords,
-        this.terms.dataset,
-        null,
-        pageNumber,
-        this.tableParams.pageSize,
-        this.tableParams.sortBy,
-        {},
-        true,
-        this.filterForAPI,
-        ''
-      )
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
-        // the change so the UI can function as normal
-        if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
-          this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
-          delete this.filterForAPI['currentPhaseName'];
-        }
+    this.subscriptions.add(
+      this.searchService
+        .getSearchResults(
+          this.terms.keywords,
+          this.terms.dataset,
+          null,
+          pageNumber,
+          this.tableParams.pageSize,
+          this.tableParams.sortBy,
+          {},
+          true,
+          this.filterForAPI,
+          ''
+        )
+        .subscribe({
+          next: (res: any) => {
+            // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
+            // the change so the UI can function as normal
+            if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
+              this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
+              delete this.filterForAPI['currentPhaseName'];
+            }
 
-        if (res[0].data) {
-          this.count = res[0].data.meta[0].searchResultsTotal;
-          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-          this.results = res[0].data.searchResults;
-          this.tableTemplateUtils.updateUrl(
-            this.tableParams.sortBy,
-            this.tableParams.currentPage,
-            this.tableParams.pageSize,
-            this.filterForURL,
-            this.terms.keywords
-          );
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load topics');
-          // project not found --> navigate back to search
-          this.router.navigate(['/']);
-        }
-      });
+            if (res[0].data) {
+              this.count = res[0].data.meta[0].searchResultsTotal;
+              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+              this.results = res[0].data.searchResults;
+              this.tableTemplateUtils.updateUrl(
+                this.tableParams.sortBy,
+                this.tableParams.currentPage,
+                this.tableParams.pageSize,
+                this.filterForURL,
+                this.terms.keywords
+              );
+              this.setRowData();
+              this.loading = false;
+              this._changeDetectionRef.detectChanges();
+            } else {
+              alert('Uh-oh, couldn\'t load topics');
+              // project not found --> navigate back to search
+              this.router.navigate(['/']);
+            }
+          }
+          // No need for error or complete handler here
+        })
+    );
   }
 
   // reload page with current search terms
@@ -790,20 +818,18 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public filterCompareWith(filter: any, filterToCompare: any) {
     if (filter.hasOwnProperty('code')) {
       return filter && filterToCompare
-             ? filter.code === filterToCompare.code
-             : filter === filterToCompare;
+        ? filter.code === filterToCompare.code
+        : filter === filterToCompare;
     } else if (filter.hasOwnProperty('_id')) {
       return filter && filterToCompare
-             ? filter._id === filterToCompare._id
-             : filter === filterToCompare;
+        ? filter._id === filterToCompare._id
+        : filter === filterToCompare;
     }
   }
 
   ngOnDestroy() {
     // dismiss any open snackbar
     if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { Subject } from 'rxjs';
 import { StorageService } from 'src/app/services/storage.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-label',
@@ -10,7 +10,7 @@ import { StorageService } from 'src/app/services/storage.service';
   styleUrls: ['./add-label.component.scss']
 })
 export class AddLabelComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public currentProjectId: string;
   public myForm: UntypedFormGroup;
   public labels: any[] = [];
@@ -23,11 +23,12 @@ export class AddLabelComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.route.parent.paramMap
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
-        this.currentProjectId = params.get('projId');
-      });
+    this.subscriptions.add(
+      this.route.parent.paramMap
+        .subscribe(params => {
+          this.currentProjectId = params.get('projId');
+        })
+    );
 
     this.myForm = new UntypedFormGroup({
       'doctypesel': new UntypedFormControl(),
@@ -61,7 +62,6 @@ export class AddLabelComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

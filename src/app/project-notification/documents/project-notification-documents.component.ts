@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } fr
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject, forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
 import { DocumentService } from 'src/app/services/document.service';
@@ -65,7 +65,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     }
   ];
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public selectedCount = {
     categorized: 0,
@@ -91,35 +91,36 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   }
 
   ngOnInit() {
-    this.route.parent.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.currentProject = this.storageService.state.currentProject?.data;
-        if (!this.currentProject) {
-          this.storageService.state.currentProject = res.notificationProject;
+    this.subscriptions.add(
+      this.route.parent.data
+        .subscribe((res: any) => {
           this.currentProject = this.storageService.state.currentProject?.data;
-        }
-
-        if (res.documents) {
-          if (res.documents[0].data && res.documents[0].data.meta.length > 0) {
-            this.docs = res.documents[0].data.searchResults;
-          } else {
-            this.docs = [];
+          if (!this.currentProject) {
+            this.storageService.state.currentProject = res.notificationProject;
+            this.currentProject = this.storageService.state.currentProject?.data;
           }
 
-          this.tableParams.sortBy = '-datePosted';
-          this.tableParams.pageSize = 10;
-          this.tableParams.currentPage = 1;
-          this.tableParams.totalListItems = res.documents[0].data.meta[0] ? res.documents[0].data.meta[0].searchResultsTotal : 0;
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load documents');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+          if (res.documents) {
+            if (res.documents[0].data && res.documents[0].data.meta.length > 0) {
+              this.docs = res.documents[0].data.searchResults;
+            } else {
+              this.docs = [];
+            }
+
+            this.tableParams.sortBy = '-datePosted';
+            this.tableParams.pageSize = 10;
+            this.tableParams.currentPage = 1;
+            this.tableParams.totalListItems = res.documents[0].data.meta[0] ? res.documents[0].data.meta[0].searchResultsTotal : 0;
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
+          } else {
+            alert('Uh-oh, couldn\'t load documents');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
+          }
+        })
+    );
   }
 
   public openSnackBar(message: string, action: string) {
@@ -360,9 +361,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     params['ms'] = new Date().getMilliseconds();
     params['notificationProjectId'] = this.currentProject._id;
 
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
-
     this.router.navigate([
       'pn',
       this.currentProject._id,
@@ -419,24 +417,25 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     // Use displayName as secondary sort if column has equal values
     const sortBy = this.tableParams.sortBy.substr(1) === 'displayName' ? this.tableParams.sortBy : `${this.tableParams.sortBy},+displayName`;
 
-    this.searchService.getSearchResults(
-      null,
-      'Document',
-      [],
-      this.tableParams.currentPage,
-      this.tableParams.pageSize,
-      sortBy,
-      { documentSource: 'PROJECT-NOTIFICATION', project: this.currentProject._id })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.docs = res[0].data.searchResults;
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+    this.subscriptions.add(
+      this.searchService.getSearchResults(
+        null,
+        'Document',
+        [],
+        this.tableParams.currentPage,
+        this.tableParams.pageSize,
+        sortBy,
+        { documentSource: 'PROJECT-NOTIFICATION', project: this.currentProject._id })
+        .subscribe((res: any) => {
+          this.docs = res[0].data.searchResults;
+          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
 
-        this.setRowData();
+          this.setRowData();
 
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   isEnabled(button) {
@@ -531,7 +530,6 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RecentActivity } from 'src/app/models/recentActivity';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
@@ -21,7 +21,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   public isEditing = false;
   // private subscriptions: Subscription[] = [];
   private subscriptions = new Subscription();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public loading = true;
   public projects = [];
   public projectNotifications = [];
@@ -226,26 +225,28 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   public loadProjectLocation(projectId) {
-    this.projectService.getById(projectId)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          this.myForm.controls['projectLocation'].setValue(res.location);
-          this._changeDetectorRef.detectChanges();
-        }
-      });
+    this.subscriptions.add(
+      this.projectService.getById(projectId)
+        .subscribe((res: any) => {
+          if (res) {
+            this.myForm.controls['projectLocation'].setValue(res.location);
+            this._changeDetectorRef.detectChanges();
+          }
+        })
+    );
   }
 
   public loadPcpsForProject(projectId) {
-    this.commentPeriodService.getAllByProjectId(projectId)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          this.periods = res.data;
-          this.myForm.controls['pcp'].setValue('');
-          this._changeDetectorRef.detectChanges();
-        }
-      });
+    this.subscriptions.add(
+      this.commentPeriodService.getAllByProjectId(projectId)
+        .subscribe((res: any) => {
+          if (res) {
+            this.periods = res.data;
+            this.myForm.controls['pcp'].setValue('');
+            this._changeDetectorRef.detectChanges();
+          }
+        })
+    );
   }
 
   buildForm(data) {

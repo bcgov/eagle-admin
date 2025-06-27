@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
+import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { User } from '../models/user';
@@ -13,11 +12,15 @@ export class UserService {
 
   save(user: User): Observable<User> {
     return this.api.saveUser(user)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   add(user: User): Observable<User> {
     return this.api.addUser(user)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 }

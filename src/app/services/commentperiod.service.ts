@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
-import * as _ from 'lodash';
+import { Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { CommentPeriod } from '../models/commentPeriod';
@@ -31,72 +29,88 @@ export class CommentPeriodService {
   // get all comment periods for the specified project id
   getAllByProjectId(projId: string, pageNum = 1, pageSize = 10, sortBy: string = null): Observable<Object> {
     return this.api.getPeriodsByProjId(projId, pageNum, pageSize, sortBy)
-      .map((res: any) => {
-        if (res) {
-          const periods: Array<CommentPeriod> = [];
-          if (!res || res.length === 0) {
-            return { totalCount: 0, data: [] };
+      .pipe(
+        map((res: any) => {
+          if (res) {
+            const periods: Array<CommentPeriod> = [];
+            if (!res || res.length === 0) {
+              return { totalCount: 0, data: [] };
+            }
+            res[0].results.forEach(cp => {
+              periods.push(new CommentPeriod(cp));
+            });
+            return { totalCount: res[0].total_items, data: periods };
           }
-          res[0].results.forEach(cp => {
-            periods.push(new CommentPeriod(cp));
-          });
-          return { totalCount: res[0].total_items, data: periods };
-        }
-        return {};
-      })
-      .catch(error => this.api.handleError(error));
+          return {};
+        }),
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   // get a specific comment period by its id
   getById(periodId: string): Observable<CommentPeriod> {
     return this.api.getPeriod(periodId)
-      .map(res => {
-        if (res && res.length > 0) {
-          // return the first (only) comment period
-          return new CommentPeriod(res[0]);
-        }
-        return null;
-      })
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        map(res => {
+          if (res && res.length > 0) {
+            // return the first (only) comment period
+            return new CommentPeriod(res[0]);
+          }
+          return null;
+        }),
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   getSummaryById(periodId: string): Observable<CommentPeriodSummary> {
     return this.api.getPeriodSummary(periodId)
-      .map(res => {
-        if (res) {
-          return new CommentPeriodSummary(res);
-        }
-        return null;
-      })
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        map(res => {
+          if (res) {
+            return new CommentPeriodSummary(res);
+          }
+          return null;
+        }),
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   add(commentPeriod: CommentPeriod): Observable<CommentPeriod> {
     return this.api.addCommentPeriod(commentPeriod)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   save(orig: CommentPeriod): Observable<CommentPeriod> {
     // make a (deep) copy of the passed-in comment period so we don't change it
-    const period = _.cloneDeep(orig);
+    const period = JSON.parse(JSON.stringify(orig));
 
     return this.api.saveCommentPeriod(period)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   delete(period: CommentPeriod): Observable<CommentPeriod> {
     return this.api.deleteCommentPeriod(period)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   publish(period: CommentPeriod): Observable<CommentPeriod> {
     return this.api.publishCommentPeriod(period)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   unPublish(period: CommentPeriod): Observable<CommentPeriod> {
     return this.api.unPublishCommentPeriod(period)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   // returns first period

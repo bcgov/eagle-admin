@@ -1,14 +1,9 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/mergeMap';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
-import * as _ from 'lodash';
+import { Observable, of, forkJoin } from 'rxjs';
+import { mergeMap, map, catchError, flatMap } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { DocumentService } from './document.service';
-import { flatMap, mergeMap } from 'rxjs/operators';
-import { of, forkJoin } from 'rxjs';
 
 import { Comment } from '../models/comment';
 
@@ -27,7 +22,9 @@ export class CommentService {
   // get count of comments for the specified comment period id
   getCountByPeriodId(periodId: string): Observable<number> {
     return this.api.getCountCommentsByPeriodId(periodId)
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   getById(commentId: string, populateNextComment = false): Observable<Comment> {
@@ -47,9 +44,9 @@ export class CommentService {
           }
           // now get the rest of the data for this project
           return this._getExtraAppData(new Comment(comments[0]));
-        })
-      )
-      .catch(error => this.api.handleError(error));
+        }),
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   add(comment: Comment, documentForms: Array<FormData> = []): Observable<Comment> {
@@ -65,11 +62,14 @@ export class CommentService {
               comment.documents.push(document._id);
             });
             return this.api.addComment(comment);
-          })
+          }),
+          catchError(error => this.api.handleError(error))
         );
     } else {
       return this.api.addComment(comment)
-        .catch(error => this.api.handleError(error));
+        .pipe(
+          catchError(error => this.api.handleError(error))
+        );
     }
   }
 
@@ -85,72 +85,86 @@ export class CommentService {
         }
       });
       comment.documentsList = null;
-      const newComment = _.cloneDeep(comment);
+      const newComment = JSON.parse(JSON.stringify(comment));
       observables.push(this.api.saveComment(newComment));
       return forkJoin(observables)
         .pipe(
           flatMap((payloads: any) => {
             return of(payloads.pop());
-          })
+          }),
+          catchError(error => this.api.handleError(error))
         );
-
     } else {
       // So we don't send this to API.
       comment.documentsList = null;
 
       // make a (deep) copy of the passed-in comment so we don't change it
-      const newComment = _.cloneDeep(comment);
+      const newComment = JSON.parse(JSON.stringify(comment));
 
       return this.api.saveComment(newComment)
-        .catch(error => this.api.handleError(error));
+        .pipe(
+          catchError(error => this.api.handleError(error))
+        );
     }
   }
 
   publish(comment: Comment): Observable<Comment> {
     return this.api.updateCommentStatus(comment, 'Published')
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   defer(comment: Comment): Observable<Comment> {
     return this.api.updateCommentStatus(comment, 'Deferred')
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   reject(comment: Comment): Observable<Comment> {
     return this.api.updateCommentStatus(comment, 'Rejected')
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   removeStatus(comment: Comment): Observable<Comment> {
     return this.api.updateCommentStatus(comment, 'Reset')
-      .catch(error => this.api.handleError(error));
+      .pipe(
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   // get all comments for the specified comment period id
   getByPeriodId(periodId: string, pageNum: number = null, pageSize: number = null, sortBy = '', count = true, filter: Object = {}): Observable<Object> {
     return this.api.getCommentsByPeriodId(periodId, pageNum, pageSize, sortBy, count, filter)
-      .map((res: any) => {
-        if (res) {
-          const comments: Array<Comment> = [];
-          if (!res || res.length === 0) {
-            return { totalCount: 0, data: [] };
+      .pipe(
+        map((res: any) => {
+          if (res) {
+            const comments: Array<Comment> = [];
+            if (!res || res.length === 0) {
+              return { totalCount: 0, data: [] };
+            }
+            res[0].results.forEach(c => {
+              comments.push(new Comment(c));
+            });
+            return { totalCount: res[0].total_items, data: comments };
           }
-          res[0].results.forEach(c => {
-            comments.push(new Comment(c));
-          });
-          return { totalCount: res[0].total_items, data: comments };
-        }
-        return {};
-      })
-      .catch(error => this.api.handleError(error));
+          return {};
+        }),
+        catchError(error => this.api.handleError(error))
+      );
   }
 
   private _getExtraAppData(comment: Comment): Observable<Comment> {
     return forkJoin(
       this.documentService.getByMultiId(comment.documents)
-    ).map(payloads => {
-      comment.documentsList = payloads[0];
-      return comment;
-    });
+    ).pipe(
+      map(payloads => {
+        comment.documentsList = payloads[0];
+        return comment;
+      })
+    );
   }
 }

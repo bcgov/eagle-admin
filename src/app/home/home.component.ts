@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
-import 'rxjs/add/operator/takeUntil';
+import { Subscription } from 'rxjs';
 import { ProjectService } from '../services/project.service';
 
 @Component({
@@ -11,7 +10,7 @@ import { ProjectService } from '../services/project.service';
 
 export class HomeComponent implements OnInit, OnDestroy {
   public numProjects: number = null;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   constructor(
     private projectService: ProjectService
@@ -20,20 +19,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     // although we aren't currently using numProjects,
     // this verifies our login token and redirects in case of error
-    this.projectService.getCount()
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        value => {
-          this.numProjects = value;
-        },
-        () => {
-          console.log('error = could not count projects');
-        }
-      );
+    this.subscriptions.add(
+      this.projectService.getCount()
+        .subscribe({
+          next: value => {
+            this.numProjects = value;
+          },
+          error: () => {
+            console.log('error = could not count projects');
+          }
+        })
+    );
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

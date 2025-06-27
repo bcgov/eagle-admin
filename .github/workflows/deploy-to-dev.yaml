@@ -34,11 +34,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm install --legacy-peer-deps
+          cache: "yarn"
+      - run: yarn install --silent --frozen-lockfile
 
       - name: Angular Build
-        run: npm run build
+        run: yarn build
   
       - name: Install OpenShift CLI
         run: |

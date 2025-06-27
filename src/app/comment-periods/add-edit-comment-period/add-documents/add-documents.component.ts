@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { PlatformLocation } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AddDocumentTableRowsComponent } from './add-document-table-rows/add-document-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { ApiService } from 'src/app/services/api';
@@ -20,7 +20,7 @@ import { Document } from 'src/app/models/document';
 })
 export class AddDocumentComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public documents: Document[] = null;
   public loading = true;
 
@@ -110,18 +110,16 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     });
 
     if (!isRedirecting) {
-      // get data from route resolver
-      this.route.params
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(params => {
+      this.subscriptions.add(
+        this.route.params.subscribe(params => {
           this.tableParams.keywords = params.keywords;
-        });
+        })
+      );
 
       this.originalSelectedDocs = Object.assign([], this.storageService.state.selectedDocumentsForCP.data);
 
-      this.route.data
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe((res: any) => {
+      this.subscriptions.add(
+        this.route.data.subscribe((res: any) => {
           if (res) {
             if (res.documents[0].data.meta && res.documents[0].data.meta.length > 0) {
               this.tableParams.totalListItems = res.documents[0].data.meta[0].searchResultsTotal;
@@ -138,7 +136,8 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-        });
+        })
+      );
     }
   }
 
@@ -296,23 +295,24 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.searchService.getSearchResults(
-      this.tableParams.keywords || '',
-      'Document',
-      [{ 'name': 'project', 'value': this.currentProject.data._id }],
-      pageNumber,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      { documentSource: 'PROJECT' }, false, {},  '')
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
+    this.subscriptions.add(
+      this.searchService.getSearchResults(
+        this.tableParams.keywords || '',
+        'Document',
+        [{ 'name': 'project', 'value': this.currentProject.data._id }],
+        pageNumber,
+        this.tableParams.pageSize,
+        this.tableParams.sortBy,
+        { documentSource: 'PROJECT' }, false, {},  ''
+      ).subscribe((res: any) => {
         this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
         this.documents = res[0].data.searchResults;
         this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords || '');
         this.setDocumentRowData();
         this.loading = false;
         this._changeDetectionRef.detectChanges();
-      });
+      })
+    );
   }
 
   removeSelectedDoc(doc) {
@@ -332,7 +332,6 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -1,10 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { flatMap } from 'rxjs/operators';
-import { of, forkJoin, merge } from 'rxjs';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
-import * as _ from 'lodash';
+import { Observable, of, forkJoin, merge } from 'rxjs';
+import { flatMap, map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 
@@ -32,16 +28,16 @@ export class ProjectService {
 
   // get count of projects
   getCount(): Observable<number> {
-    return this.api.getCountProjects()
-      .catch(error => this.api.handleError(error));
+    return this.api.getCountProjects().pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   // get all projects
   getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<Object> {
-    return this.api.getProjects(pageNum, pageSize, sortBy)
-      .map((res: any) => {
+    return this.api.getProjects(pageNum, pageSize, sortBy).pipe(
+      map((res: any) => {
         if (res) {
-          // let projects: Array<Project> = [];
           this.projectList = [];
           res[0].results.forEach(project => {
             this.projectList.push(new Project(project));
@@ -49,13 +45,14 @@ export class ProjectService {
           return { totalCount: res[0].total_items, data: this.projectList };
         }
         return {};
-      })
-      .catch(error => this.api.handleError(error));
+      }),
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   getById(projId: string, cpStart: string = null, cpEnd: string = null): Observable<Project> {
-    return this.api.getProject(projId, cpStart, cpEnd)
-      .map(projects => {
+    return this.api.getProject(projId, cpStart, cpEnd).pipe(
+      map(projects => {
         // get upcoming comment period if there is one and convert it into a comment period object.
         if (projects.length > 0) {
           if (projects[0].commentPeriodForBanner && projects[0].commentPeriodForBanner.length > 0) {
@@ -66,35 +63,34 @@ export class ProjectService {
         }
         // return the first (only) project
         return projects.length > 0 ? new Project(projects[0]) : null;
-      })
-      .pipe(
-        flatMap(res => {
-          const project = res;
-          if (!project) {
-            return of(null as Project);
+      }),
+      flatMap(res => {
+        const project = res;
+        if (!project) {
+          return of(null as Project);
+        }
+        if (project.projectLeadId == null && project.responsibleEPDId == null) {
+          return of(new Project(project));
+        }
+        // now get the rest of the data for this project
+        return this._getExtraAppData(
+          new Project(project),
+          {
+            getresponsibleEPD: project.responsibleEPDId !== null && project.responsibleEPDId !== '' || project.responsibleEPDId !== undefined,
+            getprojectLead: project.projectLeadId !== null && project.projectLeadId !== '' || project.projectLeadId !== undefined
           }
-          if (project.projectLeadId == null && project.responsibleEPDId == null) {
-            return of(new Project(project));
-          }
-          // now get the rest of the data for this project
-          return this._getExtraAppData(
-            new Project(project),
-            {
-              getresponsibleEPD: project.responsibleEPDId !== null && project.responsibleEPDId !== '' || project.responsibleEPDId !== undefined,
-              getprojectLead: project.projectLeadId !== null && project.projectLeadId !== '' || project.projectLeadId !== undefined
-            }
-          );
-        })
-      )
-      .catch(error => this.api.handleError(error));
+        );
+      }),
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   private _getExtraAppData(project: Project, { getresponsibleEPD = false, getprojectLead = false }: GetParameters): Observable<Project> {
     return forkJoin(
       getresponsibleEPD ? this.searchService.getItem(project.responsibleEPDId.toString(), 'User') : of(null),
       getprojectLead ? this.searchService.getItem(project.projectLeadId.toString(), 'User') : of(null)
-    )
-      .map(payloads => {
+    ).pipe(
+      map(payloads => {
         if (getresponsibleEPD) {
           project.responsibleEPDObj = payloads[0].data;
         }
@@ -103,7 +99,8 @@ export class ProjectService {
         }
         // finally update the object and return
         return project;
-      });
+      })
+    );
   }
 
   public getPeopleObjs(data): Observable<any> {
@@ -133,8 +130,8 @@ export class ProjectService {
       peopleObjs.push(forkJoin(
         this.searchService.getItem(epdId, 'User'),
         this.searchService.getItem(leadId, 'User')
-      )
-        .map(payloads => {
+      ).pipe(
+        map(payloads => {
           if (payloads) {
             project.responsibleEPDObj = payloads[0].data;
             project.projectLeadObj = payloads[1].data;
@@ -142,7 +139,7 @@ export class ProjectService {
           }
           return data;
         })
-      );
+      ));
     });
     return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
   }
@@ -156,90 +153,106 @@ export class ProjectService {
       item.description = item.description.replace(/\n/g, '\\n');
     }
 
-    return this.api.addProject(item)
-      .catch(error => this.api.handleError(error));
+    return this.api.addProject(item).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   // update existing project
   save(orig: Project): Observable<Project> {
     // make a (deep) copy of the passed-in project so we don't change it
-    const proj = _.cloneDeep(orig);
+    const proj = JSON.parse(JSON.stringify(orig));
 
     // replace newlines with \\n (JSON format)
     if (proj.description) {
       proj.description = proj.description.replace(/\n/g, '\\n');
     }
 
-    return this.api.saveProject(proj)
-      .catch(error => this.api.handleError(error));
+    return this.api.saveProject(proj).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   delete(proj: Project): Observable<Project> {
-    return this.api.deleteProject(proj)
-      .catch(error => this.api.handleError(error));
+    return this.api.deleteProject(proj).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   publish(proj: Project): Observable<Project> {
-    return this.api.publishProject(proj)
-      .catch(error => this.api.handleError(error));
+    return this.api.publishProject(proj).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   unPublish(proj: Project): Observable<Project> {
-    return this.api.unPublishProject(proj)
-      .catch(error => this.api.handleError(error));
+    return this.api.unPublishProject(proj).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   addPins(proj: Project, pins: any): Observable<Project> {
-    return this.api.addPinsToProject(proj, pins)
-      .catch(error => this.api.handleError(error));
+    return this.api.addPinsToProject(proj, pins).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   addGroup(proj: Project, group: any): Observable<Project> {
-    return this.api.addGroupToProject(proj, group)
-      .catch(error => this.api.handleError(error));
+    return this.api.addGroupToProject(proj, group).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   saveGroup(projectId: any, groupId: any, groupObj: any): Observable<Project> {
-    return this.api.saveGroup(projectId, groupId, groupObj)
-      .catch(error => this.api.handleError(error));
+    return this.api.saveGroup(projectId, groupId, groupObj).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   deleteGroup(proj: Project, group: string): Observable<Project> {
-    return this.api.deleteGroup(proj, group)
-      .catch(error => this.api.handleError(error));
+    return this.api.deleteGroup(proj, group).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   deletePin(projId: string, pin: string): Observable<Project> {
-    return this.api.deletePin(projId, pin)
-      .catch(error => this.api.handleError(error));
+    return this.api.deletePin(projId, pin).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
   publishPins(projId: string): Observable<Project> {
-    return this.api.publishPins(projId)
-      .catch(error => this.api.handleError(error));
+    return this.api.publishPins(projId).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
   unpublishPins(projId: string): Observable<Project> {
-    return this.api.unpublishPins(projId)
-      .catch(error => this.api.handleError(error));
+    return this.api.unpublishPins(projId).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   getPins(proj: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
-    return this.api.getProjectPins(proj, pageNum, pageSize, sortBy)
-      .catch(error => this.api.handleError(error));
+    return this.api.getProjectPins(proj, pageNum, pageSize, sortBy).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   getGroupMembers(proj: string, groupId: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
-    return this.api.getProjectGroupMembers(proj, groupId, pageNum, pageSize, sortBy)
-      .catch(error => this.api.handleError(error));
+    return this.api.getProjectGroupMembers(proj, groupId, pageNum, pageSize, sortBy).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   addGroupMembers(proj: Project, groupId: string, members: any): Observable<Project> {
-    return this.api.addMembersToGroup(proj, groupId, members)
-      .catch(error => this.api.handleError(error));
+    return this.api.addMembersToGroup(proj, groupId, members).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   deleteGroupMembers(projectId: string, groupId: string, member: string): Observable<Project> {
-    return this.api.deleteMembersFromGroup(projectId, groupId, member)
-      .catch(error => this.api.handleError(error));
+    return this.api.deleteMembersFromGroup(projectId, groupId, member).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   // isAccepted(status: string): boolean {

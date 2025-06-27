@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
@@ -19,8 +19,8 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
   styleUrls: ['./pins-list.component.scss']
 })
 export class PinsListComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
   public currentProject;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public entries: Org[] = null;
@@ -69,43 +69,45 @@ export class PinsListComponent implements OnInit, OnDestroy {
     this.currentProject = this.storageService.state.currentProject.data;
     this.storageService.state.selectedUsers = null;
 
-    this.route.params
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe(params => {
-      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
-      if (this.tableParams.sortBy === '') {
-        this.tableParams.sortBy = '+name';
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-      }
-      this._changeDetectionRef.detectChanges();
-    });
-
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          this.entries = [];
-          if (res.contacts && res.contacts.length > 0 && res.contacts[0].results) {
-            if (res.contacts[0].read.includes('public')) {
-              this.pinsPublished = true;
-            }
-            res.contacts[0].results.map(contact => {
-              this.entries.push(new Org(contact));
-            });
-            this.tableParams.totalListItems = res.contacts[0].total_items;
-          } else {
-            this.tableParams.totalListItems = 0;
+    this.subscriptions.add(
+      this.route.params
+        .subscribe(params => {
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = '+name';
+            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           }
-          this.setRowData();
-          this.loading = false;
           this._changeDetectionRef.detectChanges();
-        } else {
-          this.loading = false;
-          alert('Uh-oh, couldn\'t load valued components');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
+
+    this.subscriptions.add(
+      this.route.data
+        .subscribe((res: any) => {
+          if (res) {
+            this.entries = [];
+            if (res.contacts && res.contacts.length > 0 && res.contacts[0].results) {
+              if (res.contacts[0].read.includes('public')) {
+                this.pinsPublished = true;
+              }
+              res.contacts[0].results.map(contact => {
+                this.entries.push(new Org(contact));
+              });
+              this.tableParams.totalListItems = res.contacts[0].total_items;
+            } else {
+              this.tableParams.totalListItems = 0;
+            }
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
+          } else {
+            this.loading = false;
+            alert('Uh-oh, couldn\'t load valued components');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
+          }
+        })
+    );
   }
   isEnabled() {
     return this.selectedCount > 0;
@@ -113,19 +115,20 @@ export class PinsListComponent implements OnInit, OnDestroy {
   publishPins() {
     if (this.currentProject && this.currentProject._id) {
       this.loading = true;
-      this.projectService.publishPins(this.currentProject._id)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(res => {
-        if (res) {
-          // We assuming the publish action was successful
-          this.loading = false;
-          this.openSnackBar('Participating Indigenous Nations Published Successfully!', 'Close');
-          this.pinsPublished = true;
-        } else {
-          this.loading = false;
-          this.openSnackBar('Error on publishing Participating Indigenous Nations, please try again later', 'Close');
-        }
-      });
+      this.subscriptions.add(
+        this.projectService.publishPins(this.currentProject._id)
+          .subscribe(res => {
+            if (res) {
+              // We assuming the publish action was successful
+              this.loading = false;
+              this.openSnackBar('Participating Indigenous Nations Published Successfully!', 'Close');
+              this.pinsPublished = true;
+            } else {
+              this.loading = false;
+              this.openSnackBar('Error on publishing Participating Indigenous Nations, please try again later', 'Close');
+            }
+          })
+      );
     } else {
       this.openSnackBar('Invalid Project, please try again!', 'Close');
       // Error
@@ -134,18 +137,19 @@ export class PinsListComponent implements OnInit, OnDestroy {
   unpublishPins() {
     if (this.currentProject && this.currentProject._id) {
       this.loading = true;
-      this.projectService.unpublishPins(this.currentProject._id)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(res => {
-        if (res) {
-          this.loading = false;
-          this.openSnackBar('Participating Indigenous Nations Unpublished Successfully!', 'Close');
-          this.pinsPublished = false;
-        } else {
-          this.loading = false;
-          this.openSnackBar('Error on unpublishing Participating Indigenous Nations, please try again later', 'Close');
-        }
-      });
+      this.subscriptions.add(
+        this.projectService.unpublishPins(this.currentProject._id)
+          .subscribe(res => {
+            if (res) {
+              this.loading = false;
+              this.openSnackBar('Participating Indigenous Nations Unpublished Successfully!', 'Close');
+              this.pinsPublished = false;
+            } else {
+              this.loading = false;
+              this.openSnackBar('Error on unpublishing Participating Indigenous Nations, please try again later', 'Close');
+            }
+          })
+      );
     } else {
       // Error
       this.openSnackBar('Invalid Project, please try again!', 'Close');
@@ -195,16 +199,16 @@ export class PinsListComponent implements OnInit, OnDestroy {
     });
     // Add all the filtered new items.
     component.projectService.addPins(component.currentProject, filteredPins)
-    .takeUntil(component.ngUnsubscribe)
-    .subscribe(
-      () => {
-        component.router.navigate(['/p', component.currentProject._id, 'project-pins']);
-      },
-      error => {
-        console.log('error =', error);
-        alert('Uh-oh, couldn\'t edit project');
-      },
-    );
+      .takeUntil(component.ngUnsubscribe)
+      .subscribe(
+        () => {
+          component.router.navigate(['/p', component.currentProject._id, 'project-pins']);
+        },
+        error => {
+          console.log('error =', error);
+          alert('Uh-oh, couldn\'t edit project');
+        },
+      );
   }
 
   setBackURL() {
@@ -280,8 +284,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
     });
   }
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }
 
