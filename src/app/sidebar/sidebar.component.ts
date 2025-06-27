@@ -1,7 +1,7 @@
 import { Component, HostBinding, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { KeycloakService } from '../services/keycloak.service';
 import { SideBarService } from '../services/sidebar.service';
 import { StorageService } from '../services/storage.service';
@@ -13,8 +13,6 @@ import { StorageService } from '../services/storage.service';
 })
 
 export class SidebarComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
-
   public isNavMenuOpen = false;
   public routerSnapshot = null;
   public isInspectorRole = false;
@@ -27,6 +25,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public currentMenu = '';
   public showArchiveButton = false;
 
+  private subscriptions = new Subscription();
+
   @HostBinding('class.is-toggled')
   isOpen = false;
   isArchive = false;
@@ -38,27 +38,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private sideBarService: SideBarService,
   ) {
 
-    router.events.pipe(
-      filter(event => event instanceof NavigationEnd))
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(event => {
+    this.subscriptions.add(
+      router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe(event => {
         this.routerSnapshot = event;
         this.SetActiveSidebarItem();
-      });
+      })
+    );
   }
 
   ngOnInit() {
-    this.sideBarService.archiveChange
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(isArchive => {
+    this.subscriptions.add(
+      this.sideBarService.archiveChange.subscribe(isArchive => {
         this.isArchive = isArchive;
-      });
+      })
+    );
 
-    this.sideBarService.toggleChange
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(isOpen => {
+    this.subscriptions.add(
+      this.sideBarService.toggleChange.subscribe(isOpen => {
         this.isOpen = isOpen;
-      });
+      })
+    );
 
     const roles = this.keycloakService.getUserRoles();
     if (roles !== null && roles.includes('inspector')) {
@@ -158,7 +159,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

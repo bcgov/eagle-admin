@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { Project } from '../models/project';
 import { ProjectService } from '../services/project.service';
@@ -9,7 +10,7 @@ import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
-export class ActivityComponentResolver  {
+export class ActivityComponentResolver {
   public filterForURL: object = {};
   public filterForAPI: object = {};
 
@@ -28,29 +29,31 @@ export class ActivityComponentResolver  {
       return this.searchService.getItem(activity, 'RecentActivity');
     } else {
       return this.projectService.getAll(1, 1000, '+name')
-        .switchMap((res: any) => {
-          this.projects = res.data || [];
-          this.activityTypes = Constants.activityTypes;
+        .pipe(
+          switchMap((res: any) => {
+            this.projects = res.data || [];
+            this.activityTypes = Constants.activityTypes;
 
-          this.setFiltersFromParams(route.params);
+            this.setFiltersFromParams(route.params);
 
-          const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
-          if (tableParams.sortBy === '') {
-            tableParams.sortBy = '-dateAdded';
-            this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
-          }
-          return this.searchService.getSearchResults(
-            tableParams.keywords || '',
-            'RecentActivity',
-            null,
-            tableParams.currentPage,
-            tableParams.pageSize,
-            tableParams.sortBy,
-            {},
-            true,
-            this.filterForAPI,
-            '');
-        });
+            const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
+            if (tableParams.sortBy === '') {
+              tableParams.sortBy = '-dateAdded';
+              this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
+            }
+            return this.searchService.getSearchResults(
+              tableParams.keywords || '',
+              'RecentActivity',
+              null,
+              tableParams.currentPage,
+              tableParams.pageSize,
+              tableParams.sortBy,
+              {},
+              true,
+              this.filterForAPI,
+              '');
+          })
+        );
     }
   }
 
@@ -83,7 +86,7 @@ export class ActivityComponentResolver  {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = _.find(collection, [identifyBy, value]);
         if (record) {
           confirmedValues.push(value);
         }

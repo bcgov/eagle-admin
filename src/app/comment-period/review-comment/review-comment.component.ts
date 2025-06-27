@@ -2,7 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
 import { ApiService } from 'src/app/services/api';
 import { CommentService } from 'src/app/services/comment.service';
@@ -19,7 +19,7 @@ import { Document } from 'src/app/models/document';
 
 export class ReviewCommentComponent implements OnInit, OnDestroy {
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public currentProject;
   public baseRouteUrl: string;
   public comment: Comment;
@@ -46,37 +46,38 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
     this.baseRouteUrl = this.currentProject.type === 'currentProjectNotification' ? '/pn' : '/p';
     this.storageService.state.selectedTab = 1;
 
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(data => {
-        if (data.comment) {
-          this.comment = data.comment;
+    this.subscriptions.add(
+      this.route.data
+        .subscribe(data => {
+          if (data.comment) {
+            this.comment = data.comment;
 
-          if (this.storageService.state.currentCommentPeriod) {
-            this.commentPeriod = this.storageService.state.currentCommentPeriod.data;
-          } else if (data.commentPeriod) {
-            // On a hard reload we need to get the comment period.
-            this.commentPeriod = data.commentPeriod;
-            this.storageService.state.currentCommentPeriod = { type: 'currentCommentPeriod', data: this.commentPeriod };
+            if (this.storageService.state.currentCommentPeriod) {
+              this.commentPeriod = this.storageService.state.currentCommentPeriod.data;
+            } else if (data.commentPeriod) {
+              // On a hard reload we need to get the comment period.
+              this.commentPeriod = data.commentPeriod;
+              this.storageService.state.currentCommentPeriod = { type: 'currentCommentPeriod', data: this.commentPeriod };
+            } else {
+              alert('Uh-oh, couldn\'t load comment period');
+              // comment period not found --> navigate back to search
+              this.router.navigate(['/search']);
+            }
+
+            // This is populated in commentService.
+            this.pendingCommentCount = this.commentService.pendingCommentCount;
+            this.nextCommentId = this.commentService.nextCommentId;
+
+            this.initForm();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
-            alert('Uh-oh, couldn\'t load comment period');
+            alert('Uh-oh, couldn\'t load comment');
             // comment period not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-
-          // This is populated in commentService.
-          this.pendingCommentCount = this.commentService.pendingCommentCount;
-          this.nextCommentId = this.commentService.nextCommentId;
-
-          this.initForm();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load comment');
-          // comment period not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
   }
 
   private initForm() {
@@ -128,33 +129,34 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
     this.comment.proponentNotes = this.commentReviewForm.get('proponentResponseText').value;
 
     const previousCommentId = this.comment.commentId;
-    this.commentService.save(this.comment)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        newComment => {
-          this.comment = newComment;
-        },
-        () => {
-          alert('Uh-oh, couldn\'t edit comment');
-        },
-        () => {
-          this.openSnackBar(`Comment #${previousCommentId} updated.`, 'Close');
-          switch (action) {
-            case 'exit': {
-              this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
-              break;
+    this.subscriptions.add(
+      this.commentService.save(this.comment)
+        .subscribe(
+          newComment => {
+            this.comment = newComment;
+          },
+          () => {
+            alert('Uh-oh, couldn\'t edit comment');
+          },
+          () => {
+            this.openSnackBar(`Comment #${previousCommentId} updated.`, 'Close');
+            switch (action) {
+              case 'exit': {
+                this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
+                break;
+              }
+              case 'next': {
+                this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id, 'c', this.nextCommentId, 'comment-details']);
+                break;
+              }
+              default: {
+                break;
+              }
             }
-            case 'next': {
-              this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id, 'c', this.nextCommentId, 'comment-details']);
-              break;
-            }
-            default: {
-              break;
-            }
+            this.loading = false;
           }
-          this.loading = false;
-        }
-      );
+        )
+    );
   }
 
   public onCancel() {
@@ -236,7 +238,6 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

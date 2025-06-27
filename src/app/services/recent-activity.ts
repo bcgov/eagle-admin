@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
+import { map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { RecentActivity } from '../models/recentActivity';
@@ -12,35 +11,38 @@ export class RecentActivityService {
 
   // MBL TODO: PUT/POST functionality.
   add(activity: RecentActivity) {
-    return this.api.addRecentActivity(activity)
-    .map(res => {
-      if (res) {
-        return new RecentActivity(res);
-      }
-      return [];
-    })
-    .catch(error => this.api.handleError(error));
+    return this.api.addRecentActivity(activity).pipe(
+      map(res => {
+        if (res) {
+          return new RecentActivity(res);
+        }
+        return [];
+      }),
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   save(activity: RecentActivity) {
-    return this.api.saveRecentActivity(activity)
-    .map(res => {
-      if (res) {
-        return new RecentActivity(res);
-      }
-      return [];
-    })
-    .catch(error => this.api.handleError(error));
+    return this.api.saveRecentActivity(activity).pipe(
+      map(res => {
+        if (res) {
+          return new RecentActivity(res);
+        }
+        return [];
+      }),
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   delete(activity: RecentActivity) {
-    return this.api.deleteRecentActivity(activity)
-    .map(res => {
-      if (res) {
-        return new RecentActivity(res);
-      }
-      return [];
-    })
-    .catch(error => this.api.handleError(error));
+    return this.api.deleteRecentActivity(activity).pipe(
+      map(res => {
+        if (res) {
+          return new RecentActivity(res);
+        }
+        return [];
+      }),
+      catchError(error => this.api.handleError(error))
+    );
   }
 }

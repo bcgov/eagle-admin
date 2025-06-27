@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
@@ -7,7 +7,6 @@ import { ApiService } from 'src/app/services/api';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-comment-period-details-tab',
@@ -17,7 +16,7 @@ import { takeUntil } from 'rxjs/operators';
 
 export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   @Input() public commentPeriod: CommentPeriod;
 
@@ -48,13 +47,14 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
     this.baseRouteUrl = this.projectType === 'currentProject' ? '/p' : '/pn';
 
     if (this.commentPeriod.relatedDocuments.length > 0) {
-      this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          data => {
-            this.commentPeriodDocs = data;
-          }
-        );
+      this.subscriptions.add(
+        this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
+          .subscribe(
+            data => {
+              this.commentPeriodDocs = data;
+            }
+          )
+      );
     }
 
     this.loading = false;
@@ -69,27 +69,29 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
     if (confirm(`Are you sure you want to ${this.publishAction} this comment period?`)) {
       this.loading = true;
       if (this.commentPeriod.isPublished) {
-        this.commentPeriodService.unPublish(this.commentPeriod)
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe(
-            (() => {
-              this.commentPeriod.isPublished = false;
-              this.setPublishStatus();
-              this.openSnackBar('This comment period has been un-published.', 'Close');
-              this.loading = false;
-            })
-          );
+        this.subscriptions.add(
+          this.commentPeriodService.unPublish(this.commentPeriod)
+            .subscribe(
+              (() => {
+                this.commentPeriod.isPublished = false;
+                this.setPublishStatus();
+                this.openSnackBar('This comment period has been un-published.', 'Close');
+                this.loading = false;
+              })
+            )
+        );
       } else {
-        this.commentPeriodService.publish(this.commentPeriod)
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe(
-            (() => {
-              this.commentPeriod.isPublished = true;
-              this.setPublishStatus();
-              this.openSnackBar('This comment period has been published.', 'Close');
-              this.loading = false;
-            })
-          );
+        this.subscriptions.add(
+          this.commentPeriodService.publish(this.commentPeriod)
+            .subscribe(
+              (() => {
+                this.commentPeriod.isPublished = true;
+                this.setPublishStatus();
+                this.openSnackBar('This comment period has been published.', 'Close');
+                this.loading = false;
+              })
+            )
+        );
       }
     }
   }
@@ -107,21 +109,22 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   deleteCommentPeriod() {
     if (confirm(`Are you sure you want to delete this comment period?`)) {
       this.loading = true;
-      this.commentPeriodService.delete(this.commentPeriod)
-        .pipe(takeUntil(this.ngUnsubscribe))
-        .subscribe({
-          error: () => {
-            alert('Uh-oh, couldn\'t delete comment period');
-            this.loading = false;
-          },
-          complete: () => {
-            // delete succeeded --> navigate back to search
-            // Clear out the document state that was stored previously.
-            this.loading = false;
-            this.openSnackBar('This comment period has been deleted', 'Close');
-            this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
-          }
-        });
+      this.subscriptions.add(
+        this.commentPeriodService.delete(this.commentPeriod)
+          .subscribe({
+            error: () => {
+              alert('Uh-oh, couldn\'t delete comment period');
+              this.loading = false;
+            },
+            complete: () => {
+              // delete succeeded --> navigate back to search
+              // Clear out the document state that was stored previously.
+              this.loading = false;
+              this.openSnackBar('This comment period has been deleted', 'Close');
+              this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
+            }
+          })
+      );
     }
   }
 
@@ -151,7 +154,6 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { from, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { from, Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
@@ -23,7 +22,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   public navigationObject;
   public extensionForm: UntypedFormGroup;
   public isEditing = false;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   constructor(
     private router: Router,
@@ -41,8 +40,8 @@ export class ExtensionComponent implements OnInit, OnDestroy {
       // this.router.navigate(['/']);
     }
 
-    this.extensionType = this.storageService.state.extensionType.includes('-extension') ? 'Extension' : 'Suspension' ;
-    this.extensionOperation = this.storageService.state.extensionType.includes('add-') ? 'Add' : 'Edit' ;
+    this.extensionType = this.storageService.state.extensionType.includes('-extension') ? 'Extension' : 'Suspension';
+    this.extensionOperation = this.storageService.state.extensionType.includes('add-') ? 'Add' : 'Edit';
 
     if (this.storageService.state.extension) {
       this.isEditing = true;
@@ -73,19 +72,23 @@ export class ExtensionComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.message = `Click <strong>OK</strong> to delete this ${this.extensionType}`;
     modalRef.componentInstance.okOnly = false;
 
-    from(modalRef.result).pipe(takeUntil(this.ngUnsubscribe)).subscribe(
-      (isConfirmed: boolean) => {
-        if (isConfirmed) {
-          this.api.deleteExtension(this.storageService.state.project, this.storageService.state.extension)
-            .subscribe(
-              () => this.goBack(),
-              error => console.log('error =', error)
+    this.subscriptions.add(
+      from(modalRef.result).subscribe({
+        next: (isConfirmed: boolean) => {
+          if (isConfirmed) {
+            this.subscriptions.add(
+              this.api.deleteExtension(this.storageService.state.project, this.storageService.state.extension)
+                .subscribe(
+                  () => this.goBack(),
+                  error => console.log('error =', error)
+                )
             );
+          }
+        },
+        error: () => {
+          // Modal dismissed, do nothing
         }
-      },
-      () => {
-        // Modal dismissed, do nothing
-      }
+      })
     );
   }
 
@@ -109,12 +112,12 @@ export class ExtensionComponent implements OnInit, OnDestroy {
       console.log('Update: ', extensionObj);
       const self = this;
       this.api.editExtension(this.storageService.state.project, extensionObj)
-      .subscribe(res => {
-        console.log('res:', res);
-        self.goBack();
-      }, err => {
-        console.log('err', err);
-      });
+        .subscribe(res => {
+          console.log('res:', res);
+          self.goBack();
+        }, err => {
+          console.log('err', err);
+        });
     } else {
       // New
       const newExtension = {
@@ -126,12 +129,12 @@ export class ExtensionComponent implements OnInit, OnDestroy {
       console.log('Adding ', newExtension.type, ':', newExtension);
       const self = this;
       this.api.addExtension(this.storageService.state.project, newExtension)
-      .subscribe(res => {
-        console.log('res:', res);
-        self.goBack();
-      }, err => {
-        console.log('err', err);
-      });
+        .subscribe(res => {
+          console.log('res:', res);
+          self.goBack();
+        }, err => {
+          console.log('err', err);
+        });
     }
   }
 
@@ -144,8 +147,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 
 }

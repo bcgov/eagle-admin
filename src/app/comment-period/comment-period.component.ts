@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommentPeriod } from '../models/commentPeriod';
 import { StorageService } from '../services/storage.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-comment-period',
@@ -12,7 +12,7 @@ import { StorageService } from '../services/storage.service';
 
 export class CommentPeriodComponent implements OnInit, OnDestroy {
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public commentPeriod: CommentPeriod;
   public loading = true;
@@ -38,21 +38,22 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
 
     // get data from route resolver
     if (this.storageService.state.currentCommentPeriod == null) {
-      this.route.data
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          (data) => {
-            if (data.commentPeriod) {
-              this.commentPeriod = data.commentPeriod;
-              this.storageService.state.selectedDocumentsForCP = null;
-            } else {
-              alert('Uh-oh, couldn\'t load comment period ');
-              // comment period not found --> navigate back to search
-              this.router.navigate(['/search']);
+      this.subscriptions.add(
+        this.route.data
+          .subscribe(
+            (data) => {
+              if (data.commentPeriod) {
+                this.commentPeriod = data.commentPeriod;
+                this.storageService.state.selectedDocumentsForCP = null;
+              } else {
+                alert('Uh-oh, couldn\'t load comment period ');
+                // comment period not found --> navigate back to search
+                this.router.navigate(['/search']);
+              }
+              this.loading = false;
             }
-            this.loading = false;
-          }
-        );
+          )
+      );
     } else {
       this.commentPeriod = this.storageService.state.currentCommentPeriod.data;
       this.loading = false;
@@ -60,7 +61,6 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

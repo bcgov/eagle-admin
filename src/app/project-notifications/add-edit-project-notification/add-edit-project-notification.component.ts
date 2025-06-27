@@ -2,7 +2,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 
-import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
 import { ProjectNotification } from 'src/app/models/projectNotification';
 import { ConfigService } from 'src/app/services/config.service';
@@ -11,6 +10,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Constants } from 'src/app/shared/utils/constants';
 import { Utils } from 'src/app/shared/utils/utils';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-edit-notification-project',
@@ -19,7 +19,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 })
 
 export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public isAdd = false;
   public isPublished = false;
@@ -120,13 +120,14 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   // loads all the projects for the projects list
   public getAllProjectsList() {
-    this.projectService.getAll(1, 1000, '+name')
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res2: any) => {
-        if (res2) {
-          this.projects = res2.data;
-        }
-      });
+    this.subscriptions.add(
+      this.projectService.getAll(1, 1000, '+name')
+        .subscribe((res2: any) => {
+          if (res2) {
+            this.projects = res2.data;
+          }
+        })
+    );
   }
 
   public onSubmit(publish) {
@@ -184,26 +185,28 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     }
 
     if (this.isAdd) {
-      this.notificationProjectService.add(notificationProject, publish)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe({
-          error: () => {
-            alert('An error has occurred.');
-          },
-          complete: () => { this.router.navigate(['/project-notifications']); }
-        });
+      this.subscriptions.add(
+        this.notificationProjectService.add(notificationProject, publish)
+          .subscribe({
+            error: () => {
+              alert('An error has occurred.');
+            },
+            complete: () => { this.router.navigate(['/project-notifications']); }
+          })
+      );
     } else {
       notificationProject._id = this.projectNotification._id;
-      this.notificationProjectService.save(notificationProject, publish)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe({
-          error: () => {
-            alert('An error has occurred.');
-          },
-          complete: () => {
-            this.router.navigate(['/pn', this.projectNotification._id, 'details']);
-          }
-        });
+      this.subscriptions.add(
+        this.notificationProjectService.save(notificationProject, publish)
+          .subscribe({
+            error: () => {
+              alert('An error has occurred.');
+            },
+            complete: () => {
+              this.router.navigate(['/pn', this.projectNotification._id, 'details']);
+            }
+          })
+      );
     }
   }
 
@@ -370,7 +373,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

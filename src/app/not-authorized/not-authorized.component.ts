@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-not-authorized',
@@ -8,7 +8,7 @@ import { Subject } from 'rxjs';
   styleUrls: ['./not-authorized.component.scss']
 })
 export class NotAuthorizedComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public loggedout = false;
 
   constructor(
@@ -16,11 +16,12 @@ export class NotAuthorizedComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.route.queryParamMap
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(paramMap => {
-        this.loggedout = paramMap.get('loggedout') === 'true';
-      });
+    this.subscriptions.add(
+      this.route.queryParamMap
+        .subscribe(paramMap => {
+          this.loggedout = paramMap.get('loggedout') === 'true';
+        })
+    );
   }
 
   login() {
@@ -28,7 +29,6 @@ export class NotAuthorizedComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

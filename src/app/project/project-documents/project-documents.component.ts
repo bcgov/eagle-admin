@@ -2,7 +2,8 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject, forkJoin } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import * as moment from 'moment';
 import * as _ from 'lodash';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -128,7 +129,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public selectedCount = {
     categorized: 0,
@@ -173,68 +174,70 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       const projectPhases = this.configService.lists.filter(item => item.type === 'projectPhase');
       this.projectPhases = _.sortBy(projectPhases, ['legislation']);
     }
+    this.subscriptions.add(
+      this.route.params
+        .pipe(
+          switchMap((res: any) => {
+            const params = { ...res };
 
-    this.route.params
-      .switchMap((res: any) => {
-        const params = { ...res };
+            this.setFiltersFromParams(params);
 
-        this.setFiltersFromParams(params);
+            this.updateCounts();
 
-        this.updateCounts();
+            if (this.storageService.state.projectDocumentTableParams == null) {
+              this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
+                params,
+                this.filterForURL
+              );
 
-        if (this.storageService.state.projectDocumentTableParams == null) {
-          this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
-            params,
-            this.filterForURL
-          );
+              if (this.tableParams.sortByCategorized === '') {
+                this.tableParams.sortByCategorized = '-datePosted,+displayName';
+              }
 
-          if (this.tableParams.sortByCategorized === '') {
-            this.tableParams.sortByCategorized = '-datePosted,+displayName';
-          }
+              if (params.keywords !== undefined) {
+                this.tableParams.keywords =
+                  decodeURIComponent(params.keywords) || '';
+              } else {
+                this.tableParams.keywords = '';
+              }
 
-          if (params.keywords !== undefined) {
-            this.tableParams.keywords =
-              decodeURIComponent(params.keywords) || '';
+              this.storageService.state.projectDocumentTableParams = this.tableParams;
+              this._changeDetectionRef.detectChanges();
+            } else {
+              this.tableParams = this.storageService.state.projectDocumentTableParams;
+              this.tableParams.keywords = decodeURIComponent(
+                this.tableParams.keywords
+              );
+            }
+
+            this.currentProject = this.storageService.state.currentProject.data;
+            this.storageService.state.labels = null;
+            this._changeDetectionRef.detectChanges();
+
+            return this.route.data;
+          })
+        )
+        .subscribe(({ documents }: any) => {
+          if (documents.categorized) {
+            if (documents.categorized.data && documents.categorized.data.meta.length > 0) {
+              this.tableParams.totalListItemsCategorized = documents.categorized.data.meta[0].searchResultsTotal;
+              this.categorizedDocs = documents.categorized.data.searchResults;
+            } else {
+              this.tableParams.totalListItemsCategorized = 0;
+              this.categorizedDocs = [];
+            }
+
+            this.setRowData();
+
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
-            this.tableParams.keywords = '';
+            alert('Uh-oh, couldn\'t load valued components');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
           }
-
-          this.storageService.state.projectDocumentTableParams = this.tableParams;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          this.tableParams = this.storageService.state.projectDocumentTableParams;
-          this.tableParams.keywords = decodeURIComponent(
-            this.tableParams.keywords
-          );
-        }
-
-        this.currentProject = this.storageService.state.currentProject.data;
-        this.storageService.state.labels = null;
-        this._changeDetectionRef.detectChanges();
-
-        return this.route.data;
-      })
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(({ documents }: any) => {
-        if (documents.categorized) {
-          if (documents.categorized.data && documents.categorized.data.meta.length > 0) {
-            this.tableParams.totalListItemsCategorized = documents.categorized.data.meta[0].searchResultsTotal;
-            this.categorizedDocs = documents.categorized.data.searchResults;
-          } else {
-            this.tableParams.totalListItemsCategorized = 0;
-            this.categorizedDocs = [];
-          }
-
-          this.setRowData();
-
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load valued components');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
   }
 
   public openSnackBar(message: string, action: string) {
@@ -780,38 +783,39 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
     if (docType === Constants.documentTypes.CATEGORIZED) {
       this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0;
-      this.searchService
-        .getSearchResults(
-          this.tableParams.keywords || '',
-          'Document',
-          [
-            { name: 'project', value: this.currentProject._id },
-            { name: 'categorized', value: true }
-          ],
-          pageNumber,
-          this.categorizedDocumentTableData.paginationData.pageSize,
-          this.tableParams.sortByCategorized,
-          { documentSource: 'PROJECT' },
-          true,
-          this.filterForAPI,
-          ''
-        )
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe((res: any) => {
-          this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
-          this.categorizedDocs = res[0].data.searchResults;
-          this.tableDocumentTemplateUtils.updateUrl(
+      this.subscriptions.add(
+        this.searchService
+          .getSearchResults(
+            this.tableParams.keywords || '',
+            'Document',
+            [
+              { name: 'project', value: this.currentProject._id },
+              { name: 'categorized', value: true }
+            ],
+            pageNumber,
+            this.categorizedDocumentTableData.paginationData.pageSize,
             this.tableParams.sortByCategorized,
-            this.tableParams.currentPageCategorized,
-            this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0,
-            this.filterForURL,
-            this.tableParams.keywords || ''
-          );
+            { documentSource: 'PROJECT' },
+            true,
+            this.filterForAPI,
+            ''
+          )
+          .subscribe((res: any) => {
+            this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
+            this.categorizedDocs = res[0].data.searchResults;
+            this.tableDocumentTemplateUtils.updateUrl(
+              this.tableParams.sortByCategorized,
+              this.tableParams.currentPageCategorized,
+              this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0,
+              this.filterForURL,
+              this.tableParams.keywords || ''
+            );
 
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        });
+            this.setRowData();
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
+          })
+      );
     }
   }
 
@@ -891,7 +895,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

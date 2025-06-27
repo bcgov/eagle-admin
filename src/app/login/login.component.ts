@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { KeycloakService } from '../services/keycloak.service';
 
 @Component({
@@ -11,7 +11,7 @@ import { KeycloakService } from '../services/keycloak.service';
 })
 
 export class LoginComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   model: any = {};
   loading = false;
   error = '';
@@ -32,25 +32,25 @@ export class LoginComponent implements OnInit, OnDestroy {
   login() {
     this.loading = true;
 
-    this.api.login(this.model.username, this.model.password)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        result => {
-          if (result === true) {
-            // login successful
-            this.router.navigate(['/']);
+    this.subscriptions.add(
+      this.api.login(this.model.username, this.model.password)
+        .subscribe(
+          result => {
+            if (result === true) {
+              // login successful
+              this.router.navigate(['/']);
+            }
+          },
+          error => {
+            console.log('error =', error);
+            this.error = 'Username or password is incorrect';
+            this.loading = false;
           }
-        },
-        error => {
-          console.log('error =', error);
-          this.error = 'Username or password is incorrect';
-          this.loading = false;
-        }
-      );
+        )
+    );
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

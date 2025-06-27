@@ -1,6 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Project } from 'src/app/models/project';
 import { ApiService } from 'src/app/services/api';
@@ -8,6 +7,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-detail',
@@ -15,7 +15,7 @@ import { Document } from 'src/app/models/document';
   styleUrls: ['./detail.component.scss']
 })
 export class DocumentDetailComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public document: Document = null;
   public currentProject: Project = null;
   public publishText: string;
@@ -36,17 +36,18 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
     this.formatBytes = this.utils.formatBytes;
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.document = res.document;
-        if (this.document.read.includes('public')) {
-          this.publishText = 'Unpublish';
-        } else {
-          this.publishText = 'Publish';
-        }
-        this._changeDetectionRef.detectChanges();
-      });
+    this.subscriptions.add(
+      this.route.data
+        .subscribe((res: any) => {
+          this.document = res.document;
+          if (this.document.read.includes('public')) {
+            this.publishText = 'Unpublish';
+          } else {
+            this.publishText = 'Publish';
+          }
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   onEdit() {
@@ -91,7 +92,6 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

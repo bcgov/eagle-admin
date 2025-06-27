@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import { ProjectService } from '../services/project.service';
 import { SearchService } from '../services/search.service';
 
 @Injectable()
-export class FullProjectResolver  {
+export class FullProjectResolver {
 
   constructor(
     private searchService: SearchService,
@@ -14,10 +15,6 @@ export class FullProjectResolver  {
 
   resolve(route: ActivatedRouteSnapshot): Observable<Object> {
     const projId = route.pathFromRoot[1].paramMap.get('projId');
-    const start = new Date();
-    const end = new Date();
-    start.setDate(start.getDate() - 7);
-    end.setDate(end.getDate() + 7);
     return this.searchService.getSearchResults(
       '',
       'Project',
@@ -25,11 +22,12 @@ export class FullProjectResolver  {
       1,
       1,
       '',
-      {_id: projId},
+      { _id: projId },
       true,
       {},
       'all',
-    ).flatMap(data => this.projectService.getPeopleObjs(data));
-    // Mapping the get People object observable here to fill out the epd and lead objects
+    ).pipe(
+      mergeMap(data => this.projectService.getPeopleObjs(data))
+    );
   }
 }

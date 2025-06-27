@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ProjectNotificationTableRowsComponent } from './project-notifications-table-rows/project-notifications-table-rows.component';
 import { ProjectNotification } from '../models/projectNotification';
 import { SearchTerms } from '../models/search';
@@ -14,8 +14,9 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
   styleUrls: ['./project-notifications.component.scss']
 })
 export class ProjectNotificationsComponent implements OnInit, OnDestroy {
+  private subscriptions = new Subscription();
+
   public terms = new SearchTerms();
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
   public notificationProjects: ProjectNotification[] = null;
   public loading = true;
 
@@ -59,29 +60,31 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
-    this.route.params
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(params => {
-        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        // default sort order
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = '-_id';
-        }
-        this.route.data
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe((res: any) => {
-            if (res && res.notificationProjects && res.notificationProjects[0].data.meta && res.notificationProjects[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.notificationProjects[0].data.meta[0].searchResultsTotal;
-              this.notificationProjects = res.notificationProjects[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.notificationProjects = [];
-            }
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          });
-      });
+    this.subscriptions.add(
+      this.route.params
+        .subscribe(params => {
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+          // default sort order
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = '-_id';
+          }
+          this.subscriptions.add(
+            this.route.data
+              .subscribe((res: any) => {
+                if (res && res.notificationProjects && res.notificationProjects[0].data.meta && res.notificationProjects[0].data.meta.length > 0) {
+                  this.tableParams.totalListItems = res.notificationProjects[0].data.meta[0].searchResultsTotal;
+                  this.notificationProjects = res.notificationProjects[0].data.searchResults;
+                } else {
+                  this.tableParams.totalListItems = 0;
+                  this.notificationProjects = [];
+                }
+                this.setRowData();
+                this.loading = false;
+                this._changeDetectionRef.detectChanges();
+              })
+          );
+        })
+    );
   }
 
   public onSubmit(currentPage = 1) {
@@ -128,7 +131,6 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

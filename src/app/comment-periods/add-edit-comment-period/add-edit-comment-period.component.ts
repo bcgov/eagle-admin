@@ -2,7 +2,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject } from 'rxjs';
 import * as moment from 'moment';
 
 // tiny mce imports for plugins
@@ -18,6 +17,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-edit-comment-period',
@@ -29,7 +29,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 
 
 export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public currentProject: { type: string, data: Project };
   public componentBaseUrl: string;
@@ -94,27 +94,28 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
         if (segment.path === 'edit') {
           this.isEditing = true;
           // get data from route resolver
-          this.route.data
-            .takeUntil(this.ngUnsubscribe)
-            .subscribe(
-              (data: any) => {
-                if (data.commentPeriod) {
-                  this.commentPeriod = data.commentPeriod;
-                  this.storageService.state.currentCommentPeriod = { type: 'currentCommentPeriod', data: this.commentPeriod };
-                  this.initSelectedDocs();
-                  this.initForm();
+          this.subscriptions.add(
+            this.route.data
+              .subscribe(
+                (data: any) => {
+                  if (data.commentPeriod) {
+                    this.commentPeriod = data.commentPeriod;
+                    this.storageService.state.currentCommentPeriod = { type: 'currentCommentPeriod', data: this.commentPeriod };
+                    this.initSelectedDocs();
+                    this.initForm();
 
+                    this.loading = false;
+                    this._changeDetectionRef.detectChanges();
+                  } else {
+                    alert('Uh-oh, couldn\'t load comment periods');
+                    // project not found --> navigate back to search
+                    this.router.navigate(['/search']);
+                  }
                   this.loading = false;
                   this._changeDetectionRef.detectChanges();
-                } else {
-                  alert('Uh-oh, couldn\'t load comment periods');
-                  // project not found --> navigate back to search
-                  this.router.navigate(['/search']);
                 }
-                this.loading = false;
-                this._changeDetectionRef.detectChanges();
-              }
-            );
+              )
+          );
         } else {
           this.initForm();
           this.loading = false;
@@ -193,13 +194,14 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private initSelectedDocs() {
     if (this.storageService.state.selectedDocumentsForCP == null) {
       if (this.commentPeriod.relatedDocuments && this.commentPeriod.relatedDocuments.length > 0) {
-        this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
-          .takeUntil(this.ngUnsubscribe)
-          .subscribe(
-            data => {
-              this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: data };
-            }
-          );
+        this.subscriptions.add(
+          this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
+            .subscribe(
+              data => {
+                this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: data };
+              }
+            )
+        );
       } else {
         this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: this.commentPeriod.relatedDocuments };
       }
@@ -276,32 +278,34 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
     // Submit
     if (this.isEditing) {
-      this.commentPeriodService.save(this.commentPeriod)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe({
-          error: () => {
-            alert('Uh-oh, couldn\'t edit comment period');
-          },
-          complete: () => { // onCompleted
-            this.loading = false;
-            this.openSnackBar('This comment period was created successfully.', 'Close');
-            this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
-          }
-        });
+      this.subscriptions.add(
+        this.commentPeriodService.save(this.commentPeriod)
+          .subscribe({
+            error: () => {
+              alert('Uh-oh, couldn\'t edit comment period');
+            },
+            complete: () => { // onCompleted
+              this.loading = false;
+              this.openSnackBar('This comment period was created successfully.', 'Close');
+              this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
+            }
+          })
+      );
     } else {
       this.commentPeriod.project = this.currentProject.data._id;
-      this.commentPeriodService.add(this.commentPeriod)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe({
-          error: () => {
-            alert('Uh-oh, couldn\'t add new comment period');
-          },
-          complete: () => { // onCompleted
-            this.loading = false;
-            this.openSnackBar('This comment period was created successfully.', 'Close');
-            this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
-          }
-        });
+      this.subscriptions.add(
+        this.commentPeriodService.add(this.commentPeriod)
+          .subscribe({
+            error: () => {
+              alert('Uh-oh, couldn\'t add new comment period');
+            },
+            complete: () => { // onCompleted
+              this.loading = false;
+              this.openSnackBar('This comment period was created successfully.', 'Close');
+              this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
+            }
+          })
+      );
     }
     this.storageService.state.selectedDocumentsForCP = null;
   }
@@ -410,7 +414,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

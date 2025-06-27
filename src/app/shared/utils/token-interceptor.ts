@@ -36,20 +36,22 @@ export class TokenInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
     request = this.addAuthHeader(request);
 
-    return next.handle(request).catch(error => {
-      if (error.status === 403) {
-        return this.refreshToken().pipe(
-          switchMap(() => {
-            request = this.addAuthHeader(request);
-            return next.handle(request);
-          }),
-          catchError((err) => {
-            return throwError(err);
-          })
-        );
-      }
-      return throwError(error);
-    });
+    return next.handle(request).pipe(
+      catchError(error => {
+        if (error.status === 403) {
+          return this.refreshToken().pipe(
+            switchMap(() => {
+              request = this.addAuthHeader(request);
+              return next.handle(request);
+            }),
+            catchError((err) => {
+              return throwError(() => err);
+            })
+          );
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
   /**
@@ -81,7 +83,7 @@ export class TokenInterceptor implements HttpInterceptor {
     if (this.refreshTokenInProgress) {
       return new Observable(observer => {
         this.tokenRefreshed$.subscribe(() => {
-          observer.next();
+          observer.next(null);
           observer.complete();
         });
       });
@@ -91,7 +93,7 @@ export class TokenInterceptor implements HttpInterceptor {
       return this.auth.refreshToken().pipe(
         tap(() => {
           this.refreshTokenInProgress = false;
-          this.tokenRefreshedSource.next();
+          this.tokenRefreshedSource.next(null);
         })
       );
     }

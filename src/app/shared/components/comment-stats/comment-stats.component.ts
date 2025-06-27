@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api';
 
 @Component({
@@ -12,22 +12,22 @@ export class CommentStatsComponent implements OnInit, OnDestroy {
   @Input() period: any;
   public summary: any;
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   constructor(
     private api: ApiService
   ) { }
 
   ngOnInit() {
-    this.api.getPeriodSummary(this.period._id)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(summary => {
-        this.summary = summary;
-      });
+    this.subscriptions.add(
+      this.api.getPeriodSummary(this.period._id)
+        .subscribe(summary => {
+          this.summary = summary;
+        })
+    );
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

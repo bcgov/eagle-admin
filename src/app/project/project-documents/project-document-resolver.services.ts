@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
-import 'rxjs/add/operator/switchMap';
+import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { ConfigService } from 'src/app/services/config.service';
 import { SearchService } from 'src/app/services/search.service';
@@ -9,7 +9,7 @@ import { StorageService } from 'src/app/services/storage.service';
 
 
 @Injectable()
-export class DocumentsResolver  {
+export class DocumentsResolver {
   private filterForAPI: object = {};
 
   constructor(
@@ -72,13 +72,11 @@ export class DocumentsResolver  {
       this.filterForAPI,
       ''
     );
-
-    return categorizedObs.map(res => (
-      {
+    return categorizedObs.pipe(
+      map(res => ({
         categorized: res[0],
-      }
-    ));
-
+      }))
+    );
   }
 
   paramsToCollectionFilter(params, name, collection, identifyBy) {
@@ -89,7 +87,7 @@ export class DocumentsResolver  {
       // look up each value in collection
       const values = params[name].split(',');
       values.forEach(value => {
-        const record = _.find(collection, [ identifyBy, value ]);
+        const record = _.find(collection, [identifyBy, value]);
         if (record) {
           confirmedValues.push(value);
         }

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { CommentService } from 'src/app/services/comment.service';
@@ -70,7 +70,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   public commentPeriodId: string;
   public baseRouteUrl: string;
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
@@ -105,42 +105,43 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
     this.baseRouteUrl = this.storageService.state.currentProject.type === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.selectedTab = 0;
 
-    this.commentService.getByPeriodId(
-      this.commentPeriodId,
-      this.tableParams.currentPage,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      true,
-      this.filter)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        if (res) {
-          this.tableParams.totalListItems = res.totalCount;
-          if (this.tableParams.totalListItems > 0) {
-            this.comments = res.data;
-            this.setCommentRowData();
+    this.subscriptions.add(
+      this.commentService.getByPeriodId(
+        this.commentPeriodId,
+        this.tableParams.currentPage,
+        this.tableParams.pageSize,
+        this.tableParams.sortBy,
+        true,
+        this.filter)
+        .subscribe((res: any) => {
+          if (res) {
+            this.tableParams.totalListItems = res.totalCount;
+            if (this.tableParams.totalListItems > 0) {
+              this.comments = res.data;
+              this.setCommentRowData();
 
-            // If there is a published comment, we are not allowed to delete the comment period.
-            let canDelete = true;
-            for (const comment of this.comments) {
-              if (comment.eaoStatus === 'Published') {
-                canDelete = false;
-                break;
+              // If there is a published comment, we are not allowed to delete the comment period.
+              let canDelete = true;
+              for (const comment of this.comments) {
+                if (comment.eaoStatus === 'Published') {
+                  canDelete = false;
+                  break;
+                }
               }
+              this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: canDelete };
+            } else {
+              this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: true };
             }
-            this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: canDelete };
+            this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+            this.loading = false;
+            this._changeDetectionRef.detectChanges();
           } else {
-            this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: true };
+            alert('Uh-oh, couldn\'t load comments');
+            // project not found --> navigate back to search
+            this.router.navigate(['/search']);
           }
-          this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        } else {
-          alert('Uh-oh, couldn\'t load comments');
-          // project not found --> navigate back to search
-          this.router.navigate(['/search']);
-        }
-      });
+        })
+    );
   }
 
   public togglePending() {
@@ -203,22 +204,22 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, true, this.filter)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItems = res.totalCount;
-        this.comments = res.data;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
-        this.setCommentRowData();
+    this.subscriptions.add(
+      this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, true, this.filter)
+        .subscribe((res: any) => {
+          this.tableParams.totalListItems = res.totalCount;
+          this.comments = res.data;
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
+          this.setCommentRowData();
 
-        this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+          this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

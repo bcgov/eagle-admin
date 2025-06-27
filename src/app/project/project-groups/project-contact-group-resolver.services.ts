@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/forkJoin';
+import { Observable } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 
 @Injectable()
-export class ProjectContactsGroupResolver  {
+export class ProjectContactsGroupResolver {
   constructor(
     private projectService: ProjectService
   ) { }

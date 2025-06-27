@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -24,7 +24,7 @@ export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableCompo
   public columns: any;
   public useSmallTable: boolean;
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   constructor(
     private _changeDetectionRef: ChangeDetectorRef,
@@ -49,35 +49,37 @@ export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableCompo
     modalRef.componentInstance.okOnly = false;
 
     modalRef.result
-       .then(isConfirmed => {
-          if (isConfirmed) {
-            this.recentActivityService.delete(activity)
-              .subscribe(
-                () => {
-                  this.entries.splice(this.entries.indexOf(activity), 1);
-                  this._changeDetectionRef.detectChanges();
-                },
-                error => {
-                  console.log('error =', error);
-                });
-          }
-        })
-        .catch(() => {
-          // Modal dismissed
-        });
+      .then(isConfirmed => {
+        if (isConfirmed) {
+          this.recentActivityService.delete(activity)
+            .subscribe(
+              () => {
+                this.entries.splice(this.entries.indexOf(activity), 1);
+                this._changeDetectionRef.detectChanges();
+              },
+              error => {
+                console.log('error =', error);
+              });
+        }
+      })
+      .catch(() => {
+        // Modal dismissed
+      });
   }
 
   togglePin(activity) {
     activity.pinned === true ? activity.pinned = false : activity.pinned = true;
-    this.recentActivityService.save(activity)
-      .subscribe(
-        () => {
-          this._changeDetectionRef.detectChanges();
-        },
-        error => {
-          console.log('error =', error);
-        }
-      );
+    this.subscriptions.add(
+      this.recentActivityService.save(activity)
+        .subscribe({
+          next: () => {
+            this._changeDetectionRef.detectChanges();
+          },
+          error: error => {
+            console.log('error =', error);
+          }
+        })
+    );
   }
 
   goToItem(activity) {
@@ -86,7 +88,6 @@ export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableCompo
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-
-import 'rxjs/add/operator/switchMap';
+import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import * as _ from 'lodash';
 import { Org } from 'src/app/models/org';
@@ -93,41 +92,43 @@ export class ProjectListResolver  {
     // Fetch proponents and other collections
     // TODO: Put all of these into Lists
     return this.orgService.getByCompanyType('Proponent/Certificate Holder')
-      .switchMap((res: any) => {
-        this.proponents = res || [];
+      .pipe(
+        switchMap((res: any) => {
+          this.proponents = res || [];
 
-        this.regions = this.REGIONS_COLLECTION;
-        this.ceaaInvolvements = this.CEAA_INVOLVEMENTS_COLLECTION;
+          this.regions = this.REGIONS_COLLECTION;
+          this.ceaaInvolvements = this.CEAA_INVOLVEMENTS_COLLECTION;
 
-        this.setFiltersFromParams(route.params);
+          this.setFiltersFromParams(route.params);
 
-        const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
-        if (tableParams.sortBy === '') {
-          tableParams.sortBy = '+name';
-          this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
-        }
+          const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, this.filterForURL);
+          if (tableParams.sortBy === '') {
+            tableParams.sortBy = '+name';
+            this.tableTemplateUtils.updateUrl(tableParams.sortBy, tableParams.currentPage, tableParams.pageSize, this.filterForURL, tableParams.keywords);
+          }
 
-        // if we're searching for projects, replace projectPhase with currentPhaseName
-        // The code is called projectPhase, but the db column on projects is currentPhaseName
-        // so the rename is required to pass in the correct query
-        if (route.params.hasOwnProperty('projectPhase')) {
-          this.filterForAPI['currentPhaseName'] = route.params['projectPhase'];
-          delete this.filterForAPI['projectPhase'];
-        }
+          // if we're searching for projects, replace projectPhase with currentPhaseName
+          // The code is called projectPhase, but the db column on projects is currentPhaseName
+          // so the rename is required to pass in the correct query
+          if (route.params.hasOwnProperty('projectPhase')) {
+            this.filterForAPI['currentPhaseName'] = route.params['projectPhase'];
+            delete this.filterForAPI['projectPhase'];
+          }
 
-        return this.searchService.getSearchResults(
-          tableParams.keywords,
-          'Project',
-          null,
-          tableParams.currentPage,
-          tableParams.pageSize,
-          tableParams.sortBy,
-          {},
-          true,
-          this.filterForAPI,
-          ''
-        );
-      });
+          return this.searchService.getSearchResults(
+            tableParams.keywords,
+            'Project',
+            null,
+            tableParams.currentPage,
+            tableParams.pageSize,
+            tableParams.sortBy,
+            {},
+            true,
+            this.filterForAPI,
+            ''
+          );
+        })
+      );
   }
 
   paramsToCheckboxFilters(params, name, map) {

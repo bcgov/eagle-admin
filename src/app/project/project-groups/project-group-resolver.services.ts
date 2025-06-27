@@ -1,11 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/forkJoin';
+import { Observable } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
 
 @Injectable()
-export class ProjectGroupResolver  {
+export class ProjectGroupResolver {
   constructor(
     private searchService: SearchService
   ) { }

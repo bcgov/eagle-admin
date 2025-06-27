@@ -1,9 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDate } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
 import * as moment from 'moment-timezone';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'src/app/services/config.service';
@@ -17,7 +16,7 @@ import { Utils } from 'src/app/shared/utils/utils';
   styleUrls: ['./document-edit.component.scss']
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   private readonly SNACKBAR_TIMEOUT = 1500;
 
   public documents: any[] = [];
@@ -108,13 +107,13 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       this.isPublished = this.documents[0].read.includes('public');
 
       // Set the old data in there if it exists.
-      if (this.documents[0].type) {this.myForm.controls.doctypesel.setValue(this.documents[0].type); }
-      if (this.documents[0].documentAuthorType) {this.myForm.controls.authorsel.setValue(this.documents[0].documentAuthorType); }
-      if (this.documents[0].milestone) {this.myForm.controls.labelsel.setValue(this.documents[0].milestone); }
-      if (this.documents[0].datePosted) {this.myForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))); }
-      if (this.documents[0].displayName) {this.myForm.controls.displayName.setValue(this.documents[0].displayName); }
-      if (this.documents[0].description) {this.myForm.controls.description.setValue(this.documents[0].description); }
-      if (this.documents[0].projectPhase) {this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
+      if (this.documents[0].type) { this.myForm.controls.doctypesel.setValue(this.documents[0].type); }
+      if (this.documents[0].documentAuthorType) { this.myForm.controls.authorsel.setValue(this.documents[0].documentAuthorType); }
+      if (this.documents[0].milestone) { this.myForm.controls.labelsel.setValue(this.documents[0].milestone); }
+      if (this.documents[0].datePosted) { this.myForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))); }
+      if (this.documents[0].displayName) { this.myForm.controls.displayName.setValue(this.documents[0].displayName); }
+      if (this.documents[0].description) { this.myForm.controls.description.setValue(this.documents[0].description); }
+      if (this.documents[0].projectPhase) { this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
 
       // init docNameInvalid
       this.validateDate();
@@ -147,7 +146,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.filteredProjectPhases2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
   }
 
-  public changeLegislation (event) {
+  public changeLegislation(event) {
     this.legislationYear = event.target.value;
 
     this.myForm.controls.doctypesel.setValue(null);
@@ -218,9 +217,9 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       formData.append('documentSource', 'PROJECT');
 
       if (!this.multiEdit) {
-        if (doc.documentFileName) {formData.append('documentFileName', doc.documentFileName); }
-        if (this.myForm.value.description) {formData.append('description', this.myForm.value.description); }
-        if (this.myForm.value.displayName) {formData.append('displayName', this.myForm.value.displayName); }
+        if (doc.documentFileName) { formData.append('documentFileName', doc.documentFileName); }
+        if (this.myForm.value.description) { formData.append('description', this.myForm.value.description); }
+        if (this.myForm.value.displayName) { formData.append('displayName', this.myForm.value.displayName); }
 
         formData.append('milestone', this.myForm.value.labelsel);
         formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toDate().toISOString());
@@ -252,28 +251,29 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.storageService.state = { type: 'documents', data: null };
     this.storageService.state = { type: 'labels', data: null };
 
-    forkJoin(observables)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        (d) => { // onNext
-          // Push the new version of documents into the selected list.
-          this.storageService.state.selectedDocs = d;
-        },
-        error => {
-          const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
-          this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_TIMEOUT});
-          this.loading = false;
-        },
-        () => { // onCompleted
-          // Set new state for docs.
-          this.storageService.state = { type: 'documents', data: this.storageService.state.selectedDocs };
-          // Clear out the document state that was stored previously.
-          this.goBack();
-          // this.loading should not be turned off at all in this function.
-          // its important that the spinner stays on until we navigate away from this page
-          // this.loading = false;
-        }
-      );
+    this.subscriptions.add(
+      forkJoin(observables)
+        .subscribe(
+          (d) => { // onNext
+            // Push the new version of documents into the selected list.
+            this.storageService.state.selectedDocs = d;
+          },
+          error => {
+            const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
+            this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_TIMEOUT });
+            this.loading = false;
+          },
+          () => { // onCompleted
+            // Set new state for docs.
+            this.storageService.state = { type: 'documents', data: this.storageService.state.selectedDocs };
+            // Clear out the document state that was stored previously.
+            this.goBack();
+            // this.loading should not be turned off at all in this function.
+            // its important that the spinner stays on until we navigate away from this page
+            // this.loading = false;
+          }
+        )
+    );
   }
 
   addLabels() {
@@ -293,28 +293,29 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       } else {
         observables.push(this.documentService.unPublish(doc._id));
       }
-      forkJoin(observables)
-        .takeUntil(this.ngUnsubscribe)
-        .subscribe(
-          () => { // onNext
-            // do nothing here - see onCompleted() function below
-          },
-          error => {
-            console.log('error =', error);
-            alert('Uh-oh, couldn\'t update document\'s publish status');
-            // TODO: should fully reload project here so we have latest non-deleted objects
-          },
-          () => { // onCompleted
+      this.subscriptions.add(
+        forkJoin(observables)
+          .subscribe(
+            () => { // onNext
+              // do nothing here - see onCompleted() function below
+            },
+            error => {
+              console.log('error =', error);
+              alert('Uh-oh, couldn\'t update document\'s publish status');
+              // TODO: should fully reload project here so we have latest non-deleted objects
+            },
+            () => { // onCompleted
 
-            this.save();
+              this.save();
 
-            if (this.isPublished) {
-              this.openSnackBar('This document has been published.', 'Close');
-            } else {
-              this.openSnackBar('This document has been unpublished.', 'Close');
+              if (this.isPublished) {
+                this.openSnackBar('This document has been published.', 'Close');
+              } else {
+                this.openSnackBar('This document has been unpublished.', 'Close');
+              }
             }
-          }
-        );
+          )
+      );
     });
   }
 
@@ -330,7 +331,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

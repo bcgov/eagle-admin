@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
+import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import * as _ from 'lodash';
 
 import { ApiService } from './api';
@@ -28,8 +28,9 @@ export class DecisionService {
       decision.description = decision.description.replace(/\n/g, '\\n');
     }
 
-    return this.api.addDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.addDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   save(orig: Decision): Observable<Decision> {
@@ -44,23 +45,27 @@ export class DecisionService {
       decision.description = decision.description.replace(/\n/g, '\\n');
     }
 
-    return this.api.saveDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.saveDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   delete(decision: Decision): Observable<Decision> {
-    return this.api.deleteDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.deleteDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   publish(decision: Decision): Observable<Decision> {
-    return this.api.publishDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.publishDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
   unPublish(decision: Decision): Observable<Decision> {
-    return this.api.unPublishDecision(decision)
-      .catch(error => this.api.handleError(error));
+    return this.api.unPublishDecision(decision).pipe(
+      catchError(error => this.api.handleError(error))
+    );
   }
 
 }

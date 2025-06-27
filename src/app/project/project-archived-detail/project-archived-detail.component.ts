@@ -2,10 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Subject } from 'rxjs';
-import 'rxjs/add/operator/takeUntil';
-import 'rxjs/add/operator/concat';
-import { of } from 'rxjs';
+import { Subscription, of } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project } from 'src/app/models/project';
@@ -31,7 +28,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public isDeleting = false;
   public project: Project = null;
   private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public currentLeg: string;
   public currentLegYear: number;
   public showArchivedButton = false;
@@ -59,10 +56,9 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
-    this.route.parent.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        (data: {  project: ISearchResults<Project>[] }) => {
+    this.subscriptions.add(
+      this.route.parent.data.subscribe(
+        (data: { project: ISearchResults<Project>[] }) => {
           if (data.project) {
             const projectSearchData = this.utils.extractFromSearchResults(data.project);
             this.project = projectSearchData ? projectSearchData[0] : null;
@@ -74,20 +70,21 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
             this.router.navigate(['/search']);
           }
         }
-      );
+      )
+    );
 
-    this.route.data
-    .takeUntil(this.ngUnsubscribe)
-    .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-      this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
-      if ( (this.legislationYearList ).includes(2002)) {
-        this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
-      } else {
-        this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
-      }
-      this.isPublished = this.project && this.project.read && this.project.read.includes('public');
-      this.substantiallyStarted = (this.project.substantially === true ) ? 'Yes' : 'No';
-    });
+    this.subscriptions.add(
+      this.route.data.subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
+        this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
+        if ((this.legislationYearList).includes(2002)) {
+          this.project = data.fullProject[0].data.searchResults[0].legislation_2002;
+        } else {
+          this.project = data.fullProject[0].data.searchResults[0].legislation_1996;
+        }
+        this.isPublished = this.project && this.project.read && this.project.read.includes('public');
+        this.substantiallyStarted = (this.project.substantially === true) ? 'Yes' : 'No';
+      })
+    );
   }
 
   editProject() {
@@ -135,9 +132,8 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
 
     const observables = of(null);
 
-    observables
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
+    this.subscriptions.add(
+      observables.subscribe(
         () => { // onNext
           // do nothing here - see onCompleted() function below
         },
@@ -152,7 +148,8 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
           // delete succeeded --> navigate back to search
           this.router.navigate(['/search']);
         }
-      );
+      )
+    );
   }
 
   public publishProject() {
@@ -176,78 +173,80 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   private internalPublishProject() {
     this.isPublishing = true;
 
-    this.projectService.publish(this.project)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        () => { // onNext
-          // do nothing here - see onCompleted() function below
-        },
-        error => {
-          this.isPublishing = false;
-          console.log('error =', error);
-          alert('Uh-oh, couldn\'t publish project');
-          // TODO: should fully reload project here so we have latest isPublished flags for objects
-        },
-        () => { // onCompleted
-          this.snackBarRef = this.snackBar.open('Project published...', null, { duration: 2000 });
-          // reload all data
-          this.projectService.getById(this.project._id)
-            .takeUntil(this.ngUnsubscribe)
-            .subscribe(
-              project => {
-                this.isPublishing = false;
-                this.project = project;
-              },
-              error => {
-                this.isPublishing = false;
-                console.log('error =', error);
-                alert('Uh-oh, couldn\'t reload project');
-              }
+    this.subscriptions.add(
+      this.projectService.publish(this.project)
+        .subscribe(
+          () => { // onNext
+            // do nothing here - see onCompleted() function below
+          },
+          error => {
+            this.isPublishing = false;
+            console.log('error =', error);
+            alert('Uh-oh, couldn\'t publish project');
+            // TODO: should fully reload project here so we have latest isPublished flags for objects
+          },
+          () => { // onCompleted
+            this.snackBarRef = this.snackBar.open('Project published...', null, { duration: 2000 });
+            // reload all data
+            this.subscriptions.add(
+              this.projectService.getById(this.project._id)
+                .subscribe({
+                  next: project => {
+                    this.isPublishing = false;
+                    this.project = project;
+                  },
+                  error: error => {
+                    this.isPublishing = false;
+                    console.log('error =', error);
+                    alert('Uh-oh, couldn\'t reload project');
+                  }
+                })
             );
-        }
-      );
+          }
+        )
+    );
   }
 
   public unPublishProject() {
     this.isUnpublishing = true;
 
-    this.projectService.unPublish(this.project)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        () => { // onNext
-          // do nothing here - see onCompleted() function below
-        },
-        error => {
-          this.isPublishing = false;
-          console.log('error =', error);
-          alert('Uh-oh, couldn\'t publish project');
-          // TODO: should fully reload project here so we have latest isPublished flags for objects
-        },
-        () => { // onCompleted
-          this.snackBarRef = this.snackBar.open('Project un-published...', null, { duration: 2000 });
-          // reload all data
-          this.projectService.getById(this.project._id)
-            .takeUntil(this.ngUnsubscribe)
-            .subscribe(
-              project => {
-                this.isPublishing = false;
-                this.project = project;
-              },
-              error => {
-                this.isPublishing = false;
-                console.log('error =', error);
-                alert('Uh-oh, couldn\'t reload project');
-              }
+    this.subscriptions.add(
+      this.projectService.unPublish(this.project)
+        .subscribe({
+          next: () => {
+            // do nothing here - see complete below
+          },
+          error: error => {
+            this.isPublishing = false;
+            console.log('error =', error);
+            alert('Uh-oh, couldn\'t publish project');
+            // TODO: should fully reload project here so we have latest isPublished flags for objects
+          },
+          complete: () => {
+            this.snackBarRef = this.snackBar.open('Project un-published...', null, { duration: 2000 });
+            // reload all data
+            this.subscriptions.add(
+              this.projectService.getById(this.project._id)
+                .subscribe({
+                  next: project => {
+                    this.isPublishing = false;
+                    this.project = project;
+                  },
+                  error: error => {
+                    this.isPublishing = false;
+                    console.log('error =', error);
+                    alert('Uh-oh, couldn\'t reload project');
+                  }
+                })
             );
-        }
-      );
+          }
+        })
+    );
   }
 
   ngOnDestroy() {
     // dismiss any open snackbar
     if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

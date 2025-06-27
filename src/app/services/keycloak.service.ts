@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
+import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { JwtUtil } from '../jwt-util';
 
@@ -171,7 +170,7 @@ export class KeycloakService {
         .updateToken(30)
         .then((refreshed) => {
           console.log(`KC refreshed token?: ${refreshed}`);
-          observer.next();
+          observer.next(null);
           observer.complete();
         })
         .catch((err) => {

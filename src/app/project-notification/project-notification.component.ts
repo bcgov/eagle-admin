@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { StorageService } from '../services/storage.service';
 import { Project } from '../models/project';
 import { SideBarService } from '../services/sidebar.service';
@@ -12,7 +12,7 @@ import { SideBarService } from '../services/sidebar.service';
 })
 export class ProjectNotificationComponent implements OnInit, OnDestroy {
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   public project: Project = null;
   public loading = true;
   public classApplied = false;
@@ -33,26 +33,26 @@ export class ProjectNotificationComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // get data from route resolver
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        (data: any) => {
-          if (data.notificationProject) {
-            const docMeta = data.documents[0].data.meta[0];
-            const docTotal = docMeta ? docMeta.searchResultsTotal : 0;
-            this.storageService.state.currentProject = { type: 'currentProjectNotification', data: data.notificationProject.data, docTotal: docTotal };
-            this.loading = false;
-            this._changeDetectorRef.detectChanges();
-          } else {
-            // project notification not found --> navigate back to search
-            this.router.navigate(['/search']);
+    this.subscriptions.add(
+      this.route.data
+        .subscribe(
+          (data: any) => {
+            if (data.notificationProject) {
+              const docMeta = data.documents[0].data.meta[0];
+              const docTotal = docMeta ? docMeta.searchResultsTotal : 0;
+              this.storageService.state.currentProject = { type: 'currentProjectNotification', data: data.notificationProject.data, docTotal: docTotal };
+              this.loading = false;
+              this._changeDetectorRef.detectChanges();
+            } else {
+              // project notification not found --> navigate back to search
+              this.router.navigate(['/search']);
+            }
           }
-        }
-      );
+        )
+    );
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

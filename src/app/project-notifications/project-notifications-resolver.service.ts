@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { SearchService } from '../services/search.service';
 import { StorageService } from '../services/storage.service';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';

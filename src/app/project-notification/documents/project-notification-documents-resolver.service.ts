@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 
 @Injectable()
-export class ProjectNotificationDocumentsResolver  {
+export class ProjectNotificationDocumentsResolver {
   constructor(
     private searchService: SearchService,
     private storageService: StorageService

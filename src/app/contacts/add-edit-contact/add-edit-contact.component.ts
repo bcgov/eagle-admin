@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { Topic } from 'src/app/models/topic';
 import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
@@ -23,7 +23,7 @@ export interface DataModel {
 // NOTE: dialog components must not implement OnDestroy
 //       otherwise they don't return a result
 export class AddEditContactComponent implements OnInit, OnDestroy {
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
   private navigationObject;
 
   public currentProject;
@@ -60,50 +60,51 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       org = this.storageService.state.selectedOrganization._id;
     }
 
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(res => {
-        this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
-        this.contactId = this.isEditing ? res.contact.data._id : '';
+    this.subscriptions.add(
+      this.route.data
+        .subscribe(res => {
+          this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
+          this.contactId = this.isEditing ? res.contact.data._id : '';
 
-        if (this.storageService.state.contactForm == null) {
-          if (!this.isEditing) {
-            this.buildForm({
-              'firstName': '',
-              'middleName': '',
-              'lastName': '',
-              'displayName': '',
-              'email': '',
-              'org': org,
-              'title': '',
-              'phoneNumber': '',
-              'salutation': '',
-              'department': '',
-              'faxNumber': '',
-              'cellPhoneNumber': '',
-              'address1': '',
-              'address2': '',
-              'city': '',
-              'province': '',
-              'country': '',
-              'postalCode': '',
-              'notes': ''
-            });
-          } else {
-            if (org !== '') {
-              res.contact.data.org = org;
-              res.contact.data.orgName = this.contactOrganizationName;
+          if (this.storageService.state.contactForm == null) {
+            if (!this.isEditing) {
+              this.buildForm({
+                'firstName': '',
+                'middleName': '',
+                'lastName': '',
+                'displayName': '',
+                'email': '',
+                'org': org,
+                'title': '',
+                'phoneNumber': '',
+                'salutation': '',
+                'department': '',
+                'faxNumber': '',
+                'cellPhoneNumber': '',
+                'address1': '',
+                'address2': '',
+                'city': '',
+                'province': '',
+                'country': '',
+                'postalCode': '',
+                'notes': ''
+              });
             } else {
-              this.contactOrganizationName = res.contact.data.orgName;
+              if (org !== '') {
+                res.contact.data.org = org;
+                res.contact.data.orgName = this.contactOrganizationName;
+              } else {
+                this.contactOrganizationName = res.contact.data.orgName;
+              }
+              this.buildForm(res.contact.data);
             }
-            this.buildForm(res.contact.data);
+          } else {
+            this.contactForm = this.storageService.state.contactForm;
+            this.contactForm.controls.org.setValue(org);
           }
-        } else {
-          this.contactForm = this.storageService.state.contactForm;
-          this.contactForm.controls.org.setValue(org);
-        }
-        this.loading = false;
-      });
+          this.loading = false;
+        })
+    );
   }
 
   private setBreadcrumbs() {
@@ -280,7 +281,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }

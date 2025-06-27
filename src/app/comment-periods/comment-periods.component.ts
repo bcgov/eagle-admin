@@ -1,6 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { CommentPeriod } from '../models/commentPeriod';
 import { ApiService } from '../services/api';
 import { CommentPeriodService } from '../services/commentperiod.service';
@@ -17,7 +17,7 @@ import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/c
 })
 export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
-  private ngUnsubscribe: Subject<boolean> = new Subject<boolean>();
+  private subscriptions = new Subscription();
 
   public commentPeriods: CommentPeriod[] = null;
   public commentPeriodTableColumns: any[] = [
@@ -89,28 +89,29 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     this.storageService.state.selectedTab = 0;
 
     // get data from route resolver
-    this.route.data
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe(
-        (res: any) => {
-          if (res) {
-            this.tableParams.totalListItems = res.commentPeriods.totalCount;
-            if (this.tableParams.totalListItems > 0) {
-              this.commentPeriods = res.commentPeriods.data;
+    this.subscriptions.add(
+      this.route.data
+        .subscribe(
+          (res: any) => {
+            if (res) {
+              this.tableParams.totalListItems = res.commentPeriods.totalCount;
+              if (this.tableParams.totalListItems > 0) {
+                this.commentPeriods = res.commentPeriods.data;
+              } else {
+                this.tableParams.totalListItems = 0;
+                this.commentPeriods = [];
+              }
+              this.setCPRowData();
+              this.loading = false;
+              this._changeDetectionRef.detectChanges();
             } else {
-              this.tableParams.totalListItems = 0;
-              this.commentPeriods = [];
+              alert('Uh-oh, couldn\'t load comment periods');
+              // project not found --> navigate back to search
+              this.router.navigate(['/search']);
             }
-            this.setCPRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          } else {
-            alert('Uh-oh, couldn\'t load comment periods');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
           }
-        }
-      );
+        )
+    );
   }
 
   setColumnSort(column) {
@@ -160,16 +161,17 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.commentPeriodService.getAllByProjectId(this.currentProject.data._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
-      .takeUntil(this.ngUnsubscribe)
-      .subscribe((res: any) => {
-        this.tableParams.totalListItems = res.totalCount;
-        this.commentPeriods = res.data;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize);
-        this.setCPRowData();
-        this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      });
+    this.subscriptions.add(
+      this.commentPeriodService.getAllByProjectId(this.currentProject.data._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
+        .subscribe((res: any) => {
+          this.tableParams.totalListItems = res.totalCount;
+          this.commentPeriods = res.data;
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize);
+          this.setCPRowData();
+          this.loading = false;
+          this._changeDetectionRef.detectChanges();
+        })
+    );
   }
 
   public addCommentPeriod() {
@@ -199,7 +201,6 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.ngUnsubscribe.next();
-    this.ngUnsubscribe.complete();
+    this.subscriptions.unsubscribe();
   }
 }
