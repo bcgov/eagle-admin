@@ -86,7 +86,7 @@
     margin-top: -0.25rem;
     margin-bottom: -0.25rem;
 
-    + span {
+    +span {
       display: none;
       margin-top: 1px;
       margin-left: 0.25rem;
@@ -100,7 +100,7 @@
 @media (min-width: 420px) {
   .navbar-toggler {
     i {
-      + span {
+      +span {
         display: inline-block;
       }
     }
@@ -116,11 +116,13 @@
 
   .navbar-nav {
     margin-top: 0.5rem;
+
     span {
       font-size: 1rem;
       text-transform: none;
       font-weight: normal;
     }
+
     @media screen and (max-width: 600px) {
       .btn-group {
         display: block;
@@ -137,6 +139,7 @@
       font-size: $mn-font-size;
       font-weight: 700;
       cursor: pointer;
+
       i {
         margin-right: 4px;
         margin-top: 3px;
@@ -209,16 +212,18 @@
         height: 4.2rem; // 60px to match the branding height
         padding: 0.5rem 0.75rem !important;
         border-top: none;
+
         span {
           margin-top: 0.9rem;
           display: inline-block;
         }
+
         &:hover {
           background-color: #002663;
         }
       }
 
-      > li {
+      >li {
         .dropdown-menu {
           top: 100% !important;
           right: 0;
@@ -228,9 +233,11 @@
           min-width: 10rem;
           padding: 0.5rem;
           background-color: #002663;
+
           &.dm-sm {
             min-width: 12rem;
           }
+
           .dropdown-item {
             padding: 0.5rem;
           }
@@ -241,12 +248,14 @@
             .dropdown-toggle {
               color: $mn-color;
             }
+
             .dropdown-menu {
               display: none;
             }
           }
 
           &:hover {
+
             >a,
             >a:hover,
             >a:focus {
@@ -287,6 +296,7 @@
   line-height: 1.1rem;
   font-weight: 800;
   font-size: 2rem;
+
   .wb {
     display: block;
   }

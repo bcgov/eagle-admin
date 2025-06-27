@@ -27,13 +27,12 @@
                             <div class="input-group main-search-field">
                                 <input class="form-control" type="text" name="keywordInput"
                                     placeholder="Enter keywords to search..." id="keywordInput"
-                                    [(ngModel)]="tableParams.keywords"  />
-                                <div *ngIf="!showAdvancedSearch || !isShowingFilter()" class="input-group-append">
-                                    <!-- prevent searching if input is empty or we're already searching -->
-                                    <button class="btn btn-primary search-button" type="submit">
-                                        <span>Search</span>
-                                    </button>
-                                </div>
+                                    [(ngModel)]="tableParams.keywords" />
+                                <!-- prevent searching if input is empty or we're already searching -->
+                                <button *ngIf="!showAdvancedSearch || !isShowingFilter()"
+                                    class="btn btn-primary search-button btn-append" type="submit">
+                                    <span>Search</span>
+                                </button>
                             </div>
                             <div class="advanced-filter">
                                 <div class="row filter-row">
@@ -45,14 +44,14 @@
                                         <button *ngFor="let filter of filterForUI.type" class="btn filter-badge type">
                                             <span class="ng-value-label">{{filter.name}} </span>
                                             <span class="ng-value-icon left" (click)="clearSelectedItem('type', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
                                         <button *ngFor="let filter of filterForUI.pcp" class="btn filter-badge pcp">
                                             <span class="ng-value-label">{{filter.name}} </span>
                                             <span class="ng-value-icon left" (click)="clearSelectedItem('pcp', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -62,14 +61,14 @@
                                             </span>
                                             <span class="ng-value-icon left"
                                                 (click)="clearSelectedItem('eacDecision', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
                                         <button *ngIf="isDateRangeSet()" class="btn filter-badge eacDecisionDate">
                                             <span class="ng-value-label">EA Date Range </span>
                                             <span class="ng-value-icon left" (click)="clearDateRange()"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -78,7 +77,7 @@
                                             <span class="ng-value-label">{{filter.name}} </span>
                                             <span class="ng-value-icon left"
                                                 (click)="clearSelectedItem('proponent', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -88,7 +87,7 @@
                                             </span>
                                             <span class="ng-value-icon left"
                                                 (click)="clearSelectedItem('projectPhase', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -98,7 +97,7 @@
                                             </span>
                                             <span class="ng-value-icon left"
                                                 (click)="clearSelectedItem('CEAAInvolvement', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -107,7 +106,7 @@
                                             <span class="ng-value-label">{{filter.name}} </span>
                                             <span class="ng-value-icon left"
                                                 (click)="clearSelectedItem('region', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -115,7 +114,7 @@
                                         <button *ngIf="isUiFiltered()" class="btn filter-badge btn-outline-dark"
                                             type="button" (click)="clearAll();">
                                             <span class="ng-value-label">Clear Filters </span>&nbsp;
-                                            <i class="material-symbols-outlined size-20">
+                                            <i class="material-icons size-20">
                                                 filter_alt_off
                                             </i>
                                         </button>
@@ -139,7 +138,7 @@
                                                 [(ngModel)]="filterForUI.type" [compareWith]="filterCompareWith">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             work
                                                         </i>&nbsp;Project Type
                                                         ({{filterForUI.type.length}})</span>
@@ -159,7 +158,7 @@
                                                 [(ngModel)]="filterForUI.pcp" [compareWith]="filterCompareWith">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             comment
                                                         </i>&nbsp;Comment Period
                                                         ({{filterForUI.pcp.length}})</span>
@@ -180,7 +179,7 @@
                                                 [compareWith]="filterCompareWith">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             mark_as_unread
                                                         </i>&nbsp;EA Decision
                                                         ({{filterForUI.eacDecision.length}})</span>
@@ -205,7 +204,7 @@
                                                 (ngModelChange)="changeDateRange()">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             date_range
                                                         </i>&nbsp;EA Decision Date</span>
                                                 </ng-template>
@@ -219,13 +218,10 @@
                                                             #decisionDateStartPicker="ngbDatepicker"
                                                             [minDate]="constants.minPickerDate"
                                                             [maxDate]="constants.maxPickerDate">
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-outline-secondary calendar"
-                                                                (click)="decisionDateStartPicker.toggle()"
-                                                                type="button">
-                                                                <i class="material-icons">date_range</i>
-                                                            </button>
-                                                        </div>
+                                                        <button class="btn btn-outline-secondary btn-append calendar"
+                                                            (click)="decisionDateStartPicker.toggle()" type="button">
+                                                            <i class="material-icons">date_range</i>
+                                                        </button>
                                                         &nbsp;to&nbsp;
                                                         <input id="decisionDateEnd" type="text" class="form-control"
                                                             placeholder="yyyy-mm-dd"
@@ -235,12 +231,10 @@
                                                             #decisionDateEndPicker="ngbDatepicker"
                                                             [minDate]="constants.minPickerDate"
                                                             [maxDate]="constants.maxPickerDate" />
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-outline-secondary calendar"
-                                                                (click)="decisionDateEndPicker.toggle()" type="button">
-                                                                <i class="material-icons">date_range</i>
-                                                            </button>
-                                                        </div>
+                                                        <button class="btn btn-outline-secondary btn-append calendar"
+                                                            (click)="decisionDateEndPicker.toggle()" type="button">
+                                                            <i class="material-icons">date_range</i>
+                                                        </button>
                                                     </div>
                                                 </ng-template>
                                             </ng-select>
@@ -252,7 +246,7 @@
                                                 [compareWith]="filterCompareWith" [searchable]="false">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:block" class="ng-placeholder"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             domain
                                                         </i>&nbsp;Proponent ({{filterForUI.proponent.length}})</span>
                                                 </ng-template>
@@ -271,7 +265,7 @@
                                                 [(ngModel)]="filterForUI.projectPhase" [searchable]="false">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:block" class="ng-placeholder"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             view_timeline
                                                         </i>&nbsp;Project Phase
                                                         ({{filterForUI.projectPhase.length}})</span>
@@ -292,7 +286,7 @@
                                                 [compareWith]="filterCompareWith" [searchable]="false">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:block" class="ng-placeholder"><i
-                                                            class="material-symbols-outlined size-28 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             hub
                                                         </i>&nbsp; IAAC Involvement
                                                         ({{filterForUI.CEAAInvolvement.length}})</span>
@@ -312,9 +306,9 @@
                                                 [(ngModel)]="filterForUI.region" [compareWith]="filterCompareWith"
                                                 [searchable]="false">
                                                 <ng-template ng-multi-label-tmp>
-                                                    <span style="display:block" class="ng-placeholder">
-                                                        <i class="material-symbols-outlined size-32 center-icon">
-                                                            distance
+                                                    <span style="display:block" class="ng-placeholder"><i
+                                                            class="material-icons size-32 center-icon">
+                                                            explore
                                                         </i>&nbsp;Region ({{filterForUI.region.length}})</span>
                                                 </ng-template>
                                                 <ng-template ng-option-tmp let-item="item" let-item$="item$"
@@ -325,6 +319,7 @@
                                                 </ng-template>
                                             </ng-select>
                                         </div>
+
                                         <div *ngIf="showAdvancedSearch && showFilters.more" class="eaDate filter">
                                         </div>
                                     </div>

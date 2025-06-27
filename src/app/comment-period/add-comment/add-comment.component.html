@@ -2,7 +2,8 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
       <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
-      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All Project Notifications</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All
+        Project Notifications</a>
     </li>
     <li class="breadcrumb-item">
       <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
@@ -11,7 +12,8 @@
       <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', commentPeriod._id]">{{commentPeriod.dateStarted | date: 'MMMM d'}} -
+      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', commentPeriod._id]">{{commentPeriod.dateStarted |
+        date: 'MMMM d'}} -
         {{commentPeriod.dateCompleted | date}}</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
@@ -91,8 +93,8 @@
         <div class="form-row">
           <div class="form-group col-md-12">
             <label for="attachments"><b>Attachments</b></label>
-            <app-file-upload [maxFiles]="50" [maxSize]="3000" [showInfo]="false" [showList]="false" [files]="commentFiles"
-              (filesChange)="addDocuments($event); commentFiles = []"></app-file-upload>
+            <app-file-upload [maxFiles]="50" [maxSize]="3000" [showInfo]="false" [showList]="false"
+              [files]="commentFiles" (filesChange)="addDocuments($event); commentFiles = []"></app-file-upload>
             <br>
             <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
               <li *ngFor="let doc of documents">
@@ -160,9 +162,7 @@
           <input required id="inputAddDate" container='body' type="text" class="form-control"
             placeholder="Select an add date" name="dateAdded" formControlName="dateAdded" ngbDatepicker
             #addDatePicker="ngbDatepicker">
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary calendar" (click)="addDatePicker.toggle()" type="button"></button>
-          </div>
+          <button class="btn btn-outline-secondary calendar" (click)="addDatePicker.toggle()" type="button"></button>
         </div>
       </div>
       <div class="form-group col-md-6">
@@ -171,9 +171,7 @@
           <input required id="inputPostDate" container='body' type="text" class="form-control"
             placeholder="Not Published" name="datePosted" formControlName="datePosted" ngbDatepicker
             #postDatePicker="ngbDatepicker">
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()" type="button"></button>
-          </div>
+          <button class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()" type="button"></button>
         </div>
       </div>
     </div>

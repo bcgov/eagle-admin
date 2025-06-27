@@ -12,9 +12,9 @@
 
 <div class="container-fluid-padding">
     <h1>
-        <div class="row">
+        <div class="d-flex">
             <div>Documents</div>
-            <div class="ml-auto" ngbDropdown placement="bottom-right">
+            <div class="ms-auto" ngbDropdown placement="bottom-right">
                 <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
                 <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
                     <button (click)="selectAction('publish')" class="dropdown-item" [disabled]="!isEnabled('publish')"

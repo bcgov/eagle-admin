@@ -30,26 +30,26 @@
 
       <div>
         <div class='input-group-prepend'>
-          <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary mr-1"
+          <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary me-1"
             [disabled]="!isEnabled('selectAll')" type="button" id="button-sa"><i
               class="material-icons">select_all</i>Select All
           </button>
-          <button (click)="setBackURL()" class="btn btn-outline-secondary mr-1" type="button" id="button-a">
+          <button (click)="setBackURL()" class="btn btn-outline-secondary me-1" type="button" id="button-a">
             <i class="material-icons">add</i>Add Contact(s)
           </button>
-          <button (click)="selectAction('delete')" class="btn btn-outline-secondary mr-1"
+          <button (click)="selectAction('delete')" class="btn btn-outline-secondary me-1"
             [disabled]="!isEnabled('delete')" type="button" id="button-d"><i
               class="material-icons">delete</i>Remove</button>
-          <button (click)="selectAction('export')" class="btn btn-outline-secondary mr-1"
+          <button (click)="selectAction('export')" class="btn btn-outline-secondary me-1"
             [disabled]="!isEnabled('export')" type="button" id="button-e"><i
               class="material-icons">import_export</i>Export</button>
-          <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary mr-1"
+          <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary me-1"
             [disabled]="!isEnabled('copyEmail')" type="button" id="button-ce"><i
               class="material-icons">import_export</i>Copy Emails</button>
           <div class="col mb-2">
             <div *ngIf="!loading && this.tableParams.totalListItems > 10">
-              <div class="btn-toolbar mb-2" class="text-right" role="toolbar" aria-label="Toolbar with button groups">
-                <div class="btn-group-toggle mr-2" role="group" aria-label="First group">
+              <div class="btn-toolbar mb-2" class="text-end" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="btn-group-toggle me-2" role="group" aria-label="First group">
                   <a href="javascript:void(0);" role="button" class="btn btn-primary"
                     (click)="tableParams.pageSize=this.tableParams.totalListItems; getPaginatedContacts(1);"
                     aria-pressed="tableParams.pageSize === this.tableParams.totalListItems"

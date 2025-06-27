@@ -18,8 +18,8 @@
     </div>
   </h1>
   <div [hidden]="tableParams.totalListItems == 0">
-    <button class="btn btn-primary mr-1" type="button" (click)="onSave()">Save</button>
-    <button class="btn btn-secondary mr-1" type="cancel" (click)="onCancel()">cancel</button>
+    <button class="btn btn-primary me-1" type="button" (click)="onSave()">Save</button>
+    <button class="btn btn-secondary me-1" type="cancel" (click)="onCancel()">cancel</button>
   </div>
   <app-table-template
     *ngIf="!loading && tableParams.totalListItems != 0"

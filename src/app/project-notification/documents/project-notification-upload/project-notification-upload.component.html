@@ -41,23 +41,20 @@
         <div class="form-group col-md-4">
           <label for="date">Date*</label>
           <div class="input-group">
-            <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="date"
-              formControlName="date" ngbDatepicker #datePicker="ngbDatepicker" />
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary calendar" (click)="datePicker.toggle()"
-                type="button"></button>
-            </div>
+            <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="date" formControlName="date"
+              ngbDatepicker #datePicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="datePicker.toggle()" type="button"></button>
           </div>
         </div>
 
         <div class="pn-info-block col-md-4">
-            <label>Milestone:</label>
-            <p class="value" [innerHTML]="documentMilestone[0]"></p>
+          <label>Milestone:</label>
+          <p class="value" [innerHTML]="documentMilestone[0]"></p>
         </div>
 
         <div class="pn-info-block col-md-4">
-            <label>Phase:</label>
-            <p class="value" [innerHTML]="documentPhase[0]"></p>
+          <label>Phase:</label>
+          <p class="value" [innerHTML]="documentPhase[0]"></p>
         </div>
       </div>
 
@@ -67,7 +64,8 @@
           <div class="form-group col-md-12">
             <label for="description">Description</label>
             <div>
-              <input type="text" class="form-control" id="description" name="description" formControlName="description" maxlength="255">
+              <input type="text" class="form-control" id="description" name="description" formControlName="description"
+                maxlength="255">
             </div>
           </div>
         </div>
@@ -76,8 +74,8 @@
   </div>
 
   <div class="form-group mb-0">
-    <app-file-upload [maxFiles]="20 - docTotal" [maxSize]="3000" [showInfo]="false" [showList]="false" [files]="projectFiles"
-      (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
+    <app-file-upload [maxFiles]="20 - docTotal" [maxSize]="3000" [showInfo]="false" [showList]="false"
+      [files]="projectFiles" (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
     <br>
     <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
       <li *ngFor="let doc of documents">
@@ -96,12 +94,11 @@
     </ul>
   </div>
 
-  <div class="text-right">
+  <div class="text-end">
     <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
     &nbsp;
-    <button class="btn btn-primary mr-1"
-      [disabled]=" !myForm.valid || docNameInvalid || documents?.length === 0" type="submit"
-      (click)="uploadDocuments()">Upload</button>
+    <button class="btn btn-primary me-1" [disabled]=" !myForm.valid || docNameInvalid || documents?.length === 0"
+      type="submit" (click)="uploadDocuments()">Upload</button>
     &nbsp;
   </div>
 

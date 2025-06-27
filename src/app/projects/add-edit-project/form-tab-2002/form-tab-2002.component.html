@@ -103,7 +103,7 @@
       <div class="label-pair">
         <label for="capital">Capital Investment </label>
         <div class="money">
-          <i class="material-icons mr-3" role="add">attach_money</i>
+          <i class="material-icons me-3" role="add">attach_money</i>
           <input name="capital" id="capital" formControlName="capital" type="text" class="form-control" />
         </div>
       </div>
@@ -160,10 +160,8 @@
           <div class="input-group">
             <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="decisionDate"
               formControlName="decisionDate" ngbDatepicker #decisionDatePicker="ngbDatepicker" />
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
-                type="button"></button>
-            </div>
+            <button class="btn btn-outline-secondary calendar" (click)="decisionDatePicker.toggle()"
+              type="button"></button>
           </div>
         </div>
       </fieldset>
@@ -188,7 +186,7 @@
       </div>
     </div>
   </section>
-  <div class="text-right">
+  <div class="text-end">
     <button class="btn btn-cancel" type="cancel" (click)="onCancel()">Cancel</button>
     &nbsp;
     <button class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>

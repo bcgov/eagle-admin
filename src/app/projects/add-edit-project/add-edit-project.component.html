@@ -36,7 +36,9 @@
             <li class="nav-item" role="presentation" *ngFor="let tabLink of tabLinks">
               <a class="nav-link" role="tab" [routerLink]="tabLink.link" [replaceUrl]="true"
                 routerLinkActive="active">{{tabLink.label}}
-                  <span class="badge bg-success badge-published" *ngIf="fullProject && fullProject.read.includes('public') && tabLink.years.includes(fullProject.currentLegislationYear)"> Published</span>
+                <span class="badge bg-success badge-published"
+                  *ngIf="fullProject && fullProject.read.includes('public') && tabLink.years.includes(fullProject.currentLegislationYear)">
+                  Published</span>
               </a>
             </li>
           </ul>
@@ -46,65 +48,50 @@
     </div>
   </section>
 
-    <section *ngIf="false">
-      <h2>Project Tracking</h2>
-      <div class="flex-container">
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="review180Start">Application Review Start (180) </label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review180Start"
-                formControlName="review180Start" ngbDatepicker #review180StartPicker="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="review180StartPicker.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
+  <section *ngIf="false">
+    <h2>Project Tracking</h2>
+    <div class="flex-container">
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="review180Start">Application Review Start (180) </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review180Start"
+              formControlName="review180Start" ngbDatepicker #review180StartPicker="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="review180StartPicker.toggle()"
+              type="button"></button>
           </div>
-        </fieldset>
-        <fieldset class="form-group">
-          <div class="label-pair">
-            <label for="review45Start">Minister Review Start (45) </label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review45Start"
-                formControlName="review45Start" ngbDatepicker #review45Start="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="review45Start.toggle()"
-                  type="button"></button>
-              </div>
-            </div>
+        </div>
+      </fieldset>
+      <fieldset class="form-group">
+        <div class="label-pair">
+          <label for="review45Start">Minister Review Start (45) </label>
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review45Start"
+              formControlName="review45Start" ngbDatepicker #review45Start="ngbDatepicker" />
+            <button class="btn btn-outline-secondary calendar" (click)="review45Start.toggle()" type="button"></button>
           </div>
-        </fieldset>
-      </div>
-      <div class="flex-container">
-        <a class="upload-docs">
-          <button class="btn btn-outline-secondary mr-1"
-                  type="button"
-                  (click)="addExtension()"
-                  id="button-d">
-              <i class="material-icons">alarm_add</i>&nbsp;Add Extension
-          </button>
-        </a>
-        <a class="upload-docs">
-          <button class="btn btn-outline-secondary mr-1"
-                  type="button"
-                  (click)="addSuspension()"
-                  id="button-d">
-              <i class="material-icons">timer_off</i>&nbsp;Add Suspension
-          </button>
-        </a>
-      </div>
-    </section>
-    <section *ngIf="false">
-      <div class="flex-container">
-        <app-table-template
-          *ngIf="!loading && modifications.length != 0"
-          [columns]="modificationsTableColumns"
-          [data]="modificationsTableData"
-          (onItemClicked)='onItemClicked($event)'
-          (onSelectedRow)='updateSelectedRow($event)'
-        >
-        </app-table-template>
-      </div>
-    </section>
+        </div>
+      </fieldset>
+    </div>
+    <div class="flex-container">
+      <a class="upload-docs">
+        <button class="btn btn-outline-secondary me-1" type="button" (click)="addExtension()" id="button-d">
+          <i class="material-icons">alarm_add</i>&nbsp;Add Extension
+        </button>
+      </a>
+      <a class="upload-docs">
+        <button class="btn btn-outline-secondary me-1" type="button" (click)="addSuspension()" id="button-d">
+          <i class="material-icons">timer_off</i>&nbsp;Add Suspension
+        </button>
+      </a>
+    </div>
+  </section>
+  <section *ngIf="false">
+    <div class="flex-container">
+      <app-table-template *ngIf="!loading && modifications.length != 0" [columns]="modificationsTableColumns"
+        [data]="modificationsTableData" (onItemClicked)='onItemClicked($event)'
+        (onSelectedRow)='updateSelectedRow($event)'>
+      </app-table-template>
+    </div>
+  </section>
 </main>

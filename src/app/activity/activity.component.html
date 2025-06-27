@@ -23,12 +23,10 @@
                                 <input class="form-control" type="text" name="keywordInput"
                                     placeholder="Enter keywords to search..." id="keywordInput"
                                     [(ngModel)]="tableParams.keywords" />
-                                <div class="input-group-append">
-                                    <!-- prevent searching if input is empty or we're already searching -->
-                                    <button class="btn btn-primary search-button" type="submit">
-                                        <span>Search</span>
-                                    </button>
-                                </div>
+                                <!-- prevent searching if input is empty or we're already searching -->
+                                <button class="btn btn-primary search-button" type="submit">
+                                    <span>Search</span>
+                                </button>
                             </div>
                             <div class="advanced-filter">
                                 <div class="row filter-row">
@@ -41,14 +39,14 @@
                                             <span class="ng-value-label">{{filter.name}} </span>
                                             <span class="ng-value-icon left"
                                                 (click)="clearSelectedItem('project', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
                                         <button *ngFor="let filter of filterForUI.type" class="btn filter-badge type">
                                             <span class="ng-value-label">{{filter.name}} </span>
                                             <span class="ng-value-icon left" (click)="clearSelectedItem('type', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-symbols-outlined size-20">
+                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -56,7 +54,7 @@
                                             <span class="ng-value-label">Date Range </span>
                                             <span class="ng-value-icon left" (click)="clearDateRange()"
                                                 (keydown)="clearDateRange()" aria-hidden="true">&nbsp;<i
-                                                    class="material-symbols-outlined size-20">
+                                                    class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -66,7 +64,7 @@
                                             </span>
                                             <span class="ng-value-icon left" (click)="clearCAndE()"
                                                 (keydown)="clearCAndE()" aria-hidden="true">&nbsp;<i
-                                                    class="material-symbols-outlined size-20">
+                                                    class="material-icons size-20">
                                                     clear
                                                 </i></span>
                                         </button>
@@ -74,7 +72,7 @@
                                         <button *ngIf="isUiFiltered()" class="btn filter-badge btn-outline-dark"
                                             type="button" (click)="clearAll();">
                                             <span class="ng-value-label">Clear Filters </span>&nbsp;
-                                            <i class="material-symbols-outlined size-20">
+                                            <i class="material-icons size-20">
                                                 filter_alt_off
                                             </i>
                                         </button>
@@ -90,7 +88,7 @@
                                                 [compareWith]="filterCompareWith">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             work
                                                         </i>&nbsp;Project
                                                         ({{filterForUI.project.length}})</span>
@@ -110,7 +108,7 @@
                                                 [(ngModel)]="filterForUI.type" [compareWith]="filterCompareWith">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             comment
                                                         </i>&nbsp;News Types
                                                         ({{filterForUI.type.length}})</span>
@@ -133,7 +131,7 @@
                                                 (ngModelChange)="changeDateRange()">
                                                 <ng-template ng-multi-label-tmp>
                                                     <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-symbols-outlined size-32 center-icon">
+                                                            class="material-icons size-32 center-icon">
                                                             date_range
                                                         </i>&nbsp;Date Range</span>
                                                 </ng-template>
@@ -146,11 +144,9 @@
                                                             ngbDatepicker #dateAddedStartPicker="ngbDatepicker"
                                                             [minDate]="constants.minPickerDate"
                                                             [maxDate]="constants.maxPickerDate">
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-outline-secondary calendar"
-                                                                (click)="dateAddedStartPicker.toggle()" type="button">
-                                                            </button>
-                                                        </div>
+                                                        <button class="btn btn-outline-secondary calendar"
+                                                            (click)="dateAddedStartPicker.toggle()" type="button">
+                                                        </button>
                                                         &nbsp;to&nbsp;
                                                         <input id="dateAddedEnd" type="text" class="form-control"
                                                             placeholder="yyyy-mm-dd"
@@ -159,11 +155,9 @@
                                                             ngbDatepicker #dateAddedEndPicker="ngbDatepicker"
                                                             [minDate]="constants.minPickerDate"
                                                             [maxDate]="constants.maxPickerDate" />
-                                                        <div class="input-group-append">
-                                                            <button class="btn btn-outline-secondary calendar"
-                                                                (click)="dateAddedEndPicker.toggle()" type="button">
-                                                            </button>
-                                                        </div>
+                                                        <button class="btn btn-outline-secondary calendar"
+                                                            (click)="dateAddedEndPicker.toggle()" type="button">
+                                                        </button>
                                                     </div>
                                                 </ng-template>
                                             </ng-select>

@@ -18,9 +18,9 @@ These projects comprise EAO EPIC:
 
 ## Pre-requisites
 
-Before setting up the project, ensure you have **Node.js 16** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) for easy Node.js version management.
+Before setting up the project, ensure you have **Node.js 18** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) for easy Node.js version management.
 
-To install nvm and Node.js 16 on Debian-based systems:
+To install nvm and Node.js 18 on Debian-based systems:
 
 ```bash
 # Install nvm if you don't have it
@@ -31,15 +31,15 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
-# Install and use Node.js 16
-nvm install 16
-nvm use 16
+# Install and use Node.js 18
+nvm install 18
+nvm use 18
 
 # Verify Node.js version
-node -v  # Should output v16.x.x
+node -v  # Should output v18.x.x
 ```
 
-Once Node.js 16 is active, install project dependencies using the legacy peer dependencies flag:
+Once Node.js 18 is active, install project dependencies using the legacy peer dependencies flag:
 
 ```bash
 npm i --legacy-peer-deps
@@ -47,7 +47,7 @@ npm i --legacy-peer-deps
 
 ## Build, Lint, Test, and Run
 
-After installing Node.js 16 and project dependencies, you can use the following commands to work with the project:
+After installing Node.js 18 and project dependencies, you can use the following commands to work with the project:
 
 ### Start the Development Server
 

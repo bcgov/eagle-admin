@@ -2,7 +2,8 @@
   <ol class="breadcrumb" *ngIf="commentPeriod">
     <li class="breadcrumb-item">
       <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
-      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notification']">All Project Notifications</a>
+      <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notification']">All
+        Project Notifications</a>
 
     </li>
     <li class="breadcrumb-item">
@@ -81,8 +82,9 @@
         </div>
         <div>
           <h3>CAC Comment: </h3>
-          <div class="border ml-2 badge badge-pill badge-info"
-          [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? 'Yes' : 'No'}}</div>
+          <div class="border ms-2 badge badge-pill badge-info"
+            [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC
+            ? 'Yes' : 'No'}}</div>
         </div>
         <div class="row">
           <div class="col-md-12 comment">
@@ -157,10 +159,8 @@
         <div class="input-group">
           <input id="inputAddDate" container='body' type="text" class="form-control" placeholder="Select an add date"
             name="dateAdded" formControlName="dateAdded" ngbDatepicker #addDatePicker="ngbDatepicker">
-          <div class="input-group-append">
-            <button disabled class="btn btn-outline-secondary calendar" (click)="addDatePicker.toggle()"
-              type="button"></button>
-          </div>
+          <button disabled class="btn btn-outline-secondary calendar" (click)="addDatePicker.toggle()"
+            type="button"></button>
         </div>
       </div>
       <div class="form-group col-md-6">
@@ -168,10 +168,8 @@
         <div class="input-group">
           <input id="inputPostDate" container='body' type="text" class="form-control" placeholder="Not Published"
             name="datePosted" formControlName="datePosted" ngbDatepicker #postDatePicker="ngbDatepicker">
-          <div class="input-group-append">
-            <button disabled class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()"
-              type="button"></button>
-          </div>
+          <button disabled class="btn btn-outline-secondary calendar" (click)="postDatePicker.toggle()"
+            type="button"></button>
         </div>
       </div>
     </div>

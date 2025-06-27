@@ -5,7 +5,7 @@
                 <h2 class="mb-0">Public Comment Period is {{commentPeriod.commentPeriodStatus}}</h2>
                 <h5>{{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}</h5>
             </div>
-            <div class="col-md-6 text-right">
+            <div class="col-md-6 text-end">
                 <div *ngIf="commentPeriod.commentPeriodStatus !== Open">
                     <button type="button" id="viewComment" class="btn btn-primary" (click)="goToViewComments()">
                         View Comment Period

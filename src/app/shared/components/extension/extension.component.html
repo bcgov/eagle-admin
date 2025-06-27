@@ -21,7 +21,8 @@
       <div class="flex-container">
         <div class="label-pair">
           <label for="appliedTo">Applied To</label>
-          <input required name="appliedTo" id="appliedTo" formControlName="appliedTo" type="text" class="form-control" />
+          <input required name="appliedTo" id="appliedTo" formControlName="appliedTo" type="text"
+            class="form-control" />
         </div>
       </div>
     </section>
@@ -31,11 +32,9 @@
           <div class="label-pair">
             <label for="start">Start Date</label>
             <div class="input-group">
-              <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="start" formControlName="start"
-                ngbDatepicker #start="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="start.toggle()" type="button"></button>
-              </div>
+              <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="start"
+                formControlName="start" ngbDatepicker #start="ngbDatepicker" />
+              <button class="btn btn-outline-secondary calendar" (click)="start.toggle()" type="button"></button>
             </div>
           </div>
           <div class="label-pair">
@@ -43,9 +42,7 @@
             <div class="input-group">
               <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="end" formControlName="end"
                 ngbDatepicker #end="ngbDatepicker" />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar" (click)="end.toggle()" type="button"></button>
-              </div>
+              <button class="btn btn-outline-secondary calendar" (click)="end.toggle()" type="button"></button>
             </div>
           </div>
         </fieldset>
@@ -57,7 +54,8 @@
 
   <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
     <div class="btn-group" role="group" aria-label="First group">
-      <button class="btn btn-outline-primary mr-1" type="button" id="button-cl" (click)="goBack()"><i class="material-icons">arrow_back</i>Back</button>
+      <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
+          class="material-icons">arrow_back</i>Back</button>
       <button [disabled]="!extensionForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
     </div>
     <div class="input-group">

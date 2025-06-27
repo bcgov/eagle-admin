@@ -17,13 +17,11 @@
     <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit(1)">
         <div class="input-group main-search-field mb-2">
             <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-                id="keywordInput" [(ngModel)]="tableParams.keywords"  />
-            <div class="input-group-append">
-                <!-- prevent searching if input is empty or we're already searching -->
-                <button class="btn btn-primary" id="search" type="submit">
-                    <span>Search</span>
-                </button>
-            </div>
+                id="keywordInput" [(ngModel)]="tableParams.keywords" />
+            <!-- prevent searching if input is empty or we're already searching -->
+            <button class="btn btn-primary" id="search" type="submit">
+                <span>Search</span>
+            </button>
         </div>
     </form>
 
@@ -35,7 +33,7 @@
                     <input type="checkbox"
                         (click)="orgTypeFilter.indigenousGroup = !orgTypeFilter.indigenousGroup; setFilter();"
                         [(ngModel)]="orgTypeFilter.indigenousGroup" autocomplete="off"
-                        [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}" style="display: none;">
                     Indigenous Group
                 </label>
             </div>
@@ -43,7 +41,8 @@
             <div class="btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-primary" [class.active]="orgTypeFilter.proponent">
                     <input type="checkbox" (click)="orgTypeFilter.proponent = !orgTypeFilter.proponent; setFilter();"
-                        [(ngModel)]="orgTypeFilter.proponent" autocomplete="off" [ngModelOptions]="{standalone: true}">
+                        [(ngModel)]="orgTypeFilter.proponent" autocomplete="off" [ngModelOptions]="{standalone: true}"
+                        style="display: none;">
                     Proponent/Certificate Holder
                 </label>
             </div>
@@ -52,8 +51,8 @@
                 <label class="btn btn-primary" [class.active]="orgTypeFilter.otherAgency">
                     <input type="checkbox"
                         (click)="orgTypeFilter.otherAgency = !orgTypeFilter.otherAgency; setFilter();"
-                        [(ngModel)]="orgTypeFilter.otherAgency" autocomplete="off"
-                        [ngModelOptions]="{standalone: true}">
+                        [(ngModel)]="orgTypeFilter.otherAgency" autocomplete="off" [ngModelOptions]="{standalone: true}"
+                        style="display: none;">
                     Other Agency
                 </label>
             </div>
@@ -63,7 +62,7 @@
                     <input type="checkbox"
                         (click)="orgTypeFilter.localGovernment = !orgTypeFilter.localGovernment; setFilter();"
                         [(ngModel)]="orgTypeFilter.localGovernment" autocomplete="off"
-                        [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}" style="display: none;">
                     Local Government
                 </label>
             </div>
@@ -73,7 +72,7 @@
                     <input type="checkbox"
                         (click)="orgTypeFilter.municipality = !orgTypeFilter.municipality; setFilter();"
                         [(ngModel)]="orgTypeFilter.municipality" autocomplete="off"
-                        [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}" style="display: none;">
                     Municipality
                 </label>
             </div>
@@ -81,7 +80,8 @@
             <div class="btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-primary" [class.active]="orgTypeFilter.consultant">
                     <input type="checkbox" (click)="orgTypeFilter.consultant = !orgTypeFilter.consultant; setFilter();"
-                        [(ngModel)]="orgTypeFilter.consultant" autocomplete="off" [ngModelOptions]="{standalone: true}">
+                        [(ngModel)]="orgTypeFilter.consultant" autocomplete="off" [ngModelOptions]="{standalone: true}"
+                        style="display: none;">
                     Consultant
                 </label>
             </div>
@@ -91,7 +91,7 @@
                     <input type="checkbox"
                         (click)="orgTypeFilter.otherGovernment = !orgTypeFilter.otherGovernment; setFilter();"
                         [(ngModel)]="orgTypeFilter.otherGovernment" autocomplete="off"
-                        [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}" style="display: none;">
                     Other Government
                 </label>
             </div>
@@ -101,7 +101,7 @@
                     <input type="checkbox"
                         (click)="orgTypeFilter.communityGroup = !orgTypeFilter.communityGroup; setFilter();"
                         [(ngModel)]="orgTypeFilter.communityGroup" autocomplete="off"
-                        [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}" style="display: none;">
                     Community Group
                 </label>
             </div>
@@ -109,7 +109,8 @@
             <div class="btn-group-toggle" data-toggle="buttons">
                 <label class="btn btn-primary" [class.active]="orgTypeFilter.other">
                     <input type="checkbox" (click)="orgTypeFilter.other = !orgTypeFilter.other; setFilter();"
-                        [(ngModel)]="orgTypeFilter.other" autocomplete="off" [ngModelOptions]="{standalone: true}">
+                        [(ngModel)]="orgTypeFilter.other" autocomplete="off" [ngModelOptions]="{standalone: true}"
+                        style="display: none;">
                     Other
                 </label>
             </div>
@@ -117,9 +118,9 @@
     </div>
 
     <div *ngIf="tableParams.totalListItems > 0">
-        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
-            [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-            (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
+        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns"
+            [data]="tableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
+            (onPageNumUpdate)='onSubmit($event)'>
         </app-table-template>
     </div>
     <div *ngIf="tableParams.totalListItems == 0">

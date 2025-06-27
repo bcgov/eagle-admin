@@ -1,17 +1,6 @@
-import 'zone.js';
-import 'zone.js/dist/async-test.js';
-import 'zone.js/dist/proxy.js';
-import 'zone.js/dist/sync-test';
-import 'zone.js/dist/jasmine-patch';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Utils } from 'src/app/shared/utils/utils';
 import { waitForAsync } from '@angular/core/testing';
-// import {
-//   BrowserDynamicTestingModule,
-//   platformBrowserDynamicTesting
-//   } from '@angular/platform-browser-dynamic/testing';
-//   TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
-
 import { DayCalculatorResult } from './day-calculator-modal.component';
 import { DayCalculatorModalComponent } from './day-calculator-modal.component';
 

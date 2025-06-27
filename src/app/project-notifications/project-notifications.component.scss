@@ -1,23 +1,24 @@
 @import "src/assets/styles/base/base.scss";
 
 .create-button {
-    float: right;
-    width: 325px;
+  float: right;
+  width: 325px;
+  height: 50px;
 }
 
-.btn-group-toggle > .btn {
-    margin-bottom: 0;
-    background: none;
-    color: #13477b;
-    border: 1px solid #858b99;
-    font-weight: 600;
+.btn-group-toggle>.btn {
+  margin-bottom: 0;
+  background: none;
+  color: #13477b;
+  border: 1px solid #858b99;
+  font-weight: 600;
 
-    &:hover {
-      background: #fcb118;
-    }
-
-    &.active {
-        background: #235383;
-        color: #fff;
-    }
+  &:hover {
+    background: #fcb118;
   }
+
+  &.active {
+    background: #235383;
+    color: #fff;
+  }
+}
