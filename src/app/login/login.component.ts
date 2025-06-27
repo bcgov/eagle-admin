@@ -6,7 +6,6 @@ import { KeycloakService } from '../services/keycloak.service';
 
 @Component({
   selector: 'app-login',
-  moduleId: module.id,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })

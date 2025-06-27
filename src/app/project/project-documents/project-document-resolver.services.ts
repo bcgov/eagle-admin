@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/switchMap';
 import * as _ from 'lodash';
@@ -9,7 +9,7 @@ import { StorageService } from 'src/app/services/storage.service';
 
 
 @Injectable()
-export class DocumentsResolver implements Resolve<Observable<object>> {
+export class DocumentsResolver  {
   private filterForAPI: object = {};
 
   constructor(

@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { ConfigService } from 'src/app/services/config.service';
 import { SearchService } from 'src/app/services/search.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Injectable()
-export class ApplicationSortResolver implements Resolve<Observable<object>> {
+export class ApplicationSortResolver  {
   constructor(
     private searchService: SearchService,
     private configService: ConfigService,

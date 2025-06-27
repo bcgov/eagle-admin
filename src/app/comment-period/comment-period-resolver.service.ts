@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { forkJoin, from } from 'rxjs';
 import { CommentPeriodService } from '../services/commentperiod.service';
 import { CommentPeriod } from '../models/commentPeriod';
 
 @Injectable()
-export class CommentPeriodResolver implements Resolve<Object> {
+export class CommentPeriodResolver  {
 
   constructor(
     private commentPeriodService: CommentPeriodService

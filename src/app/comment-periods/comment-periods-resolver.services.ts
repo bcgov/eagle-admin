@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import { CommentPeriodService } from '../services/commentperiod.service';
 
 
 @Injectable()
-export class CommentPeriodsResolver implements Resolve<Object> {
+export class CommentPeriodsResolver  {
 
   constructor(
     private commentPeriodService: CommentPeriodService,

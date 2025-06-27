@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import * as _ from 'lodash';
 import { Project } from '../models/project';
@@ -9,7 +9,7 @@ import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
-export class ActivityComponentResolver implements Resolve<Observable<object>> {
+export class ActivityComponentResolver  {
   public filterForURL: object = {};
   public filterForAPI: object = {};
 

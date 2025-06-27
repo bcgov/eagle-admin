@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 
 import 'rxjs/add/operator/switchMap';
@@ -12,7 +12,7 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Injectable()
-export class ProjectListResolver implements Resolve<Object> {
+export class ProjectListResolver  {
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];

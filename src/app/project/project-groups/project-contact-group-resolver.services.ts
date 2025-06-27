@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/forkJoin';
 import { ProjectService } from 'src/app/services/project.service';
 
 @Injectable()
-export class ProjectContactsGroupResolver implements Resolve<Observable<object>> {
+export class ProjectContactsGroupResolver  {
   constructor(
     private projectService: ProjectService
   ) { }
