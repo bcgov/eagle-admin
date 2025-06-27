@@ -146,7 +146,7 @@
                       [markFirst]="false" [(ngModel)]="filterForUI.eacDecision" [compareWith]="filterCompareWith">
                       <ng-template ng-label-tmp let-item="item">
                         <span class="ng-value-icon left" (click)="clearSelectedItem('eacDecision', item)"
-                          aria-hidden="true">×</span>
+                          aria-hidden="true" (keydown)="clearSelectedItem('eacDecision', item)">×</span>
                         <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                       </ng-template>
                       <ng-template ng-optgroup-tmp let-item="item" let-index="index">

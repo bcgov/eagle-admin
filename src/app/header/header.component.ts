@@ -46,7 +46,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   };
   private dayCalculatorModal: NgbModalRef = null;
   public showDayCalculatorModal = false;
-  private subscriptions = new Subscription();
+  private readonly subscriptions = new Subscription();
 
   constructor(
     private api: ApiService,
