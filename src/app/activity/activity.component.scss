@@ -241,7 +241,7 @@ form {
 
   // Set icons in filter placeholders
   .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     font-style: normal;
@@ -251,7 +251,7 @@ form {
   }
 
   .ng-select#projects ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     font-style: normal;
@@ -261,7 +261,7 @@ form {
   }
 
   .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     font-style: normal;

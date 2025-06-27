@@ -252,7 +252,7 @@
                         [compareWith]="filterCompareWith">
                         <ng-template ng-label-tmp let-item="item">
                           <span class="ng-value-icon left" (click)="clearSelectedItem('CEAAInvolvement', item)"
-                            aria-hidden="true">×</span>
+                            (keydown.enter)="clearSelectedItem('CEAAInvolvement', item)" aria-hidden="true">×</span>
                           <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                         </ng-template>
                         <ng-template ng-optgroup-tmp let-item="item" let-index="index">
@@ -276,7 +276,7 @@
                         [closeOnSelect]="false" [markFirst]="false" [(ngModel)]="filterForUI.projectPhase">
                         <ng-template ng-label-tmp let-item="item">
                           <span class="ng-value-icon left" (click)="clearSelectedItem('projectPhase', item)"
-                            aria-hidden="true">×</span>
+                            aria-hidden="true" (keydown)="clearSelectedItem('projectPhase', item)">×</span>
                           <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                         </ng-template>
                         <ng-template ng-optgroup-tmp let-item="item" let-index="index">
@@ -303,7 +303,7 @@
                         [(ngModel)]="filterForUI.milestone" [compareWith]="filterCompareWith">
                         <ng-template ng-label-tmp let-item="item">
                           <span class="ng-value-icon left" (click)="clearSelectedItem('milestone', item)"
-                            aria-hidden="true">×</span>
+                            (keydown)="clearSelectedItem('milestone', item)" aria-hidden="true">×</span>
                           <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                         </ng-template>
                         <ng-template ng-optgroup-tmp let-item="item" let-index="index">
@@ -388,7 +388,7 @@
                         [compareWith]="filterCompareWith">
                         <ng-template ng-label-tmp let-item="item">
                           <span class="ng-value-icon left" (click)="clearSelectedItem('docType', item)"
-                            aria-hidden="true">×</span>
+                            aria-hidden="true" (keydown)="clearSelectedItem('docType', item)">×</span>
                           <span class="ng-value-label">{{item.name}} ({{item.legislation}})</span>
                         </ng-template>
                         <ng-template ng-optgroup-tmp let-item="item" let-index="index">

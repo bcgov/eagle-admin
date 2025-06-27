@@ -336,7 +336,7 @@
 
   // set icons in placeholders
   .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "work";
@@ -344,7 +344,7 @@
   }
 
   .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "comment";
@@ -352,7 +352,7 @@
   }
 
   .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "mark_as_unread";
@@ -360,7 +360,7 @@
   }
 
   .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "date_range";
@@ -368,7 +368,7 @@
   }
 
   .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "domain";
@@ -376,7 +376,7 @@
   }
 
   .ng-select#projectPhase ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "view_timeline";
@@ -384,7 +384,7 @@
   }
 
   .ng-select#ceaaInvolvement ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "hub";
@@ -392,7 +392,7 @@
   }
 
   .ng-select#region ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-    font-family: 'Material Icons';
+    font-family: 'Material Icons', sans-serif;
     font-size: 20px;
     font-weight: normal;
     content: "explore";
