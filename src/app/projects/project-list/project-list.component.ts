@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import * as moment from 'moment';
+import moment from 'moment';
 import { Org } from 'src/app/models/org';
 import { Project } from 'src/app/models/project';
 import { SearchTerms } from 'src/app/models/search';

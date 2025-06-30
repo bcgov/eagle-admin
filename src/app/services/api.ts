@@ -3,7 +3,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
-import * as JSZip from 'jszip';
+import JSZip from 'jszip';
 
 import { ConfigService } from './config.service';
 import { CommentPeriod } from '../models/commentPeriod';

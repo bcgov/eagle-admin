@@ -6,7 +6,7 @@ import { of, Subscription } from 'rxjs';
 
 import { switchMap } from 'rxjs/operators';
 
-import * as moment from 'moment';
+import moment from 'moment';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
 import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
