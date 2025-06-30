@@ -20,7 +20,8 @@
               "jszip"
             ],
             "outputPath": {
-              "base": "dist"
+              "base": "dist",
+              "browser": ""
             },
             "index": "src/index.html",
             "tsConfig": "tsconfig.app.json",
@@ -71,9 +72,7 @@
           },
           "configurations": {
             "production": {
-              "optimization": {
-                "styles": false
-              },
+              "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
