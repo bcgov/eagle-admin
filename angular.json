@@ -71,7 +71,9 @@
           },
           "configurations": {
             "production": {
-              "optimization": true,
+              "optimization": {
+                "styles": false
+              },
               "outputHashing": "all",
               "sourceMap": false,
               "namedChunks": false,
