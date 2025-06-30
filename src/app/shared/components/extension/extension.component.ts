@@ -10,9 +10,10 @@ import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { Utils } from '../../utils/utils';
 
 @Component({
-  selector: 'app-extension',
-  templateUrl: './extension.component.html',
-  styleUrls: ['./extension.component.scss']
+    selector: 'app-extension',
+    templateUrl: './extension.component.html',
+    styleUrls: ['./extension.component.scss'],
+    standalone: false
 })
 export class ExtensionComponent implements OnInit, OnDestroy {
 

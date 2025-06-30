@@ -16,8 +16,9 @@ export interface DataModel {
 }
 
 @Component({
-  templateUrl: './add-edit-contact.component.html',
-  styleUrls: ['./add-edit-contact.component.scss']
+    templateUrl: './add-edit-contact.component.html',
+    styleUrls: ['./add-edit-contact.component.scss'],
+    standalone: false
 })
 
 // NOTE: dialog components must not implement OnDestroy

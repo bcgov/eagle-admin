@@ -12,9 +12,10 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-add-edit-activity',
-  templateUrl: './add-edit-activity.component.html',
-  styleUrls: ['./add-edit-activity.component.scss']
+    selector: 'app-add-edit-activity',
+    templateUrl: './add-edit-activity.component.html',
+    styleUrls: ['./add-edit-activity.component.scss'],
+    standalone: false
 })
 export class AddEditActivityComponent implements OnInit, OnDestroy {
   public myForm: UntypedFormGroup;

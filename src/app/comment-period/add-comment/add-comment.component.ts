@@ -13,9 +13,10 @@ import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-add-comment',
-  templateUrl: './add-comment.component.html',
-  styleUrls: ['./add-comment.component.scss']
+    selector: 'app-add-comment',
+    templateUrl: './add-comment.component.html',
+    styleUrls: ['./add-comment.component.scss'],
+    standalone: false
 })
 
 export class AddCommentComponent implements OnInit, OnDestroy {

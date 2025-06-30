@@ -5,9 +5,10 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
-  selector: 'app-user-table-rows',
-  templateUrl: './user-table-rows.component.html',
-  styleUrls: ['./user-table-rows.component.scss']
+    selector: 'app-user-table-rows',
+    templateUrl: './user-table-rows.component.html',
+    styleUrls: ['./user-table-rows.component.scss'],
+    standalone: false
 })
 export class UserTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;

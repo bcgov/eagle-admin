@@ -9,9 +9,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-pins-table-rows]',
-  templateUrl: './pins-table-rows.component.html',
-  styleUrls: ['./pins-table-rows.component.scss']
+    selector: 'tbody[app-pins-table-rows]',
+    templateUrl: './pins-table-rows.component.html',
+    styleUrls: ['./pins-table-rows.component.scss'],
+    standalone: false
 })
 
 export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent {

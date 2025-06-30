@@ -9,9 +9,10 @@ import { TableParamsObject } from '../shared/components/table-template/table-par
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Component({
-  selector: 'app-notification-projects',
-  templateUrl: './project-notifications.component.html',
-  styleUrls: ['./project-notifications.component.scss']
+    selector: 'app-notification-projects',
+    templateUrl: './project-notifications.component.html',
+    styleUrls: ['./project-notifications.component.scss'],
+    standalone: false
 })
 export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

@@ -8,8 +8,9 @@ import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
-  templateUrl: './add-edit-organization.component.html',
-  styleUrls: ['./add-edit-organization.component.scss']
+    templateUrl: './add-edit-organization.component.html',
+    styleUrls: ['./add-edit-organization.component.scss'],
+    standalone: false
 })
 
 export class AddEditOrganizationComponent implements OnInit, OnDestroy {

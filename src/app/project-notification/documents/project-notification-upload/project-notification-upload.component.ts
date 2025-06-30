@@ -12,9 +12,10 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-project-notification-upload',
-  templateUrl: './project-notification-upload.component.html',
-  styleUrls: ['./project-notification-upload.component.scss']
+    selector: 'app-project-notification-upload',
+    templateUrl: './project-notification-upload.component.html',
+    styleUrls: ['./project-notification-upload.component.scss'],
+    standalone: false
 })
 export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

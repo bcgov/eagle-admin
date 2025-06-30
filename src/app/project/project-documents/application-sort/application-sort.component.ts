@@ -18,9 +18,10 @@ import { Utils } from 'src/app/shared/utils/utils';
 
 
 @Component({
-  selector: 'app-application-sort',
-  templateUrl: './application-sort.component.html',
-  styleUrls: ['./application-sort.component.scss']
+    selector: 'app-application-sort',
+    templateUrl: './application-sort.component.html',
+    styleUrls: ['./application-sort.component.scss'],
+    standalone: false
 })
 export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

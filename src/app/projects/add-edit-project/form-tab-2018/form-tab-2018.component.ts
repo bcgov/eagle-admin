@@ -19,9 +19,10 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { switchMap } from 'rxjs/operators';
 
 @Component({
-  selector: 'form-tab-2018',
-  templateUrl: './form-tab-2018.component.html',
-  styleUrls: ['../add-edit-project.component.scss']
+    selector: 'form-tab-2018',
+    templateUrl: './form-tab-2018.component.html',
+    styleUrls: ['../add-edit-project.component.scss'],
+    standalone: false
 })
 export class FormTab2018Component implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

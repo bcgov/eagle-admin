@@ -17,9 +17,10 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
-  selector: 'app-group-contact',
-  templateUrl: './group-contact.component.html',
-  styleUrls: ['./group-contact.component.scss']
+    selector: 'app-group-contact',
+    templateUrl: './group-contact.component.html',
+    styleUrls: ['./group-contact.component.scss'],
+    standalone: false
 })
 export class GroupContactComponent implements OnInit, OnDestroy {
   private groupId: any = null;

@@ -8,9 +8,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-activity-detail-table-rows]',
-  templateUrl: './activity-detail-table-rows.component.html',
-  styleUrls: ['./activity-detail-table-rows.component.scss']
+    selector: 'tbody[app-activity-detail-table-rows]',
+    templateUrl: './activity-detail-table-rows.component.html',
+    styleUrls: ['./activity-detail-table-rows.component.scss'],
+    standalone: false
 })
 
 export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, TableComponent {

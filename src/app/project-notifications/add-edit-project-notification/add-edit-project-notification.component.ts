@@ -13,9 +13,10 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-add-edit-notification-project',
-  templateUrl: './add-edit-project-notification.component.html',
-  styleUrls: ['./add-edit-project-notification.component.scss']
+    selector: 'app-add-edit-notification-project',
+    templateUrl: './add-edit-project-notification.component.html',
+    styleUrls: ['./add-edit-project-notification.component.scss'],
+    standalone: false
 })
 
 export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {

@@ -3,9 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-not-authorized',
-  templateUrl: './not-authorized.component.html',
-  styleUrls: ['./not-authorized.component.scss']
+    selector: 'app-not-authorized',
+    templateUrl: './not-authorized.component.html',
+    styleUrls: ['./not-authorized.component.scss'],
+    standalone: false
 })
 export class NotAuthorizedComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

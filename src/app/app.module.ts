@@ -1,5 +1,5 @@
 // Angular Core Modules
-import { NgModule, APP_INITIALIZER, ApplicationRef } from '@angular/core';
+import { NgModule, ApplicationRef, inject, provideAppInitializer } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule, CurrencyPipe } from '@angular/common';
@@ -230,12 +230,10 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
       SideBarService,
       StorageService,
       UserService,
-      {
-        provide: APP_INITIALIZER,
-        useFactory: initConfig,
-        deps: [ConfigService, KeycloakService],
-        multi: true
-      },
+      provideAppInitializer(() => {
+        const initializerFn = (initConfig)(inject(ConfigService), inject(KeycloakService));
+        return initializerFn();
+      }),
       {
         provide: HTTP_INTERCEPTORS,
         useClass: TokenInterceptor,

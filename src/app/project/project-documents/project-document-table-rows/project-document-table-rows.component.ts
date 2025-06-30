@@ -6,9 +6,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-document-table-rows]',
-  templateUrl: './project-document-table-rows.component.html',
-  styleUrls: ['./project-document-table-rows.component.scss']
+    selector: 'tbody[app-document-table-rows]',
+    templateUrl: './project-document-table-rows.component.html',
+    styleUrls: ['./project-document-table-rows.component.scss'],
+    standalone: false
 })
 
 export class DocumentTableRowsComponent implements OnInit, TableComponent {

@@ -5,9 +5,10 @@ import { StorageService } from '../services/storage.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-comment-period',
-  templateUrl: './comment-period.component.html',
-  styleUrls: ['./comment-period.component.scss']
+    selector: 'app-comment-period',
+    templateUrl: './comment-period.component.html',
+    styleUrls: ['./comment-period.component.scss'],
+    standalone: false
 })
 
 export class CommentPeriodComponent implements OnInit, OnDestroy {

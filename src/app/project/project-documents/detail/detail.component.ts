@@ -10,9 +10,10 @@ import { Document } from 'src/app/models/document';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-detail',
-  templateUrl: './detail.component.html',
-  styleUrls: ['./detail.component.scss']
+    selector: 'app-detail',
+    templateUrl: './detail.component.html',
+    styleUrls: ['./detail.component.scss'],
+    standalone: false
 })
 export class DocumentDetailComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

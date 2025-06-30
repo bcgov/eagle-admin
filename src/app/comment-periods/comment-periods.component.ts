@@ -11,9 +11,10 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/comment-periods-table-rows.component';
 
 @Component({
-  selector: 'app-comment-periods',
-  templateUrl: './comment-periods.component.html',
-  styleUrls: ['./comment-periods.component.scss']
+    selector: 'app-comment-periods',
+    templateUrl: './comment-periods.component.html',
+    styleUrls: ['./comment-periods.component.scss'],
+    standalone: false
 })
 export class CommentPeriodsComponent implements OnInit, OnDestroy {
 

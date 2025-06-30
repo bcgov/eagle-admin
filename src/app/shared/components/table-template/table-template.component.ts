@@ -6,10 +6,11 @@ import { TableComponent } from './table.component';
 import { Constants } from '../../utils/constants';
 
 @Component({
-  selector: 'app-table-template',
-  templateUrl: './table-template.component.html',
-  styleUrls: ['./table-template.component.scss'],
-  encapsulation: ViewEncapsulation.None,
+    selector: 'app-table-template',
+    templateUrl: './table-template.component.html',
+    styleUrls: ['./table-template.component.scss'],
+    encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @Input() data: TableObject;

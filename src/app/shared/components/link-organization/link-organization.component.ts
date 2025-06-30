@@ -13,10 +13,11 @@ import { TableParamsObject } from '../table-template/table-params-object';
 
 
 @Component({
-  selector: 'app-link-organization',
-  templateUrl: './link-organization.component.html',
-  styleUrls: ['./link-organization.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-link-organization',
+    templateUrl: './link-organization.component.html',
+    styleUrls: ['./link-organization.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

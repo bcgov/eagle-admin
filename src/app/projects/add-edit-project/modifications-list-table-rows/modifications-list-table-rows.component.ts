@@ -5,7 +5,8 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 @Component({
     selector: 'tbody[app-modifications-list-table-rows]',
     templateUrl: './modifications-list-table-rows.component.html',
-    styleUrls: ['./modifications-list-table-rows.component.scss']
+    styleUrls: ['./modifications-list-table-rows.component.scss'],
+    standalone: false
 })
 
 export class ModificationsListTableRowsComponent implements OnInit, TableComponent {

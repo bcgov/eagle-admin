@@ -10,9 +10,10 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-project-updates',
-  templateUrl: './project-updates.component.html',
-  styleUrls: ['./project-updates.component.scss']
+    selector: 'app-project-updates',
+    templateUrl: './project-updates.component.html',
+    styleUrls: ['./project-updates.component.scss'],
+    standalone: false
 })
 export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

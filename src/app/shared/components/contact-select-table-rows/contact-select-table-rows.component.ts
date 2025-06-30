@@ -6,9 +6,10 @@ import { TableObject } from '../table-template/table-object';
 import { TableComponent } from '../table-template/table.component';
 
 @Component({
-  selector: 'app-contact-select-table-rows',
-  templateUrl: './contact-select-table-rows.component.html',
-  styleUrls: ['./contact-select-table-rows.component.scss']
+    selector: 'app-contact-select-table-rows',
+    templateUrl: './contact-select-table-rows.component.html',
+    styleUrls: ['./contact-select-table-rows.component.scss'],
+    standalone: false
 })
 
 export class ContactSelectTableRowsComponent implements OnInit, TableComponent {

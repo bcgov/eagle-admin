@@ -5,9 +5,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-document-table-rows]',
-  templateUrl: './search-document-table-rows.component.html',
-  styleUrls: ['./search-document-table-rows.component.scss']
+    selector: 'tbody[app-document-table-rows]',
+    templateUrl: './search-document-table-rows.component.html',
+    styleUrls: ['./search-document-table-rows.component.scss'],
+    standalone: false
 })
 
 export class SearchDocumentTableRowsComponent implements OnInit, TableComponent {

@@ -3,7 +3,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 @Component({
     selector: 'app-dropdown-template',
     templateUrl: './dropdown-template.component.html',
-    styleUrls: ['./dropdown-template.component.scss']
+    styleUrls: ['./dropdown-template.component.scss'],
+    standalone: false
 })
 
 export class DropdownTemplateComponent {

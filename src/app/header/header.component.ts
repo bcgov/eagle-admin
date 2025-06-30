@@ -10,25 +10,26 @@ import { ApiService } from '../services/api';
 import { KeycloakService } from '../services/keycloak.service';
 
 @Component({
-  selector: 'app-header',
-  templateUrl: './header.component.html',
-  styleUrls: ['./header.component.scss'],
-  animations: [
-    trigger('toggleNav', [
-      state('navClosed', style({
-        height: '0',
-      })),
-      state('navOpen', style({
-        height: '*',
-      })),
-      transition('navOpen => navClosed', [
-        animate('0.2s')
-      ]),
-      transition('navClosed => navOpen', [
-        animate('0.2s')
-      ]),
-    ]),
-  ]
+    selector: 'app-header',
+    templateUrl: './header.component.html',
+    styleUrls: ['./header.component.scss'],
+    animations: [
+        trigger('toggleNav', [
+            state('navClosed', style({
+                height: '0',
+            })),
+            state('navOpen', style({
+                height: '*',
+            })),
+            transition('navOpen => navClosed', [
+                animate('0.2s')
+            ]),
+            transition('navClosed => navOpen', [
+                animate('0.2s')
+            ]),
+        ]),
+    ],
+    standalone: false
 })
 
 export class HeaderComponent implements OnInit, OnDestroy {

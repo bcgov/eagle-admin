@@ -6,9 +6,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-review-comments-tab-table-rows]',
-  templateUrl: './review-comments-tab-table-rows.component.html',
-  styleUrls: ['./review-comments-tab-table-rows.component.scss']
+    selector: 'tbody[app-review-comments-tab-table-rows]',
+    templateUrl: './review-comments-tab-table-rows.component.html',
+    styleUrls: ['./review-comments-tab-table-rows.component.scss'],
+    standalone: false
 })
 
 export class ReviewCommentsTabTableRowsComponent implements OnInit, TableComponent {

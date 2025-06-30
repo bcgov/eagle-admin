@@ -14,9 +14,10 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
-  selector: 'app-pins-list',
-  templateUrl: './pins-list.component.html',
-  styleUrls: ['./pins-list.component.scss']
+    selector: 'app-pins-list',
+    templateUrl: './pins-list.component.html',
+    styleUrls: ['./pins-list.component.scss'],
+    standalone: false
 })
 export class PinsListComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

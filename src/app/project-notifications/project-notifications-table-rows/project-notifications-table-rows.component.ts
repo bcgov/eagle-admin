@@ -5,9 +5,10 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
-  selector: 'app-notification-project-table-rows',
-  templateUrl: './project-notifications-table-rows.component.html',
-  styleUrls: ['./project-notifications-table-rows.component.scss']
+    selector: 'app-notification-project-table-rows',
+    templateUrl: './project-notifications-table-rows.component.html',
+    styleUrls: ['./project-notifications-table-rows.component.scss'],
+    standalone: false
 })
 export class ProjectNotificationTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;

@@ -10,9 +10,10 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Comment } from 'src/app/models/comment';
 
 @Component({
-  selector: 'app-review-comments-tab',
-  templateUrl: './review-comments-tab.component.html',
-  styleUrls: ['./review-comments-tab.component.scss']
+    selector: 'app-review-comments-tab',
+    templateUrl: './review-comments-tab.component.html',
+    styleUrls: ['./review-comments-tab.component.scss'],
+    standalone: false
 })
 
 export class ReviewCommentsTabComponent implements OnInit, OnDestroy {

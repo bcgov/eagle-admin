@@ -34,9 +34,10 @@ class DocumentFilterObject {
 }
 
 @Component({
-  selector: 'app-project-documents',
-  templateUrl: './project-documents.component.html',
-  styleUrls: ['./project-documents.component.scss']
+    selector: 'app-project-documents',
+    templateUrl: './project-documents.component.html',
+    styleUrls: ['./project-documents.component.scss'],
+    standalone: false
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   // Must do this to expose the constants to the template,

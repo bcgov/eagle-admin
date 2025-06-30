@@ -4,9 +4,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-application-sort-table-rows]',
-  templateUrl: './application-sort-table-rows.component.html',
-  styleUrls: ['./application-sort-table-rows.component.scss']
+    selector: 'tbody[app-application-sort-table-rows]',
+    templateUrl: './application-sort-table-rows.component.html',
+    styleUrls: ['./application-sort-table-rows.component.scss'],
+    standalone: false
 })
 
 export class ApplicationSortTableRowsComponent implements OnInit, TableComponent {

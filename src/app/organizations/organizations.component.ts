@@ -11,9 +11,10 @@ import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Component({
-  selector: 'app-organizations',
-  templateUrl: './organizations.component.html',
-  styleUrls: ['./organizations.component.scss']
+    selector: 'app-organizations',
+    templateUrl: './organizations.component.html',
+    styleUrls: ['./organizations.component.scss'],
+    standalone: false
 })
 export class OrganizationsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

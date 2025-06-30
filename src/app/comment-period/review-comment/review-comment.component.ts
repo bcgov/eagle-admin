@@ -12,9 +12,10 @@ import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-review-comment',
-  templateUrl: './review-comment.component.html',
-  styleUrls: ['./review-comment.component.scss']
+    selector: 'app-review-comment',
+    templateUrl: './review-comment.component.html',
+    styleUrls: ['./review-comment.component.scss'],
+    standalone: false
 })
 
 export class ReviewCommentComponent implements OnInit, OnDestroy {

@@ -16,9 +16,10 @@ export class DayCalculatorResult {
 }
 
 @Component({
-  selector: 'app-day-calculator-modal',
-  templateUrl: './day-calculator-modal.component.html',
-  styleUrls: ['./day-calculator-modal.component.scss']
+    selector: 'app-day-calculator-modal',
+    templateUrl: './day-calculator-modal.component.html',
+    styleUrls: ['./day-calculator-modal.component.scss'],
+    standalone: false
 })
 export class DayCalculatorModalComponent {
 

@@ -12,9 +12,10 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-add-edit-project',
-  templateUrl: './add-edit-project.component.html',
-  styleUrls: ['./add-edit-project.component.scss']
+    selector: 'app-add-edit-project',
+    templateUrl: './add-edit-project.component.html',
+    styleUrls: ['./add-edit-project.component.scss'],
+    standalone: false
 })
 export class AddEditProjectComponent implements OnInit, OnDestroy {
 

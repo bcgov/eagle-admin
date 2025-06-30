@@ -16,10 +16,11 @@ import { PnDocumentTableRowsComponent } from './project-notification-document-ta
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-project-notification-documents',
-  templateUrl: './project-notification-documents.component.html',
-  encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./project-notification-documents.component.scss']
+    selector: 'app-project-notification-documents',
+    templateUrl: './project-notification-documents.component.html',
+    encapsulation: ViewEncapsulation.None,
+    styleUrls: ['./project-notification-documents.component.scss'],
+    standalone: false
 })
 export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy {
   // Must do this to expose the constants to the template,

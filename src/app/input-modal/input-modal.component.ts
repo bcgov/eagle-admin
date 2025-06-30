@@ -2,9 +2,10 @@ import { Component, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-input-modal',
-  templateUrl: './input-modal.component.html',
-  styleUrls: ['./input-modal.component.scss']
+    selector: 'app-input-modal',
+    templateUrl: './input-modal.component.html',
+    styleUrls: ['./input-modal.component.scss'],
+    standalone: false
 })
 export class InputModalComponent {
 

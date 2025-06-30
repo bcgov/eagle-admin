@@ -20,9 +20,10 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'form-tab-2002',
-  templateUrl: './form-tab-2002.component.html',
-  styleUrls: ['../add-edit-project.component.scss']
+    selector: 'form-tab-2002',
+    templateUrl: './form-tab-2002.component.html',
+    styleUrls: ['../add-edit-project.component.scss'],
+    standalone: false
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

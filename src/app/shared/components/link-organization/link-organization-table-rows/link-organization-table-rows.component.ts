@@ -7,9 +7,10 @@ import { TableObject } from '../../table-template/table-object';
 import { TableComponent } from '../../table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-link-organization-table-rows]',
-  templateUrl: './link-organization-table-rows.component.html',
-  styleUrls: ['./link-organization-table-rows.component.scss']
+    selector: 'tbody[app-link-organization-table-rows]',
+    templateUrl: './link-organization-table-rows.component.html',
+    styleUrls: ['./link-organization-table-rows.component.scss'],
+    standalone: false
 })
 
 export class LinkOrganizationTableRowsComponent implements OnInit, TableComponent {

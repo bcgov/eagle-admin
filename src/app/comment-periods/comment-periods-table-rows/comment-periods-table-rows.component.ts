@@ -7,7 +7,8 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 @Component({
     selector: 'tbody[app-comment-periods-table-rows]',
     templateUrl: './comment-periods-table-rows.component.html',
-    styleUrls: ['./comment-periods-table-rows.component.scss']
+    styleUrls: ['./comment-periods-table-rows.component.scss'],
+    standalone: false
 })
 
 export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent {

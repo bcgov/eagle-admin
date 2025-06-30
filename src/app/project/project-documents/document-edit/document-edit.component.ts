@@ -11,9 +11,10 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-document-edit',
-  templateUrl: './document-edit.component.html',
-  styleUrls: ['./document-edit.component.scss']
+    selector: 'app-document-edit',
+    templateUrl: './document-edit.component.html',
+    styleUrls: ['./document-edit.component.scss'],
+    standalone: false
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

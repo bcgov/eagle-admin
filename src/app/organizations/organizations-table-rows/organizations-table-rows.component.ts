@@ -5,9 +5,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
-  selector: 'app-organizations-table-rows',
-  templateUrl: './organizations-table-rows.component.html',
-  styleUrls: ['./organizations-table-rows.component.scss']
+    selector: 'app-organizations-table-rows',
+    templateUrl: './organizations-table-rows.component.html',
+    styleUrls: ['./organizations-table-rows.component.scss'],
+    standalone: false
 })
 export class OrganizationsTableRowsComponent implements OnInit {
   @Input() data: TableObject;

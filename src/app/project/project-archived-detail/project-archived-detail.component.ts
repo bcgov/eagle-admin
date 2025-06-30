@@ -16,9 +16,10 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-project-archived-detail',
-  templateUrl: './project-archived-detail.component.html',
-  styleUrls: ['./project-archived-detail.component.scss']
+    selector: 'app-project-archived-detail',
+    templateUrl: './project-archived-detail.component.html',
+    styleUrls: ['./project-archived-detail.component.scss'],
+    standalone: false
 })
 
 export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {

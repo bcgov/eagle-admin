@@ -4,9 +4,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-add-document-table-rows]',
-  templateUrl: './add-document-table-rows.component.html',
-  styleUrls: ['./add-document-table-rows.component.scss']
+    selector: 'tbody[app-add-document-table-rows]',
+    templateUrl: './add-document-table-rows.component.html',
+    styleUrls: ['./add-document-table-rows.component.scss'],
+    standalone: false
 })
 
 export class AddDocumentTableRowsComponent implements OnInit, TableComponent {

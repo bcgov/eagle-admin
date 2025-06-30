@@ -25,10 +25,11 @@ class ActivityFilterObject {
 }
 
 @Component({
-  selector: 'app-activity',
-  templateUrl: './activity.component.html',
-  styleUrls: ['./activity.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-activity',
+    templateUrl: './activity.component.html',
+    styleUrls: ['./activity.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class ActivityComponent implements OnDestroy {
   private subscriptions = new Subscription();

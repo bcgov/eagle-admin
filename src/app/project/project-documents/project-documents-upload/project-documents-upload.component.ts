@@ -12,9 +12,10 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-project-documents-upload',
-  templateUrl: './project-documents-upload.component.html',
-  styleUrls: ['./project-documents-upload.component.scss']
+    selector: 'app-project-documents-upload',
+    templateUrl: './project-documents-upload.component.html',
+    styleUrls: ['./project-documents-upload.component.scss'],
+    standalone: false
 })
 export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

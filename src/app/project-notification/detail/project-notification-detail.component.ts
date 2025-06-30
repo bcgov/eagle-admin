@@ -9,9 +9,10 @@ import { NotificationProjectService } from 'src/app/services/notification-projec
 import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
-  selector: 'app-notification-project',
-  templateUrl: './project-notification-detail.component.html',
-  styleUrls: ['./project-notification-detail.component.scss']
+    selector: 'app-notification-project',
+    templateUrl: './project-notification-detail.component.html',
+    styleUrls: ['./project-notification-detail.component.scss'],
+    standalone: false
 })
 
 export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {

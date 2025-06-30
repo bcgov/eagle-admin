@@ -9,9 +9,10 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
-  selector: 'app-comment-period-details-tab',
-  templateUrl: './comment-period-details-tab.component.html',
-  styleUrls: ['./comment-period-details-tab.component.scss']
+    selector: 'app-comment-period-details-tab',
+    templateUrl: './comment-period-details-tab.component.html',
+    styleUrls: ['./comment-period-details-tab.component.scss'],
+    standalone: false
 })
 
 export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {

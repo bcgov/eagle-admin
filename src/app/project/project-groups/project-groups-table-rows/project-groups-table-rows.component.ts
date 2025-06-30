@@ -3,9 +3,10 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-groups-table-rows]',
-  templateUrl: './project-groups-table-rows.component.html',
-  styleUrls: ['./project-groups-table-rows.component.scss']
+    selector: 'tbody[app-groups-table-rows]',
+    templateUrl: './project-groups-table-rows.component.html',
+    styleUrls: ['./project-groups-table-rows.component.scss'],
+    standalone: false
 })
 
 export class GroupsTableRowsComponent implements OnInit, TableComponent {

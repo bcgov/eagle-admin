@@ -11,9 +11,10 @@ import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Component({
-  selector: 'app-contacts',
-  templateUrl: './contacts.component.html',
-  styleUrls: ['./contacts.component.scss']
+    selector: 'app-contacts',
+    templateUrl: './contacts.component.html',
+    styleUrls: ['./contacts.component.scss'],
+    standalone: false
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

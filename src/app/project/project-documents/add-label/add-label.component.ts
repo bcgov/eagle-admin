@@ -5,9 +5,10 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-add-label',
-  templateUrl: './add-label.component.html',
-  styleUrls: ['./add-label.component.scss']
+    selector: 'app-add-label',
+    templateUrl: './add-label.component.html',
+    styleUrls: ['./add-label.component.scss'],
+    standalone: false
 })
 export class AddLabelComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

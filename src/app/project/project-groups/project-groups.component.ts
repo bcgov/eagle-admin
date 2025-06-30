@@ -18,9 +18,10 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
-  selector: 'app-project-groups',
-  templateUrl: './project-groups.component.html',
-  styleUrls: ['./project-groups.component.scss']
+    selector: 'app-project-groups',
+    templateUrl: './project-groups.component.html',
+    styleUrls: ['./project-groups.component.scss'],
+    standalone: false
 })
 export class ProjectGroupsComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

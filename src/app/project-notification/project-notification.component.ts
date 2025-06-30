@@ -6,9 +6,10 @@ import { Project } from '../models/project';
 import { SideBarService } from '../services/sidebar.service';
 
 @Component({
-  selector: 'app-project-notification',
-  templateUrl: './project-notification.component.html',
-  styleUrls: ['./project-notification.component.scss']
+    selector: 'app-project-notification',
+    templateUrl: './project-notification.component.html',
+    styleUrls: ['./project-notification.component.scss'],
+    standalone: false
 })
 export class ProjectNotificationComponent implements OnInit, OnDestroy {
 
