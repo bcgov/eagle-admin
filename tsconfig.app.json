@@ -2,9 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": [
-      "arcgis-js-api"
-    ],
+    "types": [],
     "paths": {
       "stream": [
         "./node_modules/readable-stream/readable.js"
