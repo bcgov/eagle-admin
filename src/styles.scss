@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files. */
 /* This architecture roughly follows https://sass-guidelin.es/#the-7-1-pattern */
 
-@import "~bootstrap/dist/css/bootstrap.css";
+@import "bootstrap/dist/css/bootstrap.css";
 
 // Base
 @import "src/assets/styles/base/base.scss";
@@ -35,10 +35,10 @@
 
 // Third-party Components
 // Required for Angular Material styling: (ref: https://material.angular.io/guide/theming)
-@import "~@angular/material/prebuilt-themes/deeppurple-amber.css";
+@import "@angular/material/prebuilt-themes/deeppurple-amber.css";
 
 // For the ng-select multiselect component.
-@import "~@ng-select/ng-select/themes/default.theme.css";
+@import "@ng-select/ng-select/themes/default.theme.css";
 
 .modal-backdrop.custom-backdrop {
   background-color: rgba(0, 0, 0, 0.5) !important;

@@ -1,8 +1,9 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApiService } from './api';
 import { ConfigService } from './config.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 describe('api', () => {
   let keys = '';
   let schemaName = '';
@@ -19,10 +20,9 @@ describe('api', () => {
   ]);
   beforeEach(async() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule
-      ]
-    })
+    imports: [],
+    providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+})
     .compileComponents();
   });
   beforeEach(() => {

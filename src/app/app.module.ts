@@ -4,7 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 // Third-Party Modules
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -122,8 +122,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
   };
 }
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         ActivityComponent,
         ActivityDetailTableRowsComponent,
         ActivityTableRowsComponent,
@@ -197,14 +196,12 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
         FormTab2018Component,
         ModificationsListTableRowsComponent
     ],
-    imports: [
-        AppRoutingModule,
+    bootstrap: [AppComponent], imports: [AppRoutingModule,
         BrowserAnimationsModule,
         BrowserModule,
         CommonModule,
         EditorModule,
         FormsModule,
-        HttpClientModule,
         MatMenuModule,
         MatSlideToggleModule,
         MatTabsModule,
@@ -212,9 +209,7 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
         NgSelectModule,
         NzPaginationModule,
         ReactiveFormsModule,
-        SharedModule,
-    ],
-    providers: [
+        SharedModule], providers: [
         ApiService,
         CanDeactivateGuard,
         CommentPeriodService,
@@ -244,9 +239,8 @@ export function initConfig(configService: ConfigService, keycloakService: Keyclo
             useClass: TokenInterceptor,
             multi: true
         },
-    ],
-    bootstrap: [AppComponent]
-})
+        provideHttpClient(withInterceptorsFromDi()),
+    ] })
 
 export class AppModule {
   constructor(applicationRef: ApplicationRef) {
