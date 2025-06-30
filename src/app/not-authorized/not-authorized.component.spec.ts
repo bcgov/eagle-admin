@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NotAuthorizedComponent } from './not-authorized.component';
 
@@ -8,7 +8,7 @@ describe('NotAuthorizedComponent', () => {
   let component: NotAuthorizedComponent;
   let fixture: ComponentFixture<NotAuthorizedComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [NotAuthorizedComponent],
       imports: [ RouterTestingModule ],

@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -68,18 +68,18 @@ describe('ProjectListTableRowsComponent', () => {
   });
   const tableData = new TableObject(ProjectListTableRowsComponent, projectList, paginationData);
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        ProjectListTableRowsComponent
-      ],
-      providers: [
-        { provide: Router, useValue: routerSpy }
-      ],
-      schemas: [NO_ERRORS_SCHEMA]
-    })
-      .compileComponents();
-  }));
+  beforeEach(waitForAsync(() => {
+      TestBed.configureTestingModule({
+        declarations: [
+          ProjectListTableRowsComponent
+        ],
+        providers: [
+          { provide: Router, useValue: routerSpy }
+        ],
+        schemas: [NO_ERRORS_SCHEMA]
+      })
+        .compileComponents();
+    }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProjectListTableRowsComponent);

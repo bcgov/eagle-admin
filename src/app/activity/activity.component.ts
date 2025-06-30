@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
 import { Project } from '../models/project';

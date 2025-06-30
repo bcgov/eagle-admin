@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription, forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import * as moment from 'moment';
+import moment from 'moment';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { SearchTerms } from 'src/app/models/search';
 import { ApiService } from 'src/app/services/api';

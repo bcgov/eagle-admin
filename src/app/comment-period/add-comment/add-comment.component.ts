@@ -3,7 +3,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
 import { ApiService } from 'src/app/services/api';
 import { CommentService } from 'src/app/services/comment.service';

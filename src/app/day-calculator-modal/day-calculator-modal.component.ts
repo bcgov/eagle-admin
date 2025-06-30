@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Utils } from '../shared/utils/utils';
 
 export enum DayCalculatorModalResult {

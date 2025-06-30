@@ -3,7 +3,7 @@ import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subscription, forkJoin } from 'rxjs';
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';

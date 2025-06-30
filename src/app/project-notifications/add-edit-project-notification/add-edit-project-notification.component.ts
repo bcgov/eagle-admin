@@ -2,7 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 
-import * as moment from 'moment-timezone';
+import moment from 'moment-timezone';
 import { ProjectNotification } from 'src/app/models/projectNotification';
 import { ConfigService } from 'src/app/services/config.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';

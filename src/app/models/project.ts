@@ -1,5 +1,5 @@
 import { CommentPeriod } from './commentPeriod';
-import * as moment from 'moment';
+import moment from 'moment';
 
 export class Project {
   // the following are retrieved from the API
