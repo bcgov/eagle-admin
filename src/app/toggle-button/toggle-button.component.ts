@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { SideBarService } from '../services/sidebar.service';
 
 @Component({
     selector: 'app-toggle-button',
     templateUrl: './toggle-button.component.html',
     styleUrls: ['./toggle-button.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule]
 })
 
 export class ToggleButtonComponent {

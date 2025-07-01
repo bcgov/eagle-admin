@@ -1,6 +1,6 @@
 <header class="app-header app-header--solid" id="header">
   <nav class="navbar navbar-expand-md justify-content-between">
-    <a class="navbar-brand" title="EPIC" routerLink="/home">
+    <a class="navbar-brand" title="EPIC" [routerLink]="['/']">
       <span class="navbar-brand__title">EPIC</span>
     </a>
     <div *ngIf="showBanner" class="env-banner" [ngClass]="bannerColour">
@@ -17,7 +17,7 @@
       <ul class="navbar-nav">
         <li *ngIf="jwt" class="nav-item">
           <div class="btn-group">
-            <a class="nav-link" id="search" routerLink="/search" title="Search" tabindex="0">
+            <a class="nav-link" id="search" [routerLink]="['/']" title="Search" tabindex="0">
               <span class="align-middle"><i class="material-icons">search</i></span>
               <span class="align-middle d-inline-block d-md-none d-xxl-inline-block">Search</span>
             </a>

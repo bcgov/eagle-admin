@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -12,12 +12,15 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
-    selector: 'app-pins-list',
-    templateUrl: './pins-list.component.html',
-    styleUrls: ['./pins-list.component.scss'],
-    standalone: false
+  selector: 'app-pins-list',
+  standalone: true,
+  imports: [RouterModule, TableTemplateComponent],
+  templateUrl: './pins-list.component.html',
+  styleUrls: ['./pins-list.component.scss'],
+
 })
 export class PinsListComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

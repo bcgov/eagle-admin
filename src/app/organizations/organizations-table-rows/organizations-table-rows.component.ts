@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
@@ -8,7 +9,9 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
     selector: 'app-organizations-table-rows',
     templateUrl: './organizations-table-rows.component.html',
     styleUrls: ['./organizations-table-rows.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule],
+    
 })
 export class OrganizationsTableRowsComponent implements OnInit {
   @Input() data: TableObject;

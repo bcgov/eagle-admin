@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
+import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { Router, RouterModule } from '@angular/router';
 import { Subscription, forkJoin } from 'rxjs';
 import moment from 'moment-timezone';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,12 +10,16 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
+import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-    selector: 'app-project-documents-upload',
-    templateUrl: './project-documents-upload.component.html',
-    styleUrls: ['./project-documents-upload.component.scss'],
-    standalone: false
+  selector: 'app-project-documents-upload',
+  standalone: true,
+  imports: [FileUploadComponent, NgbDatepickerModule, ReactiveFormsModule, RouterModule],
+  templateUrl: './project-documents-upload.component.html',
+  styleUrls: ['./project-documents-upload.component.scss'],
+
 })
 export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

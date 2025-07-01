@@ -6,12 +6,14 @@ import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'tbody[app-activity-detail-table-rows]',
     templateUrl: './activity-detail-table-rows.component.html',
     styleUrls: ['./activity-detail-table-rows.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule],
 })
 
 export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, TableComponent {

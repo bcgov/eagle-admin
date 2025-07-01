@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FullProject } from 'src/app/models/fullProject';
@@ -10,12 +10,21 @@ import { ConfigService } from 'src/app/services/config.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
+import { CommonModule } from '@angular/common';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-    selector: 'app-add-edit-project',
-    templateUrl: './add-edit-project.component.html',
-    styleUrls: ['./add-edit-project.component.scss'],
-    standalone: false
+  selector: 'app-add-edit-project',
+  templateUrl: './add-edit-project.component.html',
+  styleUrls: ['./add-edit-project.component.scss'],
+  standalone: true,
+  imports: [
+    RouterModule,
+    CommonModule,
+    TableTemplateComponent,
+    NgbDatepickerModule
+  ]
 })
 export class AddEditProjectComponent implements OnInit, OnDestroy {
 

@@ -8,12 +8,15 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-group-contact-select',
+    standalone: true,
+    imports: [FormsModule],
     templateUrl: './group-contact-select.component.html',
     styleUrls: ['./group-contact-select.component.scss'],
-    standalone: false
+    
 })
 export class GroupContactSelectComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

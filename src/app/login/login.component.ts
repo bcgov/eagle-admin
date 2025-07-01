@@ -1,14 +1,21 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../services/api';
 import { Subscription } from 'rxjs';
 import { KeycloakService } from '../services/keycloak.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      RouterModule
+    ]
 })
 
 export class LoginComponent implements OnInit, OnDestroy {
@@ -25,7 +32,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Redir to the main index page if they try to get here.
-    if (this.keycloakService.isKeyCloakEnabled()) {
+    if (this.keycloakService.keycloakEnabled) {
       this.router.navigate(['/']);
     }
   }

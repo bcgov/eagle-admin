@@ -1,8 +1,12 @@
-import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import moment from 'moment';
+import { CommonModule } from '@angular/common';
+import { NgbDatepickerModule, NgbTimepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { EditorModule } from '@tinymce/tinymce-angular';
+import { SafeHtmlPipe } from 'src/app/shared/pipes/safe-html-converter.pipe';
 
 // tiny mce imports for plugins
 import 'tinymce/plugins/advlist';
@@ -23,7 +27,17 @@ import { Subscription } from 'rxjs';
     selector: 'app-add-edit-comment-period',
     templateUrl: './add-edit-comment-period.component.html',
     styleUrls: ['./add-edit-comment-period.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      CommonModule,
+      ReactiveFormsModule,
+      FormsModule,
+      RouterModule,
+      NgbDatepickerModule,
+      NgbTimepickerModule,
+      EditorModule,
+      SafeHtmlPipe
+    ],
 })
 
 

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
 import { ProjectNotification } from 'src/app/models/projectNotification';
@@ -7,12 +7,16 @@ import { ApiService } from 'src/app/services/api';
 import { DocumentService } from 'src/app/services/document.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { CommonModule } from '@angular/common';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'app-notification-project',
+    standalone: true,
+    imports: [RouterModule, CommonModule, NgbDropdownModule],
     templateUrl: './project-notification-detail.component.html',
     styleUrls: ['./project-notification-detail.component.scss'],
-    standalone: false
+    
 })
 
 export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {

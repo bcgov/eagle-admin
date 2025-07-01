@@ -20,6 +20,8 @@ import { TableDocumentTemplateUtils } from 'src/app/shared/utils/table-document-
 import { Utils } from 'src/app/shared/utils/utils';
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
 import { Document } from 'src/app/models/document';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 
 class DocumentFilterObject {
@@ -35,9 +37,11 @@ class DocumentFilterObject {
 
 @Component({
     selector: 'app-project-documents',
+    standalone: true,
+    imports: [FormsModule, RouterModule],
     templateUrl: './project-documents.component.html',
     styleUrls: ['./project-documents.component.scss'],
-    standalone: false
+    
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   // Must do this to expose the constants to the template,

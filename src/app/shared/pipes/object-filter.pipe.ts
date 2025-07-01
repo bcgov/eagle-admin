@@ -3,7 +3,7 @@ import { Project } from 'src/app/models/project';
 
 @Pipe({
     name: 'objectFilter',
-    standalone: false
+    
 })
 export class ObjectFilterPipe implements PipeTransform {
 

@@ -1,12 +1,15 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'tbody[app-groups-table-rows]',
     templateUrl: './project-groups-table-rows.component.html',
     styleUrls: ['./project-groups-table-rows.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule, FormsModule],
 })
 
 export class GroupsTableRowsComponent implements OnInit, TableComponent {

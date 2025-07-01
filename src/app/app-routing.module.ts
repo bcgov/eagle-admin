@@ -79,7 +79,6 @@ import { DocumentsResolver } from './project/project-documents/project-document-
 
 // Guards
 import { AuthGuard } from './services/auth-guard.service';
-import { CanDeactivateGuard } from './services/can-deactivate-guard.service';
 
 const routes: Routes = [
   // Authentication & Authorization
@@ -600,8 +599,6 @@ const routes: Routes = [
     ActivityComponentResolver,
     AddDocumentsResolver,
     ApplicationSortResolver,
-    AuthGuard,
-    CanDeactivateGuard,
     CommentPeriodResolver,
     CommentPeriodsResolver,
     ContactsResolver,

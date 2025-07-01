@@ -61,7 +61,7 @@ export class ApiService {
   handleError(error: any): Observable<never> {
     const reason = error.message ? (error.error ? `${error.message} - ${error.error.message}` : error.message) : (error.status ? `${error.status} - ${error.statusText}` : 'Server error');
     console.log('API error =', reason);
-    if (error && error.status === 403 && !this.keycloakService.isKeyCloakEnabled()) {
+    if (error && error.status === 403 && !this.keycloakService.keycloakEnabled) {
       window.location.href = '/admin/login';
     }
     return throwError(error);

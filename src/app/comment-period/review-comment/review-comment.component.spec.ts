@@ -17,7 +17,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 // Added the declaration of BlankComponent to be used for test routing
 @Component({
     selector: 'test-blank', template: ``,
-    standalone: false
+    
 })
 class BlankComponent { }
 

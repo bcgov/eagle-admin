@@ -3,7 +3,7 @@ import { ConfigService } from 'src/app/services/config.service';
 
 @Pipe({
     name: 'orgName',
-    standalone: false
+    
 })
 export class OrgNamePipe implements PipeTransform {
   private configService: ConfigService;

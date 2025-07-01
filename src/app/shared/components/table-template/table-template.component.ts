@@ -4,13 +4,17 @@ import { TableDirective } from './table.directive';
 import { TableObject } from './table-object';
 import { TableComponent } from './table.component';
 import { Constants } from '../../utils/constants';
+import { CommonModule } from '@angular/common';
+import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 
 @Component({
-    selector: 'app-table-template',
-    templateUrl: './table-template.component.html',
-    styleUrls: ['./table-template.component.scss'],
-    encapsulation: ViewEncapsulation.None,
-    standalone: false
+  selector: 'app-table-template',
+  templateUrl: './table-template.component.html',
+  styleUrls: ['./table-template.component.scss'],
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [CommonModule, NzPaginationModule, NzButtonModule, TableDirective],
 })
 export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   @Input() data: TableObject;

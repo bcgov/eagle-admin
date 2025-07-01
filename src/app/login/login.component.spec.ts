@@ -20,7 +20,7 @@ describe('LoginComponent', () => {
   };
 
   const mockKeycloakService = {
-    isKeyCloakEnabled: () => {
+    keycloakEnabled: () => {
       return false;
     }
   };
@@ -56,7 +56,7 @@ describe('LoginComponent', () => {
     let service: KeycloakService;
     beforeEach(() => {
       service = TestBed.get(KeycloakService);
-      spyOn(service, 'isKeyCloakEnabled').and.returnValue(true);
+      spyOn(service, 'keycloakEnabled').and.returnValue(true);
     });
 
     it('redirects to root', () => {

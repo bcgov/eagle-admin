@@ -1,13 +1,14 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-
 import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Topic } from 'src/app/models/topic';
 import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
+import { EditorModule } from '@tinymce/tinymce-angular';
+import { CommonModule } from '@angular/common';
 
 export interface DataModel {
   title: string;
@@ -18,7 +19,8 @@ export interface DataModel {
 @Component({
     templateUrl: './add-edit-contact.component.html',
     styleUrls: ['./add-edit-contact.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule, ReactiveFormsModule, EditorModule],
 })
 
 // NOTE: dialog components must not implement OnDestroy

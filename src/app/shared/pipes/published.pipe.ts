@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 //
 @Pipe({
     name: 'published',
-    standalone: false
+    
 })
 
 export class PublishedPipe implements PipeTransform {

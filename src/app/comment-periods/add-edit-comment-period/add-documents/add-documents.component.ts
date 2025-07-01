@@ -17,7 +17,7 @@ import { Document } from 'src/app/models/document';
     templateUrl: './add-documents.component.html',
     styleUrls: ['./add-documents.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    
 })
 export class AddDocumentComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

@@ -1,14 +1,25 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommentPeriod } from '../models/commentPeriod';
 import { StorageService } from '../services/storage.service';
 import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { MatTabsModule } from '@angular/material/tabs';
+import { CommentPeriodDetailsTabComponent } from '../comment-period/comment-period-details-tabs/comment-period-details-tab.component';
+import { ReviewCommentsTabComponent } from '../comment-period/review-comments-tab/review-comments-tab.component';
 
 @Component({
     selector: 'app-comment-period',
     templateUrl: './comment-period.component.html',
     styleUrls: ['./comment-period.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      CommonModule,
+      RouterModule,
+      MatTabsModule,
+      CommentPeriodDetailsTabComponent,
+      ReviewCommentsTabComponent,
+    ]
 })
 
 export class CommentPeriodComponent implements OnInit, OnDestroy {

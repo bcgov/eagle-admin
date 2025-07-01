@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -6,7 +7,8 @@ import { Subscription } from 'rxjs';
     selector: 'app-not-authorized',
     templateUrl: './not-authorized.component.html',
     styleUrls: ['./not-authorized.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule]
 })
 export class NotAuthorizedComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

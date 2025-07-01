@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GroupsTableRowsComponent } from './project-groups-table-rows/project-groups-table-rows.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -16,12 +16,14 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
     selector: 'app-project-groups',
     templateUrl: './project-groups.component.html',
     styleUrls: ['./project-groups.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [RouterModule, TableTemplateComponent]
 })
 export class ProjectGroupsComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

@@ -2,12 +2,16 @@
 // inspired by http://www.advancesharp.com/blog/1218/angular-4-upload-files-with-data-and-web-api-by-drag-drop
 //
 import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-file-upload',
     templateUrl: './file-upload.component.html',
     styleUrls: ['./file-upload.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      CommonModule
+    ]
 })
 
 export class FileUploadComponent {

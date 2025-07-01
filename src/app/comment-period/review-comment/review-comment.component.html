@@ -45,21 +45,21 @@
         <div class="btn-group btn-group-toggle">
           <div class="btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-primary" [class.active]="commentReviewForm.get('isPublished').value">
-              <input type="checkbox" (click)="setEaoStatus('Published')" autocomplete="off"
+              <input type="checkbox" style="display: none;" (click)="setEaoStatus('Published')" autocomplete="off"
                 formControlName="isPublished">Publish
             </label>
           </div>
           &nbsp;
           <div class="btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-primary" [class.active]="commentReviewForm.get('isDeferred').value">
-              <input type="checkbox" (click)="setEaoStatus('Deferred')" autocomplete="off"
+              <input type="checkbox" style="display: none;" (click)="setEaoStatus('Deferred')" autocomplete="off"
                 formControlName="isDeferred">Defer
             </label>
           </div>
           &nbsp;
           <div class="btn-group-toggle" data-toggle="buttons">
             <label class="btn btn-primary" [class.active]="commentReviewForm.get('isRejected').value">
-              <input type="checkbox" (click)="setEaoStatus('Rejected')" autocomplete="off"
+              <input type="checkbox" style="display: none;" (click)="setEaoStatus('Rejected')" autocomplete="off"
                 formControlName="isRejected">Reject
             </label>
           </div>

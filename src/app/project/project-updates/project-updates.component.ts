@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { ActivityDetailTableRowsComponent } from 'src/app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
@@ -13,7 +14,11 @@ import { Utils } from 'src/app/shared/utils/utils';
     selector: 'app-project-updates',
     templateUrl: './project-updates.component.html',
     styleUrls: ['./project-updates.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      FormsModule,
+      RouterModule
+    ]
 })
 export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

@@ -14,7 +14,7 @@ import { TableTemplateUtils } from '../../utils/table-template-utils';
     selector: 'app-contact-select',
     templateUrl: './contact-select.component.html',
     styleUrls: ['./contact-select.component.scss'],
-    standalone: false
+    
 })
 export class ContactSelectComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

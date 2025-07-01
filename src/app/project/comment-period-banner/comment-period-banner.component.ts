@@ -6,7 +6,7 @@ import { StorageService } from 'src/app/services/storage.service';
     selector: 'app-comment-period-banner',
     templateUrl: './comment-period-banner.component.html',
     styleUrls: ['./comment-period-banner.component.scss'],
-    standalone: false
+    
 })
 
 export class CommentPeriodBannerComponent implements OnInit {

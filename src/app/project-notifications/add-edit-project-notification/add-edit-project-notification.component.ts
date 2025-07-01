@@ -1,6 +1,10 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 import moment from 'moment-timezone';
 import { ProjectNotification } from 'src/app/models/projectNotification';
@@ -14,9 +18,11 @@ import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-add-edit-notification-project',
+    standalone: true,
+    imports: [CommonModule, NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgSelectModule],
     templateUrl: './add-edit-project-notification.component.html',
     styleUrls: ['./add-edit-project-notification.component.scss'],
-    standalone: false
+    
 })
 
 export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {

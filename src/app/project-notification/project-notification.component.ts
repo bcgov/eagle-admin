@@ -1,15 +1,18 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { StorageService } from '../services/storage.service';
 import { Project } from '../models/project';
 import { SideBarService } from '../services/sidebar.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-project-notification',
+    standalone: true,
+    imports: [CommonModule, RouterModule],
     templateUrl: './project-notification.component.html',
     styleUrls: ['./project-notification.component.scss'],
-    standalone: false
+    
 })
 export class ProjectNotificationComponent implements OnInit, OnDestroy {
 

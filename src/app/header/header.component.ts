@@ -1,35 +1,37 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { trigger, state, style, animate, transition } from '@angular/animations';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
-import { JwtUtil } from '../jwt-util';
 import { ApiService } from '../services/api';
 import { KeycloakService } from '../services/keycloak.service';
+import { JwtUtil } from '../shared/utils/jwt-utils';
 
 @Component({
-    selector: 'app-header',
-    templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss'],
-    animations: [
-        trigger('toggleNav', [
-            state('navClosed', style({
-                height: '0',
-            })),
-            state('navOpen', style({
-                height: '*',
-            })),
-            transition('navOpen => navClosed', [
-                animate('0.2s')
-            ]),
-            transition('navClosed => navOpen', [
-                animate('0.2s')
-            ]),
-        ]),
-    ],
-    standalone: false
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
+  animations: [
+    trigger('toggleNav', [
+      state('navClosed', style({
+        height: '0',
+      })),
+      state('navOpen', style({
+        height: '*',
+      })),
+      transition('navOpen => navClosed', [
+        animate('0.2s')
+      ]),
+      transition('navClosed => navOpen', [
+        animate('0.2s')
+      ]),
+    ]),
+  ],
+  standalone: true,
+  imports: [CommonModule, RouterModule]
 })
 
 export class HeaderComponent implements OnInit, OnDestroy {
@@ -60,7 +62,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         const token = this.keycloakService.getToken();
         // TODO: Change this to observe the change in the _api.token
         if (token) {
-          const jwt = new JwtUtil().decodeToken(token);
+          const jwt = JwtUtil.decodeToken(token);
           this.welcomeMsg = jwt ? ('Hello ' + jwt.preferred_username) : 'Login';
           this.jwt = jwt;
         } else {
@@ -72,7 +74,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Make sure they have the right role.
-    if (!this.keycloakService.isValidForSite()) {
+    if (!this.keycloakService.isAuthenticated()) {
       this.router.navigate(['/not-authorized']);
     }
 

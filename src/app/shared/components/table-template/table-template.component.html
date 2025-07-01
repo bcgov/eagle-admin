@@ -1,21 +1,19 @@
 <table class="table">
   <thead class="thead-light">
     <tr>
-      <th *ngFor="let entry of columns"
-        class="project-table__name-col sortable"
-        (click)="!entry.nosort && sort(entry.value)"
-        [style.width]="entry.width"
-        >
+      <th *ngFor="let entry of columns" class="project-table__name-col sortable"
+        (click)="!entry.nosort && sort(entry.value)" [style.width]="entry.width">
         <div *ngIf="entry.name !== 'select_all_box'">
-        {{entry.name}}
+          {{entry.name}}
         </div>
         <div *ngIf="entry.name === 'select_all_box'">
-          <i *ngIf="selectAll === false" class="material-icons" aria-hidden="true" (click)="selectAction()">check_box_outline_blank</i>
+          <i *ngIf="selectAll === false" class="material-icons" aria-hidden="true"
+            (click)="selectAction()">check_box_outline_blank</i>
           <i *ngIf="selectAll === true" class="material-icons" aria-hidden="true" (click)="selectAction()">check_box</i>
         </div>
         <i *ngIf="entry.nosort !== true" class="sort"
-           [ngClass]="{'sort-asc': (column.slice(1) == entry.value && column.charAt(0) === '+'), 'sort-desc': (column.slice(1) == entry.value && column.charAt(0) === '-') }"
-           aria-hidden="true"></i>
+          [ngClass]="{'sort-asc': (column.slice(1) == entry.value && column.charAt(0) === '+'), 'sort-desc': (column.slice(1) == entry.value && column.charAt(0) === '-') }"
+          aria-hidden="true"></i>
       </th>
     </tr>
   </thead>
@@ -24,18 +22,13 @@
   </ng-template>
 </table>
 <div class="page-controls text-center pt-3 pb-3">
-    <nz-pagination
-        *ngIf="data.paginationData.totalListItems >= 10"
-        [nzPageIndex]="activePage"
-        (nzPageIndexChange)="updatePageNumber($event)"
-        (nzPageSizeChange)="updatePageSize($event)"
-        [nzShowSizeChanger]="true"
-        [nzPageSize]="activePageSize"
-        [nzTotal]="data.paginationData.totalListItems"
-        [nzPageSizeOptions]="pageSizeArray"
-        [nzShowTotal]="totalTemplate">
-    </nz-pagination>
-    <ng-template #totalTemplate let-total>{{total}} result<span *ngIf="total != 1">s</span> found
-      <button nz-button nzType="primary" class="show_all_btn" (click)="updatePageSize(data.paginationData.totalListItems)">Show All</button>
-    </ng-template>
+  <nz-pagination *ngIf="data.paginationData.totalListItems >= 10" [nzPageIndex]="activePage"
+    (nzPageIndexChange)="updatePageNumber($event)" (nzPageSizeChange)="updatePageSize($event)"
+    [nzShowSizeChanger]="true" [nzPageSize]="activePageSize" [nzTotal]="data.paginationData.totalListItems"
+    [nzPageSizeOptions]="pageSizeArray" [nzShowTotal]="totalTemplate">
+  </nz-pagination>
+  <ng-template #totalTemplate let-total>{{total}} result<span *ngIf="total != 1">s</span> found
+    <button nz-button nzType="primary" class="show_all_btn"
+      (click)="updatePageSize(data.paginationData.totalListItems)">Show All</button>
+  </ng-template>
 </div>

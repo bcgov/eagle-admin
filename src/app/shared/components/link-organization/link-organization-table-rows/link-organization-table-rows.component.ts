@@ -5,12 +5,14 @@ import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableObject } from '../../table-template/table-object';
 import { TableComponent } from '../../table-template/table.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'tbody[app-link-organization-table-rows]',
     templateUrl: './link-organization-table-rows.component.html',
     styleUrls: ['./link-organization-table-rows.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule],
 })
 
 export class LinkOrganizationTableRowsComponent implements OnInit, TableComponent {

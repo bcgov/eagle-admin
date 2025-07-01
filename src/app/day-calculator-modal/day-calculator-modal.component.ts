@@ -1,5 +1,7 @@
 import { Component, HostListener } from '@angular/core';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import moment from 'moment';
 import { Utils } from '../shared/utils/utils';
 
@@ -19,7 +21,12 @@ export class DayCalculatorResult {
     selector: 'app-day-calculator-modal',
     templateUrl: './day-calculator-modal.component.html',
     styleUrls: ['./day-calculator-modal.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      NgbDatepickerModule
+    ]
 })
 export class DayCalculatorModalComponent {
 

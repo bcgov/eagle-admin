@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription, forkJoin } from 'rxjs';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -15,12 +15,16 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { FormsModule } from '@angular/forms';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
-    selector: 'app-group-contact',
-    templateUrl: './group-contact.component.html',
-    styleUrls: ['./group-contact.component.scss'],
-    standalone: false
+  selector: 'app-group-contact',
+  standalone: true,
+  imports: [FormsModule, RouterModule, TableTemplateComponent],
+  templateUrl: './group-contact.component.html',
+  styleUrls: ['./group-contact.component.scss'],
+
 })
 export class GroupContactComponent implements OnInit, OnDestroy {
   private groupId: any = null;

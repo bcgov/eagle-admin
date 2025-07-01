@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -15,13 +15,16 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Utils } from 'src/app/shared/utils/utils';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 
 @Component({
-    selector: 'app-application-sort',
-    templateUrl: './application-sort.component.html',
-    styleUrls: ['./application-sort.component.scss'],
-    standalone: false
+  selector: 'app-application-sort',
+  standalone: true,
+  imports: [RouterModule, TableTemplateComponent],
+  templateUrl: './application-sort.component.html',
+  styleUrls: ['./application-sort.component.scss'],
+
 })
 export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

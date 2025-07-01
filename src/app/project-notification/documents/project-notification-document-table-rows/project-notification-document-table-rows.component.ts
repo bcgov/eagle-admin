@@ -1,4 +1,8 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -9,7 +13,8 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './project-notification-document-table-rows.component.html',
     styleUrls: ['./project-notification-document-table-rows.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule, ListConverterPipe, RouterModule, FormsModule],
 })
 
 export class PnDocumentTableRowsComponent implements OnInit, TableComponent {

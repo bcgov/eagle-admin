@@ -9,12 +9,20 @@ import { TableObject } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 @Component({
-    selector: 'app-contacts',
-    templateUrl: './contacts.component.html',
-    styleUrls: ['./contacts.component.scss'],
-    standalone: false
+  selector: 'app-contacts',
+  templateUrl: './contacts.component.html',
+  styleUrls: ['./contacts.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableTemplateComponent
+  ]
 })
 export class ContactsComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

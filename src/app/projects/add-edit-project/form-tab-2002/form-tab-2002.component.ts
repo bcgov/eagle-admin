@@ -1,12 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import moment from 'moment-timezone';
 import { Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { mergeMap } from 'rxjs/operators';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project, ProjectPublishState } from 'src/app/models/project';
@@ -18,12 +18,14 @@ import { ContactSelectTableRowsComponent } from 'src/app/shared/components/conta
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { Utils } from 'src/app/shared/utils/utils';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'form-tab-2002',
     templateUrl: './form-tab-2002.component.html',
     styleUrls: ['../add-edit-project.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [CommonModule, ReactiveFormsModule, NgbDatepickerModule],
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

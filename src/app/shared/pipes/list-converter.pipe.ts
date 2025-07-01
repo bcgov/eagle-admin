@@ -3,7 +3,7 @@ import { ConfigService } from 'src/app/services/config.service';
 
 @Pipe({
     name: 'listConverter',
-    standalone: false
+    
 })
 export class ListConverterPipe implements PipeTransform {
   private configService: ConfigService;
