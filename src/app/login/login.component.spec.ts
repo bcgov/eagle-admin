@@ -9,6 +9,7 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ConfigService } from 'src/app/services/config.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
 // Use createSpyObj for router and keycloak
 const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -33,7 +34,7 @@ describe('LoginComponent', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         // Add provideRouter for router testing
-        require('@angular/router').provideRouter([])
+        provideRouter([])
       ]
     })
       .compileComponents();
