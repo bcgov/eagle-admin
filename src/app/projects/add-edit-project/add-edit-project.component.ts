@@ -17,7 +17,7 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-add-edit-project',
   templateUrl: './add-edit-project.component.html',
-  styleUrls: ['./add-edit-project.component.scss'],
+  styleUrls: ['./add-edit-project.component.css'],
   standalone: true,
   imports: [
     RouterModule,

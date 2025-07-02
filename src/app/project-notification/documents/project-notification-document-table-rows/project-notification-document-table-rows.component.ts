@@ -12,7 +12,7 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 @Component({
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './project-notification-document-table-rows.component.html',
-    styleUrls: ['./project-notification-document-table-rows.component.scss'],
+    styleUrls: ['./project-notification-document-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, ListConverterPipe, RouterModule, FormsModule],
 })

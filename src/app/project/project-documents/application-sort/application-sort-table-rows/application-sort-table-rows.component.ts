@@ -8,7 +8,7 @@ import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 @Component({
     selector: 'tbody[app-application-sort-table-rows]',
     templateUrl: './application-sort-table-rows.component.html',
-    styleUrls: ['./application-sort-table-rows.component.scss'],
+    styleUrls: ['./application-sort-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, ListConverterPipe],
     

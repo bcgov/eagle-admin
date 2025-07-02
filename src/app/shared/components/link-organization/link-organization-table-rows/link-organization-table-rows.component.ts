@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'tbody[app-link-organization-table-rows]',
     templateUrl: './link-organization-table-rows.component.html',
-    styleUrls: ['./link-organization-table-rows.component.scss'],
+    styleUrls: ['./link-organization-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
 })

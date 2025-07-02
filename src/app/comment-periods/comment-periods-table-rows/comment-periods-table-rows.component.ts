@@ -9,7 +9,7 @@ import { CommentStatsComponent } from 'src/app/shared/components/comment-stats/c
 @Component({
     selector: 'tbody[app-comment-periods-table-rows]',
     templateUrl: './comment-periods-table-rows.component.html',
-    styleUrls: ['./comment-periods-table-rows.component.scss'],
+    styleUrls: ['./comment-periods-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, CommentStatsComponent],
 })

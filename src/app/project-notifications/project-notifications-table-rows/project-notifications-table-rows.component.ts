@@ -8,7 +8,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 @Component({
     selector: 'app-notification-project-table-rows',
     templateUrl: './project-notifications-table-rows.component.html',
-    styleUrls: ['./project-notifications-table-rows.component.scss'],
+    styleUrls: ['./project-notifications-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
     

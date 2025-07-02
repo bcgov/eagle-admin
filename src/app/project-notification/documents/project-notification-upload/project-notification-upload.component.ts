@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [RouterModule, ReactiveFormsModule, NgbDatepickerModule, FileUploadComponent, CommonModule],
     templateUrl: './project-notification-upload.component.html',
-    styleUrls: ['./project-notification-upload.component.scss'],
+    styleUrls: ['./project-notification-upload.component.css'],
     
 })
 export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {

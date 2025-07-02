@@ -19,7 +19,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 @Component({
     selector: 'app-add-edit-activity',
     templateUrl: './add-edit-activity.component.html',
-    styleUrls: ['./add-edit-activity.component.scss'],
+    styleUrls: ['./add-edit-activity.component.css'],
     standalone: true,
     imports: [
       CommonModule,

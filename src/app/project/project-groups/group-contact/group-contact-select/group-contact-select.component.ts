@@ -15,7 +15,7 @@ import { FormsModule } from '@angular/forms';
     standalone: true,
     imports: [FormsModule],
     templateUrl: './group-contact-select.component.html',
-    styleUrls: ['./group-contact-select.component.scss'],
+    styleUrls: ['./group-contact-select.component.css'],
     
 })
 export class GroupContactSelectComponent implements OnInit, OnDestroy {

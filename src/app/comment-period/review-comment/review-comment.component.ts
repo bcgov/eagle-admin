@@ -14,7 +14,7 @@ import { Document } from 'src/app/models/document';
 @Component({
     selector: 'app-review-comment',
     templateUrl: './review-comment.component.html',
-    styleUrls: ['./review-comment.component.scss'],
+    styleUrls: ['./review-comment.component.css'],
     
 })
 

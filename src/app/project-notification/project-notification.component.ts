@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule, RouterModule],
     templateUrl: './project-notification.component.html',
-    styleUrls: ['./project-notification.component.scss'],
+    styleUrls: ['./project-notification.component.css'],
     
 })
 export class ProjectNotificationComponent implements OnInit, OnDestroy {

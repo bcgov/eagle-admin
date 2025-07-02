@@ -16,7 +16,7 @@ import { TableTemplateComponent } from '../shared/components/table-template/tabl
 @Component({
     selector: 'app-comment-periods',
     templateUrl: './comment-periods.component.html',
-    styleUrls: ['./comment-periods.component.scss'],
+    styleUrls: ['./comment-periods.component.css'],
     standalone: true,
     imports: [
       CommonModule,

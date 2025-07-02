@@ -10,7 +10,7 @@ export interface DataModel {
 @Component({
     selector: 'app-confirm',
     templateUrl: './confirm.component.html',
-    styleUrls: ['./confirm.component.scss'],
+    styleUrls: ['./confirm.component.css'],
     
 })
 export class ConfirmComponent {

@@ -18,7 +18,7 @@ import { TableTemplateComponent } from '../shared/components/table-template/tabl
     standalone: true,
     imports: [CommonModule, FormsModule, TableTemplateComponent],
     templateUrl: './organizations.component.html',
-    styleUrls: ['./organizations.component.scss'],
+    styleUrls: ['./organizations.component.css'],
     
 })
 export class OrganizationsComponent implements OnInit, OnDestroy {

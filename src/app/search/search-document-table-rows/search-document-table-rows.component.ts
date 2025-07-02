@@ -9,7 +9,7 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 @Component({
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './search-document-table-rows.component.html',
-    styleUrls: ['./search-document-table-rows.component.scss'],
+    styleUrls: ['./search-document-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, ListConverterPipe],
 })

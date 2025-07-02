@@ -21,7 +21,7 @@ import { Subscription } from 'rxjs';
     standalone: true,
     imports: [CommonModule, NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgSelectModule],
     templateUrl: './add-edit-project-notification.component.html',
-    styleUrls: ['./add-edit-project-notification.component.scss'],
+    styleUrls: ['./add-edit-project-notification.component.css'],
     
 })
 

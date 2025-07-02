@@ -33,7 +33,7 @@ class ActivityFilterObject {
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
-  styleUrls: ['./activity.component.scss'],
+  styleUrls: ['./activity.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]

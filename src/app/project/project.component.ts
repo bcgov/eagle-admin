@@ -12,7 +12,7 @@ import { RouterModule } from '@angular/router';
 @Component({
     selector: 'app-project',
     templateUrl: './project.component.html',
-    styleUrls: ['./project.component.scss'],
+    styleUrls: ['./project.component.css'],
     standalone: true,
     imports: [CommonModule, RouterModule],
 })

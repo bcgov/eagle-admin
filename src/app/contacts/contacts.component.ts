@@ -16,7 +16,7 @@ import { TableTemplateComponent } from '../shared/components/table-template/tabl
 @Component({
   selector: 'app-contacts',
   templateUrl: './contacts.component.html',
-  styleUrls: ['./contacts.component.scss'],
+  styleUrls: ['./contacts.component.css'],
   standalone: true,
   imports: [
     CommonModule,

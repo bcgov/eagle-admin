@@ -15,7 +15,7 @@ import { Utils } from 'src/app/shared/utils/utils';
     standalone: true,
     imports: [RouterModule],
     templateUrl: './document-edit.component.html',
-    styleUrls: ['./document-edit.component.scss'],
+    styleUrls: ['./document-edit.component.css'],
     
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {

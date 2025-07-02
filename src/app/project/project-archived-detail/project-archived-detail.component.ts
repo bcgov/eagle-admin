@@ -22,7 +22,7 @@ import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-p
     standalone: true,
     imports: [RouterModule, CommonModule, CommentPeriodBannerComponent],
     templateUrl: './project-archived-detail.component.html',
-    styleUrls: ['./project-archived-detail.component.scss'],
+    styleUrls: ['./project-archived-detail.component.css'],
     
 })
 

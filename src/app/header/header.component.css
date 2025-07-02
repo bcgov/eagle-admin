@@ -1,0 +1,313 @@
+@import url("src/assets/styles/base/base.css");
+
+.env-banner {
+  padding: 5px 10px;
+  z-index: 10000;
+}
+
+.env-banner.red {
+  background-color: #ff8e8e;
+  color: #a70404;
+}
+
+.env-banner.orange {
+  background-color: #ffd47e;
+  color: #bd7e02;
+}
+
+.env-banner.yellow {
+  background-color: #f1ef63;
+  color: #98980f;
+}
+
+.env-banner.green {
+  background-color: #aaf1a0;
+  color: #057713;
+}
+
+.env-banner.purple {
+  background-color: #d39eff;
+  color: #8c00ff;
+}
+
+.app-header {
+  padding: 0;
+  background: var(--header-bg);
+  color: var(--header-font-color);
+  z-index: 1001;
+}
+
+@media (width >= 768px) {
+  .app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    transition: all linear 0.2s;
+  }
+
+  .app-header--flex {
+    position: relative;
+    background: var(--header-bg);
+    color: var(--header-font-color);
+  }
+
+  .app-header--solid {
+    background: var(--header-bg);
+    color: var(--header-font-color);
+    padding: 2px 0 6px;
+  }
+}
+
+/* Navbar Toggle Button */
+.navbar-toggler {
+  margin-right: 0.5rem;
+  padding: 0.5rem 0.4rem;
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  font-size: medium;
+  font-weight: 600;
+  outline: none;
+}
+
+.navbar-toggler:hover {
+  cursor: pointer;
+}
+
+.navbar-toggler.collapsed {
+  border: 2px solid transparent;
+  color: var(--white);
+}
+
+.navbar-toggler i {
+  float: left;
+  margin-top: -0.25rem;
+  margin-bottom: -0.25rem;
+}
+
+.navbar-toggler i + span {
+  display: none;
+  margin-top: 1px;
+  margin-left: 0.25rem;
+  font-size: var(--mn-font-size);
+  font-weight: 700;
+  vertical-align: top;
+}
+
+@media (width >= 420px) {
+  .navbar-toggler i + span {
+    display: inline-block;
+  }
+}
+
+/* NAVBAR */
+.navbar {
+  padding: 0;
+  background-color: var(--header-bg);
+  z-index: 1000;
+}
+
+.navbar .navbar-nav {
+  margin-top: 0.5rem;
+}
+
+.navbar .navbar-nav span {
+  font-size: 1rem;
+  text-transform: none;
+  font-weight: normal;
+}
+
+@media screen and (width <= 600px) {
+  .navbar .navbar-nav .btn-group {
+    display: block;
+  }
+}
+
+.navbar .navbar-nav .nav-link {
+  position: relative;
+  z-index: 1001;
+  padding: 0.875rem 1rem;
+  border-top: 1px solid var(--mn-border-color);
+  color: var(--mn-color);
+  text-transform: uppercase;
+  font-size: var(--mn-font-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.navbar .navbar-nav .nav-link i {
+  margin-right: 4px;
+  margin-top: 3px;
+  font-size: 20px;
+}
+
+.navbar .navbar-nav .dropdown.show .dropdown-toggle {
+  color: var(--gold);
+}
+
+.navbar .navbar-nav .dropdown-menu {
+  padding-top: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.navbar .navbar-nav .dropdown-menu .dropdown-item {
+  padding: 0.5rem 1rem;
+  color: var(--mn-color);
+  font-size: var(--mn-dropdown-menu-size);
+  white-space: normal;
+  cursor: pointer;
+}
+
+.navbar .navbar-nav .dropdown-menu .dropdown-item strong {
+  font-weight: 600;
+  transition: color 0.2s ease-out;
+}
+
+.navbar .navbar-nav .dropdown-menu .dropdown-item .dd-item-desc {
+  display: block;
+  font-size: small;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-out;
+}
+
+.navbar .navbar-nav .dropdown-menu .dropdown-item:focus,
+.navbar .navbar-nav .dropdown-menu .dropdown-item:hover {
+  background: transparent;
+}
+
+.navbar .navbar-nav .dropdown-menu .dropdown-item:focus strong,
+.navbar .navbar-nav .dropdown-menu .dropdown-item:hover strong {
+  color: var(--mn-hover-color);
+}
+
+.navbar .navbar-nav .dropdown-menu .dropdown-item:focus .dd-item-desc,
+.navbar .navbar-nav .dropdown-menu .dropdown-item:hover .dd-item-desc {
+  opacity: 1;
+}
+
+.navbar-collapse {
+  overflow: hidden;
+}
+
+@media (width >= 768px) {
+  .navbar {
+    background: transparent;
+  }
+
+  .navbar .navbar-nav {
+    margin-top: 0;
+  }
+
+  .navbar .navbar-nav .nav-link {
+    height: 4.2rem;
+    padding: 0.5rem 0.75rem !important;
+    border-top: none;
+  }
+
+  .navbar .navbar-nav .nav-link span {
+    margin-top: 0.9rem;
+    display: inline-block;
+  }
+
+  .navbar .navbar-nav .nav-link:hover {
+    background-color: #002663;
+  }
+
+  .navbar .navbar-nav > li .dropdown-menu {
+    top: 100% !important;
+    right: 0;
+    left: auto !important;
+    margin: 0;
+    width: auto !important;
+    min-width: 10rem;
+    padding: 0.5rem;
+    background-color: #002663;
+  }
+
+  .navbar .navbar-nav > li .dropdown-menu.dm-sm {
+    min-width: 12rem;
+  }
+
+  .navbar .navbar-nav > li .dropdown-menu .dropdown-item {
+    padding: 0.5rem;
+  }
+
+  .navbar .navbar-nav > li.dropdown.show .dropdown-toggle {
+    color: var(--mn-color);
+  }
+
+  .navbar .navbar-nav > li.dropdown.show .dropdown-menu {
+    display: none;
+  }
+
+  .navbar .navbar-nav > li.dropdown:hover > a,
+  .navbar .navbar-nav > li.dropdown:hover > a:hover,
+  .navbar .navbar-nav > li.dropdown:hover > a:focus {
+    background-color: #002663;
+    border: none;
+  }
+
+  .navbar .navbar-nav > li.dropdown:hover .dropdown-menu {
+    display: block;
+  }
+
+  .navbar-collapse {
+    overflow: visible;
+    height: auto !important;
+    flex-grow: 0;
+  }
+}
+
+/* Navbar Brand */
+.navbar-brand {
+  height: 3.4375rem;
+  background-image: url("../../assets/images/bcgov-header-vert-SM.png");
+  background-position: 8px center;
+  background-repeat: no-repeat;
+  white-space: normal;
+}
+
+.navbar-brand__title {
+  margin-top: 0.78rem;
+  margin-left: 75px;
+  display: inline-block;
+  color: #fff;
+  line-height: 1.1rem;
+  font-weight: 800;
+  font-size: 2rem;
+}
+
+.navbar-brand__title .wb {
+  display: block;
+}
+
+.navbar-brand__version {
+  margin-top: -0.1rem;
+  display: inline-block;
+  color: var(--gold);
+  font-size: 0.5rem;
+  font-weight: 700;
+  vertical-align: top;
+}
+
+@media (width >= 1200px) {
+  .navbar-brand {
+    height: 4.2rem;
+    background-image: url("../../assets/images/bcgov-header-vert-MD.png");
+    background-position: 10px center;
+  }
+
+  .navbar-brand__title {
+    margin-left: 88px;
+    line-height: 1.2rem;
+    font-weight: 800;
+    font-size: 3rem;
+    margin-top: 17px;
+  }
+
+  .navbar-brand__version {
+    font-size: 0.6rem;
+  }
+}

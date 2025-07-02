@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
     standalone: true,
     imports: [CommonModule],
     templateUrl: './search-help.component.html',
-    styleUrls: ['./search-help.component.scss'],
+    styleUrls: ['./search-help.component.css'],
     
 })
 export class SearchHelpComponent { }

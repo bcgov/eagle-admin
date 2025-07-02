@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'form-tab-2018',
     templateUrl: './form-tab-2018.component.html',
-    styleUrls: ['../add-edit-project.component.scss'],
+    styleUrls: ['../add-edit-project.component.css'],
     standalone: true,
     imports: [CommonModule, NgbDatepickerModule, ReactiveFormsModule],
 })

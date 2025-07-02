@@ -14,7 +14,7 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
 @Component({
   selector: 'app-review-comments-tab',
   templateUrl: './review-comments-tab.component.html',
-  styleUrls: ['./review-comments-tab.component.scss'],
+  styleUrls: ['./review-comments-tab.component.css'],
   standalone: true,
   imports: [
     CommonModule,

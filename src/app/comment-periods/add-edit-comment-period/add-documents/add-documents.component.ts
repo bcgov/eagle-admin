@@ -15,7 +15,7 @@ import { Document } from 'src/app/models/document';
 @Component({
     selector: 'app-add-documents',
     templateUrl: './add-documents.component.html',
-    styleUrls: ['./add-documents.component.scss'],
+    styleUrls: ['./add-documents.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush,
     
 })

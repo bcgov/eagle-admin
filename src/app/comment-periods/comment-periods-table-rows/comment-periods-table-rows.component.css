@@ -1,0 +1,13 @@
+@import url("src/assets/styles/base/base.css");
+
+tr:hover {
+  cursor: pointer;
+  background-color: #e2f1ff;
+}
+
+app-comment-stats .col-3 {
+  @media screen and (width <= 768px) {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}

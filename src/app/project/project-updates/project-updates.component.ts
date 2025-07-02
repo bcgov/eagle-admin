@@ -9,16 +9,20 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Utils } from 'src/app/shared/utils/utils';
+import { CommonModule } from '@angular/common';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
-    selector: 'app-project-updates',
-    templateUrl: './project-updates.component.html',
-    styleUrls: ['./project-updates.component.scss'],
-    standalone: true,
-    imports: [
-      FormsModule,
-      RouterModule
-    ]
+  selector: 'app-project-updates',
+  templateUrl: './project-updates.component.html',
+  styleUrls: ['./project-updates.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TableTemplateComponent
+  ]
 })
 export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

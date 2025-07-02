@@ -1,0 +1,14 @@
+{
+    "extends": "stylelint-config-standard",
+    "rules": {
+        "selector-class-pattern": null,
+        "selector-id-pattern": null,
+        "no-empty-source": null,
+        "selector-pseudo-class-no-unknown": [true, {
+            "ignorePseudoClasses": ["ng-deep"]
+        }],
+        "selector-pseudo-element-no-unknown": [true, {
+            "ignorePseudoElements": ["ng-deep"]
+        }]
+    }
+}

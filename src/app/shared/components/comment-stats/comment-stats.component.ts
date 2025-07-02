@@ -5,7 +5,7 @@ import { ApiService } from 'src/app/services/api';
 @Component({
     selector: 'app-comment-stats',
     templateUrl: './comment-stats.component.html',
-    styleUrls: ['./comment-stats.component.scss'],
+    styleUrls: ['./comment-stats.component.css'],
     
 })
 

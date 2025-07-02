@@ -1,0 +1,9 @@
+.action-container {
+	.btn {
+		width: 260px;
+
+		@media screen and (width <= 768px) {
+			width: 100%;
+		}
+	}
+}

@@ -23,7 +23,7 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
   standalone: true,
   imports: [FormsModule, RouterModule, TableTemplateComponent],
   templateUrl: './group-contact.component.html',
-  styleUrls: ['./group-contact.component.scss'],
+  styleUrls: ['./group-contact.component.css'],
 
 })
 export class GroupContactComponent implements OnInit, OnDestroy {

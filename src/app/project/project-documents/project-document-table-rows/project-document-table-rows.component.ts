@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './project-document-table-rows.component.html',
-    styleUrls: ['./project-document-table-rows.component.scss'],
+    styleUrls: ['./project-document-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, ListConverterPipe, FormsModule],
 })

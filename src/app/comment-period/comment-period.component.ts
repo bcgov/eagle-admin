@@ -11,7 +11,7 @@ import { ReviewCommentsTabComponent } from '../comment-period/review-comments-ta
 @Component({
     selector: 'app-comment-period',
     templateUrl: './comment-period.component.html',
-    styleUrls: ['./comment-period.component.scss'],
+    styleUrls: ['./comment-period.component.css'],
     standalone: true,
     imports: [
       CommonModule,

@@ -19,7 +19,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-add-comment',
     templateUrl: './add-comment.component.html',
-    styleUrls: ['./add-comment.component.scss'],
+    styleUrls: ['./add-comment.component.css'],
     standalone: true,
     imports: [
       CommonModule,

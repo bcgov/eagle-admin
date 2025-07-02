@@ -8,7 +8,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 @Component({
     selector: 'app-organizations-table-rows',
     templateUrl: './organizations-table-rows.component.html',
-    styleUrls: ['./organizations-table-rows.component.scss'],
+    styleUrls: ['./organizations-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
     

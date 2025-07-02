@@ -11,7 +11,7 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
 @Component({
   selector: 'app-table-template',
   templateUrl: './table-template.component.html',
-  styleUrls: ['./table-template.component.scss'],
+  styleUrls: ['./table-template.component.css'],
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [CommonModule, NzPaginationModule, NzButtonModule, TableDirective],

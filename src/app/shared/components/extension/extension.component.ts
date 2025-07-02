@@ -13,7 +13,7 @@ import { Utils } from '../../utils/utils';
 @Component({
   selector: 'app-extension',
   templateUrl: './extension.component.html',
-  styleUrls: ['./extension.component.scss'],
+  styleUrls: ['./extension.component.css'],
   standalone: true,
   imports: [
     CommonModule,

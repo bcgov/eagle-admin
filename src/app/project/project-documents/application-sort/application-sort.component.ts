@@ -23,7 +23,7 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
   standalone: true,
   imports: [RouterModule, TableTemplateComponent],
   templateUrl: './application-sort.component.html',
-  styleUrls: ['./application-sort.component.scss'],
+  styleUrls: ['./application-sort.component.css'],
 
 })
 export class DocumentApplicationSortComponent implements OnInit, OnDestroy {

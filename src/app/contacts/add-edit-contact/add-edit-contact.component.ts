@@ -18,7 +18,7 @@ export interface DataModel {
 
 @Component({
     templateUrl: './add-edit-contact.component.html',
-    styleUrls: ['./add-edit-contact.component.scss'],
+    styleUrls: ['./add-edit-contact.component.css'],
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, EditorModule],
 })

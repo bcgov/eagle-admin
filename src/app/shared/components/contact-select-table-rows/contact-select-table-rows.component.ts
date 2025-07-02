@@ -9,7 +9,7 @@ import { TableComponent } from '../table-template/table.component';
 @Component({
     selector: 'app-contact-select-table-rows',
     templateUrl: './contact-select-table-rows.component.html',
-    styleUrls: ['./contact-select-table-rows.component.scss'],
+    styleUrls: ['./contact-select-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
 })

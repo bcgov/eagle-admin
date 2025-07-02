@@ -1,0 +1,100 @@
+.top-container {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  padding: 1.1rem 1rem 0.5rem;
+}
+
+.subway-circle {
+  width: 30px;
+  height: 30px;
+}
+
+.bottom-container {
+  overflow: hidden;
+}
+
+h2 {
+  font: 33px BCSans, 'Noto Sans', sans-serif;
+  margin-top: 30px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+h2.background {
+  position: relative;
+  z-index: 1;
+
+  &::before {
+    border-top: 2px solid #dfdfdf;
+    content:"";
+    margin: 0 auto; /* this centers the line to the full width specified */
+    position: absolute; /* positioning must be absolute here, and relative positioning must be applied to the parent */
+    inset: 50% 0 0;
+    width: 95%;
+    z-index: -1;
+  }
+
+  span {
+    /* to hide the lines from behind the text, you have to set the background color the same as the container */
+    background: #fff;
+    padding: 0 15px;
+  }
+}
+
+h2.double::before {
+  /* this is just to undo the :before styling from above */
+  border-top: none;
+}
+
+h2.double::after {
+  border-bottom: 1px solid blue;
+  box-shadow: 0 1px 0 0 red;
+  content: "";
+  margin: 0 auto; /* this centers the line to the full width specified */
+  position: absolute;
+  top: 45%; left: 0; right: 0;
+  width: 95%;
+  z-index: -1;
+}
+
+h2.no-background {
+  position: relative;
+  overflow: hidden;
+
+  span {
+    display: inline-block;
+    vertical-align: baseline;
+    zoom: 1;
+    position: relative;
+    padding: 0 20px;
+
+    &::before, &::after {
+      content: '';
+      display: block;
+      width: 1000px;
+      position: absolute;
+      top: 0.73em;
+      border-top: 1px solid red;
+    }
+
+    &::before { right: 100%; }
+    &::after { left: 100%; }
+  }
+}
+
+h2.no-span {
+  display: table;
+  white-space: nowrap;
+
+  &::before, &::after {
+    border-top: 1px solid green;
+    content: '';
+    display: table-cell;
+    position: relative;
+    top: 0.5em;
+    width: 45%;
+  }
+  &::before { right: 1.5%; }
+  &::after { left: 1.5%; }
+}

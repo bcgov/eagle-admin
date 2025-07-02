@@ -1,0 +1,60 @@
+@import url("src/assets/styles/components/details.css");
+
+section {
+  + section {
+    margin-top: 3rem;
+  }
+}
+
+button {
+    float: right;
+    margin: 0 10px 20px;
+}
+
+h1 {
+  margin-bottom: 1.75rem;
+}
+
+.people {
+  vertical-align: top;
+
+  i {
+    vertical-align: bottom;
+  }
+
+  .col {
+    padding: 0;
+    margin-bottom: 20px;
+    vertical-align: top;
+
+    @media screen and (width >= 800px) {
+      display: inline-block;
+      width: 32%;
+      margin-right: 1%;
+    }
+  }
+}
+
+.badge-info {
+  color: #00264e;
+  background-color: #fcb118;
+  box-shadow: none;
+  border: none;
+  white-space: normal;
+  text-align: left;
+}
+
+.publish-state {
+  i {
+    vertical-align: top;
+  }
+
+  color: #fff;
+  background: #003368;
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 25px;
+  font-size: .85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}

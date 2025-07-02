@@ -1,0 +1,60 @@
+@import url("src/assets/styles/components/add-edit.css");
+
+.form-row {
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 2rem;
+}
+
+.eAPProjectLabel{
+  font-size: 10pt;
+}
+
+.publish-btn {
+  background-color: #4CAF50;
+  border: none;
+}
+
+.un-publish-btn {
+  background-color: red;
+  border: none;
+}
+
+.label-pair {
+  @media screen and (width >= 800px) {
+    &.half {
+      width: 47%;
+      margin-right: 2%;
+    }
+  }
+}
+
+.non-public-grouping-box {
+  padding: 0;
+}
+
+.sub-headder{
+  margin-top: -15px;
+  color: grey;
+  padding-left: 80px;
+}
+
+.sub-label{
+  padding: 4px 0 0;
+  margin: 0
+}
+
+.info-text {
+  color: grey;
+  font-size: small;
+  font-weight:normal;
+}
+
+.notification-threshold-box {
+  display: inline-block;
+  padding: 0 0 4px;
+}
+
+
+hr {
+  border-top: 1px solid  #cecece;
+}

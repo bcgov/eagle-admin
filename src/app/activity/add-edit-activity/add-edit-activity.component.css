@@ -1,0 +1,18 @@
+@import url("src/assets/styles/components/add-edit.css");
+
+.form-row {
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 2rem;
+}
+
+.btn-unpublish{
+  background-color: white;
+  color: var(--danger);
+  border-color: var(--danger);
+  border-width: 1px;
+}
+
+.btn-publish{
+  background-color: var(--success);
+  border-color: var(--success);
+}

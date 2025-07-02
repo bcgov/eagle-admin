@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
     standalone: true,
     imports: [RouterModule],
     templateUrl: './milestones.component.html',
-    styleUrls: ['./milestones.component.scss'],
+    styleUrls: ['./milestones.component.css'],
     
 })
 export class MilestonesComponent {

@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'tbody[app-pins-table-rows]',
     templateUrl: './pins-table-rows.component.html',
-    styleUrls: ['./pins-table-rows.component.scss'],
+    styleUrls: ['./pins-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
 })

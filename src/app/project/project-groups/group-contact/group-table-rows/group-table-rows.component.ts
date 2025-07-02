@@ -6,7 +6,7 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 @Component({
     selector: 'app-group-table-rows',
     templateUrl: './group-table-rows.component.html',
-    styleUrls: ['./group-table-rows.component.scss'],
+    styleUrls: ['./group-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
     

@@ -17,13 +17,14 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-project-groups',
-    templateUrl: './project-groups.component.html',
-    styleUrls: ['./project-groups.component.scss'],
-    standalone: true,
-    imports: [RouterModule, TableTemplateComponent]
+  selector: 'app-project-groups',
+  templateUrl: './project-groups.component.html',
+  styleUrls: ['./project-groups.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterModule, TableTemplateComponent]
 })
 export class ProjectGroupsComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

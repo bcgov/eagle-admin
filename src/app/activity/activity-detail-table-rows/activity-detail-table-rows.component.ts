@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'tbody[app-activity-detail-table-rows]',
     templateUrl: './activity-detail-table-rows.component.html',
-    styleUrls: ['./activity-detail-table-rows.component.scss'],
+    styleUrls: ['./activity-detail-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
 })

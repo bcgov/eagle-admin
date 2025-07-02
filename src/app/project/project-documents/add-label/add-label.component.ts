@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs';
     standalone: true,
     imports: [RouterModule, ReactiveFormsModule],
     templateUrl: './add-label.component.html',
-    styleUrls: ['./add-label.component.scss'],
+    styleUrls: ['./add-label.component.css'],
     
 })
 export class AddLabelComponent implements OnInit, OnDestroy {

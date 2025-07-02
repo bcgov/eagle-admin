@@ -26,7 +26,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'app-add-edit-comment-period',
     templateUrl: './add-edit-comment-period.component.html',
-    styleUrls: ['./add-edit-comment-period.component.scss'],
+    styleUrls: ['./add-edit-comment-period.component.css'],
     standalone: true,
     imports: [
       CommonModule,

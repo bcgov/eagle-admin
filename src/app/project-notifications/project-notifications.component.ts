@@ -17,7 +17,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [FormsModule, CommonModule, TableTemplateComponent, RouterModule],
   templateUrl: './project-notifications.component.html',
-  styleUrls: ['./project-notifications.component.scss'],
+  styleUrls: ['./project-notifications.component.css'],
 
 })
 export class ProjectNotificationsComponent implements OnInit, OnDestroy {

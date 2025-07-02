@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
     selector: 'tbody[app-groups-table-rows]',
     templateUrl: './project-groups-table-rows.component.html',
-    styleUrls: ['./project-groups-table-rows.component.scss'],
+    styleUrls: ['./project-groups-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, FormsModule],
 })

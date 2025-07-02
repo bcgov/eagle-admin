@@ -12,13 +12,14 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-project-documents-upload',
   standalone: true,
-  imports: [FileUploadComponent, NgbDatepickerModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FileUploadComponent, NgbDatepickerModule, ReactiveFormsModule, RouterModule],
   templateUrl: './project-documents-upload.component.html',
-  styleUrls: ['./project-documents-upload.component.scss'],
+  styleUrls: ['./project-documents-upload.component.css'],
 
 })
 export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {

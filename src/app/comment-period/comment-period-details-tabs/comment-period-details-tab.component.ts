@@ -16,7 +16,7 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 @Component({
     selector: 'app-comment-period-details-tab',
     templateUrl: './comment-period-details-tab.component.html',
-    styleUrls: ['./comment-period-details-tab.component.scss'],
+    styleUrls: ['./comment-period-details-tab.component.css'],
     standalone: true,
     imports: [
       CommonModule,

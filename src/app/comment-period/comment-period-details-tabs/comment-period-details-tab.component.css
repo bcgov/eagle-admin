@@ -1,0 +1,50 @@
+@import url("src/assets/styles/components/details.css");
+
+#comment-period-details, #comments-received-details, #open-house-details {
+  max-width: 100%;
+  overflow-x: hidden;
+  margin-bottom: 1rem;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.date-range {
+	font-size: 1.2rem;
+}
+
+.dropdown {
+	text-align: right;
+
+	button {
+		width: 100%;
+	}
+}
+
+h3 {
+	margin-bottom: .25rem;
+}
+
+.row {
+	margin-bottom: 20px;
+}
+
+.cell {
+	padding: 10px;
+}
+
+.publish-state {
+	i {
+		vertical-align: top;
+	}
+
+	color: #fff;
+	background: #003368;
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 25px;
+	font-size: .85rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}

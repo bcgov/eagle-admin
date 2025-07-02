@@ -5,7 +5,7 @@ import { StorageService } from 'src/app/services/storage.service';
 @Component({
     selector: 'app-comment-period-banner',
     templateUrl: './comment-period-banner.component.html',
-    styleUrls: ['./comment-period-banner.component.scss'],
+    styleUrls: ['./comment-period-banner.component.css'],
     
 })
 

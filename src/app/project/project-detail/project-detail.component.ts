@@ -21,7 +21,7 @@ import { RouterModule } from '@angular/router';
 @Component({
     selector: 'app-project-detail',
     templateUrl: './project-detail.component.html',
-    styleUrls: ['./project-detail.component.scss'],
+    styleUrls: ['./project-detail.component.css'],
     standalone: true,
     imports: [CommonModule, RouterModule, NgbDropdownModule],
 })

@@ -17,7 +17,7 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     standalone: true,
     imports: [RouterModule, CommonModule, NgbDropdownModule],
     templateUrl: './detail.component.html',
-    styleUrls: ['./detail.component.scss'],
+    styleUrls: ['./detail.component.css'],
     
 })
 export class DocumentDetailComponent implements OnInit, OnDestroy {

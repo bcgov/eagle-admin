@@ -15,7 +15,7 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     standalone: true,
     imports: [RouterModule, CommonModule, NgbDropdownModule],
     templateUrl: './project-notification-detail.component.html',
-    styleUrls: ['./project-notification-detail.component.scss'],
+    styleUrls: ['./project-notification-detail.component.css'],
     
 })
 

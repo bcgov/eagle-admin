@@ -19,7 +19,7 @@ import { TableTemplateComponent } from '../table-template/table-template.compone
 @Component({
   selector: 'app-link-organization',
   templateUrl: './link-organization.component.html',
-  styleUrls: ['./link-organization.component.scss'],
+  styleUrls: ['./link-organization.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,

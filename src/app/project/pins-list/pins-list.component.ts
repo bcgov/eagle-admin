@@ -13,13 +13,14 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-pins-list',
   standalone: true,
-  imports: [RouterModule, TableTemplateComponent],
+  imports: [CommonModule, RouterModule, TableTemplateComponent],
   templateUrl: './pins-list.component.html',
-  styleUrls: ['./pins-list.component.scss'],
+  styleUrls: ['./pins-list.component.css'],
 
 })
 export class PinsListComponent implements OnInit, OnDestroy {

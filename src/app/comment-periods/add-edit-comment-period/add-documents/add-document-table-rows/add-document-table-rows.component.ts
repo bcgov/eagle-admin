@@ -9,7 +9,7 @@ import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 @Component({
     selector: 'tbody[app-add-document-table-rows]',
     templateUrl: './add-document-table-rows.component.html',
-    styleUrls: ['./add-document-table-rows.component.scss'],
+    styleUrls: ['./add-document-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule, FormsModule, ListConverterPipe],
 })

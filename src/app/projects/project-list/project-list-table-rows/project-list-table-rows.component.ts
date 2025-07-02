@@ -7,7 +7,7 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 @Component({
     selector: 'tbody[app-project-list-table-rows]',
     templateUrl: './project-list-table-rows.component.html',
-    styleUrls: ['./project-list-table-rows.component.scss'],
+    styleUrls: ['./project-list-table-rows.component.css'],
     standalone: true,
     imports: [CommonModule],
 })

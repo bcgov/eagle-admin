@@ -13,7 +13,7 @@ import { TableTemplateUtils } from '../../utils/table-template-utils';
 @Component({
     selector: 'app-contact-select',
     templateUrl: './contact-select.component.html',
-    styleUrls: ['./contact-select.component.scss'],
+    styleUrls: ['./contact-select.component.css'],
     
 })
 export class ContactSelectComponent implements OnInit, OnDestroy {

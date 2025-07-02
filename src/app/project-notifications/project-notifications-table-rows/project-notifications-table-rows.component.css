@@ -1,0 +1,19 @@
+@import url("src/assets/styles/base/base.css");
+
+.clickable-row {
+    cursor: pointer;
+}
+
+tr:hover {
+    cursor: pointer;
+    background-color: #e2f1ff;
+}
+
+td {
+    border-top: 0;
+    text-align: left;
+}
+
+.clickable {
+    cursor: pointer;
+}

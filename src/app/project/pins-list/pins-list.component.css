@@ -1,0 +1,38 @@
+@import url("src/assets/styles/base/base.css");
+
+tr:hover {
+    cursor: pointer;
+    background-color: #e2f1ff;
+}
+
+.active-flag {
+  background: #5BB75C;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px 4px;
+  border-radius: 5px;
+  font-size: .8rem;
+}
+
+.inactive-flag {
+  background: red;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px 4px;
+  border-radius: 5px;
+  font-size: .8rem;
+}
+
+.btn-unpublish{
+    background-color: white;
+    color: #D8292F;
+    border-color: #D8292F;
+    border-width: 1px;
+}
+
+.btn-publish{
+    background-color: #28a745;
+    border-color: #28a745;
+}

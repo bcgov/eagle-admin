@@ -1,0 +1,206 @@
+/* Move somewhere global */
+h1 {
+  letter-spacing: -0.05rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.03rem;
+}
+
+h2 strong {
+  font-weight: 400;
+}
+
+.btn-sm i {
+  margin-top: -0.1rem;
+}
+
+/* Search Container */
+.search-container {
+  padding-top: 1.5rem;
+  padding-bottom: .5rem;
+  background: #f7f8fa;
+}
+
+form {
+  margin-top: 2rem;
+}
+
+.main-search-field input {
+  height: 3rem;
+  color: #000;
+  font-size: 1.15rem;
+}
+
+.main-search-field input:-webkit-autofill {
+  box-shadow: 0 0 0 30px white inset;
+}
+
+.main-search-field button {
+  min-width: 10rem;
+  font-weight: 700;
+}
+
+.main-search-field .input-group-addon {
+  font-size: 1.15rem;
+}
+
+.form-text {
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+}
+
+/* CSS Variables */
+:root {
+  --sr-table-row-bg: #f7f8fa;
+  --cl-arrow-size: 3.0rem;
+  --cl-arrow-color: #036;
+  --cl-arrow-font-color: #fff;
+}
+
+/* Search Results Table */
+.search-results table {
+  margin-top: .5rem;
+  table-layout: fixed;
+}
+
+.search-results th {
+  padding: 0.5rem 1rem;
+  overflow: hidden;
+  border: none;
+  background: var(--sr-table-row-bg);
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+}
+
+.search-results td {
+  padding: 1.25rem 1rem;
+  border: none;
+  background: var(--sr-table-row-bg);
+  line-height: 1.15rem;
+  font-size: 0.9375rem;
+}
+
+/* Search Table Columns */
+.cl-file {
+  padding-right: 0;
+  width: 7rem;
+  overflow: hidden;
+}
+
+/* Crown Land File Number Arrow */
+.cl-arrow {
+  position: relative;
+  display: inline-block;
+  height: var(--cl-arrow-size);
+  padding-top: 0.55rem;
+  padding-right: 0.65rem;
+  padding-left: 1rem;
+  color: var(--cl-arrow-font-color);
+  background: var(--cl-arrow-color);
+  font-weight: bold;
+}
+
+.cl-file .cl-arrow {
+  top: -0.55rem;
+
+  /* Offset top padding */
+  left: -1rem;
+
+  /* Offset left padding */
+}
+
+.disp {
+  width: 5.5rem;
+}
+
+.status {
+  max-width: 13rem;
+}
+
+.actions {
+  width: 9rem;
+  text-align: right;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.actions .btn {
+  margin-top: -0.35rem;
+  width: 6rem;
+  border-width: 2px;
+  font-weight: 700;
+}
+
+.app-details {
+  border-top: 4px solid #fff;
+}
+
+.app-comment-details td {
+  padding-top: 0;
+  padding-bottom: 1.25rem;
+}
+
+.app-comment-details td a {
+  color: #007bff;
+}
+
+.app-comment-details span+.loading-comment-info {
+  display: none;
+}
+
+.cl-arrow::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: calc(var(--cl-arrow-size) * -1);
+  display: block;
+  width: var(--cl-arrow-size);
+  height: var(--cl-arrow-size);
+  border-style: solid;
+  border-top-width: calc(var(--cl-arrow-size) / 2);
+  border-top-color: transparent;
+  border-bottom-width: calc(var(--cl-arrow-size) / 2);
+  border-bottom-color: transparent;
+  border-left-width: calc(var(--cl-arrow-size) / 2);
+  border-left-color: var(--cl-arrow-color);
+}
+
+.dropdown-menu {
+  padding-top: 0;
+  padding-bottom: 0;
+  border: none;
+  box-shadow: 0 0 0.5rem #999;
+  font-size: 0.875rem;
+}
+
+.dropdown-menu button {
+  padding: 0.5rem 1rem;
+  color: #007bff;
+}
+
+.dropdown-menu button i {
+  margin-top: -0.15rem;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+  margin-left: -0.25rem;
+  font-size: 1.25rem;
+  width: 1.5rem;
+}
+
+.dropdown-menu button:hover {
+  color: #fff;
+  background: #007bff;
+}
+
+.dropdown-item:first-child {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.dropdown-item:last-child {
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}

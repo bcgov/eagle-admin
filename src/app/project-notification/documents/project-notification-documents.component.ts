@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
@@ -20,10 +20,10 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-project-notification-documents',
   standalone: true,
-  imports: [RouterModule, TableTemplateComponent, CommonModule],
+  imports: [RouterModule, TableTemplateComponent, CommonModule, NgbDropdownModule],
   templateUrl: './project-notification-documents.component.html',
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./project-notification-documents.component.scss'],
+  styleUrls: ['./project-notification-documents.component.css'],
 
 })
 export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy {

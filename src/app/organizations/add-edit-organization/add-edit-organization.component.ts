@@ -12,7 +12,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 
 @Component({
   templateUrl: './add-edit-organization.component.html',
-  styleUrls: ['./add-edit-organization.component.scss'],
+  styleUrls: ['./add-edit-organization.component.css'],
   standalone: true,
   imports: [
     CommonModule,
