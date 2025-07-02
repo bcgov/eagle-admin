@@ -1,7 +1,7 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormTab2002Component } from './form-tab-2002.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -62,31 +62,29 @@ describe('FormTab2002', () => {
   };
 
   beforeEach(waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [
-          FormTab2002Component,
-        ],
-        imports: [
-          MatSnackBarModule,
-          RouterTestingModule,
-          FormsModule,
-          ReactiveFormsModule,
-          NgbModule,
-        ],
-        providers: [
-          { provide: ApiService, useValue: mockApiService },
-          { provide: ConfigService, useValue: mockConfigService },
-          { provide: StorageService, useValue: mockStorageService },
-          { provide: ProjectService, useValue: mockProjectService },
-          { provide: NgbActiveModal, useValue: {} },
-          { provide: ActivatedRoute, useValue: mockActivatedRoute },
-          { provide: NavigationStackUtils, useValue: mockNavigationStackUtils },
-          { provide: Utils, useValue: utils }
-        ],
-        schemas: [NO_ERRORS_SCHEMA]
-      })
-        .compileComponents();
-    }));
+    TestBed.configureTestingModule({
+      imports: [
+        FormTab2002Component,
+        MatSnackBarModule,
+        FormsModule,
+        ReactiveFormsModule,
+        NgbModule,
+      ],
+      providers: [
+        provideRouter([]),
+        { provide: ApiService, useValue: mockApiService },
+        { provide: ConfigService, useValue: mockConfigService },
+        { provide: StorageService, useValue: mockStorageService },
+        { provide: ProjectService, useValue: mockProjectService },
+        { provide: NgbActiveModal, useValue: {} },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        { provide: NavigationStackUtils, useValue: mockNavigationStackUtils },
+        { provide: Utils, useValue: utils }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    })
+      .compileComponents();
+  }));
   beforeEach(() => {
     // This calls ngoninit but has no data so proponent is not pre populated
     fixture = TestBed.createComponent(FormTab2002Component);

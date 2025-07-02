@@ -69,17 +69,15 @@ describe('ProjectListTableRowsComponent', () => {
   const tableData = new TableObject(ProjectListTableRowsComponent, projectList, paginationData);
 
   beforeEach(waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [
-          ProjectListTableRowsComponent
-        ],
-        providers: [
-          { provide: Router, useValue: routerSpy }
-        ],
-        schemas: [NO_ERRORS_SCHEMA]
-      })
-        .compileComponents();
-    }));
+    TestBed.configureTestingModule({
+      imports: [ProjectListTableRowsComponent],
+      providers: [
+        { provide: Router, useValue: routerSpy }
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    })
+      .compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProjectListTableRowsComponent);

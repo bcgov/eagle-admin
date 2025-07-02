@@ -2,7 +2,6 @@ import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LoginComponent } from './login.component';
 import { FormsModule } from '@angular/forms';
-import { RouterTestingModule } from '@angular/router/testing';
 import { ApiService } from 'src/app/services/api';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { Router } from '@angular/router';
@@ -11,34 +10,32 @@ import { ConfigService } from 'src/app/services/config.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
+// Use createSpyObj for router and keycloak
+const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+const keycloakSpy = jasmine.createSpyObj('KeycloakService', ['keycloakEnabled']);
+
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
 
-  const routerSpy = {
-    navigate: jasmine.createSpy('navigate')
-  };
-
-  const mockKeycloakService = {
-    keycloakEnabled: () => {
-      return false;
-    }
-  };
-
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [LoginComponent],
-    imports: [FormsModule, RouterTestingModule],
-    providers: [
-        { provide: ApiService },
-        { provide: KeycloakService, useValue: mockKeycloakService },
+      imports: [
+        LoginComponent,
+        FormsModule
+      ],
+      providers: [
+        ApiService,
+        { provide: KeycloakService, useValue: keycloakSpy },
         { provide: Router, useValue: routerSpy },
         ConfigService,
         Utils,
         provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting()
-    ]
-})
+        provideHttpClientTesting(),
+        // Add provideRouter for router testing
+        require('@angular/router').provideRouter([])
+      ]
+    })
       .compileComponents();
   }));
 
@@ -53,10 +50,8 @@ describe('LoginComponent', () => {
   });
 
   describe('when keycloak is enabled', () => {
-    let service: KeycloakService;
     beforeEach(() => {
-      service = TestBed.get(KeycloakService);
-      spyOn(service, 'keycloakEnabled').and.returnValue(true);
+      keycloakSpy.keycloakEnabled.and.returnValue(true);
     });
 
     it('redirects to root', () => {

@@ -8,9 +8,9 @@ describe('SearchHelpComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SearchHelpComponent ]
+      imports: [SearchHelpComponent]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

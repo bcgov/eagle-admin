@@ -8,7 +8,7 @@ describe('ConfirmComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ConfirmComponent],
+      imports: [ConfirmComponent],
       providers: [
         { provide: NgbActiveModal, useValue: {} }
       ]

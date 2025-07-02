@@ -1,5 +1,5 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { ApiService } from 'src/app/services/api';
@@ -55,28 +55,26 @@ describe('DocumentApplicationSortComponent', () => {
 
 
   beforeEach(waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [
-          RouterTestingModule,
-          NzPaginationModule,
-          MatSnackBarModule
-        ],
-        declarations: [
-          DocumentApplicationSortComponent,
-          TableTemplateComponent
-        ],
-        providers: [
-          { provide: ApiService, useValue: mockApiService },
-          { provide: StorageService, useValue: mockStorageService },
-          { provide: SearchService, useValue: mockSearchService },
-          { provide: DocumentService, useValue: mockDocumentService },
-          { provide: ConfigService, useValue: mockConfigService },
-          { provide: TableTemplateUtils, useValue: mockTableTemplateUtils },
-          { provide: Utils, useValue: utils }
-        ]
-      })
+    TestBed.configureTestingModule({
+      imports: [
+        DocumentApplicationSortComponent,
+        NzPaginationModule,
+        MatSnackBarModule,
+        TableTemplateComponent
+      ],
+      providers: [
+        provideRouter([]),
+        { provide: ApiService, useValue: mockApiService },
+        { provide: StorageService, useValue: mockStorageService },
+        { provide: SearchService, useValue: mockSearchService },
+        { provide: DocumentService, useValue: mockDocumentService },
+        { provide: ConfigService, useValue: mockConfigService },
+        { provide: TableTemplateUtils, useValue: mockTableTemplateUtils },
+        { provide: Utils, useValue: utils }
+      ]
+    })
       .compileComponents();
-    }));
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DocumentApplicationSortComponent);

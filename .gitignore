@@ -52,3 +52,7 @@ Thumbs.db
 /shell_helper.sh
 
 /.angular
+
+convert-scss-vars-to-css-vars.sh
+convert-slash-comments.sh
+migrate-scss-to-css.sh

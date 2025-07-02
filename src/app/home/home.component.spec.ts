@@ -1,7 +1,7 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { ProjectService } from 'src/app/services/project.service';
 import { of } from 'rxjs';
 
@@ -15,10 +15,10 @@ describe('HomeComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [HomeComponent],
-      imports: [RouterTestingModule],
+      imports: [HomeComponent],
       providers: [
-        { provide: ProjectService, useValue: mockProjectService}
+        { provide: ProjectService, useValue: mockProjectService },
+        provideRouter([])
       ]
     })
       .compileComponents();
