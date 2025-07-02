@@ -1,9 +1,16 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { MatMenuModule } from '@angular/material/menu';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-dropdown-template',
     templateUrl: './dropdown-template.component.html',
-    styleUrls: ['./dropdown-template.component.scss']
+    styleUrls: ['./dropdown-template.component.css'],
+    standalone: true,
+    imports: [
+      CommonModule,
+      MatMenuModule
+    ]
 })
 
 export class DropdownTemplateComponent {

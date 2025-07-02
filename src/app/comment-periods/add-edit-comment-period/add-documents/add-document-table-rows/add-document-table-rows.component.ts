@@ -1,12 +1,17 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { FormsModule } from '@angular/forms';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 
 @Component({
-  selector: 'tbody[app-add-document-table-rows]',
-  templateUrl: './add-document-table-rows.component.html',
-  styleUrls: ['./add-document-table-rows.component.scss']
+    selector: 'tbody[app-add-document-table-rows]',
+    templateUrl: './add-document-table-rows.component.html',
+    styleUrls: ['./add-document-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule, FormsModule, ListConverterPipe],
 })
 
 export class AddDocumentTableRowsComponent implements OnInit, TableComponent {

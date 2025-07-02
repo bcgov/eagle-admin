@@ -1,9 +1,11 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subscription } from 'rxjs';
-import moment from 'moment-timezone';
+import { UntypedFormGroup, UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { FileUploadComponent } from '../../file-upload/file-upload.component';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
 import { ApiService } from 'src/app/services/api';
 import { CommentService } from 'src/app/services/comment.service';
@@ -11,11 +13,23 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
+import moment from 'moment-timezone';
+import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-add-comment',
-  templateUrl: './add-comment.component.html',
-  styleUrls: ['./add-comment.component.scss']
+    selector: 'app-add-comment',
+    templateUrl: './add-comment.component.html',
+    styleUrls: ['./add-comment.component.css'],
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      ReactiveFormsModule,
+      RouterModule,
+      NgbDatepickerModule,
+      MatSnackBarModule,
+      FileUploadComponent
+    ]
 })
 
 export class AddCommentComponent implements OnInit, OnDestroy {

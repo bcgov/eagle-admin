@@ -1,0 +1,23 @@
+@import url("src/assets/styles/base/base.css");
+
+tr {
+  background: transparent;
+  transition: 0.3s;
+}
+
+tr .accordion__collapse-header {
+  background: var(--table-row-bg);
+}
+
+tr:nth-child(even) {
+  background: var(--table-alt-row-bg);
+}
+
+tr:hover {
+  cursor: pointer;
+  background-color: #e2f1ff;
+}
+
+.inputCheckBox {
+  cursor: pointer;
+}

@@ -1,0 +1,31 @@
+/* ink bar */
+
+/* Removed ::ng-deep for valid CSS. Move this rule to a global stylesheet if needed. */
+
+/* .mat-ink-bar {
+  background-color: #FCBA19 !important;
+} */
+
+textarea,
+input[type="text"] {
+  border-radius: 2px;
+  box-shadow: none;
+  appearance: none;
+  border: 1px solid #ababab;
+  font-size: 1rem;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+  border-color: #5091cd;
+}
+
+h1 {
+  margin-bottom: 16px;
+}
+
+.date {
+  font-size: 1rem;
+  color: #FCB118;
+}

@@ -8,25 +8,25 @@
       <h3 class="filter-title">FILTER RESULTS:</h3>
       <div class="btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-primary" [class.active]="filter.pending">
-          <input type="checkbox" (click)="togglePending()" autocomplete="off">Pending
+          <input type="checkbox" style="display: none;" (click)="togglePending()" autocomplete="off">Pending
         </label>
       </div>
       &nbsp;
       <div class="btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-primary" [class.active]="filter.published">
-          <input type="checkbox" (click)="togglePublished()" autocomplete="off">Published
+          <input type="checkbox" style="display: none;" (click)="togglePublished()" autocomplete="off">Published
         </label>
       </div>
       &nbsp;
       <div class="btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-primary" [class.active]="filter.deferred">
-          <input type="checkbox" (click)="toggleDeferred()" autocomplete="off">Deferred
+          <input type="checkbox" style="display: none;" (click)="toggleDeferred()" autocomplete="off">Deferred
         </label>
       </div>
       &nbsp;
       <div class="btn-group-toggle" data-toggle="buttons">
         <label class="btn btn-primary" [class.active]="filter.rejected">
-          <input type="checkbox" (click)="toggleRejected()" autocomplete="off">Rejected
+          <input type="checkbox" style="display: none;" (click)="toggleRejected()" autocomplete="off">Rejected
         </label>
       </div>
     </div>

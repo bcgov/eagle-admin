@@ -1,6 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
+import { EditorModule } from '@tinymce/tinymce-angular';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RecentActivity } from 'src/app/models/recentActivity';
@@ -12,9 +17,19 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-add-edit-activity',
-  templateUrl: './add-edit-activity.component.html',
-  styleUrls: ['./add-edit-activity.component.scss']
+    selector: 'app-add-edit-activity',
+    templateUrl: './add-edit-activity.component.html',
+    styleUrls: ['./add-edit-activity.component.css'],
+    standalone: true,
+    imports: [
+      CommonModule,
+      FormsModule,
+      ReactiveFormsModule,
+      RouterModule,
+      EditorModule,
+      NgbDatepickerModule,
+      MatSlideToggleModule
+    ]
 })
 export class AddEditActivityComponent implements OnInit, OnDestroy {
   public myForm: UntypedFormGroup;

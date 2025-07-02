@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDate } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import moment from 'moment-timezone';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'src/app/services/config.service';
@@ -11,9 +11,12 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-  selector: 'app-document-edit',
-  templateUrl: './document-edit.component.html',
-  styleUrls: ['./document-edit.component.scss']
+    selector: 'app-document-edit',
+    standalone: true,
+    imports: [RouterModule],
+    templateUrl: './document-edit.component.html',
+    styleUrls: ['./document-edit.component.css'],
+    
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

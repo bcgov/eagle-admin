@@ -1,0 +1,52 @@
+@import url("src/assets/styles/base/base.css");
+
+.app-footer {
+  background: var(--bg-dark);
+  border-top: none;
+  color: var(--footer-color);
+  position: relative;
+}
+.app-footer .container {
+  padding: 0.5rem 1.5rem;
+}
+.app-footer ul {
+  padding: 0;
+  font-size: 0.875rem;
+  list-style-type: none;
+  text-align: center;
+}
+.app-footer ul li {
+  margin-bottom: 0.25rem;
+}
+.app-footer a {
+  color: var(--footer-color);
+}
+.app-footer a:focus,
+.app-footer a:hover {
+  color: var(--gold);
+}
+.app-footer .footer-admin {
+  margin: 0;
+  padding: 0;
+}
+.app-footer .footer-admin .gov-links {
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+.app-footer .footer-admin .gov-links li {
+  display: inline-block;
+  margin: 0;
+  line-height: 1rem;
+}
+.app-footer .footer-admin .gov-links li::after {
+  position: relative;
+  top: -1px;
+  display: inline-block;
+  margin-left: 0.5rem;
+  margin-right: 0.25rem;
+  content: '|';
+}
+.app-footer .footer-admin .gov-links li:last-child::after {
+  display: none;
+}

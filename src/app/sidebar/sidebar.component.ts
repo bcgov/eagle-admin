@@ -1,15 +1,22 @@
 import { Component, HostBinding, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { KeycloakService } from '../services/keycloak.service';
 import { SideBarService } from '../services/sidebar.service';
 import { StorageService } from '../services/storage.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.scss']
+  styleUrls: ['./sidebar.component.css'],
+  imports: [
+    CommonModule,
+    RouterModule,
+  ],
+  standalone: true
 })
 
 export class SidebarComponent implements OnInit, OnDestroy {
@@ -61,8 +68,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       })
     );
 
-    const roles = this.keycloakService.getUserRoles();
-    if (roles !== null && roles.includes('inspector')) {
+    let roles: string[] = [];
+    try {
+      roles = this.keycloakService.getUserRoles() || [];
+    } catch (e) {
+      roles = [];
+    }
+    if (roles.includes('inspector')) {
       this.isInspectorRole = true;
     }
   }

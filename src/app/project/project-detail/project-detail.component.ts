@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
@@ -15,11 +15,15 @@ import { ProjectService } from 'src/app/services/project.service';
 import { SideBarService } from 'src/app/services/sidebar.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
-  selector: 'app-project-detail',
-  templateUrl: './project-detail.component.html',
-  styleUrls: ['./project-detail.component.scss']
+    selector: 'app-project-detail',
+    templateUrl: './project-detail.component.html',
+    styleUrls: ['./project-detail.component.css'],
+    standalone: true,
+    imports: [CommonModule, RouterModule, NgbDropdownModule],
 })
 
 

@@ -4,11 +4,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DocumentService } from 'src/app/services/document.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { CommonModule } from '@angular/common';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'tbody[app-document-table-rows]',
-  templateUrl: './project-document-table-rows.component.html',
-  styleUrls: ['./project-document-table-rows.component.scss']
+    selector: 'tbody[app-document-table-rows]',
+    templateUrl: './project-document-table-rows.component.html',
+    styleUrls: ['./project-document-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule, ListConverterPipe, FormsModule],
 })
 
 export class DocumentTableRowsComponent implements OnInit, TableComponent {

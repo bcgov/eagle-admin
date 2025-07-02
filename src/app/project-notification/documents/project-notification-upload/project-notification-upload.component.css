@@ -1,0 +1,43 @@
+@import url("src/assets/styles/components/add-edit.css");
+
+.label-pair {
+    width: 100%;
+}
+
+.badge-published{
+    padding: 5px 9px;
+    color: white;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+}
+
+.btn-unpublish{
+    background-color: white;
+    color: #D8292F;
+    border-color: #D8292F;
+    border-width: 1px;
+}
+
+.btn-publish{
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-cancel{
+    background-color: white;
+    color: #007bff;
+    border-color: #007bff;
+    border-width: 1px;
+}
+
+.legislation-label {
+    font-weight: 400;
+}
+
+.pn-info-block {
+    padding: 20px;
+
+    @media (width <= 960px) {
+        padding: 20px 0;
+    }
+}

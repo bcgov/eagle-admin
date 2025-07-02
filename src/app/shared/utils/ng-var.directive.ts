@@ -5,9 +5,8 @@ import { Directive, Input, ViewContainerRef, TemplateRef } from '@angular/core';
 //
 
 @Directive({
-  selector: '[ngVar]'
+    selector: '[ngVar]'
 })
-
 export class VarDirective {
   context: any = {};
 

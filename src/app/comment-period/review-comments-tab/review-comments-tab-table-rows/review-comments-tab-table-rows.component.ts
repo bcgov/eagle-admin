@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
@@ -6,9 +7,12 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-review-comments-tab-table-rows]',
-  templateUrl: './review-comments-tab-table-rows.component.html',
-  styleUrls: ['./review-comments-tab-table-rows.component.scss']
+    selector: 'tbody[app-review-comments-tab-table-rows]',
+    templateUrl: './review-comments-tab-table-rows.component.html',
+    styleUrls: ['./review-comments-tab-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule],
+    
 })
 
 export class ReviewCommentsTabTableRowsComponent implements OnInit, TableComponent {

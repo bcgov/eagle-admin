@@ -1,13 +1,17 @@
 import { Component, Input, OnInit, } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 
 import { Router } from '@angular/router';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
-  selector: 'tbody[app-document-table-rows]',
-  templateUrl: './search-document-table-rows.component.html',
-  styleUrls: ['./search-document-table-rows.component.scss']
+    selector: 'tbody[app-document-table-rows]',
+    templateUrl: './search-document-table-rows.component.html',
+    styleUrls: ['./search-document-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule, ListConverterPipe],
 })
 
 export class SearchDocumentTableRowsComponent implements OnInit, TableComponent {

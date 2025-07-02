@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import moment from 'moment';
@@ -13,6 +13,12 @@ import { TableObject } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 class ActivityFilterObject {
   constructor(
@@ -27,8 +33,11 @@ class ActivityFilterObject {
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
-  styleUrls: ['./activity.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./activity.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
+
 })
 export class ActivityComponent implements OnDestroy {
   private subscriptions = new Subscription();

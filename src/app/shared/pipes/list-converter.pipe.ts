@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { ConfigService } from 'src/app/services/config.service';
 
 @Pipe({
-  name: 'listConverter'
+    name: 'listConverter',
+    
 })
 export class ListConverterPipe implements PipeTransform {
   private configService: ConfigService;

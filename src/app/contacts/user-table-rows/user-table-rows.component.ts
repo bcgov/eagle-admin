@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -5,9 +6,12 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
-  selector: 'app-user-table-rows',
-  templateUrl: './user-table-rows.component.html',
-  styleUrls: ['./user-table-rows.component.scss']
+    selector: 'app-user-table-rows',
+    templateUrl: './user-table-rows.component.html',
+    styleUrls: ['./user-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule],
+    
 })
 export class UserTableRowsComponent implements OnInit, TableComponent {
   @Input() data: TableObject;

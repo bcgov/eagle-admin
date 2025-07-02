@@ -1,6 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, ViewEncapsulation } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { of, Subscription } from 'rxjs';
 
@@ -19,6 +23,7 @@ import { TableParamsObject } from '../shared/components/table-template/table-par
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
+import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -47,9 +52,18 @@ class SearchFilterObject {
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
-  styleUrls: ['./search.component.scss'],
+  styleUrls: ['./search.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  standalone: true,
+  imports: [
+    RouterModule,
+    FormsModule,
+    CommonModule,
+    NgSelectModule,
+    NgbDatepickerModule,
+    TableTemplateComponent
+  ]
 })
 
 export class SearchComponent implements OnInit, OnDestroy, DoCheck {

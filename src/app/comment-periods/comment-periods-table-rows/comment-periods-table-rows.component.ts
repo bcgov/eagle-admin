@@ -1,13 +1,17 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { CommentStatsComponent } from 'src/app/shared/components/comment-stats/comment-stats.component';
 
 @Component({
     selector: 'tbody[app-comment-periods-table-rows]',
     templateUrl: './comment-periods-table-rows.component.html',
-    styleUrls: ['./comment-periods-table-rows.component.scss']
+    styleUrls: ['./comment-periods-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule, CommentStatsComponent],
 })
 
 export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent {

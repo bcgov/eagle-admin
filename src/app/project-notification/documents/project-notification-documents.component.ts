@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
@@ -14,12 +14,17 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { Utils } from 'src/app/shared/utils/utils';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { Document } from 'src/app/models/document';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-project-notification-documents',
+  standalone: true,
+  imports: [RouterModule, TableTemplateComponent, CommonModule, NgbDropdownModule],
   templateUrl: './project-notification-documents.component.html',
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./project-notification-documents.component.scss']
+  styleUrls: ['./project-notification-documents.component.css'],
+
 })
 export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy {
   // Must do this to expose the constants to the template,

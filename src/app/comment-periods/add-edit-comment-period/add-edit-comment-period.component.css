@@ -1,0 +1,50 @@
+@import url("src/assets/styles/components/add-edit.css");
+
+.input-group-prepend {
+  flex-wrap: wrap;
+}
+.input-group-prepend button {
+  margin: 0 10px 10px 0;
+}
+
+.main-search-field {
+  margin-bottom: 12px;
+}
+
+.panel {
+  border: 1px solid green;
+}
+
+textarea,
+input[type="text"] {
+  border-radius: 2px;
+  box-shadow: none;
+  appearance: none;
+  border: 1px solid #ababab;
+  font-size: 1rem;
+  height: 40px;
+}
+textarea:focus,
+input[type="text"]:focus {
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+  border-color: #5091cd;
+}
+
+.btn-outline-secondary {
+  color: #007bff;
+  border-color: #007bff;
+}
+.btn-outline-secondary i {
+  margin-right: 4px;
+  font-size: 20px;
+}
+.btn-outline-secondary:disabled {
+  border-color: #6c757d;
+  color: #6c757d;
+}
+
+#removeDoc {
+  vertical-align: middle;
+  cursor: pointer;
+}
+

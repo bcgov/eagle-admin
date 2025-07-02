@@ -1,0 +1,22 @@
+@import url("src/assets/styles/base/base.css");
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.btn-group-toggle>.btn {
+    margin-bottom: 0;
+    background: none;
+    color: #13477b;
+    border: 1px solid #858b99;
+    font-weight: 600;
+
+    &:hover {
+        background: #fcb118;
+    }
+
+    &.active {
+        background: #235383;
+        color: #fff;
+    }
+}

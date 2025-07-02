@@ -1,0 +1,50 @@
+@import url("bootstrap/dist/css/bootstrap.css");
+
+/* Base */
+@import url("src/assets/styles/base/base.css");
+
+/* Helpers */
+@import url("src/assets/styles/base/helpers.css");
+
+/* Layout */
+@import url("src/assets/styles/layout/layout.css");
+
+/* Typography */
+@import url("src/assets/styles/base/typography.css");
+
+/* Components */
+@import url("src/assets/styles/components/accordion.css");
+@import url("src/assets/styles/components/aside.css");
+@import url("src/assets/styles/components/badge.css");
+@import url("src/assets/styles/components/buttons.css");
+@import url("src/assets/styles/components/card.css");
+@import url("src/assets/styles/components/doc-list.css");
+@import url("src/assets/styles/components/filter-bar.css");
+@import url("src/assets/styles/components/form-elements.css");
+@import url("src/assets/styles/components/lists.css");
+@import url("src/assets/styles/components/material.css");
+@import url("src/assets/styles/components/modal.css");
+@import url("src/assets/styles/components/multi-select.css");
+@import url("src/assets/styles/components/pagination.css");
+@import url("src/assets/styles/components/spinner.css");
+@import url("src/assets/styles/components/tab-nav.css");
+@import url("src/assets/styles/components/table.css");
+
+/* Third-party Components */
+
+/* Required for Angular Material styling: (ref: https://material.angular.io/guide/theming) */
+@import url("@angular/material/prebuilt-themes/deeppurple-amber.css");
+
+/* For the ng-select multiselect component. */
+@import url("@ng-select/ng-select/themes/default.theme.css");
+
+/* Fonts must be imported before any other rules */
+@import url("assets/fonts/BCSans.css");
+
+.modal-backdrop.custom-backdrop {
+  background-color: rgb(0 0 0 / 50%) !important;
+}
+
+body {
+  font-family: BCSans, Arial, sans-serif;
+}

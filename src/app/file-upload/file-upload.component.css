@@ -1,0 +1,94 @@
+@import url("src/assets/styles/base/base.css");
+
+.files-info {
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: small;
+}
+
+.material-icons {
+  vertical-align: middle;
+}
+
+.dragarea,
+.droparea {
+  padding: 1rem;
+  border-style: dashed;
+  border-radius: 0.4rem;
+  border-width: 3px;
+  border-color: #ddd;
+  background-color: #fff;
+  color: #bbb;
+  font-size: 1rem;
+}
+
+.dragarea a,
+.droparea a {
+  color: #007bff;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.dragarea {
+  transition: all ease-out 0.2s;
+}
+
+.droparea {
+  border-color: var(--fc-focus-border-color);
+  background-color: #eff;
+}
+
+.files-list {
+  margin-top: 1rem;
+}
+
+.files-list ul {
+  list-style: decimal;
+  line-height: 1.7;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.errors-list ul li,
+.errors-list ul li span {
+  display: flex;
+}
+
+.files-list ul li .name {
+  padding-right: 0.5rem;
+  background-color: var(--white);
+}
+
+.files-list ul li .value {
+  float: right;
+  clear: right;
+  padding-left: 0.5rem;
+  background-color: var(--white);
+  margin-top: -2px;
+}
+
+.files-list ul li .value .btn i+span {
+  vertical-align: text-top;
+}
+
+.errors-list {
+  margin-top: 1rem;
+  margin-bottom: -1rem;
+}
+
+.errors-list ul {
+  list-style: none;
+  line-height: 1.7;
+  padding-left: 20px;
+  color: #f00;
+}
+
+.btn-xs {
+  padding: 0 5px;
+  font-size: 0.83rem;
+  border-radius: 3px;
+}
+
+.btn-xs .material-icons {
+  font-size: large;
+}

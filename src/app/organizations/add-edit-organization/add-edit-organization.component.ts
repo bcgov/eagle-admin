@@ -1,6 +1,9 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { EditorModule } from '@tinymce/tinymce-angular';
 import { Subscription } from 'rxjs';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
@@ -9,7 +12,13 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 
 @Component({
   templateUrl: './add-edit-organization.component.html',
-  styleUrls: ['./add-edit-organization.component.scss']
+  styleUrls: ['./add-edit-organization.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    EditorModule
+  ]
 })
 
 export class AddEditOrganizationComponent implements OnInit, OnDestroy {

@@ -2,7 +2,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { ConfigService } from 'src/app/services/config.service';
 
 @Pipe({
-  name: 'orgName'
+    name: 'orgName',
+    
 })
 export class OrgNamePipe implements PipeTransform {
   private configService: ConfigService;

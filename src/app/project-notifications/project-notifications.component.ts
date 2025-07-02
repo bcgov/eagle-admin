@@ -7,11 +7,18 @@ import { SearchTerms } from '../models/search';
 import { TableObject } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-notification-projects',
+  standalone: true,
+  imports: [FormsModule, CommonModule, TableTemplateComponent, RouterModule],
   templateUrl: './project-notifications.component.html',
-  styleUrls: ['./project-notifications.component.scss']
+  styleUrls: ['./project-notifications.component.css'],
+
 })
 export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

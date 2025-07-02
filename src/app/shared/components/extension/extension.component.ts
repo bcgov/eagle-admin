@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { from, Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
@@ -12,7 +13,14 @@ import { Utils } from '../../utils/utils';
 @Component({
   selector: 'app-extension',
   templateUrl: './extension.component.html',
-  styleUrls: ['./extension.component.scss']
+  styleUrls: ['./extension.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NgbDatepickerModule
+  ]
 })
 export class ExtensionComponent implements OnInit, OnDestroy {
 

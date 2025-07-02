@@ -1,17 +1,31 @@
 import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
 import { ApiService } from 'src/app/services/api';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { SafeHtmlPipe } from 'src/app/shared/pipes/safe-html-converter.pipe';
+import { CommentStatsComponent } from 'src/app/shared/components/comment-stats/comment-stats.component';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-comment-period-details-tab',
-  templateUrl: './comment-period-details-tab.component.html',
-  styleUrls: ['./comment-period-details-tab.component.scss']
+    selector: 'app-comment-period-details-tab',
+    templateUrl: './comment-period-details-tab.component.html',
+    styleUrls: ['./comment-period-details-tab.component.css'],
+    standalone: true,
+    imports: [
+      CommonModule,
+      SafeHtmlPipe,
+      CommentStatsComponent,
+      ListConverterPipe,
+      NgbDropdownModule,
+      RouterModule
+    ]
 })
 
 export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {

@@ -13,10 +13,11 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
 
 @Component({
-  selector: 'app-add-documents',
-  templateUrl: './add-documents.component.html',
-  styleUrls: ['./add-documents.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    selector: 'app-add-documents',
+    templateUrl: './add-documents.component.html',
+    styleUrls: ['./add-documents.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    
 })
 export class AddDocumentComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

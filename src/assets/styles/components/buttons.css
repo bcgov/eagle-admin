@@ -1,0 +1,235 @@
+.btn {
+  border-radius: 0.25rem;
+  font-weight: 400;
+  transition: all linear 0.2s;
+  cursor: pointer;
+}
+
+.btn.inverted {
+  color: var(--white);
+  border: 2px solid var(--white);
+  background: transparent;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.btn.inverted:active,
+.btn.inverted:focus,
+.btn.inverted:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.btn i {
+  vertical-align: middle;
+}
+
+.btn-icon i {
+  margin-top: -0.1rem;
+}
+
+.btn:disabled {
+  pointer-events: none;
+}
+
+.btn-inverted {
+  background: var(--gold);
+  text-transform: uppercase;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+main .btn-default {
+  padding: 0.5rem;
+}
+
+.slide-r-btn,
+.slide-l-btn {
+  padding: 0.5rem;
+  border-radius: 0.2rem;
+  transition: all ease-out 0.2s;
+}
+
+.slide-r-btn img,
+.slide-r-btn i,
+.slide-r-btn span,
+.slide-l-btn img,
+.slide-l-btn i,
+.slide-l-btn span {
+  transition: all ease-out 0.2s;
+}
+
+.slide-r-btn img,
+.slide-r-btn i {
+  opacity: 0;
+  margin-left: 0.25rem;
+  transform: translateX(20px);
+}
+
+.content-btn-alt i {
+  margin-top: -0.2rem;
+  margin-left: -0.2rem;
+}
+
+.slide-r-btn span {
+  display: inline-block;
+  margin-left: 0.25rem;
+  transform: translateX(12px);
+}
+
+.slide-l-btn img,
+.slide-l-btn i {
+  opacity: 0;
+  margin-right: 0.25rem;
+  transform: translateX(-20px);
+}
+
+.slide-l-btn span {
+  display: inline-block;
+  margin-right: 0.25rem;
+  transform: translateX(-12px);
+}
+
+.slide-r-btn:hover img,
+.slide-r-btn:focus img,
+.slide-r-btn:hover i,
+.slide-r-btn:focus i,
+.slide-r-btn:hover span,
+.slide-r-btn:focus span,
+.slide-l-btn:hover img,
+.slide-l-btn:focus img,
+.slide-l-btn:hover i,
+.slide-l-btn:focus i,
+.slide-l-btn:hover span,
+.slide-l-btn:focus span {
+  opacity: 1;
+  transform: translateX(0);
+  text-decoration: none;
+}
+
+@media (width <=1024px) {
+  .slide-r-btn img,
+  .slide-r-btn i,
+  .slide-r-btn span,
+  .slide-l-btn img,
+  .slide-l-btn i,
+  .slide-l-btn span {
+    transform: translateX(0);
+  }
+
+  .slide-r-btn img,
+  .slide-r-btn i,
+  .slide-l-btn img,
+  .slide-l-btn i {
+    opacity: 1;
+  }
+}
+
+.content-btns {
+  margin-top: 3rem;
+}
+
+.content-btn {
+  padding: 0.5rem;
+  background: var(--lightgray);
+  color: var(--link-color);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%),
+    0 1px 5px 0 rgb(0 0 0 / 12%),
+    0 3px 1px -2px rgb(0 0 0 / 20%);
+}
+
+.content-btn:focus,
+.content-btn:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+.content-btn:not([href], [tabindex]) {
+  color: var(--link-color);
+}
+
+.content-btn-alt {
+  padding: 0.35rem 1rem;
+  color: #007bff;
+  border: 2px solid #007bff;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.content-btn-alt:focus,
+.content-btn-alt:hover {
+  color: var(--white);
+  border-color: #007bff;
+  background: #007bff;
+}
+
+.content-btn-alt.danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.content-btn-alt.danger:focus,
+.content-btn-alt.danger:hover {
+  color: var(--white);
+  border-color: #dc3545;
+  background: #dc3545;
+}
+
+.scroll-top-btn {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  padding: 0.5rem;
+  opacity: 0;
+  border-color: var(--gold);
+  background: var(--gold);
+  transform: translateY(1rem);
+  transition: all ease-out 0.2s;
+}
+
+.scroll-top-btn.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.submit-btn {
+  border-color: var(--gold);
+  background: var(--gold);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.btn-light {
+  background: #f1f1f1;
+}
+
+.btn-light:active,
+.btn-light:focus {
+  box-shadow: 0 0 0 0.2rem #ccc;
+}
+
+.btn-icon {
+  min-width: 2.5rem !important;
+  padding: 0.35rem 0;
+  overflow: hidden;
+  color: #808080;
+  background: transparent;
+  transition: all ease-out 0.2s;
+  cursor: pointer;
+}
+
+.btn-icon .btn-txt {
+  visibility: hidden;
+}
+
+.btn-icon:active,
+.btn-icon:focus,
+.btn-icon:hover {
+  color: #000;
+  background: #eee;
+}

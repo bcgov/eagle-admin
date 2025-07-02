@@ -1,0 +1,35 @@
+@import url("src/assets/styles/base/base.css");
+
+:host {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  font-family: BCSans, "Noto Sans", sans-serif;
+}
+
+app-toggle-button {
+  position: fixed;
+  z-index: 1000;
+  margin-top: 17px;
+  margin-left: 0;
+}
+
+@media screen and (width <= 768px) {
+  app-toggle-button {
+    margin-top: 10px;
+  }
+}
+
+.app-body {
+  background: #fff;
+  position: relative;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+@media screen and (width >= 768px) {
+  .app-body {
+    margin-top: 68px;
+  }
+}

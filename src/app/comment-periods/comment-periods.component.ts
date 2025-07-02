@@ -9,11 +9,20 @@ import { TableObject } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/comment-periods-table-rows.component';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 @Component({
-  selector: 'app-comment-periods',
-  templateUrl: './comment-periods.component.html',
-  styleUrls: ['./comment-periods.component.scss']
+    selector: 'app-comment-periods',
+    templateUrl: './comment-periods.component.html',
+    styleUrls: ['./comment-periods.component.css'],
+    standalone: true,
+    imports: [
+      CommonModule,
+      RouterModule,
+      TableTemplateComponent
+    ]
 })
 export class CommentPeriodsComponent implements OnInit, OnDestroy {
 

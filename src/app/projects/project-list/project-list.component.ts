@@ -2,6 +2,10 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 import moment from 'moment';
 import { Org } from 'src/app/models/org';
@@ -17,6 +21,7 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 class ProjectFilterObject {
   constructor(
@@ -34,9 +39,11 @@ class ProjectFilterObject {
 }
 
 @Component({
-  selector: 'app-project-list',
-  templateUrl: './project-list.component.html',
-  styleUrls: ['./project-list.component.scss']
+    selector: 'app-project-list',
+    templateUrl: './project-list.component.html',
+    styleUrls: ['./project-list.component.css'],
+    standalone: true,
+    imports: [CommonModule, FormsModule, NgSelectModule, TableTemplateComponent, NgbDatepickerModule],
 })
 export class ProjectListComponent implements OnInit, OnDestroy {
   public readonly constants = Constants;

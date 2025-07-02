@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { forkJoin, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import moment from 'moment-timezone';
@@ -10,11 +10,18 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
+import { ReactiveFormsModule } from '@angular/forms';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-project-notification-upload',
-  templateUrl: './project-notification-upload.component.html',
-  styleUrls: ['./project-notification-upload.component.scss']
+    selector: 'app-project-notification-upload',
+    standalone: true,
+    imports: [RouterModule, ReactiveFormsModule, NgbDatepickerModule, FileUploadComponent, CommonModule],
+    templateUrl: './project-notification-upload.component.html',
+    styleUrls: ['./project-notification-upload.component.css'],
+    
 })
 export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

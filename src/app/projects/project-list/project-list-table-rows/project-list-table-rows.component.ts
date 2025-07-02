@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -6,7 +7,9 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 @Component({
     selector: 'tbody[app-project-list-table-rows]',
     templateUrl: './project-list-table-rows.component.html',
-    styleUrls: ['./project-list-table-rows.component.scss']
+    styleUrls: ['./project-list-table-rows.component.css'],
+    standalone: true,
+    imports: [CommonModule],
 })
 
 export class ProjectListTableRowsComponent implements OnInit, TableComponent {

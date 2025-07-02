@@ -8,11 +8,17 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 import { Subscription } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-detail',
-  templateUrl: './detail.component.html',
-  styleUrls: ['./detail.component.scss']
+    selector: 'app-detail',
+    standalone: true,
+    imports: [RouterModule, CommonModule, NgbDropdownModule],
+    templateUrl: './detail.component.html',
+    styleUrls: ['./detail.component.css'],
+    
 })
 export class DocumentDetailComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

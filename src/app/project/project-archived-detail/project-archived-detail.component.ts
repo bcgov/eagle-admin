@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription, of } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -14,11 +14,16 @@ import { DocumentService } from 'src/app/services/document.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
+import { CommonModule } from '@angular/common';
+import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-period-banner.component';
 
 @Component({
-  selector: 'app-project-archived-detail',
-  templateUrl: './project-archived-detail.component.html',
-  styleUrls: ['./project-archived-detail.component.scss']
+    selector: 'app-project-archived-detail',
+    standalone: true,
+    imports: [RouterModule, CommonModule, CommentPeriodBannerComponent],
+    templateUrl: './project-archived-detail.component.html',
+    styleUrls: ['./project-archived-detail.component.css'],
+    
 })
 
 export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {

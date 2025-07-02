@@ -1,5 +1,5 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+import { provideRouter } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -15,7 +15,10 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 // Added the declaration of BlankComponent to be used for test routing
-@Component({ selector: 'test-blank', template: `` })
+@Component({
+  selector: 'test-blank', template: ``,
+
+})
 class BlankComponent { }
 
 describe('ReviewCommentComponent', () => {
@@ -46,15 +49,10 @@ describe('ReviewCommentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        ReviewCommentComponent,
-        TableTemplateComponent,
-        BlankComponent
-      ],
       imports: [
-        RouterTestingModule.withRoutes([// <-- Added the .withRoutes method
-          { path: 'search', component: BlankComponent }
-        ]),
+        TableTemplateComponent,
+        BlankComponent,
+        ReviewCommentComponent,
         FormsModule,
         ReactiveFormsModule,
         NgbModule,
@@ -62,6 +60,9 @@ describe('ReviewCommentComponent', () => {
         NzPaginationModule,
       ],
       providers: [
+        provideRouter([
+          { path: 'search', component: BlankComponent }
+        ]),
         { provide: ApiService, useValue: mockApiService },
         { provide: CommentService, useValue: mockCommentService },
         { provide: StorageService, useValue: mockStorageService },

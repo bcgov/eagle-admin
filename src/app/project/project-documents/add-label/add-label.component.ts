@@ -1,13 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-add-label',
-  templateUrl: './add-label.component.html',
-  styleUrls: ['./add-label.component.scss']
+    selector: 'app-add-label',
+    standalone: true,
+    imports: [RouterModule, ReactiveFormsModule],
+    templateUrl: './add-label.component.html',
+    styleUrls: ['./add-label.component.css'],
+    
 })
 export class AddLabelComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

@@ -1,0 +1,153 @@
+@import url("src/assets/styles/base/base.css");
+
+:host {
+  display: block;
+
+  /* fill the entire viewport and offset the fixed header and footer height (68px + 61px = 129px;) */
+  min-height: calc(100vh - 129px);
+  background-position: center -8rem;
+  background-size: 250%;
+  background-repeat: no-repeat;
+}
+
+@media (width >= 768px) and (orientation: portrait) {
+  :host {
+    background-size: 200%;
+    background-position: center -15rem;
+  }
+}
+
+@media (width >= 1024px) {
+  :host {
+    background-position: center -20rem;
+    background-size: 170%;
+  }
+}
+
+@media (width >= 1200px) {
+  :host {
+    background-position: center -25rem;
+    background-size: 125%;
+  }
+}
+
+/* Home Title Container */
+.home-title-container {
+  margin-bottom: 1.5rem;
+}
+
+.home-title-container h1 {
+  line-height: 2rem;
+}
+
+.home-title-container h2 {
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+.home-title-container .badge {
+  color: var(--gold);
+}
+
+@media (width >= 768px) {
+  .home-title-container {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+  }
+
+  .home-title-container h1 {
+    font-size: 2.8rem;
+    line-height: 2.5rem;
+  }
+
+  .home-title-container h2 {
+    font-size: 1.8rem;
+    line-height: 1.8rem;
+  }
+}
+
+/* Feature Blocks */
+.feature-blocks [class^="col"] {
+  padding: 0.5rem;
+}
+
+.feature-blocks .feature-block {
+  height: 100%;
+}
+
+.feature-blocks .feature-block__list {
+  margin-left: 0;
+  padding: 0;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.feature-blocks .feature-block__list-item {
+  padding: 0.2rem 0.5rem;
+  border-top: 1px solid var(--white);
+  font-size: 0.875rem;
+}
+
+@media (width >= 992px) {
+  .feature-blocks [class^="col"] {
+    padding: 1rem;
+  }
+
+  .feature-blocks .feature-block {
+    height: 17rem;
+  }
+}
+
+main {
+  color: var(--font-gray);
+}
+
+main .home-page__header {
+  margin-top: 4rem;
+}
+
+main .home-page__header h1 {
+  font-size: 2rem;
+  line-height: 2rem;
+}
+
+main .home-page__header h1 span {
+  display: inline-block;
+}
+
+main .home-page__header h2 {
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
+main .home-page__header h2 span {
+  display: inline-block;
+}
+
+@media (width >= 768px) {
+  main .home-page {
+    padding-top: 2rem;
+  }
+
+  main .home-page__header h1 {
+    font-size: 2.8rem;
+    line-height: 2.5rem;
+  }
+
+  main .home-page__header h2 {
+    font-size: 1.8rem;
+    line-height: 1.8rem;
+  }
+}
+
+@media (width >= 992px) {
+  main .home-page__header h1 {
+    font-size: 2.8rem;
+    line-height: 2.8rem;
+  }
+
+  main .home-page__header h2 {
+    line-height: 2rem;
+    font-size: 2rem;
+  }
+}

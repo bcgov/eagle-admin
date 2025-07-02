@@ -4,7 +4,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 // Filter to change newlines to HTML linebreaks.
 //
 @Pipe({
-  name: 'newlines'
+    name: 'newlines',
+    
 })
 
 export class NewlinesPipe implements PipeTransform {

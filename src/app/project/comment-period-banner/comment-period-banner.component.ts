@@ -3,9 +3,10 @@ import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
-  selector: 'app-comment-period-banner',
-  templateUrl: './comment-period-banner.component.html',
-  styleUrls: ['./comment-period-banner.component.scss']
+    selector: 'app-comment-period-banner',
+    templateUrl: './comment-period-banner.component.html',
+    styleUrls: ['./comment-period-banner.component.css'],
+    
 })
 
 export class CommentPeriodBannerComponent implements OnInit {

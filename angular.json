@@ -52,7 +52,7 @@
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
               "src/assets/fonts/BCSans.css",
-              "src/styles.scss"
+              "src/styles.css"
             ],
             "scripts": [
               "node_modules/@popperjs/core/dist/umd/popper.min.js",
@@ -84,6 +84,9 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ]
+            },
+            "development": {
+              "optimization": false
             }
           }
         },
@@ -91,11 +94,14 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "port": 4200,
-            "buildTarget": "base-app2:build"
+            "buildTarget": "base-app2:build:development"
           },
           "configurations": {
             "production": {
               "buildTarget": "base-app2:build:production"
+            },
+            "development": {
+              "buildTarget": "base-app2:build:development"
             }
           }
         },
@@ -130,7 +136,7 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
-              "src/styles.scss"
+              "src/styles.css"
             ],
             "assets": [
               "src/favicon.ico",

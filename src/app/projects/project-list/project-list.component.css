@@ -1,0 +1,457 @@
+@import url("src/assets/styles/base/base.css");
+
+.project-list__options {
+  display: flex;
+  flex: 0 0 auto;
+  padding: 1rem 0;
+}
+
+.project-list__options mat-slide-toggle {
+  white-space: normal;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.project-table .accordion__collapse-header {
+  background: transparent;
+}
+
+.project-table__project-details {
+  font-size: 0.85rem;
+}
+
+.project-table__project-details--links {
+  padding-top: 1.5rem;
+}
+
+.project-table__project-details--description {
+  margin-bottom: 1.25rem;
+}
+
+.project-table__project-details--description p {
+  margin: 0;
+  line-height: calc(0.85rem * 1.5);
+  font-size: 0.85rem;
+}
+
+.project-table__project-details--list li {
+  align-items: flex-start;
+}
+
+.project-table__project-details--list li+li {
+  border-top: 1px solid #fff;
+}
+
+.project-table__project-details--list .name,
+.project-table__project-details--list .value {
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  width: 50%;
+}
+
+.project-table__project-details--list .name {
+  font-weight: bold;
+}
+
+@media (width <=767px) {
+  .project-table {
+    table-layout: auto;
+  }
+
+  .project-table thead {
+    display: block;
+    width: 100%;
+  }
+
+  .project-table thead tr {
+    display: flex;
+  }
+
+  .project-table thead th {
+    border-top: none;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .project-table thead th.project-table__name-col {
+    flex: 1 1 auto;
+  }
+
+  .project-table__cl_file-col {
+    width: 25%;
+  }
+
+  .project-table__purpose-col,
+  .project-table__region-col,
+  .project-table__commenting-col {
+    display: none;
+  }
+
+  .project-table__status-col {
+    width: 30%;
+  }
+
+  .project-table__project-details--links .btn {
+    width: 100%;
+  }
+
+  .project-table__project-details--links .btn+.btn {
+    margin-top: 0.5rem;
+  }
+}
+
+@media (width >=768px) {
+  .project-table__cl_file-col {
+    width: 12.5%;
+  }
+
+  .project-table__purpose-col {
+    width: 25%;
+  }
+
+  .project-table__region-col {
+    width: 12.5%;
+  }
+
+  .project-table__status-col {
+    width: 14%;
+  }
+
+  .project-table__commenting-col {
+    width: 16%;
+  }
+
+  .project-table__project-details {
+    font-size: 0.9375rem;
+  }
+
+  .project-table__project-details--description p {
+    line-height: calc(0.9375rem * 1.5);
+    font-size: 0.9375rem;
+  }
+
+  .project-table__project-details--list {
+    list-style-type: none;
+  }
+
+  .project-table__project-details--list .name {
+    width: 15rem;
+  }
+
+  .project-table__project-details--list .value {
+    width: auto;
+  }
+
+  .project-table__project-details--links .btn+.btn {
+    margin-left: 0.5rem;
+  }
+}
+
+.search-area {
+  background-color: #fff;
+  border: 1px solid lightgray;
+}
+
+.main-search-field {
+  margin-left: 0;
+  padding: 8px;
+}
+
+.search-button {
+  min-width: 10rem;
+  font-weight: 700;
+  background: #fcba18;
+  color: #212529;
+  border: none;
+}
+
+.search-button:hover {
+  min-width: 10rem;
+  font-weight: 700;
+  background: #0069d9;
+  color: #fff;
+  border: none;
+}
+
+.advanced-filter {
+  position: relative;
+}
+
+.advanced-filter hr {
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.advanced-filter .project-filter {
+  margin-top: 2px;
+  margin-bottom: 6px;
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+
+.advanced-filter .project-filter .filter {
+  min-width: 225px;
+  max-width: 300px;
+  flex: 1 0 calc(22% - 58px);
+  margin-bottom: 0;
+}
+
+.advanced-filter .project-filter .eaDate {
+  flex: 1 0 calc(35% - 58px);
+  max-width: 450px;
+}
+
+.advanced-filter .more-filters {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.advanced-filter .controls {
+  display: flex;
+  margin-right: 0;
+  margin-top: 15px;
+  align-content: flex-end;
+}
+
+.advanced-filter .show-advanced-search-button button {
+  float: right;
+  margin: 0 0 6px auto;
+  width: 200px;
+}
+
+.advanced-filter .btn {
+  margin: 8px 0 8px 8px;
+}
+
+.advanced-filter .more-btn {
+  margin: 0;
+  float: right;
+  margin-left: auto;
+}
+
+.advanced-filter .calendar {
+  margin: 0;
+}
+
+.advanced-filter .date-range {
+  width: 100%;
+  margin-left: 0;
+  display: flex;
+}
+
+.advanced-filter .date-range .date-from {
+  padding-right: 10px;
+  max-width: 300px;
+  flex: 1 0 calc(50% - 20px);
+}
+
+.advanced-filter .date-range .date-to {
+  padding-left: 10px;
+  max-width: 300px;
+  flex: 1 0 calc(50% - 20px);
+}
+
+.advanced-filter .date-range .form-control {
+  z-index: 0 !important;
+  height: 2rem;
+}
+
+.advanced-filter .date-range .btn-append {
+  height: 2rem;
+}
+
+.advanced-filter .date-range .calendar {
+  padding-top: 0;
+}
+
+.advanced-filter .form-check label {
+  padding-left: 0.25rem;
+  font-size: 1rem;
+}
+
+.advanced-filter .search-button {
+  position: absolute;
+  right: 8px;
+  bottom: -8px;
+}
+
+.advanced-filter ng-select {
+  width: 100%;
+}
+
+.advanced-filter #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
+  overflow: visible;
+}
+
+.advanced-filter .ng-placeholder {
+  font-weight: 600;
+}
+
+.advanced-filter .ng-select ::ng-deep .ng-placeholder {
+  color: #585858;
+}
+
+.advanced-filter .ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
+  color: #585858;
+  display: flex;
+  align-items: center;
+}
+
+.advanced-filter .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "work";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "comment";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "mark_as_unread";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "date_range";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "domain";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#projectPhase ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "view_timeline";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#ceaaInvolvement ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "hub";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select#region ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Icons', sans-serif;
+  font-size: 20px;
+  font-weight: normal;
+  content: "explore";
+  vertical-align: middle;
+}
+
+.advanced-filter .ng-select ::ng-deep .ng-placeholder.custom::before {
+  content: none;
+}
+
+.advanced-filter .filter-label {
+  display: flex;
+}
+
+.advanced-filter .filter-label p {
+  margin: 0;
+  align-self: center;
+}
+
+.advanced-filter .filter-row {
+  position: relative;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.advanced-filter .filters-hidden {
+  flex-direction: row-reverse;
+}
+
+.advanced-filter .filter-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 4px;
+  margin-top: 0;
+}
+
+.advanced-filter .filter-badges .type,
+.advanced-filter .filter-badges .proponent {
+  background: #FEEBAB;
+  color: #553402;
+}
+
+.advanced-filter .filter-badges .pcp,
+.advanced-filter .filter-badges .projectPhase {
+  background: #E3EBFF;
+  color: #022170;
+}
+
+.advanced-filter .filter-badges .eacDecision,
+.advanced-filter .filter-badges .CEAAInvolvement {
+  background: #FFF8E8;
+  color: #593F00;
+}
+
+.advanced-filter .filter-badges .eacDecisionDate,
+.advanced-filter .filter-badges .region {
+  background: #F1F8FF;
+  color: #323130;
+}
+
+.advanced-filter .filter-badge {
+  border-radius: 4px;
+  margin-top: 2px;
+  padding: .3rem .6rem;
+}
+
+.advanced-filter .last {
+  padding-right: 0;
+  flex: 0 1 230px;
+}
+
+.advanced-filter .first {
+  padding-left: 0;
+  flex: 1 0 calc(100% - 230px);
+}
+
+.results {
+  color: #000;
+}
+
+.btn-group-toggle>.btn {
+  margin-bottom: 0;
+  background: none;
+  color: #13477b;
+  border: 1px solid #858b99;
+  font-weight: 600;
+}
+
+.btn-group-toggle>.btn:hover {
+  background: #fcb118;
+}
+
+.btn-group-toggle>.btn.active {
+  background: #235383;
+  color: #fff;
+}

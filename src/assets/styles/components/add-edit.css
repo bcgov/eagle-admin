@@ -1,0 +1,197 @@
+/* New CSS - KD */
+
+h2 {
+  border-bottom: 1px solid #cecece;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+}
+
+label {
+  margin-bottom: .25rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+select {
+  font-size: 1rem;
+  border: 1px solid #ababab;
+  cursor: pointer;
+}
+
+textarea {
+  border-radius: 2px;
+  box-shadow: none;
+  appearance: none;
+  border: 1px solid #ababab;
+  font-size: 1rem;
+  height: 125px;
+}
+
+input[type="text"] {
+  border-radius: 2px;
+  box-shadow: none;
+  appearance: none;
+  border: 1px solid #ababab;
+  font-size: 1rem;
+}
+
+select:focus {
+  border-color: #5091cd;
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+}
+
+textarea:focus {
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+  border-color: #5091cd;
+}
+
+input[type="text"]:focus {
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+  border-color: #5091cd;
+}
+
+section+section {
+  margin-top: 2rem;
+}
+
+legend {
+  float: none;
+}
+
+.radio-group,
+.checkbox-group {
+  display: flex;
+  height: 44px;
+}
+
+.radio-group .radio,
+.checkbox-group .checkbox {
+  margin-top: 6px;
+  margin-right: 15px;
+}
+
+.money {
+  position: relative;
+}
+
+.money i {
+  position: absolute;
+  z-index: 10;
+  top: 8px;
+}
+
+.money input {
+  padding-left: 24px;
+}
+
+.file {
+  position: relative;
+}
+
+.file i {
+  position: absolute;
+  z-index: 10;
+  top: 8px;
+}
+
+.file input {
+  padding-left: 24px;
+}
+
+.add-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding-top: 5px;
+  height: 44px;
+  width: 45px;
+  background: transparent;
+  border: none;
+}
+
+.add-btn button:focus {
+  border-color: #5091cd;
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+}
+
+.add-btn i {
+  font-size: 35px;
+  color: #036;
+  margin-right: 0;
+}
+
+.add-row input {
+  padding-right: 2.5rem;
+}
+
+.label-pair {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+@media screen and (width >= 800px) {
+  .label-pair {
+    width: 32%;
+    margin-right: 1%;
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .label-pair.sm {
+    width: 15.5%;
+  }
+
+  .label-pair.med {
+    width: 65%;
+  }
+
+  .label-pair.lrg {
+    width: 100%;
+  }
+}
+
+fieldset {
+  border: none;
+  margin-top: 0;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+@media screen and (width >= 800px) {
+  fieldset {
+    border-right: 1px solid #eee;
+    width: 32%;
+    padding-right: 2%;
+    margin-right: 2%;
+  }
+
+  fieldset:last-of-type {
+    border-right: none;
+  }
+
+  fieldset:nth-child(3n) {
+    padding-right: 0;
+    margin-right: 0;
+  }
+
+  fieldset .label-pair {
+    width: 100%;
+  }
+}
+
+button.calendar,
+button.calendar:active {
+  width: 2.75rem;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACIAAAAcCAYAAAAEN20fAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAEUSURBVEiJ7ZQxToVAEIY/YCHGxN6XGOIpnpaEsBSeQC9ArZbm9TZ6ADyBNzAhQGGl8Riv4BLAWAgmkpBYkH1b8FWT2WK/zJ8ZJ4qiI6XUI3ANnGKWBnht2/ZBDRK3hgVGNsCd7/ui+JkEIrKtqurLpEWaphd933+IyI3LEIdpCYCiKD6HcuOa/nwOa0ScJEnk0BJg0UTUWJRl6RxCYEzEmomsIlPU3IPW+grIAbquy+q6fluy/28RIBeRMwDXdXMgXLj/B2uimRXpui4D9sBeRLKl+1N+L+t6RwbWrZliTTTr1oxYtzVWiTQAcRxvTX+eJMnlUDaO1vpZRO5NS0x48sIwfPc87xg4B04MCzQi8hIEwe4bl1DnFMCN2zsAAAAASUVORK5CYII=') !important;
+  background-repeat: no-repeat;
+  background-size: 23px;
+  background-position: center;
+}
+
+#add-remove-open-house {
+  cursor: pointer;
+}

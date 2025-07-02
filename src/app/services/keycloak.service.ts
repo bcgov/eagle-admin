@@ -1,43 +1,24 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
-import { JwtUtil } from '../jwt-util';
-
-declare let Keycloak: any;
+import { JwtUtil } from '../shared/utils/jwt-utils';
+import Keycloak from 'keycloak-js';
 
 @Injectable()
 export class KeycloakService {
+  public LAST_IDP_AUTHENTICATED = 'kc-last-idp-authenticated';
   private keycloakAuth: any;
-  private keycloakEnabled: boolean;
+  public keycloakEnabled: boolean;
   private keycloakUrl: string;
   private keycloakRealm: string;
-  private loggedOut: string;
 
   public readonly idpHintEnum = {
     IDIR: 'idir',
   };
 
   constructor(
-    private configService: ConfigService
+    private configService: ConfigService,
   ) { }
-
-  isKeyCloakEnabled(): boolean {
-    return this.keycloakEnabled;
-  }
-
-  private getParameterByName(name) {
-    const url = window.location.href;
-    name = name.replace(/[\[\]]/g, '\\$&');
-    const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-      results = regex.exec(url);
-    if (!results) {
-      return null;
-    }
-    if (!results[2]) {
-      return '';
-    }
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-  }
 
   async init() {
     // Load up the config service data
@@ -45,11 +26,10 @@ export class KeycloakService {
     this.keycloakUrl = this.configService.config['KEYCLOAK_URL'];
     this.keycloakRealm = this.configService.config['KEYCLOAK_REALM'];
 
-    this.loggedOut = this.getParameterByName('loggedout');
-
     if (this.keycloakEnabled) {
       // Bootup KC
-      const keycloak_client_id = this.configService.config['KEYCLOAK_CLIENT_ID'];
+      const keycloak_client_id =
+        this.configService.config['KEYCLOAK_CLIENT_ID'];
 
       return new Promise<void>((resolve, reject) => {
         const config = {
@@ -58,12 +38,19 @@ export class KeycloakService {
           clientId: !keycloak_client_id ? 'eagle-admin-console' : keycloak_client_id
         };
 
-        // console.log('KC Auth init.');
+        // this.loggerService.debug('KC Auth init.');
 
         this.keycloakAuth = new Keycloak(config);
 
-        this.keycloakAuth.onAuthSuccess = function () {
-          // console.log('onAuthSuccess');
+        this.keycloakAuth.onAuthSuccess = () => {
+          // this.loggerService.debug('onAuthSuccess');
+          const idp = this.getIdpFromToken();
+          if (idp !== '') {
+            localStorage.setItem(
+              this.LAST_IDP_AUTHENTICATED,
+              idp
+            );
+          }
         };
 
         this.keycloakAuth.onAuthError = function () {
@@ -106,24 +93,38 @@ export class KeycloakService {
             resolve();
           })
           .catch((err) => {
-            if (this.loggedOut === 'true') {
-              // Don't do anything, they wanted to remain logged out.
-              resolve();
-            } else {
-              console.log('KC error2:', err);
-              reject();
-            }
+            console.log('KC error2:', err);
             reject();
           });
       });
     }
   }
 
-  isValidForSite() {
+  /**
+   * Check if the current user is logged in.
+   *
+   * @returns {boolean} true if the user is logged in.
+   * @memberof KeycloakService
+   */
+  isAuthenticated(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      return false;
+    }
+    return this.keycloakAuth && this.keycloakAuth.authenticated === true;
+  }
+
+  /**
+   * Check if the current user is logged in and has admin access.
+   *
+   * @returns {boolean} true if the user has access, false otherwise.
+   * @memberof KeycloakService
+   */
+  isAuthorized(): boolean {
     if (!this.getToken()) {
       return false;
     }
-    const jwt = new JwtUtil().decodeToken(this.getToken());
+    const jwt = JwtUtil.decodeToken(this.getToken());
 
     if (jwt && jwt.realm_access && jwt.realm_access.roles) {
       return jwt.realm_access.roles.includes('sysadmin');
@@ -139,17 +140,10 @@ export class KeycloakService {
    * @memberof KeycloakService
    */
   getToken(): string {
-    if (!this.keycloakEnabled) {
-      // return the local storage token
-      const currentUser = JSON.parse(window.localStorage.getItem('currentUser'));
-      return currentUser ? currentUser.token : null;
-    }
-
     return this.keycloakAuth && this.keycloakAuth.token;
   }
-
   getUserRoles() {
-    const jwt = new JwtUtil().decodeToken(this.keycloakAuth.token);
+    const jwt = JwtUtil.decodeToken(this.keycloakAuth.token);
     if (jwt && jwt.realm_access && jwt.realm_access.roles) {
       return jwt.realm_access.roles;
     } else {
@@ -170,7 +164,7 @@ export class KeycloakService {
         .updateToken(30)
         .then((refreshed) => {
           console.log(`KC refreshed token?: ${refreshed}`);
-          observer.next(null);
+          observer.next(refreshed);
           observer.complete();
         })
         .catch((err) => {
@@ -178,8 +172,68 @@ export class KeycloakService {
           observer.error();
         });
 
-      return { unsubscribe() { console.log('Unsubscribed from refresh token'); } };
+      return { unsubscribe() { } };
     });
+  }
+
+  public getWelcomeMessage(): string {
+    const token = this.getToken();
+
+    if (!token) {
+      return '';
+    }
+
+    const jwt = JwtUtil.decodeToken(token);
+
+    if (!jwt || !jwt.name) {
+      return '';
+    }
+
+    return `${jwt.name}`;
+  }
+
+  /**
+   * Redirects to keycloak and logs in
+   *
+   * @param {string} idpHint see idpHintEnum for valid values
+   * @memberof KeycloakService
+   */
+  login(idpHint: string) {
+    let redirectUri = localStorage.getItem(this.configService.config.REDIRECT_KEY) || window.location.href;
+    // by default keycloak login will want to redirect back to the login page
+    // redirect to '/dayuse' instead
+    if (redirectUri.endsWith('/login')) {
+      redirectUri = redirectUri.slice(0, redirectUri.lastIndexOf('/'));
+    }
+    return (
+      this.keycloakAuth &&
+      this.keycloakAuth.login({ idpHint: idpHint, redirectUri: redirectUri })
+    );
+  }
+
+  /**
+   * Infers the identity provider from the JWT token
+   *
+   * @remarks
+   * If IDIR and BCEID users are being redirected to the BCSC login
+   * page to re-authenticate, it means the client mappers in Keycloak
+   * (idir_userid and bceid_userid) haven't been properly setup.
+   *
+   * @memberof KeycloakService
+   */
+  getIdpFromToken(): string {
+    const token = this.getToken();
+
+    if (!token) {
+      return '';
+    }
+
+    const jwt = JwtUtil.decodeToken(token);
+
+    // idir users have an idir_userid property
+    if (jwt.idir_user_guid !== undefined) {
+      return this.idpHintEnum.IDIR;
+    }
   }
 
   getLogoutURL(): string {

@@ -1,6 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
 import { Org } from 'src/app/models/org';
@@ -10,13 +13,21 @@ import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../../utils/table-template-utils';
 import { TableObject } from '../table-template/table-object';
 import { TableParamsObject } from '../table-template/table-params-object';
+import { TableTemplateComponent } from '../table-template/table-template.component';
 
 
 @Component({
   selector: 'app-link-organization',
   templateUrl: './link-organization.component.html',
-  styleUrls: ['./link-organization.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./link-organization.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    TableTemplateComponent
+  ]
 })
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();
