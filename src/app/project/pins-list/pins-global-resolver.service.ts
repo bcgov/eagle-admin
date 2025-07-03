@@ -1,13 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
 
 @Injectable()
 export class PinsGlobalComponentResolver  {
-  constructor(
-    private searchService: SearchService
-  ) { }
+  private searchService = inject(SearchService);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const pageNum = route.params.currentPage ? route.params.currentPage : 1;

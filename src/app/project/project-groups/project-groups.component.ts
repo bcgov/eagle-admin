@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GroupsTableRowsComponent } from './project-groups-table-rows/project-groups-table-rows.component';
@@ -24,9 +24,25 @@ import { CommonModule } from '@angular/common';
   templateUrl: './project-groups.component.html',
   styleUrls: ['./project-groups.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule, TableTemplateComponent]
+  imports: [
+    CommonModule,
+    RouterModule,
+    TableTemplateComponent
+  ]
 })
 export class ProjectGroupsComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private excelService = inject(ExcelService);
+  private modalService = inject(NgbModal);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private projectService = inject(ProjectService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private searchService = inject(SearchService);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   private subscriptions = new Subscription();
 
   public currentProject;
@@ -56,19 +72,6 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
       width: '90%'
     }
   ];
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private excelService: ExcelService,
-    private modalService: NgbModal,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private searchService: SearchService,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
@@ -306,7 +309,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
       }
 
       this.loading = false;
-    } catch (error) {
+    } catch {
       // Handle modal dismiss or any other errors if necessary
       this.loading = false;
     }

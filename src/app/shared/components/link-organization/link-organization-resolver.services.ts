@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SearchService } from 'src/app/services/search.service';
@@ -6,10 +6,9 @@ import { TableTemplateUtils } from '../../utils/table-template-utils';
 
 @Injectable()
 export class LinkOrganizationResolver {
-  constructor(
-    private searchService: SearchService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
+  private searchService = inject(SearchService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params, null, 10);

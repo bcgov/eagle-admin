@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
@@ -7,13 +7,11 @@ import { SearchService } from '../services/search.service';
 
 @Injectable()
 export class FullProjectResolver {
+  private searchService = inject(SearchService);
+  private projectService = inject(ProjectService);
 
-  constructor(
-    private searchService: SearchService,
-    private projectService: ProjectService
-  ) { }
 
-  resolve(route: ActivatedRouteSnapshot): Observable<Object> {
+  resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const projId = route.pathFromRoot[1].paramMap.get('projId');
     return this.searchService.getSearchResults(
       '',

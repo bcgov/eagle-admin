@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -35,6 +35,11 @@ import { JwtUtil } from '../shared/utils/jwt-utils';
 })
 
 export class HeaderComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+  private keycloakService = inject(KeycloakService);
+  private modalService = inject(NgbModal);
+  router = inject(Router);
+
   public envName: string;
   public bannerColour: string;
   public showBanner = false;
@@ -51,12 +56,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public showDayCalculatorModal = false;
   private readonly subscriptions = new Subscription();
 
-  constructor(
-    private api: ApiService,
-    private keycloakService: KeycloakService,
-    private modalService: NgbModal,
-    public router: Router
-  ) {
+  constructor() {
+    const router = this.router;
+
     this.subscriptions.add(router.events
       .subscribe(() => {
         const token = this.keycloakService.getToken();

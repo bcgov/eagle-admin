@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of, forkJoin } from 'rxjs';
 import { mergeMap, map, catchError, flatMap } from 'rxjs/operators';
 
@@ -9,14 +9,12 @@ import { Comment } from '../models/comment';
 
 @Injectable()
 export class CommentService {
+  private api = inject(ApiService);
+  private documentService = inject(DocumentService);
+
 
   public pendingCommentCount = 0;
   public nextCommentId = null;
-
-  constructor(
-    private api: ApiService,
-    private documentService: DocumentService
-  ) { }
 
 
   // get count of comments for the specified comment period id
@@ -137,7 +135,7 @@ export class CommentService {
   }
 
   // get all comments for the specified comment period id
-  getByPeriodId(periodId: string, pageNum: number = null, pageSize: number = null, sortBy = '', count = true, filter: Object = {}): Observable<Object> {
+  getByPeriodId(periodId: string, pageNum: number = null, pageSize: number = null, sortBy = '', count = true, filter: object = {}): Observable<object> {
     return this.api.getCommentsByPeriodId(periodId, pageNum, pageSize, sortBy, count, filter)
       .pipe(
         map((res: any) => {

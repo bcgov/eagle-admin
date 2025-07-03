@@ -1,192 +1,202 @@
 <div class="action-container">
-    <ol aria-label="breadcrumb" class="breadcrumb">
-        <li class="breadcrumb-item active" aria-current="page">Activity Posts</li>
-    </ol>
-    <div class="dropdown">
-        <button (click)="selectAction('add')" class="btn btn-primary" type="button" id="button-d"><i
-                class="material-icons">add</i>Add Activity</button>
-    </div>
+  <ol aria-label="breadcrumb" class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Activity Posts</li>
+  </ol>
+  <div class="dropdown">
+    <button (click)="selectAction('add')" class="btn btn-primary" type="button" id="button-d"><i
+    class="material-icons">add</i>Add Activity</button>
+  </div>
 </div>
 
 <div class="search-container">
-    <div class="fb-container bg-faded">
-        <section class="container-fluid-padding" id="anchor-point">
-            <div class="spinner-container" *ngIf="loading">
-                <div class="spinner-new rotating"></div>
-            </div>
-            <main *ngIf="!loading">
-                <section>
-
-                    <form #f="ngForm" class="search-form ui form mb-3" (ngSubmit)="onSubmit()">
-                        <div class="search-area">
-                            <div class="input-group main-search-field">
-                                <input class="form-control" type="text" name="keywordInput"
-                                    placeholder="Enter keywords to search..." id="keywordInput"
-                                    [(ngModel)]="tableParams.keywords" />
-                                <!-- prevent searching if input is empty or we're already searching -->
-                                <button class="btn btn-primary search-button" type="submit">
-                                    <span>Search</span>
-                                </button>
-                            </div>
-                            <div class="advanced-filter">
-                                <div class="row filter-row">
-                                    <div class="filter-badges col-md-11 first">
-                                        <div class="filter-label">
-                                            <p>Filters:</p>
-                                        </div>
-                                        <button *ngFor="let filter of filterForUI.project"
-                                            class="btn filter-badge project">
-                                            <span class="ng-value-label">{{filter.name}} </span>
-                                            <span class="ng-value-icon left"
-                                                (click)="clearSelectedItem('project', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
-                                                    clear
-                                                </i></span>
-                                        </button>
-                                        <button *ngFor="let filter of filterForUI.type" class="btn filter-badge type">
-                                            <span class="ng-value-label">{{filter.name}} </span>
-                                            <span class="ng-value-icon left" (click)="clearSelectedItem('type', filter)"
-                                                aria-hidden="true">&nbsp;<i class="material-icons size-20">
-                                                    clear
-                                                </i></span>
-                                        </button>
-                                        <button *ngIf="isDateRangeSet()" class="btn filter-badge dateAddedRange">
-                                            <span class="ng-value-label">Date Range </span>
-                                            <span class="ng-value-icon left" (click)="clearDateRange()"
-                                                (keydown)="clearDateRange()" aria-hidden="true">&nbsp;<i
-                                                    class="material-icons size-20">
-                                                    clear
-                                                </i></span>
-                                        </button>
-                                        <button *ngIf="filterForUI.complianceAndEnforcement"
-                                            class="btn filter-badge cAndE">
-                                            <span class="ng-value-label">C&E Announcement
-                                            </span>
-                                            <span class="ng-value-icon left" (click)="clearCAndE()"
-                                                (keydown)="clearCAndE()" aria-hidden="true">&nbsp;<i
-                                                    class="material-icons size-20">
-                                                    clear
-                                                </i></span>
-                                        </button>
-
-                                        <button *ngIf="isUiFiltered()" class="btn filter-badge btn-outline-dark"
-                                            type="button" (click)="clearAll();">
-                                            <span class="ng-value-label">Clear Filters </span>&nbsp;
-                                            <i class="material-icons size-20">
-                                                filter_alt_off
-                                            </i>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="row filter-row">
-                                    <div class="activity-filter first col-md-11">
-                                        <div class="project-filters filter">
-                                            <ng-select id="projects" name="projects" multiple="true" bindLabel="name"
-                                                placeholder="&nbsp;Project" [items]="projects" [closeOnSelect]="false"
-                                                [searchable]="false" [(ngModel)]="filterForUI.project"
-                                                [compareWith]="filterCompareWith">
-                                                <ng-template ng-multi-label-tmp>
-                                                    <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-icons size-32 center-icon">
-                                                            work
-                                                        </i>&nbsp;Project
-                                                        ({{filterForUI.project.length}})</span>
-                                                </ng-template>
-                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
-                                                    let-index="index">
-                                                    <input id="item-{{index}}" type="checkbox"
-                                                        [ngModel]="item$.selected" name="item-{{index}}" />
-                                                    &nbsp;{{item.name}}
-                                                </ng-template>
-                                            </ng-select>
-                                        </div>
-                                        <div class="type-filters filter">
-                                            <ng-select id="type" name="type" multiple="true" bindLabel="name"
-                                                placeholder="&nbsp;News Type" [items]="activityTypes"
-                                                [closeOnSelect]="false" [searchable]="false"
-                                                [(ngModel)]="filterForUI.type" [compareWith]="filterCompareWith">
-                                                <ng-template ng-multi-label-tmp>
-                                                    <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-icons size-32 center-icon">
-                                                            comment
-                                                        </i>&nbsp;News Types
-                                                        ({{filterForUI.type.length}})</span>
-                                                </ng-template>
-                                                <ng-template ng-option-tmp let-item="item" let-item$="item$"
-                                                    let-index="index">
-                                                    <input id="item-{{index}}" type="checkbox"
-                                                        [ngModel]="item$.selected" name="item-{{index}}" />
-                                                    &nbsp;{{item.name}}
-                                                </ng-template>
-                                            </ng-select>
-                                        </div>
-
-                                        <div class="datePosted filter">
-                                            <ng-select #dateRange id="dateRange" name="dateRange" [multiple]="false"
-                                                bindLabel="name" placeholder="&nbsp;Date Range" [items]="dateRangeItems"
-                                                [closeOnSelect]="false" [searchable]="false" [clearOnBackspace]="false"
-                                                [compareWith]="filterCompareWith" (clear)="clearDateRange()"
-                                                [ngModel]="placeholderDateRangeModel"
-                                                (ngModelChange)="changeDateRange()">
-                                                <ng-template ng-multi-label-tmp>
-                                                    <span style="display:inline" class="ng-placeholder custom"><i
-                                                            class="material-icons size-32 center-icon">
-                                                            date_range
-                                                        </i>&nbsp;Date Range</span>
-                                                </ng-template>
-                                                <ng-template ng-option-tmp>
-                                                    <div class="date-input date-range">
-                                                        <input id="dateAddedStart" type="text" class="form-control"
-                                                            placeholder="yyyy-mm-dd"
-                                                            (ngModelChange)="changeDate($event, 'start')"
-                                                            name="dateAddedStart" [ngModel]="filterForUI.dateAddedStart"
-                                                            ngbDatepicker #dateAddedStartPicker="ngbDatepicker"
-                                                            [minDate]="constants.minPickerDate"
-                                                            [maxDate]="constants.maxPickerDate">
-                                                        <button class="btn btn-outline-secondary calendar"
-                                                            (click)="dateAddedStartPicker.toggle()" type="button">
-                                                        </button>
-                                                        &nbsp;to&nbsp;
-                                                        <input id="dateAddedEnd" type="text" class="form-control"
-                                                            placeholder="yyyy-mm-dd"
-                                                            (ngModelChange)="changeDate($event, 'end')"
-                                                            name="dateAddedEnd" [ngModel]="filterForUI.dateAddedEnd"
-                                                            ngbDatepicker #dateAddedEndPicker="ngbDatepicker"
-                                                            [minDate]="constants.minPickerDate"
-                                                            [maxDate]="constants.maxPickerDate" />
-                                                        <button class="btn btn-outline-secondary calendar"
-                                                            (click)="dateAddedEndPicker.toggle()" type="button">
-                                                        </button>
-                                                    </div>
-                                                </ng-template>
-                                            </ng-select>
-                                        </div>
-                                        <div class="form-group filter">
-                                            <mat-slide-toggle name="isCAndE"
-                                                [(ngModel)]="filterForUI.complianceAndEnforcement"></mat-slide-toggle>
-                                            &nbsp;
-                                            <label for="isCAndE">C&E Announcement</label>
-                                        </div>
-
-                                    </div>
-
-                                </div>
-                            </div>
+  <div class="fb-container bg-faded">
+    <section class="container-fluid-padding" id="anchor-point">
+      @if (loading) {
+        <div class="spinner-container">
+          <div class="spinner-new rotating"></div>
+        </div>
+      }
+      @if (!loading) {
+        <main>
+          <section>
+            <form #f="ngForm" class="search-form ui form mb-3" (ngSubmit)="onSubmit()">
+              <div class="search-area">
+                <div class="input-group main-search-field">
+                  <input class="form-control" type="text" name="keywordInput"
+                    placeholder="Enter keywords to search..." id="keywordInput"
+                    [(ngModel)]="tableParams.keywords" />
+                  <!-- prevent searching if input is empty or we're already searching -->
+                  <button class="btn btn-primary search-button" type="submit">
+                    <span>Search</span>
+                  </button>
+                </div>
+                <div class="advanced-filter">
+                  <div class="row filter-row">
+                    <div class="filter-badges col-md-11 first">
+                      <div class="filter-label">
+                        <p>Filters:</p>
+                      </div>
+                      @for (filter of filterForUI.project; track filter) {
+                        <button
+                          class="btn filter-badge project">
+                          <span class="ng-value-label">{{filter.name}} </span>
+                          <span class="ng-value-icon left"
+                            (click)="clearSelectedItem('project', filter)"
+                            aria-hidden="true">&nbsp;<i class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
+                      @for (filter of filterForUI.type; track filter) {
+                        <button class="btn filter-badge type">
+                          <span class="ng-value-label">{{filter.name}} </span>
+                          <span class="ng-value-icon left" (click)="clearSelectedItem('type', filter)"
+                            aria-hidden="true">&nbsp;<i class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
+                      @if (isDateRangeSet()) {
+                        <button class="btn filter-badge dateAddedRange">
+                          <span class="ng-value-label">Date Range </span>
+                          <span class="ng-value-icon left" (click)="clearDateRange()"
+                            (keydown)="clearDateRange()" aria-hidden="true">&nbsp;<i
+                            class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
+                      @if (filterForUI.complianceAndEnforcement) {
+                        <button
+                          class="btn filter-badge cAndE">
+                          <span class="ng-value-label">C&E Announcement
+                          </span>
+                          <span class="ng-value-icon left" (click)="clearCAndE()"
+                            (keydown)="clearCAndE()" aria-hidden="true">&nbsp;<i
+                            class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
+                      @if (isUiFiltered()) {
+                        <button class="btn filter-badge btn-outline-dark"
+                          type="button" (click)="clearAll();">
+                          <span class="ng-value-label">Clear Filters </span>&nbsp;
+                          <i class="material-icons size-20">
+                            filter_alt_off
+                          </i>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <div class="row filter-row">
+                    <div class="activity-filter first col-md-11">
+                      <div class="project-filters filter">
+                        <ng-select id="projects" name="projects" multiple="true" bindLabel="name"
+                          placeholder="&nbsp;Project" [items]="projects" [closeOnSelect]="false"
+                          [searchable]="false" [(ngModel)]="filterForUI.project"
+                          [compareWith]="filterCompareWith">
+                          <ng-template ng-multi-label-tmp>
+                            <span style="display:inline" class="ng-placeholder custom"><i
+                              class="material-icons size-32 center-icon">
+                              work
+                            </i>&nbsp;Project
+                          ({{filterForUI.project.length}})</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                          let-index="index">
+                          <input id="item-{{index}}" type="checkbox"
+                            [ngModel]="item$.selected" name="item-{{index}}" />
+                          &nbsp;{{item.name}}
+                        </ng-template>
+                      </ng-select>
+                    </div>
+                    <div class="type-filters filter">
+                      <ng-select id="type" name="type" multiple="true" bindLabel="name"
+                        placeholder="&nbsp;News Type" [items]="activityTypes"
+                        [closeOnSelect]="false" [searchable]="false"
+                        [(ngModel)]="filterForUI.type" [compareWith]="filterCompareWith">
+                        <ng-template ng-multi-label-tmp>
+                          <span style="display:inline" class="ng-placeholder custom"><i
+                            class="material-icons size-32 center-icon">
+                            comment
+                          </i>&nbsp;News Types
+                        ({{filterForUI.type.length}})</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                        let-index="index">
+                        <input id="item-{{index}}" type="checkbox"
+                          [ngModel]="item$.selected" name="item-{{index}}" />
+                        &nbsp;{{item.name}}
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                  <div class="datePosted filter">
+                    <ng-select #dateRange id="dateRange" name="dateRange" [multiple]="false"
+                      bindLabel="name" placeholder="&nbsp;Date Range" [items]="dateRangeItems"
+                      [closeOnSelect]="false" [searchable]="false" [clearOnBackspace]="false"
+                      [compareWith]="filterCompareWith" (clear)="clearDateRange()"
+                      [ngModel]="placeholderDateRangeModel"
+                      (ngModelChange)="changeDateRange()">
+                      <ng-template ng-multi-label-tmp>
+                        <span style="display:inline" class="ng-placeholder custom"><i
+                          class="material-icons size-32 center-icon">
+                          date_range
+                        </i>&nbsp;Date Range</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp>
+                        <div class="date-input date-range">
+                          <input id="dateAddedStart" type="text" class="form-control"
+                            placeholder="yyyy-mm-dd"
+                            (ngModelChange)="changeDate($event, 'start')"
+                            name="dateAddedStart" [ngModel]="filterForUI.dateAddedStart"
+                            ngbDatepicker #dateAddedStartPicker="ngbDatepicker"
+                            [minDate]="constants.minPickerDate"
+                            [maxDate]="constants.maxPickerDate">
+                          <button class="btn btn-outline-secondary calendar"
+                            (click)="dateAddedStartPicker.toggle()" type="button">
+                          </button>
+                          &nbsp;to&nbsp;
+                          <input id="dateAddedEnd" type="text" class="form-control"
+                            placeholder="yyyy-mm-dd"
+                            (ngModelChange)="changeDate($event, 'end')"
+                            name="dateAddedEnd" [ngModel]="filterForUI.dateAddedEnd"
+                            ngbDatepicker #dateAddedEndPicker="ngbDatepicker"
+                            [minDate]="constants.minPickerDate"
+                            [maxDate]="constants.maxPickerDate" />
+                          <button class="btn btn-outline-secondary calendar"
+                            (click)="dateAddedEndPicker.toggle()" type="button">
+                          </button>
                         </div>
-                    </form>
-
-                    <div *ngIf="tableParams.totalListItems > 0">
-                        <app-table-template [columns]="tableColumns" [data]="tableData"
-                            (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
-                        </app-table-template>
-                    </div>
-                    <div *ngIf="tableParams.totalListItems === 0">
-                        No Activities/Updates.
-                    </div>
-
-                </section>
-            </main>
-        </section>
-    </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                  <div class="form-group filter">
+                    <mat-slide-toggle name="isCAndE"
+                    [(ngModel)]="filterForUI.complianceAndEnforcement"></mat-slide-toggle>
+                    &nbsp;
+                    <label for="isCAndE">C&E Announcement</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        @if (tableParams.totalListItems > 0) {
+          <div>
+            <app-table-template [columns]="tableColumns" [data]="tableData"
+              (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
+            </app-table-template>
+          </div>
+        }
+        @if (tableParams.totalListItems === 0) {
+          <div>
+            No Activities/Updates.
+          </div>
+        }
+      </section>
+    </main>
+  }
+</section>
+</div>
 </div>

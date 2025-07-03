@@ -103,7 +103,7 @@ export class Utils {
     return <T[]>data.searchResults;
   }
 
-  public isEmptyObject(object: Object): boolean {
+  public isEmptyObject(object: object): boolean {
     if (!object) {
       return true;
     }

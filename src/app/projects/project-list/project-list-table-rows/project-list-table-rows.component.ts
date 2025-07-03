@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
@@ -9,10 +9,12 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
     templateUrl: './project-list-table-rows.component.html',
     styleUrls: ['./project-list-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
 })
 
 export class ProjectListTableRowsComponent implements OnInit, TableComponent {
+    private router = inject(Router);
+
     @Input() data: TableObject;
     @Input() columnData: Array<any>;
     @Input() smallTable: boolean;
@@ -21,10 +23,6 @@ export class ProjectListTableRowsComponent implements OnInit, TableComponent {
     public paginationData: any;
     public columns: any;
     public useSmallTable: boolean;
-
-    constructor(
-        private router: Router
-    ) { }
 
     ngOnInit() {
         this.projects = this.data.data;

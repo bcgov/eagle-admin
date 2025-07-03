@@ -1,16 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SearchService } from '../services/search.service';
 
 @Injectable()
 export class ProjectResolver  {
+  private searchService = inject(SearchService);
 
-  constructor(
-    private searchService: SearchService
-  ) { }
 
-  resolve(route: ActivatedRouteSnapshot): Observable<Object> {
+  resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const projId = route.paramMap.get('projId');
     const start = new Date();
     const end = new Date();

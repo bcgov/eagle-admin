@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of, forkJoin, merge } from 'rxjs';
 import { flatMap, map, catchError } from 'rxjs/operators';
 
@@ -19,12 +19,11 @@ interface GetParameters {
 
 @Injectable()
 export class ProjectService {
+  private api = inject(ApiService);
+  private utils = inject(Utils);
+  private searchService = inject(SearchService);
+
   private projectList: Project[] = [];
-  constructor(
-    private api: ApiService,
-    private utils: Utils,
-    private searchService: SearchService
-  ) { }
 
   // get count of projects
   getCount(): Observable<number> {
@@ -34,7 +33,7 @@ export class ProjectService {
   }
 
   // get all projects
-  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<Object> {
+  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<object> {
     return this.api.getProjects(pageNum, pageSize, sortBy).pipe(
       map((res: any) => {
         if (res) {

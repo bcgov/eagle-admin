@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -9,13 +9,11 @@ import { StorageService } from 'src/app/services/storage.service';
 
 @Injectable()
 export class DocumentsResolver {
-  private filterForAPI: object = {};
+  private configService = inject(ConfigService);
+  private searchService = inject(SearchService);
+  private storageService = inject(StorageService);
 
-  constructor(
-    private configService: ConfigService,
-    private searchService: SearchService,
-    private storageService: StorageService
-  ) { }
+  private filterForAPI: object = {};
 
   resolve(route: ActivatedRouteSnapshot): Observable<any> {
     const projectId = route.parent.paramMap.get('projId');

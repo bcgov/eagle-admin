@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
@@ -10,10 +10,14 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
     templateUrl: './organizations-table-rows.component.html',
     styleUrls: ['./organizations-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     
 })
 export class OrganizationsTableRowsComponent implements OnInit {
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private storageService = inject(StorageService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -23,12 +27,6 @@ export class OrganizationsTableRowsComponent implements OnInit {
   public dropdownItems = ['Edit', 'Delete'];
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.organizations = this.data.data;

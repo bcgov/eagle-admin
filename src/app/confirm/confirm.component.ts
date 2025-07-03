@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 export interface DataModel {
@@ -14,11 +14,11 @@ export interface DataModel {
     
 })
 export class ConfirmComponent {
+  activeModal = inject(NgbActiveModal);
+
   @Input() title: string;
   @Input() message: string;
   @Input() okOnly: boolean;
-
-  constructor(public activeModal: NgbActiveModal) {}
 
   confirm() {
     this.activeModal.close(true);

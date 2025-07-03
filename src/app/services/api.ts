@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Params } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
@@ -33,6 +33,11 @@ interface LocalLoginResponse {
 
 @Injectable()
 export class ApiService {
+  private http = inject(HttpClient);
+  private keycloakService = inject(KeycloakService);
+  private configService = inject(ConfigService);
+  private utils = inject(Utils);
+
 
   public token: string;
   public isMS: boolean; // IE, Edge, etc
@@ -42,12 +47,7 @@ export class ApiService {
   public env: string;  // Could be anything per Openshift environment variables  but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo' | 'hotfix'
   public bannerColour: string;  // This is the colour of the banner that you see in the header, and could be anything per Openshift environment variables but must correspond with the css in header.component.scss e.g. red | orange | green | yellow | purple
 
-  constructor(
-    private http: HttpClient,
-    private keycloakService: KeycloakService,
-    private configService: ConfigService,
-    private utils: Utils
-  ) {
+  constructor() {
     // this.jwtHelper = new JwtHelperService();
     const currentUser = JSON.parse(window.localStorage.getItem('currentUser'));
     this.token = currentUser && currentUser.token;
@@ -94,7 +94,7 @@ export class ApiService {
   //
   // Projects
   //
-  getProjects(pageNum: number, pageSize: number, sortBy: string, populate = true): Observable<Object> {
+  getProjects(pageNum: number, pageSize: number, sortBy: string, populate = true): Observable<object> {
     const fields = [
       'eacDecision',
       'name',
@@ -114,7 +114,7 @@ export class ApiService {
     if (populate !== null) { queryString += `populate=${populate}&`; }
     queryString += `fields=${this.buildValues(fields)}`;
 
-    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<object>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // NB: returns array with 1 element
@@ -200,7 +200,7 @@ export class ApiService {
 
   getCountProjects(): Observable<number> {
     const queryString = `project`;
-    return this.http.head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
+    return this.http.head<HttpResponse<object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
       .pipe(
         map(res => {
           // retrieve the count from the response headers
@@ -403,7 +403,7 @@ export class ApiService {
   //
   // Comment Periods
   //
-  getPeriodsByProjId(projId: string, pageNum: number, pageSize: number, sortBy: string): Observable<Object> {
+  getPeriodsByProjId(projId: string, pageNum: number, pageSize: number, sortBy: string): Observable<object> {
     const fields = [
       'project',
       'dateStarted',
@@ -419,7 +419,7 @@ export class ApiService {
     queryString += `count=true&`;
     queryString += `fields=${this.buildValues(fields)}`;
 
-    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<object>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // NB: returns array with 1 element
@@ -547,7 +547,7 @@ export class ApiService {
   //
   // Topics
   //
-  getTopics(pageNum: number, pageSize: number, sortBy: string): Observable<Object> {
+  getTopics(pageNum: number, pageSize: number, sortBy: string): Observable<object> {
     const fields = [
       'description',
       'name',
@@ -562,7 +562,7 @@ export class ApiService {
     if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
     queryString += `fields=${this.buildValues(fields)}`;
 
-    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<object>(`${this.pathAPI}/${queryString}`, {});
   }
   getTopic(id: string): Observable<Topic[]> {
     const fields = [
@@ -598,7 +598,7 @@ export class ApiService {
   getCountCommentsByPeriodId(periodId: string): Observable<number> {
     // NB: count only pending comments
     const queryString = `comment?isDeleted=false&commentStatus='Pending'&_commentPeriod=${periodId}`;
-    return this.http.head<HttpResponse<Object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
+    return this.http.head<HttpResponse<object>>(`${this.pathAPI}/${queryString}`, { observe: 'response' })
       .pipe(
         map(res => {
           // retrieve the count from the response headers
@@ -607,7 +607,7 @@ export class ApiService {
       );
   }
 
-  getCommentsByPeriodId(periodId: string, pageNum: number, pageSize: number, sortBy: string, count: boolean, filter: object): Observable<Object> {
+  getCommentsByPeriodId(periodId: string, pageNum: number, pageSize: number, sortBy: string, count: boolean, filter: object): Observable<object> {
     const fields = [
       '_id',
       'author',
@@ -634,7 +634,7 @@ export class ApiService {
     });
     queryString += `&fields=${this.buildValues(fields)}`;
 
-    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<object>(`${this.pathAPI}/${queryString}`, {});
   }
 
   // NB: returns array with 1 element
@@ -1163,7 +1163,7 @@ export class ApiService {
   // Project Notifications
   //
 
-  getProjectNotifications(pageNum: number, pageSize: number, sortBy: string, populate = true): Observable<Object> {
+  getProjectNotifications(pageNum: number, pageSize: number, sortBy: string, populate = true): Observable<object> {
     const fields = [
       'name',
       'epicProjectID',
@@ -1177,7 +1177,7 @@ export class ApiService {
     if (sortBy !== '' && sortBy !== null) { queryString += `sortBy=${sortBy}&`; }
     if (populate !== null) { queryString += `populate=${populate}&`; }
     queryString += `fields=${this.buildValues(fields)}`;
-    return this.http.get<Object>(`${this.pathAPI}/${queryString}`, {});
+    return this.http.get<object>(`${this.pathAPI}/${queryString}`, {});
   }
 
   saveNotificationProject(projectNotification: ProjectNotification, publish: boolean): Observable<ProjectNotification> {

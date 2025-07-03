@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
@@ -33,6 +33,14 @@ import { Subscription } from 'rxjs';
 })
 
 export class AddCommentComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private commentService = inject(CommentService);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
 
   private subscriptions = new Subscription();
 
@@ -46,16 +54,6 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
   public addCommentForm: UntypedFormGroup;
   public anonymousName = 'Anonymous';
-
-  constructor(
-    private api: ApiService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private commentService: CommentService,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject;

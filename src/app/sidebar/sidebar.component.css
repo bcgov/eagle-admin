@@ -74,14 +74,18 @@
   transition: 0.3s;
 }
 
+/* On mouse-over */
 .sidenav a:hover,
 .dropdown-btn:hover {
   color: #f1f1f1;
 }
 
+/* Main content */
 .main {
   margin-left: 250px;
+  /* Same as the width of the sidenav */
   font-size: 20px;
+  /* Increased text to enable scrolling */
   padding: 0px 10px;
 }
 
@@ -94,10 +98,9 @@
   top: 5px;
 }
 
-#pn-documents:hover {
-  cursor: pointer;
-}
-
-#documents:hover {
-  cursor: pointer;
+@media screen and (max-width: 350px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
 }

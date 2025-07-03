@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -7,10 +7,8 @@ import { Decision } from '../models/decision';
 
 @Injectable()
 export class DecisionService {
+  private api = inject(ApiService);
 
-  constructor(
-    private api: ApiService
-  ) { }
 
   add(orig: Decision): Observable<Decision> {
     // make a (deep) copy of the passed-in decision so we don't change it

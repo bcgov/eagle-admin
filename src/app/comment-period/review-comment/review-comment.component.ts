@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
@@ -19,6 +19,15 @@ import { Document } from 'src/app/models/document';
 })
 
 export class ReviewCommentComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+  private commentService = inject(CommentService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
 
   private subscriptions = new Subscription();
   public currentProject;
@@ -30,17 +39,6 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   public commentReviewForm: UntypedFormGroup;
   public pendingCommentCount = 0;
   public nextCommentId;
-
-  constructor(
-    private api: ApiService,
-    private commentService: CommentService,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject;

@@ -1,34 +1,31 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { StorageService } from '../services/storage.service';
 import { Project } from '../models/project';
 import { SideBarService } from '../services/sidebar.service';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-project-notification',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [RouterModule],
     templateUrl: './project-notification.component.html',
     styleUrls: ['./project-notification.component.css'],
     
 })
 export class ProjectNotificationComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private sidebarService = inject(SideBarService);
+  private storageService = inject(StorageService);
+
 
   private subscriptions = new Subscription();
   public project: Project = null;
   public loading = true;
   public classApplied = false;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private _changeDetectorRef: ChangeDetectorRef,
-    private sidebarService: SideBarService,
-    private storageService: StorageService
-  ) {
-  }
 
   toggleSideNav() {
     this.sidebarService.toggle();

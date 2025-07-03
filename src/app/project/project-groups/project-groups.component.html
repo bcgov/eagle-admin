@@ -14,33 +14,39 @@
   <div>
     <div class='input-group-prepend'>
       <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary me-1" type="button" id="button-sa"><i
-          class="material-icons">select_all</i>Select
-        All</button>
-      <button (click)="selectAction('add')" class="btn btn-outline-secondary me-1" type="button" id="button-a">
-        <i class="material-icons">add</i>Add Group
-      </button>
-      <button (click)="selectAction('edit')" class="btn btn-outline-secondary me-1" [disabled]="!isEnabled('edit')"
-        type="button" id="button-e"><i class="material-icons">edit</i>Edit Group</button>
-      <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-        [routerLink]="['/p', currentProject._id, 'project-groups', 'select']">
-      </a>
+      class="material-icons">select_all</i>Select
+    All</button>
+    <button (click)="selectAction('add')" class="btn btn-outline-secondary me-1" type="button" id="button-a">
+      <i class="material-icons">add</i>Add Group
+    </button>
+    <button (click)="selectAction('edit')" class="btn btn-outline-secondary me-1" [disabled]="!isEnabled('edit')"
+      type="button" id="button-e"><i class="material-icons">edit</i>Edit Group</button>
+      @if (currentProject) {
+        <a class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+          [routerLink]="['/p', currentProject._id, 'project-groups', 'select']">
+        </a>
+      }
       <button (click)="selectAction('delete')" class="btn btn-outline-secondary me-1" [disabled]="!isEnabled('delete')"
         type="button" id="button-d"><i class="material-icons">delete</i>Delete
-        Group</button>
+      Group</button>
       <button (click)="selectAction('export')" class="btn btn-outline-secondary me-1" [disabled]="!isEnabled('export')"
         type="button" id="button-ex"><i class="material-icons">import_export</i>Export</button>
-      <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary me-1"
-        [disabled]="!isEnabled('copyEmail')" type="button" id="button-ce"><i
-          class="material-icons">import_export</i>Copy Emails</button>
+        <button (click)="selectAction('copyEmail')" class="btn btn-outline-secondary me-1"
+          [disabled]="!isEnabled('copyEmail')" type="button" id="button-ce"><i
+        class="material-icons">import_export</i>Copy Emails</button>
+      </div>
     </div>
-  </div>
-  <br>
+    <br>
 
-  <div *ngIf="!loading && tableParams.totalListItems === 0">
-    No project groups found.
-  </div>
+      @if (!loading && tableParams.totalListItems === 0) {
+        <div>
+          No project groups found.
+        </div>
+      }
 
-  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
-    (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'>
-  </app-table-template>
-</div>
+      @if (!loading && tableParams.totalListItems != 0) {
+        <app-table-template [columns]="tableColumns" [data]="tableData"
+          (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'>
+        </app-table-template>
+      }
+    </div>

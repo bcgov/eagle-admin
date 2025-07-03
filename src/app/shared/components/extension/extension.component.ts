@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+
 import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -16,13 +16,19 @@ import { Utils } from '../../utils/utils';
   styleUrls: ['./extension.component.css'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     NgbDatepickerModule
-  ]
+]
 })
 export class ExtensionComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private modalService = inject(NgbModal);
+  api = inject(ApiService);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
 
   public loading = false;
   public extensionType = 'Extension';
@@ -31,15 +37,6 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   public extensionForm: UntypedFormGroup;
   public isEditing = false;
   private subscriptions = new Subscription();
-
-  constructor(
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils,
-    private modalService: NgbModal,
-    public api: ApiService,
-    private storageService: StorageService,
-    private utils: Utils,
-  ) { }
 
   ngOnInit() {
     if (this.navigationStackUtils.getNavigationStack()) {

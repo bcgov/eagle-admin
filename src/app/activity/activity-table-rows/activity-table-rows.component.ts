@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
@@ -9,14 +9,19 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'tbody[app-activity-table-rows]',
-    templateUrl: './activity-table-rows.component.html',
-    styleUrls: ['./activity-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule],
+  selector: 'tbody[app-activity-table-rows]',
+  templateUrl: './activity-table-rows.component.html',
+  styleUrls: ['./activity-table-rows.component.css'],
+  standalone: true,
+  imports: [CommonModule],
 })
 
 export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableComponent {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private router = inject(Router);
+  private modalService = inject(NgbModal);
+  private recentActivityService = inject(RecentActivityService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -28,13 +33,6 @@ export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableCompo
   public useSmallTable: boolean;
 
   private subscriptions = new Subscription();
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private router: Router,
-    private modalService: NgbModal,
-    private recentActivityService: RecentActivityService,
-  ) { }
 
   async ngOnInit() {
     this.entries = this.data.data;
@@ -71,7 +69,11 @@ export class ActivityTableRowsComponent implements OnInit, OnDestroy, TableCompo
   }
 
   togglePin(activity) {
-    activity.pinned === true ? activity.pinned = false : activity.pinned = true;
+    if (activity.pinned === true) {
+      activity.pinned = false;
+    } else {
+      activity.pinned = true;
+    }
     this.subscriptions.add(
       this.recentActivityService.save(activity)
         .subscribe({

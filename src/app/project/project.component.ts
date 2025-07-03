@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Project } from '../models/project';
@@ -6,7 +6,7 @@ import { ISearchResults } from '../models/search';
 import { SideBarService } from '../services/sidebar.service';
 import { StorageService } from '../services/storage.service';
 import { Utils } from '../shared/utils/utils';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -14,24 +14,21 @@ import { RouterModule } from '@angular/router';
     templateUrl: './project.component.html',
     styleUrls: ['./project.component.css'],
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [RouterModule],
 })
 export class ProjectComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private sidebarService = inject(SideBarService);
+  private utils = inject(Utils);
+  private storageService = inject(StorageService);
+
 
   private subscriptions = new Subscription();
   public project: Project = null;
   public loading = true;
   public classApplied = false;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private _changeDetectorRef: ChangeDetectorRef,
-    private sidebarService: SideBarService,
-    private utils: Utils,
-    private storageService: StorageService
-  ) {
-  }
 
   toggleSideNav() {
     this.sidebarService.toggle();

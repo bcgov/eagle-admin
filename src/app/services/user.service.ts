@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -7,8 +7,8 @@ import { User } from '../models/user';
 
 @Injectable()
 export class UserService {
+  private api = inject(ApiService);
 
-  constructor(private api: ApiService) { }
 
   save(user: User): Observable<User> {
     return this.api.saveUser(user)

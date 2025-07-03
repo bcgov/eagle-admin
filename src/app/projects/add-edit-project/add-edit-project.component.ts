@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,9 +10,10 @@ import { ConfigService } from 'src/app/services/config.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
-import { CommonModule } from '@angular/common';
+
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -20,13 +21,20 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./add-edit-project.component.css'],
   standalone: true,
   imports: [
-    RouterModule,
     CommonModule,
+    RouterModule,
     TableTemplateComponent,
     NgbDatepickerModule
   ]
 })
 export class AddEditProjectComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private snackBar = inject(MatSnackBar);
+  private config = inject(ConfigService);
+  projectService = inject(ProjectService);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
 
   // order of items in this tabLinks array is important because it orders the tabs and for the add page we are only adding information to the newest legislations
   public tabLinks: IAddEditTab[] = [
@@ -52,16 +60,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public pageIsEditing = false;
 
   public loading = true;
-
-  constructor(
-    private route: ActivatedRoute,
-    private snackBar: MatSnackBar,
-    private config: ConfigService,
-    public projectService: ProjectService,
-    private storageService: StorageService,
-    private utils: Utils
-  ) {
-  }
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)

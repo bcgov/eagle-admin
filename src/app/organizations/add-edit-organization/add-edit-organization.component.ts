@@ -1,7 +1,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { Subscription } from 'rxjs';
@@ -15,13 +15,18 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
   styleUrls: ['./add-edit-organization.component.css'],
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     EditorModule
-  ]
+]
 })
 
 export class AddEditOrganizationComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private orgService = inject(OrgService);
+  private storageService = inject(StorageService);
+
   private subscriptions = new Subscription();
 
   public isEditing = false;
@@ -51,14 +56,6 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
     'Other'
   ];
   public provinceList = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils,
-    private orgService: OrgService,
-    private storageService: StorageService,
-  ) { }
 
   ngOnInit() {
     if (this.navigationStackUtils.getNavigationStack()) {

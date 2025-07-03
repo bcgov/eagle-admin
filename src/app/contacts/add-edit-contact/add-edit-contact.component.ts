@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -8,7 +8,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { EditorModule } from '@tinymce/tinymce-angular';
-import { CommonModule } from '@angular/common';
+
 
 export interface DataModel {
   title: string;
@@ -20,12 +20,18 @@ export interface DataModel {
     templateUrl: './add-edit-contact.component.html',
     styleUrls: ['./add-edit-contact.component.css'],
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, EditorModule],
+    imports: [ReactiveFormsModule, EditorModule],
 })
 
 // NOTE: dialog components must not implement OnDestroy
 //       otherwise they don't return a result
 export class AddEditContactComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private storageService = inject(StorageService);
+  private userService = inject(UserService);
+
   private subscriptions = new Subscription();
   private navigationObject;
 
@@ -44,14 +50,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   public phonePattern;
   public salutationList = ['Mr.', 'Mrs.', 'Miss', 'Dr.', 'Ms', 'Chief', 'Mayor', 'Minister'];
   public provinceList = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils,
-    private storageService: StorageService,
-    private userService: UserService
-  ) { }
 
   ngOnInit() {
     if (this.navigationStackUtils.getNavigationStack()) {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -7,13 +7,12 @@ import { SearchResults } from '../models/search';
 
 @Injectable()
 export class SearchService {
+  private api = inject(ApiService);
+
 
   public isError = false;
   // This might get large
   private _cachedItems = {};
-  constructor(
-    private api: ApiService
-  ) { }
 
 
   getItem(_id: string, schema: string, useCache = false): Observable<any> {

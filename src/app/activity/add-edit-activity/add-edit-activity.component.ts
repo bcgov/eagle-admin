@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -32,6 +32,16 @@ import { Utils } from 'src/app/shared/utils/utils';
     ]
 })
 export class AddEditActivityComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private utils = inject(Utils);
+  private snackBar = inject(MatSnackBar);
+  private recentActivityService = inject(RecentActivityService);
+  private projectService = inject(ProjectService);
+  private notificationProjectService = inject(NotificationProjectService);
+  private commentPeriodService = inject(CommentPeriodService);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+
   public myForm: UntypedFormGroup;
   public isEditing = false;
   // private subscriptions: Subscription[] = [];
@@ -60,18 +70,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       ' alignright alignjustify | bullist numlist outdent indent |' +
       ' removeformat | help']
   };
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private utils: Utils,
-    private snackBar: MatSnackBar,
-    private recentActivityService: RecentActivityService,
-    private projectService: ProjectService,
-    private notificationProjectService: NotificationProjectService,
-    private commentPeriodService: CommentPeriodService,
-    private _changeDetectorRef: ChangeDetectorRef
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

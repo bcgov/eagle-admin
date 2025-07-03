@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import moment from 'moment-timezone';
@@ -17,16 +17,27 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { Utils } from 'src/app/shared/utils/utils';
 import { switchMap } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
-    selector: 'form-tab-2018',
-    templateUrl: './form-tab-2018.component.html',
-    styleUrls: ['../add-edit-project.component.css'],
-    standalone: true,
-    imports: [CommonModule, NgbDatepickerModule, ReactiveFormsModule],
+  selector: 'form-tab-2018',
+  templateUrl: './form-tab-2018.component.html',
+  styleUrls: ['../add-edit-project.component.css'],
+  standalone: true,
+  imports: [NgbDatepickerModule, ReactiveFormsModule],
 })
 export class FormTab2018Component implements OnInit, OnDestroy {
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private configService = inject(ConfigService);
+  private modalService = inject(NgbModal);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private projectService = inject(ProjectService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
   private subscriptions = new Subscription();
   public myForm: UntypedFormGroup;
   public documents: any[] = [];
@@ -66,20 +77,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public published: boolean;
   public only2018: boolean;
 
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    private configService: ConfigService,
-    private modalService: NgbModal,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private utils: Utils,
-  ) {
-  }
-
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
     this.regions = this.configService.regions;
@@ -97,9 +94,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           this.loading = false;
           try {
             this._changeDetectorRef.detectChanges();
-          } catch (e) {
-            // console.log('e:', e);
-          }
+          } catch { }
         })
     );
 

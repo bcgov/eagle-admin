@@ -1,7 +1,9 @@
-<tr (click)="selectItem(contact)"
-  *ngFor="let contact of contacts">
-  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{contact.displayName || '-'}}</td>
-  <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[0].width">{{contact.orgName || '-'}}</td>
-  <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[0].width">{{contact.email || '-'}}</td>
-  <td scope="row" data-label="PhoneNumber" [style.width]="!useSmallTable && columns[0].width">{{contact.phoneNumber || '-'}}</td>
-</tr>
+@for (contact of contacts; track contact) {
+  <tr (click)="selectItem(contact)"
+    >
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{contact.displayName || '-'}}</td>
+    <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[0].width">{{contact.orgName || '-'}}</td>
+    <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[0].width">{{contact.email || '-'}}</td>
+    <td scope="row" data-label="PhoneNumber" [style.width]="!useSmallTable && columns[0].width">{{contact.phoneNumber || '-'}}</td>
+  </tr>
+}

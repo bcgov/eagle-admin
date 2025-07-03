@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { OrganizationsTableRowsComponent } from './organizations-table-rows/organizations-table-rows.component';
@@ -9,19 +9,33 @@ import { TableObject } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 @Component({
     selector: 'app-organizations',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableTemplateComponent],
+    imports: [
+      CommonModule,
+      RouterModule,
+      FormsModule,
+      TableTemplateComponent
+    ],
     templateUrl: './organizations.component.html',
     styleUrls: ['./organizations.component.css'],
     
 })
 export class OrganizationsComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  private storageService = inject(StorageService);
+
   public terms = new SearchTerms();
   private subscriptions = new Subscription();
   public organizations: Org[] = null;
@@ -67,15 +81,6 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     communityGroup: false,
     other: false
   };
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private navigationStackUtils: NavigationStackUtils,
-    private tableTemplateUtils: TableTemplateUtils,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.storageService.state.orgForm = null;

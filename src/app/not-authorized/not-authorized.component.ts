@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -8,15 +8,13 @@ import { Subscription } from 'rxjs';
     templateUrl: './not-authorized.component.html',
     styleUrls: ['./not-authorized.component.css'],
     standalone: true,
-    imports: [CommonModule]
+    imports: []
 })
 export class NotAuthorizedComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+
   private subscriptions = new Subscription();
   public loggedout = false;
-
-  constructor(
-    private route: ActivatedRoute
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

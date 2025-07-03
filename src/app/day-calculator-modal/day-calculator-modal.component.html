@@ -21,12 +21,14 @@
               <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="startDP" [(ngModel)]="startDate"
                 ngbDatepicker #startDatePicker="ngbDatepicker" (change)="updateStartDateAlert()" />
               <button class="btn btn-outline-secondary calendar" (click)="startDatePicker.toggle()"
-                type="button"></button>
+              type="button"></button>
             </div>
           </div>
-          <div *ngIf="startDateAlert" role="alert">
-            <p class="text-danger help-block">{{ startDateAlert }}</p>
-          </div>
+          @if (startDateAlert) {
+            <div role="alert">
+              <p class="text-danger help-block">{{ startDateAlert }}</p>
+            </div>
+          }
         </div>
 
 
@@ -37,46 +39,56 @@
               <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="endDP" [(ngModel)]="endDate"
                 ngbDatepicker #endDatePicker="ngbDatepicker" (change)="updateEndDateAlert()" />
               <button class="btn btn-outline-secondary calendar" (click)="endDatePicker.toggle()"
-                type="button"></button>
+              type="button"></button>
             </div>
           </div>
-          <div *ngIf="endDateAlert" role="alert">
-            <p class="text-danger help-block">{{ endDateAlert }}</p>
-          </div>
+          @if (endDateAlert) {
+            <div role="alert">
+              <p class="text-danger help-block">{{ endDateAlert }}</p>
+            </div>
+          }
         </div>
       </div>
 
       <div class="row">
-        <div class="col-sm-6" *ngIf="type.value === 'suspended'">
-          <div class="form-group">
-            <label>Suspension Date</label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="suspendDP"
-                [(ngModel)]="suspendDate" ngbDatepicker #suspendDatePicker="ngbDatepicker"
-                (change)="updateSuspendDateAlert()" />
-              <button class="btn btn-outline-secondary calendar" (click)="suspendDatePicker.toggle()"
+        @if (type.value === 'suspended') {
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label>Suspension Date</label>
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="suspendDP"
+                  [(ngModel)]="suspendDate" ngbDatepicker #suspendDatePicker="ngbDatepicker"
+                  (change)="updateSuspendDateAlert()" />
+                <button class="btn btn-outline-secondary calendar" (click)="suspendDatePicker.toggle()"
                 type="button"></button>
+              </div>
             </div>
+            @if (suspendDateAlert) {
+              <div role="alert">
+                <p class="text-danger help-block">{{ suspendDateAlert }}</p>
+              </div>
+            }
           </div>
-          <div *ngIf="suspendDateAlert" role="alert">
-            <p class="text-danger help-block">{{ suspendDateAlert }}</p>
-          </div>
-        </div>
+        }
 
-        <div class="col-sm-6" *ngIf="type.value === 'suspended'">
-          <div class="form-group">
-            <label>Resumption Date</label>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="resumeDP" [(ngModel)]="resumeDate"
-                ngbDatepicker #resumeDatePicker="ngbDatepicker" (change)="updateResumeDateAlert()" />
-              <button class="btn btn-outline-secondary calendar" (click)="resumeDatePicker.toggle()"
+        @if (type.value === 'suspended') {
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label>Resumption Date</label>
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="resumeDP" [(ngModel)]="resumeDate"
+                  ngbDatepicker #resumeDatePicker="ngbDatepicker" (change)="updateResumeDateAlert()" />
+                <button class="btn btn-outline-secondary calendar" (click)="resumeDatePicker.toggle()"
                 type="button"></button>
+              </div>
             </div>
+            @if (resumeDateAlert) {
+              <div role="alert">
+                <p class="text-danger help-block">{{ resumeDateAlert }}</p>
+              </div>
+            }
           </div>
-          <div *ngIf="resumeDateAlert" role="alert">
-            <p class="text-danger help-block">{{ resumeDateAlert }}</p>
-          </div>
-        </div>
+        }
       </div>
 
       <div class="row">
@@ -84,7 +96,9 @@
           <label>Calculation Type</label>
           <div class="form-group">
             <select class="form-control" name="calcType" [(ngModel)]="type">
-              <option *ngFor="let t of types" [ngValue]="t">{{t.displayName}}</option>
+              @for (t of types; track t) {
+                <option [ngValue]="t">{{t.displayName}}</option>
+              }
             </select>
           </div>
         </div>
@@ -101,33 +115,44 @@
         <div class="col-sm-12">
           <div class="form-group">
             <label class="control-label">Description</label>
-            <div *ngIf="type.value === 'regular'">
-              <p class="help-block">Start date is included in calculation.</p>
-            </div>
-            <div *ngIf="type.value === 'suspended'">
-              <p class="help-block">Suspended dates are excluded from calculation.</p>
-            </div>
-            <div *ngIf="type.value === 'dayZero'">
-              <p class="help-block">Start date is excluded from calculation.
-                <a (click)="showRules = !showRules">
-                  <span class="hide-show" *ngIf="!showRules">Show</span>
-                  <span class="hide-show" *ngIf="showRules">Hide</span>
-                  Day Zero rules.
-                </a>
-              </p>
-            </div>
+            @if (type.value === 'regular') {
+              <div>
+                <p class="help-block">Start date is included in calculation.</p>
+              </div>
+            }
+            @if (type.value === 'suspended') {
+              <div>
+                <p class="help-block">Suspended dates are excluded from calculation.</p>
+              </div>
+            }
+            @if (type.value === 'dayZero') {
+              <div>
+                <p class="help-block">Start date is excluded from calculation.
+                  <a (click)="showRules = !showRules">
+                    @if (!showRules) {
+                      <span class="hide-show">Show</span>
+                    }
+                    @if (showRules) {
+                      <span class="hide-show">Hide</span>
+                    }
+                    Day Zero rules.
+                  </a>
+                </p>
+              </div>
+            }
           </div>
         </div>
       </div>
 
-      <div class="row" *ngIf="showRules">
-        <div class="col-sm-12"><small>
+      @if (showRules) {
+        <div class="row">
+          <div class="col-sm-12"><small>
             <div><strong>Holidays</strong></div>
             <div>
               <ul>
                 <li>If a deadline falls on a holiday the deadline is extended to the next day that is not a holiday. For
                   example, if the deadline for a comment period is December 26, boxing day, the deadline is extended to
-                  December 27.</li>
+                December 27.</li>
               </ul>
             </div>
             <div><strong>Weekends or Other Office Closures</strong></div>
@@ -135,7 +160,7 @@
               <ul>
                 <li>If a deadline falls on a day when the office is not open (Saturday, Sunday) the deadline is extended
                   to the next day that the office is open. For example, if the deadline for a comment period falls on a
-                  Saturday then the deadline is extended to Monday.</li>
+                Saturday then the deadline is extended to Monday.</li>
               </ul>
             </div>
             <div><strong>Calculation of Days</strong></div>
@@ -143,9 +168,9 @@
               <ul>
                 <li>When calculating periods (for example 30 day comment period) the first day must be excluded and the
                   last day included. For example, a 30 day comment period starts March 1, 2017, the comment period does
-                  not end until March 31, 2017.</li>
+                not end until March 31, 2017.</li>
                 <li>Legislated time periods must be calculated with day -0- eg, Evaluation 30 days, Application Review
-                  180 days, Ministers Decision 45 days, and Public Comment Periods.</li>
+                180 days, Ministers Decision 45 days, and Public Comment Periods.</li>
               </ul>
             </div>
             <div><strong>Time of Day</strong></div>
@@ -168,47 +193,50 @@
                 <li>Suspending a project during the Application Review period, when the suspension resumes it starts
                   back on the day it was suspended on. If a project is suspended on day 50 of the 180, in accordance
                   with the spirit of the Act, day 49 was the last full day of the Application Review Period, when the
-                  project resumes, it would resume on day 50 to allow 180 full days of review.</li>
+                project resumes, it would resume on day 50 to allow 180 full days of review.</li>
               </ul>
             </div>
             <div><strong>Interpretation Act</strong></div>
             <div style="margin-left: 25px;">
               <p><strong>25</strong>&nbsp;&nbsp;(1) This section applies to an enactment and to a deed, conveyance or
-                other legal instrument unless specifically provided otherwise in the deed, conveyance or other legal
-                instrument.</p>
-              <p>(2) If the time for doing an act falls or expires on a holiday, the time is extended to the next day
-                that is not a holiday.</p>
-              <p>(3) If the time for doing an act in a business office falls or expires on a day when the office is not
-                open during regular business hours, the time is extended to the next day that the office is open.</p>
-              <p>(4) In the calculation of time expressed as clear days, weeks, months or years, or as &quot;at
-                least&quot; or &quot;not less than&quot; a number of days, weeks, months or years, the first and last
-                days must be excluded.</p>
-              <p>(5) In the calculation of time not referred to in subsection (4), the first day must be excluded and
-                the last day included.</p>
-              <p>(6) If, under this section, the calculation of time ends on a day in a month that has no date
-                corresponding to the first day of the period of time, the time ends on the last day of that month.</p>
-              <p>(7) A specified time of day is a reference to Pacific Standard time, or 8 hours behind Greenwich mean
-                time, unless Daylight Saving time is being used or observed on that day.</p>
-              <p>(8) A person reaches a particular age expressed in years at the start of the relevant anniversary of
-                his or her date of birth.</p>
-            </div>
-          </small>
-        </div>
-      </div>
-      <div class="row" *ngIf="errorAlert">
-        <div class="col-sm-12">
-          <div role="alert">
-            <p class="text-danger help-block">{{ errorAlert }}</p>
+              other legal instrument unless specifically provided otherwise in the deed, conveyance or other legal
+            instrument.</p>
+            <p>(2) If the time for doing an act falls or expires on a holiday, the time is extended to the next day
+            that is not a holiday.</p>
+            <p>(3) If the time for doing an act in a business office falls or expires on a day when the office is not
+            open during regular business hours, the time is extended to the next day that the office is open.</p>
+            <p>(4) In the calculation of time expressed as clear days, weeks, months or years, or as &quot;at
+              least&quot; or &quot;not less than&quot; a number of days, weeks, months or years, the first and last
+            days must be excluded.</p>
+            <p>(5) In the calculation of time not referred to in subsection (4), the first day must be excluded and
+            the last day included.</p>
+            <p>(6) If, under this section, the calculation of time ends on a day in a month that has no date
+            corresponding to the first day of the period of time, the time ends on the last day of that month.</p>
+            <p>(7) A specified time of day is a reference to Pacific Standard time, or 8 hours behind Greenwich mean
+            time, unless Daylight Saving time is being used or observed on that day.</p>
+            <p>(8) A person reaches a particular age expressed in years at the start of the relevant anniversary of
+            his or her date of birth.</p>
           </div>
+        </small>
+      </div>
+    </div>
+  }
+  @if (errorAlert) {
+    <div class="row">
+      <div class="col-sm-12">
+        <div role="alert">
+          <p class="text-danger help-block">{{ errorAlert }}</p>
         </div>
       </div>
-    </form>
-  </div>
+    </div>
+  }
+</form>
+</div>
 
-  <div class="modal-footer">
-    <button class="btn btn-secondary" type="button" (click)="reset()">Reset</button>
-    <button class="btn btn-primary" type="button" (click)="dismiss()">Close</button>
-    <button class="btn btn-success" type="button" (click)="go()">Calculate</button>
-  </div>
+<div class="modal-footer">
+  <button class="btn btn-secondary" type="button" (click)="reset()">Reset</button>
+  <button class="btn btn-primary" type="button" (click)="dismiss()">Close</button>
+  <button class="btn btn-success" type="button" (click)="go()">Calculate</button>
+</div>
 
 </div>

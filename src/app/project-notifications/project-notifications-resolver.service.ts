@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SearchService } from '../services/search.service';
@@ -7,11 +7,10 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
 export class ProjectNotificationsResolver  {
-  constructor(
-    private searchService: SearchService,
-    private tableTemplateUtils: TableTemplateUtils,
-    private storageService: StorageService
-  ) { }
+  private searchService = inject(SearchService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  private storageService = inject(StorageService);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const tableParams = this.tableTemplateUtils.getParamsFromUrl(route.params);

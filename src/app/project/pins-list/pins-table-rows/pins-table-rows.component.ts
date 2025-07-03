@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef, EventEmitter, Output, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, EventEmitter, Output, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { from, Subscription } from 'rxjs';
@@ -7,17 +7,23 @@ import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
-    selector: 'tbody[app-pins-table-rows]',
-    templateUrl: './pins-table-rows.component.html',
-    styleUrls: ['./pins-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule],
+  selector: 'tbody[app-pins-table-rows]',
+  templateUrl: './pins-table-rows.component.html',
+  styleUrls: ['./pins-table-rows.component.css'],
+  standalone: true,
+  imports: [],
 })
 
 export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private router = inject(Router);
+  private modalService = inject(NgbModal);
+  private recentActivityService = inject(RecentActivityService);
+  private projectService = inject(ProjectService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -31,14 +37,6 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   public columns: any;
   public useSmallTable: boolean;
   public projectId: string;
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private router: Router,
-    private modalService: NgbModal,
-    private recentActivityService: RecentActivityService,
-    private projectService: ProjectService
-  ) { }
 
   async ngOnInit() {
     this.contacts = this.data.data;
@@ -85,7 +83,11 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   }
 
   togglePin(activity) {
-    activity.pinned === true ? activity.pinned = false : activity.pinned = true;
+    if (activity.pinned === true) {
+      activity.pinned = false;
+    } else {
+      activity.pinned = true;
+    }
     this.subscriptions.add(
       this.recentActivityService.save(activity)
         .subscribe({

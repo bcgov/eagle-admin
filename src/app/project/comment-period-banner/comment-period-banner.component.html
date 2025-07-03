@@ -1,31 +1,39 @@
-<div *ngIf="commentPeriod" class="banner">
+@if (commentPeriod) {
+  <div class="banner">
     <div class="m-3 py-3">
-        <div class="row">
-            <div class="col-md-6">
-                <h2 class="mb-0">Public Comment Period is {{commentPeriod.commentPeriodStatus}}</h2>
-                <h5>{{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}</h5>
-            </div>
-            <div class="col-md-6 text-end">
-                <div *ngIf="commentPeriod.commentPeriodStatus !== Open">
-                    <button type="button" id="viewComment" class="btn btn-primary" (click)="goToViewComments()">
-                        View Comment Period
-                    </button>
-                    &nbsp;
-                    <button type="button" id="submitComment" class="btn btn-primary" (click)="goToAddComment()">
-                        Submit a Comment
-                    </button>
-                </div>
-            </div>
+      <div class="row">
+        <div class="col-md-6">
+          <h2 class="mb-0">Public Comment Period is {{commentPeriod.commentPeriodStatus}}</h2>
+          <h5>{{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}</h5>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <p *ngIf="commentPeriod.informationLabel" class="mb-0">
-                    This Public Comment Period is regarding the <b>{{commentPeriod.informationLabel}}</b>
-                </p>
-                <p *ngIf="commentPeriod.informationLabel == null" class="mb-0">
-                    {{commentPeriod.instructions}}
-                </p>
+        <div class="col-md-6 text-end">
+          @if (commentPeriod.commentPeriodStatus !== Open) {
+            <div>
+              <button type="button" id="viewComment" class="btn btn-primary" (click)="goToViewComments()">
+                View Comment Period
+              </button>
+              &nbsp;
+              <button type="button" id="submitComment" class="btn btn-primary" (click)="goToAddComment()">
+                Submit a Comment
+              </button>
             </div>
+          }
         </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          @if (commentPeriod.informationLabel) {
+            <p class="mb-0">
+              This Public Comment Period is regarding the <b>{{commentPeriod.informationLabel}}</b>
+            </p>
+          }
+          @if (commentPeriod.informationLabel == null) {
+            <p class="mb-0">
+              {{commentPeriod.instructions}}
+            </p>
+          }
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+}

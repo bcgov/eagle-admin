@@ -1,29 +1,33 @@
 <!-- <div class="top-container">
-  <h1>
+<h1>
 
-  </h1>
-  <div class="col-6">
-    <div class="row">
-      <div class="col-3">
-        <div class="subway-circle rounded-circle bg-success"></div>label
-      </div>
-      <div class="col-3">
-        <div class="subway-circle rounded-circle bg-success"></div>label
-      </div>
-      <div class="col-3">
-        <div class="subway-circle rounded-circle bg-success"></div>label
-      </div>
-      <div class="col-3">
-        <div class="subway-circle rounded-circle bg-success"></div>label
-      </div>
+</h1>
+<div class="col-6">
+  <div class="row">
+    <div class="col-3">
+      <div class="subway-circle rounded-circle bg-success"></div>label
+    </div>
+    <div class="col-3">
+      <div class="subway-circle rounded-circle bg-success"></div>label
+    </div>
+    <div class="col-3">
+      <div class="subway-circle rounded-circle bg-success"></div>label
+    </div>
+    <div class="col-3">
+      <div class="subway-circle rounded-circle bg-success"></div>label
     </div>
   </div>
+</div>
 </div> -->
 <div class="bottom-container project-container">
-  <div class="spinner-container full-screen" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
-  <div *ngIf="!loading">
-    <router-outlet></router-outlet>
-  </div>
+  @if (loading) {
+    <div class="spinner-container full-screen">
+      <div class="spinner-new rotating"></div>
+    </div>
+  }
+  @if (!loading) {
+    <div>
+      <router-outlet></router-outlet>
+    </div>
+  }
 </div>

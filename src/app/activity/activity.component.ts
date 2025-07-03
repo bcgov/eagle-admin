@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -14,7 +14,7 @@ import { TableParamsObject } from '../shared/components/table-template/table-par
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -36,10 +36,16 @@ class ActivityFilterObject {
   styleUrls: ['./activity.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
+  imports: [FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
 
 })
 export class ActivityComponent implements OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private projectService = inject(ProjectService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   private subscriptions = new Subscription();
   public readonly constants = Constants;
   public loading = true;
@@ -99,13 +105,7 @@ export class ActivityComponent implements OnDestroy {
     }
   ];
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private projectService: ProjectService,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private tableTemplateUtils: TableTemplateUtils,
-  ) {
+  constructor() {
     this.subscriptions.add(
       this.projectService.getAll(1, 1000, '+name')
         .pipe(

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommentPeriod } from '../models/commentPeriod';
 import { StorageService } from '../services/storage.service';
@@ -23,6 +23,10 @@ import { ReviewCommentsTabComponent } from '../comment-period/review-comments-ta
 })
 
 export class CommentPeriodComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+
 
   private subscriptions = new Subscription();
 
@@ -31,12 +35,6 @@ export class CommentPeriodComponent implements OnInit, OnDestroy {
   public currentProject;
   public baseRouteUrl: string;
   public selectedTab = 0;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject;

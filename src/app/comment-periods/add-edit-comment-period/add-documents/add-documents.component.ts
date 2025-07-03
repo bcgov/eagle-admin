@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { PlatformLocation } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -11,15 +11,35 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
-    selector: 'app-add-documents',
-    templateUrl: './add-documents.component.html',
-    styleUrls: ['./add-documents.component.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    
+  selector: 'app-add-documents',
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    TableTemplateComponent,
+  ],
+  templateUrl: './add-documents.component.html',
+  styleUrls: ['./add-documents.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+
 })
 export class AddDocumentComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private api = inject(ApiService);
+  private location = inject(PlatformLocation);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private searchService = inject(SearchService);
+  storageService = inject(StorageService);
+  tableTemplateUtils = inject(TableTemplateUtils);
+
   public terms = new SearchTerms();
   private subscriptions = new Subscription();
   public documents: Document[] = null;
@@ -64,16 +84,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
 
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private api: ApiService,
-    private location: PlatformLocation,
-    private route: ActivatedRoute,
-    private router: Router,
-    private searchService: SearchService,
-    public storageService: StorageService,
-    public tableTemplateUtils: TableTemplateUtils
-  ) {
+  constructor() {
     this.location.onPopState(() => {
       // TODO: if navigating anywhere, we should ask the user if they really want to do that.
       this.storageService.state.selectedDocumentsForCP.data = this.originalSelectedDocs;
@@ -304,7 +315,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
         pageNumber,
         this.tableParams.pageSize,
         this.tableParams.sortBy,
-        { documentSource: 'PROJECT' }, false, {},  ''
+        { documentSource: 'PROJECT' }, false, {}, ''
       ).subscribe((res: any) => {
         this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
         this.documents = res[0].data.searchResults;

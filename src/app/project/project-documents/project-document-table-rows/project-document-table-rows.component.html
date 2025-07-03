@@ -1,27 +1,34 @@
-<tr
-  *ngFor="let document of documents"
-  class="clickable-row" [className]="(!activeLegislationYear || document.legislation === activeLegislationYear) ? ' active' : ' inactive'">
-  <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
-    <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox' [disabled]="(activeLegislationYear && document.legislation !== activeLegislationYear)">
-  </td>
-  <td data-label="Name" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width"><a href="/admin/p/{{document.project._id}}/project-documents/detail/{{document._id}}"> {{document.displayName}} </a></td>
-  <td data-label="Status" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
-    <p class="card-text publish-state">
-      <i class="material-icons">
-        {{document.status === 'Not Published' ?   'cloud_off' : 'cloud_done' || '-'}}
-      </i>
-    </p>
-  </td>
-  <td data-label="Date" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[3].width">
-    <div *ngIf="document.datePosted !== '1900-01-01T08:00:00.000Z'">{{document.datePosted | date:'longDate'}}</div>
-  </td>
-  <td data-label="Type" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[4].width">{{document.type | listConverter}}</td>
-  <td data-label="Milestone" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[5].width">
+@for (document of documents; track document) {
+  <tr
+    class="clickable-row" [className]="(!activeLegislationYear || document.legislation === activeLegislationYear) ? ' active' : ' inactive'">
+    <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
+      <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox' [disabled]="(activeLegislationYear && document.legislation !== activeLegislationYear)">
+    </td>
+    <td data-label="Name" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width"><a href="/admin/p/{{document.project._id}}/project-documents/detail/{{document._id}}"> {{document.displayName}} </a></td>
+    <td data-label="Status" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
+      <p class="card-text publish-state">
+        <i class="material-icons">
+          {{document.status === 'Not Published' ?   'cloud_off' : 'cloud_done' || '-'}}
+        </i>
+      </p>
+    </td>
+    <td data-label="Date" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[3].width">
+      @if (document.datePosted !== '1900-01-01T08:00:00.000Z') {
+        <div>{{document.datePosted | date:'longDate'}}</div>
+      }
+    </td>
+    <td data-label="Type" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[4].width">{{document.type | listConverter}}</td>
+    <td data-label="Milestone" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[5].width">
     {{document.milestone | listConverter}}</td>
-  <td data-label="Legislation" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[6].width">
+    <td data-label="Legislation" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[6].width">
     {{document.legislation}}</td>
-  <td data-label="Feature" (click)="favoriteDocument(document)" scope="row" [style.width]="!useSmallTable && columns[7].width">
-    <i *ngIf="document.isFeatured === true" class="material-icons featured-star" aria-hidden="true">star</i>
-    <i *ngIf="document.isFeatured !== true" class="material-icons un-featured-star" aria-hidden="true">star_border</i>
-  </td>
-</tr>
+    <td data-label="Feature" (click)="favoriteDocument(document)" scope="row" [style.width]="!useSmallTable && columns[7].width">
+      @if (document.isFeatured === true) {
+        <i class="material-icons featured-star" aria-hidden="true">star</i>
+      }
+      @if (document.isFeatured !== true) {
+        <i class="material-icons un-featured-star" aria-hidden="true">star_border</i>
+      }
+    </td>
+  </tr>
+}

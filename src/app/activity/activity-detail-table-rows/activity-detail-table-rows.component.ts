@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -17,6 +17,11 @@ import { CommonModule } from '@angular/common';
 })
 
 export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, TableComponent {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private router = inject(Router);
+  private modalService = inject(NgbModal);
+  private recentActivityService = inject(RecentActivityService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -28,13 +33,6 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
   public useSmallTable: boolean;
 
   private subscriptions = new Subscription();
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private router: Router,
-    private modalService: NgbModal,
-    private recentActivityService: RecentActivityService,
-  ) { }
 
   async ngOnInit() {
     this.entries = this.data.data;

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ApiService } from 'src/app/services/api';
 
@@ -10,14 +10,12 @@ import { ApiService } from 'src/app/services/api';
 })
 
 export class CommentStatsComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+
   @Input() period: any;
   public summary: any;
 
   private subscriptions = new Subscription();
-
-  constructor(
-    private api: ApiService
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

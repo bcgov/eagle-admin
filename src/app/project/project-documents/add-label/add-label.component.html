@@ -4,34 +4,36 @@
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <!-- ADD PROPERTY projectID project.name -->
-<!--         <li class="breadcrumb-item" >
-      <a [routerLink]="['/p', projectId]"> {{project.name}}
-      </a>
-    </li> -->
-    <li class="breadcrumb-item active" aria-current="page"><a
-        [routerLink]="['/p', currentProjectId, 'project-documents']">Documents</a></li>
-    <li class="breadcrumb-item active" aria-current="page"><a
-        [routerLink]="back.url">{{back.label}}</a></li>
-    <li class="breadcrumb-item">Add Label(s)</li>
-  </ol>
+    <!--         <li class="breadcrumb-item" >
+    <a [routerLink]="['/p', projectId]"> {{project.name}}
+    </a>
+  </li> -->
+  <li class="breadcrumb-item active" aria-current="page"><a
+  [routerLink]="['/p', currentProjectId, 'project-documents']">Documents</a></li>
+  <li class="breadcrumb-item active" aria-current="page"><a
+  [routerLink]="back.url">{{back.label}}</a></li>
+  <li class="breadcrumb-item">Add Label(s)</li>
+</ol>
 </nav>
 
 <div class="container-fluid-padding">
   <div class="form-group mb-0">
     <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
       <div class="form-row">
-        <div *ngFor="let label of labels" class="form-group col">
-          <button type="button" class="col-12 btn" (click)="toggleSelected(label)"
-            [ngClass]="label.selected ? 'btn-primary' : 'btn-secondary'">{{label.name}}<span
-              class="badge"></span></button>
-        </div>
+        @for (label of labels; track label) {
+          <div class="form-group col">
+            <button type="button" class="col-12 btn" (click)="toggleSelected(label)"
+              [ngClass]="label.selected ? 'btn-primary' : 'btn-secondary'">{{label.name}}<span
+            class="badge"></span></button>
+          </div>
+        }
       </div>
     </form>
   </div>
   <div class="btn-group" role="group" aria-label="Action Buttons">
     <div class="input-group-prepend">
       <button class="btn btn-outline-primary me-1" type="button" id="button-cl" [routerLink]="back.url"><i
-          class="material-icons">arrow_back</i>Back</button>
+      class="material-icons">arrow_back</i>Back</button>
     </div>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ConfigService } from 'src/app/services/config.service';
@@ -7,11 +7,10 @@ import { Utils } from 'src/app/shared/utils/utils';
 
 @Injectable()
 export class ApplicationSortResolver  {
-  constructor(
-    private searchService: SearchService,
-    private configService: ConfigService,
-    private utils: Utils
-  ) { }
+  private searchService = inject(SearchService);
+  private configService = inject(ConfigService);
+  private utils = inject(Utils);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const projectId = route.parent.paramMap.get('projId');

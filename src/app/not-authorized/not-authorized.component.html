@@ -3,17 +3,18 @@
     warning
   </i>
 
-  <div *ngIf="!loggedout; else loggedOut">
-    <h1>Email for access</h1>
-    <p>You must request access to this administrative site by <strong>email</strong>.</p>
-    <p><a href="mailto:epicsupport.eao@gov.bc.ca">epicsupport.eao&#64;gov.bc.ca</a></p>
-    <p>Authentication is a one time process, after which your IDIR will be enabled for future logins.</p>
-  </div>
-
-  <ng-template #loggedOut>
+  @if (!loggedout) {
+    <div>
+      <h1>Email for access</h1>
+      <p>You must request access to this administrative site by <strong>email</strong>.</p>
+      <p><a href="mailto:epicsupport.eao@gov.bc.ca">epicsupport.eao&#64;gov.bc.ca</a></p>
+      <p>Authentication is a one time process, after which your IDIR will be enabled for future logins.</p>
+    </div>
+  } @else {
     <h1>Logged Out</h1>
     <p><strong>You have been logged out.</strong></p>
     <button class="btn btn-primary" (click)="login()">Click here to log back in again.</button>
-  </ng-template>
+  }
+
 
 </div>

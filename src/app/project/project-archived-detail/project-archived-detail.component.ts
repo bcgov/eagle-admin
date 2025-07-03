@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -27,6 +27,19 @@ import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-p
 })
 
 export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  snackBar = inject(MatSnackBar);
+  api = inject(ApiService);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private modalService = inject(NgbModal);
+  projectService = inject(ProjectService);
+  commentPeriodService = inject(CommentPeriodService);
+  decisionService = inject(DecisionService);
+  private storageService = inject(StorageService);
+  documentService = inject(DocumentService);
+  private utils = inject(Utils);
+
 
   public isPublishing = false;
   public isUnpublishing = false;
@@ -41,23 +54,6 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   public currentProject;
   public isPublished;
   public substantiallyStarted;
-
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    public snackBar: MatSnackBar,
-    public api: ApiService, // also used in template
-    private _changeDetectorRef: ChangeDetectorRef,
-    private modalService: NgbModal,
-    public projectService: ProjectService, // also used in template
-    public commentPeriodService: CommentPeriodService,
-    public decisionService: DecisionService,
-    private storageService: StorageService,
-    public documentService: DocumentService,
-    private utils: Utils
-  ) {
-  }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

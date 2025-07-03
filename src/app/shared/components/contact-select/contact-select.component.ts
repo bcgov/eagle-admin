@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableObject } from '../table-template/table-object';
@@ -9,14 +9,31 @@ import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../../utils/table-template-utils';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { TableTemplateComponent } from '../table-template/table-template.component';
 
 @Component({
-    selector: 'app-contact-select',
-    templateUrl: './contact-select.component.html',
-    styleUrls: ['./contact-select.component.css'],
-    
+  selector: 'app-contact-select',
+  templateUrl: './contact-select.component.html',
+  styleUrls: ['./contact-select.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TableTemplateComponent
+  ]
 })
 export class ContactSelectComponent implements OnInit, OnDestroy {
+  navigationStackUtils = inject(NavigationStackUtils);
+  private route = inject(ActivatedRoute);
+  router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  storageService = inject(StorageService);
+
   private subscriptions = new Subscription();
   public loading = true;
   public entries: User[] = null;
@@ -49,14 +66,6 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
       width: '25%'
     }
   ];
-  constructor(
-    public navigationStackUtils: NavigationStackUtils,
-    private route: ActivatedRoute,
-    public router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private tableTemplateUtils: TableTemplateUtils,
-    public storageService: StorageService
-  ) { }
 
   ngOnInit() {
     if (this.navigationStackUtils.getNavigationStack()) {
@@ -101,8 +110,11 @@ export class ContactSelectComponent implements OnInit, OnDestroy {
     const list = [];
     if (this.entries && this.entries.length > 0) {
       this.entries.forEach((item: any) => {
-        // Switch between the two contact/org components.
-        this.storageService.state.componentModel === 'User' ? list.push(new User(item)) : list.push(new Org(item));
+        if (this.storageService.state.componentModel === 'User') {
+          list.push(new User(item));
+        } else {
+          list.push(new Org(item));
+        }
       });
       this.tableData = new TableObject(
         this.storageService.state.rowComponent,

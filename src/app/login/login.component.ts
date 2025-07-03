@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../services/api';
 import { Subscription } from 'rxjs';
@@ -19,16 +19,14 @@ import { FormsModule } from '@angular/forms';
 })
 
 export class LoginComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private api = inject(ApiService);
+  private keycloakService = inject(KeycloakService);
+
   private subscriptions = new Subscription();
   model: any = {};
   loading = false;
   error = '';
-
-  constructor(
-    private router: Router,
-    private api: ApiService,
-    private keycloakService: KeycloakService
-  ) { }
 
   ngOnInit() {
     // Redir to the main index page if they try to get here.

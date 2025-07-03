@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
@@ -6,6 +6,8 @@ import Keycloak from 'keycloak-js';
 
 @Injectable()
 export class KeycloakService {
+  private configService = inject(ConfigService);
+
   public LAST_IDP_AUTHENTICATED = 'kc-last-idp-authenticated';
   private keycloakAuth: any;
   public keycloakEnabled: boolean;
@@ -15,10 +17,6 @@ export class KeycloakService {
   public readonly idpHintEnum = {
     IDIR: 'idir',
   };
-
-  constructor(
-    private configService: ConfigService,
-  ) { }
 
   async init() {
     // Load up the config service data

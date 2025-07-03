@@ -1,6 +1,6 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { NgbActiveModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import moment from 'moment';
 import { Utils } from '../shared/utils/utils';
@@ -23,12 +23,14 @@ export class DayCalculatorResult {
     styleUrls: ['./day-calculator-modal.component.css'],
     standalone: true,
     imports: [
-      CommonModule,
-      FormsModule,
-      NgbDatepickerModule
-    ]
+    FormsModule,
+    NgbDatepickerModule
+]
 })
 export class DayCalculatorModalComponent {
+  activeModal = inject(NgbActiveModal);
+  private utils = inject(Utils);
+
 
   startDate = null;
   endDate = null;
@@ -50,11 +52,6 @@ export class DayCalculatorModalComponent {
     { displayName: 'Suspension', value: 'suspended' }
   ];
   type = this.types[0];
-
-  constructor(
-    public activeModal: NgbActiveModal, // also used in template
-    private utils: Utils
-  ) { }
 
   public dismiss() {
     this.activeModal.close(DayCalculatorModalResult.Dismissed);

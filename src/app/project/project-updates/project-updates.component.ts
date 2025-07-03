@@ -1,7 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { ActivityDetailTableRowsComponent } from 'src/app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
@@ -9,7 +10,7 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Utils } from 'src/app/shared/utils/utils';
-import { CommonModule } from '@angular/common';
+
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
@@ -25,6 +26,13 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
   ]
 })
 export class ProjectUpdatesComponent implements OnInit, OnDestroy {
+  private storageService = inject(StorageService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private utils = inject(Utils);
+
   private subscriptions = new Subscription();
   public terms = new SearchTerms();
   public currentProject;
@@ -47,15 +55,6 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
       nosort: true
     }
   ];
-
-  constructor(
-    private storageService: StorageService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private tableTemplateUtils: TableTemplateUtils,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

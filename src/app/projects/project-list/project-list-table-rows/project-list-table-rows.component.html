@@ -1,11 +1,13 @@
-<tr
-  (click)="goToProject(project)"
-  *ngFor="let project of projects">
-  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{project.name || '-'}}</td>
-  <!-- TODO: Get proponent name in here. -->
-  <td scope="row" data-label="Proponent" [style.width]="!useSmallTable && columns[1].width">{{project.proponent?.name || '-'}}</td>
-  <td scope="row" data-label="Type" [style.width]="!useSmallTable && columns[2].width">{{project.type || '-'}}</td>
-  <td scope="row" data-label="Region" [style.width]="!useSmallTable && columns[3].width">{{project.region || '-'}}</td>
-  <td scope="row" data-label="Phase" [style.width]="!useSmallTable && columns[4].width">{{project.currentPhaseName?.name || '-'}}</td>
-  <td scope="row" data-label="Decision" [style.width]="!useSmallTable && columns[5].width">{{project.eacDecision?.name || '-'}}</td>
-</tr>
+@for (project of projects; track project) {
+  <tr
+    (click)="goToProject(project)"
+    >
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{project.name || '-'}}</td>
+    <!-- TODO: Get proponent name in here. -->
+    <td scope="row" data-label="Proponent" [style.width]="!useSmallTable && columns[1].width">{{project.proponent?.name || '-'}}</td>
+    <td scope="row" data-label="Type" [style.width]="!useSmallTable && columns[2].width">{{project.type || '-'}}</td>
+    <td scope="row" data-label="Region" [style.width]="!useSmallTable && columns[3].width">{{project.region || '-'}}</td>
+    <td scope="row" data-label="Phase" [style.width]="!useSmallTable && columns[4].width">{{project.currentPhaseName?.name || '-'}}</td>
+    <td scope="row" data-label="Decision" [style.width]="!useSmallTable && columns[5].width">{{project.eacDecision?.name || '-'}}</td>
+  </tr>
+}

@@ -1,6 +1,8 @@
-<div class="spinner-container" *ngIf="loading">
-  <div class="spinner-new rotating"></div>
-</div>
+@if (loading) {
+  <div class="spinner-container">
+    <div class="spinner-new rotating"></div>
+  </div>
+}
 
 <section id="comment-period-details">
   <div class="row top-row">
@@ -20,9 +22,13 @@
           <button class="dropdown-item" (click)="editCommentPeriod()">Edit</button>
           <button class="dropdown-item" (click)="addComment()">Add a comment</button>
           <button class="dropdown-item" (click)="exportCommentsForStaff()">Export All Comments</button>
-          <button *ngIf="projectType === 'currentProject'" class="dropdown-item" (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
+          @if (projectType === 'currentProject') {
+            <button class="dropdown-item" (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
+          }
           <button class="dropdown-item" (click)="togglePublishState()">{{publishAction}}</button>
-          <button *ngIf="canDeleteCommentPeriod" class="dropdown-item" (click)="deleteCommentPeriod()">Delete</button>
+          @if (canDeleteCommentPeriod) {
+            <button class="dropdown-item" (click)="deleteCommentPeriod()">Delete</button>
+          }
         </div>
       </div>
     </div>
@@ -38,7 +44,7 @@
     </div>
     <div class="col-md-4">
       <h3>
-          STATUS:&nbsp;
+        STATUS:&nbsp;
       </h3>
       <p id="status">
         <i class="material-icons align-middle">
@@ -47,10 +53,12 @@
         Commenting {{commentPeriod.commentPeriodStatus}}
       </p>
     </div>
-    <div *ngIf="projectType === 'currentProject'" class="col-md-4">
-      <h3>MILESTONE(S):</h3>
-      <p id="milestone">{{commentPeriod.milestone | listConverter}}</p>
-    </div>
+    @if (projectType === 'currentProject') {
+      <div class="col-md-4">
+        <h3>MILESTONE(S):</h3>
+        <p id="milestone">{{commentPeriod.milestone | listConverter}}</p>
+      </div>
+    }
   </div>
   <div class="row">
     <div class="col-md-8">
@@ -60,37 +68,45 @@
       <p>{{commentPeriod.informationLabel}}</p>
     </div>
   </div>
-  <div *ngIf="commentPeriod.commentTip" class="row">
-    <div class="col-md-8">
-      <h3>COMMENT TIP</h3>
-      <div id="commentTip" [innerHTML]="commentPeriod.commentTip  | safeHtml"></div>
+  @if (commentPeriod.commentTip) {
+    <div class="row">
+      <div class="col-md-8">
+        <h3>COMMENT TIP</h3>
+        <div id="commentTip" [innerHTML]="commentPeriod.commentTip  | safeHtml"></div>
+      </div>
     </div>
-  </div>
+  }
   <div class="row">
     <div class="col-md-12">
       <h3>
         RELATED DOCUMENT(S):
       </h3>
-      <ul class="doc-list mb-3" *ngIf="commentPeriodDocs?.length > 0">
-        <li class="clickable-row" *ngFor="let doc of commentPeriodDocs" (click)="downloadDocument(doc)">
-          <span class="cell icon">
-            <i class="material-icons">insert_drive_file</i>
-          </span>
-          <span class="cell name" [title]="doc.displayName || ''">
-            <span class="cell__txt-content">{{doc.displayName}}</span>
-          </span>
-          <span class="cell">
-            <p class="card-text publish-state">
-              <i class="material-icons">
-                {{doc.read.includes("public") ?   'cloud_done' : 'cloud_off' || '-'}}
-              </i>
-            </p>
-          </span>
-        </li>
-      </ul>
-      <div *ngIf="commentPeriodDocs?.length === 0">
-        <p>This comment has no associated documents.</p>
-      </div>
+      @if (commentPeriodDocs?.length > 0) {
+        <ul class="doc-list mb-3">
+          @for (doc of commentPeriodDocs; track doc) {
+            <li class="clickable-row" (click)="downloadDocument(doc)" tabindex="0" (keydown)="onKeyDownDocument($event, doc)">
+              <span class="cell icon">
+                <i class="material-icons">insert_drive_file</i>
+              </span>
+              <span class="cell name" [title]="doc.displayName || ''">
+                <span class="cell__txt-content">{{doc.displayName}}</span>
+              </span>
+              <span class="cell">
+                <p class="card-text publish-state">
+                  <i class="material-icons">
+                    {{doc.read.includes("public") ?   'cloud_done' : 'cloud_off' || '-'}}
+                  </i>
+                </p>
+              </span>
+            </li>
+          }
+        </ul>
+      }
+      @if (commentPeriodDocs?.length === 0) {
+        <div>
+          <p>This comment has no associated documents.</p>
+        </div>
+      }
     </div>
   </div>
 </section>
@@ -119,32 +135,39 @@
   </div>
 </section>
 
-<section  *ngIf="projectType === 'currentProject'"id="open-house-details">
-  <div class="row">
-    <div class="col-12">
-      <h2>OPEN HOUSE</h2>
+@if (projectType === 'currentProject') {
+  <section id="open-house-details">
+    <div class="row">
+      <div class="col-12">
+        <h2>OPEN HOUSE</h2>
+      </div>
     </div>
-  </div>
-
-  <div class="row" *ngIf="commentPeriod.openHouses.length !== 0">
-    <div class="col-12">
-      <ul class="list-group">
-        <li class="list-group-item" *ngFor="let openHouse of commentPeriod.openHouses">
-          <h3>
-            DATE:&nbsp;
-          </h3>
-          <p>
-            {{openHouse.eventDate | date}}
-          </p>
-          <h3>
-            DESCRIPTION
-          </h3>
-          <p>{{openHouse.description}}</p>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div *ngIf="commentPeriod.openHouses.length === 0">
-    <p>There are no open houses associated with this comment period.</p>
-  </div>
-</section>
+    @if (commentPeriod.openHouses.length !== 0) {
+      <div class="row">
+        <div class="col-12">
+          <ul class="list-group">
+            @for (openHouse of commentPeriod.openHouses; track openHouse) {
+              <li class="list-group-item">
+                <h3>
+                  DATE:&nbsp;
+                </h3>
+                <p>
+                  {{openHouse.eventDate | date}}
+                </p>
+                <h3>
+                  DESCRIPTION
+                </h3>
+                <p>{{openHouse.description}}</p>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+    @if (commentPeriod.openHouses.length === 0) {
+      <div>
+        <p>There are no open houses associated with this comment period.</p>
+      </div>
+    }
+  </section>
+}

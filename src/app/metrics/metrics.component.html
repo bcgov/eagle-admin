@@ -15,12 +15,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of data">
-          <td data-label="Action">{{item.action || 'New Item'}}</td>
-          <td data-label="User">{{item.performedBy || item.addedBy }}</td>
-          <td data-label="Meta">{{item._objectSchema}}</td>
-          <td data-label="Timestamp">{{item.timestamp | date:'full'}}</td>
-        </tr>
+        @for (item of data; track item) {
+          <tr>
+            <td data-label="Action">{{item.action || 'New Item'}}</td>
+            <td data-label="User">{{item.performedBy || item.addedBy }}</td>
+            <td data-label="Meta">{{item._objectSchema}}</td>
+            <td data-label="Timestamp">{{item.timestamp | date:'full'}}</td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>

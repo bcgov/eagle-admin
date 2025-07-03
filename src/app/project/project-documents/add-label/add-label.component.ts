@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
@@ -13,17 +13,15 @@ import { Subscription } from 'rxjs';
     
 })
 export class AddLabelComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private storageService = inject(StorageService);
+
   private subscriptions = new Subscription();
   public currentProjectId: string;
   public myForm: UntypedFormGroup;
   public labels: any[] = [];
   public back: any = {};
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

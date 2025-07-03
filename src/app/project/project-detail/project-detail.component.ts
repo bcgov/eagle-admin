@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -28,6 +28,20 @@ import { RouterModule } from '@angular/router';
 
 
 export class ProjectDetailComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  snackBar = inject(MatSnackBar);
+  api = inject(ApiService);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private modalService = inject(NgbModal);
+  projectService = inject(ProjectService);
+  commentPeriodService = inject(CommentPeriodService);
+  sidebarService = inject(SideBarService);
+  decisionService = inject(DecisionService);
+  private storageService = inject(StorageService);
+  documentService = inject(DocumentService);
+  private utils = inject(Utils);
+
 
   public isPublishing = false;
   public isUnpublishing = false;
@@ -44,24 +58,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public projectID: string;
   public substantiallyStarted: string;
   public disputeResolution: string;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    public snackBar: MatSnackBar,
-    public api: ApiService, // also used in template
-    private _changeDetectorRef: ChangeDetectorRef,
-    private modalService: NgbModal,
-    public projectService: ProjectService, // also used in template
-    public commentPeriodService: CommentPeriodService,
-    public sidebarService: SideBarService,
-    public decisionService: DecisionService,
-    private storageService: StorageService,
-    public documentService: DocumentService,
-    private utils: Utils
-
-  ) {
-  }
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)

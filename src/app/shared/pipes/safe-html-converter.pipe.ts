@@ -1,6 +1,6 @@
 
 import {DomSanitizer} from '@angular/platform-browser';
-import { PipeTransform, Pipe } from '@angular/core';
+import { PipeTransform, Pipe, inject } from '@angular/core';
 
 
 // This pipe strips out script tags, do not use with (non-staff) user input
@@ -9,7 +9,8 @@ import { PipeTransform, Pipe } from '@angular/core';
     
 })
 export class SafeHtmlPipe implements PipeTransform  {
-  constructor(private sanitized: DomSanitizer) {}
+  private sanitized = inject(DomSanitizer);
+
   transform(value) {
     return this.sanitized.bypassSecurityTrustHtml(value);
   }

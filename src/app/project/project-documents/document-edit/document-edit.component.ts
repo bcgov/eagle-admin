@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { NgbDateStruct, NgbDate } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateStruct, NgbDate, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import moment from 'moment-timezone';
@@ -13,12 +13,19 @@ import { Utils } from 'src/app/shared/utils/utils';
 @Component({
     selector: 'app-document-edit',
     standalone: true,
-    imports: [RouterModule],
+    imports: [RouterModule, NgbDatepickerModule],
     templateUrl: './document-edit.component.html',
     styleUrls: ['./document-edit.component.css'],
     
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {
+  private configService = inject(ConfigService);
+  private documentService = inject(DocumentService);
+  private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
   private subscriptions = new Subscription();
   private readonly SNACKBAR_TIMEOUT = 1500;
 
@@ -45,15 +52,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   public filteredProjectPhases2018: any[] = [];
 
   public legislationYear = '1996';
-
-  constructor(
-    private configService: ConfigService,
-    private documentService: DocumentService,
-    private snackBar: MatSnackBar,
-    private router: Router,
-    private storageService: StorageService,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     this.documents = this.storageService.state.selectedDocs;

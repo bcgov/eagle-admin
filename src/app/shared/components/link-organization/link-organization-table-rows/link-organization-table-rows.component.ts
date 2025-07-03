@@ -1,21 +1,25 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Org } from 'src/app/models/org';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableObject } from '../../table-template/table-object';
 import { TableComponent } from '../../table-template/table.component';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
-    selector: 'tbody[app-link-organization-table-rows]',
-    templateUrl: './link-organization-table-rows.component.html',
-    styleUrls: ['./link-organization-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule],
+  selector: 'tbody[app-link-organization-table-rows]',
+  templateUrl: './link-organization-table-rows.component.html',
+  styleUrls: ['./link-organization-table-rows.component.css'],
+  standalone: true,
+  imports: [],
 })
 
 export class LinkOrganizationTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private storageService = inject(StorageService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -26,12 +30,6 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
   public showCheckboxes = false;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.organizations = this.data.data;
@@ -60,7 +58,11 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
   }
 
   onRowClick(item: Org): void {
-    this.showCheckboxes ? this.selectItem(item) : this.saveSingleItem(item);
+    if (this.showCheckboxes) {
+      this.selectItem(item);
+    } else {
+      this.saveSingleItem(item);
+    }
   }
 
   saveSingleItem(item: Org): void {

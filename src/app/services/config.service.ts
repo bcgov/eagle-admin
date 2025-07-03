@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 //
@@ -8,13 +8,13 @@ import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class ConfigService {
+  private httpClient = inject(HttpClient);
+
   // defaults
   private _baseLayerName = 'World Topographic'; // NB: must match a valid base layer name
   private _lists = [];
   private _regions = [];
   private configuration = { };
-
-  constructor(private httpClient: HttpClient) { }
 
   /**
    * Initialize the Config Service.  Get configuration data from front-end build, or back-end if nginx

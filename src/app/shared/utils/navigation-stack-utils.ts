@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { StorageService } from 'src/app/services/storage.service';
 
 @Injectable()
 export class NavigationStackUtils {
-    constructor(private storageService: StorageService) { }
+    private storageService = inject(StorageService);
+
 
     public getNavigationStack() {
         if (this.storageService.state.navigationStack) {
@@ -52,7 +53,7 @@ export class NavigationStackUtils {
         }
     ]
     */
-    public pushNavigationStack(backUrl: Array<string>, breadcrumbs: Array<Object>, componentId: string = null) {
+    public pushNavigationStack(backUrl: Array<string>, breadcrumbs: Array<object>, componentId: string = null) {
         const navigationObject = {
             backUrl: backUrl,
             breadcrumbs: breadcrumbs,

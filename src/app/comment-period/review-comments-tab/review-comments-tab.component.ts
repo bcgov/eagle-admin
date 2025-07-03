@@ -1,5 +1,5 @@
-import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectorRef, OnInit, OnDestroy, inject } from '@angular/core';
+
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
@@ -10,6 +10,7 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Comment } from 'src/app/models/comment';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-review-comments-tab',
@@ -23,6 +24,13 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
 })
 
 export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private commentService = inject(CommentService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   public comments: Array<Comment>;
   public loading = true;
 
@@ -78,15 +86,6 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   public baseRouteUrl: string;
 
   private subscriptions = new Subscription();
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private commentService: CommentService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
 
   ngOnInit() {
     if (this.storageService.state.commentReviewTabParams == null) {

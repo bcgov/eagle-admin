@@ -1,5 +1,5 @@
-import { Component, OnInit, HostBinding } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, HostBinding, inject } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
@@ -13,23 +13,20 @@ import { SideBarService } from './services/sidebar.service';
     styleUrls: ['./app.component.css'],
     standalone: true,
     imports: [
-      CommonModule,
-      RouterModule,
-      HeaderComponent,
-      SidebarComponent,
-      ToggleButtonComponent,
-      FooterComponent
-    ]
+    RouterModule,
+    HeaderComponent,
+    SidebarComponent,
+    ToggleButtonComponent,
+    FooterComponent
+]
 })
 
 export class AppComponent implements OnInit {
+  private sideBarService = inject(SideBarService);
+
 
   @HostBinding('class.sidebarcontrol')
   isOpen = false;
-
-  constructor(
-    private sideBarService: SideBarService
-  ) { }
 
   ngOnInit() {
     this.sideBarService.toggleChange.subscribe(isOpen => {

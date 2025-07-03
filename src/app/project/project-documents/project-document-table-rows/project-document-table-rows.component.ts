@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DocumentService } from 'src/app/services/document.service';
@@ -17,6 +17,11 @@ import { FormsModule } from '@angular/forms';
 })
 
 export class DocumentTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private documentService = inject(DocumentService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -27,13 +32,6 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   public activeLegislationYear: number;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private documentService: DocumentService,
-    private _changeDetectionRef: ChangeDetectorRef
-  ) { }
 
   ngOnInit() {
     this.documents = this.data.data;

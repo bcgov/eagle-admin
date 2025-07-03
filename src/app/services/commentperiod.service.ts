@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -8,6 +8,8 @@ import { CommentPeriodSummary } from '../models/commentPeriodSummary';
 
 @Injectable()
 export class CommentPeriodService {
+  private api = inject(ApiService);
+
 
   // statuses (also used as short strings)
   readonly NOT_STARTED = 'Not Started';
@@ -18,7 +20,7 @@ export class CommentPeriodService {
   // use helpers to get these:
   private commentStatuses = [];
 
-  constructor(private api: ApiService) {
+  constructor() {
     // user-friendly strings
     this.commentStatuses[this.NOT_STARTED] = 'Commenting Not Started';
     this.commentStatuses[this.NOT_OPEN] = 'Not Open For Commenting';
@@ -27,7 +29,7 @@ export class CommentPeriodService {
   }
 
   // get all comment periods for the specified project id
-  getAllByProjectId(projId: string, pageNum = 1, pageSize = 10, sortBy: string = null): Observable<Object> {
+  getAllByProjectId(projId: string, pageNum = 1, pageSize = 10, sortBy: string = null): Observable<object> {
     return this.api.getPeriodsByProjId(projId, pageNum, pageSize, sortBy)
       .pipe(
         map((res: any) => {

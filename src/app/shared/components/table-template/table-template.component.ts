@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ComponentFactoryResolver, OnDestroy, ViewChild, Output, EventEmitter, SimpleChanges, OnChanges, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnInit, ComponentFactoryResolver, OnDestroy, ViewChild, Output, EventEmitter, SimpleChanges, OnChanges, ViewEncapsulation, inject } from '@angular/core';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { TableDirective } from './table.directive';
 import { TableObject } from './table-object';
@@ -17,6 +17,9 @@ import { NzButtonModule } from 'ng-zorro-antd/button';
   imports: [CommonModule, NzPaginationModule, NzButtonModule, TableDirective],
 })
 export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
+  private componentFactoryResolver = inject(ComponentFactoryResolver);
+  private media = inject(MediaMatcher);
+
   @Input() data: TableObject;
   @Input() columns: any[];
   @Input() pageSizeArray: number[];
@@ -37,8 +40,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   public mobileQuery: MediaQueryList;
   private mobileQueryListener: () => void;
 
-  constructor(private componentFactoryResolver: ComponentFactoryResolver,
-    private media: MediaMatcher) {
+  constructor() {
     // Detect when the app displays in mobile mode and reload the component.
     this.mobileQuery = this.media.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => this.loadComponent();

@@ -4,7 +4,9 @@
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <li class="breadcrumb-item">
-      <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      @if (currentProject) {
+        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      }
     </li>
     <li class="breadcrumb-item active" aria-current="page">Updates</li>
   </ol>
@@ -20,20 +22,30 @@
       </button>
     </div>
     <div class="results my-2">
-      <p *ngIf="!loading && tableParams.totalListItems == 0">
-        No results found for "{{keywords}}"
-      </p>
-      <div *ngIf="!loading && tableParams.totalListItems > 0">
-        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
+      @if (!loading && tableParams.totalListItems == 0) {
+        <p>
+          No results found for "{{keywords}}"
+        </p>
+      }
+      @if (!loading && tableParams.totalListItems > 0) {
+        <div>
+          {{tableParams.totalListItems}} result@if (tableParams.totalListItems != 1) {
+          <span>s found</span>
+        }
       </div>
-    </div>
-  </form>
+    }
+  </div>
+</form>
 
-  <div class="spinner-container" *ngIf="loading">
+@if (loading) {
+  <div class="spinner-container">
     <div class="spinner-new rotating"></div>
   </div>
+}
 
-  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
+@if (!loading && tableParams.totalListItems != 0) {
+  <app-table-template [columns]="tableColumns" [data]="tableData"
     (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
   </app-table-template>
+}
 </div>
