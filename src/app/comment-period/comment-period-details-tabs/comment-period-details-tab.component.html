@@ -84,7 +84,7 @@
       @if (commentPeriodDocs?.length > 0) {
         <ul class="doc-list mb-3">
           @for (doc of commentPeriodDocs; track doc) {
-            <li class="clickable-row" (click)="downloadDocument(doc)">
+            <li class="clickable-row" (click)="downloadDocument(doc)" tabindex="0" (keydown)="onKeyDownDocument($event, doc)">
               <span class="cell icon">
                 <i class="material-icons">insert_drive_file</i>
               </span>

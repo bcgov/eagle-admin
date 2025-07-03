@@ -205,19 +205,19 @@ form {
   flex: 1 0 calc(100% - 230px);
 }
 .advanced-filter .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined', sans-serif;
   font-size: 32px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e24c";
 }
 .advanced-filter .ng-select#projects ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined', sans-serif;
   font-size: 32px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e943";
 }
 .advanced-filter .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined', sans-serif;
   font-size: 32px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e916";

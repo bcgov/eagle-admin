@@ -3,7 +3,8 @@
     <tr>
       @for (entry of columns; track entry) {
         <th class="project-table__name-col sortable"
-          (click)="!entry.nosort && sort(entry.value)" [style.width]="entry.width">
+          (click)="!entry.nosort && sort(entry.value)" [style.width]="entry.width"
+          (keydown)="onHeaderKeyDown($event, entry)">
           @if (entry.name !== 'select_all_box') {
             <div>
               {{entry.name}}
