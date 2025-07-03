@@ -14,7 +14,7 @@ import { TableParamsObject } from '../shared/components/table-template/table-par
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -36,7 +36,7 @@ class ActivityFilterObject {
   styleUrls: ['./activity.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
+  imports: [FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
 
 })
 export class ActivityComponent implements OnDestroy {

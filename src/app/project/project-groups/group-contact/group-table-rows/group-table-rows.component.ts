@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 
@@ -8,7 +8,7 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
     templateUrl: './group-table-rows.component.html',
     styleUrls: ['./group-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     
 })
 export class GroupTableRowsComponent implements OnInit {

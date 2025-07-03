@@ -1,19 +1,27 @@
-<nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <ol *ngIf="navigationObject" class="breadcrumb">
-    <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
-      <a href="javascript:void(0);"
-        (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
-    </li>
-    <li class="breadcrumb-item active" aria-current="page">
-      {{extensionOperation}} {{extensionType}}
-    </li>
-  </ol>
-</nav>
+@if (!loading) {
+  <nav class="action-container" aria-label="breadcrumb">
+    @if (navigationObject) {
+      <ol class="breadcrumb">
+        @for (breadcrumb of navigationObject.breadcrumbs; track breadcrumb) {
+          <li class="breadcrumb-item">
+            <a href="javascript:void(0);"
+            (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
+          </li>
+        }
+        <li class="breadcrumb-item active" aria-current="page">
+          {{extensionOperation}} {{extensionType}}
+        </li>
+      </ol>
+    }
+  </nav>
+}
 
 <main class="container-fluid-padding add-edit-form">
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
+  @if (loading) {
+    <div class="spinner-container">
+      <div class="spinner-new rotating"></div>
+    </div>
+  }
   <form #f="ngForm" class="search-form ui form" [formGroup]="extensionForm" (ngSubmit)="onSubmit()">
     <h2>{{extensionOperation}} {{extensionType}}</h2>
 
@@ -52,14 +60,16 @@
 
   <br>
 
-  <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
-    <div class="btn-group" role="group" aria-label="First group">
-      <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
-          class="material-icons">arrow_back</i>Back</button>
-      <button [disabled]="!extensionForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
+    <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+      <div class="btn-group" role="group" aria-label="First group">
+        <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
+        class="material-icons">arrow_back</i>Back</button>
+        <button [disabled]="!extensionForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
+      </div>
+      <div class="input-group">
+        @if (isEditing) {
+          <button class="btn btn-danger" type="button" (click)="onDelete()">Delete</button>
+        }
+      </div>
     </div>
-    <div class="input-group">
-      <button *ngIf="isEditing" class="btn btn-danger" type="button" (click)="onDelete()">Delete</button>
-    </div>
-  </div>
-</main>
+  </main>

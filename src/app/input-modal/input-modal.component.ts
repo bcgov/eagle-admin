@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -9,9 +9,8 @@ import { FormsModule } from '@angular/forms';
     styleUrls: ['./input-modal.component.css'],
     standalone: true,
     imports: [
-      CommonModule,
-      FormsModule
-    ]
+    FormsModule
+]
 })
 export class InputModalComponent {
 

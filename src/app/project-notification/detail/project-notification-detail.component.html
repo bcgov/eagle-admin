@@ -9,20 +9,30 @@
     <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
     <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
       <button class="dropdown-item" (click)="edit()">Edit</button>
-      <button *ngIf="!isPublished" class="dropdown-item" (click)="publish()">Publish</button>
-      <button *ngIf="isPublished" class="dropdown-item" (click)="unPublish()">Un-Publish</button>
+      @if (!isPublished) {
+        <button class="dropdown-item" (click)="publish()">Publish</button>
+      }
+      @if (isPublished) {
+        <button class="dropdown-item" (click)="unPublish()">Un-Publish</button>
+      }
     </div>
   </div>
 </nav>
 <main class="container-fluid-padding">
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
+  @if (loading) {
+    <div class="spinner-container">
+      <div class="spinner-new rotating"></div>
+    </div>
+  }
   <h1 id="name">{{projectNotification.name}}</h1>
   <section>
     <h2>Basic Information</h2>
-    <span *ngIf="isPublished" class="badge bg-success badge-published">Published</span>
-    <span *ngIf="!isPublished" class="badge badge-unpublished">Not Published</span>
+    @if (isPublished) {
+      <span class="badge bg-success badge-published">Published</span>
+    }
+    @if (!isPublished) {
+      <span class="badge badge-unpublished">Not Published</span>
+    }
     <div class="label-pair">
       <h3>Description: </h3>
       <p>{{projectNotification.description || 'No description available'}}</p>

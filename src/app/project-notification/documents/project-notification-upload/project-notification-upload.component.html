@@ -4,20 +4,26 @@
       <a [routerLink]="['/project-notifications']">All Project Notifications</a>
     </li>
     <li class="breadcrumb-item">
-      <a *ngIf='currentProject' [routerLink]="['/pn', currentProject._id, 'details']">{{currentProject.name}}</a>
+      @if (currentProject) {
+        <a [routerLink]="['/pn', currentProject._id, 'details']">{{currentProject.name}}</a>
+      }
     </li>
     <li class="breadcrumb-item">
-      <a *ngIf='currentProject'
+      @if (currentProject) {
+        <a
         [routerLink]="['/pn', currentProject._id, 'project-notification-documents']">Documents</a>
+      }
     </li>
     <li class="breadcrumb-item">Upload Document(s)</li>
   </ol>
 </nav>
 
 <div class="container-fluid-padding">
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
+  @if (loading) {
+    <div class="spinner-container">
+      <div class="spinner-new rotating"></div>
+    </div>
+  }
 
   <div class="form-group mb-0">
     <form [formGroup]="myForm" (ngSubmit)="register(myForm)" novalidate>
@@ -26,13 +32,17 @@
         <div class="form-group col-md-6">
           <label for="type">Document Type* </label>
           <select required class="form-control" formControlName="type">
-            <option *ngFor="let type of filteredDoctypes2018" [ngValue]="type._id">{{type.name}}</option>
+            @for (type of filteredDoctypes2018; track type) {
+              <option [ngValue]="type._id">{{type.name}}</option>
+            }
           </select>
         </div>
         <div class="form-group col-md-6">
           <label for="author">Author* </label>
           <select required class="form-control" formControlName="author">
-            <option *ngFor="let author of documentAuthor" [ngValue]="author">{{author}}</option>
+            @for (author of documentAuthor; track author) {
+              <option [ngValue]="author">{{author}}</option>
+            }
           </select>
         </div>
       </div>
@@ -75,31 +85,35 @@
 
   <div class="form-group mb-0">
     <app-file-upload [maxFiles]="20 - docTotal" [maxSize]="3000" [showInfo]="false" [showList]="false"
-      [files]="projectFiles" (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
+    [files]="projectFiles" (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
     <br>
-    <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
-      <li *ngFor="let doc of documents">
-        <span class="cell icon">
-          <i class="material-icons">insert_drive_file</i>
-        </span>
-        <span class="cell name" [title]="doc.displayName || ''">
-          <span class="cell__txt-content">{{doc.documentFileName}}</span>
-        </span>
-        <span class="cell actions">
-          <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc)">
-            <i class="material-icons">delete</i>
-          </button>
-        </span>
-      </li>
-    </ul>
-  </div>
+      @if (documents?.length > 0) {
+        <ul class="doc-list mb-3">
+          @for (doc of documents; track doc) {
+            <li>
+              <span class="cell icon">
+                <i class="material-icons">insert_drive_file</i>
+              </span>
+              <span class="cell name" [title]="doc.displayName || ''">
+                <span class="cell__txt-content">{{doc.documentFileName}}</span>
+              </span>
+              <span class="cell actions">
+                <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc)">
+                  <i class="material-icons">delete</i>
+                </button>
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
 
-  <div class="text-end">
-    <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
-    &nbsp;
-    <button class="btn btn-primary me-1" [disabled]=" !myForm.valid || docNameInvalid || documents?.length === 0"
+    <div class="text-end">
+      <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
+      &nbsp;
+      <button class="btn btn-primary me-1" [disabled]=" !myForm.valid || docNameInvalid || documents?.length === 0"
       type="submit" (click)="uploadDocuments()">Upload</button>
-    &nbsp;
-  </div>
+      &nbsp;
+    </div>
 
-</div>
+  </div>

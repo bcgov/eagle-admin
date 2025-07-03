@@ -13,9 +13,11 @@
   </ol>
 </nav>
 <div class="container-fluid-padding">
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
+  @if (loading) {
+    <div class="spinner-container">
+      <div class="spinner-new rotating"></div>
+    </div>
+  }
 
 
   <div class="form-group mb-0">
@@ -49,38 +51,50 @@
           <label for="doctypesel">Document Type*</label>
           <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')"
             class="form-control" formControlName="doctypesel">
-            <option *ngFor="let type of filteredDoctypes2002" [ngValue]="type._id">{{type.name}}</option>
+            @for (type of filteredDoctypes2002; track type) {
+              <option [ngValue]="type._id">{{type.name}}</option>
+            }
           </select>
 
           <select required [hidden]="!(this.legislationYear === '2018')" class="form-control"
             formControlName="doctypesel">
-            <option *ngFor="let type of filteredDoctypes2018" [ngValue]="type._id">{{type.name}}</option>
+            @for (type of filteredDoctypes2018; track type) {
+              <option [ngValue]="type._id">{{type.name}}</option>
+            }
           </select>
         </div>
         <div class="form-group col-md-4">
           <label for="authorsel">Author*</label>
           <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')"
             class="form-control" formControlName="authorsel">
-            <option *ngFor="let author2002 of filteredAuthors2002" [ngValue]="author2002._id">{{author2002.name}}
-            </option>
+            @for (author2002 of filteredAuthors2002; track author2002) {
+              <option [ngValue]="author2002._id">{{author2002.name}}
+              </option>
+            }
           </select>
 
           <select required [hidden]="!(this.legislationYear === '2018')" class="form-control"
             formControlName="authorsel">
-            <option *ngFor="let author2018 of filteredAuthors2018" [ngValue]="author2018._id">{{author2018.name}}
-            </option>
+            @for (author2018 of filteredAuthors2018; track author2018) {
+              <option [ngValue]="author2018._id">{{author2018.name}}
+              </option>
+            }
           </select>
         </div>
         <div class="form-group col-md-4">
           <label for="labelsel">Milestone*</label>
           <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')"
             class="form-control" formControlName="labelsel">
-            <option *ngFor="let label of filteredLabels2002" [ngValue]="label._id">{{label.name}}</option>
+            @for (label of filteredLabels2002; track label) {
+              <option [ngValue]="label._id">{{label.name}}</option>
+            }
           </select>
 
           <select required [hidden]="!(this.legislationYear === '2018')" class="form-control"
             formControlName="labelsel">
-            <option *ngFor="let label of filteredLabels2018" [ngValue]="label._id">{{label.name}}</option>
+            @for (label of filteredLabels2018; track label) {
+              <option [ngValue]="label._id">{{label.name}}</option>
+            }
           </select>
         </div>
       </div>
@@ -89,14 +103,18 @@
           <label for="projectphasesel">Project Phase*</label>
           <select required [hidden]="!(this.legislationYear === '1996' || this.legislationYear === '2002')"
             class="form-control" formControlName="projectphasesel">
-            <option *ngFor="let projectPhase of filteredProjectPhases2002" [ngValue]="projectPhase._id">
+            @for (projectPhase of filteredProjectPhases2002; track projectPhase) {
+              <option [ngValue]="projectPhase._id">
               {{projectPhase.name}}</option>
+            }
           </select>
 
           <select required [hidden]="!(this.legislationYear === '2018')" class="form-control"
             formControlName="projectphasesel">
-            <option *ngFor="let projectPhase of filteredProjectPhases2018" [ngValue]="projectPhase._id">
+            @for (projectPhase of filteredProjectPhases2018; track projectPhase) {
+              <option [ngValue]="projectPhase._id">
               {{projectPhase.name}}</option>
+            }
           </select>
         </div>
         <div class="form-group col-md-4">
@@ -105,7 +123,7 @@
             <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="docDate"
               formControlName="datePosted" ngbDatepicker #datePostedPicker="ngbDatepicker" />
             <button class="btn btn-outline-secondary calendar" (click)="datePostedPicker.toggle()"
-              type="button"></button>
+            type="button"></button>
           </div>
         </div>
         <div class="form-group col-md-4">
@@ -114,22 +132,32 @@
             <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="dateUploaded"
               formControlName="dateUploaded" ngbDatepicker #dateUploadedPicker="ngbDatepicker" />
             <button class="btn btn-outline-secondary calendar" (click)="dateUploadedPicker.toggle()"
-              type="button"></button>
+            type="button"></button>
           </div>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group col-md-12">
-          <label *ngIf="documents && documents.length > 1" for="displayName">Document Name</label>
-          <label *ngIf="!documents || documents.length < 2" for="displayName">Document Name*</label>
-          <div *ngIf="docNameInvalid" class="alert alert-danger" role="alert">
-            \ / | : * ? " <> are not accepted file name characters
-          </div>
+          @if (documents && documents.length > 1) {
+            <label for="displayName">Document Name</label>
+          }
+          @if (!documents || documents.length < 2) {
+            <label for="displayName">Document Name*</label>
+          }
+          @if (docNameInvalid) {
+            <div class="alert alert-danger" role="alert">
+              \ / | : * ? " <> are not accepted file name characters
+            </div>
+          }
           <div>
-            <textarea *ngIf="documents && documents.length > 1" disabled class="form-control" id="displayName"
+            @if (documents && documents.length > 1) {
+              <textarea disabled class="form-control" id="displayName"
               name="displayName" rows="1" formControlName="displayName"></textarea>
-            <textarea *ngIf="!documents || documents.length < 2" class="form-control" id="displayName"
+            }
+            @if (!documents || documents.length < 2) {
+              <textarea class="form-control" id="displayName"
               name="displayName" rows="1" formControlName="displayName" (ngModelChange)="validateChars()"></textarea>
+            }
           </div>
         </div>
       </div>
@@ -137,7 +165,7 @@
         <div class="form-group col-md-12">
           <label for="inputDescription">Description</label>
           <textarea class="form-control" id="inputDescription" name="description" rows="1"
-            formControlName="description"></textarea>
+          formControlName="description"></textarea>
         </div>
       </div>
     </form>
@@ -145,31 +173,35 @@
 
   <div class="form-group mb-0">
     <app-file-upload [maxFiles]="50" [maxSize]="3000" [showInfo]="false" [showList]="false" [files]="projectFiles"
-      (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
+    (filesChange)="addDocuments($event); projectFiles = []"></app-file-upload>
     <br>
-    <ul class="doc-list mb-3" *ngIf="documents?.length > 0">
-      <li *ngFor="let doc of documents">
-        <span class="cell icon">
-          <i class="material-icons">insert_drive_file</i>
-        </span>
-        <span class="cell name" [title]="doc.displayName || ''">
-          <span class="cell__txt-content">{{doc.documentFileName}}</span>
-        </span>
-        <span class="cell actions">
-          <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc)">
-            <i class="material-icons">delete</i>
-          </button>
-        </span>
-      </li>
-    </ul>
-  </div>
-  <div class="text-end">
-    <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
-    &nbsp;
-    <button class="btn btn-primary me-1"
-      [disabled]="!docNameExists() || !myForm.valid || docNameInvalid || documents?.length === 0" type="submit"
+      @if (documents?.length > 0) {
+        <ul class="doc-list mb-3">
+          @for (doc of documents; track doc) {
+            <li>
+              <span class="cell icon">
+                <i class="material-icons">insert_drive_file</i>
+              </span>
+              <span class="cell name" [title]="doc.displayName || ''">
+                <span class="cell__txt-content">{{doc.documentFileName}}</span>
+              </span>
+              <span class="cell actions">
+                <button class="btn btn-icon" type="button" title="Delete this document" (click)="deleteDocument(doc)">
+                  <i class="material-icons">delete</i>
+                </button>
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+    <div class="text-end">
+      <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
+      &nbsp;
+      <button class="btn btn-primary me-1"
+        [disabled]="!docNameExists() || !myForm.valid || docNameInvalid || documents?.length === 0" type="submit"
       (click)="uploadDocuments()">Upload</button>
-    &nbsp;
-    <!-- <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid || documents?.length === 0 " type="publish" (click)="uploadAndPublish()" >Upload & Publish</button> -->
+      &nbsp;
+      <!-- <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || docNameInvalid || documents?.length === 0 " type="publish" (click)="uploadAndPublish()" >Upload & Publish</button> -->
+    </div>
   </div>
-</div>

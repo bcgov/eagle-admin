@@ -1,37 +1,47 @@
-<div class="files-info" *ngIf="showInfo">
-  Maximum of {{maxFiles}} files, up to {{maxSize}}MB each.
-  <br> Acceptable file types: {{fileExt}}
-</div>
+@if (showInfo) {
+  <div class="files-info">
+    Maximum of {{maxFiles}} files, up to {{maxSize}}MB each.
+    <br> Acceptable file types: {{fileExt}}
+    </div>
+  }
 
-<div draggable="true" ngClass="{{dragDropClass}}">
-  <div class="row">
-    <div class="col-md-12 text-center">
-      <a href="javascript:void(0)" (click)="file.click()">
-        <i class="material-icons">file_upload</i>
-        Drop files to attach, or browse.
-      </a>
-      <input type="file" #file [multiple]="(maxFiles > 1)" (click)="file.value = null" value="" (change)="onFileChange($event)" style="display:none" />
+  <div draggable="true" ngClass="{{dragDropClass}}">
+    <div class="row">
+      <div class="col-md-12 text-center">
+        <a href="javascript:void(0)" (click)="file.click()">
+          <i class="material-icons">file_upload</i>
+          Drop files to attach, or browse.
+        </a>
+        <input type="file" #file [multiple]="(maxFiles > 1)" (click)="file.value = null" value="" (change)="onFileChange($event)" style="display:none" />
+      </div>
     </div>
   </div>
-</div>
 
-<div *ngIf="showList && files.length > 0" class="files-list">
-  <ul>
-    <li *ngFor="let f of files">
-      <span class="name">{{f.name}}</span>
-      <span class="value">
-        <button type="button" class="btn btn-danger btn-xs" (click)="removeFile(f)" title="Remove this file">
-          <i class="material-icons">clear</i>
-          <span>Remove</span>
-        </button>
-      </span>
-    </li>
-  </ul>
-</div>
+  @if (showList && files.length > 0) {
+    <div class="files-list">
+      <ul>
+        @for (f of files; track f) {
+          <li>
+            <span class="name">{{f.name}}</span>
+            <span class="value">
+              <button type="button" class="btn btn-danger btn-xs" (click)="removeFile(f)" title="Remove this file">
+                <i class="material-icons">clear</i>
+                <span>Remove</span>
+              </button>
+            </span>
+          </li>
+        }
+      </ul>
+    </div>
+  }
 
-<div *ngIf="errors.length > 0" class="errors-list">
-  <ul>
-    <li *ngFor="let err of errors">
-      <i class="material-icons">error</i>&nbsp;{{err}}</li>
-  </ul>
-</div>
+  @if (errors.length > 0) {
+    <div class="errors-list">
+      <ul>
+        @for (err of errors; track err) {
+          <li>
+            <i class="material-icons">error</i>&nbsp;{{err}}</li>
+          }
+        </ul>
+      </div>
+    }

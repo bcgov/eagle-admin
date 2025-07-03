@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -10,7 +10,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
     templateUrl: './user-table-rows.component.html',
     styleUrls: ['./user-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     
 })
 export class UserTableRowsComponent implements OnInit, TableComponent {

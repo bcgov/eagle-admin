@@ -8,7 +8,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { EditorModule } from '@tinymce/tinymce-angular';
-import { CommonModule } from '@angular/common';
+
 
 export interface DataModel {
   title: string;
@@ -20,7 +20,7 @@ export interface DataModel {
     templateUrl: './add-edit-contact.component.html',
     styleUrls: ['./add-edit-contact.component.css'],
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, EditorModule],
+    imports: [ReactiveFormsModule, EditorModule],
 })
 
 // NOTE: dialog components must not implement OnDestroy

@@ -1,5 +1,5 @@
 import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
     templateUrl: './project-groups-table-rows.component.html',
     styleUrls: ['./project-groups-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [FormsModule],
 })
 
 export class GroupsTableRowsComponent implements OnInit, TableComponent {

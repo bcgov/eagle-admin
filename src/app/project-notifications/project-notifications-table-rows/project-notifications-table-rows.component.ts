@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
@@ -10,7 +10,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
     templateUrl: './project-notifications-table-rows.component.html',
     styleUrls: ['./project-notifications-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
     
 })
 export class ProjectNotificationTableRowsComponent implements OnInit, TableComponent {

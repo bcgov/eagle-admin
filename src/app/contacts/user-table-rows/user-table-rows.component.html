@@ -1,18 +1,20 @@
-<tr *ngFor="let contact of contacts"
+@for (contact of contacts; track contact) {
+  <tr
     class="clickable-row">
     <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{
-         (contact.lastName || contact.firstName) ?
-             (contact.lastName ? 
-                contact.firstName ? contact.lastName + ', '  + contact.firstName : contact.lastName
-             : contact.firstName ? contact.firstName : '-' )
-         : '-'
-        }}</td>
+      (contact.lastName || contact.firstName) ?
+      (contact.lastName ?
+      contact.firstName ? contact.lastName + ', '  + contact.firstName : contact.lastName
+      : contact.firstName ? contact.firstName : '-' )
+      : '-'
+    }}</td>
     <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[1].width">{{contact?.org?.name || '-' }}</td>
     <td scope="row" data-label="Phone" [style.width]="!useSmallTable && columns[2].width">{{contact.phoneNumber || '-'}}</td>
     <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[3].width">{{contact.email || '-'}}</td>
     <td class="clickable" data-label="Event" scope="row" [style.width]="!useSmallTable && columns[4].width">
-        <i (click)="editItem(contact)" class="material-icons">
-            edit
-        </i>
+      <i (click)="editItem(contact)" class="material-icons">
+        edit
+      </i>
     </td>
-</tr>
+  </tr>
+}

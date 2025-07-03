@@ -6,7 +6,7 @@ import { ISearchResults } from '../models/search';
 import { SideBarService } from '../services/sidebar.service';
 import { StorageService } from '../services/storage.service';
 import { Utils } from '../shared/utils/utils';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -14,7 +14,7 @@ import { RouterModule } from '@angular/router';
     templateUrl: './project.component.html',
     styleUrls: ['./project.component.css'],
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [RouterModule],
 })
 export class ProjectComponent implements OnInit, OnDestroy {
 

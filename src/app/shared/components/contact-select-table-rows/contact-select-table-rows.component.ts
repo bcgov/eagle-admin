@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { TableObject } from '../table-template/table-object';
@@ -11,7 +11,7 @@ import { TableComponent } from '../table-template/table.component';
     templateUrl: './contact-select-table-rows.component.html',
     styleUrls: ['./contact-select-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
 })
 
 export class ContactSelectTableRowsComponent implements OnInit, TableComponent {

@@ -17,14 +17,14 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { Utils } from 'src/app/shared/utils/utils';
 import { switchMap } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'form-tab-2018',
     templateUrl: './form-tab-2018.component.html',
     styleUrls: ['../add-edit-project.component.css'],
     standalone: true,
-    imports: [CommonModule, NgbDatepickerModule, ReactiveFormsModule],
+    imports: [NgbDatepickerModule, ReactiveFormsModule],
 })
 export class FormTab2018Component implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

@@ -1,5 +1,5 @@
 import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
@@ -17,9 +17,8 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
   styleUrls: ['./review-comments-tab.component.css'],
   standalone: true,
   imports: [
-    CommonModule,
     TableTemplateComponent
-  ]
+]
 })
 
 export class ReviewCommentsTabComponent implements OnInit, OnDestroy {

@@ -18,14 +18,14 @@ import { ContactSelectTableRowsComponent } from 'src/app/shared/components/conta
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { Utils } from 'src/app/shared/utils/utils';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'form-tab-2002',
     templateUrl: './form-tab-2002.component.html',
     styleUrls: ['../add-edit-project.component.css'],
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, NgbDatepickerModule],
+    imports: [ReactiveFormsModule, NgbDatepickerModule],
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
   private subscriptions = new Subscription();

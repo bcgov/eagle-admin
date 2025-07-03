@@ -1,46 +1,58 @@
-<nav *ngIf="!loading" class="action-container" aria-label="breadcrumb">
-  <div *ngIf="!pageIsEditing">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/projects']">All Projects</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">
-        Add
-      </li>
-    </ol>
-  </div>
-  <div *ngIf="pageIsEditing">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/projects']">All Projects</a>
-      </li>
-      <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="['/p', fullProject._id]">{{project.name}}</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">
-        Edit
-      </li>
-    </ol>
-  </div>
-</nav>
+@if (!loading) {
+  <nav class="action-container" aria-label="breadcrumb">
+    @if (!pageIsEditing) {
+      <div>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item" aria-current="page">
+            <a [routerLink]="['/projects']">All Projects</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            Add
+          </li>
+        </ol>
+      </div>
+    }
+    @if (pageIsEditing) {
+      <div>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item" aria-current="page">
+            <a [routerLink]="['/projects']">All Projects</a>
+          </li>
+          <li class="breadcrumb-item" aria-current="page">
+            <a [routerLink]="['/p', fullProject._id]">{{project.name}}</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            Edit
+          </li>
+        </ol>
+      </div>
+    }
+  </nav>
+}
 
 <main class="container-fluid-padding add-edit-form">
-  <div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
-  </div>
+  @if (loading) {
+    <div class="spinner-container">
+      <div class="spinner-new rotating"></div>
+    </div>
+  }
   <section class="project-tabs">
     <div class="container">
       <div class="tab-container">
         <div role="navigation">
           <ul class="nav-tabs" role="tablist">
-            <li class="nav-item" role="presentation" *ngFor="let tabLink of tabLinks">
-              <a class="nav-link" role="tab" [routerLink]="tabLink.link" [replaceUrl]="true"
-                routerLinkActive="active">{{tabLink.label}}
-                <span class="badge bg-success badge-published"
-                  *ngIf="fullProject && fullProject.read.includes('public') && tabLink.years.includes(fullProject.currentLegislationYear)">
-                  Published</span>
-              </a>
-            </li>
+            @for (tabLink of tabLinks; track tabLink) {
+              <li class="nav-item" role="presentation">
+                <a class="nav-link" role="tab" [routerLink]="tabLink.link" [replaceUrl]="true"
+                  routerLinkActive="active">{{tabLink.label}}
+                  @if (fullProject && fullProject.read.includes('public') && tabLink.years.includes(fullProject.currentLegislationYear)) {
+                    <span class="badge bg-success badge-published"
+                      >
+                    Published</span>
+                  }
+                </a>
+              </li>
+            }
           </ul>
         </div>
         <router-outlet></router-outlet>
@@ -48,50 +60,56 @@
     </div>
   </section>
 
-  <section *ngIf="false">
-    <h2>Project Tracking</h2>
-    <div class="flex-container">
-      <fieldset class="form-group">
-        <div class="label-pair">
-          <label for="review180Start">Application Review Start (180) </label>
-          <div class="input-group">
-            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review180Start"
-              formControlName="review180Start" ngbDatepicker #review180StartPicker="ngbDatepicker" />
-            <button class="btn btn-outline-secondary calendar" (click)="review180StartPicker.toggle()"
+  @if (false) {
+    <section>
+      <h2>Project Tracking</h2>
+      <div class="flex-container">
+        <fieldset class="form-group">
+          <div class="label-pair">
+            <label for="review180Start">Application Review Start (180) </label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review180Start"
+                formControlName="review180Start" ngbDatepicker #review180StartPicker="ngbDatepicker" />
+              <button class="btn btn-outline-secondary calendar" (click)="review180StartPicker.toggle()"
               type="button"></button>
+            </div>
           </div>
-        </div>
-      </fieldset>
-      <fieldset class="form-group">
-        <div class="label-pair">
-          <label for="review45Start">Minister Review Start (45) </label>
-          <div class="input-group">
-            <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review45Start"
-              formControlName="review45Start" ngbDatepicker #review45Start="ngbDatepicker" />
-            <button class="btn btn-outline-secondary calendar" (click)="review45Start.toggle()" type="button"></button>
+        </fieldset>
+        <fieldset class="form-group">
+          <div class="label-pair">
+            <label for="review45Start">Minister Review Start (45) </label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="review45Start"
+                formControlName="review45Start" ngbDatepicker #review45Start="ngbDatepicker" />
+              <button class="btn btn-outline-secondary calendar" (click)="review45Start.toggle()" type="button"></button>
+            </div>
           </div>
-        </div>
-      </fieldset>
-    </div>
-    <div class="flex-container">
-      <a class="upload-docs">
-        <button class="btn btn-outline-secondary me-1" type="button" (click)="addExtension()" id="button-d">
-          <i class="material-icons">alarm_add</i>&nbsp;Add Extension
-        </button>
-      </a>
-      <a class="upload-docs">
-        <button class="btn btn-outline-secondary me-1" type="button" (click)="addSuspension()" id="button-d">
-          <i class="material-icons">timer_off</i>&nbsp;Add Suspension
-        </button>
-      </a>
-    </div>
-  </section>
-  <section *ngIf="false">
-    <div class="flex-container">
-      <app-table-template *ngIf="!loading && modifications.length != 0" [columns]="modificationsTableColumns"
-        [data]="modificationsTableData" (onItemClicked)='onItemClicked($event)'
-        (onSelectedRow)='updateSelectedRow($event)'>
-      </app-table-template>
-    </div>
-  </section>
+        </fieldset>
+      </div>
+      <div class="flex-container">
+        <a class="upload-docs">
+          <button class="btn btn-outline-secondary me-1" type="button" (click)="addExtension()" id="button-d">
+            <i class="material-icons">alarm_add</i>&nbsp;Add Extension
+          </button>
+        </a>
+        <a class="upload-docs">
+          <button class="btn btn-outline-secondary me-1" type="button" (click)="addSuspension()" id="button-d">
+            <i class="material-icons">timer_off</i>&nbsp;Add Suspension
+          </button>
+        </a>
+      </div>
+    </section>
+  }
+  @if (false) {
+    <section>
+      <div class="flex-container">
+        @if (!loading && modifications.length != 0) {
+          <app-table-template [columns]="modificationsTableColumns"
+            [data]="modificationsTableData" (onItemClicked)='onItemClicked($event)'
+            (onSelectedRow)='updateSelectedRow($event)'>
+          </app-table-template>
+        }
+      </div>
+    </section>
+  }
 </main>

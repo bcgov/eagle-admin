@@ -4,96 +4,108 @@
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <li class="breadcrumb-item">
-        <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
-      </li>
+      @if (currentProject) {
+        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      }
+    </li>
     <li class="breadcrumb-item active" aria-current="page">
-        <a *ngIf='currentProject' [routerLink]="['/p', currentProject._id, 'project-documents']">Documents</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Document Details</li>
-  </ol>
-</nav>
-<main class="container-fluid-padding" *ngIf="document">
-  <h1>
-    <div class="d-flex">
-      <div>Details</div>
-      <div class="ms-auto" ngbDropdown placement="bottom-right">
-        <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
-        <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button class="dropdown-item" (click)="onEdit()">Edit</button>
-          <button class="dropdown-item" (click)="api.openDocument(document)">Open</button>
-          <button class="dropdown-item" (click)="api.downloadDocument(document)">Download</button>
-          <button class="dropdown-item" (click)="togglePublish()">{{publishText}}</button>
-        </div>
-      </div>
-    </div>
-  </h1>
-  <section>
-    <div class="label-pair">
-      <h3 for="displayName">Display Name: </h3>
-      <p id="displayName">{{document.displayName || '-'}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="publicHitCount">Public Views: </h3>
-      <p id="publicHitCount">{{document.publicHitCount || '-'}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="secureHitCount">Secure Views: </h3>
-      <p id="secureHitCount">{{document.secureHitCount || '-'}}</p>
-    </div>
-    <div class="label-pair">
-      <p id="status publish-state">
-        <i class="material-icons">
-          {{publishText === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}
-        </i>
-        {{publishText === 'Publish' ?  'Not Published' : 'Published' || '-'}}
-      </p>
-    </div>
-    <div class="label-pair">
-      <h3 for="documentFileName">Filename: </h3>
-      <p id="documentFileName">{{document.documentFileName || '-'}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="description">Description: </h3>
-      <p id="description">{{document.description || '-'}}</p>
-    </div>
-    <div *ngIf="document.labels" class="label-pair">
-      <h3 for="tags">Labels: </h3>
-      <div *ngFor="let label of document.labels">
-        <div class="me-2 badge badge-pill badge-info">{{label}}</div>
-      </div>
-    </div>
-  </section>
-  <section>
-    <div class="label-pair">
-      <h3 for="type">Type: </h3>
-      <p id="type">{{document.type | listConverter}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="dateUploaded">Upload Date: </h3>
-      <p id="dateUploaded">{{document.dateUploaded | date}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="datePosted">Document Date: </h3>
-      <p id="datePosted" *ngIf="document.datePosted !== '1900-01-01T08:00:00.000Z'">{{document.datePosted | date}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="legislation">Legislation:</h3>
-      <p id="legislation">{{document.legislation}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="documentAuthor">Author: </h3>
-      <p id="documentAuthor">{{document.documentAuthorType | listConverter}}</p>
-    </div>
-    <div class="label-pair">
-      <h3 for="milestone">Milestone: </h3>
-      <p id="milestone">{{document.milestone | listConverter}}</p>
-    </div>
-    <div class="label-pair">
-            <h3 for="projectPhase">Project Phase: </h3>
-            <p id="projectPhase">{{document.projectPhase | listConverter}}</p>
+      @if (currentProject) {
+        <a [routerLink]="['/p', currentProject._id, 'project-documents']">Documents</a>
+      }</li>
+      <li class="breadcrumb-item active" aria-current="page">Document Details</li>
+    </ol>
+  </nav>
+  @if (document) {
+    <main class="container-fluid-padding">
+      <h1>
+        <div class="d-flex">
+          <div>Details</div>
+          <div class="ms-auto" ngbDropdown placement="bottom-right">
+            <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
+            <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
+              <button class="dropdown-item" (click)="onEdit()">Edit</button>
+              <button class="dropdown-item" (click)="api.openDocument(document)">Open</button>
+              <button class="dropdown-item" (click)="api.downloadDocument(document)">Download</button>
+              <button class="dropdown-item" (click)="togglePublish()">{{publishText}}</button>
+            </div>
           </div>
-    <div class="label-pair">
-      <h3 for="internalSize">Filesize: </h3>
-      <p id="internalSize">{{this.formatBytes(document.internalSize)}}</p>
-    </div>
-  </section>
-</main>
+        </div>
+      </h1>
+      <section>
+        <div class="label-pair">
+          <h3 for="displayName">Display Name: </h3>
+          <p id="displayName">{{document.displayName || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="publicHitCount">Public Views: </h3>
+          <p id="publicHitCount">{{document.publicHitCount || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="secureHitCount">Secure Views: </h3>
+          <p id="secureHitCount">{{document.secureHitCount || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <p id="status publish-state">
+            <i class="material-icons">
+              {{publishText === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}
+            </i>
+            {{publishText === 'Publish' ?  'Not Published' : 'Published' || '-'}}
+          </p>
+        </div>
+        <div class="label-pair">
+          <h3 for="documentFileName">Filename: </h3>
+          <p id="documentFileName">{{document.documentFileName || '-'}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="description">Description: </h3>
+          <p id="description">{{document.description || '-'}}</p>
+        </div>
+        @if (document.labels) {
+          <div class="label-pair">
+            <h3 for="tags">Labels: </h3>
+            @for (label of document.labels; track label) {
+              <div>
+                <div class="me-2 badge badge-pill badge-info">{{label}}</div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+      <section>
+        <div class="label-pair">
+          <h3 for="type">Type: </h3>
+          <p id="type">{{document.type | listConverter}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="dateUploaded">Upload Date: </h3>
+          <p id="dateUploaded">{{document.dateUploaded | date}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="datePosted">Document Date: </h3>
+          @if (document.datePosted !== '1900-01-01T08:00:00.000Z') {
+            <p id="datePosted">{{document.datePosted | date}}</p>
+          }
+        </div>
+        <div class="label-pair">
+          <h3 for="legislation">Legislation:</h3>
+          <p id="legislation">{{document.legislation}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="documentAuthor">Author: </h3>
+          <p id="documentAuthor">{{document.documentAuthorType | listConverter}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="milestone">Milestone: </h3>
+          <p id="milestone">{{document.milestone | listConverter}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="projectPhase">Project Phase: </h3>
+          <p id="projectPhase">{{document.projectPhase | listConverter}}</p>
+        </div>
+        <div class="label-pair">
+          <h3 for="internalSize">Filesize: </h3>
+          <p id="internalSize">{{this.formatBytes(document.internalSize)}}</p>
+        </div>
+      </section>
+    </main>
+  }

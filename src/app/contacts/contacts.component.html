@@ -1,31 +1,39 @@
 <nav class="action-container" aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item active" aria-current="page">All Contacts</li>
-    </ol>
-    <button type="button" id="add-contact" class="btn btn-primary" (click)="addContact()">Add New Contact</button>
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">All Contacts</li>
+  </ol>
+  <button type="button" id="add-contact" class="btn btn-primary" (click)="addContact()">Add New Contact</button>
 </nav>
 
 <main class="container-fluid-padding">
-    <div class="spinner-container" *ngIf="loading">
-        <div class="spinner-new rotating"></div>
+  @if (loading) {
+    <div class="spinner-container">
+      <div class="spinner-new rotating"></div>
     </div>
-    <form #f="ngForm" class="search-form ui form mb-3" (ngSubmit)="onSubmit(1)">
-        <div class="input-group main-search-field mb-2">
-            <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-                id="keywordInput" [(ngModel)]="tableParams.keywords" />
-            <!-- prevent searching if input is empty or we're already searching -->
-            <button class="btn btn-primary" type="submit" id="search">
-                <span>Search</span>
-            </button>
-        </div>
-    </form>
-    <div *ngIf="tableParams.totalListItems > 0">
-        <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="documentTableColumns"
-            [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
-            (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
+  }
+  <form #f="ngForm" class="search-form ui form mb-3" (ngSubmit)="onSubmit(1)">
+    <div class="input-group main-search-field mb-2">
+      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+        id="keywordInput" [(ngModel)]="tableParams.keywords" />
+      <!-- prevent searching if input is empty or we're already searching -->
+      <button class="btn btn-primary" type="submit" id="search">
+        <span>Search</span>
+      </button>
+    </div>
+  </form>
+  @if (tableParams.totalListItems > 0) {
+    <div>
+      @if (!loading && tableParams.totalListItems != 0) {
+        <app-table-template [columns]="documentTableColumns"
+          [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
+          (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>
         </app-table-template>
+      }
     </div>
-    <div *ngIf="tableParams.totalListItems == 0">
-        There are no contacts.
+  }
+  @if (tableParams.totalListItems == 0) {
+    <div>
+      There are no contacts.
     </div>
+  }
 </main>

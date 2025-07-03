@@ -1,6 +1,8 @@
-<div class="spinner-container" *ngIf="loading">
-  <div class="spinner-new rotating"></div>
-</div>
+@if (loading) {
+  <div class="spinner-container">
+    <div class="spinner-new rotating"></div>
+  </div>
+}
 
 <section id="header-section">
   <div>
@@ -31,18 +33,24 @@
       </div>
     </div>
   </div>
-  <div class="result-num" *ngIf="tableParams.totalListItems > 0 && !loading">
-    Displaying <strong>{{tableParams.totalListItems > tableParams.pageSize ? (tableParams.pageSize * tableParams.currentPage - (tableParams.pageSize - 1)) + '-' + (tableParams.pageSize * tableParams.currentPage) + ' of ' : ''}}{{tableParams.totalListItems}}</strong> Comments
-  </div>
+  @if (tableParams.totalListItems > 0 && !loading) {
+    <div class="result-num">
+      Displaying <strong>{{tableParams.totalListItems > tableParams.pageSize ? (tableParams.pageSize * tableParams.currentPage - (tableParams.pageSize - 1)) + '-' + (tableParams.pageSize * tableParams.currentPage) + ' of ' : ''}}{{tableParams.totalListItems}}</strong> Comments
+    </div>
+  }
 </section>
 
 <section id="table-section">
-  <div *ngIf="tableParams.totalListItems > 0 && !loading">
-    <app-table-template [columns]="commentTableColumns" [data]="commentTableData" (onColumnSort)='setColumnSort($event)'
-      (onPageNumUpdate)='getPaginatedComments($event)'>
-    </app-table-template>
-  </div>
-  <div *ngIf="tableParams.totalListItems == 0">
-    There are no comments.
-  </div>
+  @if (tableParams.totalListItems > 0 && !loading) {
+    <div>
+      <app-table-template [columns]="commentTableColumns" [data]="commentTableData" (onColumnSort)='setColumnSort($event)'
+        (onPageNumUpdate)='getPaginatedComments($event)'>
+      </app-table-template>
+    </div>
+  }
+  @if (tableParams.totalListItems == 0) {
+    <div>
+      There are no comments.
+    </div>
+  }
 </section>

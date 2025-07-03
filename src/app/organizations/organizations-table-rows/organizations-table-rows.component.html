@@ -1,11 +1,13 @@
-<tr *ngFor="let organization of organizations"
+@for (organization of organizations; track organization) {
+  <tr
     class="clickable-row">
     <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[0].width">{{organization.name || '-'}}</td>
     <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[1].width">{{organization.companyType || '-' }}</td>
     <td scope="row" data-label="Organization" id="legal" [style.width]="!useSmallTable && columns[2].width">{{organization.companyLegal || '-' }}</td>
     <td class="clickable" data-label="Event" scope="row" [style.width]="!useSmallTable && columns[3].width">
-        <i (click)="editItem(organization)" class="material-icons">
-            edit
-        </i>
+      <i (click)="editItem(organization)" class="material-icons">
+        edit
+      </i>
     </td>
-</tr>
+  </tr>
+}

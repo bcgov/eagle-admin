@@ -13,12 +13,12 @@ import { Document } from 'src/app/models/document';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-project-notification-upload',
     standalone: true,
-    imports: [RouterModule, ReactiveFormsModule, NgbDatepickerModule, FileUploadComponent, CommonModule],
+    imports: [RouterModule, ReactiveFormsModule, NgbDatepickerModule, FileUploadComponent],
     templateUrl: './project-notification-upload.component.html',
     styleUrls: ['./project-notification-upload.component.css'],
     

@@ -7,14 +7,14 @@ import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'tbody[app-pins-table-rows]',
     templateUrl: './pins-table-rows.component.html',
     styleUrls: ['./pins-table-rows.component.css'],
     standalone: true,
-    imports: [CommonModule],
+    imports: [],
 })
 
 export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent {

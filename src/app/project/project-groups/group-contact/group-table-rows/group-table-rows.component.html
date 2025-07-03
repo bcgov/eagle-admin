@@ -1,10 +1,12 @@
-<tr (click)="selectItem(contact)"
-  *ngFor="let contact of contacts">
-  <td data-label="Select" scope="row" [style.width]="!useSmallTable && columns[0].width">
-    <input type="checkbox" aria-label="Checkbox for row contact" [(ngModel)]='contact.checkbox'>
-  </td>
-  <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[1].width">{{contact.displayName || '-'}}</td>
-  <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[2].width">{{contact.orgName || '-'}}</td>
-  <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[3].width">{{contact.email || '-'}}</td>
-  <td scope="row" data-label="Phone" [style.width]="!useSmallTable && columns[4].width">{{contact.phoneNumber || '-'}}</td>
-</tr>
+@for (contact of contacts; track contact) {
+  <tr (click)="selectItem(contact)"
+    >
+    <td data-label="Select" scope="row" [style.width]="!useSmallTable && columns[0].width">
+      <input type="checkbox" aria-label="Checkbox for row contact" [(ngModel)]='contact.checkbox'>
+    </td>
+    <td scope="row" data-label="Name" [style.width]="!useSmallTable && columns[1].width">{{contact.displayName || '-'}}</td>
+    <td scope="row" data-label="Organization" [style.width]="!useSmallTable && columns[2].width">{{contact.orgName || '-'}}</td>
+    <td scope="row" data-label="Email" [style.width]="!useSmallTable && columns[3].width">{{contact.email || '-'}}</td>
+    <td scope="row" data-label="Phone" [style.width]="!useSmallTable && columns[4].width">{{contact.phoneNumber || '-'}}</td>
+  </tr>
+}

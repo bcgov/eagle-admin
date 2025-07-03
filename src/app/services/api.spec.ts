@@ -26,7 +26,7 @@ describe('api', () => {
     .compileComponents();
   });
   beforeEach(() => {
-    TestBed.get(HttpTestingController);
+    TestBed.inject(HttpTestingController);
   });
     const keycloak = null;
     const configService = new ConfigService(httpMock2);

@@ -4,12 +4,12 @@ import { Subscription } from 'rxjs';
 import { StorageService } from '../services/storage.service';
 import { Project } from '../models/project';
 import { SideBarService } from '../services/sidebar.service';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
     selector: 'app-project-notification',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [RouterModule],
     templateUrl: './project-notification.component.html',
     styleUrls: ['./project-notification.component.css'],
     

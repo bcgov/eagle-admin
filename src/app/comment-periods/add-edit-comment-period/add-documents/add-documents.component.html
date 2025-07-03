@@ -1,116 +1,144 @@
 <nav class="action-container" aria-label="breadcrumb">
-  <div *ngIf="!isEditing">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
-        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All
-          Project Notifications</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
-      </li>
-      <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
-      </li>
-      <li class="breadcrumb-item" aria-current="page">
-        <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods', 'add']">Add</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">
-        Add Documents
-      </li>
-    </ol>
-  </div>
-  <div *ngIf="isEditing">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <a *ngIf="currentProject.type === 'currentProject'" [routerLink]="['/projects']">All Projects</a>
-        <a *ngIf="currentProject.type === 'currentProjectNotification'" [routerLink]="['/project-notifications']">All
-          Project Notifications</a>
-      </li>
-      <li class="breadcrumb-item">
-        <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
-      </li>
-      <li class="breadcrumb-item" aria-current="page">
-        <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'comment-periods'])"
-          [routerLink]="">Comment
+  @if (!isEditing) {
+    <div>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          @if (currentProject.type === 'currentProject') {
+            <a [routerLink]="['/projects']">All Projects</a>
+          }
+          @if (currentProject.type === 'currentProjectNotification') {
+            <a [routerLink]="['/project-notifications']">All
+            Project Notifications</a>
+          }
+        </li>
+        <li class="breadcrumb-item">
+          <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+          <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+          <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods', 'add']">Add</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          Add Documents
+        </li>
+      </ol>
+    </div>
+  }
+  @if (isEditing) {
+    <div>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          @if (currentProject.type === 'currentProject') {
+            <a [routerLink]="['/projects']">All Projects</a>
+          }
+          @if (currentProject.type === 'currentProjectNotification') {
+            <a [routerLink]="['/project-notifications']">All
+            Project Notifications</a>
+          }
+        </li>
+        <li class="breadcrumb-item">
+          <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+          <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'comment-periods'])"
+            [routerLink]="">Comment
           Periods</a>
-      </li>
-      <li class="breadcrumb-item" aria-current="page">
-        <a
-          [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted
-          | date: 'LLLL'}}
-          -
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+          <a
+            [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted
+            | date: 'LLLL'}}
+            -
           {{currentCommentPeriod.dateCompleted | date}}</a>
-      </li>
-      <li class="breadcrumb-item" aria-current="page">
-        <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'cp', currentCommentPeriod._id, 'edit'])"
+        </li>
+        <li class="breadcrumb-item" aria-current="page">
+          <a (click)="clearSelectedDocs([baseRouteUrl, currentProject.data._id, 'cp', currentCommentPeriod._id, 'edit'])"
           [routerLink]="">Edit</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">
-        Add Documents
-      </li>
-    </ol>
-  </div>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          Add Documents
+        </li>
+      </ol>
+    </div>
+  }
 </nav>
 
-<div class="spinner-container" *ngIf="loading">
-  <div class="spinner-new rotating"></div>
-</div>
+@if (loading) {
+  <div class="spinner-container">
+    <div class="spinner-new rotating"></div>
+  </div>
+}
 
-<div *ngIf="!loading" class="container-fluid-padding">
-  <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
-    <div class="input-group main-search-field mb-2">
-      <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
-        id="keywordInput" [(ngModel)]="tableParams.keywords" />
-      <!-- prevent searching if input is empty or we're already searching -->
-      <button class="btn btn-primary" type="submit">
-        <span>Search</span>
-      </button>
-    </div>
-    <div
-      *ngIf="storageService.state.selectedDocumentsForCP && storageService.state.selectedDocumentsForCP.data.length > 0">
-      <p><b>Selected Documents:</b></p>
-      <ul class="doc-list mb-3" *ngIf="storageService.state.selectedDocumentsForCP">
-        <li *ngFor="let doc of storageService.state.selectedDocumentsForCP.data">
-          <span class="cell icon">
-            <i class="material-icons">insert_drive_file</i>
-          </span>
-          <span class="cell name" [title]="doc.displayName || ''">
-            <span class="cell__txt-content">{{doc.documentFileName}}</span>
-          </span>
-          <span class="cell actions">
-            <button class="btn btn-icon" type="button" title="Delete this document" (click)="removeSelectedDoc(doc)">
-              <i class="material-icons">delete</i>
-            </button>
-          </span>
-        </li>
-      </ul>
-    </div>
-    <div class="mb-2">
-      <p *ngIf="tableParams.totalListItems == 0">
-        No results found for "{{tableParams.keywords}}"
-      </p>
-      <div *ngIf="tableParams.totalListItems > 0">
-        {{tableParams.totalListItems}} result<span *ngIf="tableParams.totalListItems != 1">s found</span>
+@if (!loading) {
+  <div class="container-fluid-padding">
+    <form #f="ngForm" class="search-form ui form" (ngSubmit)="onSubmit()">
+      <div class="input-group main-search-field mb-2">
+        <input class="form-control" type="text" name="keywordInput" placeholder="Enter keywords to search..."
+          id="keywordInput" [(ngModel)]="tableParams.keywords" />
+        <!-- prevent searching if input is empty or we're already searching -->
+        <button class="btn btn-primary" type="submit">
+          <span>Search</span>
+        </button>
       </div>
+      @if (storageService.state.selectedDocumentsForCP && storageService.state.selectedDocumentsForCP.data.length > 0) {
+        <div
+          >
+          <p><b>Selected Documents:</b></p>
+          @if (storageService.state.selectedDocumentsForCP) {
+            <ul class="doc-list mb-3">
+              @for (doc of storageService.state.selectedDocumentsForCP.data; track doc) {
+                <li>
+                  <span class="cell icon">
+                    <i class="material-icons">insert_drive_file</i>
+                  </span>
+                  <span class="cell name" [title]="doc.displayName || ''">
+                    <span class="cell__txt-content">{{doc.documentFileName}}</span>
+                  </span>
+                  <span class="cell actions">
+                    <button class="btn btn-icon" type="button" title="Delete this document" (click)="removeSelectedDoc(doc)">
+                      <i class="material-icons">delete</i>
+                    </button>
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+      <div class="mb-2">
+        @if (tableParams.totalListItems == 0) {
+          <p>
+            No results found for "{{tableParams.keywords}}"
+          </p>
+        }
+        @if (tableParams.totalListItems > 0) {
+          <div>
+            {{tableParams.totalListItems}} result@if (tableParams.totalListItems != 1) {
+            <span>s found</span>
+          }
+        </div>
+      }
     </div>
   </form>
-
   <div class="input-group-prepend">
     <button (click)="selectAction('selectAll')" class="btn btn-outline-secondary me-1" type="button"
-      id="button-sa">Select All</button>
+    id="button-sa">Select All</button>
     <button (click)="selectAction('copyLink')" class="btn btn-outline-secondary me-1"
       [disabled]="!isEnabled('copyLink')" type="button" id="button-cl"><i class="material-icons">link</i>Link</button>
-    <button (click)="selectAction('download')" class="btn btn-outline-secondary me-1"
-      [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
-        class="material-icons">cloud_download</i>Download</button>
-    <button (click)="selectAction('submitDocs')" class="btn btn-outline-secondary me-1"
-      [disabled]="!isEnabled('download')" type="button" id="button-ul"><i
-        class="material-icons">cloud_upload</i>&nbsp;Attach {{selectedCount}} document(s) to Comment Period</button>
+      <button (click)="selectAction('download')" class="btn btn-outline-secondary me-1"
+        [disabled]="!isEnabled('download')" type="button" id="button-dl"><i
+      class="material-icons">cloud_download</i>Download</button>
+      <button (click)="selectAction('submitDocs')" class="btn btn-outline-secondary me-1"
+        [disabled]="!isEnabled('download')" type="button" id="button-ul"><i
+      class="material-icons">cloud_upload</i>&nbsp;Attach {{selectedCount}} document(s) to Comment Period</button>
+    </div>
+    @if (tableParams.totalListItems != 0) {
+      <app-table-template [columns]="documentTableColumns"
+        [data]="documentTableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
+        (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+      </app-table-template>
+    }
   </div>
-
-  <app-table-template *ngIf="tableParams.totalListItems != 0" [columns]="documentTableColumns"
-    [data]="documentTableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-    (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
-  </app-table-template>
-</div>
+}

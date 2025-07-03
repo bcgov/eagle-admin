@@ -10,7 +10,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
-import { CommonModule } from '@angular/common';
+
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -21,10 +21,9 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
   standalone: true,
   imports: [
     RouterModule,
-    CommonModule,
     TableTemplateComponent,
     NgbDatepickerModule
-  ]
+]
 })
 export class AddEditProjectComponent implements OnInit, OnDestroy {
 

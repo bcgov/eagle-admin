@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -16,11 +16,10 @@ import { Utils } from '../../utils/utils';
   styleUrls: ['./extension.component.css'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     NgbDatepickerModule
-  ]
+]
 })
 export class ExtensionComponent implements OnInit, OnDestroy {
 

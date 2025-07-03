@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProjectService } from '../services/project.service';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -10,9 +10,8 @@ import { RouterModule } from '@angular/router';
     styleUrls: ['./home.component.css'],
     standalone: true,
     imports: [
-      CommonModule,
-      RouterModule
-    ]
+    RouterModule
+]
 })
 
 export class HomeComponent implements OnInit, OnDestroy {

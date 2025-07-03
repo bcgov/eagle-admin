@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -22,12 +22,11 @@ import { TableTemplateComponent } from '../table-template/table-template.compone
   styleUrls: ['./link-organization.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
     TableTemplateComponent
-  ]
+]
 })
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public terms = new SearchTerms();

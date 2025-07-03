@@ -13,30 +13,44 @@
 <div class="container-fluid-padding">
 
   <div class="input-group-prepend">
-    <a *ngIf='currentProject' class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-    [routerLink]="['/p', currentProject._id, 'project-pins', 'select']">
-    <button (click)="setBackURL('pins')" class="btn btn-outline-secondary me-1" type="button" id="button-d">
-      <i class="material-icons">add</i>Add Participating Indigenous Nation(s)
-    </button>
-    </a>
+    @if (currentProject) {
+      <a class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+        [routerLink]="['/p', currentProject._id, 'project-pins', 'select']">
+        <button (click)="setBackURL('pins')" class="btn btn-outline-secondary me-1" type="button" id="button-d">
+          <i class="material-icons">add</i>Add Participating Indigenous Nation(s)
+        </button>
+      </a>
+    }
   </div>
   <br>
 
-  <div *ngIf="!loading && tableParams.totalListItems === 0">
-    No Participating Indigenous Nations found.
-  </div>
+    @if (!loading && tableParams.totalListItems === 0) {
+      <div>
+        No Participating Indigenous Nations found.
+      </div>
+    }
 
-  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0"
-  [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
-  (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event, null, null)'>
-  </app-table-template>
-<div class="spinner-container" *ngIf="loading">
-    <div class="spinner-new rotating"></div>
+    @if (!loading && tableParams.totalListItems != 0) {
+      <app-table-template
+        [columns]="tableColumns" [data]="tableData" (onColumnSort)='setColumnSort($event)'
+        (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event, null, null)'>
+      </app-table-template>
+    }
+    @if (loading) {
+      <div class="spinner-container">
+        <div class="spinner-new rotating"></div>
+      </div>
+    }
+    @if (this.entries) {
+      <div class="text-end">
+        @if (!this.pinsPublished) {
+          <button (click)="publishPins()" class="btn btn-publish btn-primary" type="button"
+          id="button-sa">Publish</button>
+        }
+        @if (this.pinsPublished) {
+          <button (click)="unpublishPins()" class="btn btn-unpublish btn-primary" type="button"
+          id="button-sa">Unpublish</button>
+        }
+      </div>
+    }
   </div>
-  <div *ngIf="this.entries" class="text-end">
-    <button *ngIf="!this.pinsPublished" (click)="publishPins()" class="btn btn-publish btn-primary" type="button"
-      id="button-sa">Publish</button>
-    <button *ngIf="this.pinsPublished" (click)="unpublishPins()" class="btn btn-unpublish btn-primary" type="button"
-    id="button-sa">Unpublish</button>
-  </div>
-</div>
