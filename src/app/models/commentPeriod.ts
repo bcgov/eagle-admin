@@ -29,7 +29,7 @@ export class CommentPeriod {
   metURLAdmin: string;
   milestone: string;
   openCommentPeriod: string;
-  openHouses: Array<Object>;
+  openHouses: Array<object>;
   periodType: string;
   phase: string;
   phaseName: string;

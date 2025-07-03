@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -44,6 +44,17 @@ import { Subscription } from 'rxjs';
 
 
 export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private commentPeriodService = inject(CommentPeriodService);
+  private configService = inject(ConfigService);
+  private documentService = inject(DocumentService);
+  private formBuilder = inject(UntypedFormBuilder);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  storageService = inject(StorageService);
+  private utils = inject(Utils);
+
   private subscriptions = new Subscription();
 
   public currentProject: { type: string, data: Project };
@@ -75,19 +86,6 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
       ' alignright alignjustify | bullist numlist outdent indent |' +
       ' removeformat | help']
   };
-
-  constructor(
-    private route: ActivatedRoute,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private commentPeriodService: CommentPeriodService,
-    private configService: ConfigService,
-    private documentService: DocumentService,
-    private formBuilder: UntypedFormBuilder,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    public storageService: StorageService,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     // BUG: Go to add docs. refresh. it will redirect and have errors.

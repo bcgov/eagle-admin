@@ -17,7 +17,8 @@
               "moment-timezone",
               "xlsx",
               "tinymce",
-              "jszip"
+              "jszip",
+              "js-sha256"
             ],
             "outputPath": {
               "base": "dist",

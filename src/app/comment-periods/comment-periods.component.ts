@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { CommentPeriod } from '../models/commentPeriod';
 import { ApiService } from '../services/api';
@@ -12,18 +12,28 @@ import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/c
 
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-comment-periods',
-    templateUrl: './comment-periods.component.html',
-    styleUrls: ['./comment-periods.component.css'],
-    standalone: true,
-    imports: [
+  selector: 'app-comment-periods',
+  templateUrl: './comment-periods.component.html',
+  styleUrls: ['./comment-periods.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
     RouterModule,
     TableTemplateComponent
-]
+  ]
 })
 export class CommentPeriodsComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private commentPeriodService = inject(CommentPeriodService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
 
   private subscriptions = new Subscription();
 
@@ -68,16 +78,6 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   public baseRouteUrl: string;
 
   public tableParams: TableParamsObject = new TableParamsObject();
-
-  constructor(
-    private api: ApiService,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private commentPeriodService: CommentPeriodService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
 
   ngOnInit() {
     this.storageService.state.selectedDocumentsForCP = null;

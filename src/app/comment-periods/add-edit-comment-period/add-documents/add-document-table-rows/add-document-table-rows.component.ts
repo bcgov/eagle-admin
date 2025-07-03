@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -15,6 +15,8 @@ import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 })
 
 export class AddDocumentTableRowsComponent implements OnInit, TableComponent {
+  private storageService = inject(StorageService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -24,10 +26,6 @@ export class AddDocumentTableRowsComponent implements OnInit, TableComponent {
   public paginationData: any;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.documents = this.data.data;

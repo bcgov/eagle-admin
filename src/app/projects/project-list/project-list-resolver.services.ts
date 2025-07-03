@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -11,6 +11,10 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 @Injectable()
 export class ProjectListResolver {
+  private orgService = inject(OrgService);
+  private searchService = inject(SearchService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   public proponents: Array<Org> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
@@ -81,13 +85,7 @@ export class ProjectListResolver {
     { code: 'Yes', name: 'Yes' }
   ];
 
-  constructor(
-    private orgService: OrgService,
-    private searchService: SearchService,
-    private tableTemplateUtils: TableTemplateUtils,
-  ) { }
-
-  resolve(route: ActivatedRouteSnapshot): Observable<Object> {
+  resolve(route: ActivatedRouteSnapshot): Observable<object> {
     // Fetch proponents and other collections
     // TODO: Put all of these into Lists
     return this.orgService.getByCompanyType('Proponent/Certificate Holder')

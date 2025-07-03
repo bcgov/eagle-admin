@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { PlatformLocation } from '@angular/common';
 import { TableParamsObject } from '../components/table-template/table-params-object';
@@ -6,10 +6,9 @@ import { Constants } from './constants';
 
 @Injectable()
 export class TableTemplateUtils {
-  constructor(
-    private platformLocation: PlatformLocation,
-    private router: Router
-  ) { }
+  private platformLocation = inject(PlatformLocation);
+  private router = inject(Router);
+
 
   public updateUrl(sortString, currentPage, pageSize, filter = null, keywords = '') {
     let currentUrl = this.router.url;

@@ -1,4 +1,4 @@
-import { Directive, Input, ViewContainerRef, TemplateRef } from '@angular/core';
+import { Directive, Input, ViewContainerRef, TemplateRef, inject } from '@angular/core';
 
 //
 // ref: https://stackoverflow.com/questions/38582293/how-to-declare-a-variable-in-a-template-in-angular2
@@ -8,6 +8,9 @@ import { Directive, Input, ViewContainerRef, TemplateRef } from '@angular/core';
     selector: '[ngVar]'
 })
 export class VarDirective {
+  private vcRef = inject(ViewContainerRef);
+  private templateRef = inject<TemplateRef<any>>(TemplateRef);
+
   context: any = {};
 
   @Input()
@@ -15,8 +18,6 @@ export class VarDirective {
     this.context.$implicit = this.context.ngVar = context;
     this.updateView();
   }
-
-  constructor(private vcRef: ViewContainerRef, private templateRef: TemplateRef<any>) { }
 
   updateView() {
     this.vcRef.clear();

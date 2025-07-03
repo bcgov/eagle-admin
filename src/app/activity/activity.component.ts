@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -40,6 +40,12 @@ class ActivityFilterObject {
 
 })
 export class ActivityComponent implements OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private projectService = inject(ProjectService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   private subscriptions = new Subscription();
   public readonly constants = Constants;
   public loading = true;
@@ -99,13 +105,7 @@ export class ActivityComponent implements OnDestroy {
     }
   ];
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private projectService: ProjectService,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private tableTemplateUtils: TableTemplateUtils,
-  ) {
+  constructor() {
     this.subscriptions.add(
       this.projectService.getAll(1, 1000, '+name')
         .pipe(

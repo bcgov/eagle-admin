@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ProjectService } from '../services/project.service';
 
@@ -15,12 +15,10 @@ import { RouterModule } from '@angular/router';
 })
 
 export class HomeComponent implements OnInit, OnDestroy {
+  private projectService = inject(ProjectService);
+
   public numProjects: number = null;
   private subscriptions = new Subscription();
-
-  constructor(
-    private projectService: ProjectService
-  ) { }
 
   ngOnInit() {
     // although we aren't currently using numProjects,

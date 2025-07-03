@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import moment from 'moment-timezone';
@@ -21,13 +21,24 @@ import { Utils } from 'src/app/shared/utils/utils';
 
 
 @Component({
-    selector: 'form-tab-2002',
-    templateUrl: './form-tab-2002.component.html',
-    styleUrls: ['../add-edit-project.component.css'],
-    standalone: true,
-    imports: [ReactiveFormsModule, NgbDatepickerModule],
+  selector: 'form-tab-2002',
+  templateUrl: './form-tab-2002.component.html',
+  styleUrls: ['../add-edit-project.component.css'],
+  standalone: true,
+  imports: [ReactiveFormsModule, NgbDatepickerModule],
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private configService = inject(ConfigService);
+  private modalService = inject(NgbModal);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private projectService = inject(ProjectService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
   private subscriptions = new Subscription();
   public myForm: UntypedFormGroup;
   public documents: any[] = [];
@@ -63,20 +74,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public loading = true;
   public published: boolean;
 
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    private configService: ConfigService,
-    private modalService: NgbModal,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private utils: Utils,
-  ) {
-  }
-
   ngOnInit() {
     this.regions = this.configService.regions;
     this.subscriptions.add(
@@ -91,9 +88,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.loading = false;
           try {
             this._changeDetectorRef.detectChanges();
-          } catch (e) {
-            // console.log('e:', e);
-          }
+          } catch { }
         }));
 
     this.back = this.storageService.state.back;

@@ -1,13 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ProjectService } from 'src/app/services/project.service';
 
 @Injectable()
 export class PinsComponentResolver  {
-  constructor(
-    private projectService: ProjectService
-  ) { }
+  private projectService = inject(ProjectService);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const projectId = route.parent.paramMap.get('projId');

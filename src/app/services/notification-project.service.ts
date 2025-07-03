@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -7,13 +7,14 @@ import { ProjectNotification } from '../models/projectNotification';
 
 @Injectable()
 export class NotificationProjectService {
+  private api = inject(ApiService);
+
   private projectNotificationList: ProjectNotification[] = [];
-  constructor(private api: ApiService) { }
 
 
   // get all project notifications
 
-  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<Object> {
+  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<object> {
     return this.api.getProjectNotifications(pageNum, pageSize, sortBy).pipe(
       map((res: any) => {
         if (res) {

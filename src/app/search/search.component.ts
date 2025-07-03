@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, ViewEncapsulation, inject } from '@angular/core';
 import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -67,6 +67,16 @@ class SearchFilterObject {
 })
 
 export class SearchComponent implements OnInit, OnDestroy, DoCheck {
+  snackBar = inject(MatSnackBar);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  api = inject(ApiService);
+  private orgService = inject(OrgService);
+  searchService = inject(SearchService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private configService = inject(ConfigService);
+
   public readonly constants = Constants;
   public results: Array<any> = [];
   public proponents: Array<Org> = [];
@@ -198,18 +208,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   private togglingOpen = '';
 
   public pageSizeArray: number[];
-
-  constructor(
-    public snackBar: MatSnackBar,
-    private _changeDetectionRef: ChangeDetectorRef,
-    public api: ApiService,
-    private orgService: OrgService,
-    public searchService: SearchService, // also used in template
-    private tableTemplateUtils: TableTemplateUtils,
-    private router: Router,
-    private route: ActivatedRoute,
-    private configService: ConfigService
-  ) { }
 
   // TODO: when clicking on radio buttons, url must change to reflect dataset.
 

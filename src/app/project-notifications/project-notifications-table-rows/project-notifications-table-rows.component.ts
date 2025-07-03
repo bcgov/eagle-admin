@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -14,6 +14,9 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
     
 })
 export class ProjectNotificationTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -25,11 +28,6 @@ export class ProjectNotificationTableRowsComponent implements OnInit, TableCompo
 
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils
-  ) { }
 
   ngOnInit() {
     this.items = this.data.data;

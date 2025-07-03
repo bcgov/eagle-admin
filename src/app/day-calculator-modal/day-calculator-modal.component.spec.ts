@@ -1,6 +1,6 @@
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Utils } from 'src/app/shared/utils/utils';
-import { waitForAsync } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { DayCalculatorResult } from './day-calculator-modal.component';
 import { DayCalculatorModalComponent } from './day-calculator-modal.component';
 
@@ -18,8 +18,16 @@ describe('DayCalculatorModalComponent', () => {
   let resumeDate = null;
 
   beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [DayCalculatorModalComponent],
+      providers: [
+        { provide: NgbActiveModal, useValue: {} },
+        { provide: Utils, useValue: new Utils() }
+      ]
+    }).compileComponents();
 
-    component = new DayCalculatorModalComponent(new NgbActiveModal, new Utils);
+    const fixture = TestBed.createComponent(DayCalculatorModalComponent);
+    component = fixture.componentInstance;
 
     // Reset output
     calculated = new DayCalculatorResult();

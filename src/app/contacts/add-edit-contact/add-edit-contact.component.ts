@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -26,6 +26,12 @@ export interface DataModel {
 // NOTE: dialog components must not implement OnDestroy
 //       otherwise they don't return a result
 export class AddEditContactComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private storageService = inject(StorageService);
+  private userService = inject(UserService);
+
   private subscriptions = new Subscription();
   private navigationObject;
 
@@ -44,14 +50,6 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   public phonePattern;
   public salutationList = ['Mr.', 'Mrs.', 'Miss', 'Dr.', 'Ms', 'Chief', 'Mayor', 'Minister'];
   public provinceList = ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'];
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils,
-    private storageService: StorageService,
-    private userService: UserService
-  ) { }
 
   ngOnInit() {
     if (this.navigationStackUtils.getNavigationStack()) {

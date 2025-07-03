@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -26,6 +26,15 @@ import { Subscription } from 'rxjs';
 })
 
 export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private configService = inject(ConfigService);
+  private notificationProjectService = inject(NotificationProjectService);
+  private storageService = inject(StorageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private utils = inject(Utils);
+  private projectService = inject(ProjectService);
+
   private subscriptions = new Subscription();
 
   public isAdd = false;
@@ -51,26 +60,15 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public documentsToDelete = [];
 
   public NATURE_OPTIONS: Array<string> = Constants.NOTIFICATION_NATURES;
-  public PROJECT_SUBTYPES: Object = Constants.PROJECT_SUBTYPES(2018);
-  public PROJECT_NOTIFICATION_THRESHOLD_UNITS: Object = Constants.PROJECT_NOTIFICATION_THRESHOLD_UNITS;
-  public PROJECT_TYPES: Array<Object> = Constants.PROJECT_TYPES(2018);
-  public NOTIFICATION_TRIGGERS: Array<Object> = Constants.NOTIFICATION_TRIGGERS;
+  public PROJECT_SUBTYPES: object = Constants.PROJECT_SUBTYPES(2018);
+  public PROJECT_NOTIFICATION_THRESHOLD_UNITS: object = Constants.PROJECT_NOTIFICATION_THRESHOLD_UNITS;
+  public PROJECT_TYPES: Array<string> = Constants.PROJECT_TYPES(2018);
+  public NOTIFICATION_TRIGGERS: Array<object> = Constants.NOTIFICATION_TRIGGERS;
   public NOTIFICATION_DECISIONS = Constants.NOTIFICATION_DECISIONS;
   public NATURE_DEFAULT = 'New Construction';
   public NATURE_MODIFIED = 'Modification of Existing';
 
   public triggers: any[];
-
-  constructor(
-    private _changeDetectorRef: ChangeDetectorRef,
-    private configService: ConfigService,
-    private notificationProjectService: NotificationProjectService,
-    private storageService: StorageService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private utils: Utils,
-    private projectService: ProjectService,
-  ) { }
 
   public ngOnInit() {
     this.regions = this.configService.regions;

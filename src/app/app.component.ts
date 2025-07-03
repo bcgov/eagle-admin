@@ -1,4 +1,4 @@
-import { Component, OnInit, HostBinding } from '@angular/core';
+import { Component, OnInit, HostBinding, inject } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from './header/header.component';
@@ -22,13 +22,11 @@ import { SideBarService } from './services/sidebar.service';
 })
 
 export class AppComponent implements OnInit {
+  private sideBarService = inject(SideBarService);
+
 
   @HostBinding('class.sidebarcontrol')
   isOpen = false;
-
-  constructor(
-    private sideBarService: SideBarService
-  ) { }
 
   ngOnInit() {
     this.sideBarService.toggleChange.subscribe(isOpen => {

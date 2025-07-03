@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SearchService } from '../services/search.service';
@@ -7,11 +7,10 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
 export class OrganizationsResolver  {
-  constructor(
-    private searchService: SearchService,
-    private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
+  private searchService = inject(SearchService);
+  private storageService = inject(StorageService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     let tableParams;

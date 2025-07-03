@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -15,6 +15,8 @@ import { CommentStatsComponent } from 'src/app/shared/components/comment-stats/c
 })
 
 export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent {
+    private router = inject(Router);
+
     @Input() data: TableObject;
     @Input() columnData: Array<any>;
     @Input() smallTable: boolean;
@@ -24,10 +26,6 @@ export class CommentPeriodsTableRowsComponent implements OnInit, TableComponent 
     public baseRouteUrl: string;
     public columns: any;
     public useSmallTable: boolean;
-
-    constructor(
-        private router: Router
-    ) { }
 
     ngOnInit() {
         this.commentPeriods = this.data.data;

@@ -1,7 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription, forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import moment from 'moment';
@@ -23,6 +23,7 @@ import { Document } from 'src/app/models/document';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 
 class DocumentFilterObject {
@@ -39,12 +40,31 @@ class DocumentFilterObject {
 @Component({
   selector: 'app-project-documents',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    NgbDropdownModule,
+    TableTemplateComponent
+  ],
   templateUrl: './project-documents.component.html',
   styleUrls: ['./project-documents.component.css'],
   providers: [TableDocumentTemplateUtils]
 })
 export class ProjectDocumentsComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private api = inject(ApiService);
+  private modalService = inject(NgbModal);
+  private documentService = inject(DocumentService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private searchService = inject(SearchService);
+  private configService = inject(ConfigService);
+  private storageService = inject(StorageService);
+  private tableDocumentTemplateUtils = inject(TableDocumentTemplateUtils);
+  private utils = inject(Utils);
+
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
 
@@ -143,21 +163,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   public currentProject;
   public canPublish;
   public canUnpublish;
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private api: ApiService,
-    private modalService: NgbModal,
-    private documentService: DocumentService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private searchService: SearchService,
-    private configService: ConfigService,
-    private storageService: StorageService,
-    private tableDocumentTemplateUtils: TableDocumentTemplateUtils,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     if (this.milestones.length === 0) {

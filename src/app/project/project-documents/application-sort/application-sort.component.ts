@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { CommonModule } from '@angular/common';
 import { ApplicationSortTableRowsComponent } from './application-sort-table-rows/application-sort-table-rows.component';
 import { Project } from 'src/app/models/project';
 import { User } from 'src/app/models/user';
@@ -21,12 +22,28 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
 @Component({
   selector: 'app-application-sort',
   standalone: true,
-  imports: [RouterModule, TableTemplateComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TableTemplateComponent
+  ],
   templateUrl: './application-sort.component.html',
   styleUrls: ['./application-sort.component.css'],
 
 })
 export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  api = inject(ApiService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private storageService = inject(StorageService);
+  private searchService = inject(SearchService);
+  private snackBar = inject(MatSnackBar);
+  private utils = inject(Utils);
+  private documentService = inject(DocumentService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  private configService = inject(ConfigService);
+
   private subscriptions = new Subscription();
   public currentProject: Project = null;
   public loading = true;
@@ -71,22 +88,6 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
       width: '10%'
     }
   ];
-
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    public api: ApiService,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private storageService: StorageService,
-    private searchService: SearchService,
-    private snackBar: MatSnackBar,
-    private utils: Utils,
-    private documentService: DocumentService,
-    private tableTemplateUtils: TableTemplateUtils,
-    private configService: ConfigService
-  ) {
-  }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

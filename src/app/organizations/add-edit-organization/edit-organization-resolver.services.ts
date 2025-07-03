@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
@@ -7,9 +7,8 @@ import { SearchService } from 'src/app/services/search.service';
 
 @Injectable()
 export class EditOrganizationResolver {
-  constructor(
-    private searchService: SearchService,
-  ) { }
+  private searchService = inject(SearchService);
+
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const orgId = route.paramMap.get('orgId');

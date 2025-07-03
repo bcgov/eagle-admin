@@ -1,9 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
 import { Org } from 'src/app/models/org';
@@ -21,14 +22,23 @@ import { TableTemplateComponent } from '../table-template/table-template.compone
   templateUrl: './link-organization.component.html',
   styleUrls: ['./link-organization.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
     TableTemplateComponent
-]
+  ]
 })
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  storageService = inject(StorageService);
+  navigationStackUtils = inject(NavigationStackUtils);
+  tableTemplateUtils = inject(TableTemplateUtils);
+
   public terms = new SearchTerms();
   private subscriptions = new Subscription();
   public organizations: Org[] = null;
@@ -60,15 +70,6 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
   public contactId = '';
   public isParentCompany = false;
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private route: ActivatedRoute,
-    private router: Router,
-    public storageService: StorageService,
-    public navigationStackUtils: NavigationStackUtils,
-    public tableTemplateUtils: TableTemplateUtils
-  ) { }
 
   ngOnInit() {
     this.storageService.state.selectedOrgs = [];

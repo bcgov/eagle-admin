@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -29,6 +29,13 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 })
 
 export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
+  private api = inject(ApiService);
+  private commentPeriodService = inject(CommentPeriodService);
+  private documentService = inject(DocumentService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+
 
   private subscriptions = new Subscription();
 
@@ -43,15 +50,6 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   public loading = true;
   public commentPeriodDocs = [];
   public canDeleteCommentPeriod = false;
-
-  constructor(
-    private api: ApiService,
-    private commentPeriodService: CommentPeriodService,
-    private documentService: DocumentService,
-    private router: Router,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.setPublishStatus();

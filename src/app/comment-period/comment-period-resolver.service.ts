@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { forkJoin, from } from 'rxjs';
@@ -8,12 +8,10 @@ import { CommentPeriod } from '../models/commentPeriod';
 
 @Injectable()
 export class CommentPeriodResolver {
+  private commentPeriodService = inject(CommentPeriodService);
 
-  constructor(
-    private commentPeriodService: CommentPeriodService
-  ) { }
 
-  resolve(route: ActivatedRouteSnapshot): Observable<Object> {
+  resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const commentPeriodId = route.paramMap.get('commentPeriodId');
     return forkJoin([
       from(this.commentPeriodService.getSummaryById(commentPeriodId)),

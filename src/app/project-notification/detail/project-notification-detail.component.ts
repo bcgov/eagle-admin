@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { forkJoin } from 'rxjs';
@@ -20,6 +20,14 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 })
 
 export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  api = inject(ApiService);
+  notificationProjectService = inject(NotificationProjectService);
+  documentService = inject(DocumentService);
+  private storageService = inject(StorageService);
+  private _changeDetectorRef = inject(ChangeDetectorRef);
+
 
   private subscriptions: Subscription = new Subscription();
 
@@ -27,16 +35,6 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
   public loading = false;
   public isPublished = false;
   public documents = [];
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    public api: ApiService,
-    public notificationProjectService: NotificationProjectService,
-    public documentService: DocumentService,
-    private storageService: StorageService,
-    private _changeDetectorRef: ChangeDetectorRef
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

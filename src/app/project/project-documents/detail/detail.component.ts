@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Project } from 'src/app/models/project';
@@ -11,33 +11,31 @@ import { Subscription } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 
 @Component({
     selector: 'app-detail',
     standalone: true,
-    imports: [RouterModule, CommonModule, NgbDropdownModule],
+    imports: [RouterModule, CommonModule, NgbDropdownModule, ListConverterPipe],
     templateUrl: './detail.component.html',
     styleUrls: ['./detail.component.css'],
     
 })
 export class DocumentDetailComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  api = inject(ApiService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private storageService = inject(StorageService);
+  private snackBar = inject(MatSnackBar);
+  private utils = inject(Utils);
+  private documentService = inject(DocumentService);
+
   private subscriptions = new Subscription();
   public document: Document = null;
   public currentProject: Project = null;
   public publishText: string;
   formatBytes: (bytes: any, decimals?: number) => string;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    public api: ApiService,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private storageService: StorageService,
-    private snackBar: MatSnackBar,
-    private utils: Utils,
-    private documentService: DocumentService,
-  ) {
-  }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

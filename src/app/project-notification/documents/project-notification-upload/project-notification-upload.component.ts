@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
@@ -24,6 +24,14 @@ import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
     
 })
 export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private storageService = inject(StorageService);
+  private documentService = inject(DocumentService);
+  private snackBar = inject(MatSnackBar);
+  private configService = inject(ConfigService);
+  private utils = inject(Utils);
+
   private subscriptions = new Subscription();
 
   public currentProject;
@@ -44,18 +52,6 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   public documentMilestoneID: any[] = [];
   public documentAuthorID: any[] = [];
   public documentPhaseID: any[] = [];
-
-
-
-  constructor(
-    private router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private storageService: StorageService,
-    private documentService: DocumentService,
-    private snackBar: MatSnackBar,
-    private configService: ConfigService,
-    private utils: Utils
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

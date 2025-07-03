@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchTerms } from 'src/app/models/search';
@@ -8,17 +8,32 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
-    selector: 'app-group-contact-select',
-    standalone: true,
-    imports: [FormsModule],
-    templateUrl: './group-contact-select.component.html',
-    styleUrls: ['./group-contact-select.component.css'],
-    
+  selector: 'app-group-contact-select',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TableTemplateComponent
+  ],
+  templateUrl: './group-contact-select.component.html',
+  styleUrls: ['./group-contact-select.component.css'],
+
 })
 export class GroupContactSelectComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  navigationStackUtils = inject(NavigationStackUtils);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  storageService = inject(StorageService);
+
   private subscriptions = new Subscription();
   public navigationObject;
 
@@ -32,15 +47,6 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public tableColumns: any[];
-
-  constructor(
-    private route: ActivatedRoute,
-    public router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    public navigationStackUtils: NavigationStackUtils,
-    private tableTemplateUtils: TableTemplateUtils,
-    public storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

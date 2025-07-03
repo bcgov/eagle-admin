@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit, EventEmitter, Output, inject } from '@angular/core';
 
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
@@ -12,6 +12,8 @@ import { TableObject } from 'src/app/shared/components/table-template/table-obje
     
 })
 export class GroupTableRowsComponent implements OnInit {
+  private storageService = inject(StorageService);
+
   @Input() data: TableObject;
   @Output() selectedCount: EventEmitter<any> = new EventEmitter();
   @Input() columnData: Array<any>;
@@ -21,10 +23,6 @@ export class GroupTableRowsComponent implements OnInit {
   public paginationData: any;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.contacts = this.data.data;

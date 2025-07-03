@@ -1,5 +1,5 @@
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
@@ -14,6 +14,9 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
     
 })
 export class UserTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+  private navigationStackUtils = inject(NavigationStackUtils);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -23,11 +26,6 @@ export class UserTableRowsComponent implements OnInit, TableComponent {
   public dropdownItems = ['Edit', 'Delete'];
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private navigationStackUtils: NavigationStackUtils
-  ) { }
 
   ngOnInit() {
     this.contacts = this.data.data;

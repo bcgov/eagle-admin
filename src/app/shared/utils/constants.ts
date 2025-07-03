@@ -133,7 +133,7 @@ export class Constants {
     { code: 'waterManagement', name: 'Water Management' }
   ];
 
-  public static readonly PROJECT_NOTIFICATION_THRESHOLD_UNITS: Object = {
+  public static readonly PROJECT_NOTIFICATION_THRESHOLD_UNITS: object = {
     'Energy-Electricity': [
       'Land Based Wind Turbines (turbines)',
       'Water Based Wind Turbines (turbines)',
@@ -455,7 +455,7 @@ export class Constants {
     }
   }
 
-  public static readonly PROJECT_SUBTYPES = (legislationYear: number): Object => {
+  public static readonly PROJECT_SUBTYPES = (legislationYear: number): object => {
     switch (legislationYear) {
       case 2002:
       return {

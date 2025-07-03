@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
@@ -6,8 +6,8 @@ import { RecentActivity } from '../models/recentActivity';
 
 @Injectable()
 export class RecentActivityService {
+  private api = inject(ApiService);
 
-  constructor(private api: ApiService) { }
 
   // MBL TODO: PUT/POST functionality.
   add(activity: RecentActivity) {

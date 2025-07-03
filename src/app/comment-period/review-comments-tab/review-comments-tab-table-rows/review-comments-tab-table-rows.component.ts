@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { Router } from '@angular/router';
@@ -16,6 +16,9 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 })
 
 export class ReviewCommentsTabTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -27,11 +30,6 @@ export class ReviewCommentsTabTableRowsComponent implements OnInit, TableCompone
   public baseRouteUrl: string;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.projectId = this.storageService.state.currentProject.data._id;

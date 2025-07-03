@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
@@ -7,9 +7,8 @@ import { Document } from '../models/document';
 
 @Injectable()
 export class DocumentService {
-  // private currentState: any;
+  private api = inject(ApiService);
 
-  constructor(private api: ApiService) { }
 
   // get a specific document by its id
   getByMultiId(ids: Array<string>): Observable<Array<Document>> {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -10,17 +10,15 @@ import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 
 @Injectable()
 export class ActivityComponentResolver {
+  private searchService = inject(SearchService);
+  private projectService = inject(ProjectService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   public filterForURL: object = {};
   public filterForAPI: object = {};
 
   public activityTypes: Array<object>;
   public projects: Array<Project> = [];
-
-  constructor(
-    private searchService: SearchService,
-    private projectService: ProjectService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
 
   resolve(route: ActivatedRouteSnapshot): Observable<object> {
     const activity = route.paramMap.get('activityId');

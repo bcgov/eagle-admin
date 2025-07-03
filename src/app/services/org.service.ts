@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api';
 import { Observable } from 'rxjs';
 import { Org } from '../models/org';
@@ -8,10 +8,8 @@ import { map, catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class OrgService {
+  private api = inject(ApiService);
 
-  constructor(
-    private api: ApiService
-  ) { }
 
   save(org: Org): Observable<Org> {
     return this.api.saveOrg(org).pipe(

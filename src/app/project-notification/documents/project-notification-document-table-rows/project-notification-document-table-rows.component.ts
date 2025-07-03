@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { RouterModule } from '@angular/router';
@@ -18,6 +18,9 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 })
 
 export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -28,11 +31,6 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
   public activeLegislationYear: number;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) { }
 
   ngOnInit() {
     this.documents = this.data.data;

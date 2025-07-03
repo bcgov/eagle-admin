@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ProjectNotificationTableRowsComponent } from './project-notifications-table-rows/project-notifications-table-rows.component';
@@ -8,6 +8,7 @@ import { TableObject } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 import { RouterModule } from '@angular/router';
@@ -15,12 +16,22 @@ import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-notification-projects',
   standalone: true,
-  imports: [FormsModule, TableTemplateComponent, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableTemplateComponent,
+    RouterModule
+  ],
   templateUrl: './project-notifications.component.html',
   styleUrls: ['./project-notifications.component.css'],
 
 })
 export class ProjectNotificationsComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   private subscriptions = new Subscription();
 
   public terms = new SearchTerms();
@@ -58,13 +69,6 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
 
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private tableTemplateUtils: TableTemplateUtils,
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

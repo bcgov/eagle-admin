@@ -1,7 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription, forkJoin } from 'rxjs';
-import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -17,16 +16,35 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { CommonModule } from '@angular/common';
+import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 
 @Component({
   selector: 'app-group-contact',
   standalone: true,
-  imports: [FormsModule, RouterModule, TableTemplateComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TableTemplateComponent
+  ],
   templateUrl: './group-contact.component.html',
   styleUrls: ['./group-contact.component.css'],
 
 })
 export class GroupContactComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private modalService = inject(NgbModal);
+  private excelService = inject(ExcelService);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private projectService = inject(ProjectService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private searchService = inject(SearchService);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   private groupId: any = null;
   private subscritions = new Subscription();
 
@@ -69,20 +87,6 @@ export class GroupContactComponent implements OnInit, OnDestroy {
 
   public selectedCount = 0;
   public tableParams: TableParamsObject = new TableParamsObject();
-
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private modalService: NgbModal,
-    private excelService: ExcelService,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private searchService: SearchService,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private tableTemplateUtils: TableTemplateUtils
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

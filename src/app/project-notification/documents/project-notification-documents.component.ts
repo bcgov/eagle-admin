@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation, inject } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -20,13 +20,29 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-project-notification-documents',
   standalone: true,
-  imports: [RouterModule, TableTemplateComponent, CommonModule, NgbDropdownModule],
+  imports: [
+    RouterModule,
+    TableTemplateComponent,
+    CommonModule,
+    NgbDropdownModule
+  ],
   templateUrl: './project-notification-documents.component.html',
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./project-notification-documents.component.css'],
 
 })
 export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy {
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private api = inject(ApiService);
+  private documentService = inject(DocumentService);
+  private modalService = inject(NgbModal);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private searchService = inject(SearchService);
+  private snackBar = inject(MatSnackBar);
+  private storageService = inject(StorageService);
+  private utils = inject(Utils);
+
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
 
@@ -80,18 +96,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   public canPublish;
   public canUnpublish;
 
-  constructor(
-    private _changeDetectionRef: ChangeDetectorRef,
-    private api: ApiService,
-    private documentService: DocumentService,
-    private modalService: NgbModal,
-    private route: ActivatedRoute,
-    private router: Router,
-    private searchService: SearchService,
-    private snackBar: MatSnackBar,
-    private storageService: StorageService,
-    private utils: Utils
-  ) {
+  constructor() {
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
   }
 

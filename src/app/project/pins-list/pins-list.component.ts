@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -18,12 +18,25 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-pins-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, TableTemplateComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TableTemplateComponent
+  ],
   templateUrl: './pins-list.component.html',
   styleUrls: ['./pins-list.component.css'],
 
 })
 export class PinsListComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private storageService = inject(StorageService);
+  private snackBar = inject(MatSnackBar);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private projectService = inject(ProjectService);
+  private router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+
   private subscriptions = new Subscription();
   public currentProject;
   public tableParams: TableParamsObject = new TableParamsObject();
@@ -56,16 +69,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
       nosort: true
     },
   ];
-  constructor(
-    private route: ActivatedRoute,
-    private storageService: StorageService,
-    private snackBar: MatSnackBar,
-    private navigationStackUtils: NavigationStackUtils,
-    private projectService: ProjectService,
-    private router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private tableTemplateUtils: TableTemplateUtils,
-  ) {
+  constructor() {
     this.entries = [];
   }
 

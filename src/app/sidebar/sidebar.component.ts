@@ -1,4 +1,4 @@
-import { Component, HostBinding, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostBinding, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -38,15 +38,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isOpen = false;
   isArchive = false;
 
-  constructor(
-    private router: Router,
-    private storageService: StorageService,
-    private keycloakService: KeycloakService,
-    private sideBarService: SideBarService,
-  ) {
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+  private keycloakService = inject(KeycloakService);
+  private sideBarService = inject(SideBarService);
 
+  constructor() {
     this.subscriptions.add(
-      router.events.pipe(
+      this.router.events.pipe(
         filter(event => event instanceof NavigationEnd)
       ).subscribe(event => {
         this.routerSnapshot = event;
@@ -71,7 +70,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     let roles: string[] = [];
     try {
       roles = this.keycloakService.getUserRoles() || [];
-    } catch (e) {
+    } catch {
       roles = [];
     }
     if (roles.includes('inspector')) {
@@ -138,7 +137,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       try {
         this.currentMenu = urlArray[2];
         this.currentMenu = urlArray[2].split(';')[0];
-      } catch (e) {
+      } catch {
         // When coming from search, it's blank.
       }
       this.showProjectDetails = true;

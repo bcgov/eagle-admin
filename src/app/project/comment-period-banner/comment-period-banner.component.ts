@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
 
@@ -10,14 +10,12 @@ import { StorageService } from 'src/app/services/storage.service';
 })
 
 export class CommentPeriodBannerComponent implements OnInit {
+  private router = inject(Router);
+  private storageService = inject(StorageService);
+
 
   public commentPeriod;
   public projectId;
-
-  constructor(
-    private router: Router,
-    private storageService: StorageService
-  ) { }
 
   ngOnInit() {
     this.projectId = this.storageService.state.currentProject.data._id;

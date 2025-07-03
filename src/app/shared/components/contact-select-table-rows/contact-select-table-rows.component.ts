@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit, EventEmitter, Output, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StorageService } from 'src/app/services/storage.service';
@@ -15,6 +15,10 @@ import { TableComponent } from '../table-template/table.component';
 })
 
 export class ContactSelectTableRowsComponent implements OnInit, TableComponent {
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private storageService = inject(StorageService);
+  private router = inject(Router);
+
 
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
@@ -26,13 +30,6 @@ export class ContactSelectTableRowsComponent implements OnInit, TableComponent {
   public paginationData: any;
   public columns: any;
   public useSmallTable: boolean;
-
-
-  constructor(
-    private navigationStackUtils: NavigationStackUtils,
-    private storageService: StorageService,
-    private router: Router
-  ) { }
 
   ngOnInit() {
     this.contacts = this.data.data;

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -11,12 +11,10 @@ import { Subscription } from 'rxjs';
     imports: []
 })
 export class NotAuthorizedComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+
   private subscriptions = new Subscription();
   public loggedout = false;
-
-  constructor(
-    private route: ActivatedRoute
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

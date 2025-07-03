@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 
@@ -15,6 +15,8 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 })
 
 export class SearchDocumentTableRowsComponent implements OnInit, TableComponent {
+  private router = inject(Router);
+
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
   @Input() smallTable: boolean;
@@ -24,10 +26,6 @@ export class SearchDocumentTableRowsComponent implements OnInit, TableComponent 
   public activeLegislationYear: number;
   public columns: any;
   public useSmallTable: boolean;
-
-  constructor(
-    private router: Router
-  ) { }
 
   ngOnInit() {
     this.documents = this.data.data;

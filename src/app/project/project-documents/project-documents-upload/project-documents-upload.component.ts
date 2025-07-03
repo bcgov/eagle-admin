@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
@@ -23,6 +23,14 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 })
 export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private storageService = inject(StorageService);
+  private snackBar = inject(MatSnackBar);
+  private documentService = inject(DocumentService);
+  private utils = inject(Utils);
+  private configService = inject(ConfigService);
+
   private subscriptions = new Subscription();
 
   public authorsel: any;
@@ -50,16 +58,6 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   public legislationYear = '2018';
   public publishDoc = false;
   public snackBarTimeout = 1500;
-
-  constructor(
-    private router: Router,
-    private _changeDetectionRef: ChangeDetectorRef,
-    private storageService: StorageService,
-    private snackBar: MatSnackBar,
-    private documentService: DocumentService,
-    private utils: Utils,
-    private configService: ConfigService
-  ) { }
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -39,13 +39,29 @@ class ProjectFilterObject {
 }
 
 @Component({
-    selector: 'app-project-list',
-    templateUrl: './project-list.component.html',
-    styleUrls: ['./project-list.component.css'],
-    standalone: true,
-    imports: [CommonModule, FormsModule, NgSelectModule, TableTemplateComponent, NgbDatepickerModule],
+  selector: 'app-project-list',
+  templateUrl: './project-list.component.html',
+  styleUrls: ['./project-list.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgSelectModule,
+    TableTemplateComponent,
+    NgbDatepickerModule
+  ],
 })
 export class ProjectListComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private tableTemplateUtils = inject(TableTemplateUtils);
+  private navigationStackUtils = inject(NavigationStackUtils);
+  private orgService = inject(OrgService);
+  private searchService = inject(SearchService);
+  private storageService = inject(StorageService);
+  private configService = inject(ConfigService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
+
   public readonly constants = Constants;
   public projects: Array<Project> = [];
   public proponents: Array<Org> = [];
@@ -119,18 +135,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   ];
 
   private subscriptions = new Subscription();
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private tableTemplateUtils: TableTemplateUtils,
-    private navigationStackUtils: NavigationStackUtils,
-    private orgService: OrgService,
-    private searchService: SearchService,
-    private storageService: StorageService,
-    private configService: ConfigService,
-    private _changeDetectionRef: ChangeDetectorRef
-  ) { }
 
   ngOnInit() {
     this.subscriptions.add(

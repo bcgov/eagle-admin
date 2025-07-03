@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { ConfigService } from 'src/app/services/config.service';
 
 @Pipe({
@@ -8,7 +8,9 @@ import { ConfigService } from 'src/app/services/config.service';
 export class ListConverterPipe implements PipeTransform {
   private configService: ConfigService;
 
-  constructor(configService: ConfigService) {
+  constructor() {
+    const configService = inject(ConfigService);
+
     this.configService = configService;
   }
 

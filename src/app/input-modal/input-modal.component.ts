@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
@@ -13,12 +13,10 @@ import { FormsModule } from '@angular/forms';
 ]
 })
 export class InputModalComponent {
+  activeModal = inject(NgbActiveModal);
+
 
   groupName = '';
-
-  constructor(
-    public activeModal: NgbActiveModal // also used in template
-  ) { }
 
   public cancel() {
     this.activeModal.close(null);
