@@ -311,56 +311,56 @@
 
 .advanced-filter .ng-select#type ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e943";
 }
 
 .advanced-filter .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e24c";
 }
 
 .advanced-filter .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e9bc";
 }
 
 .advanced-filter .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e916";
 }
 
 .advanced-filter .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e7ee";
 }
 
 .advanced-filter .ng-select#projectPhase ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\eb85";
 }
 
 .advanced-filter .ng-select#ceaaInvolvement ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 28px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 28, 'wght' 300;
   content: "\e9f4";
 }
 
 .advanced-filter .ng-select#region ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 32px;
+  font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\f6ea";
 }

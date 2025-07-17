@@ -2,7 +2,7 @@ import { enableProdMode, importProvidersFrom, inject, provideAppInitializer } fr
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { AppRoutingModule } from './app/app-routing.module';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { environment } from './environments/environment';
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
@@ -25,6 +25,7 @@ import { UserService } from './app/services/user.service';
 import { Utils } from './app/shared/utils/utils';
 import { TableTemplateUtils } from './app/shared/utils/table-template-utils';
 import { NavigationStackUtils } from './app/shared/utils/navigation-stack-utils';
+import { TokenInterceptor } from './app/shared/utils/token-interceptor';
 
 if (environment.production) {
   enableProdMode();
@@ -50,7 +51,10 @@ bootstrapApplication(AppComponent, {
       return initializerFn();
     }),
     provideAnimations(),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(
+      withInterceptorsFromDi(),
+    ),
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     ApiService,
     CommentPeriodService,
     CommentService,
