@@ -5,14 +5,14 @@
   margin-bottom: 2rem;
 }
 
-.btn-unpublish{
+.btn-unpublish {
   background-color: white;
-  color: var(--danger);
-  border-color: var(--danger);
+  color: var(--bs-danger);
+  border-color: var(--bs-danger);
   border-width: 1px;
 }
 
-.btn-publish{
-  background-color: var(--success);
-  border-color: var(--success);
+.btn-publish {
+  background-color: var(--bs-success);
+  border-color: var(--bs-success);
 }
