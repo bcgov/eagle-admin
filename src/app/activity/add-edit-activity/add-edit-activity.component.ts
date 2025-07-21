@@ -17,19 +17,19 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-    selector: 'app-add-edit-activity',
-    templateUrl: './add-edit-activity.component.html',
-    styleUrls: ['./add-edit-activity.component.css'],
-    standalone: true,
-    imports: [
-      CommonModule,
-      FormsModule,
-      ReactiveFormsModule,
-      RouterModule,
-      EditorModule,
-      NgbDatepickerModule,
-      MatSlideToggleModule
-    ]
+  selector: 'app-add-edit-activity',
+  templateUrl: './add-edit-activity.component.html',
+  styleUrls: ['./add-edit-activity.component.css'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    EditorModule,
+    NgbDatepickerModule,
+    MatSlideToggleModule
+  ]
 })
 export class AddEditActivityComponent implements OnInit, OnDestroy {
   private router = inject(Router);

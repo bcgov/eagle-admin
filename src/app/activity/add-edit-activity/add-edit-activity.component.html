@@ -4,23 +4,23 @@
       <a [routerLink]="['/activity']">Activity Posts</a>
     </li>
     @if (isEditing) {
-      <li class="breadcrumb-item active" aria-current="page">
-        Edit
-      </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      Edit
+    </li>
     }
     @if (!isEditing) {
-      <li class="breadcrumb-item active" aria-current="page">
-        Add
-      </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      Add
+    </li>
     }
   </ol>
 </div>
 
 <main class="container-fluid-padding add-edit-form">
   @if (loading) {
-    <div class="spinner-container">
-      <div class="spinner-new rotating"></div>
-    </div>
+  <div class="spinner-container">
+    <div class="spinner-new rotating"></div>
+  </div>
   }
   <form [formGroup]="myForm" novalidate>
     <h2>Activity Post</h2>
@@ -29,19 +29,19 @@
         <label for="type">Type* </label>
         <select required default="select" class="form-control" formControlName="type" (change)="updateType()">
           @for (type of activityTypes; track type) {
-            <option [ngValue]="type">{{type}}</option>
+          <option [ngValue]="type">{{type}}</option>
           }
         </select>
       </div>
     </div>
     @if (typeIsNotification) {
-      <div class="flex-container">
-        <div class="label-pair">
-          <label for="type">Project Notification Name*</label>
-          <input [required]="typeIsNotification" name="notificationName" id="notificationName"
-            formControlName="notificationName" type="text" class="form-control" />
-        </div>
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="type">Project Notification Name*</label>
+        <input [required]="typeIsNotification" name="notificationName" id="notificationName"
+          formControlName="notificationName" type="text" class="form-control" />
       </div>
+    </div>
     }
     <div class="flex-container">
       <div class="label-pair lrg">
@@ -56,38 +56,38 @@
       </div>
     </div>
     @if (typeIsPCP && !projectIsSelected) {
-      <div class="alert alert-warning" role="alert">
-        Please select a project.
-      </div>
+    <div class="alert alert-warning" role="alert">
+      Please select a project.
+    </div>
     }
     @if (typeIsProjectNotificationNews && !projectIsSelected) {
-      <div class="alert alert-warning" role="alert">
-        Please select a Project Notification.
-      </div>
+    <div class="alert alert-warning" role="alert">
+      Please select a Project Notification.
+    </div>
     }
     @if (typeIsPCP && projectIsSelected && periods.length === 0) {
-      <div class="alert alert-warning" role="alert">
-        No public comment periods exist for selected project.
-      </div>
+    <div class="alert alert-warning" role="alert">
+      No public comment periods exist for selected project.
+    </div>
     }
     <div class="flex-container">
       <div class="label-pair med">
         @if (!typeIsPCP && !typeIsProjectNotificationNews) {
-          <label for="project">Project </label>
+        <label for="project">Project </label>
         }
         @if (typeIsPCP) {
-          <label for="project">Project* </label>
+        <label for="project">Project* </label>
         }
         @if (typeIsProjectNotificationNews) {
-          <label for="project">Project Notification* </label>
+        <label for="project">Project Notification* </label>
         }
         <select [required]="typeIsPCP || typeIsProjectNotificationNews" class="form-control" formControlName="project"
           (change)="updateProject()">
-          @for (item of (typeIsPCP ? projects : (typeIsProjectNotificationNews ? projectNotifications : (!typeIsProjectNotificationNews ? projects :[]))); track item) {
-            <option
-              [ngValue]="item._id">
-              {{item.name}}
-            </option>
+          @for (item of (typeIsPCP ? projects : (typeIsProjectNotificationNews ? projectNotifications :
+          (!typeIsProjectNotificationNews ? projects :[]))); track item) {
+          <option [ngValue]="item._id">
+            {{item.name}}
+          </option>
           }
         </select>
       </div>
@@ -109,16 +109,16 @@
       </div>
       <div class="label-pair">
         @if (!typeIsPCP) {
-          <label for="pcp">Public Comment Period</label>
+        <label for="pcp">Public Comment Period</label>
         }
         @if (typeIsPCP) {
-          <label for="pcp">Public Comment Period* </label>
+        <label for="pcp">Public Comment Period* </label>
         }
         <select [required]="typeIsPCP" class="form-control" formControlName="pcp">
           <!-- this default value is so that when you are switching between projects and this PCP selector is being populated it doesn't default to the first PCP -->
           <option disabled hidden [ngValue]=""></option>
           @for (period of periods; track period) {
-            <option [ngValue]="period._id">{{period.dateStarted | date: 'MMMM d'}} -
+          <option [ngValue]="period._id">{{period.dateStarted | date: 'MMMM d'}} -
             {{period.dateCompleted | date}}</option>
           }
         </select>
@@ -127,10 +127,10 @@
     <div class="flex-container">
       <div class="label-pair lrg">
         @if (!typeIsNotification) {
-          <label for="documentUrl">Document URL</label>
+        <label for="documentUrl">Document URL</label>
         }
         @if (typeIsNotification) {
-          <label for="documentUrl">URL to Public Comment Period*</label>
+        <label for="documentUrl">URL to Public Comment Period*</label>
         }
         <input [required]="typeIsNotification" documentUrl="documentUrl" id="documentUrl" formControlName="documentUrl"
           type="text" class="form-control" />
@@ -151,12 +151,12 @@
     <button class="btn btn-primary me-1" [disabled]="!myForm.valid" type="submit" (click)="onSubmit()">Save</button>
     &nbsp;
     @if (!this.isPublished) {
-      <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()"
-      >Save & Publish</button>
+    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()">Save
+      & Publish</button>
     }
     @if (this.isPublished) {
-      <button class="btn btn-unpublish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()"
-      >Save & Unpublish</button>
+    <button class="btn btn-unpublish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()">Save &
+      Unpublish</button>
     }
   </div>
 </main>
