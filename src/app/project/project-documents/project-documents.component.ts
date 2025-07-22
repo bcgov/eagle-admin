@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription, forkJoin } from 'rxjs';
+import { Subscription, forkJoin, firstValueFrom } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import moment from 'moment';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -470,7 +470,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       'Click <strong>OK</strong> to delete this Document or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
-    modalRef.result.then((isConfirmed) => {
+    modalRef.result.then(async (isConfirmed) => {
       if (isConfirmed) {
         this.loading = true;
         const itemsToDelete = [];
@@ -479,7 +479,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               itemsToDelete.push({
-                promise: this.documentService.delete(item).toPromise(),
+                promise: firstValueFrom(this.documentService.delete(item)),
                 item: item
               });
             }
@@ -488,7 +488,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
         this.loading = false;
 
-        return Promise.all(itemsToDelete).then(() => {
+        return Promise.all(itemsToDelete.map(i => i.promise)).then(() => {
           this.onSubmit(); // Reload main page
         });
       }

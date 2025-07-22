@@ -14,10 +14,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
   templateUrl: './add-edit-organization.component.html',
   styleUrls: ['./add-edit-organization.component.css'],
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    EditorModule
-]
+  imports: [ReactiveFormsModule, EditorModule]
 })
 
 export class AddEditOrganizationComponent implements OnInit, OnDestroy {

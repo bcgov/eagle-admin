@@ -2,7 +2,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <h4 class="modal-title" [innerHTML]="title || 'Confirm'"></h4>
-      <button type="button" class="close" (click)="activeModal.dismiss()">&times;</button>
+      <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
     </div>
     <div class="modal-body">
       <p [innerHTML]="message || 'Are you sure?'"></p>
@@ -10,7 +10,7 @@
     <div class="modal-footer">
       <button type="button" class="btn btn-primary" (click)="activeModal.close(true)">OK</button>
       @if (!okOnly) {
-        <button type="button" class="btn btn-light" (click)="activeModal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-light" (click)="activeModal.dismiss()">Cancel</button>
       }
     </div>
   </div>

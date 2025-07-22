@@ -14,6 +14,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-add-edit-project',
@@ -24,7 +25,8 @@ import { CommonModule } from '@angular/common';
     CommonModule,
     RouterModule,
     TableTemplateComponent,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    ReactiveFormsModule
   ]
 })
 export class AddEditProjectComponent implements OnInit, OnDestroy {

@@ -2,7 +2,8 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation, inj
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subscription, firstValueFrom } from 'rxjs';
+import { ReactiveFormsModule } from '@angular/forms';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ApiService } from 'src/app/services/api';
 import { DocumentService } from 'src/app/services/document.service';
@@ -24,7 +25,8 @@ import { CommonModule } from '@angular/common';
     RouterModule,
     TableTemplateComponent,
     CommonModule,
-    NgbDropdownModule
+    NgbDropdownModule,
+    ReactiveFormsModule
   ],
   templateUrl: './project-notification-documents.component.html',
   encapsulation: ViewEncapsulation.None,
@@ -330,7 +332,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
             this.documentTableData.data.forEach(item => {
               if (item.checkbox === true) {
                 itemsToDelete.push(
-                  this.documentService.delete(item).toPromise()
+                  firstValueFrom(this.documentService.delete(item))
                 );
               }
             });
