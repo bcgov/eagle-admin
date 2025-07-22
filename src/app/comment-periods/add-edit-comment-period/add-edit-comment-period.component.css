@@ -3,6 +3,7 @@
 .input-group-prepend {
   flex-wrap: wrap;
 }
+
 .input-group-prepend button {
   margin: 0 10px 10px 0;
 }
@@ -24,6 +25,7 @@ input[type="text"] {
   font-size: 1rem;
   height: 40px;
 }
+
 textarea:focus,
 input[type="text"]:focus {
   box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
@@ -34,10 +36,12 @@ input[type="text"]:focus {
   color: #007bff;
   border-color: #007bff;
 }
+
 .btn-outline-secondary i {
   margin-right: 4px;
   font-size: 20px;
 }
+
 .btn-outline-secondary:disabled {
   border-color: #6c757d;
   color: #6c757d;

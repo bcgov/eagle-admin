@@ -1,5 +1,5 @@
-@import "src/assets/styles/components/details.css";
-@import "src/assets/styles/components/add-edit.css";
+@import url("src/assets/styles/components/details.css");
+@import url("src/assets/styles/components/add-edit.css");
 
 section+section {
   margin-top: 3rem;
@@ -13,11 +13,13 @@ h1 {
   width: 100%;
 }
 
+.form-row {
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 2rem;
+}
+
 .badge-published {
-  padding-left: 9px;
-  padding-right: 9px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding: 5px 9px;
   color: white;
   letter-spacing: 0.5px;
   margin-left: 10px;
@@ -40,6 +42,17 @@ h1 {
   color: #007bff;
   border-color: #007bff;
   border-width: 1px;
+}
+
+.btn-autofill {
+  padding-bottom: 1px;
+  padding-top: 1px;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.override-read-only {
+  background-color: #fff;
 }
 
 .legislation-label {

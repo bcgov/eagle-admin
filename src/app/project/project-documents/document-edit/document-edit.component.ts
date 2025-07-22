@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgbDateStruct, NgbDate, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
@@ -11,12 +11,12 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 
 @Component({
-    selector: 'app-document-edit',
-    standalone: true,
-    imports: [RouterModule, NgbDatepickerModule],
-    templateUrl: './document-edit.component.html',
-    styleUrls: ['./document-edit.component.css'],
-    
+  selector: 'app-document-edit',
+  standalone: true,
+  imports: [RouterModule, NgbDatepickerModule, ReactiveFormsModule],
+  templateUrl: './document-edit.component.html',
+  styleUrls: ['./document-edit.component.css'],
+
 })
 export class DocumentEditComponent implements OnInit, OnDestroy {
   private configService = inject(ConfigService);
@@ -56,7 +56,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.documents = this.storageService.state.selectedDocs;
     this.currentProject = this.storageService.state.currentProject.data;
-
+    console.log('this.documents:', this.documents);
     // Check if documents are null (nav straight to this page)
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
@@ -115,7 +115,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       if (this.documents[0].displayName) { this.myForm.controls.displayName.setValue(this.documents[0].displayName); }
       if (this.documents[0].description) { this.myForm.controls.description.setValue(this.documents[0].description); }
       if (this.documents[0].projectPhase) { this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
-
       // init docNameInvalid
       this.validateDate();
       this.validateChars();
@@ -125,6 +124,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
+    console.log('this.myForm:', this.myForm.value);
     this.loading = false;
   }
 

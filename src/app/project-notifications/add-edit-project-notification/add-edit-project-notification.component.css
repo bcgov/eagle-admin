@@ -5,7 +5,7 @@
   margin-bottom: 2rem;
 }
 
-.eAPProjectLabel{
+.eAPProjectLabel {
   font-size: 10pt;
 }
 
@@ -19,12 +19,10 @@
   border: none;
 }
 
-.label-pair {
-  @media screen and (width >= 800px) {
-    &.half {
-      width: 47%;
-      margin-right: 2%;
-    }
+@media screen and (width >= 800px) {
+  .label-pair.half {
+    width: 47%;
+    margin-right: 2%;
   }
 }
 
@@ -32,21 +30,21 @@
   padding: 0;
 }
 
-.sub-headder{
+.sub-headder {
   margin-top: -15px;
   color: grey;
   padding-left: 80px;
 }
 
-.sub-label{
+.sub-label {
   padding: 4px 0 0;
-  margin: 0
+  margin: 0;
 }
 
 .info-text {
   color: grey;
   font-size: small;
-  font-weight:normal;
+  font-weight: normal;
 }
 
 .notification-threshold-box {
@@ -54,7 +52,6 @@
   padding: 0 0 4px;
 }
 
-
 hr {
-  border-top: 1px solid  #cecece;
+  border-top: 1px solid #cecece;
 }
