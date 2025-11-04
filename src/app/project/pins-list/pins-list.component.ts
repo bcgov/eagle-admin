@@ -39,7 +39,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
   private tableTemplateUtils = inject(TableTemplateUtils);
 
   private subscriptions = new Subscription();
-  private destroy$ = new Subject<void>(); // <-- add this
+  private destroy$ = new Subject<void>();
   public currentProject;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
