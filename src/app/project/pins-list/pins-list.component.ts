@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
@@ -38,6 +39,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
   private tableTemplateUtils = inject(TableTemplateUtils);
 
   private subscriptions = new Subscription();
+  private destroy$ = new Subject<void>(); // <-- add this
   public currentProject;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -207,16 +209,15 @@ export class PinsListComponent implements OnInit, OnDestroy {
       }
     });
     // Add all the filtered new items.
-    component.projectService.addPins(component.currentProject, filteredPins)
-      .subscribe(
-        () => {
-          component.router.navigate(['/p', component.currentProject._id, 'project-pins']);
-        },
-        error => {
-          console.log('error =', error);
-          alert('Uh-oh, couldn\'t edit project');
-        },
-      );
+  component.projectService.addPins(component.currentProject, filteredPins)
+    .pipe(takeUntil(component.destroy$))
+    .subscribe(
+      () => component.router.navigate(['/p', component.currentProject._id, 'project-pins']),
+      (error) => {
+        console.log('error =', error);
+        alert('Uh-oh, couldn\'t edit project');
+      }
+    );
   }
 
   setBackURL() {
@@ -293,6 +294,8 @@ export class PinsListComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
 
