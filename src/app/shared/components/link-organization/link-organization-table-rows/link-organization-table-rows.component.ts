@@ -1,5 +1,6 @@
 import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Org } from 'src/app/models/org';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
@@ -12,7 +13,7 @@ import { TableComponent } from '../../table-template/table.component';
   templateUrl: './link-organization-table-rows.component.html',
   styleUrls: ['./link-organization-table-rows.component.css'],
   standalone: true,
-  imports: [],
+  imports: [FormsModule],
 })
 
 export class LinkOrganizationTableRowsComponent implements OnInit, TableComponent {
@@ -31,39 +32,53 @@ export class LinkOrganizationTableRowsComponent implements OnInit, TableComponen
   public columns: any;
   public useSmallTable: boolean;
 
-  ngOnInit() {
-    this.organizations = this.data.data;
-    this.showCheckboxes = this.storageService.state.showOrgTableCheckboxes;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
-    this.organizations.forEach((org: Org) => {
-      org.checkbox = this.storageService.state.selectedOrgs.some(element => {
-        return org._id === element._id;
-      });
-    });
+ngOnInit() {
+  this.organizations = this.data.data;
+  this.showCheckboxes = this.storageService.state.showOrgTableCheckboxes;
+  this.paginationData = this.data.paginationData;
+  this.columns = this.columnData;
+  this.useSmallTable = this.smallTable;
+  if (!Array.isArray(this.storageService.state.selectedOrgs)) {
+    this.storageService.state.selectedOrgs = [];
   }
+  this.organizations.forEach((org: Org) => {
+    org.checkbox = this.storageService.state.selectedOrgs.some(element => {
+      return org._id === element._id;
+    });
+  });
+  this.selectedCount.emit(this.storageService.state.selectedOrgs.length);
+}
+
+onCheckboxChange(item: Org): void {
+  this.selectItem(item);
+}
 
   selectItem(item: Org): void {
-    item.checkbox = !item.checkbox;
-    if (Array.isArray(this.storageService.state.selectedOrgs)) {
-      if (item.checkbox) {
-        this.storageService.state.selectedOrgs.push(item);
-      } else {
-        this.storageService.state.selectedOrgs = this.storageService.state.selectedOrgs.filter(function (value) {
-          return value._id !== item._id;
-        });
-      }
+    if (!Array.isArray(this.storageService.state.selectedOrgs)) {
+      this.storageService.state.selectedOrgs = [];
     }
+    
+    if (item.checkbox) {
+      const exists = this.storageService.state.selectedOrgs.some(org => org._id === item._id);
+      if (!exists) {
+        this.storageService.state.selectedOrgs.push(item);
+      }
+    } else {
+      this.storageService.state.selectedOrgs = this.storageService.state.selectedOrgs.filter(function (value) {
+        return value._id !== item._id;
+      });
+    }
+    this.selectedCount.emit(this.storageService.state.selectedOrgs.length);
   }
 
-  onRowClick(item: Org): void {
-    if (this.showCheckboxes) {
-      this.selectItem(item);
-    } else {
-      this.saveSingleItem(item);
-    }
+onRowClick(item: Org): void {
+  if (this.showCheckboxes) {
+    item.checkbox = !item.checkbox;
+    this.selectItem(item);
+  } else {
+    this.saveSingleItem(item);
   }
+}
 
   saveSingleItem(item: Org): void {
     this.storageService.state.selectedOrganization = item;

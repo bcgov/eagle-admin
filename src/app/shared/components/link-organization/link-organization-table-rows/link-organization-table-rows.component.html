@@ -1,12 +1,14 @@
 @for (organization of organizations; track organization) {
-  <tr (click) = "onRowClick(organization)"
-    class="clickable-row">
+  <tr (click)="onRowClick(organization)" class="clickable-row">
     @if (showCheckboxes) {
-      <td  data-label="Select" scope="row" [style.width]="!useSmallTable && columns[0].width">
-        <input type="checkbox" aria-label="Checkbox for row organization" [(ngModel)]='organization.checkbox'>
+      <td data-label="Select" scope="row" [style.width]="!useSmallTable && columns[0].width" (click)="$event.stopPropagation()">
+        <input type="checkbox" 
+               aria-label="Checkbox for row organization" 
+               [(ngModel)]='organization.checkbox'
+               (ngModelChange)="onCheckboxChange(organization)">
       </td>
     }
-    <td data-label="Name"  scope="row" [style.width]="!useSmallTable && columns[1].width">{{organization.name}}</td>
+    <td data-label="Name" scope="row" [style.width]="!useSmallTable && columns[1].width">{{organization.name}}</td>
     <td data-label="Company Type" scope="row" [style.width]="!useSmallTable && columns[2].width">
       {{organization.companyType}}
     </td>
