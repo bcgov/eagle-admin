@@ -45,7 +45,9 @@
   <ng-template #totalTemplate let-total>{{total}} result@if (total != 1) {
     <span>s</span>
     } found
-    <button nz-button nzType="primary" class="show_all_btn"
-    (click)="updatePageSize(data.paginationData.totalListItems)">Show All</button>
+    @if (total <= 500) {
+      <button nz-button nzType="primary" class="show_all_btn"
+      (click)="updatePageSize(data.paginationData.totalListItems)">Show All</button>
+    }
   </ng-template>
 </div>
