@@ -3,7 +3,7 @@ import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angu
 import { NgbDateStruct, NgbDate, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
@@ -165,7 +165,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   public validateDate() {
-    if (!moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.datePosted)).isValid()) {
+    if (!DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.datePosted)).isValid) {
       this.dateInvalid = true;
     } else {
       this.dateInvalid = false;
@@ -184,7 +184,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   multiEditGetUpdatedValue(formValue: string | NgbDate, docValue, isDate = false) {
     if (formValue !== null) {
       if (isDate) {
-        return moment(this.utils.convertFormGroupNGBDateToJSDate(formValue)).toDate().toISOString();
+        return DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(formValue)).toUTC().toISO();
       } else {
         return formValue;
       }
@@ -223,7 +223,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         if (this.myForm.value.displayName) { formData.append('displayName', this.myForm.value.displayName); }
 
         formData.append('milestone', this.myForm.value.labelsel);
-        formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toDate().toISOString());
+        formData.append('datePosted', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toUTC().toISO());
         formData.append('type', this.myForm.value.doctypesel);
         formData.append('documentAuthorType', this.myForm.value.authorsel);
         formData.append('projectPhase', this.myForm.value.projectphasesel);

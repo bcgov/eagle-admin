@@ -6,7 +6,7 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { ProjectNotification } from 'src/app/models/projectNotification';
 import { ConfigService } from 'src/app/services/config.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
@@ -167,8 +167,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       trigger: triggerCSV.join(),
       region: this.myForm.value.region,
       location: this.myForm.value.location,
-      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate)).toDate() : null,
-      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate)).toDate() : null,
+      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate)).toJSDate() : null,
+      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate)).toJSDate() : null,
       decision: this.myForm.value.decision,
       associatedProjectId: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
       associatedProjectName: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,

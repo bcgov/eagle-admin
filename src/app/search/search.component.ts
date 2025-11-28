@@ -10,7 +10,7 @@ import { of, Subscription } from 'rxjs';
 
 import { switchMap } from 'rxjs/operators';
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
 import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
@@ -560,7 +560,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       this.filterForURL[name] = params[name];
       this.filterForAPI[name] = params[name];
       // NGB Date
-      const date = moment(params[name]).toDate();
+      const date = DateTime.fromISO(params[name]).toJSDate();
       this.filterForUI[name] = { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
     }
   }
@@ -617,7 +617,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   dateFilterToParams(params, name) {
     if (this.isNGBDate(this.filterForUI[name])) {
       const date = new Date(this.filterForUI[name].year, this.filterForUI[name].month - 1, this.filterForUI[name].day);
-      params[name] = moment(date).format('YYYY-MM-DD');
+      params[name] = DateTime.fromJSDate(date).toISODate();
     }
   }
 

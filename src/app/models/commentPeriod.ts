@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 export class CommentPeriod {
   _id: string;
@@ -126,15 +126,15 @@ export class CommentPeriod {
 
     // get comment period days remaining and determine commentPeriodStatus of the period
     if (obj && obj.dateStarted && obj.dateCompleted) {
-      const now = new Date();
-      const dateStarted = moment(obj.dateStarted);
-      const dateCompleted = moment(obj.dateCompleted);
+      const now = DateTime.now();
+      const dateStarted = DateTime.fromJSDate(new Date(obj.dateStarted));
+      const dateCompleted = DateTime.fromJSDate(new Date(obj.dateCompleted));
 
-      if (moment(now).isBetween(dateStarted, dateCompleted)) {
+      if (now >= dateStarted && now <= dateCompleted) {
         this.commentPeriodStatus = 'Open';
-        const days = dateCompleted.diff(moment(now), 'days');
+        const days = Math.floor(dateCompleted.diff(now, 'days').days);
         this.daysRemaining = days + (days === 1 ? ' Day ' : ' Days ') + 'Remaining';
-      } else if (moment(now).isAfter(dateCompleted)) {
+      } else if (now > dateCompleted) {
         this.commentPeriodStatus = 'Closed';
         this.daysRemaining = 'Completed';
       } else {

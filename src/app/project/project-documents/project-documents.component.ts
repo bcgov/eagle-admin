@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription, forkJoin, firstValueFrom } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { SearchTerms } from 'src/app/models/search';
 import { ApiService } from 'src/app/services/api';
@@ -684,7 +684,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
       this.filterForURL[name] = params[name];
       this.filterForAPI[name] = params[name];
       // NGB Date
-      const date = moment(params[name]).toDate();
+      const date = DateTime.fromISO(params[name]).toJSDate();
       this.filterForUI[name] = {
         year: date.getFullYear(),
         month: date.getMonth() + 1,
@@ -723,7 +723,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         this.filterForUI[name].month - 1,
         this.filterForUI[name].day
       );
-      params[name] = moment(date).format('YYYY-MM-DD');
+      params[name] = DateTime.fromJSDate(date).toISODate();
     }
   }
 

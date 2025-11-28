@@ -13,7 +13,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -234,8 +234,8 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       formData.append('documentFileName', doc.documentFileName);
       formData.append('internalOriginalName', doc.internalOriginalName);
       formData.append('documentSource', 'COMMENT');
-      formData.append('dateUploaded', moment().toISOString());
-      formData.append('datePosted', moment().toISOString());
+      formData.append('dateUploaded', DateTime.now().toUTC().toISO());
+      formData.append('datePosted', DateTime.now().toUTC().toISO());
       formData.append('documentAuthor', this.addCommentForm.get('authorText').value);
 
       if (this.currentProject.type === 'currentProject') {

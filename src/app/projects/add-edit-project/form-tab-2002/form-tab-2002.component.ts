@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -350,7 +350,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   private getDecisionDate(value) {
     // nb: isNaN(undefined) returns true, while isNaN(null) returns false
     const date = value === null ? undefined : value.day;
-    return isNaN(date) ? null : moment(this.utils.convertFormGroupNGBDateToJSDate(value)).toDate().toISOString();
+    return isNaN(date) ? null : DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(value)).toUTC().toISO();
   }
   convertFormToProject(form) {
     return {
