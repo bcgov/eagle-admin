@@ -4,7 +4,7 @@ import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
 import { forkJoin, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -121,7 +121,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
       formData.append('displayName', doc.documentFileName);
       formData.append('dateUploaded', new Date().toISOString());
-      formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value)).toDate().toISOString());
+      formData.append('datePosted', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value)).toUTC().toISO());
       formData.append('milestone', milestoneID);
       formData.append('type', this.myForm.get('type').value);
       formData.append('description', this.myForm.get('description').value);

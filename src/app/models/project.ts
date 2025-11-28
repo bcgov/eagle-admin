@@ -1,5 +1,5 @@
 import { CommentPeriod } from './commentPeriod';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 export class Project {
   // the following are retrieved from the API
@@ -216,11 +216,11 @@ export class Project {
     if (obj && obj.currentPeriods) {
       this.commentPeriods.push(obj.currentPeriods);
 
-      const now = moment('YYYY-MM-DD');
+      const now = DateTime.now();
 
       this.commentPeriods.forEach(period => {
         // TODO: Update comment period model. Should actually be period.dateEnded or something.
-        if (moment(period.dateCompleted) > now) {
+        if (DateTime.fromJSDate(new Date(period.dateCompleted)).toMillis() > now.toMillis()) {
           this.currentPeriods.push(obj.currentPeriods);
         }
       });

@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, injec
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
 import { Project } from '../models/project';
@@ -244,7 +244,7 @@ export class ActivityComponent implements OnDestroy {
         this.filterForUI[name].month - 1,
         this.filterForUI[name].day
       );
-      params[name] = moment(date).format('YYYY-MM-DD');
+      params[name] = DateTime.fromJSDate(date).toISODate();
     }
   }
 
@@ -257,7 +257,7 @@ export class ActivityComponent implements OnDestroy {
       this.filterForURL[name] = params[name];
       this.filterForAPI[name] = params[name];
       // NGB Date
-      const date = moment(params[name]).toDate();
+      const date = DateTime.fromISO(params[name]).toJSDate();
       this.filterForUI[name] = {
         year: date.getFullYear(),
         month: date.getMonth() + 1,

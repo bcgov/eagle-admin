@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angula
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { CommonModule } from '@angular/common';
 import { NgbDatepickerModule, NgbTimepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { EditorModule } from '@tinymce/tinymce-angular';
@@ -229,7 +229,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // Check start and end date
     this.commentPeriod.dateStarted = this.utils.convertFormGroupNGBDateToJSDate(this.commentPeriodForm.get('startDate').value, this.commentPeriodForm.get('startTime').value);
     this.commentPeriod.dateCompleted = this.utils.convertFormGroupNGBDateToJSDate(this.commentPeriodForm.get('endDate').value, this.commentPeriodForm.get('endTime').value);
-    if (moment(this.commentPeriod.dateStarted) > moment(this.commentPeriod.dateCompleted)) {
+    if (DateTime.fromJSDate(this.commentPeriod.dateStarted).toMillis() > DateTime.fromJSDate(this.commentPeriod.dateCompleted).toMillis()) {
       this.areDatesInvalid = true;
       this.loading = false;
       return;

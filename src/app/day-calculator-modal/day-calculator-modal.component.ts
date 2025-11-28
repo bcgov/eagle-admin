@@ -2,7 +2,7 @@ import { Component, HostListener, inject } from '@angular/core';
 import { NgbActiveModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Utils } from '../shared/utils/utils';
 
 export enum DayCalculatorModalResult {
@@ -62,17 +62,17 @@ export class DayCalculatorModalComponent {
     if (!date) { return ''; }
 
     // Valid date?
-    date = moment(date);
-    if (!date.isValid()) { return 'Invalid date'; }
+    date = DateTime.fromJSDate(date);
+    if (!date.isValid) { return 'Invalid date'; }
 
     // Weekend?
-    const day = date.day();
-    if (day === 0) { return 'Sunday'; }
+    const day = date.weekday; // 1-7 (Monday-Sunday)
+    if (day === 7) { return 'Sunday'; }
     if (day === 6) { return 'Saturday'; }
 
     // Holiday?
-    const month = date.month() + 1;
-    const monthDay = date.date();
+    const month = date.month;
+    const monthDay = date.day;
     const isMonday = day === 1;
 
     // New Year's Day
@@ -82,7 +82,7 @@ export class DayCalculatorModalComponent {
     if (month === 2 && isMonday && monthDay > 7 && monthDay < 15) { return 'Family Day'; }
 
     // Good Friday: Hard-coded.
-    const year = date.year();
+    const year = date.year;
     if ((year === 2017 && month === 4 && monthDay === 14) ||
       (year === 2018 && month === 3 && monthDay === 30) ||
       (year === 2019 && month === 4 && monthDay === 19) ||
@@ -213,12 +213,12 @@ export class DayCalculatorModalComponent {
       resumeDate = this.utils.convertFormGroupNGBDateToJSDate(resumeDate);
     }
 
-    let startDateMoment = moment(startDate);
-    let endDateMoment = moment(endDate);
-    const suspendDateMoment = moment(suspendDate);
-    const resumeDateMoment = moment(resumeDate);
+    let startDateLuxon = startDate ? DateTime.fromJSDate(startDate) : null;
+    let endDateLuxon = endDate ? DateTime.fromJSDate(endDate) : null;
+    const suspendDateLuxon = suspendDate ? DateTime.fromJSDate(suspendDate) : null;
+    const resumeDateLuxon = resumeDate ? DateTime.fromJSDate(resumeDate) : null;
 
-    if (suspended && suspendDate && resumeDate && suspendDateMoment >= resumeDateMoment) {
+    if (suspended && suspendDate && resumeDate && suspendDateLuxon.toMillis() >= resumeDateLuxon.toMillis()) {
       // Show error if resume date is later than suspend date
       throw new Error('The suspension date must come before the resumption date.');
     }
@@ -237,7 +237,7 @@ export class DayCalculatorModalComponent {
 
     if (startDate && endDate) {
 
-      if (startDateMoment >= endDateMoment) {
+      if (startDateLuxon.toMillis() >= endDateLuxon.toMillis()) {
         // Show error if start date is later than end date
         throw new Error('The start date must come before the end date.');
       }
@@ -246,21 +246,21 @@ export class DayCalculatorModalComponent {
       calcRes.numDays = regular ? 1 : 0;
 
       // Count the number of days between start and end dates
-      const date = startDateMoment;
+      let date = startDateLuxon;
 
       // Look at every date between
-      while (date < endDateMoment) {
-        date.add(1, 'd');
+      while (date.toMillis() < endDateLuxon.toMillis()) {
+        date = date.plus({ days: 1 });
 
         // Factor in a suspension
-        if (suspended && suspendDate && date >= suspendDateMoment) {
+        if (suspended && suspendDate && date.toMillis() >= suspendDateLuxon.toMillis()) {
           // Stop if the suspension goes past the end date
-          if (!resumeDate || endDateMoment < resumeDateMoment) {
+          if (!resumeDate || endDateLuxon.toMillis() < resumeDateLuxon.toMillis()) {
             return calcRes;
           }
 
           // Don't count days in the suspension range
-          if (date < resumeDateMoment) { continue; }
+          if (date.toMillis() < resumeDateLuxon.toMillis()) { continue; }
         }
 
         // If we've made it this far, count the day
@@ -268,17 +268,17 @@ export class DayCalculatorModalComponent {
       }
     } else if (startDate && calcRes.numDays) {
       // Find the end date from the start date and number of days
-      endDateMoment = moment(startDate);
+      endDateLuxon = DateTime.fromJSDate(startDate);
 
       // Include the start date in the calculation.
       numDays = regular ? 1 : 0;
 
       // Start counting the days
       while (numDays < calcRes.numDays) {
-        endDateMoment.add(1, 'days');
+        endDateLuxon = endDateLuxon.plus({ days: 1 });
 
         // Factor in a suspension
-        if (suspended && suspendDate && endDateMoment >= suspendDateMoment) {
+        if (suspended && suspendDate && endDateLuxon.toMillis() >= suspendDateLuxon.toMillis()) {
           if (!resumeDate) {
             // Can't find an end date if there is no resume date
             calcRes.endDate = null;
@@ -286,31 +286,31 @@ export class DayCalculatorModalComponent {
           }
 
           // Don't count days in the suspension range
-          if (endDateMoment < resumeDateMoment) { continue; }
+          if (endDateLuxon.toMillis() < resumeDateLuxon.toMillis()) { continue; }
         }
 
         // If we've made it this far, count the day
         numDays++;
       }
-      // convert moment date back to Date() object so it displays in datepicker
+      // convert Luxon date back to Date() object so it displays in datepicker
 
-      const JS_endDate = new Date(endDateMoment.year(), endDateMoment.month(), endDateMoment.date());
+      const JS_endDate = endDateLuxon.toJSDate();
       calcRes.endDate = this.utils.convertJSDateToNGBDate(JS_endDate);
 
     } else if (endDate && calcRes.numDays) {
       // Find the start date from the end date and number of days
 
-      startDateMoment = moment(endDate);
+      startDateLuxon = DateTime.fromJSDate(endDate);
 
       // Include the start date in the calculation.
       numDays = regular ? 1 : 0;
 
       // Start counting back the days
       while (numDays < calcRes.numDays) {
-        startDateMoment.subtract(1, 'd');
+        startDateLuxon = startDateLuxon.minus({ days: 1 });
 
         // Factor in a suspension
-        if (suspended && suspendDate && startDateMoment >= suspendDateMoment) {
+        if (suspended && suspendDate && startDateLuxon.toMillis() >= suspendDateLuxon.toMillis()) {
           if (!resumeDate) {
             // Can't find a start date if there is no resume date
             calcRes.startDate = null;
@@ -318,15 +318,15 @@ export class DayCalculatorModalComponent {
           }
 
           // Don't count days in the suspension range
-          if (startDateMoment < resumeDateMoment) { continue; }
+          if (startDateLuxon.toMillis() < resumeDateLuxon.toMillis()) { continue; }
         }
 
         // If we've made it this far, count the day
         numDays++;
       }
 
-      // convert moment date back to Date() object so it displays in datepicker
-      const JS_startDate = new Date(startDateMoment.year(), startDateMoment.month(), startDateMoment.date());
+      // convert Luxon date back to Date() object so it displays in datepicker
+      const JS_startDate = startDateLuxon.toJSDate();
       calcRes.startDate = this.utils.convertJSDateToNGBDate(JS_startDate);
     }
     return calcRes;

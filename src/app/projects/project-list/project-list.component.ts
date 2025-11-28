@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { Org } from 'src/app/models/org';
 import { Project } from 'src/app/models/project';
 import { SearchTerms } from 'src/app/models/search';
@@ -252,7 +252,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       this.filterForURL[name] = params[name];
       this.filterForAPI[name] = params[name];
       // NGB Date
-      const date = moment(params[name]).toDate();
+      const date = DateTime.fromISO(params[name]).toJSDate();
       this.filterForUI[name] = {
         year: date.getFullYear(),
         month: date.getMonth() + 1,
@@ -307,7 +307,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
         this.filterForUI[name].month - 1,
         this.filterForUI[name].day
       );
-      params[name] = moment(date).format('YYYY-MM-DD');
+      params[name] = DateTime.fromJSDate(date).toISODate();
     }
   }
 

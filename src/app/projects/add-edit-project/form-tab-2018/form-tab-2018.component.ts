@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -410,15 +410,15 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'ea': form.controls.ea.value,
       'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
       'eaStatus': form.controls.eaStatus.value,
-      'eaStatusDate': form.get('eaStatusDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value)).toDate().toISOString() : null,
+      'eaStatusDate': form.get('eaStatusDate').value ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value)).toUTC().toISO() : null,
       'status': form.controls.status.value,
-      // 'projectStatusDate': form.get('projectStatusDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value)).toDate().toISOString() : null,
+      // 'projectStatusDate': form.get('projectStatusDate').value ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value)).toUTC().toISO() : null,
       'eacDecision': form.controls.eacDecision.value,
-      'decisionDate': form.get('decisionDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value)).toDate().toISOString() : null,
+      'decisionDate': form.get('decisionDate').value ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(form.get('decisionDate').value)).toUTC().toISO() : null,
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
-      'substantiallyDate': form.get('substantiallyDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value)).toDate().toISOString() : null,
+      'substantiallyDate': form.get('substantiallyDate').value ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value)).toUTC().toISO() : null,
       'dispute': form.controls.dispute.value === 'yes' ? true : false,
-      'disputeDate': form.get('disputeDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('disputeDate').value)).toDate().toISOString() : null,
+      'disputeDate': form.get('disputeDate').value ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(form.get('disputeDate').value)).toUTC().toISO() : null,
       'activeStatus': form.controls.activeStatus.value,
       // 'activeDate': form.get('activeDate').value ? moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value)).toDate().toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,

@@ -3,7 +3,7 @@ import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
 import { Subscription, forkJoin } from 'rxjs';
-import moment from 'moment-timezone';
+import { DateTime } from 'luxon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
@@ -177,8 +177,8 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
 
       formData.append('displayName', this.documents.length > 1 ? doc.documentFileName : this.myForm.value.displayName);
       formData.append('milestone', this.myForm.value.labelsel);
-      formData.append('dateUploaded', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateUploaded').value)).toDate().toISOString());
-      formData.append('datePosted', moment(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toDate().toISOString());
+      formData.append('dateUploaded', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateUploaded').value)).toUTC().toISO());
+      formData.append('datePosted', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toUTC().toISO());
       formData.append('type', this.myForm.value.doctypesel);
       formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', this.myForm.value.authorsel);
