@@ -65,7 +65,7 @@ jobs:
         node-version: '24'
 
     - name: Install dependencies
-      run: npm ci
+      run: yarn install --frozen-lockfile
       working-directory: ${{ github.workspace }}
 
     # Add any setup steps before running the `github/codeql-action/init` action.
