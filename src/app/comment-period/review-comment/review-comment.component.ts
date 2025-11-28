@@ -1,6 +1,6 @@
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subscription } from 'rxjs';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
@@ -10,12 +10,15 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
+import { DatePipe, CommonModule } from '@angular/common';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
     selector: 'app-review-comment',
     templateUrl: './review-comment.component.html',
     styleUrls: ['./review-comment.component.css'],
-    
+    standalone: true,
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, DatePipe, NgbDatepickerModule]
 })
 
 export class ReviewCommentComponent implements OnInit, OnDestroy {
