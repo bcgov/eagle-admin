@@ -73,6 +73,6 @@
     "karma-jasmine-html-reporter": "^2.1.0",
     "puppeteer": "^24.11.2",
     "typescript": "~5.8.3",
-    "vite": "^7.0.7"
+    "vite": "^7.0.8"
   }
 }
