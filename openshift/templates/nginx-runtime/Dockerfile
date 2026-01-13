@@ -1,4 +1,4 @@
-FROM docker-remote.artifacts.developer.gov.bc.ca/nginx:mainline
+FROM artifacts.developer.gov.bc.ca/docker-remote/nginx:mainline
 
 ENV STI_SCRIPTS_PATH=/usr/libexec/s2i
 
