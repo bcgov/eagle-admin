@@ -12,18 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [24.x]
+        node-version: [22.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       ### Install if no cache exists ###
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - run: yarn install --silent --frozen-lockfile
+      - run: yarn install --immutable
 
   lint:
     name: Lint
@@ -31,18 +31,18 @@ jobs:
     needs: install
     strategy:
       matrix:
-        node-version: [24.x]
+        node-version: [22.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       ### Install if no cache exists ###
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - run: yarn install --silent --frozen-lockfile
+      - run: yarn install --immutable
       - run: yarn lint
 
   test:
@@ -51,17 +51,17 @@ jobs:
     needs: install
     strategy:
       matrix:
-        node-version: [24.x]
+        node-version: [22.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       ### Install if no cache exists ###
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - run: yarn install --silent --frozen-lockfile
+      - run: yarn install --immutable
 
       - run: yarn test-ci

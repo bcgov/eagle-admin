@@ -23,21 +23,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [24.x]
+        node-version: [22.x]
     outputs:
       SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2  # Need at least 2 commits to compare changes
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v3
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - run: yarn install --silent --frozen-lockfile
+      - run: yarn install --immutable
 
       - name: Angular Build
         run: yarn build
