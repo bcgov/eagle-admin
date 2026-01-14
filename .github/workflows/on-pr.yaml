@@ -23,6 +23,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+      - name: Enable Corepack
+        run: corepack enable
       - run: yarn install --immutable
 
   lint:
@@ -42,6 +44,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+      - name: Enable Corepack
+        run: corepack enable
       - run: yarn install --immutable
       - run: yarn lint
 
@@ -62,6 +66,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
+      - name: Enable Corepack
+        run: corepack enable
       - run: yarn install --immutable
 
       - run: yarn test-ci
