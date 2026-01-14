@@ -17,14 +17,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
       ### Install if no cache exists ###
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - name: Enable Corepack
-        run: corepack enable
       - run: yarn install --immutable
 
   lint:
@@ -38,14 +39,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
       ### Install if no cache exists ###
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - name: Enable Corepack
-        run: corepack enable
       - run: yarn install --immutable
       - run: yarn lint
 
@@ -60,14 +62,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
       ### Install if no cache exists ###
       - name: Setup node
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - name: Enable Corepack
-        run: corepack enable
       - run: yarn install --immutable
 
       - run: yarn test-ci
