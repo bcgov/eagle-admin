@@ -16,6 +16,13 @@
   window.__env.KEYCLOAK_REALM = 'eao-epic';
   window.__env.KEYCLOAK_ENABLED = true;
 
+  // Analytics configuration
+  // Dynamically set by run script at container startup via %PENGUIN_ANALYTICS_URL%
+  // Default: uses relative proxy path /api/analytics (nginx reverse proxy)
+  // Can be overridden via PENGUIN_ANALYTICS_URL env variable during deployment
+  window.__env.ANALYTICS_API_URL = '%PENGUIN_ANALYTICS_URL%';
+  window.__env.ANALYTICS_DEBUG = window.__env.ENVIRONMENT === 'local';
+
   // Add any feature-toggles
   // window.__env.coolFeatureActive = false;
 }(this));

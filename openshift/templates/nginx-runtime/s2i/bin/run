@@ -1,6 +1,24 @@
 #!/bin/bash
 echo run script starting...
-sed "s~%RealIpFrom%~${RealIpFrom:-172.51.0.0/16}~g; s~%IpFilterRules%~${IpFilterRules}~g; s~%AdditionalRealIpFromRules%~${AdditionalRealIpFromRules}~g" /tmp/nginx.conf.template > /etc/nginx/nginx.conf
+
+# Configure Penguin Analytics host and port (for dynamic nginx reverse proxy)
+# PENGUIN_ANALYTICS_HOST should be set per environment:
+#   - Same namespace: penguin-analytics-api (service name only)
+#   - Cross-namespace: penguin-analytics-api.<namespace>.svc.cluster.local
+# If not set, defaults to same-namespace service name
+export PENGUIN_ANALYTICS_HOST=${PENGUIN_ANALYTICS_HOST:-penguin-analytics-api}
+export PENGUIN_ANALYTICS_PORT=${PENGUIN_ANALYTICS_PORT:-3000}
+export PENGUIN_ANALYTICS_URL=${PENGUIN_ANALYTICS_URL:-/api/analytics}
+
+echo "---> Configuring Penguin Analytics: ${PENGUIN_ANALYTICS_HOST}:${PENGUIN_ANALYTICS_PORT}"
+
+sed "s~%RealIpFrom%~${RealIpFrom:-172.51.0.0/16}~g; s~%IpFilterRules%~${IpFilterRules}~g; s~%AdditionalRealIpFromRules%~${AdditionalRealIpFromRules}~g; s~%PENGUIN_ANALYTICS_HOST%~${PENGUIN_ANALYTICS_HOST}~g; s~%PENGUIN_ANALYTICS_PORT%~${PENGUIN_ANALYTICS_PORT}~g" /tmp/nginx.conf.template > /etc/nginx/nginx.conf
+
+# Substitute analytics URL in env.js for the Angular app
+if [ -f /tmp/app/dist/admin/env.js ]; then
+    echo "---> Configuring analytics URL: ${PENGUIN_ANALYTICS_URL}"
+    sed -i "s~%PENGUIN_ANALYTICS_URL%~${PENGUIN_ANALYTICS_URL}~g" /tmp/app/dist/admin/env.js
+fi
 
 if [ -n "$HTTP_BASIC_USERNAME" ] && [ -n "$HTTP_BASIC_PASSWORD" ]; then
     echo "---> Generating .htpasswd file"
