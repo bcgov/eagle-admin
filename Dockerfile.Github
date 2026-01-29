@@ -1,5 +1,8 @@
 FROM image-registry.apps.silver.devops.gov.bc.ca/6cdc9e-tools/eagle-admin-nginx-runtime
 
+# Copy default.conf as a template for runtime processing
+COPY openshift/templates/nginx-runtime/default.conf /tmp/default.conf.template
+
 COPY dist /tmp/app/dist/admin
 
 CMD ["/usr/libexec/s2i/run"]

@@ -12,12 +12,20 @@ export PENGUIN_ANALYTICS_URL=${PENGUIN_ANALYTICS_URL:-/api/analytics}
 
 echo "---> Configuring Penguin Analytics: ${PENGUIN_ANALYTICS_HOST}:${PENGUIN_ANALYTICS_PORT}"
 
-sed "s~%RealIpFrom%~${RealIpFrom:-172.51.0.0/16}~g; s~%IpFilterRules%~${IpFilterRules}~g; s~%AdditionalRealIpFromRules%~${AdditionalRealIpFromRules}~g; s~%PENGUIN_ANALYTICS_HOST%~${PENGUIN_ANALYTICS_HOST}~g; s~%PENGUIN_ANALYTICS_PORT%~${PENGUIN_ANALYTICS_PORT}~g" /tmp/nginx.conf.template > /etc/nginx/nginx.conf
+# Process nginx.conf template (if exists)
+if [ -f /tmp/nginx.conf.template ]; then
+    sed "s~%RealIpFrom%~${RealIpFrom:-172.51.0.0/16}~g; s~%IpFilterRules%~${IpFilterRules}~g; s~%AdditionalRealIpFromRules%~${AdditionalRealIpFromRules}~g" /tmp/nginx.conf.template > /etc/nginx/nginx.conf
+fi
+
+# Process default.conf template for analytics reverse proxy
+if [ -f /tmp/default.conf.template ]; then
+    sed "s~%PENGUIN_ANALYTICS_HOST%~${PENGUIN_ANALYTICS_HOST}~g; s~%PENGUIN_ANALYTICS_PORT%~${PENGUIN_ANALYTICS_PORT}~g" /tmp/default.conf.template > /etc/nginx/conf.d/default.conf
+fi
 
 # Substitute analytics URL in env.js for the Angular app
 if [ -f /tmp/app/dist/admin/env.js ]; then
     echo "---> Configuring analytics URL: ${PENGUIN_ANALYTICS_URL}"
-    sed -i "s~%PENGUIN_ANALYTICS_URL%~${PENGUIN_ANALYTICS_URL}~g" /tmp/app/dist/admin/env.js
+    sed "s~%PENGUIN_ANALYTICS_URL%~${PENGUIN_ANALYTICS_URL}~g" /tmp/app/dist/admin/env.js > /tmp/env.js.tmp && mv /tmp/env.js.tmp /tmp/app/dist/admin/env.js
 fi
 
 if [ -n "$HTTP_BASIC_USERNAME" ] && [ -n "$HTTP_BASIC_PASSWORD" ]; then
