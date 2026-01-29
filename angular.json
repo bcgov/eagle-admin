@@ -90,7 +90,8 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "port": 4200,
-            "buildTarget": "base-app2:build:development"
+            "buildTarget": "base-app2:build:development",
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {

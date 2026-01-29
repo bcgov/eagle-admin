@@ -169,6 +169,73 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@analytics/cookie-utils@npm:^0.2.14":
+  version: 0.2.14
+  resolution: "@analytics/cookie-utils@npm:0.2.14"
+  dependencies:
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+  checksum: 10c0/66aeb890c0be6d22cab54648d29e302496efa175b4b83a4daf30ba713183710d9bd6d5488965ce3599e78d01eecfa0292f7a23598f3588ccf084e4aa89c57d20
+  languageName: node
+  linkType: hard
+
+"@analytics/core@npm:^0.13.2":
+  version: 0.13.2
+  resolution: "@analytics/core@npm:0.13.2"
+  dependencies:
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+    "@analytics/type-utils": "npm:^0.6.4"
+    analytics-utils: "npm:^1.1.1"
+  checksum: 10c0/4ff62718e5ebc6626d8f08538470aa12b81a3ed85567b7766602baec12b310d831e88d64a4f5000f24978cb198ffb9c088e511ab5dceb65f7adacb50481ce68a
+  languageName: node
+  linkType: hard
+
+"@analytics/global-storage-utils@npm:^0.1.9":
+  version: 0.1.9
+  resolution: "@analytics/global-storage-utils@npm:0.1.9"
+  dependencies:
+    "@analytics/type-utils": "npm:^0.6.4"
+  checksum: 10c0/f8a4b20274a2d5f96e2b92f7d27faac92ff0c60fcafc96ca54adcfc6972b8a64a81138ce6fade1bd7ad1923fa5a096b60c1bbc9fcf533918a66bfc46c3a09a9a
+  languageName: node
+  linkType: hard
+
+"@analytics/localstorage-utils@npm:^0.1.12":
+  version: 0.1.12
+  resolution: "@analytics/localstorage-utils@npm:0.1.12"
+  dependencies:
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+  checksum: 10c0/2511f7aadabda7a4b850992e9bc1d82ca0be2f881b8e3612da690afadd6026497c1063c21260e461adc09eb51431a98f6b855939f7d961b64a863db47d6da2ae
+  languageName: node
+  linkType: hard
+
+"@analytics/session-storage-utils@npm:^0.0.9":
+  version: 0.0.9
+  resolution: "@analytics/session-storage-utils@npm:0.0.9"
+  dependencies:
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+  checksum: 10c0/cb72694a31b7098083667a84dab2d60d37916439852a23e43989f52c787605c882d50e0a79b46e90e73917f77213f00e6ac14b149c4d50da1fc244f16384dcd4
+  languageName: node
+  linkType: hard
+
+"@analytics/storage-utils@npm:^0.4.4":
+  version: 0.4.4
+  resolution: "@analytics/storage-utils@npm:0.4.4"
+  dependencies:
+    "@analytics/cookie-utils": "npm:^0.2.14"
+    "@analytics/global-storage-utils": "npm:^0.1.9"
+    "@analytics/localstorage-utils": "npm:^0.1.12"
+    "@analytics/session-storage-utils": "npm:^0.0.9"
+    "@analytics/type-utils": "npm:^0.6.4"
+  checksum: 10c0/4bd3c7f405cbf2eef8be2fe8c6a21272243437dd440cfaba7e60852b814251ac649efa9b4015ed96706058b84782f108c5ddfdcd54710e4079d1e8349e5afe8b
+  languageName: node
+  linkType: hard
+
+"@analytics/type-utils@npm:^0.6.4":
+  version: 0.6.4
+  resolution: "@analytics/type-utils@npm:0.6.4"
+  checksum: 10c0/627cbd7a5bacbbc472521fcf4f7af2f10d483f4f15e97a39f51649b1fd45261c00c660ffb7c9861cbedb237c88434cab896d92590974ed40f36f32bd5bb95b2f
+  languageName: node
+  linkType: hard
+
 "@angular-devkit/architect@npm:0.2100.5, @angular-devkit/architect@npm:>= 0.2100.0 < 0.2200.0":
   version: 0.2100.5
   resolution: "@angular-devkit/architect@npm:0.2100.5"
@@ -3350,6 +3417,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"analytics-utils@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "analytics-utils@npm:1.1.1"
+  dependencies:
+    "@analytics/type-utils": "npm:^0.6.4"
+    dlv: "npm:^1.1.3"
+  peerDependencies:
+    "@types/dlv": ^1.0.0
+  checksum: 10c0/7e241ec3c7aa9388237e7bd1ca6822c83c65b6cb31cd58d1b489aed3ad69a5a2b88cfe33b6f611da91b91fc75cb7d3f7ed1b7aa0bf66b566d619725dc64abdc5
+  languageName: node
+  linkType: hard
+
+"analytics@npm:^0.8.14":
+  version: 0.8.19
+  resolution: "analytics@npm:0.8.19"
+  dependencies:
+    "@analytics/core": "npm:^0.13.2"
+    "@analytics/storage-utils": "npm:^0.4.4"
+  checksum: 10c0/afdced9af6365142401c721e5be2778cb9f962ed871132d6e07e337ee41f8a13c6385bc011d046f5eb2e5b451a5885574d2c1ca7ca6acb8812652d401bc10d15
+  languageName: node
+  linkType: hard
+
 "ansi-escapes@npm:^7.0.0":
   version: 7.2.0
   resolution: "ansi-escapes@npm:7.2.0"
@@ -3578,6 +3667,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.37.0"
     "@typescript-eslint/types": "npm:^8.37.0"
     "@typescript-eslint/utils": "npm:^8.37.0"
+    analytics: "npm:^0.8.14"
     bootstrap: "npm:^5.3.7"
     eslint: "npm:^9.30.1"
     jasmine-core: "npm:~5.8.0"
@@ -4249,6 +4339,13 @@ __metadata:
   version: 27.5.1
   resolution: "diff-sequences@npm:27.5.1"
   checksum: 10c0/a52566d891b89a666f48ba69f54262fa8293ae6264ae04da82c7bf3b6661cba75561de0729f18463179d56003cc0fd69aa09845f2c2cd7a353b1ec1e1a96beb9
+  languageName: node
+  linkType: hard
+
+"dlv@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "dlv@npm:1.1.3"
+  checksum: 10c0/03eb4e769f19a027fd5b43b59e8a05e3fd2100ac239ebb0bf9a745de35d449e2f25cfaf3aa3934664551d72856f4ae8b7822016ce5c42c2d27c18ae79429ec42
   languageName: node
   linkType: hard
 

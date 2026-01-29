@@ -29,6 +29,7 @@
     "@ng-select/ng-select": "^21.1.0",
     "@popperjs/core": "^2.11.8",
     "@tinymce/tinymce-angular": "^9.0.0",
+    "analytics": "^0.8.14",
     "bootstrap": "^5.3.7",
     "jszip": "^3.10.1",
     "keycloak-angular": "^21.0.0",

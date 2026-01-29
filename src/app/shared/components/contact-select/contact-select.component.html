@@ -1,14 +1,14 @@
 <nav class="action-container" aria-label="breadcrumb">
   @if (!loading) {
-  <ol class="breadcrumb">
-    @for (breadcrumb of navigationObject.breadcrumbs; track breadcrumb) {
-    <li class="breadcrumb-item">
-      <a href="javascript:void(0);"
-        (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
-    </li>
-    }
-    <li class="breadcrumb-item active" aria-current="page">Select Contact</li>
-  </ol>
+    <ol class="breadcrumb">
+      @for (breadcrumb of navigationObject.breadcrumbs; track breadcrumb) {
+        <li class="breadcrumb-item">
+          <a href="javascript:void(0);"
+            (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
+        </li>
+      }
+      <li class="breadcrumb-item active" aria-current="page">Select Contact</li>
+    </ol>
   }
 </nav>
 
@@ -35,30 +35,24 @@
     </button>
   </div>
 
-  @if (!loading && tableParams.totalListItems === 0) {
-  <div>
-    No contacts found.
-  </div>
+  @if (tableParams.totalListItems === 0) {
+    <div>
+      No contacts found.
+    </div>
   }
 
-  @if (!loading && tableParams.totalListItems != 0) {
-  <app-table-template [columns]="tableColumns" [data]="tableData"
-    (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-    (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
-  </app-table-template>
-  }
+  @if (tableParams.totalListItems != 0) {
+    <app-table-template [columns]="tableColumns" [data]="tableData"
+      (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
+      (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+    </app-table-template>
 
-  @if (!loading && tableParams.totalListItems != 0) {
-  <div class="btn-group" role="group" aria-label="Action Buttons">
-    <div class="input-group-prepend">
-      <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
-          class="material-icons">arrow_back</i>Back</button>
+    <div class="btn-group" role="group" aria-label="Action Buttons">
+      <div class="input-group-prepend">
+        <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
+            class="material-icons">arrow_back</i>Back</button>
+      </div>
     </div>
-    <div class="input-group-append">
-      <button class="btn btn-outline-primary" (click)="selectContact()" type="button" id="button-sc">Select
-        Contact</button>
-    </div>
-  </div>
   }
 </div>
 }
