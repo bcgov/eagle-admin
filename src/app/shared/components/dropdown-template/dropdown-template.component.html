@@ -2,5 +2,7 @@
     settings
   </i></button>
 <mat-menu #menu="matMenu">
-  <button *ngFor="let item of items" (click)="itemClicked(item)" mat-menu-item>{{item}}</button>
+  @for (item of items; track item) {
+  <button (click)="itemClicked(item)" mat-menu-item>{{item}}</button>
+  }
 </mat-menu>

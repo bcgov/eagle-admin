@@ -1,14 +1,19 @@
 <nav class="action-container" aria-label="breadcrumb">
-  <ol *ngIf="!loading" class="breadcrumb">
-    <li class="breadcrumb-item" *ngFor="let breadcrumb of navigationObject.breadcrumbs">
+  @if (!loading) {
+  <ol class="breadcrumb">
+    @for (breadcrumb of navigationObject.breadcrumbs; track breadcrumb) {
+    <li class="breadcrumb-item">
       <a href="javascript:void(0);"
         (click)="navigationStackUtils.navigateBreadcrumb(breadcrumb, router)">{{breadcrumb.label}}</a>
     </li>
+    }
     <li class="breadcrumb-item active" aria-current="page">Select Contact</li>
   </ol>
+  }
 </nav>
 
-<div *ngIf="!loading" class="container-fluid-padding">
+@if (!loading) {
+<div class="container-fluid-padding">
   <form #f="ngForm" class="search-form ui form" (ngSubmit)="getPaginatedDocs(1)">
     <p><b>Name Filter:</b></p>
     <div class="form-row">
@@ -30,18 +35,30 @@
     </button>
   </div>
 
-  <div *ngIf="!loading && tableParams.totalListItems === 0">
+  @if (!loading && tableParams.totalListItems === 0) {
+  <div>
     No contacts found.
   </div>
+  }
 
-  <app-table-template *ngIf="!loading && tableParams.totalListItems != 0" [columns]="tableColumns" [data]="tableData"
+  @if (!loading && tableParams.totalListItems != 0) {
+  <app-table-template [columns]="tableColumns" [data]="tableData"
     (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
     (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
   </app-table-template>
+  }
 
-  <div class="btn-group" role="group" aria-label="Action Buttons" *ngIf="!loading && tableParams.totalListItems != 0">
+  @if (!loading && tableParams.totalListItems != 0) {
+  <div class="btn-group" role="group" aria-label="Action Buttons">
     <div class="input-group-prepend">
       <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
           class="material-icons">arrow_back</i>Back</button>
     </div>
+    <div class="input-group-append">
+      <button class="btn btn-outline-primary" (click)="selectContact()" type="button" id="button-sc">Select
+        Contact</button>
+    </div>
   </div>
+  }
+</div>
+}

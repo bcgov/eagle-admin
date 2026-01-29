@@ -58,9 +58,11 @@
 
 <body id="top">
     <app-root>
-        <div class="spinner-container" *ngIf="!results">
+        @if (!results) {
+        <div class="spinner-container">
             <div class="spinner-new rotating"></div>
         </div>
+        }
     </app-root>
 </body>
 
