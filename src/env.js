@@ -17,8 +17,8 @@
   window.__env.KEYCLOAK_ENABLED = true;
 
   // Analytics configuration
-  // Uses relative path - nginx reverse proxies /api/analytics to penguin-analytics service
-  window.__env.ANALYTICS_API_URL = '/api/analytics';
+  // Direct URL to penguin-analytics API (route-based, not nginx proxy)
+  window.__env.ANALYTICS_API_URL = 'https://penguin-analytics-api-6cdc9e-dev.apps.silver.devops.gov.bc.ca/events';
   window.__env.ANALYTICS_DEBUG = window.__env.ENVIRONMENT === 'local';
 
   // Add any feature-toggles
