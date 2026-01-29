@@ -17,10 +17,8 @@
   window.__env.KEYCLOAK_ENABLED = true;
 
   // Analytics configuration
-  // Dynamically set by run script at container startup via %PENGUIN_ANALYTICS_URL%
-  // Default: uses relative proxy path /api/analytics (nginx reverse proxy)
-  // Can be overridden via PENGUIN_ANALYTICS_URL env variable during deployment
-  window.__env.ANALYTICS_API_URL = '%PENGUIN_ANALYTICS_URL%';
+  // Uses relative path - nginx reverse proxies /api/analytics to penguin-analytics service
+  window.__env.ANALYTICS_API_URL = '/api/analytics';
   window.__env.ANALYTICS_DEBUG = window.__env.ENVIRONMENT === 'local';
 
   // Add any feature-toggles
