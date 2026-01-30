@@ -1,0 +1,64 @@
+name: Deploy to Prod
+
+on:
+  push:
+    branches:
+      - promotion/prod
+    paths:
+      - state.json
+  workflow_dispatch:
+
+permissions: write-all
+
+env:
+  OPENSHIFT_NAMESPACE: 6cdc9e-tools
+  IMAGE_NAME: eagle-admin
+
+jobs:
+  deploy:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    outputs:
+      COMMIT_SHA: ${{ steps.read-hash.outputs.SHA }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: "promotion/prod"
+
+      - name: Retrieve previous commit hash
+        id: read-hash
+        run: echo "SHA=$(jq -r '.commit' state.json)" >> $GITHUB_OUTPUT
+
+      - name: Install OpenShift CLI
+        run: |
+          curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz"
+          tar -xvzf openshift-client-linux.tar.gz
+          sudo mv oc /usr/local/bin/
+          rm -f openshift-client-linux.tar.gz
+
+      - name: Log into OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Tag image
+        run: |
+          oc -n ${{ env.OPENSHIFT_NAMESPACE }} tag --reference-policy='local' ${{ env.IMAGE_NAME }}:prod ${{ env.IMAGE_NAME }}:prod-backup
+          oc -n ${{ env.OPENSHIFT_NAMESPACE }} tag --reference-policy='local' ${{ env.IMAGE_NAME }}:test ${{ env.IMAGE_NAME }}:prod
+
+  sync-main-branch:
+    name: Rebase Prod
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: "main"
+      - run: |
+          git fetch origin test
+          git rebase ${{needs.deploy.outputs.COMMIT_SHA}} main
+          git push origin main
