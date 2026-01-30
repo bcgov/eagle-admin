@@ -124,8 +124,13 @@ jobs:
 
           echo $(jq '.commit="${{ needs.build.outputs.SHORT_SHA }}"' state.json) > state.json
 
-          git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
-          git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
+          # Only commit if there are changes
+          if git diff --quiet state.json; then
+            echo "No changes to state.json, skipping commit"
+          else
+            git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
+            git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
+          fi
       - name: Create or Update Pull Request
         run: |
           # Check if PR exists
