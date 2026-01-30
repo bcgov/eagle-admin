@@ -1,0 +1,21 @@
+import { Component } from '@angular/core';
+
+import { NzCronExpressionModule } from 'ng-zorro-antd/cron-expression';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzCronExpressionModule],
+  <% if(inlineTemplate) { %>template: `
+    <div class="example-cron-expression">
+      <nz-cron-expression nzSize="small"></nz-cron-expression>
+      <nz-cron-expression nzSize="default"></nz-cron-expression>
+      <nz-cron-expression nzSize="large"></nz-cron-expression>
+    </div>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      .example-cron-expression nz-cron-expression {
+        margin: 0 8px 8px 0;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

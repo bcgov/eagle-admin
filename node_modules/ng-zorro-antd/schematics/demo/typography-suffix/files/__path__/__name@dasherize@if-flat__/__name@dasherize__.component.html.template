@@ -1,0 +1,14 @@
+
+    <nz-slider [(ngModel)]="rows" [nzMax]="10" [nzMin]="1"></nz-slider>
+    <p
+      nz-typography
+      nzEllipsis
+      nzExpandable
+      [attr.title]="content + suffix"
+      [nzEllipsisRows]="rows"
+      [nzSuffix]="suffix"
+      (nzOnEllipsis)="onEllipsisChange($event)"
+    >
+      {{ content }}
+    </p>
+  

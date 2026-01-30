@@ -1,0 +1,10 @@
+
+    <nz-input-number [(ngModel)]="dollarValue" [nzFormatter]="formatterDollar" [nzParser]="parserDollar" />
+    <nz-input-number
+      [(ngModel)]="percentValue"
+      nzMin="1"
+      nzMax="100"
+      [nzFormatter]="formatterPercent"
+      [nzParser]="parserPercent"
+    />
+  

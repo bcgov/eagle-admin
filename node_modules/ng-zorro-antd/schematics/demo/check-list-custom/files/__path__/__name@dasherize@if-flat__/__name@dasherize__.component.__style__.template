@@ -1,0 +1,11 @@
+
+      :host {
+        position: relative;
+      }
+      form {
+        width: 300px;
+      }
+      nz-check-list {
+        position: absolute;
+      }
+    

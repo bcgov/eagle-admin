@@ -1,0 +1,12 @@
+
+    <strong>Categories:</strong>
+    @for (tag of hotTags; track $index) {
+      <nz-tag
+        nzMode="checkable"
+        [nzChecked]="selectedTags.indexOf(tag) > -1"
+        (nzCheckedChange)="handleChange($event, tag)"
+      >
+        {{ tag }}
+      </nz-tag>
+    }
+  

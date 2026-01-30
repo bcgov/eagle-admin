@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+import { NzQRCodeModule } from 'ng-zorro-antd/qr-code';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzQRCodeModule],
+  <% if(inlineTemplate) { %>template: `<nz-qrcode nzValue="https://ng.ant.design/"></nz-qrcode>`<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {}

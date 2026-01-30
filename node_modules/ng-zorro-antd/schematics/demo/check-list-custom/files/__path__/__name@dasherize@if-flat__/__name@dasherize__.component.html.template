@@ -1,0 +1,51 @@
+
+    <form nz-form nzLayout="vertical" [formGroup]="form">
+      <nz-form-item>
+        <nz-form-label>Visible</nz-form-label>
+        <nz-form-control>
+          <label nz-checkbox formControlName="nzVisible"></label>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Show Progress</nz-form-label>
+        <nz-form-control>
+          <label nz-checkbox formControlName="nzProgress"></label>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Index</nz-form-label>
+        <nz-form-control>
+          <nz-segmented [nzOptions]="options" (nzValueChange)="handleIndexChange($event)"></nz-segmented>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Trigger Render</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="nzTriggerRender" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Title</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="nzTitle" />
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label>Footer</nz-form-label>
+        <nz-form-control>
+          <input nz-input formControlName="nzFooter" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+
+    <nz-check-list
+      [nzItems]="nzItems"
+      [nzVisible]="form.controls.nzVisible.value"
+      [nzIndex]="form.controls.nzIndex.value || 0"
+      [nzProgress]="form.controls.nzProgress.value"
+      [nzTriggerRender]="form.controls.nzTriggerRender.value"
+      [nzTitle]="form.controls.nzTitle.value"
+      [nzFooter]="form.controls.nzFooter.value"
+      (nzHide)="hideCancel($event)"
+    ></nz-check-list>
+  

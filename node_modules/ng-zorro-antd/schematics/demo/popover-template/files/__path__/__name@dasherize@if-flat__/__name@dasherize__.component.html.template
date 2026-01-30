@@ -1,0 +1,13 @@
+
+    <button nz-button nz-popover [nzPopoverTitle]="titleTemplate" [nzPopoverContent]="contentTemplate">
+      Render Template
+    </button>
+    <ng-template #titleTemplate>
+      <nz-icon nzType="close" />
+      Title
+    </ng-template>
+    <ng-template #contentTemplate>
+      <nz-icon nzType="check" />
+      Content
+    </ng-template>
+  

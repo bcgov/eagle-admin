@@ -1,0 +1,23 @@
+import { Component } from '@angular/core';
+
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzSpinModule],
+  <% if(inlineTemplate) { %>template: `
+    <div class="container">
+      <nz-spin nzSimple></nz-spin>
+    </div>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      .container {
+        text-align: center;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 4px;
+        padding: 30px 50px;
+        margin: 20px 0;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

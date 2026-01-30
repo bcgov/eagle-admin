@@ -1,0 +1,27 @@
+import { Component } from '@angular/core';
+
+import { NzCalendarModule } from 'ng-zorro-antd/calendar';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzCalendarModule],
+  <% if(inlineTemplate) { %>template: `
+    <div class="card">
+      <nz-calendar [nzFullscreen]="false" [nzCustomHeader]="customHeader"></nz-calendar>
+    </div>
+
+    <ng-template #customHeader>
+      <div style="padding: 8px">
+        <h4>Custom header</h4>
+      </div>
+    </ng-template>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      .card {
+        width: 300px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

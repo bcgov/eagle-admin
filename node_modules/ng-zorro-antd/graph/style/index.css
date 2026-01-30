@@ -1,0 +1,69 @@
+/* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
+/* stylelint-disable no-duplicate-selectors */
+.nz-graph {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+.nz-graph-nodes .nz-graph-node-rect {
+  fill: transparent;
+  stroke: #91d5ff;
+  stroke-width: 1px;
+}
+.nz-graph-nodes .nz-graph-node-rect:hover {
+  stroke: #1890ff;
+}
+.nz-graph-edges .nz-graph-edge path {
+  fill: none;
+  stroke: #91d5ff;
+  stroke-linecap: butt;
+  stroke-width: 1px;
+}
+.nz-graph-edges .nz-graph-edge path:hover {
+  stroke: #1890ff;
+}
+.nz-graph-edges .nz-graph-edge-text {
+  font-size: 12px;
+  fill: rgba(0, 0, 0, 0.85);
+}
+.nz-graph-edge-marker {
+  color: #91d5ff;
+  fill: #91d5ff;
+}
+.nz-graph-minimap {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  transition: opacity 0.3s linear;
+  pointer-events: auto;
+}
+.nz-graph-minimap.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.nz-graph-minimap canvas {
+  border: 1px solid #999;
+}
+.nz-graph-minimap rect {
+  cursor: move;
+  filter: url('#minimapDropShadow');
+  fill: #fff;
+  stroke: rgba(0, 0, 0, 0.45);
+  stroke-width: 1px;
+  fill-opacity: 0;
+}
+.nz-graph-minimap svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.nz-graph-minimap .buffer,
+.nz-graph-minimap .viewport {
+  display: block;
+  height: 100%;
+}

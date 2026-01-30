@@ -1,0 +1,14 @@
+
+    <h4 style="margin-bottom: 16px">Presets:</h4>
+    <div>
+      @for (color of presetColors; track color) {
+        <nz-tag [nzColor]="color">{{ color }}</nz-tag>
+      }
+    </div>
+    <h4 style="margin: 16px 0">Custom:</h4>
+    <div>
+      @for (color of customColors; track color) {
+        <nz-tag [nzColor]="color">{{ color }}</nz-tag>
+      }
+    </div>
+  

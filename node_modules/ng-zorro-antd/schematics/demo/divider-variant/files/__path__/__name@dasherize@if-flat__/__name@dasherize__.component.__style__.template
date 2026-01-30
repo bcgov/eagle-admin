@@ -1,0 +1,6 @@
+
+      nz-divider::after,
+      nz-divider::before {
+        border-color: #7cb305 !important;
+      }
+    

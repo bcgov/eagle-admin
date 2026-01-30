@@ -1,0 +1,14 @@
+
+    <nz-divider nzText="Preset" nzOrientation="left"></nz-divider>
+    @for (color of presetColors; track color) {
+      <button nz-button nz-tooltip [nzTooltipTitle]="color" [nzTooltipColor]="color">
+        {{ color }}
+      </button>
+    }
+    <nz-divider nzText="Custom" nzOrientation="left"></nz-divider>
+    @for (color of customColors; track color) {
+      <button nz-button nz-tooltip [nzTooltipTitle]="color" [nzTooltipColor]="color">
+        {{ color }}
+      </button>
+    }
+  

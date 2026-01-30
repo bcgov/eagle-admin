@@ -1,0 +1,95 @@
+/* stylelint-disable at-rule-empty-line-before,at-rule-name-space-after,at-rule-no-unknown */
+/* stylelint-disable no-duplicate-selectors */
+.ant-cron-expression {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.ant-cron-expression-content {
+  width: 100%;
+}
+.ant-cron-expression-content .ant-cron-expression-input-group-error-focus {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+.ant-cron-expression nz-cron-expression-input {
+  width: 20%;
+}
+.ant-cron-expression-input-group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+.ant-cron-expression-input-group input {
+  width: 100%;
+  padding: 0;
+  border: none !important;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none !important;
+}
+.ant-cron-expression-input-group-focus {
+  border-color: #1890ff;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+.ant-cron-expression nz-cron-expression-label {
+  width: 20%;
+}
+.ant-cron-expression-label-group {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  width: 100%;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.ant-cron-expression-label-group-default {
+  padding: 0 12px;
+}
+.ant-cron-expression-label-foucs {
+  color: #1890ff;
+}
+.ant-cron-expression-map {
+  margin-left: 12px;
+}
+.ant-cron-expression-preview {
+  display: flex;
+  padding: 12px;
+}
+.ant-cron-expression-preview-dateTime {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+}
+.ant-cron-expression-preview-dateTime-center {
+  justify-content: center;
+}
+.ant-cron-expression-preview-content {
+  display: flex;
+  flex: 0 0 220px;
+  align-items: center;
+  padding-left: 16px;
+}
+.ant-cron-expression-preview-list,
+.ant-cron-expression-preview-icon {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ant-cron-expression-preview-list li,
+.ant-cron-expression-preview-icon li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ant-cron-expression-preview-list {
+  height: 132px;
+  overflow-y: scroll;
+}
+.ant-cron-expression-preview-icon {
+  display: flex;
+  flex: 0 0 16px;
+  justify-content: center;
+}
+.ant-cron-expression-error {
+  color: #ff4d4f;
+}

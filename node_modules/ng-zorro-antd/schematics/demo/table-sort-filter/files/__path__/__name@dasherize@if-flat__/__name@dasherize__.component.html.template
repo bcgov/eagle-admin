@@ -1,0 +1,29 @@
+
+    <nz-table #filterTable [nzData]="listOfData" nzTableLayout="fixed">
+      <thead>
+        <tr>
+          @for (column of listOfColumns; track column) {
+            <th
+              [nzSortOrder]="column.sortOrder"
+              [nzSortFn]="column.sortFn"
+              [nzSortDirections]="column.sortDirections"
+              [nzFilterMultiple]="column.filterMultiple"
+              [nzFilters]="column.listOfFilter"
+              [nzFilterFn]="column.filterFn"
+            >
+              {{ column.name }}
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (data of filterTable.data; track data) {
+          <tr>
+            <td>{{ data.name }}</td>
+            <td>{{ data.age }}</td>
+            <td>{{ data.address }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  

@@ -1,0 +1,26 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzInputNumberModule, NzIconModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-input-number nzStatus="error" [style.width.%]="100"></nz-input-number>
+    <nz-input-number nzStatus="warning" [style.width.%]="100"></nz-input-number>
+    <nz-input-number nzStatus="error" [style.width.%]="100">
+      <nz-icon nzInputPrefix nzType="clock-circle" />
+    </nz-input-number>
+    <nz-input-number nzStatus="warning" [style.width.%]="100">
+      <nz-icon nzInputPrefix nzType="clock-circle" />
+    </nz-input-number>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-input-number {
+        margin-bottom: 8px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

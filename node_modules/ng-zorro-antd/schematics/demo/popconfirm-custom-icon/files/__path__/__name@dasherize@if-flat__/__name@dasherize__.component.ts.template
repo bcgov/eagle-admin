@@ -1,0 +1,16 @@
+import { Component } from '@angular/core';
+
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzIconModule, NzPopconfirmModule],
+  <% if(inlineTemplate) { %>template: `
+    <a nz-popconfirm nzPopconfirmTitle="Are you sure?" [nzIcon]="iconTpl">Delete</a>
+    <ng-template #iconTpl>
+      <nz-icon nzType="question-circle-o" style="color: red;" />
+    </ng-template>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {}

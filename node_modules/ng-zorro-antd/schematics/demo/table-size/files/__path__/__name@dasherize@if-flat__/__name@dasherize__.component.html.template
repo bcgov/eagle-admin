@@ -1,0 +1,40 @@
+
+    <h4>Middle size table</h4>
+    <nz-table #middleTable nzSize="middle" [nzData]="data">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (data of middleTable.data; track data) {
+          <tr>
+            <td>{{ data.name }}</td>
+            <td>{{ data.age }}</td>
+            <td>{{ data.address }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+    <h4>Small size table</h4>
+    <nz-table #smallTable nzSize="small" [nzData]="data">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (data of smallTable.data; track data) {
+          <tr>
+            <td>{{ data.name }}</td>
+            <td>{{ data.age }}</td>
+            <td>{{ data.address }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  

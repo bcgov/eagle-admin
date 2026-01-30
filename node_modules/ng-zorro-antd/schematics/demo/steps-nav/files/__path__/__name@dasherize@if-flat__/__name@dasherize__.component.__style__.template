@@ -1,0 +1,6 @@
+
+      nz-steps {
+        margin-bottom: 60px;
+        box-shadow: rgb(232, 232, 232) 0 -1px 0 0 inset;
+      }
+    

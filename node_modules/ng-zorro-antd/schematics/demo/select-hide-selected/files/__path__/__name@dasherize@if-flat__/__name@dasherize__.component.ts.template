@@ -1,0 +1,29 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzSelectModule } from 'ng-zorro-antd/select';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzSelectModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-select nzMode="multiple" nzPlaceHolder="Inserted are removed" [(ngModel)]="listOfSelected">
+      @for (option of listOfOption; track option) {
+        <nz-option [nzLabel]="option" [nzValue]="option" [nzHide]="!isSelected(option)"></nz-option>
+      }
+    </nz-select>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-select {
+        width: 100%;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  listOfOption = ['Apples', 'Nails', 'Bananas', 'Helicopters'];
+  listOfSelected: string[] = [];
+
+  isSelected(value: string): boolean {
+    return this.listOfSelected.indexOf(value) !== -1;
+  }
+}

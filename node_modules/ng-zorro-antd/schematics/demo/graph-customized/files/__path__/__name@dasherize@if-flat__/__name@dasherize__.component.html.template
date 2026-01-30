@@ -1,0 +1,38 @@
+
+    <button nz-button nzType="default" (click)="expandAll()">ExpandAll</button>
+    <button nz-button nzType="default" (click)="collapseAll()">CollapseAll</button>
+    <button nz-button nzType="primary" (click)="fit()">Fit</button>
+    <nz-radio-group [(ngModel)]="rankDirection">
+      <label nz-radio-button nzValue="LR">LR</label>
+      <label nz-radio-button nzValue="RL">RL</label>
+      <label nz-radio-button nzValue="TB">TB</label>
+      <label nz-radio-button nzValue="BT">BT</label>
+    </nz-radio-group>
+    <nz-graph
+      nz-graph-zoom
+      [nzGraphData]="graphData"
+      [nzAutoSize]="true"
+      [nzRankDirection]="rankDirection"
+      (nzGraphInitialized)="graphInitialized($event)"
+    >
+      <ng-container *nzGraphNode="let node">
+        <foreignObject x="0" y="0" [attr.width]="node.width" [attr.height]="node.height">
+          <xhtml:div class="graph-node leaf-node" (click)="focusNode(node.id || node.name)">
+            <div class="title">
+              {{ node.name }}
+            </div>
+          </xhtml:div>
+        </foreignObject>
+      </ng-container>
+
+      <ng-container *nzGraphGroupNode="let node">
+        <foreignObject x="0" y="0" [attr.width]="node.width" [attr.height]="node.height">
+          <xhtml:div class="graph-node group-node" (click)="focusNode(node.id || node.name)">
+            <div class="title">
+              {{ node.name }}
+            </div>
+          </xhtml:div>
+        </foreignObject>
+      </ng-container>
+    </nz-graph>
+  

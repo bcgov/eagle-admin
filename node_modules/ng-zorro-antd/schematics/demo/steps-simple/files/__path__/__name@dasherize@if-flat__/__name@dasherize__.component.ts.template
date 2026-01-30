@@ -1,0 +1,16 @@
+import { Component } from '@angular/core';
+
+import { NzStepsModule } from 'ng-zorro-antd/steps';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzStepsModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-steps [nzCurrent]="1">
+      <nz-step nzTitle="Finished" nzDescription="This is a description."></nz-step>
+      <nz-step nzTitle="In Progress" nzSubtitle="Left 00:00:08" nzDescription="This is a description."></nz-step>
+      <nz-step nzTitle="Waiting" nzDescription="This is a description."></nz-step>
+    </nz-steps>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {}

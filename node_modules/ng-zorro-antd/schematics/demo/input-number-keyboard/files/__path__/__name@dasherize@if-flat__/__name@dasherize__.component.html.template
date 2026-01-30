@@ -1,0 +1,4 @@
+
+    <nz-input-number [(ngModel)]="value" [nzKeyboard]="keyboard" nzMin="1" nzMax="10" />
+    <label nz-checkbox [(ngModel)]="keyboard">Toggle Keyboard</label>
+  

@@ -1,0 +1,10 @@
+
+    <nz-input-number nzStatus="error" [style.width.%]="100"></nz-input-number>
+    <nz-input-number nzStatus="warning" [style.width.%]="100"></nz-input-number>
+    <nz-input-number nzStatus="error" [style.width.%]="100">
+      <nz-icon nzInputPrefix nzType="clock-circle" />
+    </nz-input-number>
+    <nz-input-number nzStatus="warning" [style.width.%]="100">
+      <nz-icon nzInputPrefix nzType="clock-circle" />
+    </nz-input-number>
+  

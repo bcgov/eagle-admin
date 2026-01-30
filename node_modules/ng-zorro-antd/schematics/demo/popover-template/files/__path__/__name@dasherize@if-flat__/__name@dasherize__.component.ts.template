@@ -1,0 +1,24 @@
+import { Component } from '@angular/core';
+
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzPopoverModule } from 'ng-zorro-antd/popover';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzButtonModule, NzIconModule, NzPopoverModule],
+  <% if(inlineTemplate) { %>template: `
+    <button nz-button nz-popover [nzPopoverTitle]="titleTemplate" [nzPopoverContent]="contentTemplate">
+      Render Template
+    </button>
+    <ng-template #titleTemplate>
+      <nz-icon nzType="close" />
+      Title
+    </ng-template>
+    <ng-template #contentTemplate>
+      <nz-icon nzType="check" />
+      Content
+    </ng-template>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {}

@@ -1,0 +1,8 @@
+
+    <nz-badge nzSize="default" [nzCount]="5">
+      <a class="head-example"></a>
+    </nz-badge>
+    <nz-badge nzSize="small" [nzCount]="5">
+      <a class="head-example"></a>
+    </nz-badge>
+  

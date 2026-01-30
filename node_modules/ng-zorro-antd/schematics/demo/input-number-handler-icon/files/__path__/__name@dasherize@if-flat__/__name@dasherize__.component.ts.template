@@ -1,0 +1,19 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzInputNumberModule, NzIconModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-input-number [(ngModel)]="value">
+      <nz-icon nzInputNumberUpIcon nzType="arrow-up" />
+      <nz-icon nzInputNumberDownIcon nzType="arrow-down" />
+    </nz-input-number>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {
+  value = 3;
+}

@@ -1,0 +1,34 @@
+import { Component } from '@angular/core';
+
+import { NzCalendarModule } from 'ng-zorro-antd/calendar';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzCalendarModule],
+  <% if(inlineTemplate) { %>template: `
+    <div class="card">
+      <nz-calendar
+        [nzFullscreen]="false"
+        (nzSelectChange)="onValueChange($event)"
+        (nzPanelChange)="onPanelChange($event)"
+      ></nz-calendar>
+    </div>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      .card {
+        width: 300px;
+        border: 1px solid #d9d9d9;
+        border-radius: 4px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  onValueChange(value: Date): void {
+    console.log(`Current value: ${value}`);
+  }
+
+  onPanelChange(change: { date: Date; mode: string }): void {
+    console.log(`Current value: ${change.date}`);
+    console.log(`Current mode: ${change.mode}`);
+  }
+}

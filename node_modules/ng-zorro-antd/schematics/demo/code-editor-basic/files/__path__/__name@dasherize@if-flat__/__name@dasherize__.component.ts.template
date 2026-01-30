@@ -1,0 +1,23 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzCodeEditorModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-code-editor class="editor" [ngModel]="code" [nzEditorOption]="{ language: 'typescript' }"></nz-code-editor>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      .editor {
+        height: 200px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  code = `import { NzCodeEditorModule } from 'ng-zorro-antd/code-editor'
+
+@Component({})
+export class SomeComponent {}`;
+}

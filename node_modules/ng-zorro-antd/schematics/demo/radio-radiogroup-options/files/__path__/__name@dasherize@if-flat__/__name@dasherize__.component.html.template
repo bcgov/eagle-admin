@@ -1,0 +1,17 @@
+
+    <nz-radio-group [(ngModel)]="radioValue">
+      @for (o of options; track o.value) {
+        <label nz-radio [nzValue]="o.value">{{ o.label }}</label>
+      }
+    </nz-radio-group>
+    <nz-radio-group [(ngModel)]="radioValue">
+      @for (o of options; track o.value) {
+        <label nz-radio [nzValue]="o.value">{{ o.label }}</label>
+      }
+    </nz-radio-group>
+    <nz-radio-group [(ngModel)]="radioValue">
+      @for (o of options; track o.value) {
+        <label nz-radio [nzValue]="o.value">{{ o.label }}</label>
+      }
+    </nz-radio-group>
+  

@@ -1,0 +1,14 @@
+import { Component } from '@angular/core';
+
+import { NzProgressModule } from 'ng-zorro-antd/progress';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzProgressModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-progress nzStrokeLinecap="round" nzPercent="75"></nz-progress>
+    <nz-progress nzStrokeLinecap="round" nzType="circle" nzPercent="75"></nz-progress>
+    <nz-progress nzStrokeLinecap="square" nzType="dashboard" nzPercent="75"></nz-progress>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {}

@@ -1,0 +1,35 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzSliderModule } from 'ng-zorro-antd/slider';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzSliderModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-slider
+      [(ngModel)]="singleValue"
+      (ngModelChange)="onChange($event)"
+      (nzOnAfterChange)="onAfterChange($event)"
+    ></nz-slider>
+    <nz-slider
+      nzRange
+      [nzStep]="10"
+      [(ngModel)]="rangeValue"
+      (ngModelChange)="onChange($event)"
+      (nzOnAfterChange)="onAfterChange($event)"
+    ></nz-slider>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {
+  singleValue = 30;
+  rangeValue = [20, 50];
+
+  onChange(value: number): void {
+    console.log(`onChange: ${value}`);
+  }
+
+  onAfterChange(value: number[] | number): void {
+    console.log(`onAfterChange: ${value}`);
+  }
+}

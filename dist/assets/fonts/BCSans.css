@@ -1,0 +1,28 @@
+@font-face {
+    font-family: BCSans;
+    font-style: normal;
+    src: url('./BCSans/BCSans-Regular.woff2') format('woff2'),
+        url('./BCSans/BCSans-Regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: BCSans;
+    font-style: italic;
+    src: url('./BCSans/BCSans-Italic.woff2') format('woff2'),
+        url('./BCSans/BCSans-Italic.woff') format('woff');
+}
+
+@font-face {
+    font-family: BCSans;
+    font-weight: 700;
+    src: url('./BCSans/BCSans-Bold.woff2') format('woff2'),
+        url('./BCSans/BCSans-Bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: BCSans;
+    font-style: italic;
+    font-weight: 700;
+    src: url('./BCSans/BCSans-BoldItalic.woff2') format('woff2'),
+        url('./BCSans/BCSans-BoldItalic.woff') format('woff');
+}

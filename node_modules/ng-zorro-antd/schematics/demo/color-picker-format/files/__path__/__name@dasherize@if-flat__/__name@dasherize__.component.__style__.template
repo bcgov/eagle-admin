@@ -1,0 +1,11 @@
+
+      .format {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      nz-color-picker {
+        margin-right: 8px;
+      }
+    

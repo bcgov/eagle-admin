@@ -1,0 +1,5 @@
+
+    <nz-input-number [(ngModel)]="value" nzSize="large" nzMin="1" nzMax="10" />
+    <nz-input-number [(ngModel)]="value" nzMin="1" nzMax="10" />
+    <nz-input-number [(ngModel)]="value" nzSize="small" nzMin="1" nzMax="10" />
+  

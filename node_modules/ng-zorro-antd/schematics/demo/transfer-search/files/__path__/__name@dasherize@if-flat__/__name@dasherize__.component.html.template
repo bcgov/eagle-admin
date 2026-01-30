@@ -1,0 +1,13 @@
+
+    <nz-transfer
+      [nzDataSource]="list"
+      [nzDisabled]="disabled"
+      nzShowSearch
+      [nzFilterOption]="filterOption"
+      (nzSearchChange)="search($event)"
+      (nzSelectChange)="select($event)"
+      (nzChange)="change($event)"
+    ></nz-transfer>
+    <br />
+    <nz-switch [(ngModel)]="disabled" nzCheckedChildren="disabled" nzUnCheckedChildren="disabled"></nz-switch>
+  

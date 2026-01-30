@@ -1,0 +1,4 @@
+
+    <ng-template #indicatorTemplate><nz-icon nzType="loading" /></ng-template>
+    <nz-spin nzSimple [nzIndicator]="indicatorTemplate"></nz-spin>
+  

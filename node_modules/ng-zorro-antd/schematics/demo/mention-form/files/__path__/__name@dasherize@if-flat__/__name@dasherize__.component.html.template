@@ -1,0 +1,27 @@
+
+    <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm()">
+      <nz-form-item>
+        <nz-form-label [nzSm]="6" nzFor="mention">Top coders</nz-form-label>
+        <nz-form-control [nzSm]="16" nzErrorTip="More than one must be selected!">
+          <nz-mention #mentions [nzSuggestions]="suggestions">
+            <textarea
+              rows="1"
+              id="mention"
+              placeholder="input here"
+              formControlName="mention"
+              nzMentionTrigger
+              nz-input
+            ></textarea>
+          </nz-mention>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item nz-row style="margin-bottom:8px;">
+        <nz-form-control [nzSpan]="14" [nzOffset]="6">
+          <div class="cta-wrapper">
+            <button type="button" nz-button nzType="primary" (click)="submitForm()">Submit</button>
+            <button type="button" nz-button (click)="resetForm()">Reset</button>
+          </div>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  

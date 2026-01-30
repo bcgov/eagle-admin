@@ -1,0 +1,1 @@
+<button nz-button (click)="success()">Success</button>

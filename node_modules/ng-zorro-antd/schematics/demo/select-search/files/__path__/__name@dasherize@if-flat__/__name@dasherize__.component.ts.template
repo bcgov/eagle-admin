@@ -1,0 +1,24 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzSelectModule } from 'ng-zorro-antd/select';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzSelectModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Select a person" [(ngModel)]="selectedValue">
+      <nz-option nzLabel="Jack" nzValue="jack"></nz-option>
+      <nz-option nzLabel="Lucy" nzValue="lucy"></nz-option>
+      <nz-option nzLabel="Tom" nzValue="tom"></nz-option>
+    </nz-select>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-select {
+        width: 200px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  selectedValue = null;
+}

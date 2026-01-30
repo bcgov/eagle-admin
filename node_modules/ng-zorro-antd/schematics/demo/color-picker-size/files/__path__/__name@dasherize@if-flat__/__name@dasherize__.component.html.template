@@ -1,0 +1,9 @@
+
+    <nz-color-picker nzSize="large"></nz-color-picker>
+    <br />
+    <br />
+    <nz-color-picker></nz-color-picker>
+    <br />
+    <br />
+    <nz-color-picker nzSize="small"></nz-color-picker>
+  

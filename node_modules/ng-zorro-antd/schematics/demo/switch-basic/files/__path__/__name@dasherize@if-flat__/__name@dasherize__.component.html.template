@@ -1,0 +1,1 @@
+<nz-switch [(ngModel)]="switchValue"></nz-switch>

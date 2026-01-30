@@ -1,0 +1,55 @@
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzSwitchModule } from 'ng-zorro-antd/switch';
+import { NzTransferModule, TransferItem } from 'ng-zorro-antd/transfer';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzSwitchModule, NzTransferModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-transfer
+      [nzDataSource]="list"
+      [nzDisabled]="disabled"
+      nzShowSearch
+      [nzFilterOption]="filterOption"
+      (nzSearchChange)="search($event)"
+      (nzSelectChange)="select($event)"
+      (nzChange)="change($event)"
+    ></nz-transfer>
+    <br />
+    <nz-switch [(ngModel)]="disabled" nzCheckedChildren="disabled" nzUnCheckedChildren="disabled"></nz-switch>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component implements OnInit {
+  list: TransferItem[] = [];
+  disabled = false;
+
+  ngOnInit(): void {
+    for (let i = 0; i < 20; i++) {
+      this.list.push({
+        key: i.toString(),
+        title: `content${i + 1}`,
+        description: `description of content${i + 1}`,
+        direction: Math.random() * 2 > 1 ? 'right' : undefined
+      });
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filterOption(inputValue: string, item: any): boolean {
+    return item.description.indexOf(inputValue) > -1;
+  }
+
+  search(ret: {}): void {
+    console.log('nzSearchChange', ret);
+  }
+
+  select(ret: {}): void {
+    console.log('nzSelectChange', ret);
+  }
+
+  change(ret: {}): void {
+    console.log('nzChange', ret);
+  }
+}

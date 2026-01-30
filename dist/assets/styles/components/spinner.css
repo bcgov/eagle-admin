@@ -1,0 +1,122 @@
+/* Spinner New */
+.spinner-new {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--spinner-lg);
+  height: var(--spinner-lg);
+  margin-top: calc(-1 * var(--spinner-lg) / 1.5);
+  margin-left: calc(-1 * var(--spinner-lg) / 2);
+  background-image: url("../../images/spinner.png");
+}
+
+/* Spinner Base */
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-image: url("../../images/spinner.png");
+  background-size: 100%;
+}
+
+/* Spinner Sizes */
+.spinner.spinner-sm {
+  width: var(--spinner-sm);
+  height: var(--spinner-sm);
+  margin-top: calc(-1 * var(--spinner-sm) / 1.5);
+  margin-left: calc(-1 * var(--spinner-sm) / 2);
+}
+
+.spinner.spinner-lg {
+  width: var(--spinner-lg);
+  height: var(--spinner-lg);
+  margin-top: calc(-1 * var(--spinner-lg) / 1.5);
+  margin-left: calc(-1 * var(--spinner-lg) / 2);
+}
+
+/* Spinner Message */
+.spinner__msg {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  margin-top: 1rem;
+  width: 100%;
+  color: #5091cd;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+/* Spinner Container */
+.spinner-container {
+  position: absolute;
+  inset: 0;
+  padding: 5%;
+  background: var(--spinner-bg);
+  z-index: 9999;
+
+  /* to keep above everything else */
+  transition: all linear 0.5s;
+}
+
+.spinner-container.inverted,
+.spinner-container.transparent {
+  background: var(--spinner-invert-bg);
+}
+
+.spinner-container.inverted .spinner-new,
+.spinner-container.transparent .spinner-new {
+  background-image: url("../../images/spinner.png");
+}
+
+.spinner-container.inverted {
+  background: var(--spinner-invert-bg);
+}
+
+.spinner-container.transparent {
+  background: transparent;
+}
+
+.spinner-container.full-screen {
+  position: fixed;
+  z-index: 9999;
+
+  /* to keep above everything else */
+}
+
+/* Rotating Animation */
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating {
+  animation: rotating 0.75s linear infinite;
+}
+
+/* Button Variant Spinner */
+.btn .spinner {
+  position: relative;
+  top: 0;
+  left: 0;
+  margin-top: -0.1rem;
+  margin-right: 0.5rem;
+  display: inline-block;
+  background-image: url("../../images/spinner-inverted.png");
+  width: 1rem;
+  height: 1rem;
+}

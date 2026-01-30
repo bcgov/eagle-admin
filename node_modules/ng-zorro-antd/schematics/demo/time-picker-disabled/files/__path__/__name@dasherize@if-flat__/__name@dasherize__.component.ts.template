@@ -1,0 +1,10 @@
+import { Component } from '@angular/core';
+
+import { NzTimePickerModule } from 'ng-zorro-antd/time-picker';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzTimePickerModule],
+  <% if(inlineTemplate) { %>template: `<nz-time-picker nzDisabled></nz-time-picker>`<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {}

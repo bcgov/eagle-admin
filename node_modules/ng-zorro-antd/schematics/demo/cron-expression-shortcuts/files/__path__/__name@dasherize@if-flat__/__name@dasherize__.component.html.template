@@ -1,0 +1,21 @@
+
+    <nz-cron-expression
+      [nzExtra]="shortcuts"
+      [(ngModel)]="value"
+      (ngModelChange)="getValue($event)"
+    ></nz-cron-expression>
+    <ng-template #shortcuts>
+      <button nz-button nz-dropdown [nzDropdownMenu]="menu">
+        Shortcuts
+        <nz-icon nzType="down" />
+      </button>
+      <nz-dropdown-menu #menu="nzDropdownMenu">
+        <ul nz-menu nzSelectable>
+          @for (item of options; track item.value) {
+            <li nz-menu-item [value]="item.value" (click)="setValue(item.value)">{{ item.label }}</li>
+          }
+        </ul>
+      </nz-dropdown-menu>
+    </ng-template>
+    <p>cron: {{ cron }} </p>
+  

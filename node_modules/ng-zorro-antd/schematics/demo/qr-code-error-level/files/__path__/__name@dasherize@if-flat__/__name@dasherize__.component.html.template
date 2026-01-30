@@ -1,0 +1,4 @@
+
+    <nz-qrcode nzValue="https://github.com/NG-ZORRO/ng-zorro-antd/issues" [nzLevel]="errorLevel"></nz-qrcode>
+    <nz-segmented [nzOptions]="options" [(ngModel)]="errorLevel"></nz-segmented>
+  

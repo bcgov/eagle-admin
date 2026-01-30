@@ -1,0 +1,8 @@
+
+    <nz-transfer
+      [nzDataSource]="list"
+      [nzCanMove]="canMove"
+      (nzSelectChange)="select($event)"
+      (nzChange)="change($event)"
+    ></nz-transfer>
+  

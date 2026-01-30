@@ -1,0 +1,13 @@
+
+      [nz-form] {
+        max-width: 600px;
+      }
+
+      .ant-select.ant-select-in-form-item.phone-select {
+        width: 80px;
+      }
+
+      .register-area {
+        margin-bottom: 8px;
+      }
+    

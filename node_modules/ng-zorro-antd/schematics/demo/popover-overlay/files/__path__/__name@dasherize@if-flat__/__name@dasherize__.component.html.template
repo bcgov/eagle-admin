@@ -1,0 +1,17 @@
+
+    <button
+      nz-button
+      nz-popover
+      nzType="primary"
+      nzPopoverTitle="Title"
+      nzPopoverTrigger="click"
+      [nzPopoverContent]="contentTemplate"
+      [nzPopoverOverlayClickable]="false"
+      [nzPopoverVisible]="visible"
+      (nzPopoverVisibleChange)="visibleChange($event)"
+      >Click me</button
+    >
+    <ng-template #contentTemplate>
+      <button nz-button nzSize="small" nzType="primary" (click)="visibleChange(false)"> Close me </button>
+    </ng-template>
+  

@@ -1,0 +1,23 @@
+import { Component } from '@angular/core';
+
+import { NzFloatButtonModule } from 'ng-zorro-antd/float-button';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzFloatButtonModule],
+  <% if(inlineTemplate) { %>template: `
+    <div class="basic">
+      <nz-float-button></nz-float-button>
+    </div>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      .basic {
+        height: 300px;
+        position: relative;
+      }
+      nz-float-button {
+        position: absolute;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

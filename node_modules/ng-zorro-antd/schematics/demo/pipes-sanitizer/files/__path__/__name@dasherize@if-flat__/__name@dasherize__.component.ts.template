@@ -1,0 +1,12 @@
+import { Component } from '@angular/core';
+
+import { NzSanitizerPipe } from 'ng-zorro-antd/pipes';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzSanitizerPipe],
+  <% if(inlineTemplate) { %>template: `<div [innerHTML]="html | nzSanitizer: 'html'"></div>`<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {
+  html = `<span>I am <code>innerHTML</code></span>`;
+}

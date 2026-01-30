@@ -1,0 +1,39 @@
+
+    <div class="slider-container">
+      <span>Horizontal Gutter (px):</span>
+      <div class="slider">
+        <nz-slider [nzMarks]="marksHGutter" [nzStep]="null" [nzMin]="8" [nzMax]="48" [(ngModel)]="hGutter"></nz-slider>
+      </div>
+      <span>Vertical Gutter (px):</span>
+      <div class="slider">
+        <nz-slider [nzMarks]="marksVGutter" [nzStep]="null" [nzMin]="8" [nzMax]="48" [(ngModel)]="vGutter"></nz-slider>
+      </div>
+      <span>Column Count:</span>
+      <div class="slider">
+        <nz-slider
+          [nzMarks]="marksCount"
+          [nzStep]="null"
+          [nzMin]="2"
+          [nzMax]="12"
+          [(ngModel)]="count"
+          (ngModelChange)="reGenerateArray($event)"
+        ></nz-slider>
+      </div>
+    </div>
+
+    <div class="gutter-example">
+      <div nz-row [nzGutter]="[hGutter, vGutter]">
+        @for (i of array; track $index) {
+          <div nz-col class="gutter-row" [nzSpan]="24 / count">
+            <div class="grid-config">Column</div>
+          </div>
+        }
+
+        @for (i of array; track $index) {
+          <div nz-col class="gutter-row" [nzSpan]="24 / count">
+            <div class="grid-config">Column</div>
+          </div>
+        }
+      </div>
+    </div>
+  

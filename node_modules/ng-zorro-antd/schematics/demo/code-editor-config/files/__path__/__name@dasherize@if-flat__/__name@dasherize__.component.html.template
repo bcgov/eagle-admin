@@ -1,0 +1,18 @@
+
+    <p nz-paragraph style="margin-bottom: 8px;">
+      Change Theme
+      <nz-switch
+        [ngModel]="dark"
+        (ngModelChange)="onDarkModeChange($event)"
+        [nzUnCheckedChildren]="unchecked"
+        [nzCheckedChildren]="checked"
+      ></nz-switch>
+    </p>
+    <ng-template #unchecked>
+      <nz-icon nzType="bulb" />
+    </ng-template>
+    <ng-template #checked>
+      <nz-icon nzType="poweroff" />
+    </ng-template>
+    <nz-code-editor style="height: 200px" [ngModel]="code" [nzEditorOption]="{ language: 'markdown' }"></nz-code-editor>
+  

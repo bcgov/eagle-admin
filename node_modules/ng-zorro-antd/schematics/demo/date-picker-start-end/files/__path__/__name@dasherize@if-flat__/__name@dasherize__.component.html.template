@@ -1,0 +1,19 @@
+
+    <nz-date-picker
+      [nzDisabledDate]="disabledStartDate"
+      nzShowTime
+      nzFormat="yyyy-MM-dd HH:mm:ss"
+      [(ngModel)]="startValue"
+      nzPlaceHolder="Start"
+      (nzOnOpenChange)="handleStartOpenChange($event)"
+    ></nz-date-picker>
+    <nz-date-picker
+      #endDatePicker
+      [nzDisabledDate]="disabledEndDate"
+      nzShowTime
+      nzFormat="yyyy-MM-dd HH:mm:ss"
+      [(ngModel)]="endValue"
+      nzPlaceHolder="End"
+      (nzOnOpenChange)="handleEndOpenChange($event)"
+    ></nz-date-picker>
+  

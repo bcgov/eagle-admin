@@ -1,0 +1,18 @@
+
+    <div class="segment-wrapper">
+      <span>Select justify:</span>
+      <nz-segmented [nzOptions]="justifySegment" [(ngModel)]="selectedJustification"></nz-segmented>
+    </div>
+
+    <div class="segment-wrapper">
+      <span>Select align:</span>
+      <nz-segmented [nzOptions]="alignSegment" [(ngModel)]="selectedLAlignment"></nz-segmented>
+    </div>
+
+    <div class="btn-wrappers" nz-flex [nzJustify]="selectedJustification" [nzAlign]="selectedLAlignment">
+      <button nz-button nzType="primary">Primary</button>
+      <button nz-button nzType="primary">Primary</button>
+      <button nz-button nzType="primary">Primary</button>
+      <button nz-button nzType="primary">Primary</button>
+    </div>
+  

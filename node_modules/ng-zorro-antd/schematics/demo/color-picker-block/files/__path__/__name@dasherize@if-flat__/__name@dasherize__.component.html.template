@@ -1,0 +1,5 @@
+
+    <nz-color-block nzSize="small"></nz-color-block>
+    <nz-color-block></nz-color-block>
+    <nz-color-block nzSize="large"></nz-color-block>
+  

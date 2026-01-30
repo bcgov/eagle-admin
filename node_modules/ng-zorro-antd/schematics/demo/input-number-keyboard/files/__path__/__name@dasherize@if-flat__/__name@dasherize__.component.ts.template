@@ -1,0 +1,23 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzInputNumberModule } from 'ng-zorro-antd/input-number';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzInputNumberModule, NzCheckboxModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-input-number [(ngModel)]="value" [nzKeyboard]="keyboard" nzMin="1" nzMax="10" />
+    <label nz-checkbox [(ngModel)]="keyboard">Toggle Keyboard</label>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-input-number {
+        margin-right: 8px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  keyboard = true;
+  value = 3;
+}

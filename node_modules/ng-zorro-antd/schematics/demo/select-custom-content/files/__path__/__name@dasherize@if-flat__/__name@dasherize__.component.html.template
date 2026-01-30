@@ -1,0 +1,16 @@
+
+    <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Select OS" [(ngModel)]="selectedValue">
+      <nz-option nzCustomContent nzLabel="Windows" nzValue="windows">
+        <nz-icon nzType="windows" />
+        Windows
+      </nz-option>
+      <nz-option nzCustomContent nzLabel="Mac" nzValue="mac">
+        <nz-icon nzType="apple" />
+        Mac
+      </nz-option>
+      <nz-option nzCustomContent nzLabel="Android" nzValue="android">
+        <nz-icon nzType="android" />
+        Android
+      </nz-option>
+    </nz-select>
+  

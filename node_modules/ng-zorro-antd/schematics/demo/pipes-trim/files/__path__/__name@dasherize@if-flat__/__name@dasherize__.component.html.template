@@ -1,0 +1,10 @@
+
+    <input type="text" nz-input [(ngModel)]="str" />
+    <br />
+    <div>
+      <pre>{{ str }}</pre>
+    </div>
+    <div>
+      <pre>{{ str | nzTrim }}</pre>
+    </div>
+  

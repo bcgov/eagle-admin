@@ -1,0 +1,28 @@
+import { Component } from '@angular/core';
+
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzDatePickerModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-date-picker [nzFormat]="dateFormat"></nz-date-picker>
+    <br />
+    <nz-date-picker nzMode="month" [nzFormat]="monthFormat"></nz-date-picker>
+    <br />
+    <nz-date-picker nzMode="quarter" [nzFormat]="quarterFormat"></nz-date-picker>
+    <br />
+    <nz-range-picker [nzFormat]="dateFormat"></nz-range-picker>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-date-picker,
+      nz-range-picker {
+        margin: 0 8px 12px 0;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  dateFormat = 'yyyy/MM/dd';
+  monthFormat = 'yyyy/MM';
+  quarterFormat = 'yyyy/[Q]Q';
+}

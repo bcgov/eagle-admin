@@ -1,0 +1,5 @@
+
+    <div class="format"> <nz-color-picker nzFormat="hex" [(ngModel)]="hex"></nz-color-picker> HEX: {{ hex }} </div>
+    <div class="format"> <nz-color-picker nzFormat="hsb" [(ngModel)]="hsb"></nz-color-picker> HSB: {{ hsb }} </div>
+    <div class="format"> <nz-color-picker nzFormat="rgb" [(ngModel)]="rgb"></nz-color-picker> RGB: {{ rgb }} </div>
+  

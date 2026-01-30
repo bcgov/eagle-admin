@@ -1,0 +1,7 @@
+
+    <a>
+      <nz-badge [nzCount]="5" [nzOffset]="[10, 10]">
+        <a class="head-example"></a>
+      </nz-badge>
+    </a>
+  

@@ -1,0 +1,46 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzDatePickerModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-date-picker
+      nzShowTime
+      nzFormat="yyyy-MM-dd HH:mm:ss"
+      ngModel
+      (ngModelChange)="onChange($event)"
+      (nzOnOk)="onOk($event)"
+    ></nz-date-picker>
+    <br />
+    <nz-range-picker
+      [nzShowTime]="{ nzFormat: 'HH:mm' }"
+      nzFormat="yyyy-MM-dd HH:mm"
+      ngModel
+      (ngModelChange)="onChange($event)"
+      (nzOnCalendarChange)="onCalendarChange($event)"
+      (nzOnOk)="onOk($event)"
+    ></nz-range-picker>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-date-picker,
+      nz-range-picker {
+        margin: 0 8px 12px 0;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  onChange(result: Date): void {
+    console.log('Selected Time: ', result);
+  }
+
+  onOk(result: Date | Date[] | null): void {
+    console.log('onOk', result);
+  }
+
+  onCalendarChange(result: Array<Date | null>): void {
+    console.log('onCalendarChange', result);
+  }
+}

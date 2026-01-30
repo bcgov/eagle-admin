@@ -1,0 +1,39 @@
+import { Component } from '@angular/core';
+
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzIconModule, NzSelectModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-select nzAllowClear nzPlaceHolder="Select OS" [nzCustomTemplate]="defaultTemplate">
+      <nz-option nzLabel="Windows" nzValue="windows"></nz-option>
+      <nz-option nzLabel="Apple" nzValue="apple"></nz-option>
+      <nz-option nzLabel="Android" nzValue="android"></nz-option>
+    </nz-select>
+    <ng-template #defaultTemplate let-selected>
+      <nz-icon [nzType]="selected.nzValue" />
+      {{ selected.nzLabel }}
+    </ng-template>
+    <br />
+    <br />
+    <nz-select nzAllowClear nzPlaceHolder="Select OS" nzMode="multiple" [nzCustomTemplate]="multipleTemplate">
+      <nz-option nzLabel="Windows" nzValue="windows"></nz-option>
+      <nz-option nzLabel="Apple" nzValue="apple"></nz-option>
+      <nz-option nzLabel="Android" nzValue="android"></nz-option>
+    </nz-select>
+    <ng-template #multipleTemplate let-selected>
+      <div class="ant-select-selection-item-content">
+        <nz-icon [nzType]="selected.nzValue" />
+        {{ selected.nzLabel }}
+      </div>
+    </ng-template>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-select {
+        width: 100%;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

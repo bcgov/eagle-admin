@@ -1,0 +1,28 @@
+
+    <nz-steps [nzCurrent]="current">
+      @for (step of this.steps; track step.id) {
+        <nz-step
+          [nzTitle]="step.title"
+          [nzDescription]="step.description"
+          [nzPercentage]="step.async ? step.percentage : null"
+        ></nz-step>
+      }
+    </nz-steps>
+    <div class="steps-action">
+      @if (current > 0) {
+        <button nz-button nzType="default" (click)="pre()">
+          <span>Previous</span>
+        </button>
+      }
+      @if (current < 2) {
+        <button nz-button nzType="default" (click)="next()" [nzLoading]="processing">
+          <span>Next</span>
+        </button>
+      }
+      @if (current === 2) {
+        <button nz-button nzType="primary" (click)="done()" [nzLoading]="processing">
+          <span>Done</span>
+        </button>
+      }
+    </div>
+  

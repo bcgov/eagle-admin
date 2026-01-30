@@ -1,0 +1,23 @@
+
+    <nz-collapse>
+      @for (panel of panels; track panel) {
+        <nz-collapse-panel [nzHeader]="panel.name" [nzActive]="panel.active">
+          <p>{{ panel.name }}</p>
+          @if (panel.childPanel && panel.childPanel.length > 0) {
+            <div>
+              <nz-collapse>
+                @for (childPanel of panel.childPanel; track childPanel) {
+                  <nz-collapse-panel [nzHeader]="childPanel.name" [nzActive]="childPanel.active">
+                    <p>
+                      A dog is a type of domesticated animal. Known for its loyalty and faithfulness, it can be found as
+                      a welcome guest in many households across the world.
+                    </p>
+                  </nz-collapse-panel>
+                }
+              </nz-collapse>
+            </div>
+          }
+        </nz-collapse-panel>
+      }
+    </nz-collapse>
+  

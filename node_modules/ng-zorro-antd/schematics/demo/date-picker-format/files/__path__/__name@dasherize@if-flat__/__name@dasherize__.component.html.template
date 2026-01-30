@@ -1,0 +1,9 @@
+
+    <nz-date-picker [nzFormat]="dateFormat"></nz-date-picker>
+    <br />
+    <nz-date-picker nzMode="month" [nzFormat]="monthFormat"></nz-date-picker>
+    <br />
+    <nz-date-picker nzMode="quarter" [nzFormat]="quarterFormat"></nz-date-picker>
+    <br />
+    <nz-range-picker [nzFormat]="dateFormat"></nz-range-picker>
+  

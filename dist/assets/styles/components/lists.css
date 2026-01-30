@@ -1,0 +1,36 @@
+.nv-list {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.nv-list li {
+  /* clearfix removed, use overflow: auto if needed */
+  margin-top: 1px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  background: var(--nv-list-bg);
+}
+
+.nv-list span.name,
+.nv-list span.value {
+  float: left;
+  display: block;
+  width: 50%;
+}
+
+.nv-list span.name {
+  margin-bottom: 0.25rem;
+}
+
+.list-group-item {
+  border: none;
+}
+
+.list-group-item:nth-child(odd) {
+  background: var(--list-row-bg);
+}
+
+.list-group-item:nth-child(even) {
+  background: var(--list-row-alt-bg);
+}

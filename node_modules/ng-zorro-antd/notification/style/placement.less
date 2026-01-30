@@ -1,0 +1,107 @@
+@import '../../style/themes/index';
+@import '../../style/core/motion/util';
+
+@animation-max-height: 150px;
+
+.@{notification-prefix-cls} {
+  @notification-animation-cls: ~'@{notification-prefix-cls}-fade';
+
+  .make-motion-enter(@notification-animation-cls, antNotificationFadeIn, @ease-in-out);
+  .make-motion-leave(@notification-animation-cls, antNotificationFadeOut, @ease-in-out);
+
+  .notification-fade-effect {
+    animation-duration: 0.24s;
+    animation-timing-function: @ease-in-out;
+    animation-fill-mode: both;
+  }
+
+  &-top,
+  &-bottom {
+    margin-inline: 0;
+  }
+
+  &-top {
+    .@{notification-prefix-cls}-fade-enter {
+      animation-name: antNotificationTopFadeIn;
+    }
+  }
+
+  &-bottom {
+    .@{notification-prefix-cls}-fade-enter{
+      animation-name: antNotificationBottomFadeIn;
+    }
+  }
+
+  &-topLeft,
+  &-bottomLeft {
+    margin-right: 0;
+    margin-left: @notification-margin-edge;
+
+    .@{notification-prefix-cls}-fade-enter {
+      animation-name: antNotificationLeftFadeIn;
+    }
+  }
+}
+
+@keyframes antNotificationFadeIn {
+  0% {
+    transform: translate3d(100%, 0, 0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes antNotificationTopFadeIn {
+  0% {
+    top: -@animation-max-height;
+    opacity: 0;
+  }
+
+  100% {
+    top: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes antNotificationBottomFadeIn {
+  0% {
+    bottom: -@animation-max-height;
+    opacity: 0;
+  }
+
+  100% {
+    bottom: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes antNotificationLeftFadeIn {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+@keyframes antNotificationFadeOut {
+  0% {
+    max-height: @animation-max-height;
+    margin-bottom: @notification-margin-bottom;
+  }
+
+  100% {
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+  }
+}

@@ -1,0 +1,16 @@
+
+      [nz-button] {
+        margin-right: 8px;
+        margin-bottom: 12px;
+      }
+
+      .ghost-background {
+        padding: 8px;
+        background: rgb(190, 200, 200);
+      }
+
+      .ghost-background [nz-button] {
+        margin-right: 8px;
+        margin-bottom: 0;
+      }
+    

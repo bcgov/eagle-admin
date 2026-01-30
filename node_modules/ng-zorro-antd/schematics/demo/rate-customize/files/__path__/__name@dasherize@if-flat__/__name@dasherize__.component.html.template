@@ -1,0 +1,28 @@
+
+    <nz-rate [ngModel]="2" [nzCharacter]="characterNumber"></nz-rate>
+    <br />
+    <nz-rate [ngModel]="3" [nzCharacter]="characterIcon"></nz-rate>
+    <br />
+    <ng-template #characterNumber let-index>
+      {{ index + 1 }}
+    </ng-template>
+    <ng-template #characterIcon let-index>
+      @switch (index) {
+        @case (0) {
+          <nz-icon nzType="frown" />
+        }
+        @case (1) {
+          <nz-icon nzType="frown" />
+        }
+        @case (2) {
+          <nz-icon nzType="meh" />
+        }
+        @case (3) {
+          <nz-icon nzType="smile" />
+        }
+        @case (4) {
+          <nz-icon nzType="smile" />
+        }
+      }
+    </ng-template>
+  

@@ -1,0 +1,6 @@
+
+    <nz-color-picker [nzFlipFlop]="flipFlop" [(ngModel)]="color"></nz-color-picker>
+    <ng-template #flipFlop>
+      <button nz-button nzType="primary" [style.background-color]="color">Color</button>
+    </ng-template>
+  

@@ -1,0 +1,26 @@
+
+    <nz-table #fixedTable [nzData]="listOfData" nzTableLayout="fixed">
+      <thead>
+        <tr>
+          <th>Full Name</th>
+          <th>Age</th>
+          <th>Column 1</th>
+          <th>Column 2</th>
+          <th nzEllipsis>Column ColumnColumn 3</th>
+          <th>Column 4</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (data of fixedTable.data; track data) {
+          <tr>
+            <td>{{ data.name }}</td>
+            <td>{{ data.age }}</td>
+            <td nzEllipsis>{{ data.address }}</td>
+            <td nzEllipsis>{{ data.address }}</td>
+            <td nzEllipsis>{{ data.address }}</td>
+            <td nzEllipsis>{{ data.address }}</td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  

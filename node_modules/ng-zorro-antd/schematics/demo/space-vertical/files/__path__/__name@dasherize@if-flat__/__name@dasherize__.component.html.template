@@ -1,0 +1,12 @@
+
+    <nz-space nzDirection="vertical">
+      <nz-card *nzSpaceItem nzTitle="Card" style="width: 300px">
+        <p>Card content</p>
+        <p>Card content</p>
+      </nz-card>
+      <nz-card *nzSpaceItem nzTitle="Card" style="width: 300px">
+        <p>Card content</p>
+        <p>Card content</p>
+      </nz-card>
+    </nz-space>
+  

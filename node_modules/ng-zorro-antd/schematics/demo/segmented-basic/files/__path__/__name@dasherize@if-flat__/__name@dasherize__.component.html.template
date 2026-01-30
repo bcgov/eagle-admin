@@ -1,0 +1,1 @@
+<nz-segmented [nzOptions]="options" (nzValueChange)="handleValueChange($event)"></nz-segmented>

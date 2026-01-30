@@ -1,0 +1,15 @@
+
+    <nz-transfer
+      [nzDataSource]="list"
+      [nzDisabled]="disabled"
+      [nzTitles]="['Source', 'Target']"
+      (nzSelectChange)="select($event)"
+      [nzSelectedKeys]="['0', '2', '3']"
+      nzOneWay
+      (nzChange)="change($event)"
+    ></nz-transfer>
+    <div style="margin-top: 8px;">
+      <nz-switch [(ngModel)]="disabled" nzCheckedChildren="disabled" nzUnCheckedChildren="disabled"></nz-switch>
+      <div></div>
+    </div>
+  

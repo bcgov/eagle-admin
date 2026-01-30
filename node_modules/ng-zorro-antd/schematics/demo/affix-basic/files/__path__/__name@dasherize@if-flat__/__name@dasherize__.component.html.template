@@ -1,0 +1,13 @@
+
+    <nz-affix [nzOffsetTop]="offsetTop">
+      <button nz-button nzType="primary" (click)="setOffsetTop()">
+        <span>Affix top</span>
+      </button>
+    </nz-affix>
+    <br />
+    <nz-affix [nzOffsetBottom]="nzOffsetBottom" (click)="setOffsetBottom()">
+      <button nz-button nzType="primary">
+        <span>Affix bottom</span>
+      </button>
+    </nz-affix>
+  

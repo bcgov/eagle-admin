@@ -1,0 +1,5 @@
+
+    <nz-transfer [nzDataSource]="[]" nzStatus="error"></nz-transfer>
+    <br />
+    <nz-transfer [nzDataSource]="[]" nzStatus="warning" nzShowSearch></nz-transfer>
+  

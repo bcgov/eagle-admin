@@ -1,0 +1,5 @@
+
+    <input type="text" nz-input [(ngModel)]="str" />
+    <br />
+    <p>{{ str | nzEllipsis: 36 : '...' }}</p>
+  

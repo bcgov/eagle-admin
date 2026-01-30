@@ -1,0 +1,21 @@
+
+    <button nz-button nzType="primary">primary</button>
+    <button nz-button nzType="default">secondary</button>
+    <button nz-button nz-dropdown [nzDropdownMenu]="menu">
+      Actions
+      <nz-icon nzType="down" />
+    </button>
+    <nz-dropdown-menu #menu="nzDropdownMenu">
+      <ul nz-menu>
+        <li nz-menu-item>
+          <a>1st item</a>
+        </li>
+        <li nz-menu-item>
+          <a>2nd item</a>
+        </li>
+        <li nz-menu-item>
+          <a>3rd item</a>
+        </li>
+      </ul>
+    </nz-dropdown-menu>
+  

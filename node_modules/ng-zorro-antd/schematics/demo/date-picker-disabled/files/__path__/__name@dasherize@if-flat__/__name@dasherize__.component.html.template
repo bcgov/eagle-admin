@@ -1,0 +1,7 @@
+
+    <nz-date-picker nzDisabled></nz-date-picker>
+    <br />
+    <nz-date-picker nzMode="month" nzDisabled></nz-date-picker>
+    <br />
+    <nz-range-picker nzDisabled></nz-range-picker>
+  

@@ -1,0 +1,6 @@
+
+    <a nz-popconfirm nzPopconfirmTitle="Are you sure?" [nzIcon]="iconTpl">Delete</a>
+    <ng-template #iconTpl>
+      <nz-icon nzType="question-circle-o" style="color: red;" />
+    </ng-template>
+  

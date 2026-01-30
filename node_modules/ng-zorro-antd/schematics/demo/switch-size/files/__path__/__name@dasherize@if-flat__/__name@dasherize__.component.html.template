@@ -1,0 +1,6 @@
+
+    <nz-switch [ngModel]="true"></nz-switch>
+    <br />
+    <br />
+    <nz-switch nzSize="small" [ngModel]="true"></nz-switch>
+  

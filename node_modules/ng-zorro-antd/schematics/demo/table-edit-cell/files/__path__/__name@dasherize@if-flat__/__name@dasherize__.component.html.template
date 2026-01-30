@@ -1,0 +1,32 @@
+
+    <button nz-button (click)="addRow()" nzType="primary">Add</button>
+    <br />
+    <br />
+    <nz-table #editRowTable nzBordered [nzData]="listOfData">
+      <thead>
+        <tr>
+          <th nzWidth="30%">Name</th>
+          <th>Age</th>
+          <th>Address</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (data of editRowTable.data; track data) {
+          <tr class="editable-row">
+            <td>
+              <div class="editable-cell" [hidden]="editId === data.id" (click)="startEdit(data.id)">
+                {{ data.name }}
+              </div>
+              <input [hidden]="editId !== data.id" type="text" nz-input [(ngModel)]="data.name" (blur)="stopEdit()" />
+            </td>
+            <td>{{ data.age }}</td>
+            <td>{{ data.address }}</td>
+            <td>
+              <a nz-popconfirm nzPopconfirmTitle="Sure to delete?" (nzOnConfirm)="deleteRow(data.id)">Delete</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+  

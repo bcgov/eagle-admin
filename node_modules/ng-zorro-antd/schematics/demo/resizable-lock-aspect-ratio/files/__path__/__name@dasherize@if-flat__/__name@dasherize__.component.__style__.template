@@ -1,0 +1,13 @@
+
+      :host {
+        display: block;
+        height: 200px;
+      }
+      .box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eee;
+        border: 1px solid #ddd;
+      }
+    

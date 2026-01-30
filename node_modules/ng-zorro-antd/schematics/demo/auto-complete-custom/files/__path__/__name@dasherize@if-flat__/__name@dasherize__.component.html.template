@@ -1,0 +1,17 @@
+
+    <div class="example-input">
+      <textarea
+        placeholder="input here"
+        nz-input
+        rows="4"
+        [(ngModel)]="inputValue"
+        (input)="onInput($event)"
+        [nzAutocomplete]="auto"
+      ></textarea>
+      <nz-autocomplete #auto>
+        @for (option of options; track $index) {
+          <nz-auto-option [nzValue]="option">{{ option }}</nz-auto-option>
+        }
+      </nz-autocomplete>
+    </div>
+  

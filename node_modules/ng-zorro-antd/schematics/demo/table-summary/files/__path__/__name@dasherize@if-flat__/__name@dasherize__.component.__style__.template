@@ -1,0 +1,5 @@
+
+      :host ::ng-deep tfoot.ant-table-summary {
+        background-color: #fafafa !important;
+      }
+    

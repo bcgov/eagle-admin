@@ -1,0 +1,16 @@
+
+    <nz-flex nzGap="middle" nzVertical>
+      <nz-splitter (nzResize)="setSizes($event)">
+        <nz-splitter-panel [nzSize]="sizes()[0]" [nzResizable]="resizable()">
+          <div class="box">First</div>
+        </nz-splitter-panel>
+        <nz-splitter-panel [nzSize]="sizes()[1]">
+          <div class="box">Second</div>
+        </nz-splitter-panel>
+      </nz-splitter>
+      <nz-flex nzJustify="space-between">
+        <nz-switch nzCheckedChildren="Enabled" nzUnCheckedChildren="Disabled" [(ngModel)]="resizable"></nz-switch>
+        <button nz-button (click)="sizes.set(['50%', '50%'])">Reset</button>
+      </nz-flex>
+    </nz-flex>
+  

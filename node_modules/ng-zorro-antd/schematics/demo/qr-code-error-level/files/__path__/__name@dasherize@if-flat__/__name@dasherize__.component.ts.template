@@ -1,0 +1,29 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzQRCodeModule } from 'ng-zorro-antd/qr-code';
+import { NzSegmentedModule } from 'ng-zorro-antd/segmented';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzQRCodeModule, NzSegmentedModule, FormsModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-qrcode nzValue="https://github.com/NG-ZORRO/ng-zorro-antd/issues" [nzLevel]="errorLevel"></nz-qrcode>
+    <nz-segmented [nzOptions]="options" [(ngModel)]="errorLevel"></nz-segmented>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      :host {
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      nz-qrcode {
+        margin-bottom: 12px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  options: Array<'L' | 'M' | 'Q' | 'H'> = ['L', 'M', 'Q', 'H'];
+  errorLevel: 'L' | 'M' | 'Q' | 'H' = 'L';
+}

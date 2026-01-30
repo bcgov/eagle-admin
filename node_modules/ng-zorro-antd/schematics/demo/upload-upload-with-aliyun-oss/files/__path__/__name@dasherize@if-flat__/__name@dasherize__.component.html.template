@@ -1,0 +1,16 @@
+
+    <nz-upload
+      nzName="file"
+      [(nzFileList)]="files"
+      [nzTransformFile]="transformFile"
+      [nzData]="getExtraData"
+      [nzAction]="mockOSSData.host"
+      (nzChange)="onChange($event)"
+    >
+      Photos:
+      <button nz-button>
+        <nz-icon nzType="upload" />
+        Click to Upload
+      </button>
+    </nz-upload>
+  

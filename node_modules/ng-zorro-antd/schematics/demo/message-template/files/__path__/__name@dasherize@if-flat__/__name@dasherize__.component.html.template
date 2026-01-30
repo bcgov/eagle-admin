@@ -1,0 +1,4 @@
+
+    <button nz-button nzType="default" (click)="showMessage()">Display a custom template</button>
+    <ng-template #customTemplate let-data="data">My Favorite Framework is {{ data }}</ng-template>
+  

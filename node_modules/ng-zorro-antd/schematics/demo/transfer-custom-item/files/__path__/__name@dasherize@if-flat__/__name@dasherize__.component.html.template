@@ -1,0 +1,14 @@
+
+    <nz-transfer
+      [nzDataSource]="list"
+      [nzListStyle]="{ 'width.px': 300, 'height.px': 300 }"
+      [nzRender]="render"
+      (nzSelectChange)="select($event)"
+      (nzChange)="change($event)"
+    >
+      <ng-template #render let-item>
+        <nz-icon nzType="{{ item.icon }}" />
+        {{ item.title }}
+      </ng-template>
+    </nz-transfer>
+  

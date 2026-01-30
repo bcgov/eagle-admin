@@ -1,0 +1,8 @@
+
+    <nz-mention [nzSuggestions]="suggestions" nzStatus="error" style="margin-bottom: 8px;">
+      <textarea rows="1" nz-input placeholder="input here" [(ngModel)]="inputValue" nzMentionTrigger></textarea>
+    </nz-mention>
+    <nz-mention [nzSuggestions]="suggestions" nzStatus="warning">
+      <textarea rows="1" nz-input placeholder="input here" [(ngModel)]="inputValue" nzMentionTrigger></textarea>
+    </nz-mention>
+  

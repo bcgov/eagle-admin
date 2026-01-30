@@ -1,0 +1,23 @@
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzEllipsisPipe } from 'ng-zorro-antd/pipes';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [FormsModule, NzInputModule, NzEllipsisPipe],
+  <% if(inlineTemplate) { %>template: `
+    <input type="text" nz-input [(ngModel)]="str" />
+    <br />
+    <p>{{ str | nzEllipsis: 36 : '...' }}</p>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      p {
+        padding: 8px 12px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {
+  str = 'Ant Design, a design language for background applications';
+}

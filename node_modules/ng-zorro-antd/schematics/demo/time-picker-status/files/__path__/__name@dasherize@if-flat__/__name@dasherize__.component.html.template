@@ -1,0 +1,6 @@
+
+    <nz-time-picker nzStatus="error"></nz-time-picker>
+    <br />
+    <br />
+    <nz-time-picker nzStatus="warning">></nz-time-picker>
+  

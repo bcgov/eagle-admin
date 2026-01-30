@@ -1,0 +1,1 @@
+<nz-rate [ngModel]="2.5" nzAllowHalf></nz-rate>

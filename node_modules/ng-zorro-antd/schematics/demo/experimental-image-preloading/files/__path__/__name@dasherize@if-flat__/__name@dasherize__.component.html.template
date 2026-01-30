@@ -1,0 +1,1 @@
+<nz-image [nzSrc]="src" nzWidth="200" nzHeight="200" nzPriority></nz-image>

@@ -1,0 +1,9 @@
+
+    <nz-code-editor
+      class="editor"
+      [nzOriginalText]="originalCode"
+      [nzEditorMode]="'diff'"
+      [ngModel]="code"
+      [nzEditorOption]="{ language: 'typescript' }"
+    ></nz-code-editor>
+  

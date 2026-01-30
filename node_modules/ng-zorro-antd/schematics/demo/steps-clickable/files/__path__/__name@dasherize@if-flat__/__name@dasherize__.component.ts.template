@@ -1,0 +1,29 @@
+import { Component } from '@angular/core';
+
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzStepsModule } from 'ng-zorro-antd/steps';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzDividerModule, NzStepsModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-steps [nzCurrent]="index" (nzIndexChange)="onIndexChange($event)">
+      <nz-step nzTitle="Finished" [nzDisabled]="disable" nzDescription="This is a description."></nz-step>
+      <nz-step nzTitle="In Progress" nzDescription="This is a description."></nz-step>
+      <nz-step nzTitle="Waiting" nzDescription="This is a description."></nz-step>
+    </nz-steps>
+    <nz-divider></nz-divider>
+    <nz-steps nzDirection="vertical" [nzCurrent]="index" (nzIndexChange)="onIndexChange($event)">
+      <nz-step nzTitle="Finished" nzDescription="This is a description."></nz-step>
+      <nz-step nzTitle="In Progress" nzDescription="This is a description."></nz-step>
+      <nz-step nzTitle="Waiting" nzDescription="This is a description."></nz-step>
+    </nz-steps>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>
+})
+export class <%= classify(name) %>Component {
+  index = 0;
+  disable = false;
+  onIndexChange(index: number): void {
+    this.index = index;
+  }
+}

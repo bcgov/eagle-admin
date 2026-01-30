@@ -1,0 +1,25 @@
+import { Component } from '@angular/core';
+
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzQRCodeModule } from 'ng-zorro-antd/qr-code';
+
+@Component({
+  selector: '<%= selector %>',
+  imports: [NzQRCodeModule, NzIconModule],
+  <% if(inlineTemplate) { %>template: `
+    <nz-qrcode nzValue="https://ng.ant.design/" nzStatusRender="NgZorro"></nz-qrcode>
+    <nz-qrcode nzValue="https://ng.ant.design/" [nzStatusRender]="customTemplate"></nz-qrcode>
+    <ng-template #customTemplate>
+      <div>
+        <nz-icon nzType="check-circle" nzTheme="outline" style="color: red" />
+        success
+      </div>
+    </ng-template>
+  `<% } else { %>templateUrl: './<%= dasherize(name) %>.component.html'<% } %>,
+  <% if(inlineStyle) { %>styles: [`
+      nz-qrcode {
+        margin-right: 12px;
+      }
+    `]<% } else { %>styleUrls: ['./<%= dasherize(name) %>.component.<%= style %>']<% } %>
+})
+export class <%= classify(name) %>Component {}

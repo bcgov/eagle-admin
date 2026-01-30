@@ -1,0 +1,5 @@
+
+    <nz-hash-code [nzValue]="value" nzMode="rect"></nz-hash-code>
+    <br />
+    <nz-hash-code [nzValue]="value" nzMode="rect" nzType="primary"></nz-hash-code>
+  

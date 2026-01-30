@@ -1,0 +1,6 @@
+
+    <nz-rate [(ngModel)]="value" [nzTooltips]="tooltips"></nz-rate>
+    @if (value) {
+      <span class="ant-rate-text">{{ value ? tooltips[value - 1] : '' }}</span>
+    }
+  
