@@ -115,6 +115,7 @@ jobs:
         with:
           ref: "${{ env.TEST_PROMO_BRANCH }}"
       - name: Update state.json
+        id: update-state
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{github.actor}}@users.noreply.github.com"
@@ -127,11 +128,14 @@ jobs:
           # Only commit if there are changes
           if git diff --quiet state.json; then
             echo "No changes to state.json, skipping commit"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
           else
             git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
             git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
+            echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
       - name: Create or Update Pull Request
+        if: steps.update-state.outputs.has_changes == 'true'
         run: |
           # Check if PR exists
           PR_URL=$(gh pr list --base "${{ env.TEST_PROMO_BRANCH }}" --head "${{ env.TEST_PROMO_PR_BRANCH }}" --json url --jq '.[0].url')
