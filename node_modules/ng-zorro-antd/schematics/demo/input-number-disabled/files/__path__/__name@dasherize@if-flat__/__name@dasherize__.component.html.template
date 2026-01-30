@@ -1,6 +1,0 @@
-
-    <nz-input-number [(ngModel)]="value" nzMin="1" nzMax="10" [nzDisabled]="isDisabled" />
-    <br />
-    <br />
-    <button nz-button nzType="primary" (click)="isDisabled = !isDisabled">Toggle Disabled</button>
-  

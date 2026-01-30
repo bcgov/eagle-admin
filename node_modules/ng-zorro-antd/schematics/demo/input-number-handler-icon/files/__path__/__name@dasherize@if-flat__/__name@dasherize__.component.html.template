@@ -1,6 +1,0 @@
-
-    <nz-input-number [(ngModel)]="value">
-      <nz-icon nzInputNumberUpIcon nzType="arrow-up" />
-      <nz-icon nzInputNumberDownIcon nzType="arrow-down" />
-    </nz-input-number>
-  

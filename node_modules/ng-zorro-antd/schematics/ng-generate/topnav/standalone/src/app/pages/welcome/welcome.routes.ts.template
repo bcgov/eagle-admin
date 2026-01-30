@@ -1,6 +1,0 @@
-import { Routes } from '@angular/router';
-import <% if(!exportDefault) { %>{ <% }%>Welcome<%= classify(type) %> <% if(!exportDefault) {%>} <% }%>from './welcome<%= type ? '.' + dasherize(type): '' %>';
-
-export const WELCOME_ROUTES: Routes = [
-  { path: '', component: Welcome<%= type ? classify(type): '' %> },
-];

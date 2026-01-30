@@ -1,9 +1,0 @@
-
-    <nz-carousel [nzEffect]="effect">
-      @for (index of array; track index) {
-        <div nz-carousel-content>
-          <h3>{{ index }}</h3>
-        </div>
-      }
-    </nz-carousel>
-  

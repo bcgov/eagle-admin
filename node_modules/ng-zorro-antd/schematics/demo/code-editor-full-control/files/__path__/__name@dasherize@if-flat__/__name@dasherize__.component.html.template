@@ -1,3 +1,0 @@
-
-    <nz-code-editor class="editor" [nzFullControl]="true" (nzEditorInitialized)="onEditorInit($event)"></nz-code-editor>
-  

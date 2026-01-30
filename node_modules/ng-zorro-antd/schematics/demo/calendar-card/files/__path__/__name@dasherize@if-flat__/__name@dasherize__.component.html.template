@@ -1,9 +1,0 @@
-
-    <div class="card">
-      <nz-calendar
-        [nzFullscreen]="false"
-        (nzSelectChange)="onValueChange($event)"
-        (nzPanelChange)="onPanelChange($event)"
-      ></nz-calendar>
-    </div>
-  

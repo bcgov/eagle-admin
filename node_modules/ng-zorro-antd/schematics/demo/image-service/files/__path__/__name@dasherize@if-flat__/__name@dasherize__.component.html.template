@@ -1,1 +1,0 @@
-<button nz-button nzType="primary" (click)="onClick()">Preview</button>

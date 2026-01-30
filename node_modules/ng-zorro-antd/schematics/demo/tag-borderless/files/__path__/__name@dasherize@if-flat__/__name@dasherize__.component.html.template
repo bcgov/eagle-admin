@@ -1,5 +1,0 @@
-
-    @for (color of tagColors; track color) {
-      <nz-tag [nzColor]="color" [nzBordered]="false">{{ color }}</nz-tag>
-    }
-  

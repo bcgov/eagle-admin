@@ -1,1 +1,0 @@
-<nz-time-picker [(ngModel)]="time"></nz-time-picker>

@@ -1,5 +1,0 @@
-
-    <nz-segmented [nzOptions]="options" [(ngModel)]="selectedValue" (ngModelChange)="handleModelChange($event)" />
-    <br />
-    Selected value: {{ selectedValue }}
-  

@@ -1,1 +1,0 @@
-<nz-hash-code [nzValue]="value" nzLogo="Antd"></nz-hash-code>

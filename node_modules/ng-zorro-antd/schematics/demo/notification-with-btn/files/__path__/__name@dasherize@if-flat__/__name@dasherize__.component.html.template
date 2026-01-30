@@ -1,7 +1,0 @@
-
-    <ng-template #notificationBtnTpl let-notification>
-      <button nz-button nzType="primary" nzSize="small" (click)="notification.close()">Confirm</button>
-    </ng-template>
-
-    <button nz-button nzType="primary" (click)="createNotification()">Open the notification box</button>
-  

@@ -1,6 +1,0 @@
-
-    <nz-select nzStatus="error"></nz-select>
-    <br />
-    <br />
-    <nz-select nzStatus="warning"></nz-select>
-  

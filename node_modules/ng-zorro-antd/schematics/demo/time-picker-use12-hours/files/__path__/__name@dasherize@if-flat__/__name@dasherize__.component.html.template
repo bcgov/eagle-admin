@@ -1,6 +1,0 @@
-
-    <nz-time-picker [(ngModel)]="time" nzUse12Hours></nz-time-picker>
-    <br />
-    <br />
-    <nz-time-picker [(ngModel)]="time" nzUse12Hours nzFormat="h:mm a"></nz-time-picker>
-  

@@ -1,6 +1,0 @@
-
-      :host ::ng-deep .ant-tabs-tabpane {
-        padding: 24px;
-        overflow: auto;
-      }
-    

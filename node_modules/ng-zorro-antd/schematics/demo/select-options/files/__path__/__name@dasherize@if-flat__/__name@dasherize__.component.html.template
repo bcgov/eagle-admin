@@ -1,9 +1,0 @@
-
-    <nz-select ngModel="lucy" [nzOptions]="listOfOption"></nz-select>
-    <nz-select
-      [(ngModel)]="selectedValue"
-      nzAllowClear
-      nzPlaceHolder="Choose"
-      [nzOptions]="listOfGroupOption"
-    ></nz-select>
-  

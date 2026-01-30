@@ -1,1 +1,0 @@
-<nz-pagination [nzPageIndex]="2" [nzTotal]="50" nzSimple></nz-pagination>

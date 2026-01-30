@@ -1,9 +1,0 @@
-
-      .shape {
-        height: 300px;
-        position: relative;
-      }
-      nz-float-button {
-        position: absolute;
-      }
-    

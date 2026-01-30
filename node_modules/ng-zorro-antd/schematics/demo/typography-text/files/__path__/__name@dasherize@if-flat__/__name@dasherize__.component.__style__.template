@@ -1,8 +1,0 @@
-
-      span[nz-typography] {
-        display: block;
-      }
-      span[nz-typography] + span[nz-typography] {
-        margin-top: 8px;
-      }
-    

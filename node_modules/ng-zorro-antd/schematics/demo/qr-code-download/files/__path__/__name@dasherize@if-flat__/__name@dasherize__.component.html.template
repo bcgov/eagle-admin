@@ -1,7 +1,0 @@
-
-    <div id="download">
-      <nz-qrcode nzValue="https://ng.ant.design/"></nz-qrcode>
-      <a #download></a>
-      <button nz-button nzType="primary" (click)="downloadImg()">Download</button>
-    </div>
-  

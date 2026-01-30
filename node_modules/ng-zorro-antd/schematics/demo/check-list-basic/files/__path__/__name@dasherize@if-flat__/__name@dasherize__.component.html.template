@@ -1,1 +1,0 @@
-<nz-check-list [nzItems]="nzItems" [nzIndex]="index"></nz-check-list>

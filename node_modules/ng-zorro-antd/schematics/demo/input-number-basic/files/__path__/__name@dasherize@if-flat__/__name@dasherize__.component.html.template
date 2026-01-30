@@ -1,1 +1,0 @@
-<nz-input-number [(ngModel)]="value" nzMin="1" nzMax="10" />

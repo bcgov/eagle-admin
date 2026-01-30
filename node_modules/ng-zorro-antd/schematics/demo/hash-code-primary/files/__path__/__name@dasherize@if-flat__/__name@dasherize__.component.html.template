@@ -1,1 +1,0 @@
-<nz-hash-code [nzValue]="value" nzType="primary"></nz-hash-code>

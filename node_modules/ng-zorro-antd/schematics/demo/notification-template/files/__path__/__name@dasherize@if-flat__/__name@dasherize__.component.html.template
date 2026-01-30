@@ -1,8 +1,0 @@
-
-    <button nz-button nzType="primary" (click)="createNotification()">Open the notification box</button>
-    <ng-template let-fruit="data">
-      It's a
-      <nz-tag [nzColor]="fruit.color">{{ fruit.name }}</nz-tag>
-      <button nz-button nzSize="small">Cut It!</button>
-    </ng-template>
-  
