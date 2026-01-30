@@ -1,9 +1,12 @@
 name: Deploy to Prod
 
 on:
-  repository_dispatch:
-    # Trigger from repository dispatch workflow in promotion/prod branch
-    types: [trigger-prod-deploy]
+  push:
+    branches:
+      - promotion/prod
+    paths:
+      - state.json
+  workflow_dispatch:
 
 permissions: write-all
 
