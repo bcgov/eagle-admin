@@ -1,15 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import Analytics from 'analytics';
 import type { AnalyticsInstance } from 'analytics';
 import { penguinAnalyticsPlugin } from './penguin-analytics-plugin';
+import { ConfigService } from '../config.service';
 
-interface EnvConfig {
-  ANALYTICS_API_URL?: string;
-  ANALYTICS_DEBUG?: boolean;
-  ENVIRONMENT?: string;
+interface PluginWithStartTracking {
+  startTracking?: () => void;
 }
-
-declare const window: Window & { __env?: EnvConfig };
 
 /**
  * Analytics service using Analytics.io with Penguin Analytics plugin.
@@ -39,50 +36,63 @@ declare const window: Window & { __env?: EnvConfig };
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private analytics: AnalyticsInstance;
+  private configService = inject(ConfigService);
+  private analytics: AnalyticsInstance | null = null;
+  private plugin: PluginWithStartTracking | null = null;
   private initialized = false;
 
-  constructor() {
-    const env = window.__env || {};
-    const apiUrl = env.ANALYTICS_API_URL || 'http://localhost:3001';
-    const debug = env.ANALYTICS_DEBUG ?? (env.ENVIRONMENT === 'local');
+  /**
+   * Initialize analytics with configuration from ConfigService.
+   * Called after ConfigService.init() completes.
+   */
+  initialize(): void {
+    if (this.initialized) return;
 
-    this.analytics = Analytics({
-      app: 'eagle-admin',
-      debug: debug,
-      plugins: [
-        penguinAnalyticsPlugin({
-          apiUrl: apiUrl,
-          sourceApp: 'eagle-admin',
-          debug: debug
-        })
-      ]
-    });
+    const config = this.configService.config;
+    const apiUrl = config['ANALYTICS_API_URL'];
+    
+    // Skip analytics if no API URL configured
+    if (!apiUrl) {
+      console.log('Analytics disabled: ANALYTICS_API_URL not configured');
+      this.initialized = true;
+      return;
+    }
 
+    const debug = config['ANALYTICS_DEBUG'] ?? (config['ENVIRONMENT'] === 'local');
+
+    const plugin = penguinAnalyticsPlugin({ apiUrl, sourceApp: 'eagle-admin', debug });
+    this.plugin = plugin as unknown as PluginWithStartTracking;
+    this.analytics = Analytics({ app: 'eagle-admin', debug, plugins: [plugin] });
     this.initialized = true;
+    
+    console.log('Analytics initialized with API URL:', apiUrl);
+  }
+
+  startTracking(): void {
+    if (!this.initialized) {
+      console.warn('Analytics not initialized, call initialize() first');
+      return;
+    }
+    this.plugin?.startTracking?.();
   }
 
   /** Track a page view */
   page(name?: string, properties?: Record<string, any>): void {
-    if (!this.initialized) return;
-    this.analytics.page({ name, ...properties });
+    this.analytics?.page({ name, ...properties });
   }
 
   /** Track a custom event. Use "Object + Past Verb" naming. */
   track(event: string, properties?: Record<string, any>): void {
-    if (!this.initialized) return;
-    this.analytics.track(event, properties);
+    this.analytics?.track(event, properties);
   }
 
   /** Identify user after authentication */
   identify(userId: string, traits?: Record<string, any>): void {
-    if (!this.initialized) return;
-    this.analytics.identify(userId, traits);
+    this.analytics?.identify(userId, traits);
   }
 
   /** Reset on logout */
   reset(): void {
-    if (!this.initialized) return;
-    this.analytics.reset();
+    this.analytics?.reset();
   }
 }

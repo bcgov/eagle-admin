@@ -27,6 +27,7 @@
   window.__env.REDIRECT_KEY = 'REDIRECT';
 
   // Analytics - for local dev, use localhost penguin-analytics (port 3001)
+  // For deployed: use /api/analytics which rproxy routes to penguin-analytics
   window.__env.ANALYTICS_API_URL = 'http://localhost:3001';
   window.__env.ANALYTICS_DEBUG = true;
 }(this));

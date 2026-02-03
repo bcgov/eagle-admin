@@ -38,6 +38,9 @@ export class AppComponent implements OnInit {
       this.isOpen = isOpen;
     });
 
+    // Initialize analytics (must be called after ConfigService.init())
+    this.analyticsService.initialize();
+
     // Identify user for analytics if authenticated
     // This MUST be called before any page tracking to ensure userId is set
     if (this.keycloakService.isAuthenticated()) {
