@@ -18,14 +18,23 @@ describe('api', () => {
   const filter = {};
   let apiService: ApiService;
   let httpTestingController: HttpTestingController;
+  let mockConfigService: jasmine.SpyObj<ConfigService>;
+
   beforeEach(async () => {
+    mockConfigService = jasmine.createSpyObj('ConfigService', ['init'], {
+      config: {
+        API_PATH: 'https://test-api.gov.bc.ca/api',
+        ENVIRONMENT: 'test'
+      }
+    });
+
     TestBed.configureTestingModule({
       imports: [],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         ApiService,
-        ConfigService,
+        { provide: ConfigService, useValue: mockConfigService },
         Utils,
         KeycloakService
       ]
@@ -48,7 +57,7 @@ describe('api', () => {
     sortBy = '-datePosted';
     queryModifier = { documentSource: 'PROJECT' };
     populate = true;
-    const expectedString = 'NaN/search?dataset=Document&Project=588511d9aaecd9001b826b33&keywords=%2522Pre-Application%2522%252C%2522Proponent%2520Comments%252FCorrespondence%2522%252C%2522Updated%2520Project%2520Description%2520%25232%2520for%2520the%2520Prince%2520Rupert%2520Gas%2520Transmission%2520Project%2520-%2520Northeast%2520to%2520British%2520Columbia%2520to%2520the%2520Prince%2520Rupert%2520Area%2520dated%2520%2520August%252014%252C%25202013%2522&pageNum=0&pageSize=10&projectLegislation=default&sortBy=-datePosted&populate=true&and%5BdocumentSource%5D=PROJECT';
+    const expectedString = 'https://test-api.gov.bc.ca/api/search?dataset=Document&Project=588511d9aaecd9001b826b33&keywords=%2522Pre-Application%2522%252C%2522Proponent%2520Comments%252FCorrespondence%2522%252C%2522Updated%2520Project%2520Description%2520%25232%2520for%2520the%2520Prince%2520Rupert%2520Gas%2520Transmission%2520Project%2520-%2520Northeast%2520to%2520British%2520Columbia%2520to%2520the%2520Prince%2520Rupert%2520Area%2520dated%2520%2520August%252014%252C%25202013%2522&pageNum=0&pageSize=10&projectLegislation=default&sortBy=-datePosted&populate=true&and%5BdocumentSource%5D=PROJECT';
     apiService.searchKeywords(keys, schemaName, fields, pageNum, pageSize, projectLegislation, sortBy, queryModifier, populate, filter).subscribe();
     const req = httpTestingController.expectOne(expectedString);
     expect(req.request.method).toBe('GET');

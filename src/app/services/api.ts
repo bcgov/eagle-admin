@@ -55,7 +55,9 @@ export class ApiService {
 
     this.bannerColour = this.configService.config['BANNER_COLOUR'];
     this.env = this.configService.config['ENVIRONMENT'];
-    this.pathAPI = this.configService.config['API_LOCATION'] + this.configService.config['API_PATH'];
+    // API_PATH is now the full URL (e.g., https://eagle-dev.apps.silver.devops.gov.bc.ca/api)
+    this.pathAPI = this.configService.config['API_PATH'] || 
+      (this.configService.config['API_LOCATION'] + (this.configService.config['API_PATH'] || '/api'));
   }
 
   handleError(error: any): Observable<never> {

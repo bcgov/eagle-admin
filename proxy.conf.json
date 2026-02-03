@@ -1,6 +1,12 @@
 {
+  "/api": {
+    "target": "https://eagle-dev.apps.silver.devops.gov.bc.ca",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
   "/api/analytics": {
-    "target": "http://localhost:3000",
+    "target": "http://localhost:3001",
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": {

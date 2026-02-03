@@ -1,14 +1,19 @@
 #!/bin/bash
-echo run script starting...
+echo "Starting nginx-runtime..."
 
 # Process nginx.conf template (if exists)
 if [ -f /tmp/nginx.conf.template ]; then
     sed "s~%RealIpFrom%~${RealIpFrom:-172.51.0.0/16}~g; s~%IpFilterRules%~${IpFilterRules}~g; s~%AdditionalRealIpFromRules%~${AdditionalRealIpFromRules}~g" /tmp/nginx.conf.template > /etc/nginx/nginx.conf
 fi
 
+# HTTP basic auth (if configured)
 if [ -n "$HTTP_BASIC_USERNAME" ] && [ -n "$HTTP_BASIC_PASSWORD" ]; then
     echo "---> Generating .htpasswd file"
-    `echo "$HTTP_BASIC_USERNAME:$(openssl passwd -crypt $HTTP_BASIC_PASSWORD)" > /tmp/.htpasswd`
+    echo "$HTTP_BASIC_USERNAME:$(openssl passwd -crypt $HTTP_BASIC_PASSWORD)" > /tmp/.htpasswd
 fi
 
+# Note: Configuration is now loaded from the API (/api/config) at runtime
+# No need to generate env.js - the frontend fetches config from eagle-api
+
+echo "Starting nginx..."
 /usr/sbin/nginx -g "daemon off;"

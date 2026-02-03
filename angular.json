@@ -82,7 +82,22 @@
               ]
             },
             "development": {
-              "optimization": false
+              "optimization": false,
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                "src/env.js",
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
+                  "output": "/assets/"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
+                  "output": "/assets/"
+                }
+              ]
             }
           }
         },
@@ -135,7 +150,6 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/env.js",
               {
                 "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",

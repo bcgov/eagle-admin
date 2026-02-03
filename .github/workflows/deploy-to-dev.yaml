@@ -42,6 +42,15 @@ jobs:
           cache: "yarn"
       - run: yarn install --immutable
 
+      - name: Update env.js for dev environment
+        run: |
+          # Update env.js to enable configEndpoint for deployed environment
+          # In deployed environments, nginx proxies /api to the backend
+          sed -i "s|window.__env.configEndpoint = false;|window.__env.configEndpoint = true;|g" src/env.js
+          sed -i "s|window.__env.ENVIRONMENT = 'local';|window.__env.ENVIRONMENT = 'dev';|g" src/env.js
+          echo "Updated env.js for dev environment:"
+          cat src/env.js
+
       - name: Angular Build
         run: yarn build
   

@@ -6,18 +6,10 @@ import { penguinAnalyticsPlugin } from './penguin-analytics-plugin';
 interface EnvConfig {
   ANALYTICS_API_URL?: string;
   ANALYTICS_DEBUG?: boolean;
-  API_LOCATION?: string;
-  API_PATH?: string;
+  ENVIRONMENT?: string;
 }
 
 declare const window: Window & { __env?: EnvConfig };
-
-const buildDefaultAnalyticsUrl = (env?: EnvConfig): string => {
-  const base = env?.API_LOCATION?.replace(/\/$/, '') || '';
-  const apiPath = env?.API_PATH || '/api';
-  const normalizedPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
-  return base ? `${base}${normalizedPath}/telemetry` : `${normalizedPath}/telemetry`;
-};
 
 /**
  * Analytics service using Analytics.io with Penguin Analytics plugin.
@@ -51,9 +43,9 @@ export class AnalyticsService {
   private initialized = false;
 
   constructor() {
-    const env = window.__env;
-    const apiUrl = env?.ANALYTICS_API_URL || buildDefaultAnalyticsUrl(env);
-    const debug = env?.ANALYTICS_DEBUG ?? false;
+    const env = window.__env || {};
+    const apiUrl = env.ANALYTICS_API_URL || 'http://localhost:3001';
+    const debug = env.ANALYTICS_DEBUG ?? (env.ENVIRONMENT === 'local');
 
     this.analytics = Analytics({
       app: 'eagle-admin',
