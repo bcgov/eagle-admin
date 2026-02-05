@@ -19,15 +19,15 @@ export class KeycloakService {
   };
 
   async init() {
-    // Load up the config service data
-    this.keycloakEnabled = this.configService.config['KEYCLOAK_ENABLED'];
-    this.keycloakUrl = this.configService.config['KEYCLOAK_URL'];
-    this.keycloakRealm = this.configService.config['KEYCLOAK_REALM'];
+    // Load up the config service data (call signal to get current value)
+    const config = this.configService.config();
+    this.keycloakEnabled = config.KEYCLOAK_ENABLED;
+    this.keycloakUrl = config.KEYCLOAK_URL;
+    this.keycloakRealm = config.KEYCLOAK_REALM;
 
     if (this.keycloakEnabled) {
       // Bootup KC
-      const keycloak_client_id =
-        this.configService.config['KEYCLOAK_CLIENT_ID'];
+      const keycloak_client_id = config.KEYCLOAK_CLIENT_ID;
 
       return new Promise<void>((resolve, reject) => {
         const config = {
@@ -85,9 +85,16 @@ export class KeycloakService {
           .init({
             onLoad: 'login-required',
             pkceMethod: 'S256',
+            checkLoginIframe: false,
           })
           .then((auth) => {
             console.log('KC Success:', auth);
+            // Clean up OAuth params from URL hash if present (Keycloak uses fragment mode by default)
+            // This prevents the page from reloading in a loop
+            if (window.location.hash && window.location.hash.includes('state=')) {
+              const cleanHash = window.location.hash.replace(/[&?]?(state|session_state|code)=[^&]*/g, '').replace(/^#[&?]?/, '#');
+              window.history.replaceState(null, '', window.location.pathname + (cleanHash === '#' ? '' : cleanHash));
+            }
             resolve();
           })
           .catch((err) => {
@@ -197,7 +204,8 @@ export class KeycloakService {
    * @memberof KeycloakService
    */
   login(idpHint: string) {
-    let redirectUri = localStorage.getItem(this.configService.config.REDIRECT_KEY) || window.location.href;
+    const redirectKey = this.configService.config().REDIRECT_KEY || 'REDIRECT';
+    let redirectUri = localStorage.getItem(redirectKey) || window.location.href;
     // by default keycloak login will want to redirect back to the login page
     // redirect to '/dayuse' instead
     if (redirectUri.endsWith('/login')) {
@@ -232,6 +240,31 @@ export class KeycloakService {
     if (jwt.idir_user_guid !== undefined) {
       return this.idpHintEnum.IDIR;
     }
+  }
+
+  /**
+   * Returns the user's unique GUID from the JWT token.
+   * Prefers idir_user_guid for IDIR users, falls back to sub (subject) claim.
+   */
+  getUserGuid(): string | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+    const jwt = JwtUtil.decodeToken(token);
+    return jwt?.idir_user_guid || jwt?.sub || null;
+  }
+
+  /**
+   * Returns the user's preferred username from the JWT token.
+   */
+  getPreferredUsername(): string | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+    const jwt = JwtUtil.decodeToken(token);
+    return jwt?.preferred_username || null;
   }
 
   getLogoutURL(): string {

@@ -3,9 +3,9 @@
     <a class="navbar-brand" title="EPIC" [routerLink]="['/']">
       <span class="navbar-brand__title">EPIC</span>
     </a>
-    @if (showBanner) {
-      <div class="env-banner" [ngClass]="bannerColour">
-        This is the&nbsp;<strong>{{envName}}</strong>&nbsp;environment. The content you are viewing is not final and
+    @if (showBanner()) {
+      <div class="env-banner" [ngClass]="bannerColour()">
+        This is the&nbsp;<strong>{{envName()}}</strong>&nbsp;environment. The content you are viewing is not final and
         subject to change.
       </div>
     }

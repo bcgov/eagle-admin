@@ -82,7 +82,22 @@
               ]
             },
             "development": {
-              "optimization": false
+              "optimization": false,
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                "src/env.js",
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
+                  "output": "/assets/"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
+                  "output": "/assets/"
+                }
+              ]
             }
           }
         },
@@ -90,7 +105,8 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "port": 4200,
-            "buildTarget": "base-app2:build:development"
+            "buildTarget": "base-app2:build:development",
+            "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
             "production": {
@@ -134,7 +150,6 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/env.js",
               {
                 "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",

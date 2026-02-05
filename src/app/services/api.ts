@@ -41,21 +41,25 @@ export class ApiService {
 
   public token: string;
   public isMS: boolean; // IE, Edge, etc
-  // private jwtHelper: JwtHelperService;
-  public pathAPI: string;
   public params: Params;
-  public env: string;  // Could be anything per Openshift environment variables  but generally is one of 'local' | 'dev' | 'test' | 'prod' | 'demo' | 'hotfix'
-  public bannerColour: string;  // This is the colour of the banner that you see in the header, and could be anything per Openshift environment variables but must correspond with the css in header.component.scss e.g. red | orange | green | yellow | purple
 
   constructor() {
-    // this.jwtHelper = new JwtHelperService();
     const currentUser = JSON.parse(window.localStorage.getItem('currentUser'));
     this.token = currentUser && currentUser.token;
     this.isMS = !!(window.navigator as any).msSaveOrOpenBlob;
+  }
 
-    this.bannerColour = this.configService.config['BANNER_COLOUR'];
-    this.env = this.configService.config['ENVIRONMENT'];
-    this.pathAPI = this.configService.config['API_LOCATION'] + this.configService.config['API_PATH'];
+  // Config getters - read from signal for reactivity
+  get env(): string {
+    return this.configService.config().ENVIRONMENT || 'local';
+  }
+
+  get bannerColour(): string {
+    return this.configService.config().BANNER_COLOUR || 'red';
+  }
+
+  get pathAPI(): string {
+    return this.configService.getApiPath();
   }
 
   handleError(error: any): Observable<never> {

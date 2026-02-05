@@ -1,9 +1,7 @@
 name: Deploy to Prod
 
 on:
-  repository_dispatch:
-    # Trigger from repository dispatch workflow in promotion/prod branch
-    types: [trigger-prod-deploy]
+  workflow_dispatch:
 
 permissions: write-all
 
@@ -12,50 +10,32 @@ env:
   IMAGE_NAME: eagle-admin
 
 jobs:
-  deploy:
-    name: Deploy to Prod
-    runs-on: ubuntu-latest
-    outputs:
-      COMMIT_SHA: ${{ steps.read-hash.outputs.SHA }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: "promotion/prod"
-
-      - name: Retrieve previous commit hash
-        id: read-hash
-        run: echo "SHA=$(jq -r '.commit' state.json)" >> $GITHUB_OUTPUT
-
-      - name: Install OpenShift CLI
-        run: |
-          curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz"
-          tar -xvzf openshift-client-linux.tar.gz
-          sudo mv oc /usr/local/bin/
-          rm -f openshift-client-linux.tar.gz
-
-      - name: Log into OpenShift
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_URL }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-
-      - name: Tag image
-        run: |
-          oc -n ${{ env.OPENSHIFT_NAMESPACE }} tag --reference-policy='local' ${{ env.IMAGE_NAME }}:prod ${{ env.IMAGE_NAME }}:prod-backup
-          oc -n ${{ env.OPENSHIFT_NAMESPACE }} tag --reference-policy='local' ${{ env.IMAGE_NAME }}:test ${{ env.IMAGE_NAME }}:prod
-
-  sync-main-branch:
-    name: Rebase Prod
-    needs: deploy
+  build:
+    name: Build and Push Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Get Short SHA
+        id: short-sha
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Login to OpenShift registry
+        uses: docker/login-action@v3
         with:
-          ref: "main"
-      - run: |
-          git fetch origin test
-          git rebase ${{needs.deploy.outputs.COMMIT_SHA}} main
-          git push origin main
+          registry: ${{ secrets.OPENSHIFT_REPOSITORY }}
+          username: ${{ secrets.OPENSHIFT_REPOSITORY_USERNAME }}
+          password: ${{ secrets.OPENSHIFT_REPOSITORY_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:prod
+            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.SHA }}
+          labels: |
+            commit.id=${{ github.sha }}
+            commit.timestamp=${{ github.event.head_commit.timestamp }}

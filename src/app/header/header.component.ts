@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router, RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
 import { ApiService } from '../services/api';
+import { ConfigService } from '../services/config.service';
 import { KeycloakService } from '../services/keycloak.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
 
@@ -36,13 +37,21 @@ import { JwtUtil } from '../shared/utils/jwt-utils';
 
 export class HeaderComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private configService = inject(ConfigService);
   private keycloakService = inject(KeycloakService);
   private modalService = inject(NgbModal);
   router = inject(Router);
 
-  public envName: string;
-  public bannerColour: string;
-  public showBanner = false;
+  // Reactive banner values - update when config changes
+  public envName = computed(() => this.configService.config().ENVIRONMENT || 'local');
+  public bannerColour = computed(() => this.configService.config().BANNER_COLOUR || 'red');
+  public showBanner = computed(() => {
+    const env = this.envName();
+    const colour = this.bannerColour();
+    const hasValidColor = !!colour && colour !== 'no-banner-colour-set';
+    return env === 'local' || (!!env && hasValidColor);
+  });
+
   public isNavMenuOpen = false;
   public welcomeMsg: string;
   public jwt: {
@@ -87,12 +96,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       modalRef.componentInstance.message = '<strong>  Attention: </strong>This website is not supported by Internet Explorer and Microsoft Edge, please use Google Chrome or Firefox.';
       modalRef.componentInstance.okOnly = true;
     }
-    this.envName = this.api.env;
-    this.bannerColour = this.api.bannerColour;
-    // no-banner-colour-set is the default if no banner colour is defined in the openshift environment variables.
-    if (this.envName && this.bannerColour && this.bannerColour !== 'no-banner-colour-set') {
-      this.showBanner = true;
-    }
+    // Banner values are now computed signals - no need to set here
   }
 
   openCalculator() {

@@ -1,5 +1,0 @@
-FROM image-registry.apps.silver.devops.gov.bc.ca/6cdc9e-tools/eagle-admin-nginx-runtime
-
-COPY dist /tmp/app/dist/admin
-
-CMD ["/usr/libexec/s2i/run"]

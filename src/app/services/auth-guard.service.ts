@@ -18,12 +18,14 @@ export class AuthGuard {
     const lastIdp = localStorage.getItem(
       this.keycloakService.LAST_IDP_AUTHENTICATED
     );
+    const redirectKey = this.configService.config().REDIRECT_KEY || 'REDIRECT';
+    
     // Not authenticated
     if (!this.keycloakService.isAuthenticated()) {
       // remove the localStorage value first, so if this authentication attempt
       // fails then the user will get the login page next time.
       localStorage.removeItem(this.keycloakService.LAST_IDP_AUTHENTICATED);
-      localStorage.setItem(this.configService.config.REDIRECT_KEY, window.location.href)
+      localStorage.setItem(redirectKey, window.location.href);
 
       if (lastIdp === null) {
         // If an identity provider hasn't been selected then show the login page.
@@ -34,7 +36,7 @@ export class AuthGuard {
       this.keycloakService.login(lastIdp);
       return false;
     } else {
-      localStorage.removeItem(this.configService.config.REDIRECT_KEY)
+      localStorage.removeItem(redirectKey);
     }
 
     // Not authorized / feature flagged
