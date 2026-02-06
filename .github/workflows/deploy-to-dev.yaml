@@ -18,9 +18,96 @@ env:
   TEST_PROMO_PR_BRANCH: promotion/test-pr
 
 jobs:
+  install:
+    name: Install Dependencies
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+      - run: yarn install --immutable
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: install
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+      - run: yarn install --immutable
+      - run: yarn lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: install
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+      - run: yarn install --immutable
+      - run: yarn test-ci
+
+  build-check:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: install
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn"
+      - run: yarn install --immutable
+      - run: yarn build
+
   build:
     name: Build and Push Image
     runs-on: ubuntu-latest
+    needs: [lint, test, build-check]
     outputs:
       SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
     steps:
