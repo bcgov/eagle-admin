@@ -1,0 +1,15 @@
+apiVersion: v2
+name: eagle-admin
+description: EPIC Admin Portal - Environmental Assessment Office administrative application
+type: application
+version: 1.0.0
+appVersion: "21.0.0"
+keywords:
+  - angular
+  - nginx
+  - epic
+  - eao
+  - admin
+maintainers:
+  - name: BC Gov EPIC Team
+    url: https://github.com/bcgov/eagle-admin

@@ -1,0 +1,22 @@
+# Development environment values
+replicaCount: 2
+
+image:
+  tag: "dev"
+
+route:
+  host: eagle-dev.apps.silver.devops.gov.bc.ca
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+env:
+  DEPLOYMENT_ENVIRONMENT: "dev"
+  BANNER_COLOUR: "orange"
+  REMOTE_API_PATH: "https://eagle-dev.apps.silver.devops.gov.bc.ca/api"
+  REMOTE_PUBLIC_PATH: "https://eagle-dev.apps.silver.devops.gov.bc.ca/"

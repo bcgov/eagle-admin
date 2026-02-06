@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "eagle-admin.fullname" . }}
+  labels:
+    {{- include "eagle-admin.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: 8080-tcp
+  selector:
+    {{- include "eagle-admin.selectorLabels" . | nindent 4 }}
+  sessionAffinity: None

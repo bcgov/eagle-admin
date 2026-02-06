@@ -2,40 +2,121 @@ name: Deploy to Test
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.2.3)'
+        required: true
+        type: string
 
 permissions: write-all
 
 env:
-  OPENSHIFT_NAMESPACE: 6cdc9e-tools
+  OPENSHIFT_NAMESPACE_TOOLS: 6cdc9e-tools
+  OPENSHIFT_NAMESPACE_TEST: 6cdc9e-test
   IMAGE_NAME: eagle-admin
+  APP_NAME: eagle-admin
 
 jobs:
-  build:
-    name: Build and Push Image
+  validate:
+    name: Validate Version
+    runs-on: ubuntu-latest
+    outputs:
+      tag_exists: ${{ steps.check-tag.outputs.exists }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in format v1.2.3"
+            exit 1
+          fi
+
+      - name: Check if tag exists
+        id: check-tag
+        run: |
+          if git rev-parse "${{ inputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag ${{ inputs.version }} already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag ${{ inputs.version }} does not exist - will create"
+          fi
+
+  release:
+    name: Create Release
+    needs: validate
+    if: needs.validate.outputs.tag_exists == 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Get Short SHA
-        id: short-sha
-        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Login to OpenShift registry
-        uses: docker/login-action@v3
         with:
-          registry: ${{ secrets.OPENSHIFT_REPOSITORY }}
-          username: ${{ secrets.OPENSHIFT_REPOSITORY_USERNAME }}
-          password: ${{ secrets.OPENSHIFT_REPOSITORY_PASSWORD }}
+          fetch-depth: 0
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ inputs.version }}" -m "Release ${{ inputs.version }}"
+          git push origin "${{ inputs.version }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ inputs.version }}" \
+            --title "Release ${{ inputs.version }}" \
+            --generate-notes
+
+  deploy:
+    name: Deploy to Test
+    needs: [validate, release]
+    if: always() && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install OpenShift CLI
+        uses: redhat-actions/openshift-tools-installer@v1
         with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:test
-            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.SHA }}
-          labels: |
-            commit.id=${{ github.sha }}
-            commit.timestamp=${{ github.event.head_commit.timestamp }}
+          oc: "4.14"
+
+      - name: Log into OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE_TOOLS }}
+
+      - name: Tag ci-latest as version (if new deployment)
+        if: needs.validate.outputs.tag_exists == 'false'
+        run: |
+          echo "Tagging ci-latest as ${{ inputs.version }}..."
+          oc -n ${{ env.OPENSHIFT_NAMESPACE_TOOLS }} tag \
+            ${{ env.IMAGE_NAME }}:ci-latest ${{ env.IMAGE_NAME }}:${{ inputs.version }}
+
+      - name: Verify image tag exists (if rollback)
+        if: needs.validate.outputs.tag_exists == 'true'
+        run: |
+          echo "Verifying image tag ${{ inputs.version }} exists..."
+          if ! oc -n ${{ env.OPENSHIFT_NAMESPACE_TOOLS }} get imagestreamtag ${{ env.IMAGE_NAME }}:${{ inputs.version }} &>/dev/null; then
+            echo "Error: Image tag ${{ inputs.version }} does not exist"
+            exit 1
+          fi
+          echo "Image tag ${{ inputs.version }} found - proceeding with rollback"
+
+      - name: Tag version as test
+        run: |
+          echo "Tagging ${{ inputs.version }} as test..."
+          oc -n ${{ env.OPENSHIFT_NAMESPACE_TOOLS }} tag \
+            ${{ env.IMAGE_NAME }}:${{ inputs.version }} ${{ env.IMAGE_NAME }}:test
+
+      - name: Deploy to test
+        run: |
+          oc -n ${{ env.OPENSHIFT_NAMESPACE_TEST }} rollout restart deployment/${{ env.APP_NAME }}
+          oc -n ${{ env.OPENSHIFT_NAMESPACE_TEST }} rollout status deployment/${{ env.APP_NAME }} --timeout=5m
+          
+          echo "Deployment successful!"
+          oc get pods -n ${{ env.OPENSHIFT_NAMESPACE_TEST }} -l app.kubernetes.io/name=${{ env.APP_NAME }}

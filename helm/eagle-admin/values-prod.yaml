@@ -1,0 +1,22 @@
+# Production environment values
+replicaCount: 2
+
+image:
+  tag: "prod"
+
+route:
+  host: projects.eao.gov.bc.ca
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+env:
+  DEPLOYMENT_ENVIRONMENT: "prod"
+  BANNER_COLOUR: ""
+  REMOTE_API_PATH: "https://projects.eao.gov.bc.ca/api"
+  REMOTE_PUBLIC_PATH: "https://projects.eao.gov.bc.ca/"

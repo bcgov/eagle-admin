@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: Build Angular Application
 # -----------------------------------------------------------------------------
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -37,6 +37,9 @@ RUN yarn build
 # Stage 2: Production nginx Server
 # -----------------------------------------------------------------------------
 FROM nginx:1.27-alpine
+
+# Update Alpine packages to latest security patches
+RUN apk upgrade --no-cache
 
 # Labels for OpenShift compatibility
 LABEL io.openshift.expose-services="8080:http" \

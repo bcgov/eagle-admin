@@ -1,0 +1,22 @@
+# Test environment values
+replicaCount: 2
+
+image:
+  tag: "test"
+
+route:
+  host: test.projects.eao.gov.bc.ca
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+env:
+  DEPLOYMENT_ENVIRONMENT: "test"
+  BANNER_COLOUR: "green"
+  REMOTE_API_PATH: "https://test.projects.eao.gov.bc.ca/api"
+  REMOTE_PUBLIC_PATH: "https://test.projects.eao.gov.bc.ca/"

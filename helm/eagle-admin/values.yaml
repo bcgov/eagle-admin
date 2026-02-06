@@ -1,0 +1,82 @@
+# Default values for eagle-admin
+# Override in values-{env}.yaml for environment-specific settings
+
+replicaCount: 2
+
+image:
+  repository: image-registry.openshift-image-registry.svc:5000/6cdc9e-tools/eagle-admin
+  pullPolicy: Always
+  tag: "latest"
+  # For OpenShift ImageStreamTag trigger
+  name: eagle-admin
+  namespace: 6cdc9e-tools
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+route:
+  enabled: true
+  host: ""  # Set in values-{env}.yaml
+  path: "/admin/"
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+
+# Liveness and readiness probes
+probes:
+  liveness:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 60
+    failureThreshold: 3
+  readiness:
+    tcpSocket:
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 60
+    failureThreshold: 3
+
+# Environment variables passed to the container
+env:
+  RealIpFrom: "172.51.0.0/16"
+  AdditionalRealIpFromRules: ""
+  IpFilterRules: "#allow all; deny all;"
+  DEPLOYMENT_ENVIRONMENT: ""
+  BANNER_COLOUR: ""
+  REMOTE_API_PATH: ""
+  REMOTE_PUBLIC_PATH: ""
+  KEYCLOAK_CLIENT_ID: "eagle-admin-console"
+
+# Pod annotations
+podAnnotations: {}
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity: {}
+
+# Autoscaling (disabled by default)
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80

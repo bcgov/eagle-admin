@@ -1,4 +1,4 @@
-name: CI - Build and Deploy to Dev
+name: Deploy to Dev
 
 on:
   push:
@@ -12,8 +12,10 @@ on:
 permissions: write-all
 
 env:
-  OPENSHIFT_NAMESPACE: 6cdc9e-tools
+  OPENSHIFT_NAMESPACE_TOOLS: 6cdc9e-tools
+  OPENSHIFT_NAMESPACE_DEV: 6cdc9e-dev
   IMAGE_NAME: eagle-admin
+  APP_NAME: eagle-admin
   TEST_PROMO_BRANCH: promotion/test
   TEST_PROMO_PR_BRANCH: promotion/test-pr
 
@@ -23,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +46,7 @@ jobs:
     needs: install
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,7 +68,7 @@ jobs:
     needs: install
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -82,13 +84,13 @@ jobs:
       - run: yarn install --immutable
       - run: yarn test-ci
 
-  build-check:
-    name: Build Verification
+  build:
+    name: Build
     runs-on: ubuntu-latest
     needs: install
     strategy:
       matrix:
-        node-version: [22.x]
+        node-version: [24.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -104,10 +106,10 @@ jobs:
       - run: yarn install --immutable
       - run: yarn build
 
-  build:
-    name: Build and Push Image
+  scan:
+    name: Security Scan
     runs-on: ubuntu-latest
-    needs: [lint, test, build-check]
+    needs: [lint, test, build]
     outputs:
       SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
     steps:
@@ -117,6 +119,34 @@ jobs:
       - name: Get Short SHA
         id: short-sha
         run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image for scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.SHA }}
+          load: true
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.SHA }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  push:
+    name: Push Image
+    runs-on: ubuntu-latest
+    needs: scan
+    outputs:
+      SHORT_SHA: ${{ needs.scan.outputs.SHORT_SHA }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Login to OpenShift registry
         uses: docker/login-action@v3
@@ -131,22 +161,65 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:dev
-            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:ci-latest
-            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.SHA }}
+            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:dev
+            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:ci-latest
+            ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:${{ needs.scan.outputs.SHORT_SHA }}
           labels: |
             commit.author=${{ github.event.head_commit.author.email }}
             commit.id=${{ github.event.head_commit.id }}
             commit.timestamp=${{ github.event.head_commit.timestamp }}
             commit.message=${{ github.event.head_commit.message }}
 
+  deploy:
+    name: Deploy to Dev
+    needs: push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenShift CLI
+        run: |
+          curl -LO "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz"
+          tar -xvzf openshift-client-linux.tar.gz
+          sudo mv oc /usr/local/bin/
+          rm -f openshift-client-linux.tar.gz
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+      - name: Log into OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE_DEV }}
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install ${{ env.APP_NAME }} ./helm/${{ env.APP_NAME }} \
+            --namespace ${{ env.OPENSHIFT_NAMESPACE_DEV }} \
+            --values ./helm/${{ env.APP_NAME }}/values-dev.yaml \
+            --set image.tag=dev \
+            --wait --timeout=5m
+          
+          echo "Restarting deployment to pull updated image..."
+          oc rollout restart deployment/${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE_DEV }}
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for rollout to complete..."
+          oc rollout status deployment/${{ env.APP_NAME }} -n ${{ env.OPENSHIFT_NAMESPACE_DEV }} --timeout=5m
+          
+          echo "Deployment successful!"
+          oc get pods -n ${{ env.OPENSHIFT_NAMESPACE_DEV }} -l app.kubernetes.io/name=${{ env.APP_NAME }}
+
   promotion:
     name: Create Promotion Pull Request
-    needs: build
+    needs: push
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [24.x]
     steps:
       # Update promotion/test-pr with new commit hash
       - name: Checkout promotion/test
@@ -162,14 +235,14 @@ jobs:
           git checkout -B ${{ env.TEST_PROMO_PR_BRANCH }}
           git reset --hard ${{ env.TEST_PROMO_BRANCH }}
 
-          echo $(jq '.commit="${{ needs.build.outputs.SHORT_SHA }}"' state.json) > state.json
+          echo $(jq '.commit="${{ needs.push.outputs.SHORT_SHA }}"' state.json) > state.json
 
           # Only commit if there are changes
           if git diff --quiet state.json; then
             echo "No changes to state.json, skipping commit"
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else
-            git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
+            git commit -am "Promote commit ${{ needs.push.outputs.SHORT_SHA }} to Test"
             git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
