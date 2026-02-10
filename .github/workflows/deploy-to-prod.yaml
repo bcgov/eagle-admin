@@ -43,7 +43,7 @@ jobs:
           echo "Git tag ${{ inputs.version }} verified"
 
   deploy:
-    name: Deploy to Prod
+    name: Deploying ${{ inputs.version }} to Prod
     needs: validate
     runs-on: ubuntu-latest
     steps:

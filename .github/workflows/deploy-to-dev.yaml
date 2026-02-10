@@ -16,8 +16,6 @@ env:
   OPENSHIFT_NAMESPACE_DEV: 6cdc9e-dev
   IMAGE_NAME: eagle-admin
   APP_NAME: eagle-admin
-  TEST_PROMO_BRANCH: promotion/test
-  TEST_PROMO_PR_BRANCH: promotion/test-pr
 
 jobs:
   install:
@@ -215,57 +213,3 @@ jobs:
           
           echo "Deployment successful!"
           oc get pods -n ${{ env.OPENSHIFT_NAMESPACE_DEV }} -l app.kubernetes.io/name=${{ env.APP_NAME }}
-
-  promotion:
-    name: Create Promotion Pull Request
-    needs: push
-    runs-on: ubuntu-latest
-    steps:
-      # Update promotion/test-pr with new commit hash
-      - name: Checkout promotion/test
-        uses: actions/checkout@v3
-        with:
-          ref: "${{ env.TEST_PROMO_BRANCH }}"
-      - name: Update state.json
-        id: update-state
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{github.actor}}@users.noreply.github.com"
-
-          git checkout -B ${{ env.TEST_PROMO_PR_BRANCH }}
-          git reset --hard ${{ env.TEST_PROMO_BRANCH }}
-
-          echo $(jq '.commit="${{ needs.push.outputs.SHORT_SHA }}"' state.json) > state.json
-
-          # Only commit if there are changes
-          if git diff --quiet state.json; then
-            echo "No changes to state.json, skipping commit"
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            git commit -am "Promote commit ${{ needs.push.outputs.SHORT_SHA }} to Test"
-            git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
-      - name: Create or Update Pull Request
-        if: steps.update-state.outputs.has_changes == 'true'
-        run: |
-          # Check if PR exists
-          PR_URL=$(gh pr list --base "${{ env.TEST_PROMO_BRANCH }}" --head "${{ env.TEST_PROMO_PR_BRANCH }}" --json url --jq '.[0].url')
-          if [ -z "$PR_URL" ]; then
-          # Create PR if it doesn't exist
-          gh pr create \
-            --base "${{ env.TEST_PROMO_BRANCH }}" \
-            --head "${{ env.TEST_PROMO_PR_BRANCH }}" \
-            --title "Deploy to Test Environment" \
-            --body ":crown: *An automated PR*\n\nThis PR triggers a deployment to Test once it's fully merged." \
-            --label "auto-pr,test env,pipeline" \
-            --draft
-            else
-          # Update PR if it exists
-          gh pr edit "$PR_URL" \
-            --title "Deploy to Test Environment" \
-            --body ":crown: *An automated PR*\n\nThis PR triggers a deployment to Test once it's fully merged." \
-            --add-label "auto-pr,test env,pipeline"
-            fi
-        env:
-          GH_TOKEN: ${{ github.token }}

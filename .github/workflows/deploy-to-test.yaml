@@ -73,7 +73,7 @@ jobs:
             --generate-notes
 
   deploy:
-    name: Deploy to Test
+    name: Deploying ${{ inputs.version }} to Test
     needs: [validate, release]
     if: always() && needs.validate.result == 'success'
     runs-on: ubuntu-latest

@@ -2,6 +2,7 @@
   "name": "base-app",
   "version": "0.0.0",
   "license": "Apache-2.0",
+  "packageManager": "yarn@4.12.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -75,6 +76,5 @@
     "puppeteer": "^24.11.2",
     "typescript": "~5.9.0",
     "vite": "^7.0.8"
-  },
-  "packageManager": "yarn@4.12.0"
+  }
 }
