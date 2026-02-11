@@ -56,3 +56,4 @@ Thumbs.db
 convert-scss-vars-to-css-vars.sh
 convert-slash-comments.sh
 migrate-scss-to-css.sh
+claude.md
