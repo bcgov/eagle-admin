@@ -78,6 +78,11 @@ jobs:
     if: always() && needs.validate.result == 'success'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository at version tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.version }}
+
       - name: Install OpenShift CLI
         uses: redhat-actions/openshift-tools-installer@v1
         with:
@@ -112,9 +117,6 @@ jobs:
           echo "Tagging ${{ inputs.version }} as test..."
           oc -n ${{ env.OPENSHIFT_NAMESPACE_TOOLS }} tag \
             ${{ env.IMAGE_NAME }}:${{ inputs.version }} ${{ env.IMAGE_NAME }}:test
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Install Helm
         run: |
