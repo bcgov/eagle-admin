@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
 import { ApiService } from '../services/api';
+import { AnalyticsService } from '../services/analytics/analytics.service';
 import { ConfigService } from '../services/config.service';
 import { KeycloakService } from '../services/keycloak.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
@@ -37,6 +38,7 @@ import { JwtUtil } from '../shared/utils/jwt-utils';
 
 export class HeaderComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private analyticsService = inject(AnalyticsService);
   private configService = inject(ConfigService);
   private keycloakService = inject(KeycloakService);
   private modalService = inject(NgbModal);
@@ -130,6 +132,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateToLogout() {
+    // Track session end and reset analytics state
+    this.analyticsService.reset();
     // reset login status
     this.api.logout();
     window.location.href = this.keycloakService.getLogoutURL();
