@@ -74,8 +74,10 @@ export class ConfigService {
     if (this._config().configEndpoint === true) {
       try {
         const apiConfig = await this.getConfigFromApi();
-        // Merge: API values override env.js values
-        this._config.set({ ...this._config(), ...apiConfig });
+        // Preserve eagle-admin's own client ID (don't use API's client ID)
+        const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
+        // Merge: API values override env.js values (except KEYCLOAK_CLIENT_ID)
+        this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
         if (this._config().logLevel === 0) {
           console.log('ConfigService: merged with API config:', this._config());
         }
