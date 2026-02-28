@@ -80,3 +80,8 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 4
   targetCPUUtilizationPercentage: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1

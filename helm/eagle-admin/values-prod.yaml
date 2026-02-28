@@ -15,6 +15,11 @@ resources:
     cpu: 100m
     memory: 256Mi
 
+# Pod Disruption Budget - ensure at least 1 pod during disruptions
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
 env:
   DEPLOYMENT_ENVIRONMENT: "prod"
   BANNER_COLOUR: ""
