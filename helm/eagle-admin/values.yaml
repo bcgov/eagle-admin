@@ -62,6 +62,13 @@ env:
   REMOTE_PUBLIC_PATH: ""
   KEYCLOAK_CLIENT_ID: "eagle-admin-console"
 
+# env.js ConfigMap - mount external ConfigMap to override built-in env.js
+# Set configMap name to use existing ConfigMap, leave empty to use container's built-in env.js
+# IMPORTANT: Only set configEndpoint=true and KEYCLOAK_CLIENT_ID in this ConfigMap
+# All other config comes from /api/config. See wiki: Configuration-Management
+envJs:
+  configMap: ""  # e.g., "eagle-admin-env-js"
+
 # Pod annotations
 podAnnotations: {}
 

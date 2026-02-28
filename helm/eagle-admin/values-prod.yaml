@@ -20,6 +20,12 @@ podDisruptionBudget:
   enabled: true
   minAvailable: 1
 
+# Mount existing ConfigMap for env.js
+# IMPORTANT: ConfigMap should only contain configEndpoint=true and KEYCLOAK_CLIENT_ID
+# All other config comes from /api/config. See wiki: Configuration-Management
+envJs:
+  configMap: "eagle-admin-env-js"
+
 env:
   DEPLOYMENT_ENVIRONMENT: "prod"
   BANNER_COLOUR: ""

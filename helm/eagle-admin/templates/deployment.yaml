@@ -63,6 +63,18 @@ spec:
               value: {{ $value | quote }}
             {{- end }}
           {{- end }}
+          {{- if .Values.envJs.configMap }}
+          volumeMounts:
+            - name: env-js
+              mountPath: /tmp/app/dist/admin/env.js
+              subPath: env.js
+          {{- end }}
+      {{- if .Values.envJs.configMap }}
+      volumes:
+        - name: env-js
+          configMap:
+            name: {{ .Values.envJs.configMap }}
+      {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       securityContext: {}
