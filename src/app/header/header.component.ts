@@ -46,7 +46,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // Reactive banner values - update when config changes
   public envName = computed(() => this.configService.config().ENVIRONMENT || 'local');
-  public bannerColour = computed(() => this.configService.config().BANNER_COLOUR || 'red');
+  public bannerColour = computed(() => this.configService.config().BANNER_COLOUR ?? 'red');
   public showBanner = computed(() => {
     const env = this.envName();
     const colour = this.bannerColour();
