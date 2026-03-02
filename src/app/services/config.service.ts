@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, timeout } from 'rxjs';
 
 interface EnvConfig {
@@ -122,7 +122,7 @@ export class ConfigService {
   }
 
   /**
-   * Fetch configuration from API endpoint.
+   * Fetch configuration from nginx-served JSON.
    * Only called when configEndpoint=true (deployed environments).
    * Retries with fibonacci backoff, times out to prevent blocking.
    */
@@ -135,27 +135,27 @@ export class ConfigService {
 
     while (attempts < maxAttempts) {
       try {
-        const headers = new HttpHeaders().set('Authorization', 'config');
-        // Always use relative path - nginx routes to API in deployed env
+        // Fetch config from nginx-served ConfigMap JSON
+        // No Authorization header needed - public static file
         const response = await firstValueFrom(
-          this.httpClient.get<any>('/api/config', { headers, observe: 'response' })
+          this.httpClient.get<EnvConfig>('/config.json', { observe: 'response' })
             .pipe(timeout(requestTimeoutMs))
         );
-        return response.body?.data || response.body || {};
+        return response.body || {};
       } catch (err) {
         attempts++;
         if (attempts >= maxAttempts) {
-          console.warn(`ConfigService: API config failed after ${maxAttempts} attempts`);
+          console.warn(`ConfigService: Config fetch failed after ${maxAttempts} attempts`);
           throw err;
         }
-        console.warn(`ConfigService: API config attempt ${attempts}/${maxAttempts} failed, retrying...`);
+        console.warn(`ConfigService: Config fetch attempt ${attempts}/${maxAttempts} failed, retrying...`);
         const delay = n1 + n2;
         await this.delay(delay * 1000);
         n1 = n2;
         n2 = delay;
       }
     }
-    throw new Error('Failed to load config from API');
+    throw new Error('Failed to load config from /config.json');
   }
 
   private delay(ms: number): Promise<void> {
