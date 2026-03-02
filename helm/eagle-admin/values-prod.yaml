@@ -21,13 +21,7 @@ podDisruptionBudget:
   minAvailable: 1
 
 # Mount existing ConfigMap for env.js
-# IMPORTANT: ConfigMap should only contain configEndpoint=true and KEYCLOAK_CLIENT_ID
-# All other config comes from /api/config. See wiki: Configuration-Management
+# Contains configEndpoint=true and KEYCLOAK_CLIENT_ID
+# All other config comes from /api/config (served by nginx from rproxy-config ConfigMap)
 envJs:
   configMap: "eagle-admin-env-js"
-
-env:
-  DEPLOYMENT_ENVIRONMENT: "prod"
-  BANNER_COLOUR: ""
-  REMOTE_API_PATH: "https://projects.eao.gov.bc.ca/api"
-  REMOTE_PUBLIC_PATH: "https://projects.eao.gov.bc.ca/"

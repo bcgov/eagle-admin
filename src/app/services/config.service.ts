@@ -122,8 +122,9 @@ export class ConfigService {
   }
 
   /**
-   * Fetch configuration from nginx-served JSON.
+   * Fetch configuration from /api/config.
    * Only called when configEndpoint=true (deployed environments).
+   * nginx serves this from ConfigMap (no eagle-api dependency).
    * Retries with fibonacci backoff, times out to prevent blocking.
    */
   private async getConfigFromApi(): Promise<EnvConfig> {
@@ -135,10 +136,10 @@ export class ConfigService {
 
     while (attempts < maxAttempts) {
       try {
-        // Fetch config from nginx-served ConfigMap JSON
-        // No Authorization header needed - public static file
+        // Fetch config from nginx-served ConfigMap
+        // No Authorization header needed - public endpoint
         const response = await firstValueFrom(
-          this.httpClient.get<EnvConfig>('/config.json', { observe: 'response' })
+          this.httpClient.get<EnvConfig>('/api/config', { observe: 'response' })
             .pipe(timeout(requestTimeoutMs))
         );
         return response.body || {};
@@ -155,7 +156,7 @@ export class ConfigService {
         n2 = delay;
       }
     }
-    throw new Error('Failed to load config from /config.json');
+    throw new Error('Failed to load config from /api/config');
   }
 
   private delay(ms: number): Promise<void> {

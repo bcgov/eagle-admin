@@ -52,20 +52,14 @@ probes:
     failureThreshold: 3
 
 # Environment variables passed to the container
-env:
-  RealIpFrom: "172.51.0.0/16"
-  AdditionalRealIpFromRules: ""
-  IpFilterRules: "#allow all; deny all;"
-  DEPLOYMENT_ENVIRONMENT: ""
-  BANNER_COLOUR: ""
-  REMOTE_API_PATH: ""
-  REMOTE_PUBLIC_PATH: ""
-  KEYCLOAK_CLIENT_ID: "eagle-admin-console"
+# Container environment variables (optional, not used by Angular)
+# Angular reads config from /api/config, not container env vars
+env: {}
 
 # env.js ConfigMap - mount external ConfigMap to override built-in env.js
 # Set configMap name to use existing ConfigMap, leave empty to use container's built-in env.js
-# IMPORTANT: Only set configEndpoint=true and KEYCLOAK_CLIENT_ID in this ConfigMap
-# All other config comes from /api/config. See wiki: Configuration-Management
+# ConfigMap should only contain: configEndpoint=true and KEYCLOAK_CLIENT_ID
+# All other config fetched at runtime from /api/config (served by nginx from rproxy-config)
 envJs:
   configMap: ""  # e.g., "eagle-admin-env-js"
 
