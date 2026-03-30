@@ -13,10 +13,9 @@
   window.__env.ENVIRONMENT = 'local'; // local | dev | test | prod
   window.__env.BANNER_COLOUR = 'red';
 
-  // API configuration
-  // For local dev: proxy routes to dev OpenShift API (see proxy.conf.json)
-  // For deployed: configEndpoint=true fetches from /api/config
-  window.__env.API_LOCATION = '';
+  // API — proxy.conf.js reads API_LOCATION to generate dev server proxy rules
+  // The Angular app uses relative paths (/api, /analytics) — never API_LOCATION directly
+  window.__env.API_LOCATION = 'http://localhost:3000';
   window.__env.API_PATH = '/api';
 
   // Keycloak configuration
@@ -26,8 +25,7 @@
   window.__env.KEYCLOAK_ENABLED = true;
   window.__env.REDIRECT_KEY = 'REDIRECT';
 
-  // Analytics - for local dev, use /api/analytics (proxy routes to localhost:3001)
-  // For deployed: fetched from /api/config (points to penguin-analytics service URL)
-  window.__env.ANALYTICS_API_URL = '/api/analytics';
+  // Analytics — proxied through /analytics (eagle-api forwards to penguin-analytics)
+  window.__env.ANALYTICS_API_URL = '/analytics';
   window.__env.ANALYTICS_DEBUG = true;
 }(this));

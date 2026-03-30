@@ -36,7 +36,7 @@ function initConfig(
   keycloakService: KeycloakService
 ) {
   return async () => {
-    await configService.init();
+    configService.init();
     await keycloakService.init();
   };
 }

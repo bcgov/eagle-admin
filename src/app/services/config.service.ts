@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, timeout } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 interface EnvConfig {
   logLevel?: number;
@@ -25,18 +25,18 @@ declare global {
 
 /**
  * Configuration Service
- * 
- * Manages application configuration with two modes:
- * 
+ *
  * LOCAL DEV (configEndpoint = false):
- *   - Uses values from src/env.js directly
- *   - API calls use Angular proxy (proxy.conf.json)
- * 
+ *   - Uses env.js values directly (src/env.js)
+ *   - proxy.conf.js reads API_LOCATION from env.js to generate dev server proxy rules
+ *   - App uses relative paths (/api, /analytics) — never API_LOCATION directly
+ *
  * DEPLOYED (configEndpoint = true):
- *   - env.js is modified by GitHub workflow: sed changes configEndpoint to true
- *   - Fetches config from /api/config endpoint
- *   - API config values override env.js defaults
- *   - nginx routes /api/* to the API server
+ *   - Dockerfile sed sets configEndpoint to true
+ *   - App fetches /api/config on startup (nginx serves from ConfigMap)
+ *   - ConfigMap values override env.js (except KEYCLOAK_CLIENT_ID — preserved)
+ *
+ * Lists are lazy-loaded on first access via getLists(), not during init.
  */
 @Injectable()
 export class ConfigService {
@@ -52,50 +52,60 @@ export class ConfigService {
   // UI state
   private _baseLayerName = 'World Topographic';
   private _lists: any[] = [];
+  private _listsLoaded = false;
   private _regions: any[] = [];
 
   /**
-   * Initialize the Config Service.
-   * 
-   * Flow:
-   * 1. Load env.js values (already set on window.__env before Angular loads)
-   * 2. If configEndpoint=true (deployed), fetch config from /api/config
-   * 3. Load lists from API
+   * Initialize the Config Service (synchronous).
+   *
+   * 1. Reads env.js values from window.__env
+   * 2. If deployed (configEndpoint=true), kicks off non-blocking /api/config fetch
+   *
+   * No network I/O blocks this method. Lists are lazy-loaded on first access.
    */
-  public async init(): Promise<void> {
-    // Step 1: Start with env.js values (loaded before Angular via script tag)
+  public init(): void {
     this._config.set({ ...(window.__env || {}) });
 
     if (this._config().logLevel === 0) {
       console.log('ConfigService: env.js values:', this._config());
     }
 
-    // Step 2: If deployed (configEndpoint=true), fetch config from API
     if (this._config().configEndpoint === true) {
-      try {
-        const apiConfig = await this.getConfigFromApi();
-        // Preserve eagle-admin's own client ID (don't use API's client ID)
-        const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
-        // Merge: API values override env.js values (except KEYCLOAK_CLIENT_ID)
-        this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
-        if (this._config().logLevel === 0) {
-          console.log('ConfigService: merged with API config:', this._config());
-        }
-      } catch (e) {
-        console.error('ConfigService: API config failed, using env.js defaults:', e);
-      }
+      this.fetchRemoteConfig();
     }
 
     this.configLoaded = true;
+  }
 
-    // Step 3: Load lists from API
+  /**
+   * Fetch remote config from /api/config (deployed only, non-blocking).
+   * nginx serves this from ConfigMap. On success merges over env.js values.
+   * KEYCLOAK_CLIENT_ID is always preserved from env.js.
+   */
+  private async fetchRemoteConfig(): Promise<void> {
     try {
-      const apiPath = this.getApiPath();
-      const lists = await firstValueFrom(
-        this.httpClient.get<any>(`${apiPath}/search?pageSize=1000&dataset=List`)
-          .pipe(timeout(10000))
-      );
-      this._lists = lists[0].searchResults;
+      const response = await fetch('/api/config', { signal: AbortSignal.timeout(5000) });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const apiConfig: EnvConfig = await response.json();
+      const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
+      this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
+      if (this._config().logLevel === 0) {
+        console.log('ConfigService: merged with API config:', this._config());
+      }
+    } catch (e) {
+      console.error('ConfigService: API config fetch failed, using env.js defaults:', e);
+    }
+  }
+
+  /**
+   * Load lists from API (called lazily on first access to getLists()).
+   * Safe to call post-bootstrap — HttpClient works normally here.
+   */
+  private async loadLists(): Promise<void> {
+    try {
+      const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
+      const lists = await firstValueFrom(this.httpClient.get<any>(url));
+      this._lists = lists?.[0]?.searchResults ?? [];
       this.populateRegionsList();
     } catch (e) {
       console.error('ConfigService: Error loading lists:', e);
@@ -104,89 +114,33 @@ export class ConfigService {
 
   /**
    * Get the API path for making API calls.
-   * 
-   * LOCAL DEV (configEndpoint=false): Returns full URL if API_LOCATION set
-   * DEPLOYED (configEndpoint=true): Returns relative path (nginx handles routing)
+   * Always relative — proxy.conf.js (local) or nginx (deployed) handles routing.
    */
   public getApiPath(): string {
-    const cfg = this._config();
-    const apiPath = cfg.API_PATH || '/api';
-    
-    // If LOCAL DEV and API_LOCATION is set, use full URL
-    if (cfg.configEndpoint === false && cfg.API_LOCATION) {
-      return cfg.API_LOCATION + apiPath;
-    }
-    
-    // Deployed: use relative path (nginx routes /api/* to eagle-api)
-    return apiPath;
+    return this._config().API_PATH || '/api';
   }
-
-  /**
-   * Fetch configuration from /api/config.
-   * Only called when configEndpoint=true (deployed environments).
-   * nginx serves this from ConfigMap (no eagle-api dependency).
-   * Retries with fibonacci backoff, times out to prevent blocking.
-   */
-  private async getConfigFromApi(): Promise<EnvConfig> {
-    let n1 = 0;
-    let n2 = 1;
-    let attempts = 0;
-    const maxAttempts = 3;
-    const requestTimeoutMs = 5000;
-
-    while (attempts < maxAttempts) {
-      try {
-        // Fetch config from nginx-served ConfigMap
-        // No Authorization header needed - public endpoint
-        const response = await firstValueFrom(
-          this.httpClient.get<EnvConfig>('/api/config', { observe: 'response' })
-            .pipe(timeout(requestTimeoutMs))
-        );
-        return response.body || {};
-      } catch (err) {
-        attempts++;
-        if (attempts >= maxAttempts) {
-          console.warn(`ConfigService: Config fetch failed after ${maxAttempts} attempts`);
-          throw err;
-        }
-        console.warn(`ConfigService: Config fetch attempt ${attempts}/${maxAttempts} failed, retrying...`);
-        const delay = n1 + n2;
-        await this.delay(delay * 1000);
-        n1 = n2;
-        n2 = delay;
-      }
-    }
-    throw new Error('Failed to load config from /api/config');
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  get logLevel(): number {
-    // Can be overridden by js console
-    return window.__env?.logLevel ?? 4;
-  }
-
-  // Note: config is now a computed signal - use config() to get value
-  // e.g., configService.config().ENVIRONMENT
 
   get isConfigLoaded(): boolean {
     return this.configLoaded;
   }
 
-  // getters/setters
-  get lists(): any[] { return this._lists; }
+  get lists(): any[] {
+    if (!this._listsLoaded) {
+      this._listsLoaded = true;
+      this.loadLists();
+    }
+    return this._lists;
+  }
+
   get regions(): any[] { return this._regions; }
   get baseLayerName(): string { return this._baseLayerName; }
   set baseLayerName(val: string) { this._baseLayerName = val; }
 
   private populateRegionsList() {
-    this._lists.map(item => {
-      switch (item.type) {
-        case 'region':
-          this._regions.push(item.name);
-          break;
+    this._regions = [];
+    this._lists.forEach(item => {
+      if (item.type === 'region') {
+        this._regions.push(item.name);
       }
     });
   }

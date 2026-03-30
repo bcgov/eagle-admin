@@ -49,11 +49,11 @@ export class AnalyticsService {
     if (this.initialized) return;
 
     const config = this.configService.config();
-    const apiUrl = config.ANALYTICS_API_URL;
+    const apiUrl = config.ANALYTICS_API_URL || '';
     
     // Skip analytics if no API URL configured
     if (!apiUrl) {
-      console.log('Analytics disabled: ANALYTICS_API_URL not configured');
+      console.log('Analytics disabled: no ANALYTICS_API_URL configured');
       this.initialized = true;
       return;
     }
