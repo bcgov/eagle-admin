@@ -56,14 +56,14 @@ export class ConfigService {
   private _regions: any[] = [];
 
   /**
-   * Initialize the Config Service (synchronous).
+   * Initialize the Config Service.
    *
    * 1. Reads env.js values from window.__env
-   * 2. If deployed (configEndpoint=true), kicks off non-blocking /api/config fetch
+   * 2. If deployed (configEndpoint=true), fetches /api/config and merges before returning
    *
-   * No network I/O blocks this method. Lists are lazy-loaded on first access.
+   * Must be awaited so Keycloak initializes with the correct config values.
    */
-  public init(): void {
+  public async init(): Promise<void> {
     this._config.set({ ...(window.__env || {}) });
 
     if (this._config().logLevel === 0) {
@@ -71,7 +71,7 @@ export class ConfigService {
     }
 
     if (this._config().configEndpoint === true) {
-      this.fetchRemoteConfig();
+      await this.fetchRemoteConfig();
     }
 
     this.configLoaded = true;
