@@ -64,11 +64,38 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     skin: false,
     browser_spellcheck: true,
     height: 240,
-    plugins: ['lists, advlist, link'],
+    plugins: ['lists, advlist, link, paste'],
     toolbar: ['undo redo | formatselect | ' +
       ' bold italic backcolor | alignleft aligncenter ' +
       ' alignright alignjustify | bullist numlist outdent indent |' +
-      ' removeformat | help']
+      ' removeformat | help'],
+    // Strip all inline styles and Word/Office junk on paste.
+    // Keeps semantic structure (paragraphs, links, bold/italic, lists)
+    // but discards font-family, font-size, color, mso-* and SCXW/BCX class noise.
+    paste_word_valid_elements: 'p,br,b,strong,i,em,ul,ol,li,a[href|target|rel]',
+    paste_retain_style_properties: '',
+    paste_remove_styles_if_webkit: true,
+    paste_strip_class_attributes: 'all',
+    valid_styles: {},
+    extended_valid_elements: 'span',
+    invalid_elements: 'style,script',
+    paste_preprocess: (plugin: any, args: any) => {
+      // Strip all inline style attributes from pasted content
+      args.content = args.content
+        .replace(/ style="[^"]*"/gi, '')
+        .replace(/ style='[^']*'/gi, '')
+        // Remove Word Online wrapper classes (SCXW*, BCX*, OutlineElement, MsoNormal, etc.)
+        .replace(/ class="[^"]*"/gi, '')
+        .replace(/ class='[^']*'/gi, '')
+        // Remove lang and xml:lang attributes
+        .replace(/ (lang|xml:lang)="[^"]*"/gi, '')
+        // Remove data-contrast and other Word Online data attributes
+        .replace(/ data-[a-zA-Z-]+="[^"]*"/gi, '')
+        // Flatten Word Online wrappers: OutlineElement divs, TextRun spans, NormalTextRun spans
+        // by unwrapping <div> and <span> tags that have no remaining attributes
+        .replace(/<(div|span)(\s*\/?)>/gi, '')
+        .replace(/<\/(div|span)>/gi, '');
+    }
   };
 
   ngOnInit() {
