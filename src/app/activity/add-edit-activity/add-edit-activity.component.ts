@@ -79,7 +79,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     valid_styles: {},
     extended_valid_elements: 'span',
     invalid_elements: 'style,script',
-    paste_preprocess: (plugin: any, args: any) => {
+    paste_preprocess: (_plugin: any, args: any) => {
       // Strip all inline style attributes from pasted content
       args.content = args.content
         .replace(/ style="[^"]*"/gi, '')
