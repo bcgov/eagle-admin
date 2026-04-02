@@ -86,6 +86,7 @@ export class KeycloakService {
             onLoad: 'login-required',
             pkceMethod: 'S256',
             checkLoginIframe: false,
+            scope: 'openid roles',
           })
           .then((auth) => {
             console.log('KC Success:', auth);
