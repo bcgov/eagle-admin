@@ -117,7 +117,13 @@ server {
         alias /tmp/app/dist/;
         try_files $uri $uri/ /admin/index.html;
 
-        # Cache static assets
+        # Runtime config — must never be cached (changes between deployments)
+        location = /env.js {
+            expires -1;
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+        }
+
+        # Cache static assets (hashed filenames safe to cache long-term)
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
