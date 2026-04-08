@@ -57,7 +57,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   public filteredProjectPhases2018: any[] = [];
   public legislationYear = '2018';
   public publishDoc = false;
-  public snackBarTimeout = 1500;
+  public snackBarTimeout = 5000;
 
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
@@ -199,11 +199,16 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
           },
           error: error => {
             console.log('error =', error);
-            // Add in api error message
-            const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
+            let message = 'Could not upload document';
+            if (error?.error?.message) {
+              message = error.error.message;
+            } else if (error?.message) {
+              message = error.message;
+            } else if (error?.statusText) {
+              message = `Upload failed: ${error.statusText}`;
+            }
             this.snackBar.open(message, 'Close', { duration: this.snackBarTimeout });
             this.loading = false;
-            // TODO: should fully reload project here so we have latest non-deleted objects
           },
           complete: () => {
             // delete succeeded --> navigate back to search
