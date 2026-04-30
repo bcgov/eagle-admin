@@ -43,6 +43,16 @@
                 "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
                 "output": "/assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/plugins/",
+                "output": "/plugins/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/skins/",
+                "output": "/skins/"
               }
             ],
             "styles": [
@@ -96,6 +106,16 @@
                   "glob": "**/*",
                   "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
                   "output": "/assets/"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/tinymce/plugins/",
+                  "output": "/plugins/"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/tinymce/skins/",
+                  "output": "/skins/"
                 }
               ]
             }
@@ -159,6 +179,16 @@
                 "glob": "**/*",
                 "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
                 "output": "/assets/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/plugins/",
+                "output": "/plugins/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/skins/",
+                "output": "/skins/"
               }
             ]
           }
