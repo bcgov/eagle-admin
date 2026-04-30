@@ -50,7 +50,7 @@ export class LoggingService {
     const msg = duration !== undefined
       ? `HTTP ${method} ${url} ${status} (${duration}ms)`
       : `HTTP ${method} ${url} ${status}`;
-    status >= 400 ? this.error(msg, 'HttpClient') : this.debug(msg, 'HttpClient');
+    if (status >= 400) { this.error(msg, 'HttpClient'); } else { this.debug(msg, 'HttpClient'); }
   }
 
   logHttpError(method: string, url: string, error: any): void {
