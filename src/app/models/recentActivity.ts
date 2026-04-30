@@ -15,19 +15,19 @@ export class RecentActivity {
     complianceAndEnforcement: boolean;
 
     constructor(obj?: any) {
-        this._id = obj && obj._id || null;
-        this.type = obj && obj.type || null;
-        this.pcp = obj && obj.pcp || null;
-        this.project = obj && obj.project || null;
-        this.projectNotification = obj && obj.projectNotification || null;
-        this.dateAdded = obj && obj.dateAdded || null;
-        this.content = obj && obj.content || null;
-        this.documentUrl = obj && obj.documentUrl || null;
-        this.contentUrl = obj && obj.contentUrl || null;
-        this.notificationName = obj && obj.notificationName || null;
-        this.headline = obj && obj.headline || null;
-        this.active = obj && obj.active || null;
-        this.pinned = obj && obj.pinned || null;
-        this.complianceAndEnforcement = obj && obj.complianceAndEnforcement || null;
+        this._id = obj?._id ?? null;
+        this.type = obj?.type ?? null;
+        this.pcp = obj?.pcp ?? null;
+        this.project = obj?.project ?? null;
+        this.projectNotification = obj?.projectNotification ?? null;
+        this.dateAdded = obj?.dateAdded ?? null;
+        this.content = obj?.content ?? null;
+        this.documentUrl = obj?.documentUrl ?? null;
+        this.contentUrl = obj?.contentUrl ?? null;
+        this.notificationName = obj?.notificationName ?? null;
+        this.headline = obj?.headline ?? null;
+        this.active = obj?.active ?? null;
+        this.pinned = obj?.pinned ?? null;
+        this.complianceAndEnforcement = obj?.complianceAndEnforcement ?? null;
     }
 }

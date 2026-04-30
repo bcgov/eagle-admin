@@ -42,7 +42,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   private commentPeriodService = inject(CommentPeriodService);
   private _changeDetectorRef = inject(ChangeDetectorRef);
 
-  public myForm: UntypedFormGroup;
+  public myForm!: UntypedFormGroup;
   public isEditing = false;
   // private subscriptions: Subscription[] = [];
   private subscriptions = new Subscription();
@@ -169,11 +169,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         _id: this.activity._id,
         headline: this.myForm.controls.headline.value,
         content: this.myForm.controls.content.value,
-        dateAdded: this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateAdded').value),
-        project: this.myForm.get('project').value,
-        type: this.myForm.get('type').value,
-        pcp: this.myForm.get('pcp').value,
-        notificationName: this.myForm.get('type').value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
+        dateAdded: this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateAdded')!.value),
+        project: this.myForm.get('project')!.value,
+        type: this.myForm.get('type')!.value,
+        pcp: this.myForm.get('pcp')!.value,
+        notificationName: this.myForm.get('type')!.value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         active: this.isPublished,
@@ -185,19 +185,24 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       activity.pinned = activity.pinned !== null ? activity.pinned : false;
 
       this.recentActivityService.save(activity)
-        .subscribe(() => {
-          this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout });
-          window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
+        .subscribe({
+          next: () => {
+            this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout });
+            window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
+          },
+          error: () => {
+            this.snackBar.open('Error saving activity. Please try again.', 'Close', { duration: 3000 });
+          }
         });
     } else {
       const activity = new RecentActivity({
         headline: this.myForm.controls.headline.value,
         content: this.myForm.controls.content.value,
         dateAdded: new Date(),
-        project: this.myForm.get('project').value,
-        type: this.myForm.get('type').value,
-        pcp: this.myForm.get('pcp').value,
-        notificationName: this.myForm.get('type').value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
+        project: this.myForm.get('project')!.value,
+        type: this.myForm.get('type')!.value,
+        pcp: this.myForm.get('pcp')!.value,
+        notificationName: this.myForm.get('type')!.value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
         pinned: false,
@@ -206,9 +211,14 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       });
 
       this.recentActivityService.add(activity)
-        .subscribe(() => {
-          this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout });
-          window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
+        .subscribe({
+          next: () => {
+            this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout });
+            window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
+          },
+          error: () => {
+            this.snackBar.open('Error adding activity. Please try again.', 'Close', { duration: 3000 });
+          }
         });
     }
   }
@@ -219,39 +229,39 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   public updateType() {
-    if (this.myForm.get('type').value === this.activityTypes[0]) { // PCP
+    if (this.myForm.get('type')!.value === this.activityTypes[0]) { // PCP
       this.typeIsPCP = true;
       this.typeIsNotification = false;
       this.typeIsProjectNotificationNews = false;
-      this.myForm.get('pcp').enable();
-      this.myForm.get('project').enable();
+      this.myForm.get('pcp')!.enable();
+      this.myForm.get('project')!.enable();
       if (this.projectIsSelected) {
-        this.loadPcpsForProject(this.myForm.get('project').value);
-        this.loadProjectLocation(this.myForm.get('project').value);
+        this.loadPcpsForProject(this.myForm.get('project')!.value);
+        this.loadProjectLocation(this.myForm.get('project')!.value);
       }
-    } else if (this.myForm.get('type').value === this.activityTypes[1]) { // Notification
+    } else if (this.myForm.get('type')!.value === this.activityTypes[1]) { // Notification
       this.typeIsNotification = true;
       this.myForm.controls['project'].reset({ value: '', disabled: true });
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
       this.typeIsPCP = false;
-    } else if (this.myForm.get('type').value === this.activityTypes[3]) { //  projectNotificationNews
+    } else if (this.myForm.get('type')!.value === this.activityTypes[3]) { //  projectNotificationNews
       this.typeIsNotification = false;
       this.typeIsPCP = false;
       this.typeIsProjectNotificationNews = true;
-      this.myForm.get('project').enable();
+      this.myForm.get('project')!.enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
     } else { // News
       this.typeIsPCP = false;
       this.typeIsNotification = false;
       this.typeIsProjectNotificationNews = false;
-      this.myForm.get('project').enable();
+      this.myForm.get('project')!.enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
     }
     this._changeDetectorRef.detectChanges();
   }
 
   public updateProject() {
-    const currentProjectId = this.myForm.get('project').value;
+    const currentProjectId = this.myForm.get('project')!.value;
     if (currentProjectId === undefined) {
       this.projectIsSelected = false;
     } else {
@@ -264,7 +274,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     this._changeDetectorRef.detectChanges();
   }
 
-  public loadProjectLocation(projectId) {
+  public loadProjectLocation(projectId: string) {
     this.subscriptions.add(
       this.projectService.getById(projectId)
         .subscribe((res: any) => {
@@ -276,7 +286,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     );
   }
 
-  public loadPcpsForProject(projectId) {
+  public loadPcpsForProject(projectId: string) {
     this.subscriptions.add(
       this.commentPeriodService.getAllByProjectId(projectId)
         .subscribe((res: any) => {
@@ -289,7 +299,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     );
   }
 
-  buildForm(data) {
+  buildForm(data: any) {
     this.myForm = new UntypedFormGroup({
       'headline': new UntypedFormControl(data.headline),
       'content': new UntypedFormControl(data.content),

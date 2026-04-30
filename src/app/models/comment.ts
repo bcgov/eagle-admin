@@ -41,7 +41,7 @@ export class Comment {
     this.delete = obj && obj.delete || null;
     this.eaoNotes = obj && obj.eaoNotes || null;
     this.eaoStatus = obj && obj.eaoStatus || null;
-    this.isAnonymous = obj && obj.isAnonymous || null;
+    this.isAnonymous = obj?.isAnonymous ?? null;
     this.location = obj && obj.location || null;
     this.period = obj && obj.period || null;
     this.proponentNotes = obj && obj.proponentNotes || null;

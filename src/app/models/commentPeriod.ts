@@ -77,11 +77,11 @@ export class CommentPeriod {
     this.downloadRoles = obj && obj.downloadRoles || null;
     this.informationLabel = obj && obj.informationLabel || null;
     this.instructions = obj && obj.instructions || null;
-    this.isClassified = obj && obj.isClassified || null;
-    this.isMet = obj && obj.isMet || null;
-    this.isPublished = obj && obj.isPublished || null;
-    this.isResolved = obj && obj.isResolved || null;
-    this.isVetted = obj && obj.isVetted || null;
+    this.isClassified = obj?.isClassified ?? null;
+    this.isMet = obj?.isMet ?? null;
+    this.isPublished = obj?.isPublished ?? null;
+    this.isResolved = obj?.isResolved ?? null;
+    this.isVetted = obj?.isVetted ?? null;
     this.metURLAdmin = obj && obj.metURLAdmin || null;
     this.milestone = obj && obj.milestone || null;
     this.openHouses = obj && obj.openHouses || null;
