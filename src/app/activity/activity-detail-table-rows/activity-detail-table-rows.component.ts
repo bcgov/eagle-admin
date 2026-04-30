@@ -7,6 +7,7 @@ import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { CommonModule } from '@angular/common';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'tbody[app-activity-detail-table-rows]',
@@ -21,6 +22,7 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
   private router = inject(Router);
   private modalService = inject(NgbModal);
   private recentActivityService = inject(RecentActivityService);
+  private logger = inject(LoggingService);
 
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
@@ -61,7 +63,7 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
                   this._changeDetectionRef.detectChanges();
                 },
                 error: error => {
-                  console.log('error =', error);
+                  this.logger.error('delete activity failed', 'ActivityDetailTableRowsComponent', error);
                 }
               })
           );
@@ -80,14 +82,14 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
             this._changeDetectionRef.detectChanges();
           },
           error: error => {
-            console.log('error =', error);
+            this.logger.error('save activity failed', 'ActivityDetailTableRowsComponent', error);
           }
         })
     );
   }
 
   goToItem(activity) {
-    console.log('activity:', activity);
+    this.logger.debug('navigating to activity', 'ActivityDetailTableRowsComponent', { id: activity._id });
     this.router.navigate(['/activity', activity._id, 'edit']);
   }
 

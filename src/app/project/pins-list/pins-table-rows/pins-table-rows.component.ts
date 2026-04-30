@@ -7,6 +7,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
@@ -23,6 +24,7 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
   private modalService = inject(NgbModal);
   private recentActivityService = inject(RecentActivityService);
   private projectService = inject(ProjectService);
+  private logger = inject(LoggingService);
 
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
@@ -69,7 +71,7 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
                     this._changeDetectionRef.detectChanges();
                   },
                   error: error => {
-                    console.log('error =', error);
+                    this.logger.error('delete pin failed', 'PinsTableRowsComponent', error);
                   }
                 })
             );
@@ -95,14 +97,13 @@ export class PinsTableRowsComponent implements OnInit, OnDestroy, TableComponent
             this._changeDetectionRef.detectChanges();
           },
           error: error => {
-            console.log('error =', error);
+            this.logger.error('save activity failed', 'PinsTableRowsComponent', error);
           }
         })
     );
   }
 
   goToItem(activity) {
-    // console.log('activity:', activity);
     this.router.navigate(['/project-pins', activity._id, 'edit']);
   }
 

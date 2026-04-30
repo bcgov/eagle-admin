@@ -1,8 +1,8 @@
-import { enableProdMode, importProvidersFrom, inject, provideAppInitializer } from '@angular/core';
+import { enableProdMode, importProvidersFrom, inject, provideAppInitializer, ErrorHandler } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { AppRoutingModule } from './app/app-routing.module';
-import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { environment } from './environments/environment';
 import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
@@ -26,6 +26,8 @@ import { Utils } from './app/shared/utils/utils';
 import { TableTemplateUtils } from './app/shared/utils/table-template-utils';
 import { NavigationStackUtils } from './app/shared/utils/navigation-stack-utils';
 import { TokenInterceptor } from './app/shared/utils/token-interceptor';
+import { GlobalErrorHandler } from './app/services/global-error-handler';
+import { loggingInterceptor } from './app/interceptors/logging.interceptor';
 
 if (environment.production) {
   enableProdMode();
@@ -53,8 +55,10 @@ bootstrapApplication(AppComponent, {
     provideAnimations(),
     provideHttpClient(
       withInterceptorsFromDi(),
+      withInterceptors([loggingInterceptor]),
     ),
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     ApiService,
     CommentPeriodService,
     CommentService,

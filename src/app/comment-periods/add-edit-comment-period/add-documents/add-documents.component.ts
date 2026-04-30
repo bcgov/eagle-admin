@@ -15,6 +15,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-add-documents',
@@ -39,6 +40,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
   storageService = inject(StorageService);
   tableTemplateUtils = inject(TableTemplateUtils);
+  private logger = inject(LoggingService);
 
   public terms = new SearchTerms();
   private subscriptions = new Subscription();
@@ -201,7 +203,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
           }
         });
         return Promise.all(promises).then(() => {
-          console.log('Download initiated for file(s)');
+          this.logger.debug('Download initiated for file(s)', 'AddDocumentComponent');
         });
         break;
       case 'submitDocs':

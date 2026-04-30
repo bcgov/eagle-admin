@@ -1,6 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { LoggingService } from './logging.service';
 
 interface EnvConfig {
   logLevel?: number;
@@ -41,6 +42,13 @@ declare global {
 @Injectable()
 export class ConfigService {
   private httpClient = inject(HttpClient);
+  private logger = inject(LoggingService);
+
+  constructor() {
+    // Expose ConfigService on window for LoggingService to access
+    // (avoids circular dependency since LoggingService can't inject ConfigService)
+    (window as any).__configService = this;
+  }
 
   // Configuration as a signal for reactivity
   private _config = signal<EnvConfig>({});
@@ -66,9 +74,7 @@ export class ConfigService {
   public async init(): Promise<void> {
     this._config.set({ ...(window.__env || {}) });
 
-    if (this._config().logLevel === 0) {
-      console.log('ConfigService: env.js values:', this._config());
-    }
+    this.logger.debug('env.js values:', 'ConfigService', this._config());
 
     if (this._config().configEndpoint === true) {
       await this.fetchRemoteConfig();
@@ -89,11 +95,9 @@ export class ConfigService {
       const apiConfig: EnvConfig = await response.json();
       const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
       this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
-      if (this._config().logLevel === 0) {
-        console.log('ConfigService: merged with API config:', this._config());
-      }
+      this.logger.debug('merged with API config:', 'ConfigService', this._config());
     } catch (e) {
-      console.error('ConfigService: API config fetch failed, using env.js defaults:', e);
+      this.logger.error('API config fetch failed, using env.js defaults', 'ConfigService', e);
     }
   }
 
@@ -108,7 +112,7 @@ export class ConfigService {
       this._lists = lists?.[0]?.searchResults ?? [];
       this.populateRegionsList();
     } catch (e) {
-      console.error('ConfigService: Error loading lists:', e);
+      this.logger.error('Error loading lists', 'ConfigService', e);
     }
   }
 

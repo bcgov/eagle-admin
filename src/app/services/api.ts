@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import JSZip from 'jszip';
 
 import { ConfigService } from './config.service';
+import { LoggingService } from './logging.service';
 import { CommentPeriod } from '../models/commentPeriod';
 import { CommentPeriodSummary } from '../models/commentPeriodSummary';
 import { Decision } from '../models/decision';
@@ -36,6 +37,7 @@ export class ApiService {
   private http = inject(HttpClient);
   private keycloakService = inject(KeycloakService);
   private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
   private utils = inject(Utils);
 
 
@@ -64,7 +66,7 @@ export class ApiService {
 
   handleError(error: any): Observable<never> {
     const reason = error.message ? (error.error ? `${error.message} - ${error.error.message}` : error.message) : (error.status ? `${error.status} - ${error.statusText}` : 'Server error');
-    console.log('API error =', reason);
+    this.logger.error(reason, 'ApiService', error);
     if (error && error.status === 403 && !this.keycloakService.keycloakEnabled) {
       window.location.href = '/admin/login';
     }
@@ -972,7 +974,7 @@ export class ApiService {
         let itemSearchResults = null;
         try {
           itemSearchResults = await this.http.get<any[]>(`${this.pathAPI}/${itemQueryString}`, {}).toPromise();
-          console.log('SEARCH RES', itemSearchResults);
+          this.logger.debug('SEARCH RES', 'ApiService', itemSearchResults);
         } catch {
           alert('An error has occured.');
           throw Error('Unable to find inspection item.');

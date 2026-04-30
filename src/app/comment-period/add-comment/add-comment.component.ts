@@ -15,6 +15,7 @@ import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
 import { DateTime } from 'luxon';
 import { Subscription } from 'rxjs';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-add-comment',
@@ -40,6 +41,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
 
   private subscriptions = new Subscription();
@@ -144,7 +146,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       this.commentService.add(this.comment, documentsForm)
         .subscribe({
           error: error => {
-            console.log('error =', error);
+            this.logger.error('add comment failed', 'AddCommentComponent', error);
             alert('Uh-oh, couldn\'t add comment');
           },
           complete: () => { // onCompleted
@@ -213,7 +215,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
   public downloadFile(document: Document) {
     return this.api.downloadDocument(document).then(() => {
-      console.log('Download initiated for file(s)');
+      this.logger.debug('Download initiated for file(s)', 'AddCommentComponent');
     });
   }
 
@@ -282,8 +284,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   }
 
   public register() {
-    console.log('Successful registration');
-    console.log(this.addCommentForm);
+    this.logger.debug('Successful registration', 'AddCommentComponent', this.addCommentForm.value);
   }
 
   public openSnackBar(message: string, action: string) {

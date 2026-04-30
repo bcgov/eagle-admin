@@ -7,6 +7,7 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { CommonModule } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { FormsModule } from '@angular/forms';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'tbody[app-document-table-rows]',
@@ -21,6 +22,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
   private snackBar = inject(MatSnackBar);
   private documentService = inject(DocumentService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
+  private logger = inject(LoggingService);
 
   @Input() data: TableObject;
   @Input() columnData: Array<any>;
@@ -81,7 +83,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
           this._changeDetectionRef.detectChanges();
         },
         error => {
-          console.log('error =', error);
+          this.logger.error('un-feature document failed', 'DocumentTableRowsComponent', error);
           this.snackBar.open('Could not Un-Favorite document.', '', {duration: 3000});
         }
       );
@@ -92,7 +94,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
           this._changeDetectionRef.detectChanges();
         },
         error => {
-          console.log('error =', error);
+          this.logger.error('feature document failed', 'DocumentTableRowsComponent', error);
           const message = error.status === 500 ? 'Document could not be validated. Please correct validation errors and try again.' : 'Maximum favorites is 5';
           // move the magic number '5' into a configuration
           // matching config value from service

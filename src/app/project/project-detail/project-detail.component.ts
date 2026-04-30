@@ -17,6 +17,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-project-detail',
@@ -41,6 +42,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   documentService = inject(DocumentService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
 
   public isPublishing = false;
@@ -182,9 +184,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     //     },
     //     error => {
     //       this.isDeleting = false;
-    //       console.log('error =', error);
-    //       alert('Uh-oh, couldn\'t delete project');
-    //       // TODO: should fully reload project here so we have latest non-deleted objects
+    //     // TODO: should fully reload project here so we have latest non-deleted objects
     //     },
     //     () => { // onCompleted
     //       this.isDeleting = false;
@@ -227,7 +227,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           },
           error: error => {
             this.isPublishing = false;
-            console.log('error =', error);
+            this.logger.error('publish project failed', 'ProjectDetailComponent', error);
             alert('Uh-oh, couldn\'t publish project');
             // TODO: should fully reload project here so we have latest isPublished flags for objects
           },
@@ -244,7 +244,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
                   },
                   error: error => {
                     this.isPublishing = false;
-                    console.log('error =', error);
+                    this.logger.error('reload project failed', 'ProjectDetailComponent', error);
                     alert('Uh-oh, couldn\'t reload project');
                   }
                 })
@@ -265,7 +265,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           },
           error: error => {
             this.isPublishing = false;
-            console.log('error =', error);
+            this.logger.error('unpublish project failed', 'ProjectDetailComponent', error);
             alert('Uh-oh, couldn\'t publish project');
             // TODO: should fully reload project here so we have latest isPublished flags for objects
           },
@@ -282,7 +282,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
                   },
                   error: error => {
                     this.isPublishing = false;
-                    console.log('error =', error);
+                    this.logger.error('reload project failed after unpublish', 'ProjectDetailComponent', error);
                     alert('Uh-oh, couldn\'t reload project');
                   }
                 })

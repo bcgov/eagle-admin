@@ -18,6 +18,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { CommonModule } from '@angular/common';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-project-groups',
@@ -42,6 +43,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
 
@@ -198,7 +200,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
         data.map(p => {
           userData += p.data.email + ';';
         });
-        console.log(userData);
+        this.logger.debug('email list copied to clipboard', 'ProjectGroupsComponent', userData);
         const selBox = document.createElement('textarea');
         selBox.style.position = 'fixed';
         selBox.style.left = '0';
@@ -256,7 +258,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
             email: p.data.email
           });
         });
-        console.log(userData);
+        this.logger.debug('export data prepared', 'ProjectGroupsComponent', userData);
 
         // Export to CSV
         this.excelService.exportAsExcelFile(userData, 'contactList');
@@ -355,7 +357,7 @@ export class ProjectGroupsComponent implements OnInit, OnDestroy {
     //     component.router.navigate(['/p', component.currentProject._id, 'project-pins']);
     //   },
     //   error => {
-    //     console.log('error =', error);
+    //     this.logger.error(error, 'ProjectGroupsComponent');
     //     alert('Uh-oh, couldn\'t edit project');
     //   },
     // );

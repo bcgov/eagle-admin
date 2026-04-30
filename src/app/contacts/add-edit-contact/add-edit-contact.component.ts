@@ -8,6 +8,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { EditorModule } from '@tinymce/tinymce-angular';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 export interface DataModel {
@@ -28,6 +29,7 @@ export interface DataModel {
 export class AddEditContactComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private logger = inject(LoggingService);
   private navigationStackUtils = inject(NavigationStackUtils);
   private storageService = inject(StorageService);
   private userService = inject(UserService);
@@ -112,7 +114,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     if (!this.isEditing) {
       if (this.navigationObject) {
         // We're coming from a different component so we have to preserve our nav stack.
-        console.log('nav object', this.navigationObject);
+        this.logger.debug('nav object', 'AddEditContactComponent', this.navigationObject);
         const nextBreadcrumbs = [...this.navigationObject.breadcrumbs];
         nextBreadcrumbs.push(
           {
@@ -226,7 +228,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
     if (!this.isEditing) {
       this.userService.add(user)
         .subscribe(item => {
-          console.log('item', item);
+          this.logger.debug('contact added', 'AddEditContactComponent', item);
           if (this.navigationStackUtils.getLastBackUrl()) {
             this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
           } else {
@@ -237,7 +239,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       user._id = this.contactId;
       this.userService.save(user)
         .subscribe(item => {
-          console.log('item', item);
+          this.logger.debug('contact saved', 'AddEditContactComponent', item);
           this.router.navigate(['/contacts']);
         });
     }

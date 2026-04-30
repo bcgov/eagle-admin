@@ -18,6 +18,7 @@ import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { CommonModule } from '@angular/common';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-group-contact',
@@ -44,6 +45,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
+  private logger = inject(LoggingService);
 
   private groupId: any = null;
   private subscritions = new Subscription();
@@ -276,7 +278,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
             email: p.data.email
           });
         });
-        console.log(userData);
+        this.logger.debug('export data prepared', 'GroupContactComponent', userData);
 
         // Export to CSV
         this.excelService.exportAsExcelFile(userData, 'contactList');
@@ -357,7 +359,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
             component.router.navigate(['/p', component.currentProject._id, 'project-groups', 'g', component.groupId, 'members']);
           },
           error => {
-            console.log('error =', error);
+            this.logger.error('update group members failed', 'GroupContactComponent', error);
             alert('Uh-oh, couldn\'t edit project');
           },
         );

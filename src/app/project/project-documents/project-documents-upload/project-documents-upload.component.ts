@@ -12,6 +12,7 @@ import { Utils } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
@@ -30,6 +31,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   private documentService = inject(DocumentService);
   private utils = inject(Utils);
   private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
 
@@ -149,8 +151,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   }
 
   register(myForm: UntypedFormGroup) {
-    console.log('Successful registration');
-    console.log(myForm);
+    this.logger.debug('Successful registration', 'ProjectDocumentsUploadComponent', myForm.value);
   }
 
   public uploadAndPublish() {
@@ -198,7 +199,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
             // do nothing here - see complete below
           },
           error: error => {
-            console.log('error =', error);
+            this.logger.error('document upload failed', 'ProjectDocumentsUploadComponent', error);
             let message = 'Could not upload document';
             if (error?.error?.message) {
               message = error.error.message;

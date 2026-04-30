@@ -15,6 +15,7 @@ import { TableTemplateUtils } from '../../utils/table-template-utils';
 import { TableObject } from '../table-template/table-object';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableTemplateComponent } from '../table-template/table-template.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   storageService = inject(StorageService);
   navigationStackUtils = inject(NavigationStackUtils);
   tableTemplateUtils = inject(TableTemplateUtils);
+  private logger = inject(LoggingService);
 
   public terms = new SearchTerms();
   private subscriptions = new Subscription();
@@ -121,7 +123,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
 
   save() {
     if (!this.storageService.state.selectedOrgs || this.storageService.state.selectedOrgs.length === 0) {
-      console.warn('No organizations selected - aborting save');
+      this.logger.warn('No organizations selected - aborting save', 'LinkOrganizationComponent');
       alert('Please select at least one organization');
       return;
     }

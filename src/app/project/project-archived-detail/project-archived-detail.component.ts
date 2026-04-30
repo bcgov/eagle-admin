@@ -16,6 +16,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { CommonModule } from '@angular/common';
 import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-period-banner.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-project-archived-detail',
@@ -28,6 +29,7 @@ import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-p
 
 export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private logger = inject(LoggingService);
   private route = inject(ActivatedRoute);
   snackBar = inject(MatSnackBar);
   api = inject(ApiService);
@@ -140,7 +142,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
         },
         error => {
           this.isDeleting = false;
-          console.log('error =', error);
+          this.logger.error('delete project failed', 'ProjectArchivedDetailComponent', error);
           alert('Uh-oh, couldn\'t delete project');
           // TODO: should fully reload project here so we have latest non-deleted objects
         },
@@ -182,7 +184,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
           },
           error => {
             this.isPublishing = false;
-            console.log('error =', error);
+            this.logger.error('publish project failed', 'ProjectArchivedDetailComponent', error);
             alert('Uh-oh, couldn\'t publish project');
             // TODO: should fully reload project here so we have latest isPublished flags for objects
           },
@@ -198,7 +200,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
                   },
                   error: error => {
                     this.isPublishing = false;
-                    console.log('error =', error);
+                    this.logger.error('reload project failed', 'ProjectArchivedDetailComponent', error);
                     alert('Uh-oh, couldn\'t reload project');
                   }
                 })
@@ -219,7 +221,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
           },
           error: error => {
             this.isPublishing = false;
-            console.log('error =', error);
+            this.logger.error('unpublish project failed', 'ProjectArchivedDetailComponent', error);
             alert('Uh-oh, couldn\'t publish project');
             // TODO: should fully reload project here so we have latest isPublished flags for objects
           },
@@ -235,7 +237,7 @@ export class ProjectArchivedDetailComponent implements OnInit, OnDestroy {
                   },
                   error: error => {
                     this.isPublishing = false;
-                    console.log('error =', error);
+                    this.logger.error('reload project failed after unpublish', 'ProjectArchivedDetailComponent', error);
                     alert('Uh-oh, couldn\'t reload project');
                   }
                 })

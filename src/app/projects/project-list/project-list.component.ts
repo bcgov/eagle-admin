@@ -22,6 +22,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 class ProjectFilterObject {
   constructor(
@@ -61,6 +62,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private configService = inject(ConfigService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
+  private logger = inject(LoggingService);
 
   public readonly constants = Constants;
   public projects: Array<Project> = [];
@@ -627,7 +629,7 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   }
 
   clearSelectedItem(filterType: string, item: any) {
-    console.log('clear selected items: ', filterType, ' item: ', item);
+    this.logger.debug('clear selected items', 'ProjectListComponent', { filterType, item });
     if (filterType === 'eacDecision' || filterType === 'projectPhase' || filterType === 'CEAAInvolvement') {
       this.filterForUI[filterType] = this.filterForUI[filterType].filter(option => option._id !== item._id);
     } else {

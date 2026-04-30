@@ -3,6 +3,7 @@ import Analytics from 'analytics';
 import type { AnalyticsInstance } from 'analytics';
 import { penguinAnalyticsPlugin } from './penguin-analytics-plugin';
 import { ConfigService } from '../config.service';
+import { LoggingService } from '../logging.service';
 
 interface PluginWithStartTracking {
   startTracking?: () => void;
@@ -37,6 +38,7 @@ interface PluginWithStartTracking {
 })
 export class AnalyticsService {
   private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
   private analytics: AnalyticsInstance | null = null;
   private plugin: PluginWithStartTracking | null = null;
   private initialized = false;
@@ -53,23 +55,31 @@ export class AnalyticsService {
     
     // Skip analytics if no API URL configured
     if (!apiUrl) {
-      console.log('Analytics disabled: no ANALYTICS_API_URL configured');
+      this.logger.info('Analytics disabled: no ANALYTICS_API_URL configured', 'AnalyticsService');
       this.initialized = true;
       return;
     }
 
     const debug = config.ANALYTICS_DEBUG ?? (config.ENVIRONMENT === 'local');
 
-    const plugin = penguinAnalyticsPlugin({ apiUrl, sourceApp: 'eagle-admin', debug });
+    const plugin = penguinAnalyticsPlugin({
+      apiUrl,
+      sourceApp: 'eagle-admin',
+      debug,
+      logger: {
+        debug: (msg, data?) => this.logger.debug(msg, 'PenguinAnalytics', data),
+        warn: (msg, data?) => this.logger.warn(msg, 'PenguinAnalytics', data)
+      }
+    });
     this.plugin = plugin as unknown as PluginWithStartTracking;
     this.analytics = Analytics({ app: 'eagle-admin', debug, plugins: [plugin] });
     this.initialized = true;
-    
-    console.log('Analytics initialized with API URL:', apiUrl);
+
+    this.logger.info(`Analytics initialized with API URL: ${apiUrl}`, 'AnalyticsService');
   }
   startTracking(): void {
     if (!this.initialized) {
-      console.warn('Analytics not initialized, call initialize() first');
+      this.logger.warn('Analytics not initialized, call initialize() first', 'AnalyticsService');
       return;
     }
     this.plugin?.startTracking?.();

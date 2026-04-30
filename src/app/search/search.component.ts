@@ -24,6 +24,7 @@ import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
+import { LoggingService } from '../services/logging.service';
 
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
@@ -76,6 +77,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
 
   public readonly constants = Constants;
   public results: Array<any> = [];
@@ -376,7 +378,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
             this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
           },
           error: (error) => {
-            console.log('error =', error);
+            this.logger.error('search failed', 'SearchComponent', error);
 
             // update variables on error
             this.loading = false;

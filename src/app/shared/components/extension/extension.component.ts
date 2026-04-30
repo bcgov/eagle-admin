@@ -9,6 +9,7 @@ import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { Utils } from '../../utils/utils';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-extension',
@@ -28,6 +29,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   api = inject(ApiService);
   private storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
 
   public loading = false;
@@ -85,7 +87,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
               this.api.deleteExtension(this.storageService.state.project, this.storageService.state.extension)
                 .subscribe(
                   () => this.goBack(),
-                  error => console.log('error =', error)
+                  error => this.logger.error('delete extension failed', 'ExtensionComponent', error)
                 )
             );
           }
@@ -98,7 +100,7 @@ export class ExtensionComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
-    console.log('form:', this.extensionForm.value);
+    this.logger.debug('form submitted', 'ExtensionComponent', this.extensionForm.value);
 
     // Make api call to add this to the back-end.
     if (this.storageService.state.extension) {
@@ -114,14 +116,14 @@ export class ExtensionComponent implements OnInit, OnDestroy {
         new: newExtension,
         old: this.storageService.state.extension
       };
-      console.log('Update: ', extensionObj);
+      this.logger.debug('updating extension', 'ExtensionComponent', extensionObj);
       const self = this;
       this.api.editExtension(this.storageService.state.project, extensionObj)
         .subscribe(res => {
-          console.log('res:', res);
+          this.logger.debug('extension updated', 'ExtensionComponent', res);
           self.goBack();
         }, err => {
-          console.log('err', err);
+          this.logger.error('edit extension failed', 'ExtensionComponent', err);
         });
     } else {
       // New
@@ -131,14 +133,14 @@ export class ExtensionComponent implements OnInit, OnDestroy {
         start: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.start),
         end: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
       };
-      console.log('Adding ', newExtension.type, ':', newExtension);
+      this.logger.debug('adding extension', 'ExtensionComponent', newExtension);
       const self = this;
       this.api.addExtension(this.storageService.state.project, newExtension)
         .subscribe(res => {
-          console.log('res:', res);
+          this.logger.debug('extension added', 'ExtensionComponent', res);
           self.goBack();
         }, err => {
-          console.log('err', err);
+          this.logger.error('add extension failed', 'ExtensionComponent', err);
         });
     }
   }

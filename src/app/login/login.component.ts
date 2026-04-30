@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { KeycloakService } from '../services/keycloak.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LoggingService } from '../services/logging.service';
 
 @Component({
     selector: 'app-login',
@@ -22,6 +23,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private api = inject(ApiService);
   private keycloakService = inject(KeycloakService);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
   model: any = {};
@@ -48,7 +50,7 @@ export class LoginComponent implements OnInit, OnDestroy {
             }
           },
           error => {
-            console.log('error =', error);
+            this.logger.error('login failed', 'LoginComponent', error);
             this.error = 'Username or password is incorrect';
             this.loading = false;
           }

@@ -22,6 +22,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
 import { Subscription } from 'rxjs';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-add-edit-comment-period',
@@ -54,6 +55,7 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
 
@@ -344,13 +346,12 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   }
 
   public register() {
-    console.log('Successful registration');
-    console.log(this.commentPeriodForm);
+    this.logger.debug('Successful registration', 'AddEditCommentPeriodComponent', this.commentPeriodForm.value);
   }
 
   private extractVarsFromInstructions(instructionString: string, form: UntypedFormGroup): void {
     if (!instructionString || (!form && !form.controls)) {
-      console.warn('Missing instruction string or form controls');
+      this.logger.warn('Missing instruction string or form controls', 'AddEditCommentPeriodComponent');
       return;
     }
 

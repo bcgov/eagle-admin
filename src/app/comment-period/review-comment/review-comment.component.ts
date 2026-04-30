@@ -12,6 +12,7 @@ import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
 import { DatePipe, CommonModule } from '@angular/common';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-review-comment',
@@ -30,6 +31,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
 
   private subscriptions = new Subscription();
@@ -216,7 +218,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
 
   public downloadDocument(document: Document) {
     return this.api.downloadDocument(document).then(() => {
-      console.log('Download initiated for file(s)');
+      this.logger.debug('Download initiated for file(s)', 'ReviewCommentComponent');
     });
   }
 
@@ -229,8 +231,7 @@ export class ReviewCommentComponent implements OnInit, OnDestroy {
   }
 
   public register() {
-    console.log('Successful registration');
-    console.log(this.commentReviewForm);
+    this.logger.debug('Successful registration', 'ReviewCommentComponent', this.commentReviewForm.value);
   }
 
   public openSnackBar(message: string, action: string) {

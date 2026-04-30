@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
 import { Subscription } from 'rxjs';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-add-label',
@@ -16,6 +17,7 @@ export class AddLabelComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private storageService = inject(StorageService);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
   public currentProjectId: string;
@@ -45,7 +47,7 @@ export class AddLabelComponent implements OnInit, OnDestroy {
 
     this.labels = this.storageService.state.labels;
     this.back = this.storageService.state.back;
-    console.log('labels:', this.labels);
+    this.logger.debug('labels loaded', 'AddLabelComponent', this.labels);
   }
 
   toggleSelected(label: any) {
@@ -54,8 +56,7 @@ export class AddLabelComponent implements OnInit, OnDestroy {
   }
 
   register(myForm: UntypedFormGroup) {
-    console.log('Successful registration');
-    console.log(myForm);
+    this.logger.debug('Successful registration', 'AddLabelComponent', myForm.value);
   }
 
   cancel() {

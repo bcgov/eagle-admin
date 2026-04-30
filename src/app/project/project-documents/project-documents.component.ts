@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 class DocumentFilterObject {
@@ -64,6 +65,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private tableDocumentTemplateUtils = inject(TableDocumentTemplateUtils);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
@@ -361,7 +363,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
 
         return Promise.all(promises).then(() => {
-          console.log('Download initiated for file(s)');
+          this.logger.debug('Download initiated for file(s)', 'ProjectDocumentsComponent');
         });
       case 'publish':
         this.publishDocument();
@@ -401,7 +403,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
         forkJoin(observables).subscribe({
           error: err => {
-            console.log('Error:', err);
+            this.logger.error('publish documents failed', 'ProjectDocumentsComponent', err);
           },
           complete: () => {
             this.loading = false;
@@ -443,7 +445,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
         forkJoin(observables).subscribe({
           error: err => {
-            console.log('Error:', err);
+            this.logger.error('unpublish documents failed', 'ProjectDocumentsComponent', err);
           },
           complete: () => {
             this.loading = false;

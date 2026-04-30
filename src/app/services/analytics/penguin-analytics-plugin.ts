@@ -12,6 +12,10 @@ export interface PenguinAnalyticsConfig {
   apiUrl: string;
   sourceApp: string;
   debug?: boolean;
+  logger?: {
+    debug: (msg: string, data?: any) => void;
+    warn: (msg: string, data?: any) => void;
+  };
 }
 
 interface EventPayload {
@@ -55,7 +59,7 @@ const sendEvent = (config: PenguinAnalyticsConfig, eventData: Partial<EventPaylo
   }
 
   if (config.debug) {
-    console.log('[Penguin Analytics] Sending:', payload);
+    config.logger?.debug('[Penguin Analytics] Sending:', payload);
   }
 
   fetch(config.apiUrl, {
@@ -64,7 +68,7 @@ const sendEvent = (config: PenguinAnalyticsConfig, eventData: Partial<EventPaylo
     body: JSON.stringify(payload),
     keepalive: true
   }).catch(err => {
-    if (config.debug) console.warn('[Penguin Analytics] Failed:', err);
+    if (config.debug) config.logger?.warn('[Penguin Analytics] Failed:', err);
   });
 };
 
@@ -186,7 +190,7 @@ export function penguinAnalyticsPlugin(pluginConfig: PenguinAnalyticsConfig): An
 
     initialize: ({ config: cfg }: { config: PenguinAnalyticsConfig; instance: AnalyticsInstance }) => {
       config = cfg;
-      if (config.debug) console.log('[Penguin Analytics] Initialized');
+      if (config.debug) config.logger?.debug('[Penguin Analytics] Initialized');
       
       // Don't start tracking until user is identified
       document.addEventListener('click', handleLinkClick, { passive: true });

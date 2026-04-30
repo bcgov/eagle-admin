@@ -17,6 +17,7 @@ import { PnDocumentTableRowsComponent } from './project-notification-document-ta
 import { Document } from 'src/app/models/document';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { CommonModule } from '@angular/common';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-project-notification-documents',
@@ -44,6 +45,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
@@ -201,7 +203,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
         }
 
         return Promise.all(promises).then(() => {
-          console.log('Download initiated for file(s)');
+          this.logger.debug('Download initiated for file(s)', 'ProjectNotificationDocumentsComponent');
         });
       case 'publish':
         this.publishDocument();
@@ -244,7 +246,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
           forkJoin(observables).subscribe({
             error: err => {
-              console.log('Error:', err);
+              this.logger.error('publish documents failed', 'ProjectNotificationDocumentsComponent', err);
             },
             complete: () => {
               this.loading = false;
@@ -291,7 +293,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
 
           forkJoin(observables).subscribe({
             error: err => {
-              console.log('Error:', err);
+              this.logger.error('unpublish documents failed', 'ProjectNotificationDocumentsComponent', err);
             },
             complete: () => {
               this.loading = false;
@@ -341,7 +343,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           try {
             await Promise.all(itemsToDelete);
           } catch (err) {
-            console.log('Error deleting documents:', err);
+            this.logger.error('delete documents failed', 'ProjectNotificationDocumentsComponent', err);
           } finally {
             this.loading = false;
             this.onSubmit();

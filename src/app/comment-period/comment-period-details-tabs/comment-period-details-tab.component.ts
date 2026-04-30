@@ -12,6 +12,7 @@ import { SafeHtmlPipe } from 'src/app/shared/pipes/safe-html-converter.pipe';
 import { CommentStatsComponent } from 'src/app/shared/components/comment-stats/comment-stats.component';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-comment-period-details-tab',
@@ -35,6 +36,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
+  private logger = inject(LoggingService);
 
 
   private subscriptions = new Subscription();
@@ -157,7 +159,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit, OnDestroy {
 
   public downloadDocument(document) {
     return this.api.downloadDocument(document).then(() => {
-      console.log('Download initiated for file');
+      this.logger.debug('Download initiated for file', 'CommentPeriodDetailsTabComponent');
     });
   }
 

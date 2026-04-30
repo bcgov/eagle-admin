@@ -17,6 +17,7 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { Utils } from 'src/app/shared/utils/utils';
 import { switchMap } from 'rxjs/operators';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
   public myForm: UntypedFormGroup;
@@ -544,7 +546,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
                       // onNext
                     },
                     error: (error) => {
-                      console.log('error =', error);
+                      this.logger.error('unpublish project failed', 'FormTab2018Component', error);
                       this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
                     },
                     complete: () => {

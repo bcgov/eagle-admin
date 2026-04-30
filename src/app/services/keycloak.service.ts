@@ -1,12 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ConfigService } from './config.service';
+import { LoggingService } from './logging.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
 import Keycloak from 'keycloak-js';
 
 @Injectable()
 export class KeycloakService {
   private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
 
   public LAST_IDP_AUTHENTICATED = 'kc-last-idp-authenticated';
   private keycloakAuth: any;
@@ -36,12 +38,9 @@ export class KeycloakService {
           clientId: !keycloak_client_id ? 'eagle-admin-console' : keycloak_client_id
         };
 
-        // this.loggerService.debug('KC Auth init.');
-
         this.keycloakAuth = new Keycloak(config);
 
         this.keycloakAuth.onAuthSuccess = () => {
-          // this.loggerService.debug('onAuthSuccess');
           const idp = this.getIdpFromToken();
           if (idp !== '') {
             localStorage.setItem(
@@ -51,32 +50,28 @@ export class KeycloakService {
           }
         };
 
-        this.keycloakAuth.onAuthError = function () {
-          console.log('onAuthError');
+        this.keycloakAuth.onAuthError = () => {
+          this.logger.warn('onAuthError', 'Keycloak');
         };
 
-        this.keycloakAuth.onAuthRefreshSuccess = function () {
-          // console.log('onAuthRefreshSuccess');
-        };
+        this.keycloakAuth.onAuthRefreshSuccess = () => {};
 
-        this.keycloakAuth.onAuthRefreshError = function () {
-          console.log('onAuthRefreshError');
+        this.keycloakAuth.onAuthRefreshError = () => {
+          this.logger.warn('onAuthRefreshError', 'Keycloak');
           this.keycloakAuth.login({ idpHint: this.idpHintEnum.IDIR });
         };
 
-        this.keycloakAuth.onAuthLogout = () => {
-          // console.log('onAuthLogout');
-        };
+        this.keycloakAuth.onAuthLogout = () => {};
 
         // Try to get refresh tokens in the background
         this.keycloakAuth.onTokenExpired = () => {
           this.keycloakAuth
             .updateToken()
             .then((refreshed) => {
-              console.log('KC refreshed token?:', refreshed);
+              this.logger.debug('token refreshed', 'Keycloak', { refreshed });
             })
             .catch((err) => {
-              console.log('onTokenExpired:KC refresh error:', err);
+              this.logger.error('onTokenExpired: refresh error', 'Keycloak', err);
             });
         };
 
@@ -89,7 +84,7 @@ export class KeycloakService {
             scope: 'openid roles',
           })
           .then((auth) => {
-            console.log('KC Success:', auth);
+            this.logger.debug('init success', 'Keycloak', { auth });
             // Clean up OAuth params from URL hash if present (Keycloak uses fragment mode by default)
             // This prevents the page from reloading in a loop
             if (window.location.hash && window.location.hash.includes('state=')) {
@@ -99,7 +94,7 @@ export class KeycloakService {
             resolve();
           })
           .catch((err) => {
-            console.log('KC error2:', err);
+            this.logger.error('init failed', 'Keycloak', err);
             reject();
           });
       });
@@ -169,12 +164,12 @@ export class KeycloakService {
       this.keycloakAuth
         .updateToken(30)
         .then((refreshed) => {
-          console.log(`KC refreshed token?: ${refreshed}`);
+          this.logger.debug('token refreshed', 'Keycloak', { refreshed });
           observer.next(refreshed);
           observer.complete();
         })
         .catch((err) => {
-          console.log(`KC refresh error: ${err}`);
+          this.logger.error('refresh error', 'Keycloak', err);
           observer.error();
         });
 

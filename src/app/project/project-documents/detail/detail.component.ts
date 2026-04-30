@@ -12,6 +12,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-detail',
@@ -28,6 +29,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private storageService = inject(StorageService);
   private snackBar = inject(MatSnackBar);
+  private logger = inject(LoggingService);
   private utils = inject(Utils);
   private documentService = inject(DocumentService);
 
@@ -66,7 +68,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
       this.documentService.publish(this.document._id).subscribe(
         null,
         error => {
-          console.log('error =', error);
+          this.logger.error('publish document failed', 'DocumentDetailComponent', error);
           alert('Uh-oh, couldn\'t update document');
         },
         () => {
@@ -78,7 +80,7 @@ export class DocumentDetailComponent implements OnInit, OnDestroy {
       this.documentService.unPublish(this.document._id).subscribe(
         null,
         error => {
-          console.log('error =', error);
+          this.logger.error('unpublish document failed', 'DocumentDetailComponent', error);
           alert('Uh-oh, couldn\'t update document');
         },
         () => {

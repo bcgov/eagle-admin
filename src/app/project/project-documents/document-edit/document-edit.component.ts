@@ -9,6 +9,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-document-edit',
@@ -25,6 +26,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private storageService = inject(StorageService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
   private readonly SNACKBAR_TIMEOUT = 1500;
@@ -56,7 +58,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.documents = this.storageService.state.selectedDocs;
     this.currentProject = this.storageService.state.currentProject.data;
-    console.log('this.documents:', this.documents);
+    this.logger.debug('documents loaded', 'DocumentEditComponent', this.documents);
     // Check if documents are null (nav straight to this page)
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
@@ -124,7 +126,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     if (this.storageService.state.labels) {
       // this.labels = this.storageService.state.labels;
     }
-    console.log('this.myForm:', this.myForm.value);
+    this.logger.debug('form initialized', 'DocumentEditComponent', this.myForm.value);
     this.loading = false;
   }
 
@@ -204,7 +206,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.loading = true;
 
     // Save all the elements to all the documents.
-    console.log('this.myForm:', this.myForm);
+    this.logger.debug('saving documents', 'DocumentEditComponent', this.myForm.value);
     // go through and upload one at a time.
     const observables = [];
 
@@ -278,7 +280,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   addLabels() {
-    console.log('Adding labels');
+    this.logger.debug('adding labels', 'DocumentEditComponent');
     this.storageService.state = { type: 'form', data: this.myForm };
     this.storageService.state = { type: 'labels', data: this.labels };
     this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-documents', 'edit'], label: 'Edit Document(s)' };
@@ -301,7 +303,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
               // do nothing here - see onCompleted() function below
             },
             error => {
-              console.log('error =', error);
+              this.logger.error('update document publish status failed', 'DocumentEditComponent', error);
               alert('Uh-oh, couldn\'t update document\'s publish status');
               // TODO: should fully reload project here so we have latest non-deleted objects
             },
@@ -321,8 +323,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   register(myForm: UntypedFormGroup) {
-    console.log('Successful registration');
-    console.log(myForm);
+    this.logger.debug('Successful registration', 'DocumentEditComponent', myForm.value);
   }
 
   public openSnackBar(message: string, action: string) {

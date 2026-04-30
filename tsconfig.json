@@ -17,6 +17,7 @@
     ],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "strict": false
   }
 }

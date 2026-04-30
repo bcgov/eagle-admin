@@ -9,6 +9,7 @@ import { NotificationProjectService } from 'src/app/services/notification-projec
 import { StorageService } from 'src/app/services/storage.service';
 import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
     selector: 'app-notification-project',
@@ -27,6 +28,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
   documentService = inject(DocumentService);
   private storageService = inject(StorageService);
   private _changeDetectorRef = inject(ChangeDetectorRef);
+  private logger = inject(LoggingService);
 
 
   private subscriptions: Subscription = new Subscription();
@@ -110,7 +112,7 @@ export class ProjectNotificationDetailComponent implements OnInit, OnDestroy {
 
   public downloadDocument(document) {
     return this.api.downloadDocument(document).then(() => {
-      console.log('Download initiated for file');
+      this.logger.debug('Download initiated for file', 'ProjectNotificationDetailComponent');
     });
   }
 

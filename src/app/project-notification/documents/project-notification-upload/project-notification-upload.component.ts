@@ -13,6 +13,7 @@ import { Document } from 'src/app/models/document';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
+import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
@@ -31,6 +32,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private configService = inject(ConfigService);
   private utils = inject(Utils);
+  private logger = inject(LoggingService);
 
   private subscriptions = new Subscription();
 
@@ -77,8 +79,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   }
 
   register(myForm: UntypedFormGroup) {
-    console.log('Successful registration');
-    console.log(myForm);
+    this.logger.debug('Successful registration', 'ProjectNotificationUploadComponent', myForm.value);
   }
 
   public uploadAndPublish() {
@@ -141,7 +142,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
         .subscribe({
           next: () => { /* onNext */ },
           error: error => {
-            console.log('error =', error);
+            this.logger.error('document upload failed', 'ProjectNotificationUploadComponent', error);
             alert('Document upload failed due to a service error.');
             this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
             this.loading = false;
