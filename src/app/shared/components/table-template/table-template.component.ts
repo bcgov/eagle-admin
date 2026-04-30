@@ -48,6 +48,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
+    this.column = this.data.paginationData.sortBy;
     this.loadComponent();
     this.activePageSize = parseInt(this.data.paginationData.pageSize, 10);
     const totalItems = parseInt(this.data.paginationData.totalListItems, 10);

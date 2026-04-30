@@ -41,22 +41,39 @@ td {
   font-weight: 600;
 }
 
+.table thead th > div {
+  display: inline;
+}
+
 .table thead th.sortable {
   transition: border-color ease-out 0.2s;
   cursor: pointer;
   user-select: none;
 }
 
-.table thead th.sortable:hover {
+.table thead th.sortable:hover,
+.table thead th.sortable:has(.sort-asc),
+.table thead th.sortable:has(.sort-desc) {
   border-bottom-color: var(--table-header-sort-active);
 }
 
-.table thead th.sortable.sort-asc,
-.table thead th.sortable.sort-desc {
-  color: #007bff;
-  border-bottom-color: #007bff;
-  background: transparent;
-  text-shadow: none;
+/* Sort arrow indicators */
+.sort {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+}
+
+.sort-asc {
+  border-bottom: 4px solid var(--table-header-sort-active);
+}
+
+.sort-desc {
+  border-top: 4px solid var(--table-header-sort-active);
 }
 
 .table tbody td {

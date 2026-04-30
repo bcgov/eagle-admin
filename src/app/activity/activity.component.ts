@@ -124,6 +124,9 @@ export class ActivityComponent implements OnDestroy {
               params,
               this.filterForURL
             );
+            if (this.tableParams.sortBy === '') {
+              this.tableParams.sortBy = '-dateAdded';
+            }
             return this.route.data;
           })
         )
