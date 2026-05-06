@@ -60,7 +60,7 @@ export class ConfigService {
   // UI state
   private _baseLayerName = 'World Topographic';
   private _lists: any[] = [];
-  private _listsLoaded = false;
+  private _listsPromise: Promise<void> | null = null;
   private _regions: any[] = [];
 
   /**
@@ -101,19 +101,20 @@ export class ConfigService {
     }
   }
 
-  /**
-   * Load lists from API (called lazily on first access to getLists()).
-   * Safe to call post-bootstrap — HttpClient works normally here.
-   */
-  private async loadLists(): Promise<void> {
-    try {
-      const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
-      const lists = await firstValueFrom(this.httpClient.get<any>(url));
-      this._lists = lists?.[0]?.searchResults ?? [];
-      this.populateRegionsList();
-    } catch (e) {
-      this.logger.error('Error loading lists', 'ConfigService', e);
+  public ensureListsLoaded(): Promise<void> {
+    if (!this._listsPromise) {
+      this._listsPromise = (async () => {
+        try {
+          const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
+          const lists = await firstValueFrom(this.httpClient.get<any>(url));
+          this._lists = lists?.[0]?.searchResults ?? [];
+          this.populateRegionsList();
+        } catch (e) {
+          this.logger.error('Error loading lists', 'ConfigService', e);
+        }
+      })();
     }
+    return this._listsPromise;
   }
 
   /**
@@ -129,10 +130,7 @@ export class ConfigService {
   }
 
   get lists(): any[] {
-    if (!this._listsLoaded) {
-      this._listsLoaded = true;
-      this.loadLists();
-    }
+    this.ensureListsLoaded();
     return this._lists;
   }
 

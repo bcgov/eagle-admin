@@ -59,6 +59,11 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     this.currentProject = this.storageService.state.currentProject.data;
     this.docTotal = this.storageService.state.currentProject.docTotal;
     this.buildForm();
+    this.initLists();
+  }
+
+  async initLists() {
+    await this.configService.ensureListsLoaded();
     this.getLists();
     this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
   }

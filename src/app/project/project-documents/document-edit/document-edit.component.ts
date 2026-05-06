@@ -65,8 +65,13 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     } else {
       this.legislationYear = this.documents[0].legislation ? this.documents[0].legislation.toString() : this.legislationYear;
       this.buildForm();
-      this.getLists();
+      this.initLists();
     }
+  }
+
+  async initLists() {
+    await this.configService.ensureListsLoaded();
+    this.getLists();
   }
 
   buildForm() {

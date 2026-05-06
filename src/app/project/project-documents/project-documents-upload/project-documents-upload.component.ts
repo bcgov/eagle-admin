@@ -64,6 +64,11 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.currentProject = this.storageService.state.currentProject.data;
     this.buildForm();
+    this.initLists();
+  }
+
+  async initLists() {
+    await this.configService.ensureListsLoaded();
     this.getLists();
   }
 

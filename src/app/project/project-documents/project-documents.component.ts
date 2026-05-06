@@ -167,6 +167,11 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   public canUnpublish;
 
   ngOnInit() {
+    this.initLists();
+  }
+
+  async initLists() {
+    await this.configService.ensureListsLoaded();
     if (this.milestones.length === 0) {
       const milestones = this.configService.lists.filter(item => item.type === 'label');
       this.milestones = milestones.slice().sort((a, b) => {
