@@ -1,14 +1,16 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, inject, DestroyRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Topic } from 'src/app/models/topic';
 import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
+import { SearchService } from 'src/app/services/search.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { LoggingService } from 'src/app/services/logging.service';
+import { finalize } from 'rxjs/operators';
 
 
 export interface DataModel {
@@ -18,27 +20,48 @@ export interface DataModel {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './add-edit-contact.component.html',
-    styleUrls: ['./add-edit-contact.component.css'],
-    standalone: true,
-    imports: [ReactiveFormsModule, EditorModule],
+    styleUrl: './add-edit-contact.component.css',
+    imports: [ReactiveFormsModule, EditorModule, RouterLink],
 })
 
 // NOTE: dialog components must not implement OnDestroy
 //       otherwise they don't return a result
-export class AddEditContactComponent implements OnInit, OnDestroy {
+export class AddEditContactComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private logger = inject(LoggingService);
   private navigationStackUtils = inject(NavigationStackUtils);
   private storageService = inject(StorageService);
   private userService = inject(UserService);
+  private searchService = inject(SearchService);
+  private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
 
-  private subscriptions = new Subscription();
   private navigationObject;
 
   public currentProject;
-  public contactForm: UntypedFormGroup;
+  public contactForm: FormGroup<{
+    firstName: FormControl<string | null>;
+    middleName: FormControl<string | null>;
+    lastName: FormControl<string | null>;
+    email: FormControl<string | null>;
+    org: FormControl<string | null>;
+    title: FormControl<string | null>;
+    phoneNumber: FormControl<string | null>;
+    salutation: FormControl<string | null>;
+    department: FormControl<string | null>;
+    faxNumber: FormControl<string | null>;
+    cellPhoneNumber: FormControl<string | null>;
+    address1: FormControl<string | null>;
+    address2: FormControl<string | null>;
+    city: FormControl<string | null>;
+    province: FormControl<string | null>;
+    country: FormControl<string | null>;
+    postalCode: FormControl<string | null>;
+    notes: FormControl<string | null>;
+  }>;
   public isEditing = false;
   public loading = false;
   public contactOrganizationName = '';
@@ -47,6 +70,7 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   public tinyMceSettings = {
     skin: false,
     browser_spellcheck: true,
+    promotion: false,
     height: 240
   };
   public phonePattern;
@@ -63,51 +87,55 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
       org = this.storageService.state.selectedOrganization._id;
     }
 
-    this.subscriptions.add(
-      this.route.data
-        .subscribe(res => {
-          this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
-          this.contactId = this.isEditing ? res.contact.data._id : '';
+    const contactId = this.route.snapshot.paramMap.get('contactId');
+    this.isEditing = !!contactId;
+    this.contactId = contactId || '';
 
-          if (this.storageService.state.contactForm == null) {
-            if (!this.isEditing) {
-              this.buildForm({
-                'firstName': '',
-                'middleName': '',
-                'lastName': '',
-                'displayName': '',
-                'email': '',
-                'org': org,
-                'title': '',
-                'phoneNumber': '',
-                'salutation': '',
-                'department': '',
-                'faxNumber': '',
-                'cellPhoneNumber': '',
-                'address1': '',
-                'address2': '',
-                'city': '',
-                'province': '',
-                'country': '',
-                'postalCode': '',
-                'notes': ''
-              });
-            } else {
-              if (org !== '') {
-                res.contact.data.org = org;
-                res.contact.data.orgName = this.contactOrganizationName;
-              } else {
-                this.contactOrganizationName = res.contact.data.orgName;
-              }
-              this.buildForm(res.contact.data);
-            }
+    if (this.storageService.state.contactForm == null) {
+      if (!this.isEditing) {
+        this.buildForm({
+          'firstName': '',
+          'middleName': '',
+          'lastName': '',
+          'displayName': '',
+          'email': '',
+          'org': org,
+          'title': '',
+          'phoneNumber': '',
+          'salutation': '',
+          'department': '',
+          'faxNumber': '',
+          'cellPhoneNumber': '',
+          'address1': '',
+          'address2': '',
+          'city': '',
+          'province': '',
+          'country': '',
+          'postalCode': '',
+          'notes': ''
+        });
+        this.loading = false;
+      } else {
+        this.loading = true;
+        this.searchService.getItem(contactId, 'User').pipe(
+          takeUntilDestroyed(this.destroyRef),
+          finalize(() => { this.loading = false; this.cdr.markForCheck(); })
+        ).subscribe(res => {
+          if (!res?.data) { return; }
+          if (org !== '') {
+            res.data.org = org;
+            res.data.orgName = this.contactOrganizationName;
           } else {
-            this.contactForm = this.storageService.state.contactForm;
-            this.contactForm.controls.org.setValue(org);
+            this.contactOrganizationName = res.data.orgName;
           }
-          this.loading = false;
-        })
-    );
+          this.buildForm(res.data);
+        });
+      }
+    } else {
+      this.contactForm = this.storageService.state.contactForm;
+      this.contactForm.controls.org.setValue(org);
+      this.loading = false;
+    }
   }
 
   private setBreadcrumbs() {
@@ -159,25 +187,25 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
 
   private buildForm(data) {
-    this.contactForm = new UntypedFormGroup({
-      'firstName': new UntypedFormControl(data.firstName),
-      'middleName': new UntypedFormControl(data.middleName),
-      'lastName': new UntypedFormControl(data.lastName),
-      'email': new UntypedFormControl(data.email),
-      'org': new UntypedFormControl(data.org),
-      'title': new UntypedFormControl(data.title),
-      'phoneNumber': new UntypedFormControl(data.phoneNumber),
-      'salutation': new UntypedFormControl(data.salutation),
-      'department': new UntypedFormControl(data.department),
-      'faxNumber': new UntypedFormControl(data.faxNumber),
-      'cellPhoneNumber': new UntypedFormControl(data.cellPhoneNumber),
-      'address1': new UntypedFormControl(data.address1),
-      'address2': new UntypedFormControl(data.address2),
-      'city': new UntypedFormControl(data.city),
-      'province': new UntypedFormControl(data.province),
-      'country': new UntypedFormControl(data.country),
-      'postalCode': new UntypedFormControl(data.postalCode),
-      'notes': new UntypedFormControl(data.notes),
+    this.contactForm = new FormGroup({
+      'firstName': new FormControl<string | null>(data.firstName, Validators.required),
+      'middleName': new FormControl<string | null>(data.middleName),
+      'lastName': new FormControl<string | null>(data.lastName, Validators.required),
+      'email': new FormControl<string | null>(data.email),
+      'org': new FormControl<string | null>(data.org, Validators.required),
+      'title': new FormControl<string | null>(data.title),
+      'phoneNumber': new FormControl<string | null>(data.phoneNumber),
+      'salutation': new FormControl<string | null>(data.salutation),
+      'department': new FormControl<string | null>(data.department),
+      'faxNumber': new FormControl<string | null>(data.faxNumber),
+      'cellPhoneNumber': new FormControl<string | null>(data.cellPhoneNumber),
+      'address1': new FormControl<string | null>(data.address1),
+      'address2': new FormControl<string | null>(data.address2),
+      'city': new FormControl<string | null>(data.city),
+      'province': new FormControl<string | null>(data.province),
+      'country': new FormControl<string | null>(data.country),
+      'postalCode': new FormControl<string | null>(data.postalCode),
+      'notes': new FormControl<string | null>(data.notes),
     });
   }
 
@@ -189,13 +217,13 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   public onSubmit() {
     // Validating form
     // TODO: cover all validation cases.
-    if (this.contactForm.controls.firstName.value === '') {
+    if (!this.contactForm.controls.firstName.value) {
       alert('First name cannot be empty.');
       return;
-    } else if (this.contactForm.controls.lastName.value === '') {
+    } else if (!this.contactForm.controls.lastName.value) {
       alert('Last name cannot be empty.');
       return;
-    } else if (this.contactForm.controls.org.value === '') {
+    } else if (!this.contactForm.controls.org.value) {
       alert('You must select an organization.');
       return;
     }
@@ -281,9 +309,5 @@ export class AddEditContactComponent implements OnInit, OnDestroy {
   }
   get cellPhoneNumber() {
     return this.contactForm.get('cellPhoneNumber');
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

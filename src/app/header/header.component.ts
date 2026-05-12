@@ -1,9 +1,8 @@
-import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, computed, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router, RouterModule } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription } from 'rxjs';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
 import { ApiService } from '../services/api';
@@ -13,9 +12,10 @@ import { KeycloakService } from '../services/keycloak.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
+  styleUrl: './header.component.css',
   animations: [
     trigger('toggleNav', [
       state('navClosed', style({
@@ -32,11 +32,10 @@ import { JwtUtil } from '../shared/utils/jwt-utils';
       ]),
     ]),
   ],
-  standalone: true,
-  imports: [CommonModule, RouterModule]
+  imports: [RouterModule]
 })
 
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
   private api = inject(ApiService);
   private analyticsService = inject(AnalyticsService);
   private configService = inject(ConfigService);
@@ -65,12 +64,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   };
   private dayCalculatorModal: NgbModalRef = null;
   public showDayCalculatorModal = false;
-  private readonly subscriptions = new Subscription();
+  private destroyRef = inject(DestroyRef);
 
   constructor() {
     const router = this.router;
 
-    this.subscriptions.add(router.events
+    router.events
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         const token = this.keycloakService.getToken();
         // TODO: Change this to observe the change in the _api.token
@@ -82,7 +82,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
           this.welcomeMsg = 'Login';
           this.jwt = null;
         }
-      }));
+      });
   }
 
   ngOnInit() {
@@ -147,7 +147,4 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isNavMenuOpen = false;
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

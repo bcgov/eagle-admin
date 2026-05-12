@@ -1,5 +1,5 @@
 <nav class="action-container" aria-label="breadcrumb">
-  @if (!loading) {
+  @if (!loading()) {
     <ol class="breadcrumb">
       @for (breadcrumb of navigationObject.breadcrumbs; track breadcrumb) {
         <li class="breadcrumb-item">
@@ -12,7 +12,13 @@
   }
 </nav>
 
-@if (!loading) {
+@if (loading()) {
+  <div class="spinner-container">
+    <div class="spinner-new rotating"></div>
+  </div>
+}
+
+@if (!loading()) {
 <div class="container-fluid-padding">
   <form #f="ngForm" class="search-form ui form" (ngSubmit)="getPaginatedDocs(1)">
     <p><b>Name Filter:</b></p>

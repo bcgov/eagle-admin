@@ -1,44 +1,44 @@
-import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { ToastService } from 'src/app/services/toast.service';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './project-notification-document-table-rows.component.html',
-    styleUrls: ['./project-notification-document-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule, ListConverterPipe, RouterModule, FormsModule],
+    styleUrl: './project-notification-document-table-rows.component.css',
+    imports: [DatePipe, ListConverterPipe, RouterModule, FormsModule],
 })
 
 export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
-  @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
+  selectedCount = output<any>();
 
   public documents: any;
   public paginationData: any;
   public activeLegislationYear: number;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.documents = this.data.data;
-    this.paginationData = this.data.paginationData;
+    this.documents = this.data().data;
+    this.paginationData = this.data().paginationData;
     this.activeLegislationYear = 2018;
 
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   selectItem(item) {
@@ -59,7 +59,7 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
     if (item.project && typeof item.project === 'object' && '_id' in item.project) {
       this.router.navigate(['pn', item.project._id, 'project-notification-documents', 'detail', item._id]);
     } else {
-      this.snackBar.open('Uh-oh, couldn\'t open document', 'Close');
+      this.toastService.error('Uh-oh, couldn\'t open document');
     }
   }
 }

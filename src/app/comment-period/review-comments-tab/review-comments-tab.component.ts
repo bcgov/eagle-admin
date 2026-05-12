@@ -1,35 +1,35 @@
-import { Component, ChangeDetectorRef, OnInit, OnDestroy, inject } from '@angular/core';
-
-import { Subscription } from 'rxjs';
+import { Component, DestroyRef, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef, input } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Comment } from 'src/app/models/comment';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-review-comments-tab',
   templateUrl: './review-comments-tab.component.html',
-  styleUrls: ['./review-comments-tab.component.css'],
-  standalone: true,
+  styleUrl: './review-comments-tab.component.css',
   imports: [
-    CommonModule,
     TableTemplateComponent
   ]
 })
 
-export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
-  private _changeDetectionRef = inject(ChangeDetectorRef);
+export class ReviewCommentsTabComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
   private commentService = inject(CommentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
+
+  project = input.required<any>();
 
   public comments: Array<Comment>;
   public loading = true;
@@ -42,7 +42,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   };
 
   public commentTableData: TableObject;
-  public commentTableColumns: any[] = [
+  public commentTableColumns: TableColumn[] = [
     {
       name: 'ID',
       value: 'commentId',
@@ -85,11 +85,10 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
   public commentPeriodId: string;
   public baseRouteUrl: string;
 
-  private subscriptions = new Subscription();
-
   ngOnInit() {
     if (this.storageService.state.commentReviewTabParams == null) {
       this.route.params
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(params => {
           this.commentPeriodId = params.commentPeriodId;
           this.filter.pending = params.pending == null || params.pending === 'false' ? false : true;
@@ -108,46 +107,48 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
       this.storageService.state.commentReviewTabParams = null;
     }
 
-    this.baseRouteUrl = this.storageService.state.currentProject.type === 'currentProject' ? '/p' : '/pn';
+    this.baseRouteUrl = (this.storageService.state.currentProject?.type ?? 'currentProject') === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.selectedTab = 0;
 
-    this.subscriptions.add(
-      this.commentService.getByPeriodId(
+    this.commentService.getByPeriodId(
         this.commentPeriodId,
         this.tableParams.currentPage,
         this.tableParams.pageSize,
         this.tableParams.sortBy,
         true,
         this.filter)
-        .subscribe((res: any) => {
-          if (res) {
-            this.tableParams.totalListItems = res.totalCount;
-            if (this.tableParams.totalListItems > 0) {
-              this.comments = res.data;
-              this.setCommentRowData();
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res: any) => {
+            if (res) {
+              this.tableParams.totalListItems = res.totalCount;
+              if (this.tableParams.totalListItems > 0) {
+                this.comments = res.data;
+                this.setCommentRowData();
 
-              // If there is a published comment, we are not allowed to delete the comment period.
-              let canDelete = true;
-              for (const comment of this.comments) {
-                if (comment.eaoStatus === 'Published') {
-                  canDelete = false;
-                  break;
+                // If there is a published comment, we are not allowed to delete the comment period.
+                let canDelete = true;
+                for (const comment of this.comments) {
+                  if (comment.eaoStatus === 'Published') {
+                    canDelete = false;
+                    break;
+                  }
                 }
+                this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: canDelete };
+              } else {
+                this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: true };
               }
-              this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: canDelete };
+              this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+              this.loading = false;
+              this.cdr.markForCheck();
             } else {
-              this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: true };
+              alert('Uh-oh, couldn\'t load comments');
+              // project not found --> navigate back to search
+              this.router.navigate(['/search']);
             }
-            this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          } else {
-            alert('Uh-oh, couldn\'t load comments');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
-        })
-    );
+          },
+          error: () => { this.loading = false; this.cdr.markForCheck(); }
+        });
   }
 
   public togglePending() {
@@ -190,7 +191,7 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
       ReviewCommentsTabTableRowsComponent,
       commentList,
       this.tableParams,
-      { baseRouteUrl: this.baseRouteUrl }
+      { baseRouteUrl: this.baseRouteUrl, projectId: this.project()._id ?? this.project().data?._id }
     );
   }
 
@@ -210,22 +211,21 @@ export class ReviewCommentsTabComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.subscriptions.add(
-      this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, true, this.filter)
-        .subscribe((res: any) => {
-          this.tableParams.totalListItems = res.totalCount;
-          this.comments = res.data;
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
-          this.setCommentRowData();
+    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, true, this.filter)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res: any) => {
+            this.tableParams.totalListItems = res.totalCount;
+            this.comments = res.data;
+            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
+            this.setCommentRowData();
 
-          this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+            this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => { this.loading = false; this.cdr.markForCheck(); }
+        });
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

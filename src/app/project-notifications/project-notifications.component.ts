@@ -1,45 +1,46 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { ProjectNotificationTableRowsComponent } from './project-notifications-table-rows/project-notifications-table-rows.component';
 import { ProjectNotification } from '../models/projectNotification';
 import { SearchTerms } from '../models/search';
-import { TableObject } from '../shared/components/table-template/table-object';
+import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
+import { SearchService } from '../services/search.service';
+import { LoadingStateService } from '../services/loading-state.service';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 import { RouterModule } from '@angular/router';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-notification-projects',
-  standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     TableTemplateComponent,
     RouterModule
   ],
   templateUrl: './project-notifications.component.html',
-  styleUrls: ['./project-notifications.component.css'],
+  styleUrl: './project-notifications.component.css',
 
 })
-export class ProjectNotificationsComponent implements OnInit, OnDestroy {
+export class ProjectNotificationsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
-
-  private subscriptions = new Subscription();
+  private searchService = inject(SearchService);
+  public loadingState = inject(LoadingStateService);
+  public loading = this.loadingState.getOperationState('search-results');
 
   public terms = new SearchTerms();
   public notificationProjects: ProjectNotification[] = null;
-  public loading = true;
 
   public documentTableData: TableObject;
-  public documentTableColumns: any[] = [
+  public documentTableColumns: TableColumn[] = [
     {
       name: 'Name',
       value: 'name',
@@ -71,35 +72,38 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.route.params
-        .subscribe(params => {
+    this.route.params
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(params => {
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-          // default sort order
           if (this.tableParams.sortBy === '') {
             this.tableParams.sortBy = '-_id';
           }
-          this.subscriptions.add(
-            this.route.data
-              .subscribe((res: any) => {
-                if (res && res.notificationProjects && res.notificationProjects[0].data.meta && res.notificationProjects[0].data.meta.length > 0) {
-                  this.tableParams.totalListItems = res.notificationProjects[0].data.meta[0].searchResultsTotal;
-                  this.notificationProjects = res.notificationProjects[0].data.searchResults;
-                } else {
-                  this.tableParams.totalListItems = 0;
-                  this.notificationProjects = [];
-                }
-                this.setRowData();
-                this.loading = false;
-                this._changeDetectionRef.detectChanges();
-              })
+
+          const pageNum = this.tableParams.currentPage || 1;
+          const pageSize = this.tableParams.pageSize || 10;
+          const sortBy = this.tableParams.sortBy || '-_id';
+          const keywords = this.tableParams.keywords || '';
+
+          return this.searchService.getSearchResults(
+            keywords, 'ProjectNotification', null,
+            pageNum, pageSize, sortBy, {}
           );
         })
-    );
+      ).subscribe((res: any) => {
+        if (res && res[0].data.meta && res[0].data.meta.length > 0) {
+          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+          this.notificationProjects = res[0].data.searchResults;
+        } else {
+          this.tableParams.totalListItems = 0;
+          this.notificationProjects = [];
+        }
+        this.setRowData();
+      });
   }
 
   public onSubmit(currentPage = 1) {
-    this.loading = true;
 
     // Reset page.
     const params = this.terms.getParams();
@@ -141,7 +145,4 @@ export class ProjectNotificationsComponent implements OnInit, OnDestroy {
     this.router.navigate(['project-notifications', 'add']);
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

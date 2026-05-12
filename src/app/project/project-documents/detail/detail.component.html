@@ -4,18 +4,18 @@
       <a [routerLink]="['/projects']">All Projects</a>
     </li>
     <li class="breadcrumb-item">
-      @if (currentProject) {
-        <a [routerLink]="['/p', currentProject._id]">{{currentProject.name}}</a>
+      @if (project()) {
+        <a [routerLink]="['/p', project()._id]">{{project().name}}</a>
       }
     </li>
     <li class="breadcrumb-item active" aria-current="page">
-      @if (currentProject) {
-        <a [routerLink]="['/p', currentProject._id, 'project-documents']">Documents</a>
+      @if (project()) {
+        <a [routerLink]="['/p', project()._id, 'project-documents']">Documents</a>
       }</li>
       <li class="breadcrumb-item active" aria-current="page">Document Details</li>
     </ol>
   </nav>
-  @if (document) {
+  @if (resolvedDocument()) {
     <main class="container-fluid-padding">
       <h1>
         <div class="d-flex">
@@ -24,9 +24,9 @@
             <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
             <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
               <button class="dropdown-item" (click)="onEdit()">Edit</button>
-              <button class="dropdown-item" (click)="api.openDocument(document)">Open</button>
-              <button class="dropdown-item" (click)="api.downloadDocument(document)">Download</button>
-              <button class="dropdown-item" (click)="togglePublish()">{{publishText}}</button>
+              <button class="dropdown-item" (click)="api.openDocument(resolvedDocument())">Open</button>
+              <button class="dropdown-item" (click)="api.downloadDocument(resolvedDocument())">Download</button>
+              <button class="dropdown-item" (click)="togglePublish()">{{publishText()}}</button>
             </div>
           </div>
         </div>
@@ -34,36 +34,36 @@
       <section>
         <div class="label-pair">
           <h3 for="displayName">Display Name: </h3>
-          <p id="displayName">{{document.displayName || '-'}}</p>
+          <p id="displayName">{{resolvedDocument().displayName || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="publicHitCount">Public Views: </h3>
-          <p id="publicHitCount">{{document.publicHitCount || '-'}}</p>
+          <p id="publicHitCount">{{resolvedDocument().publicHitCount || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="secureHitCount">Secure Views: </h3>
-          <p id="secureHitCount">{{document.secureHitCount || '-'}}</p>
+          <p id="secureHitCount">{{resolvedDocument().secureHitCount || '-'}}</p>
         </div>
         <div class="label-pair">
           <p id="status publish-state">
             <i class="material-icons">
-              {{publishText === 'Publish' ?   'cloud_off' : 'cloud_done' || '-'}}
+              {{publishText() === 'Publish' ? 'cloud_off' : 'cloud_done'}}
             </i>
-            {{publishText === 'Publish' ?  'Not Published' : 'Published' || '-'}}
+            {{publishText() === 'Publish' ? 'Not Published' : 'Published'}}
           </p>
         </div>
         <div class="label-pair">
           <h3 for="documentFileName">Filename: </h3>
-          <p id="documentFileName">{{document.documentFileName || '-'}}</p>
+          <p id="documentFileName">{{resolvedDocument().documentFileName || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="description">Description: </h3>
-          <p id="description">{{document.description || '-'}}</p>
+          <p id="description">{{resolvedDocument().description || '-'}}</p>
         </div>
-        @if (document.labels) {
+        @if (resolvedDocument().labels) {
           <div class="label-pair">
             <h3 for="tags">Labels: </h3>
-            @for (label of document.labels; track label) {
+            @for (label of resolvedDocument().labels; track label) {
               <div>
                 <div class="me-2 badge badge-pill badge-info">{{label}}</div>
               </div>
@@ -74,37 +74,37 @@
       <section>
         <div class="label-pair">
           <h3 for="type">Type: </h3>
-          <p id="type">{{document.type | listConverter}}</p>
+          <p id="type">{{resolvedType()}}</p>
         </div>
         <div class="label-pair">
           <h3 for="dateUploaded">Upload Date: </h3>
-          <p id="dateUploaded">{{document.dateUploaded | date}}</p>
+          <p id="dateUploaded">{{resolvedDocument().dateUploaded | date}}</p>
         </div>
         <div class="label-pair">
           <h3 for="datePosted">Document Date: </h3>
-          @if (document.datePosted !== '1900-01-01T08:00:00.000Z') {
-            <p id="datePosted">{{document.datePosted | date}}</p>
+          @if (resolvedDocument().datePosted !== '1900-01-01T08:00:00.000Z') {
+            <p id="datePosted">{{resolvedDocument().datePosted | date}}</p>
           }
         </div>
         <div class="label-pair">
           <h3 for="legislation">Legislation:</h3>
-          <p id="legislation">{{document.legislation}}</p>
+          <p id="legislation">{{resolvedDocument().legislation}}</p>
         </div>
         <div class="label-pair">
           <h3 for="documentAuthor">Author: </h3>
-          <p id="documentAuthor">{{document.documentAuthorType | listConverter}}</p>
+          <p id="documentAuthor">{{resolvedAuthor()}}</p>
         </div>
         <div class="label-pair">
           <h3 for="milestone">Milestone: </h3>
-          <p id="milestone">{{document.milestone | listConverter}}</p>
+          <p id="milestone">{{resolvedMilestone()}}</p>
         </div>
         <div class="label-pair">
           <h3 for="projectPhase">Project Phase: </h3>
-          <p id="projectPhase">{{document.projectPhase | listConverter}}</p>
+          <p id="projectPhase">{{resolvedProjectPhase()}}</p>
         </div>
         <div class="label-pair">
           <h3 for="internalSize">Filesize: </h3>
-          <p id="internalSize">{{this.formatBytes(document.internalSize)}}</p>
+          <p id="internalSize">{{formatBytes(resolvedDocument().internalSize)}}</p>
         </div>
       </section>
     </main>

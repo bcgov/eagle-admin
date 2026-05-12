@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 // https://www.npmjs.com/package/xlsx
 // https://github.com/SheetJS/js-xlsx
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ExcelService {
 
   // data: array of objects (flattened)

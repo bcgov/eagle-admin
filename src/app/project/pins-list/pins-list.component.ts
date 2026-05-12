@@ -1,47 +1,43 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { skip, switchMap, tap } from 'rxjs/operators';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/services/toast.service';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
 import { Org } from 'src/app/models/org';
 import { SearchTerms } from 'src/app/models/search';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-pins-list',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     TableTemplateComponent
   ],
   templateUrl: './pins-list.component.html',
-  styleUrls: ['./pins-list.component.css'],
+  styleUrl: './pins-list.component.css',
 
 })
-export class PinsListComponent implements OnInit, OnDestroy {
+export class PinsListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
   private storageService = inject(StorageService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private navigationStackUtils = inject(NavigationStackUtils);
   private projectService = inject(ProjectService);
   private router = inject(Router);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
-  private logger = inject(LoggingService);
-
-  private subscriptions = new Subscription();
-  private destroy$ = new Subject<void>();
+  public logger = inject(LoggingService);
   public currentProject;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -55,7 +51,7 @@ export class PinsListComponent implements OnInit, OnDestroy {
   public selectedCount = 0;
   public pinsPublished = false;
 
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: 'Name',
       value: 'name',
@@ -79,104 +75,96 @@ export class PinsListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loading = true;
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData ?? null;
     this.storageService.state.selectedUsers = null;
 
-    this.subscriptions.add(
-      this.route.params
-        .subscribe(params => {
+    // params subscription: keeps tableParams in sync AND re-fetches data on re-navigation.
+    // skip(1): first emit is the initial load — route.data resolver handles that.
+    // Subsequent emits (ms-param navigation after add/delete) trigger a fresh API fetch
+    // because Angular Router won't re-run resolvers on same-route matrix-param changes.
+    this.route.params
+      .pipe(
+        tap(params => {
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
           if (this.tableParams.sortBy === '') {
             this.tableParams.sortBy = '+name';
-            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           }
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+        }),
+        skip(1),
+        switchMap(() => {
+          this.loading = true;
+          this.cdr.markForCheck();
+          return this.projectService.getPins(
+            this.currentProject._id,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.tableParams.sortBy
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (contacts: any) => {
+          this.processContacts(contacts);
+        },
+        error: err => {
+          this.logger.error('getPins re-fetch failed', 'PinsListComponent', err);
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
 
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((res: any) => {
-          if (res) {
-            this.entries = [];
-            if (res.contacts && res.contacts.length > 0 && res.contacts[0].results) {
-              if (res.contacts[0].read.includes('public')) {
-                this.pinsPublished = true;
-              }
-              res.contacts[0].results.map(contact => {
-                this.entries.push(new Org(contact));
-              });
-              this.tableParams.totalListItems = res.contacts[0].total_items;
-            } else {
-              this.tableParams.totalListItems = 0;
-            }
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          } else {
-            this.loading = false;
-            alert('Uh-oh, couldn\'t load valued components');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
-        })
-    );
+    // data subscription: resolver pre-fetches contacts before component activates
+    this.route.data
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        this.processContacts(res?.contacts);
+      });
   }
   isEnabled() {
     return this.selectedCount > 0;
   }
-  publishPins() {
-    if (this.currentProject && this.currentProject._id) {
-      this.loading = true;
-      this.subscriptions.add(
-        this.projectService.publishPins(this.currentProject._id)
-          .subscribe(res => {
-            if (res) {
-              // We assuming the publish action was successful
-              this.loading = false;
-              this.openSnackBar('Participating Indigenous Nations Published Successfully!', 'Close');
-              this.pinsPublished = true;
-            } else {
-              this.loading = false;
-              this.openSnackBar('Error on publishing Participating Indigenous Nations, please try again later', 'Close');
-            }
-          })
-      );
+
+  private processContacts(contacts: any) {
+    this.entries = [];
+    if (contacts && contacts.length > 0 && contacts[0]?.results) {
+      if (contacts[0].read.includes('public')) {
+        this.pinsPublished = true;
+      }
+      contacts[0].results.forEach(contact => this.entries.push(new Org(contact)));
+      this.tableParams.totalListItems = contacts[0].total_items;
     } else {
-      this.openSnackBar('Invalid Project, please try again!', 'Close');
-      // Error
+      this.tableParams.totalListItems = 0;
     }
+    this.setRowData();
+    this.loading = false;
+    this.cdr.markForCheck();
   }
-  unpublishPins() {
+  setPinsPublished(publish: boolean) {
     if (this.currentProject && this.currentProject._id) {
       this.loading = true;
-      this.subscriptions.add(
-        this.projectService.unpublishPins(this.currentProject._id)
-          .subscribe(res => {
-            if (res) {
-              this.loading = false;
-              this.openSnackBar('Participating Indigenous Nations Unpublished Successfully!', 'Close');
-              this.pinsPublished = false;
-            } else {
-              this.loading = false;
-              this.openSnackBar('Error on unpublishing Participating Indigenous Nations, please try again later', 'Close');
-            }
-          })
-      );
+      const action = publish ? this.projectService.publishPins(this.currentProject._id) : this.projectService.unpublishPins(this.currentProject._id);
+      action.subscribe(res => {
+        this.loading = false;
+        this.cdr.markForCheck();
+        if (res) {
+          this.pinsPublished = publish;
+          const msg = publish ? 'Participating Indigenous Nations Published Successfully!' : 'Participating Indigenous Nations Unpublished Successfully!';
+          this.toastService.success(msg);
+        } else {
+          const msg = publish ? 'Error on publishing Participating Indigenous Nations, please try again later' : 'Error on unpublishing Participating Indigenous Nations, please try again later';
+          this.toastService.error(msg);
+        }
+      });
     } else {
-      // Error
-      this.openSnackBar('Invalid Project, please try again!', 'Close');
+      this.toastService.error('Invalid Project, please try again!');
     }
   }
   setRowData() {
-    const list = [];
     if (this.entries && this.entries.length > 0) {
-      this.entries.forEach(item => {
-        list.push(item);
-      });
       this.tableData = new TableObject(
         PinsTableRowsComponent,
-        list,
+        [...this.entries],
         this.tableParams
       );
 
@@ -201,25 +189,25 @@ export class PinsListComponent implements OnInit, OnDestroy {
 
   // Called via storage service in shared module.
   add(contacts, component) {
-    const filteredPins = [];
-    contacts.filter((thing) => {
-      const idx = component.entries.findIndex((t) => {
-        return (t._id === thing._id);
-      });
-      if (idx === -1) {
-        filteredPins.push(thing._id);
-      }
-    });
-    // Add all the filtered new items.
-  component.projectService.addPins(component.currentProject, filteredPins)
-    .pipe(takeUntil(component.destroy$))
-    .subscribe(
-      () => component.router.navigate(['/p', component.currentProject._id, 'project-pins']),
-      (error) => {
-        this.logger.error('addPins failed', 'PinsListComponent', error);
+    const filteredPins = contacts
+      .filter((thing) => component.entries.findIndex((t) => t._id === thing._id) === -1)
+      .map((thing) => thing._id);
+
+    if (filteredPins.length === 0) {
+      component.router.navigate(['/p', component.currentProject._id, 'project-pins', { ms: Date.now() }]);
+      return;
+    }
+
+    component.projectService.addPins(component.currentProject, filteredPins)
+    .subscribe({
+      next: () => {
+        component.router.navigate(['/p', component.currentProject._id, 'project-pins', { ms: Date.now() }]);
+      },
+      error: (error) => {
+        component.logger.error('addPins failed', 'PinsListComponent', error);
         alert('Uh-oh, couldn\'t edit project');
       }
-    );
+    });
   }
 
   setBackURL() {
@@ -260,7 +248,6 @@ export class PinsListComponent implements OnInit, OnDestroy {
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
     this.loading = true;
-    this._changeDetectionRef.detectChanges();
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
@@ -288,16 +275,6 @@ export class PinsListComponent implements OnInit, OnDestroy {
     } else {
       this.typeFilters.push(filterItem);
     }
-  }
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }
 

@@ -1,16 +1,15 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-organizations-table-rows',
     templateUrl: './organizations-table-rows.component.html',
-    styleUrls: ['./organizations-table-rows.component.css'],
-    standalone: true,
-    imports: [],
+    styleUrl: './organizations-table-rows.component.css',
     
 })
 export class OrganizationsTableRowsComponent implements OnInit {
@@ -18,21 +17,21 @@ export class OrganizationsTableRowsComponent implements OnInit {
   private navigationStackUtils = inject(NavigationStackUtils);
   private storageService = inject(StorageService);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
 
   public organizations: any;
   public paginationData: any;
   public dropdownItems = ['Edit', 'Delete'];
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.organizations = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.organizations = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   editItem(organization) {
@@ -40,7 +39,7 @@ export class OrganizationsTableRowsComponent implements OnInit {
     this.storageService.state.selectedOrganization = null;
     this.navigationStackUtils.clearNavigationStack();
 
-    this.storageService.state.orgTableParams = this.data.paginationData;
+    this.storageService.state.orgTableParams = this.data().paginationData;
     this.router.navigate(['o', organization._id, 'edit']);
   }
 }

@@ -1,36 +1,29 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, input, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/services/toast.service';
 import { DateTime } from 'luxon';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { NgbDatepickerModule, NgbTimepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { SafeHtmlPipe } from 'src/app/shared/pipes/safe-html-converter.pipe';
 
-// tiny mce imports for plugins
-import 'tinymce/plugins/advlist';
-import 'tinymce/plugins/lists';
-import 'tinymce/plugins/link';
-import 'tinymce/icons/default';
-
 import { CommentPeriod } from 'src/app/models/commentPeriod';
-import { Project } from 'src/app/models/project';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
-import { Subscription } from 'rxjs';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-add-edit-comment-period',
     templateUrl: './add-edit-comment-period.component.html',
-    styleUrls: ['./add-edit-comment-period.component.css'],
-    standalone: true,
+    styleUrl: './add-edit-comment-period.component.css',
     imports: [
-      CommonModule,
+      DatePipe,
       ReactiveFormsModule,
       FormsModule,
       RouterModule,
@@ -44,24 +37,22 @@ import { LoggingService } from 'src/app/services/logging.service';
 
 
 
-export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
+export class AddEditCommentPeriodComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private commentPeriodService = inject(CommentPeriodService);
   private configService = inject(ConfigService);
   private documentService = inject(DocumentService);
   private formBuilder = inject(UntypedFormBuilder);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   storageService = inject(StorageService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
 
-  private subscriptions = new Subscription();
-
-  public currentProject: { type: string, data: Project };
+  project = input.required<any>();
+  commentPeriod = input<CommentPeriod>(undefined);
   public componentBaseUrl: string;
-  public commentPeriod = new CommentPeriod;
+  public currentCommentPeriod = new CommentPeriod;
   public milestones: any[] = [];
 
   public isEditing = false;
@@ -81,8 +72,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public tinyMceSettings = {
     skin: false,
     browser_spellcheck: true,
+    promotion: false,
     height: 240,
-    plugins: ['lists, advlist, link'],
+    plugins: ['lists', 'advlist', 'link'],
     toolbar: ['undo redo | formatselect | ' +
       ' bold italic backcolor | alignleft aligncenter ' +
       ' alignright alignjustify | bullist numlist outdent indent |' +
@@ -91,50 +83,36 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // BUG: Go to add docs. refresh. it will redirect and have errors.
-    this.currentProject = this.storageService.state.currentProject;
+    const currentProject = this.project();
 
     // Set the base navigation route to use depending on if viewing a project or project notification.
-    this.componentBaseUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
+    this.componentBaseUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
 
     this.configService.lists.forEach(listItem => {
-      if (listItem && listItem.type === 'label' && listItem.legislation === this.currentProject.data.legislationYear) {
+      if (listItem && listItem.type === 'label' && listItem.legislation === currentProject.legislationYear) {
         this.milestones.push(Object.assign({}, listItem));
       }
     });
     this.milestones.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
 
     // Check if we're editing
-    this.route.url.subscribe(segments => {
+    this.route.url.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(segments => {
       segments.map(segment => {
         if (segment.path === 'edit') {
           this.isEditing = true;
-          // get data from route resolver
-          this.subscriptions.add(
-            this.route.data
-              .subscribe(
-                (data: any) => {
-                  if (data.commentPeriod) {
-                    this.commentPeriod = data.commentPeriod;
-                    this.storageService.state.currentCommentPeriod = { type: 'currentCommentPeriod', data: this.commentPeriod };
-                    this.initSelectedDocs();
-                    this.initForm();
-
-                    this.loading = false;
-                    this._changeDetectionRef.detectChanges();
-                  } else {
-                    alert('Uh-oh, couldn\'t load comment periods');
-                    // project not found --> navigate back to search
-                    this.router.navigate(['/search']);
-                  }
-                  this.loading = false;
-                  this._changeDetectionRef.detectChanges();
-                }
-              )
-          );
+          const cp = this.commentPeriod();
+          if (cp) {
+            this.currentCommentPeriod = cp;
+            this.initSelectedDocs();
+            this.initForm();
+          } else {
+            alert('Uh-oh, couldn\'t load comment period');
+            this.router.navigate(['/search']);
+          }
+          this.loading = false;
         } else {
           this.initForm();
           this.loading = false;
-          this._changeDetectionRef.detectChanges();
         }
       });
     });
@@ -172,29 +150,41 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
   private initForEditing() {
     // Date started and completed
-    this.commentPeriodForm.controls.startDate.setValue(this.utils.convertJSDateToNGBDate(this.commentPeriod.dateStarted));
-    this.commentPeriodForm.controls.startTime.setValue({ hour: this.commentPeriod.dateStarted.getHours(), minute: this.commentPeriod.dateStarted.getMinutes() });
-    this.commentPeriodForm.controls.endDate.setValue(this.utils.convertJSDateToNGBDate(this.commentPeriod.dateCompleted));
-    this.commentPeriodForm.controls.endTime.setValue({ hour: this.commentPeriod.dateCompleted.getHours(), minute: this.commentPeriod.dateCompleted.getMinutes() });
+    this.commentPeriodForm.controls.startDate.setValue(
+      this.currentCommentPeriod.dateStarted ? convertJSDateToNGBDate(this.currentCommentPeriod.dateStarted) : null
+    );
+    this.commentPeriodForm.controls.startTime.setValue(
+      this.currentCommentPeriod.dateStarted
+        ? { hour: this.currentCommentPeriod.dateStarted.getHours(), minute: this.currentCommentPeriod.dateStarted.getMinutes() }
+        : { hour: 9, minute: 0 }
+    );
+    this.commentPeriodForm.controls.endDate.setValue(
+      this.currentCommentPeriod.dateCompleted ? convertJSDateToNGBDate(this.currentCommentPeriod.dateCompleted) : null
+    );
+    this.commentPeriodForm.controls.endTime.setValue(
+      this.currentCommentPeriod.dateCompleted
+        ? { hour: this.currentCommentPeriod.dateCompleted.getHours(), minute: this.currentCommentPeriod.dateCompleted.getMinutes() }
+        : { hour: 23, minute: 59 }
+    );
 
     // Publish state
-    this.commentPeriodForm.controls.publishedStateSel.setValue(this.commentPeriod.isPublished ? 'published' : 'unpublished');
+    this.commentPeriodForm.controls.publishedStateSel.setValue(this.currentCommentPeriod.isPublished ? 'published' : 'unpublished');
 
     // Instructions
-    this.extractVarsFromInstructions(this.commentPeriod.instructions as string, this.commentPeriodForm);
+    this.extractVarsFromInstructions(this.currentCommentPeriod.instructions as string, this.commentPeriodForm);
 
     // Comment Tip
-    this.commentPeriodForm.controls.commentTipText.setValue(this.commentPeriod.commentTip);
+    this.commentPeriodForm.controls.commentTipText.setValue(this.currentCommentPeriod.commentTip);
 
     // Milestone
-    this.commentPeriodForm.controls.milestoneSel.setValue(this.commentPeriod.milestone);
+    this.commentPeriodForm.controls.milestoneSel.setValue(this.currentCommentPeriod.milestone);
 
     // Open houses
-    if (this.commentPeriod.openHouses.length > 0) {
-      this.commentPeriod.openHouses.map(openHouse => {
+    if (this.currentCommentPeriod.openHouses && this.currentCommentPeriod.openHouses.length > 0) {
+      this.currentCommentPeriod.openHouses.map(openHouse => {
         this.addOpenHouseRowWithFields(
           this.formBuilder.group({
-            eventDate: this.utils.convertJSDateToNGBDate(new Date(openHouse['eventDate'])),
+            eventDate: convertJSDateToNGBDate(new Date(openHouse['eventDate'])),
             description: openHouse['description']
           })
         );
@@ -202,23 +192,20 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     } else {
       this.addOpenHouseRow();
     }
-
-    this._changeDetectionRef.detectChanges();
   }
 
   private initSelectedDocs() {
     if (this.storageService.state.selectedDocumentsForCP == null) {
-      if (this.commentPeriod.relatedDocuments && this.commentPeriod.relatedDocuments.length > 0) {
-        this.subscriptions.add(
-          this.documentService.getByMultiId(this.commentPeriod.relatedDocuments)
-            .subscribe(
-              data => {
-                this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: data };
-              }
-            )
-        );
+      if (this.currentCommentPeriod.relatedDocuments && this.currentCommentPeriod.relatedDocuments.length > 0) {
+        this.documentService.getByMultiId(this.currentCommentPeriod.relatedDocuments)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(
+            data => {
+              this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: data };
+            }
+          );
       } else {
-        this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: this.commentPeriod.relatedDocuments };
+        this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: this.currentCommentPeriod.relatedDocuments };
       }
     }
   }
@@ -229,9 +216,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     // TODO: Custom validation for start and end date.
 
     // Check start and end date
-    this.commentPeriod.dateStarted = this.utils.convertFormGroupNGBDateToJSDate(this.commentPeriodForm.get('startDate').value, this.commentPeriodForm.get('startTime').value);
-    this.commentPeriod.dateCompleted = this.utils.convertFormGroupNGBDateToJSDate(this.commentPeriodForm.get('endDate').value, this.commentPeriodForm.get('endTime').value);
-    if (DateTime.fromJSDate(this.commentPeriod.dateStarted).toMillis() > DateTime.fromJSDate(this.commentPeriod.dateCompleted).toMillis()) {
+    this.currentCommentPeriod.dateStarted = convertFormGroupNGBDateToJSDate(this.commentPeriodForm.get('startDate').value, this.commentPeriodForm.get('startTime').value);
+    this.currentCommentPeriod.dateCompleted = convertFormGroupNGBDateToJSDate(this.commentPeriodForm.get('endDate').value, this.commentPeriodForm.get('endTime').value);
+    if (DateTime.fromJSDate(this.currentCommentPeriod.dateStarted).toMillis() > DateTime.fromJSDate(this.currentCommentPeriod.dateCompleted).toMillis()) {
       this.areDatesInvalid = true;
       this.loading = false;
       return;
@@ -241,27 +228,27 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
 
     // Check published state
     if (this.commentPeriodForm.get('publishedStateSel').value === 'published') {
-      this.commentPeriod.isPublished = true;
+      this.currentCommentPeriod.isPublished = true;
     } else {
-      this.commentPeriod.isPublished = false;
+      this.currentCommentPeriod.isPublished = false;
     }
 
     // Check info for comment
     // Check description
-    this.commentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
-    this.commentPeriod.instructions += ` for ${this.currentProject.data.name} Project.`;
+    this.currentCommentPeriod.instructions = `Comment Period on the ${this.commentPeriodForm.get('infoForCommentText').value}`;
+    this.currentCommentPeriod.instructions += ` for ${this.project().name} Project.`;
 
     // wrap comment header in h4 tag
 
-    this.commentPeriod.instructions = `<h4>${this.commentPeriod.instructions}</h4>`;
+    this.currentCommentPeriod.instructions = `<h4>${this.currentCommentPeriod.instructions}</h4>`;
 
     // add description
-    this.commentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
+    this.currentCommentPeriod.instructions += ` ${this.commentPeriodForm.get('descriptionText').value === null ? '' : this.commentPeriodForm.get('descriptionText').value}`;
 
 
 
     // Check comment tip
-    this.commentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value ? this.commentPeriodForm.get('commentTipText').value : '';
+    this.currentCommentPeriod.commentTip = this.commentPeriodForm.get('commentTipText').value ? this.commentPeriodForm.get('commentTipText').value : '';
 
     if (this.storageService.state.selectedDocumentsForCP) {
       const docIdArray = [];
@@ -270,57 +257,56 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
           docIdArray.push(element._id);
         });
       }
-      this.commentPeriod.relatedDocuments = docIdArray;
+      this.currentCommentPeriod.relatedDocuments = docIdArray;
     }
 
     // Check milestones
-    this.commentPeriod.milestone = this.commentPeriodForm.get('milestoneSel').value;
+    this.currentCommentPeriod.milestone = this.commentPeriodForm.get('milestoneSel').value;
 
     // Check open house date
-    this.commentPeriod.openHouses = [];
+    this.currentCommentPeriod.openHouses = [];
     this.commentPeriodForm.get('openHouses').value.map(openHouse => {
       if (openHouse.description !== null && openHouse.eventDate !== null) {
-        this.commentPeriod.openHouses.push({
+        this.currentCommentPeriod.openHouses.push({
           description: openHouse.description,
-          eventDate: this.utils.convertFormGroupNGBDateToJSDate(openHouse.eventDate)
+          eventDate: convertFormGroupNGBDateToJSDate(openHouse.eventDate)
         });
       } else if (openHouse.description !== null || openHouse.eventDate !== null) {
         // TODO: We should use form errors.
-        this.openSnackBar('Error: Both description and event date must not be empty.', 'Close');
+        this.toastService.error('Error: Both description and event date must not be empty.');
         return;
       }
     });
 
     // Submit
     if (this.isEditing) {
-      this.subscriptions.add(
-        this.commentPeriodService.save(this.commentPeriod)
-          .subscribe({
-            error: () => {
-              alert('Uh-oh, couldn\'t edit comment period');
-            },
-            complete: () => { // onCompleted
-              this.loading = false;
-              this.openSnackBar('This comment period was created successfully.', 'Close');
-              this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
-            }
-          })
-      );
+      this.commentPeriodService.save(this.currentCommentPeriod)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          error: () => {
+            alert('Uh-oh, couldn\'t edit comment period');
+          },
+          complete: () => { // onCompleted
+            this.loading = false;
+            this.toastService.success('This comment period was edited successfully.');
+            const cpId = this.route.snapshot.paramMap.get('commentPeriodId') || this.currentCommentPeriod._id;
+            this.router.navigate([this.componentBaseUrl, this.project()._id, 'cp', cpId]);
+          }
+        });
     } else {
-      this.commentPeriod.project = this.currentProject.data._id;
-      this.subscriptions.add(
-        this.commentPeriodService.add(this.commentPeriod)
-          .subscribe({
-            error: () => {
-              alert('Uh-oh, couldn\'t add new comment period');
-            },
-            complete: () => { // onCompleted
-              this.loading = false;
-              this.openSnackBar('This comment period was created successfully.', 'Close');
-              this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
-            }
-          })
-      );
+      this.currentCommentPeriod.project = this.project()._id;
+      this.commentPeriodService.add(this.currentCommentPeriod)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          error: () => {
+            alert('Uh-oh, couldn\'t add new comment period');
+          },
+          complete: () => { // onCompleted
+            this.loading = false;
+            this.toastService.success('This comment period was created successfully.');
+            this.router.navigate([this.componentBaseUrl, this.project()._id, 'comment-periods']);
+          }
+        });
     }
     this.storageService.state.selectedDocumentsForCP = null;
   }
@@ -329,9 +315,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
     if (confirm(`Are you sure you want to discard all changes?`)) {
       this.storageService.state.selectedDocumentsForCP = null;
       if (this.isEditing) {
-        this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
+        this.router.navigate([this.componentBaseUrl, this.project()._id, 'cp', this.currentCommentPeriod._id]);
       } else {
-        this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods']);
+        this.router.navigate([this.componentBaseUrl, this.project()._id, 'comment-periods']);
       }
     }
   }
@@ -339,9 +325,9 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public addDocuments() {
     this.storageService.state.addEditCPForm = { type: 'addEditCPForm', data: this.commentPeriodForm };
     if (this.isEditing) {
-      this.router.navigate([this.componentBaseUrl, this.commentPeriod.project, 'cp', this.commentPeriod._id, 'edit', 'add-documents']);
+      this.router.navigate([this.componentBaseUrl, this.currentCommentPeriod.project, 'cp', this.currentCommentPeriod._id, 'edit', 'add-documents']);
     } else {
-      this.router.navigate([this.componentBaseUrl, this.currentProject.data._id, 'comment-periods', 'add', 'add-documents']);
+      this.router.navigate([this.componentBaseUrl, this.project()._id, 'comment-periods', 'add', 'add-documents']);
     }
   }
 
@@ -414,20 +400,10 @@ export class AddEditCommentPeriodComponent implements OnInit, OnDestroy {
   public updateDescriptionPreview() {
     this.infoForCommentPreview = this.commentPeriodForm.get('infoForCommentText').value;
     this.descriptionPreview = this.commentPeriodForm.get('descriptionText').value;
-    this._changeDetectionRef.detectChanges();
   }
 
   public removeSelectedDoc(doc) {
     this.storageService.state.selectedDocumentsForCP.data = this.storageService.state.selectedDocumentsForCP.data.filter(obj => obj._id !== doc._id);
   }
 
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

@@ -30,59 +30,56 @@
                 </button>
               }
             </div>
-            @if (!loading) {
+            @if (!loading()) {
               <div class="advanced-search">
                 @if (terms.dataset === 'Project') {
                   <div class="row">
                     @if (showAdvancedSearch) {
                       <div class="col-md-9">
-              <button type="button" (click)="toggleFilter('projectType');" [ngClass]="{'btn': true, 'projectType-btn': true,
-                  'btn-dark': showFilters.projectType,
-                  'btn-secondary': !showFilters.projectType && numFilters.projectType > 0,
-                  'btn-outline-dark': !showFilters.projectType && numFilters.projectType == 0}">
+              <button type="button" (click)="toggleFilter('projectType');" class="btn projectType-btn"
+                [class.btn-dark]="showFilters.projectType"
+                [class.btn-secondary]="!showFilters.projectType && numFilters.projectType > 0"
+                [class.btn-outline-dark]="!showFilters.projectType && numFilters.projectType == 0">
                           Project Type@if (numFilters.projectType > 0 && !showFilters.projectType) {
                           <span>&nbsp;({{
                           numFilters.projectType }})</span>
                         }
                       </button>
-              <button type="button" (click)="toggleFilter('eacDecision');" [ngClass]="{'btn': true, 'decision-btn': true,
-                  'btn-dark': showFilters.eacDecision,
-                  'btn-secondary': !showFilters.eacDecision && numFilters.eacDecision > 0,
-                  'btn-outline-dark': !showFilters.eacDecision && numFilters.eacDecision == 0}">
+              <button type="button" (click)="toggleFilter('eacDecision');" class="btn decision-btn"
+                [class.btn-dark]="showFilters.eacDecision"
+                [class.btn-secondary]="!showFilters.eacDecision && numFilters.eacDecision > 0"
+                [class.btn-outline-dark]="!showFilters.eacDecision && numFilters.eacDecision == 0">
                         EA Decision@if (numFilters.eacDecision > 0 && !showFilters.eacDecision) {
                         <span>&nbsp;({{
                         numFilters.eacDecision }})</span>
                       }
                     </button>
-              <button type="button" (click)="toggleFilter('pcp');" [ngClass]="{'btn': true, 'pcp-btn': true,
-                  'btn-dark': showFilters.pcp,
-                  'btn-secondary': !showFilters.pcp && numFilters.pcp > 0,
-                  'btn-outline-dark': !showFilters.pcp && numFilters.pcp == 0}">
+              <button type="button" (click)="toggleFilter('pcp');" class="btn pcp-btn"
+                [class.btn-dark]="showFilters.pcp"
+                [class.btn-secondary]="!showFilters.pcp && numFilters.pcp > 0"
+                [class.btn-outline-dark]="!showFilters.pcp && numFilters.pcp == 0">
                       Public Comment Period@if (numFilters.pcp > 0 && !showFilters.pcp) {
                       <span>&nbsp;({{ numFilters.pcp
                       }})</span>
                     }
                   </button>
-              <button type="button" (click)="toggleFilter('more');" [ngClass]="{'btn': true, 'more-btn': true,
-                  'btn-dark': showFilters.more,
-                  'btn-secondary': !showFilters.more && numFilters.more > 0,
-                  'btn-outline-dark': !showFilters.more && numFilters.more == 0}">
-                    More Filters&hellip;@if (numFilters.more > 0 && !showFilters.more) {
-                    <span>&nbsp;({{ numFilters.more
-                    }})</span>
-                  }
-                </button>
                 <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
+                <button type="button" (click)="toggleFilter('more');" class="btn"
+                  [class.btn-dark]="showFilters.more"
+                  [class.btn-outline-dark]="!showFilters.more">
+                  @if (showFilters.more) { <span>Hide More Filters</span> }
+                  @if (!showFilters.more) { <span>More Filters</span> }
+                </button>
               </div>
             }
-            <div
-              [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+            <div class="show-advanced-search-button"
+              [class.col-md-3]="showAdvancedSearch" [class.col-md-12]="!showAdvancedSearch">
               <button class="btn btn-secondary" type="button" (click)="showAdvancedSearch = !showAdvancedSearch;">
                 @if (showAdvancedSearch) {
-                  <span>Hide Advanced Search</span>
+                  <span>Hide Filters</span>
                 }
                 @if (!showAdvancedSearch) {
-                  <span>Show Advanced Search</span>
+                  <span>Show Filters</span>
                 }
               </button>
             </div>
@@ -92,46 +89,46 @@
           <div class="row">
             @if (showAdvancedSearch) {
               <div class="col-md-9">
-              <button type="button" (click)="toggleFilter('milestone');" [ngClass]="{'btn': true, 'milestone-btn': true,
-                  'btn-dark': showFilters.milestone,
-                  'btn-secondary': !showFilters.milestone && numFilters.milestone > 0,
-                  'btn-outline-dark': !showFilters.milestone && numFilters.milestone == 0}">
+              <button type="button" (click)="toggleFilter('milestone');" class="btn milestone-btn"
+                [class.btn-dark]="showFilters.milestone"
+                [class.btn-secondary]="!showFilters.milestone && numFilters.milestone > 0"
+                [class.btn-outline-dark]="!showFilters.milestone && numFilters.milestone == 0">
                   Milestone@if (numFilters.milestone > 0 && !showFilters.milestone) {
                   <span>&nbsp;({{ numFilters.milestone
                   }})</span>
                 }
               </button>
-              <button type="button" (click)="toggleFilter('date');" [ngClass]="{'btn': true, 'date-btn': true,
-                  'btn-dark': showFilters.date,
-                  'btn-secondary': !showFilters.date && numFilters.date > 0,
-                  'btn-outline-dark': !showFilters.date && numFilters.date == 0}">
+              <button type="button" (click)="toggleFilter('date');" class="btn date-btn"
+                [class.btn-dark]="showFilters.date"
+                [class.btn-secondary]="!showFilters.date && numFilters.date > 0"
+                [class.btn-outline-dark]="!showFilters.date && numFilters.date == 0">
                 Document Date@if (numFilters.date > 0 && !showFilters.date) {
                 <span>&nbsp;({{ numFilters.date }})</span>
               }
             </button>
-              <button type="button" (click)="toggleFilter('documentAuthorType');" [ngClass]="{'btn': true, 'author-btn': true,
-                  'btn-dark': showFilters.documentAuthorType,
-                  'btn-secondary': !showFilters.documentAuthorType && numFilters.documentAuthorType > 0,
-                  'btn-outline-dark': !showFilters.documentAuthorType && numFilters.documentAuthorType == 0}">
+              <button type="button" (click)="toggleFilter('documentAuthorType');" class="btn author-btn"
+                [class.btn-dark]="showFilters.documentAuthorType"
+                [class.btn-secondary]="!showFilters.documentAuthorType && numFilters.documentAuthorType > 0"
+                [class.btn-outline-dark]="!showFilters.documentAuthorType && numFilters.documentAuthorType == 0">
               Document Author@if (numFilters.documentAuthorType > 0 && !showFilters.documentAuthorType) {
               <span
                 >&nbsp;({{
               numFilters.documentAuthorType }})</span>
             }
           </button>
-              <button type="button" (click)="toggleFilter('docType');" [ngClass]="{'btn': true, 'docType-btn': true,
-                  'btn-dark': showFilters.docType,
-                  'btn-secondary': !showFilters.docType && numFilters.docType > 0,
-                  'btn-outline-dark': !showFilters.docType && numFilters.docType == 0}">
+              <button type="button" (click)="toggleFilter('docType');" class="btn docType-btn"
+                [class.btn-dark]="showFilters.docType"
+                [class.btn-secondary]="!showFilters.docType && numFilters.docType > 0"
+                [class.btn-outline-dark]="!showFilters.docType && numFilters.docType == 0">
             Document Type@if (numFilters.docType > 0 && !showFilters.docType) {
             <span>&nbsp;({{ numFilters.docType
             }})</span>
           }
         </button>
-              <button type="button" (click)="toggleFilter('projectPhase');" [ngClass]="{'btn': true, 'type-btn': true,
-                  'btn-dark': showFilters.projectPhase,
-                  'btn-secondary': !showFilters.projectPhase && numFilters.projectPhase > 0,
-                  'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
+              <button type="button" (click)="toggleFilter('projectPhase');" class="btn type-btn"
+                [class.btn-dark]="showFilters.projectPhase"
+                [class.btn-secondary]="!showFilters.projectPhase && numFilters.projectPhase > 0"
+                [class.btn-outline-dark]="!showFilters.projectPhase && numFilters.projectPhase == 0">
           Project Phase@if (numFilters.projectPhase > 0 && !showFilters.projectPhase) {
           <span>&nbsp;({{
           numFilters.projectPhase }})</span>
@@ -140,8 +137,8 @@
       <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
     </div>
   }
-  <div
-    [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+  <div class="show-advanced-search-button"
+    [class.col-md-3]="showAdvancedSearch" [class.col-md-12]="!showAdvancedSearch">
     <button class="btn btn-secondary" type="button" (click)="showAdvancedSearch = !showAdvancedSearch;">
       @if (showAdvancedSearch) {
         <span>Hide Advanced Search</span>

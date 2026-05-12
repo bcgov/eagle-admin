@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class StorageService {
     private currentState: any;
 
@@ -10,4 +10,9 @@ export class StorageService {
 
     get state(): any { return this.currentState; }
     set state(state: any) { this.currentState[state.type] = state.data; }
+
+    /** Raw project object from the current route resolver. */
+    get currentProjectData(): any {
+        return this.currentState.currentProject?.data ?? null;
+    }
 }

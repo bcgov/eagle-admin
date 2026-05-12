@@ -1,7 +1,7 @@
 <table class="table">
   <thead class="thead-light">
     <tr>
-      @for (entry of columns; track entry) {
+      @for (entry of columns(); track entry) {
         <th class="project-table__name-col sortable"
           (click)="!entry.nosort && sort(entry.value)" [style.width]="entry.width"
           (keydown)="onHeaderKeyDown($event, entry)">
@@ -23,7 +23,8 @@
           }
           @if (entry.nosort !== true) {
             <i class="sort"
-              [ngClass]="{'sort-asc': (column.slice(1) == entry.value && column.charAt(0) === '+'), 'sort-desc': (column.slice(1) == entry.value && column.charAt(0) === '-') }"
+              [class.sort-asc]="column.slice(1) == entry.value && column.charAt(0) === '+'"
+              [class.sort-desc]="column.slice(1) == entry.value && column.charAt(0) === '-'"
             aria-hidden="true"></i>
           }
         </th>
@@ -34,20 +35,30 @@
     <div (selectedCount)="updateSelectedCount($event)"></div>
   </ng-template>
 </table>
-<div class="page-controls text-center pt-3 pb-3">
-  @if (data.paginationData.totalListItems >= 10) {
-    <nz-pagination [nzPageIndex]="activePage"
-      (nzPageIndexChange)="updatePageNumber($event)" (nzPageSizeChange)="updatePageSize($event)"
-      [nzShowSizeChanger]="true" [nzPageSize]="activePageSize" [nzTotal]="data.paginationData.totalListItems"
-      [nzPageSizeOptions]="pageSizeArray" [nzShowTotal]="totalTemplate">
-    </nz-pagination>
+<div class="page-controls pt-3 pb-3">
+  @if (data().paginationData.totalListItems >= 10) {
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+      <span class="results-count">
+        {{data().paginationData.totalListItems}} result@if (data().paginationData.totalListItems != 1) {<span>s</span>} found
+      </span>
+      <select class="form-select form-select-sm w-auto"
+        [value]="activePageSize"
+        (change)="updatePageSize(+$any($event.target).value)">
+        @for (size of pageSizeArray; track size) {
+          <option [value]="size">{{size}} / page</option>
+        }
+      </select>
+    </div>
+    <div class="d-flex justify-content-center">
+      <ngb-pagination
+        [page]="activePage"
+        (pageChange)="updatePageNumber($event)"
+        [pageSize]="activePageSize"
+        [collectionSize]="data().paginationData.totalListItems"
+        [maxSize]="7"
+        [rotate]="true"
+        [boundaryLinks]="true">
+      </ngb-pagination>
+    </div>
   }
-  <ng-template #totalTemplate let-total>{{total}} result@if (total != 1) {
-    <span>s</span>
-    } found
-    @if (total <= 500) {
-      <button nz-button nzType="primary" class="show_all_btn"
-      (click)="updatePageSize(data.paginationData.totalListItems)">Show All</button>
-    }
-  </ng-template>
 </div>

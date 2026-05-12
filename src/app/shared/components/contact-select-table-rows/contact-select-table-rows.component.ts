@@ -1,17 +1,16 @@
-import { Component, Input, OnInit, EventEmitter, Output, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
-import { TableObject } from '../table-template/table-object';
+import { TableObject, TableColumn } from '../table-template/table-object';
 import { TableComponent } from '../table-template/table.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-contact-select-table-rows',
     templateUrl: './contact-select-table-rows.component.html',
-    styleUrls: ['./contact-select-table-rows.component.css'],
-    standalone: true,
-    imports: [],
+    styleUrl: './contact-select-table-rows.component.css',
 })
 
 export class ContactSelectTableRowsComponent implements OnInit, TableComponent {
@@ -20,22 +19,22 @@ export class ContactSelectTableRowsComponent implements OnInit, TableComponent {
   private router = inject(Router);
 
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
 
-  @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  selectedCount = output<any>();
 
   public contacts: any;
   public paginationData: any;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.contacts = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.contacts = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   selectItem(item) {

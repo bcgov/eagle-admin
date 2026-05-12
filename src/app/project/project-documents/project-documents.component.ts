@@ -1,28 +1,27 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription, forkJoin, firstValueFrom } from 'rxjs';
+import { ToastService } from 'src/app/services/toast.service';
+import { NgbModal, NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { forkJoin, firstValueFrom } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { SearchTerms } from 'src/app/models/search';
-import { ApiService } from 'src/app/services/api';
-import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
+import { ConfigService } from 'src/app/services/config.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableDocumentParamsObject } from 'src/app/shared/components/table-template/table-document-params-object';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
 import { TableDocumentTemplateUtils } from 'src/app/shared/utils/table-document-template-utils';
-import { Utils } from 'src/app/shared/utils/utils';
+import { encodeParams, encodeString } from 'src/app/shared/utils/utils';
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
 import { Document } from 'src/app/models/document';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 
@@ -39,33 +38,32 @@ class DocumentFilterObject {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-project-documents',
-  standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
     NgbDropdownModule,
+    NgbTooltipModule,
     TableTemplateComponent
   ],
   templateUrl: './project-documents.component.html',
-  styleUrls: ['./project-documents.component.css'],
+  styleUrl: './project-documents.component.css',
   providers: [TableDocumentTemplateUtils]
 })
-export class ProjectDocumentsComponent implements OnInit, OnDestroy {
-  private _changeDetectionRef = inject(ChangeDetectorRef);
-  private api = inject(ApiService);
+export class ProjectDocumentsComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private modalService = inject(NgbModal);
   private documentService = inject(DocumentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private searchService = inject(SearchService);
   private configService = inject(ConfigService);
   private storageService = inject(StorageService);
   private tableDocumentTemplateUtils = inject(TableDocumentTemplateUtils);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
+  private _cdr = inject(ChangeDetectorRef);
 
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
@@ -112,7 +110,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   };
 
   public categorizedDocumentTableData: TableObject;
-  public documentTableColumns: any[] = [
+  public documentTableColumns: TableColumn[] = [
     {
       name: 'select_all_box',
       value: 'select_all_box',
@@ -156,7 +154,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private subscriptions = new Subscription();
 
   public selectedCount = {
     categorized: 0,
@@ -209,9 +206,9 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         return 0;
       });
     }
-    this.subscriptions.add(
       this.route.params
         .pipe(
+          takeUntilDestroyed(this.destroyRef),
           switchMap((res: any) => {
             const params = { ...res };
 
@@ -237,7 +234,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
               }
 
               this.storageService.state.projectDocumentTableParams = this.tableParams;
-              this._changeDetectionRef.detectChanges();
             } else {
               this.tableParams = this.storageService.state.projectDocumentTableParams;
               this.tableParams.keywords = decodeURIComponent(
@@ -245,18 +241,37 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
               );
             }
 
-            this.currentProject = this.storageService.state.currentProject.data;
+            this.currentProject = this.storageService.currentProjectData;
             this.storageService.state.labels = null;
-            this._changeDetectionRef.detectChanges();
 
-            return this.route.data;
+            const projectId = this.currentProject._id;
+            const sortBy = this.tableParams.sortByCategorized || '-datePosted,+displayName';
+            const pageNum = this.tableParams.currentPageCategorized || 1;
+            const pageSize = this.tableParams.pageSizeCategorized || 10;
+            const keywords = this.tableParams.keywords || '';
+
+            return this.searchService.getSearchResults(
+              keywords,
+              'Document',
+              [
+                { name: 'project', value: projectId },
+                { name: 'categorized', value: true }
+              ],
+              pageNum,
+              pageSize,
+              sortBy,
+              { documentSource: 'PROJECT' },
+              true,
+              this.filterForAPI,
+              ''
+            );
           })
         )
-        .subscribe(({ documents }: any) => {
-          if (documents.categorized) {
-            if (documents.categorized.data && documents.categorized.data.meta.length > 0) {
-              this.tableParams.totalListItemsCategorized = documents.categorized.data.meta[0].searchResultsTotal;
-              this.categorizedDocs = documents.categorized.data.searchResults;
+        .subscribe((res: any) => {
+          if (res && res[0]) {
+            if (res[0].data && res[0].data.meta.length > 0) {
+              this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
+              this.categorizedDocs = res[0].data.searchResults;
             } else {
               this.tableParams.totalListItemsCategorized = 0;
               this.categorizedDocs = [];
@@ -265,22 +280,13 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             this.setRowData();
 
             this.loading = false;
-            this._changeDetectionRef.detectChanges();
+            this._cdr.markForCheck();
           } else {
             alert('Uh-oh, couldn\'t load valued components');
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-        })
-    );
-  }
-
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      verticalPosition: 'top',
-      horizontalPosition: 'center',
-      duration: 4000
-    });
+        });
   }
 
   public selectAction(action) {
@@ -294,10 +300,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               this.createRowCopy(item);
-              this.openSnackBar(
-                'A  PUBLIC  link to this document has been copied.',
-                'Close'
-              );
+              this.toastService.info('A  PUBLIC  link to this document has been copied.');
             }
           });
         }
@@ -321,8 +324,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           : this.categorizedDocumentTableData.data.length;
 
         this.setPublishUnpublish();
-
-        this._changeDetectionRef.detectChanges();
         break;
       case 'edit':
         const selectedDocs = [];
@@ -358,7 +359,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
               promises.push(
-                this.api.downloadDocument(
+                this.documentService.downloadDocument(
                   this.categorizedDocs.filter(d => d._id === item._id)[0]
                 )
               );
@@ -409,16 +410,21 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         forkJoin(observables).subscribe({
           error: err => {
             this.logger.error('publish documents failed', 'ProjectDocumentsComponent', err);
+            this.toastService.error('Failed to publish document(s).');
+            this.loading = false;
+            this._cdr.markForCheck();
           },
           complete: () => {
             this.loading = false;
             this.canUnpublish = false;
             this.canPublish = false;
+            this.toastService.success('Document(s) published successfully.');
             this.onSubmit();
           }
         });
       } else {
         this.loading = false;
+        this._cdr.markForCheck();
       }
     }).catch(() => {
       // Handle error
@@ -451,16 +457,21 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         forkJoin(observables).subscribe({
           error: err => {
             this.logger.error('unpublish documents failed', 'ProjectDocumentsComponent', err);
+            this.toastService.error('Failed to unpublish document(s).');
+            this.loading = false;
+            this._cdr.markForCheck();
           },
           complete: () => {
             this.loading = false;
             this.canUnpublish = false;
             this.canPublish = false;
+            this.toastService.success('Document(s) unpublished successfully.');
             this.onSubmit();
           }
         });
       } else {
         this.loading = false;
+        this._cdr.markForCheck();
       }
     }).catch(() => {
       // Handle error
@@ -485,22 +496,24 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
-              itemsToDelete.push({
-                promise: firstValueFrom(this.documentService.delete(item)),
-                item: item
-              });
+              itemsToDelete.push(firstValueFrom(this.documentService.delete(item)));
             }
           });
         }
 
-        this.loading = false;
-
-        return Promise.all(itemsToDelete.map(i => i.promise)).then(() => {
-          this.onSubmit(); // Reload main page
-        });
+        try {
+          await Promise.all(itemsToDelete);
+          this.toastService.success('Document(s) deleted successfully.');
+          this.onSubmit();
+        } catch (err) {
+          this.logger.error('delete documents failed', 'ProjectDocumentsComponent', err);
+          this.toastService.error('Failed to delete document(s).');
+          this.loading = false;
+          this._cdr.markForCheck();
+        }
       }
     }).catch(() => {
-      // Handle error
+      // Modal dismissed
     });
   }
 
@@ -539,13 +552,14 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     // WORKAROUND: add timestamp to force URL to be different than last time
 
     this.loading = true;
+    this._cdr.markForCheck();
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
     params['sortByCategorized'] = this.tableParams.sortByCategorized = '-datePosted,+displayName';
-    params['keywords'] = this.utils.encodeParams(
+    params['keywords'] = encodeParams(
       (this.tableParams.keywords = this.tableParams.keywords || '')
     );
     params['pageSizeCategorized'] = this.tableParams.pageSizeCategorized;
@@ -561,6 +575,10 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
   }
 
   setRowData() {
+    if (!this.categorizedDocs || this.categorizedDocs.length === 0) {
+      this.categorizedDocumentTableData = null;
+      return;
+    }
     if (this.categorizedDocs && this.categorizedDocs.length > 0) {
       const documentList: any[] = [];
 
@@ -818,7 +836,6 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
     if (docType === Constants.documentTypes.CATEGORIZED) {
       this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0;
-      this.subscriptions.add(
         this.searchService
           .getSearchResults(
             this.tableParams.keywords || '',
@@ -835,6 +852,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
             this.filterForAPI,
             ''
           )
+          .pipe(takeUntilDestroyed(this.destroyRef))
           .subscribe((res: any) => {
             this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
             this.categorizedDocs = res[0].data.searchResults;
@@ -848,9 +866,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
 
             this.setRowData();
             this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          })
-      );
+          });
     }
   }
 
@@ -873,7 +889,7 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     selBox.style.left = '0';
     selBox.style.top = '0';
     selBox.style.opacity = '0';
-    const safeName = this.utils.encodeString(
+    const safeName = encodeString(
       item.documentFileName,
       true
     );
@@ -929,7 +945,4 @@ export class ProjectDocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

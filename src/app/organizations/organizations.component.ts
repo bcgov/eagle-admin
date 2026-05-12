@@ -1,48 +1,50 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { OrganizationsTableRowsComponent } from './organizations-table-rows/organizations-table-rows.component';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
 import { StorageService } from '../services/storage.service';
-import { TableObject } from '../shared/components/table-template/table-object';
+import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { SearchService } from '../services/search.service';
+import { LoadingStateService } from '../services/loading-state.service';
 
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-organizations',
-    standalone: true,
     imports: [
-      CommonModule,
       RouterModule,
       FormsModule,
       TableTemplateComponent
     ],
     templateUrl: './organizations.component.html',
-    styleUrls: ['./organizations.component.css'],
+    styleUrl: './organizations.component.css',
     
 })
-export class OrganizationsComponent implements OnInit, OnDestroy {
+export class OrganizationsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private storageService = inject(StorageService);
+  private searchService = inject(SearchService);
+  public loadingState = inject(LoadingStateService);
+  public loading = this.loadingState.getOperationState('search-results');
 
   public terms = new SearchTerms();
-  private subscriptions = new Subscription();
   public organizations: Org[] = null;
-  public loading = true;
 
   public tableData: TableObject;
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: 'Name',
       value: 'name',
@@ -86,9 +88,10 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     this.storageService.state.orgForm = null;
     this.storageService.state.selectedProject = null;
 
-    this.subscriptions.add(
-      this.route.params
-        .subscribe(params => {
+    this.route.params
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap(params => {
           if (this.storageService.state.orgTableParams) {
             this.tableParams = this.storageService.state.orgTableParams;
             this.storageService.state.orgTableParams = null;
@@ -104,23 +107,42 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
             this.setFilterButtons();
           }
 
-          this.subscriptions.add(
-            this.route.data
-              .subscribe((res: any) => {
-                if (res && res.orgs && res.orgs[0].data.meta && res.orgs[0].data.meta.length > 0) {
-                  this.tableParams.totalListItems = res.orgs[0].data.meta[0].searchResultsTotal;
-                  this.organizations = res.orgs[0].data.searchResults;
-                } else {
-                  this.tableParams.totalListItems = 0;
-                  this.organizations = [];
-                }
-                this.setRowData();
-                this.loading = false;
-                this._changeDetectionRef.detectChanges();
-              })
+          const filterObj = this.tableParams.filter?.companyType
+            ? this.getFiltersForApi(this.tableParams.filter.companyType)
+            : {};
+
+          return this.searchService.getSearchResults(
+            this.tableParams.keywords || '', 'Organization', null,
+            this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
+            {}, false, filterObj, ''
           );
         })
-    );
+      ).subscribe((res: any) => {
+        if (res && res[0].data.meta && res[0].data.meta.length > 0) {
+          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+          this.organizations = res[0].data.searchResults;
+        } else {
+          this.tableParams.totalListItems = 0;
+          this.organizations = [];
+        }
+        this.setRowData();
+      });
+  }
+
+  private getFiltersForApi(typeFilterString: string): object {
+    const typeFiltersFromRoute = typeFilterString.split(',');
+    const typeFiltersForApi = [];
+    if (typeFiltersFromRoute.includes('indigenousGroup')) { typeFiltersForApi.push('Indigenous Group'); }
+    if (typeFiltersFromRoute.includes('proponent')) { typeFiltersForApi.push('Proponent/Certificate Holder'); }
+    if (typeFiltersFromRoute.includes('otherAgency')) { typeFiltersForApi.push('Other Agency'); }
+    if (typeFiltersFromRoute.includes('localGovernment')) { typeFiltersForApi.push('Local Government'); }
+    if (typeFiltersFromRoute.includes('municipality')) { typeFiltersForApi.push('Municipality'); }
+    if (typeFiltersFromRoute.includes('ministry')) { typeFiltersForApi.push('Ministry'); }
+    if (typeFiltersFromRoute.includes('consultant')) { typeFiltersForApi.push('Consultant'); }
+    if (typeFiltersFromRoute.includes('otherGovernment')) { typeFiltersForApi.push('Other Government'); }
+    if (typeFiltersFromRoute.includes('communityGroup')) { typeFiltersForApi.push('Community Group'); }
+    if (typeFiltersFromRoute.includes('other')) { typeFiltersForApi.push('Other'); }
+    return { companyType: typeFiltersForApi.toString() };
   }
 
   public onSubmit(currentPage = 1) {
@@ -130,7 +152,6 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
-    this.loading = true;
 
     // Reset page.
     const params = this.terms.getParams();
@@ -231,7 +252,4 @@ export class OrganizationsComponent implements OnInit, OnDestroy {
     this.onSubmit();
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

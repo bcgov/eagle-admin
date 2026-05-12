@@ -82,8 +82,9 @@ describe('ProjectListTableRowsComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProjectListTableRowsComponent);
     component = fixture.componentInstance;
-    component.data = tableData;
-    component.columnData = projectTableColumns;
+    fixture.componentRef.setInput('data', tableData);
+    fixture.componentRef.setInput('columnData', projectTableColumns);
+    fixture.componentRef.setInput('smallTable', false);
     fixture.detectChanges();
   });
 

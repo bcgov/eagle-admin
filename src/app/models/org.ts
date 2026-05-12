@@ -29,7 +29,7 @@ export class Org {
     this.address1 = obj && obj.address1 || undefined;
     this.address2 = obj && obj.address2 || undefined;
     this.companyType = obj && obj.companyType || undefined;
-    this.parentCompany = obj && obj.parentCompany || undefined;
+    this.parentCompany = (obj && obj.parentCompany) ? obj.parentCompany : null;
     this.companyLegal = obj && obj.companyLegal || undefined;
     this.company = obj && obj.company || undefined;
     this.checkbox = obj && obj.checkbox || undefined;

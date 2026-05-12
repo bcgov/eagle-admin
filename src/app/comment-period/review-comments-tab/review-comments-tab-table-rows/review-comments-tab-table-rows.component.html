@@ -17,7 +17,7 @@
     <td (click)="goToItem(comment)" data-label="Status" scope="row" [style.width]="!useSmallTable && columns[5].width">{{comment.eaoStatus}}</td>
     <td (click)="goToItem(comment)" data-label="CAC" scope="row" [style.width]="!useSmallTable && columns[6].width">
       <div class="border ms-2 badge badge-pill badge-info"
-      [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC ? 'Yes' : 'No'}}</div>
+      [class.bg-success]="comment.submittedCAC" [class.bg-danger]="!comment.submittedCAC">{{comment.submittedCAC ? 'Yes' : 'No'}}</div>
     </td>
   </tr>
 }

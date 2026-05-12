@@ -1,31 +1,28 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
-import { ApiService } from '../services/api';
-import { Subscription } from 'rxjs';
-import { KeycloakService } from '../services/keycloak.service';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../services/api';
+import { KeycloakService } from '../services/keycloak.service';
 import { LoggingService } from '../services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-login',
     templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css'],
-    standalone: true,
+    styleUrl: './login.component.css',
     imports: [
-      CommonModule,
       FormsModule,
       RouterModule
     ]
 })
 
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent implements OnInit {
   private router = inject(Router);
   private api = inject(ApiService);
   private keycloakService = inject(KeycloakService);
   private logger = inject(LoggingService);
-
-  private subscriptions = new Subscription();
+  private destroyRef = inject(DestroyRef);
   model: any = {};
   loading = false;
   error = '';
@@ -40,25 +37,19 @@ export class LoginComponent implements OnInit, OnDestroy {
   login() {
     this.loading = true;
 
-    this.subscriptions.add(
-      this.api.login(this.model.username, this.model.password)
-        .subscribe(
-          result => {
-            if (result === true) {
-              // login successful
-              this.router.navigate(['/']);
-            }
-          },
-          error => {
-            this.logger.error('login failed', 'LoginComponent', error);
-            this.error = 'Username or password is incorrect';
-            this.loading = false;
+    this.api.login(this.model.username, this.model.password)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        result => {
+          if (result === true) {
+            this.router.navigate(['/']);
           }
-        )
-    );
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+        },
+        error => {
+          this.logger.error('login failed', 'LoginComponent', error);
+          this.error = 'Username or password is incorrect';
+          this.loading = false;
+        }
+      );
   }
 }

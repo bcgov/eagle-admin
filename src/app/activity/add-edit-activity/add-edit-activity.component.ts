@@ -1,28 +1,29 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
+import { ToastService } from 'src/app/services/toast.service';
 import { RecentActivity } from 'src/app/models/recentActivity';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
+import { SearchService } from 'src/app/services/search.service';
 import { Constants } from 'src/app/shared/utils/constants';
-import { Utils } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 
 @Component({
   selector: 'app-add-edit-activity',
   templateUrl: './add-edit-activity.component.html',
-  styleUrls: ['./add-edit-activity.component.css'],
-  standalone: true,
+  styleUrl: './add-edit-activity.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
+    DatePipe,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
@@ -31,21 +32,21 @@ import { Utils } from 'src/app/shared/utils/utils';
     MatSlideToggleModule
   ]
 })
-export class AddEditActivityComponent implements OnInit, OnDestroy {
+export class AddEditActivityComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private utils = inject(Utils);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private recentActivityService = inject(RecentActivityService);
   private projectService = inject(ProjectService);
   private notificationProjectService = inject(NotificationProjectService);
   private commentPeriodService = inject(CommentPeriodService);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private searchService = inject(SearchService);
+  private destroyRef = inject(DestroyRef);
+  private _cdr = inject(ChangeDetectorRef);
 
   public myForm!: UntypedFormGroup;
   public isEditing = false;
   // private subscriptions: Subscription[] = [];
-  private subscriptions = new Subscription();
   public loading = true;
   public projects = [];
   public projectNotifications = [];
@@ -57,14 +58,14 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   public typeIsNotification = false;
   public typeIsProjectNotificationNews = false;
   public projectIsSelected = false;
-  public snackBarTimeout = 1500;
   public isPublished = false;
 
   public tinyMceSettings = {
     skin: false,
     browser_spellcheck: true,
+    promotion: false,
     height: 240,
-    plugins: ['lists, advlist, link, paste'],
+    plugins: ['lists', 'advlist', 'link'],
     toolbar: ['undo redo | formatselect | ' +
       ' bold italic backcolor | alignleft aligncenter ' +
       ' alignright alignjustify | bullist numlist outdent indent |' +
@@ -72,10 +73,6 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
     // Strip all inline styles and Word/Office junk on paste.
     // Keeps semantic structure (paragraphs, links, bold/italic, lists)
     // but discards font-family, font-size, color, mso-* and SCXW/BCX class noise.
-    paste_word_valid_elements: 'p,br,b,strong,i,em,ul,ol,li,a[href|target|rel]',
-    paste_retain_style_properties: '',
-    paste_remove_styles_if_webkit: true,
-    paste_strip_class_attributes: 'all',
     valid_styles: {},
     extended_valid_elements: 'span',
     invalid_elements: 'style,script',
@@ -99,38 +96,35 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.route.data.subscribe(res => {
-        if (Object.keys(res).length === 0 && res.constructor === Object) {
-          this.isPublished = false;
-          this.buildForm({
-            'headline': '',
-            'content': '',
-            'dateAdded': new Date(),
-            'project': '',
-            'projectLocation': '',
-            'pinned': false,
-            'notificationName': '',
-            'type': '',
-            'pcp': '',
-            'contentUrl': '',
-            'documentUrl': '',
-            'complianceAndEnforcement': false
-          });
-        } else {
-          this.isEditing = true;
-          this.buildForm(res.activity.data);
-          this.activity = res.activity.data;
-          this.isPublished = res.activity.data.active ? true : false;
-          // init flags
-          this.updateProject();
-          this.updateType();
-        }
-      })
-    );
+    const activityId = this.route.snapshot.paramMap.get('activityId');
+    if (activityId) {
+      this.searchService.getItem(activityId, 'RecentActivity').pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
+        this.isEditing = true;
+        this.buildForm(res.data);
+        this.activity = res.data;
+        this.isPublished = res.data.active ? true : false;
+        this.updateProject();
+        this.updateType();
+      });
+    } else {
+      this.buildForm({
+        'headline': '',
+        'content': '',
+        'dateAdded': new Date(),
+        'project': '',
+        'projectLocation': '',
+        'pinned': false,
+        'notificationName': '',
+        'type': '',
+        'pcp': '',
+        'contentUrl': '',
+        'documentUrl': '',
+        'complianceAndEnforcement': false
+      });
+    }
 
-    this.subscriptions.add(
-      this.projectService.getAll(1, 1000, '+name').subscribe((res2: any) => {
+    this.projectService.getAll(1, 1000, '+name').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res2: any) => {
         if (res2) {
           this.projects = res2.data;
           // TODO: Later
@@ -146,17 +140,16 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         }
 
         this.loading = false;
-        this._changeDetectorRef.detectChanges();
-      })
-    );
+        this._cdr.markForCheck();
+      },
+      error: () => { this.loading = false; this._cdr.markForCheck(); }
+    });
 
-    this.subscriptions.add(
-      this.notificationProjectService.getAll(1, 1000, '+name').subscribe((res3: any) => {
-        if (res3) {
-          this.projectNotifications = res3.data;
-        }
-      })
-    );
+    this.notificationProjectService.getAll(1, 1000, '+name').pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res3: any) => {
+      if (res3) {
+        this.projectNotifications = res3.data;
+      }
+    });
   }
 
   onCancel() {
@@ -169,10 +162,10 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         _id: this.activity._id,
         headline: this.myForm.controls.headline.value,
         content: this.myForm.controls.content.value,
-        dateAdded: this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateAdded')!.value),
+        dateAdded: convertFormGroupNGBDateToJSDate(this.myForm.get('dateAdded')!.value),
         project: this.myForm.get('project')!.value,
         type: this.myForm.get('type')!.value,
-        pcp: this.myForm.get('pcp')!.value,
+        pcp: this.myForm.get('pcp')!.value || null,
         notificationName: this.myForm.get('type')!.value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
@@ -187,11 +180,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       this.recentActivityService.save(activity)
         .subscribe({
           next: () => {
-            this.snackBar.open('Activity Saved!', 'Close', { duration: this.snackBarTimeout });
-            window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
+            this.toastService.success('Activity Saved!');
+            this.router.navigate(['/activity']);
           },
           error: () => {
-            this.snackBar.open('Error saving activity. Please try again.', 'Close', { duration: 3000 });
+            this.toastService.error('Error saving activity. Please try again.');
           }
         });
     } else {
@@ -201,7 +194,7 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
         dateAdded: new Date(),
         project: this.myForm.get('project')!.value,
         type: this.myForm.get('type')!.value,
-        pcp: this.myForm.get('pcp')!.value,
+        pcp: this.myForm.get('pcp')!.value || null,
         notificationName: this.myForm.get('type')!.value === 'Project Notification Public Comment Period' ? this.myForm.controls.notificationName.value : null,
         contentUrl: this.myForm.controls.contentUrl.value,
         documentUrl: this.myForm.controls.documentUrl.value,
@@ -213,11 +206,11 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       this.recentActivityService.add(activity)
         .subscribe({
           next: () => {
-            this.snackBar.open('Activity Added!', 'Close', { duration: this.snackBarTimeout });
-            window.setTimeout(() => this.router.navigate(['/activity']), this.snackBarTimeout);
+            this.toastService.success('Activity Added!');
+            this.router.navigate(['/activity']);
           },
           error: () => {
-            this.snackBar.open('Error adding activity. Please try again.', 'Close', { duration: 3000 });
+            this.toastService.error('Error adding activity. Please try again.');
           }
         });
     }
@@ -229,27 +222,44 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
   }
 
   public updateType() {
+    // Clear all conditional validators before applying new ones for current type
+    ['project', 'pcp', 'documentUrl', 'notificationName'].forEach(field => {
+      this.myForm.get(field)!.clearValidators();
+      this.myForm.get(field)!.updateValueAndValidity();
+    });
+
     if (this.myForm.get('type')!.value === this.activityTypes[0]) { // PCP
       this.typeIsPCP = true;
       this.typeIsNotification = false;
       this.typeIsProjectNotificationNews = false;
       this.myForm.get('pcp')!.enable();
       this.myForm.get('project')!.enable();
+      this.myForm.get('project')!.setValidators(Validators.required);
+      this.myForm.get('pcp')!.setValidators(Validators.required);
+      this.myForm.get('project')!.updateValueAndValidity();
+      this.myForm.get('pcp')!.updateValueAndValidity();
       if (this.projectIsSelected) {
         this.loadPcpsForProject(this.myForm.get('project')!.value);
         this.loadProjectLocation(this.myForm.get('project')!.value);
       }
     } else if (this.myForm.get('type')!.value === this.activityTypes[1]) { // Notification
       this.typeIsNotification = true;
+      this.typeIsPCP = false;
+      this.typeIsProjectNotificationNews = false;
       this.myForm.controls['project'].reset({ value: '', disabled: true });
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
-      this.typeIsPCP = false;
+      this.myForm.get('documentUrl')!.setValidators(Validators.required);
+      this.myForm.get('notificationName')!.setValidators(Validators.required);
+      this.myForm.get('documentUrl')!.updateValueAndValidity();
+      this.myForm.get('notificationName')!.updateValueAndValidity();
     } else if (this.myForm.get('type')!.value === this.activityTypes[3]) { //  projectNotificationNews
       this.typeIsNotification = false;
       this.typeIsPCP = false;
       this.typeIsProjectNotificationNews = true;
       this.myForm.get('project')!.enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
+      this.myForm.get('project')!.setValidators(Validators.required);
+      this.myForm.get('project')!.updateValueAndValidity();
     } else { // News
       this.typeIsPCP = false;
       this.typeIsNotification = false;
@@ -257,56 +267,60 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       this.myForm.get('project')!.enable();
       this.myForm.controls['pcp'].reset({ value: '', disabled: true });
     }
-    this._changeDetectorRef.detectChanges();
+    this._cdr.markForCheck();
   }
 
   public updateProject() {
     const currentProjectId = this.myForm.get('project')!.value;
     if (currentProjectId === undefined) {
       this.projectIsSelected = false;
+      this._cdr.markForCheck();
     } else {
       this.projectIsSelected = true;
+      this._cdr.markForCheck();
       if (this.typeIsPCP) {
         this.loadPcpsForProject(currentProjectId);
       }
       this.loadProjectLocation(currentProjectId);
     }
-    this._changeDetectorRef.detectChanges();
   }
 
   public loadProjectLocation(projectId: string) {
-    this.subscriptions.add(
-      this.projectService.getById(projectId)
-        .subscribe((res: any) => {
-          if (res) {
-            this.myForm.controls['projectLocation'].setValue(res.location);
-            this._changeDetectorRef.detectChanges();
-          }
-        })
-    );
+    this.projectService.getById(projectId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        if (res) {
+          this.myForm.controls['projectLocation'].setValue(res.location);
+          this._cdr.markForCheck();
+        }
+      });
   }
 
   public loadPcpsForProject(projectId: string) {
-    this.subscriptions.add(
-      this.commentPeriodService.getAllByProjectId(projectId)
-        .subscribe((res: any) => {
-          if (res) {
-            this.periods = res.data;
+    this.commentPeriodService.getAllByProjectId(projectId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        if (res) {
+          this.periods = res.data;
+          // Preserve the current PCP selection if it exists in the loaded periods.
+          // Only reset when the current value is no longer valid (e.g. user switched projects).
+          const currentPcp = this.myForm.controls['pcp'].value;
+          if (!this.periods.some((p: any) => p._id === currentPcp)) {
             this.myForm.controls['pcp'].setValue('');
-            this._changeDetectorRef.detectChanges();
           }
-        })
-    );
+          this._cdr.markForCheck();
+        }
+      });
   }
 
   buildForm(data: any) {
     this.myForm = new UntypedFormGroup({
-      'headline': new UntypedFormControl(data.headline),
-      'content': new UntypedFormControl(data.content),
-      'dateAdded': new UntypedFormControl(this.utils.convertJSDateToNGBDate(new Date(data.dateAdded))),
+      'headline': new UntypedFormControl(data.headline, Validators.required),
+      'content': new UntypedFormControl(data.content, Validators.required),
+      'dateAdded': new UntypedFormControl(convertJSDateToNGBDate(new Date(data.dateAdded)), Validators.required),
       'project': new UntypedFormControl(data.project),
       'projectLocation': new UntypedFormControl({ value: data.projectLocation, disabled: true }),
-      'type': new UntypedFormControl(data.type),
+      'type': new UntypedFormControl(data.type, Validators.required),
       'pcp': new UntypedFormControl({ value: data.pcp, disabled: true }),
       'notificationName': new UntypedFormControl(data.notificationName),
       'contentUrl': new UntypedFormControl(data.contentUrl),
@@ -314,9 +328,5 @@ export class AddEditActivityComponent implements OnInit, OnDestroy {
       'documentUrl': new UntypedFormControl(data.documentUrl),
       'complianceAndEnforcement': new UntypedFormControl(data.complianceAndEnforcement ? true : false),
     });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

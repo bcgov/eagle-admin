@@ -1,13 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy} from '@angular/core';
 
 import { SideBarService } from '../services/sidebar.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-toggle-button',
   templateUrl: './toggle-button.component.html',
-  styleUrls: ['./toggle-button.component.css'],
-  standalone: true,
-  imports: []
+  styleUrl: './toggle-button.component.css',
 })
 
 export class ToggleButtonComponent {

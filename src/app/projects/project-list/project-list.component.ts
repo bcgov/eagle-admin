@@ -1,8 +1,7 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -15,7 +14,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { OrgService } from 'src/app/services/org.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
@@ -23,6 +22,7 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { LoadingStateService } from 'src/app/services/loading-state.service';
 
 class ProjectFilterObject {
   constructor(
@@ -40,19 +40,18 @@ class ProjectFilterObject {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-project-list',
   templateUrl: './project-list.component.html',
-  styleUrls: ['./project-list.component.css'],
-  standalone: true,
+  styleUrl: './project-list.component.css',
   imports: [
-    CommonModule,
     FormsModule,
     NgSelectModule,
     TableTemplateComponent,
     NgbDatepickerModule
   ],
 })
-export class ProjectListComponent implements OnInit, OnDestroy {
+export class ProjectListComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private tableTemplateUtils = inject(TableTemplateUtils);
@@ -61,8 +60,10 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
   private storageService = inject(StorageService);
   private configService = inject(ConfigService);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private logger = inject(LoggingService);
+  public loadingState = inject(LoadingStateService);
+  public loading = this.loadingState.getOperationState('search-results');
 
   public readonly constants = Constants;
   public projects: Array<Project> = [];
@@ -76,8 +77,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   public placeholderDateRangeModel: Array<object>;
   public dateRangeItems: Array<object> = [{}];
 
-  public loading = true;
-
   public tableParams: TableParamsObject = new TableParamsObject();
   public terms = new SearchTerms();
 
@@ -86,24 +85,22 @@ export class ProjectListComponent implements OnInit, OnDestroy {
 
   public filterForUI: ProjectFilterObject = new ProjectFilterObject();
 
-  public showAdvancedSearch = true;
+  showAdvancedSearch = signal(false);
 
   public showFilters: object = {
     type: false,
     eacDecision: false,
-    pcp: false,
-    more: false
+    pcp: false
   };
 
   public numFilters: object = {
     type: 0,
     eacDecision: 0,
-    pcp: 0,
-    more: 0
+    pcp: 0
   };
 
   public projectTableData: TableObject;
-  public projectTableColumns: any[] = [
+  public projectTableColumns: TableColumn[] = [
     {
       name: 'Name',
       value: 'name',
@@ -136,58 +133,78 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     }
   ];
 
-  private subscriptions = new Subscription();
-
   ngOnInit() {
-    this.subscriptions.add(
-      this.orgService.getByCompanyType('Proponent/Certificate Holder')
-        .pipe(
-          switchMap((res: any) => {
-            this.proponents = res || [];
-            this.commentPeriods = Constants.PCP_COLLECTION;
-            this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
-            this.getLists();
-            return this.route.params;
-          }),
-          switchMap((res: any) => {
-            const params = { ...res };
-            this.setFiltersFromParams(params);
-            this.updateCounts();
-            this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
-              params,
-              this.filterForURL
+    this.orgService.getByCompanyType('Proponent/Certificate Holder')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap((res: any) => {
+          this.proponents = res || [];
+          this.commentPeriods = Constants.PCP_COLLECTION;
+          this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
+          this.getLists();
+          return this.route.params;
+        }),
+        switchMap((res: any) => {
+          const params = { ...res };
+          this.setFiltersFromParams(params);
+          this.updateCounts();
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(
+            params,
+            this.filterForURL
+          );
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = '+name';
+            this.tableTemplateUtils.updateUrl(
+              this.tableParams.sortBy,
+              this.tableParams.currentPage,
+              this.tableParams.pageSize,
+              this.filterForURL,
+              this.tableParams.keywords
             );
-            if (this.tableParams.sortBy === '') {
-              this.tableParams.sortBy = '+name';
-              this.tableTemplateUtils.updateUrl(
-                this.tableParams.sortBy,
-                this.tableParams.currentPage,
-                this.tableParams.pageSize,
-                this.filterForURL,
-                this.tableParams.keywords
-              );
-            }
-            return this.route.data;
-          }),
-        )
-        .subscribe((res: any) => {
-          if (res.projects[0].data) {
-            if (res.projects[0].data.searchResults.length > 0) {
+          }
+
+          // projectPhase in URL maps to currentPhaseName in DB
+          const apiFilter = { ...this.filterForAPI };
+          if (params.hasOwnProperty('projectPhase')) {
+            apiFilter['currentPhaseName'] = params['projectPhase'];
+            delete apiFilter['projectPhase'];
+          }
+
+          return this.searchService.getSearchResults(
+            this.tableParams.keywords,
+            'Project',
+            null,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.tableParams.sortBy,
+            {},
+            true,
+            apiFilter,
+            ''
+          );
+        }),
+      )
+      .subscribe({
+        next: (res: any) => {
+          if (res[0].data) {
+            if (res[0].data.searchResults.length > 0) {
               this.tableParams.totalListItems =
-                res.projects[0].data.meta[0].searchResultsTotal;
-              this.projects = res.projects[0].data.searchResults;
+                res[0].data.meta[0].searchResultsTotal;
+              this.projects = res[0].data.searchResults;
             } else {
               this.tableParams.totalListItems = 0;
               this.projects = [];
             }
             this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load topics');
             this.router.navigate(['/']);
           }
-        }));
+        },
+        error: (error: any) => {
+          this.logger.error('Failed to load projects', 'ProjectListComponent', error);
+        }
+      });
   }
 
   addProject() {
@@ -390,18 +407,12 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     };
 
     let num = 0;
-    if (name === 'more') {
-      num =
-        getCount('region') +
-        this.filterForUI.proponent.length +
-        getCount('CEAAInvolvement') +
-        this.filterForUI.vc.length;
+    if (name === 'eacDecision') {
+      num = getCount(name);
+      num += this.isNGBDate(this.filterForUI.decisionDateStart) ? 1 : 0;
+      num += this.isNGBDate(this.filterForUI.decisionDateEnd) ? 1 : 0;
     } else {
       num = getCount(name);
-      if (name === 'eacDecision') {
-        num += this.isNGBDate(this.filterForUI.decisionDateStart) ? 1 : 0;
-        num += this.isNGBDate(this.filterForUI.decisionDateEnd) ? 1 : 0;
-      }
     }
     this.numFilters[name] = num;
   }
@@ -410,7 +421,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     this.updateCount('type');
     this.updateCount('eacDecision');
     this.updateCount('pcp');
-    this.updateCount('more');
     this.updateCount('projectPhase');
   }
 
@@ -448,7 +458,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
   getPaginatedProjects(pageNumber) {
     // Go to top of page after clicking to a different page.
     window.scrollTo(0, 0);
-    this.loading = true;
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(
       this.tableParams,
@@ -464,21 +473,22 @@ export class ProjectListComponent implements OnInit, OnDestroy {
       delete this.filterForAPI['projectPhase'];
     }
 
-    this.subscriptions.add(
-      this.searchService
-        .getSearchResults(
-          this.tableParams.keywords || '',
-          'Project',
-          null,
-          pageNumber,
-          this.tableParams.pageSize,
-          this.tableParams.sortBy,
-          {},
-          true,
-          this.filterForAPI,
-          ''
-        )
-        .subscribe((res: any) => {
+    this.searchService
+      .getSearchResults(
+        this.tableParams.keywords || '',
+        'Project',
+        null,
+        pageNumber,
+        this.tableParams.pageSize,
+        this.tableParams.sortBy,
+        {},
+        true,
+        this.filterForAPI,
+        ''
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
           if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
             this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
             delete this.filterForAPI['currentPhaseName'];
@@ -495,13 +505,15 @@ export class ProjectListComponent implements OnInit, OnDestroy {
               this.tableParams.keywords
             );
             this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
           } else {
             alert('Uh-oh, couldn\'t load topics');
             this.router.navigate(['/']);
           }
-        }));
+        },
+        error: (error: any) => {
+          this.logger.error('Failed to load projects', 'ProjectListComponent', error);
+        }
+      });
   }
 
   public onSubmit(currentPage = 1) {
@@ -511,7 +523,6 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
-    this.loading = true;
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
@@ -649,7 +660,4 @@ export class ProjectListComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

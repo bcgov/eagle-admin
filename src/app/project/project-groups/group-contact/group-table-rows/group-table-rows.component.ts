@@ -1,34 +1,33 @@
-import { Component, Input, OnInit, EventEmitter, Output, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
 
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-group-table-rows',
     templateUrl: './group-table-rows.component.html',
-    styleUrls: ['./group-table-rows.component.css'],
-    standalone: true,
-    imports: [],
+    styleUrl: './group-table-rows.component.css',
     
 })
 export class GroupTableRowsComponent implements OnInit {
   private storageService = inject(StorageService);
 
-  @Input() data: TableObject;
-  @Output() selectedCount: EventEmitter<any> = new EventEmitter();
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
+  data = input.required<TableObject>();
+  selectedCount = output<any>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
 
   public contacts: any;
   public paginationData: any;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.contacts = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.contacts = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   selectItem(item) {

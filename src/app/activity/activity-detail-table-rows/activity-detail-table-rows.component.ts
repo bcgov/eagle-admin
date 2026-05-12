@@ -1,46 +1,45 @@
-import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy, input } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { RecentActivityService } from 'src/app/services/recent-activity';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-activity-detail-table-rows]',
     templateUrl: './activity-detail-table-rows.component.html',
-    styleUrls: ['./activity-detail-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule],
+    styleUrl: './activity-detail-table-rows.component.css',
+    imports: [DatePipe],
 })
 
-export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, TableComponent {
+export class ActivityDetailTableRowsComponent implements OnInit, TableComponent {
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private router = inject(Router);
   private modalService = inject(NgbModal);
   private recentActivityService = inject(RecentActivityService);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
 
   public entries: any;
   public paginationData: any;
   public dropdownItems = ['Edit', 'Delete'];
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
-  private subscriptions = new Subscription();
-
   async ngOnInit() {
-    this.entries = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.entries = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   deleteActivity(activity) {
@@ -55,45 +54,36 @@ export class ActivityDetailTableRowsComponent implements OnInit, OnDestroy, Tabl
     modalRef.result
       .then(isConfirmed => {
         if (isConfirmed) {
-          this.subscriptions.add(
-            this.recentActivityService.delete(activity)
+          this.recentActivityService.delete(activity)
+              .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe({
                 next: () => {
                   this.entries.splice(this.entries.indexOf(activity), 1);
-                  this._changeDetectionRef.detectChanges();
+                  this._changeDetectionRef.markForCheck();
                 },
                 error: error => {
                   this.logger.error('delete activity failed', 'ActivityDetailTableRowsComponent', error);
                 }
               })
-          );
-        }
-      })
-      .catch(() => {
-        // Modal dismissed
-      });
+          }
+        })
+        .catch(() => {
+          // Modal dismissed
+        });
   }
 
   togglePin(activity) {
-    this.subscriptions.add(
-      this.recentActivityService.save(activity)
-        .subscribe({
-          next: () => {
-            this._changeDetectionRef.detectChanges();
-          },
-          error: error => {
-            this.logger.error('save activity failed', 'ActivityDetailTableRowsComponent', error);
-          }
-        })
-    );
+    activity.pinned = !activity.pinned;
+    this.recentActivityService.save(activity)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { this._changeDetectionRef.markForCheck(); },
+        error: error => this.logger.error('save activity failed', 'ActivityDetailTableRowsComponent', error)
+      });
   }
 
   goToItem(activity) {
     this.logger.debug('navigating to activity', 'ActivityDetailTableRowsComponent', { id: activity._id });
     this.router.navigate(['/activity', activity._id, 'edit']);
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

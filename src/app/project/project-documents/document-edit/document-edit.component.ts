@@ -1,63 +1,84 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject, computed, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
 import { NgbDateStruct, NgbDate, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
 import { DateTime } from 'luxon';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/services/toast.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-document-edit',
-  standalone: true,
   imports: [RouterModule, NgbDatepickerModule, ReactiveFormsModule],
   templateUrl: './document-edit.component.html',
-  styleUrls: ['./document-edit.component.css'],
+  styleUrl: './document-edit.component.css',
 
 })
-export class DocumentEditComponent implements OnInit, OnDestroy {
+export class DocumentEditComponent implements OnInit {
   private configService = inject(ConfigService);
   private documentService = inject(DocumentService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private router = inject(Router);
   private storageService = inject(StorageService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
-  private readonly SNACKBAR_TIMEOUT = 1500;
+  private readonly lists = this.configService.listsSignal;
+
+  public readonly filteredDoctypes2002 = computed(() =>
+    this.lists().filter(i => i.type === 'doctype' && i.legislation === 2002)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredDoctypes2018 = computed(() =>
+    this.lists().filter(i => i.type === 'doctype' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredAuthors2002 = computed(() =>
+    this.lists().filter(i => i.type === 'author' && i.legislation === 2002)
+  );
+  public readonly filteredAuthors2018 = computed(() =>
+    this.lists().filter(i => i.type === 'author' && i.legislation === 2018)
+  );
+  public readonly filteredLabels2002 = computed(() =>
+    this.lists().filter(i => i.type === 'label' && i.legislation === 2002)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredLabels2018 = computed(() =>
+    this.lists().filter(i => i.type === 'label' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredProjectPhases2002 = computed(() =>
+    this.lists().filter(i => i.type === 'projectPhase' && i.legislation === 2002)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredProjectPhases2018 = computed(() =>
+    this.lists().filter(i => i.type === 'projectPhase' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly allLabels = computed(() =>
+    this.lists().filter(i => i.type === 'label')
+  );
 
   public documents: any[] = [];
   public currentProject;
   public myForm: UntypedFormGroup;
-  public doctypes: any[] = [];
-  public filteredDoctypes2002: any[] = [];
-  public filteredDoctypes2018: any[] = [];
-  public authors: any[] = [];
-  public filteredAuthors2002: any[] = [];
-  public filteredAuthors2018: any[] = [];
-  public labels: any[] = [];
-  public filteredLabels2002: any[] = [];
-  public filteredLabels2018: any[] = [];
   public datePosted: NgbDateStruct = null;
   public isPublished = false;
   public loading = true;
   public multiEdit = false;
   public docNameInvalid = false;
   public dateInvalid = false;
-  public projectPhases: any[] = [];
-  public filteredProjectPhases2002: any[] = [];
-  public filteredProjectPhases2018: any[] = [];
-
   public legislationYear = '1996';
 
   ngOnInit() {
     this.documents = this.storageService.state.selectedDocs;
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData;
     this.logger.debug('documents loaded', 'DocumentEditComponent', this.documents);
     // Check if documents are null (nav straight to this page)
     if (!this.documents || this.documents.length === 0) {
@@ -65,13 +86,9 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     } else {
       this.legislationYear = this.documents[0].legislation ? this.documents[0].legislation.toString() : this.legislationYear;
       this.buildForm();
-      this.initLists();
+      this.configService.ensureListsLoaded();
+      this.populateForm();
     }
-  }
-
-  async initLists() {
-    await this.configService.ensureListsLoaded();
-    this.getLists();
   }
 
   buildForm() {
@@ -87,29 +104,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  getLists() {
-    this.configService.lists.forEach(item => {
-      switch (item.type) {
-        case 'doctype':
-          this.doctypes.push(Object.assign({}, item));
-          break;
-        case 'author':
-          this.authors.push(Object.assign({}, item));
-          break;
-        case 'label':
-          this.labels.push(Object.assign({}, item));
-          break;
-        case 'projectPhase':
-          this.projectPhases.push(Object.assign({}, item));
-          break;
-      }
-    });
-    this.populateForm();
-  }
-
   populateForm() {
-    this.filterByLegislationYear();
-
     if (this.documents.length === 1) {
       // todo: figure out publish see barakas code
       this.isPublished = this.documents[0].read.includes('public');
@@ -118,7 +113,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       if (this.documents[0].type) { this.myForm.controls.doctypesel.setValue(this.documents[0].type); }
       if (this.documents[0].documentAuthorType) { this.myForm.controls.authorsel.setValue(this.documents[0].documentAuthorType); }
       if (this.documents[0].milestone) { this.myForm.controls.labelsel.setValue(this.documents[0].milestone); }
-      if (this.documents[0].datePosted) { this.myForm.controls.datePosted.setValue(this.utils.convertJSDateToNGBDate(new Date(this.documents[0].datePosted))); }
+      if (this.documents[0].datePosted) { this.myForm.controls.datePosted.setValue(convertJSDateToNGBDate(new Date(this.documents[0].datePosted))); }
       if (this.documents[0].displayName) { this.myForm.controls.displayName.setValue(this.documents[0].displayName); }
       if (this.documents[0].description) { this.myForm.controls.description.setValue(this.documents[0].description); }
       if (this.documents[0].projectPhase) { this.myForm.controls.projectphasesel.setValue(this.documents[0].projectPhase); }
@@ -133,25 +128,6 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     }
     this.logger.debug('form initialized', 'DocumentEditComponent', this.myForm.value);
     this.loading = false;
-  }
-
-  filterByLegislationYear() {
-    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
-    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
-    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
-    this.filteredLabels2002 = this.labels.filter(item => item.legislation === 2002);
-    this.filteredLabels2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
-    this.filteredProjectPhases2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-
-    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
-    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
-    this.filteredLabels2018 = this.labels.filter(item => item.legislation === 2018);
-    this.filteredLabels2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
-    this.filteredProjectPhases2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
   }
 
   public changeLegislation(event) {
@@ -172,7 +148,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   }
 
   public validateDate() {
-    if (!DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.datePosted)).isValid) {
+    if (!DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.value.datePosted)).isValid) {
       this.dateInvalid = true;
     } else {
       this.dateInvalid = false;
@@ -191,7 +167,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
   multiEditGetUpdatedValue(formValue: string | NgbDate, docValue, isDate = false) {
     if (formValue !== null) {
       if (isDate) {
-        return DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(formValue)).toUTC().toISO();
+        return DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(formValue)).toUTC().toISO();
       } else {
         return formValue;
       }
@@ -215,7 +191,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     // go through and upload one at a time.
     const observables = [];
 
-    const theLabels = this.labels.filter(label => {
+    const theLabels = this.allLabels().filter(label => {
       return label.selected === true;
     });
 
@@ -230,7 +206,7 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
         if (this.myForm.value.displayName) { formData.append('displayName', this.myForm.value.displayName); }
 
         formData.append('milestone', this.myForm.value.labelsel);
-        formData.append('datePosted', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toUTC().toISO());
+        formData.append('datePosted', DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toUTC().toISO());
         formData.append('type', this.myForm.value.doctypesel);
         formData.append('documentAuthorType', this.myForm.value.authorsel);
         formData.append('projectPhase', this.myForm.value.projectphasesel);
@@ -259,35 +235,28 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.storageService.state = { type: 'documents', data: null };
     this.storageService.state = { type: 'labels', data: null };
 
-    this.subscriptions.add(
-      forkJoin(observables)
-        .subscribe(
-          (d) => { // onNext
-            // Push the new version of documents into the selected list.
-            this.storageService.state.selectedDocs = d;
-          },
-          error => {
-            const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
-            this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_TIMEOUT });
-            this.loading = false;
-          },
-          () => { // onCompleted
-            // Set new state for docs.
-            this.storageService.state = { type: 'documents', data: this.storageService.state.selectedDocs };
-            // Clear out the document state that was stored previously.
-            this.goBack();
-            // this.loading should not be turned off at all in this function.
-            // its important that the spinner stays on until we navigate away from this page
-            // this.loading = false;
-          }
-        )
-    );
+    forkJoin(observables)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        (d) => {
+          this.storageService.state.selectedDocs = d;
+        },
+        error => {
+          const message = (error.error && error.error.message) ? error.error.message : 'Could not upload document';
+          this.toastService.error(message);
+          this.loading = false;
+        },
+        () => {
+          this.storageService.state = { type: 'documents', data: this.storageService.state.selectedDocs };
+          this.goBack();
+        }
+      );
   }
 
   addLabels() {
     this.logger.debug('adding labels', 'DocumentEditComponent');
     this.storageService.state = { type: 'form', data: this.myForm };
-    this.storageService.state = { type: 'labels', data: this.labels };
+    this.storageService.state = { type: 'labels', data: this.allLabels() };
     this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-documents', 'edit'], label: 'Edit Document(s)' };
     this.router.navigate(['/p', this.currentProject._id, 'project-documents', 'edit', 'add-label']);
   }
@@ -301,29 +270,23 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
       } else {
         observables.push(this.documentService.unPublish(doc._id));
       }
-      this.subscriptions.add(
-        forkJoin(observables)
-          .subscribe(
-            () => { // onNext
-              // do nothing here - see onCompleted() function below
-            },
-            error => {
-              this.logger.error('update document publish status failed', 'DocumentEditComponent', error);
-              alert('Uh-oh, couldn\'t update document\'s publish status');
-              // TODO: should fully reload project here so we have latest non-deleted objects
-            },
-            () => { // onCompleted
-
-              this.save();
-
-              if (this.isPublished) {
-                this.openSnackBar('This document has been published.', 'Close');
-              } else {
-                this.openSnackBar('This document has been unpublished.', 'Close');
-              }
+      forkJoin(observables)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(
+          () => {},
+          error => {
+            this.logger.error('update document publish status failed', 'DocumentEditComponent', error);
+            alert('Uh-oh, couldn\'t update document\'s publish status');
+          },
+          () => {
+            this.save();
+            if (this.isPublished) {
+              this.toastService.success('This document has been published.');
+            } else {
+              this.toastService.success('This document has been unpublished.');
             }
-          )
-      );
+          }
+        );
     });
   }
 
@@ -331,13 +294,4 @@ export class DocumentEditComponent implements OnInit, OnDestroy {
     this.logger.debug('Successful registration', 'DocumentEditComponent', myForm.value);
   }
 
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

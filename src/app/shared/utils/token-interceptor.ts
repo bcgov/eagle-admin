@@ -11,7 +11,7 @@ import { KeycloakService } from 'src/app/services/keycloak.service';
  * @class TokenInterceptor
  * @implements {HttpInterceptor}
  */
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class TokenInterceptor implements HttpInterceptor {
   private auth = inject(KeycloakService);
 

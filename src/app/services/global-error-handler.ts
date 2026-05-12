@@ -1,7 +1,7 @@
 import { ErrorHandler, Injectable, inject } from '@angular/core';
 import { LoggingService } from './logging.service';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class GlobalErrorHandler implements ErrorHandler {
   private logger = inject(LoggingService);
 

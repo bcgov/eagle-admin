@@ -1,40 +1,41 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
+import { switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchTerms } from 'src/app/models/search';
 import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
-import { CommonModule } from '@angular/common';
+import { SearchService } from 'src/app/services/search.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-group-contact-select',
-  standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
     TableTemplateComponent
   ],
   templateUrl: './group-contact-select.component.html',
-  styleUrls: ['./group-contact-select.component.css'],
+  styleUrl: './group-contact-select.component.css',
 
 })
-export class GroupContactSelectComponent implements OnInit, OnDestroy {
+export class GroupContactSelectComponent implements OnInit {
   private route = inject(ActivatedRoute);
   router = inject(Router);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   storageService = inject(StorageService);
+  private searchService = inject(SearchService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
   public navigationObject;
 
   public currentProject;
@@ -46,10 +47,10 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
-  public tableColumns: any[];
+  public tableColumns: TableColumn[];
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData;
     this.tableColumns = this.storageService.state.tableColumns;
 
     if (this.navigationStackUtils.getNavigationStack()) {
@@ -59,39 +60,33 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
       return this.router.navigate(['/p', this.currentProject._id]);
     }
 
-    this.subscriptions.add(
-      this.route.params
-        .subscribe(params => {
-          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-          if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = this.storageService.state.sortBy;
-            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-          }
-          this._changeDetectionRef.detectChanges();
-        })
-    );
-
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((res: any) => {
-          if (res) {
-            if (res.contacts && res.contacts.length > 0 && res.contacts[0].data.meta && res.contacts[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.contacts[0].data.meta[0].searchResultsTotal;
-              this.entries = res.contacts[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.entries = [];
-            }
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          } else {
-            alert('Uh-oh, couldn\'t load contacts/orgs');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
-        })
-    );
+    this.route.params.pipe(
+      switchMap(params => {
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = this.storageService.state.sortBy;
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
+        }
+        this._changeDetectionRef.markForCheck();
+        return this.searchService.getSearchResults(
+          this.tableParams.keywords || '', 'User', null,
+          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
+          {}, false, {}, ''
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res: any) => {
+      if (res && res.length > 0 && res[0].data.meta && res[0].data.meta.length > 0) {
+        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+        this.entries = res[0].data.searchResults;
+      } else {
+        this.tableParams.totalListItems = 0;
+        this.entries = [];
+      }
+      this.setRowData();
+      this.loading = false;
+      this._changeDetectionRef.markForCheck();
+    });
   }
 
   setRowData() {
@@ -150,7 +145,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
         });
 
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
-        this._changeDetectionRef.detectChanges();
+        this._changeDetectionRef.markForCheck();
         break;
       case 'createContact':
         this.storageService.state.contactForm = null;
@@ -185,7 +180,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
     this.loading = true;
-    this._changeDetectionRef.detectChanges();
+    this._changeDetectionRef.markForCheck();
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
@@ -219,10 +214,7 @@ export class GroupContactSelectComponent implements OnInit, OnDestroy {
         item.checkbox = false;
       }
     });
-    this._changeDetectionRef.detectChanges();
+    this._changeDetectionRef.markForCheck();
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

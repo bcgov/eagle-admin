@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { Subscription, forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { SearchTerms } from 'src/app/models/search';
 import { User } from 'src/app/models/user';
@@ -10,30 +11,28 @@ import { ExcelService } from 'src/app/services/excel.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-group-contact',
-  standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
     TableTemplateComponent
   ],
   templateUrl: './group-contact.component.html',
-  styleUrls: ['./group-contact.component.css'],
+  styleUrl: './group-contact.component.css',
 
 })
-export class GroupContactComponent implements OnInit, OnDestroy {
+export class GroupContactComponent implements OnInit {
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private modalService = inject(NgbModal);
   private excelService = inject(ExcelService);
@@ -42,13 +41,13 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private searchService = inject(SearchService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
   private groupId: any = null;
-  private subscritions = new Subscription();
 
   public currentProject;
   public terms = new SearchTerms();
@@ -58,7 +57,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   public tempGroupName = '';
 
   public tableData: TableObject;
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: '',
       value: 'check',
@@ -91,39 +90,44 @@ export class GroupContactComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData;
     this.storageService.state.selectedUsers = null;
 
     this.route.paramMap.subscribe(params => {
       this.groupId = params.get('groupId');
     });
 
-    this.subscritions.add(
-      this.route.data
-        .subscribe((res: any) => {
-          // Incoming users
-          if (res && res.users[0] && res.users[0].total_items > 0) {
-            this.tableParams.totalListItems = res.users[0].total_items;
-            this.tableParams.pageSize = 10; // force to default on init
-            this.users = res.users[0].results;
+    const projId = this.route.parent.snapshot.paramMap.get('projId');
+    const groupId = this.route.snapshot.paramMap.get('groupId');
+    const snap = this.route.snapshot;
+    const pageNum = snap.params.pageNum || 1;
+    const pageSize = snap.params.pageSize || 10;
+    const sortBy = snap.params.sortBy || '+displayName';
+
+    forkJoin([
+      this.projectService.getGroupMembers(projId, groupId, pageNum, pageSize, sortBy),
+      this.searchService.getSearchResults('', 'Group', [], 1, 1, null, { _id: groupId }, false, {}, '')
+    ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([users, group]: [any, any]) => {
+          if (users && users[0] && users[0].total_items > 0) {
+            this.tableParams.totalListItems = users[0].total_items;
+            this.tableParams.pageSize = 10;
+            this.users = users[0].results;
           } else {
             this.tableParams.totalListItems = 0;
             this.users = [];
           }
 
-          // Incoming group
-          if (res && res.group && res.group[0].data && res.group[0].data.meta && res.group[0].data.meta.length > 0) {
-            this.group = res.group[0].data.searchResults[0];
+          if (group && group[0].data && group[0].data.meta && group[0].data.meta.length > 0) {
+            this.group = group[0].data.searchResults[0];
             this.tempGroupName = this.group.name;
           } else {
-            // Something wrong
             this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
           }
           this.setRowData();
           this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+          this._changeDetectionRef.markForCheck();
+        }
+      );
   }
 
   isEnabled(button) {
@@ -186,7 +190,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         });
 
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
-        this._changeDetectionRef.detectChanges();
+        this._changeDetectionRef.markForCheck();
         break;
     }
   }
@@ -233,7 +237,7 @@ export class GroupContactComponent implements OnInit, OnDestroy {
         selBox.select();
         document.execCommand('copy');
         document.body.removeChild(selBox);
-        this.openSnackBar('Emails have been copied to your clipboard.', 'Close');
+        this.toastService.success('Emails have been copied to your clipboard.');
       });
   }
 
@@ -416,34 +420,24 @@ export class GroupContactComponent implements OnInit, OnDestroy {
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
     this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, '');
 
-    this.subscritions.add(
-      this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
-        .subscribe((res: any) => {
+    this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
           // Incoming users
           this.tableParams.totalListItems = res[0].total_items;
           this.users = res[0].results;
 
           this.setRowData();
           this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+          this._changeDetectionRef.markForCheck();
+        });
   }
 
   async saveName() {
     const groupObj = { name: this.tempGroupName };
     await this.projectService.saveGroup(this.currentProject._id, this.group._id, groupObj).toPromise();
     this.group.name = this.tempGroupName;
-    this.openSnackBar('Group name has been updated', 'Close');
+    this.toastService.success('Group name has been updated');
   }
 
-  openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscritions.unsubscribe();
-  }
 }

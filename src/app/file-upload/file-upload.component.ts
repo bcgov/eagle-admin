@@ -1,52 +1,57 @@
 //
 // inspired by http://www.advancesharp.com/blog/1218/angular-4-upload-files-with-data-and-web-api-by-drag-drop
 //
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-file-upload',
     templateUrl: './file-upload.component.html',
-    styleUrls: ['./file-upload.component.css'],
-    standalone: true,
+    styleUrl: './file-upload.component.css',
+    host: {
+      '(dragover)': 'onDragOver($event)',
+      '(dragenter)': 'onDragEnter($event)',
+      '(dragend)': 'onDragEnd($event)',
+      '(dragleave)': 'onDragLeave($event)',
+      '(drop)': 'onDrop($event)',
+    },
     imports: [
-      CommonModule
     ]
 })
 
 export class FileUploadComponent {
   public dragDropClass = 'dragarea';
-  @Input() fileExt = 'jpg, jpeg, gif, png, bmp, doc, docx, xls, xlsx, ppt, pptx, pdf, txt';
-  @Input() maxFiles = 50;
-  @Input() maxSize = 3000; // in MB
+  fileExt = input('jpg, jpeg, gif, png, bmp, doc, docx, xls, xlsx, ppt, pptx, pdf, txt');
+  maxFiles = input(50);
+  maxSize = input(3000); // in MB
   // increase from 300 to 3000 01/19/2023 MS
-  @Input() files: Array<File> = [];
-  @Input() showInfo = true;
-  @Input() showList = true;
-  @Output() filesChange = new EventEmitter();
+  files = input<Array<File>>([]);
+  showInfo = input(true);
+  showList = input(true);
+  filesChange = output<File[]>();
   public errors: Array<string> = [];
 
-  @HostListener('dragover', ['$event']) onDragOver(event) {
+  onDragOver(event) {
     this.dragDropClass = 'droparea';
     event.preventDefault();
   }
 
-  @HostListener('dragenter', ['$event']) onDragEnter(event) {
+  onDragEnter(event) {
     this.dragDropClass = 'droparea';
     event.preventDefault();
   }
 
-  @HostListener('dragend', ['$event']) onDragEnd(event) {
+  onDragEnd(event) {
     this.dragDropClass = 'dragarea';
     event.preventDefault();
   }
 
-  @HostListener('dragleave', ['$event']) onDragLeave(event) {
+  onDragLeave(event) {
     this.dragDropClass = 'dragarea';
     event.preventDefault();
   }
 
-  @HostListener('drop', ['$event']) onDrop(event) {
+  onDrop(event) {
     this.dragDropClass = 'dragarea';
     event.preventDefault();
     event.stopPropagation();
@@ -63,30 +68,30 @@ export class FileUploadComponent {
 
     if (this.isValidFiles(files)) {
       for (let i = 0; i < files.length; i++) {
-        this.files.push(files[i]);
+        this.files().push(files[i]);
       }
-      this.filesChange.emit(this.files);
+      this.filesChange.emit(this.files());
     }
   }
   removeFile(file: File) {
     this.errors = []; // clear previous errors
 
-    const index = this.files.indexOf(file);
+    const index = this.files().indexOf(file);
     if (index !== -1) {
-      this.files.splice(index, 1);
+      this.files().splice(index, 1);
     }
-    this.filesChange.emit(this.files);
+    this.filesChange.emit(this.files());
   }
 
   private isValidFiles(files: FileList): boolean {
-    if (this.maxFiles > 0) { this.validateMaxFiles(files); }
-    if (this.fileExt.length > 0) { this.validateFileExtensions(files); }
-    if (this.maxSize > 0) { this.validateFileSizes(files); }
+    if (this.maxFiles() > 0) { this.validateMaxFiles(files); }
+    if (this.fileExt().length > 0) { this.validateFileExtensions(files); }
+    if (this.maxSize() > 0) { this.validateFileSizes(files); }
     return (this.errors.length === 0);
   }
 
   private validateMaxFiles(files: FileList): boolean {
-    if ((files.length + this.files.length) > this.maxFiles) {
+    if ((files.length + this.files().length) > this.maxFiles()) {
       this.errors.push('Too many files');
       setTimeout(() => this.errors = [], 5000);
       return false;
@@ -96,7 +101,7 @@ export class FileUploadComponent {
 
   private validateFileExtensions(files: FileList): boolean {
     let ret = true;
-    const extensions = this.fileExt.split(',').map(function (x) { return x.toUpperCase().trim(); });
+    const extensions = this.fileExt().split(',').map(function (x) { return x.toUpperCase().trim(); });
     for (let i = 0; i < files.length; i++) {
       const ext = files[i].name.toUpperCase().split('.').pop() || files[i].name;
       if (!extensions.includes(ext)) {
@@ -113,7 +118,7 @@ export class FileUploadComponent {
     for (let i = 0; i < files.length; i++) {
       const fileSizeinMB = files[i].size / 1024 / 1024; // in MB
       const size = Math.round(fileSizeinMB * 100) / 100; // convert up to 2 decimal places
-      if (size > this.maxSize) {
+      if (size > this.maxSize()) {
         this.errors.push('File too large: ' + files[i].name);
         setTimeout(() => this.errors = [], 5000);
         ret = false;

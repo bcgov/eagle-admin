@@ -4,7 +4,6 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
 import { Utils } from 'src/app/shared/utils/utils';
@@ -65,7 +64,6 @@ describe('FormTab2002', () => {
     TestBed.configureTestingModule({
       imports: [
         FormTab2002Component,
-        MatSnackBarModule,
         FormsModule,
         ReactiveFormsModule,
         NgbModule,

@@ -32,7 +32,7 @@
         <div class="form-group col-md-6">
           <label for="type">Document Type* </label>
           <select required class="form-control" formControlName="type">
-            @for (type of filteredDoctypes2018; track type) {
+            @for (type of filteredDoctypes2018(); track type) {
               <option [ngValue]="type._id">{{type.name}}</option>
             }
           </select>
@@ -109,7 +109,7 @@
     </div>
 
     <div class="text-end">
-      <button class="btn btn-cancel" type="cancel" (click)="goBack()">Cancel</button>
+      <button class="btn btn-cancel" type="button" (click)="goBack()">Cancel</button>
       &nbsp;
       <button class="btn btn-primary me-1" [disabled]=" !myForm.valid || docNameInvalid || documents?.length === 0"
       type="submit" (click)="uploadDocuments()">Upload</button>

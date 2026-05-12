@@ -2,8 +2,6 @@ import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { Component } from '@angular/core';
 
 import { ReviewCommentComponent } from './review-comment.component';
@@ -56,8 +54,6 @@ describe('ReviewCommentComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         NgbModule,
-        MatSnackBarModule,
-        NzPaginationModule,
       ],
       providers: [
         provideRouter([
@@ -74,7 +70,9 @@ describe('ReviewCommentComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ReviewCommentComponent);
-
+    fixture.componentRef.setInput('project', { _id: '12345', name: 'Test' });
+    fixture.componentRef.setInput('commentPeriod', { _id: 'cp1' });
+    fixture.componentRef.setInput('comment', { _id: 'c1', eaoStatus: 'Reset', documentsList: [] });
     fixture.detectChanges();
   });
 

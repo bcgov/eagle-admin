@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 
 import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
 import { Org } from 'src/app/models/org';
@@ -12,19 +12,20 @@ import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../../utils/table-template-utils';
-import { TableObject } from '../table-template/table-object';
+import { TableObject, TableColumn } from '../table-template/table-object';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableTemplateComponent } from '../table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { LoadingStateService } from 'src/app/services/loading-state.service';
+import { SearchService } from 'src/app/services/search.service';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-link-organization',
   templateUrl: './link-organization.component.html',
-  styleUrls: ['./link-organization.component.css'],
-  standalone: true,
+  styleUrl: './link-organization.component.css',
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
@@ -32,23 +33,24 @@ import { LoggingService } from 'src/app/services/logging.service';
   ]
 })
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
-  private _changeDetectionRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  storageService = inject(StorageService);
-  navigationStackUtils = inject(NavigationStackUtils);
-  tableTemplateUtils = inject(TableTemplateUtils);
+  private storageService = inject(StorageService);
+  protected navigationStackUtils = inject(NavigationStackUtils);
+  private tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
+  private searchService = inject(SearchService);
+  private loadingState = inject(LoadingStateService);
 
   public terms = new SearchTerms();
-  private subscriptions = new Subscription();
   public organizations: Org[] = null;
-  public loading = true;
+  public loading = this.loadingState.getOperationState('search-results');
 
   public isEditing = false;
 
   public tableData: TableObject;
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: '',
       value: '',
@@ -84,41 +86,39 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
-  // get data from route resolver
-  this.subscriptions.add(
-    this.route.params.subscribe(params => {
-      if (params.contactId) {
-        this.contactId = params.contactId;
-        this.isEditing = true;
-      }
-      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
-      if (this.tableParams.sortBy === '') {
-        this.tableParams.sortBy = '+name';
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-      }
-    })
-  );
+  // Detect pins context from static route data; pins routes filter by Indigenous Group
+  const companyTypeFilter = this.route.snapshot.data.companyTypeFilter;
+  const filterForApi = companyTypeFilter ? { companyType: companyTypeFilter } : {};
 
-  this.subscriptions.add(
-    this.route.data.subscribe((res: any) => {
-      if (res) {
-        if (res.organizations[0].data.meta && res.organizations[0].data.meta.length > 0) {
-          this.tableParams.totalListItems = res.organizations[0].data.meta[0].searchResultsTotal;
-          this.organizations = res.organizations[0].data.searchResults;
-        } else {
-          this.tableParams.totalListItems = 0;
-          this.organizations = [];
+  this.route.params.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      switchMap(params => {
+        if (params.contactId) {
+          this.contactId = params.contactId;
+          this.isEditing = true;
         }
-        this.setRowData();
-        this.loading = false;
-        this.selectedCount = 0;
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = '+name';
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
+        }
+        return this.searchService.getSearchResults(
+          this.tableParams.keywords || '', 'Organization', null,
+          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
+          {}, false, filterForApi, ''
+        );
+      })
+    ).subscribe((res: any) => {
+      if (res && res[0].data.meta && res[0].data.meta.length > 0) {
+        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+        this.organizations = res[0].data.searchResults;
       } else {
-        alert('Uh-oh, could\'t load valued components');
-        // project not found --> navigate back to search
-        this.router.navigate(['/search']);
+        this.tableParams.totalListItems = 0;
+        this.organizations = [];
       }
-    })
-  );
+      this.setRowData();
+      this.selectedCount = 0;
+    });
 }
 
   save() {
@@ -128,22 +128,26 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.storageService.state.selectedOrgs.forEach((org: Org) => {
-      const arr: Org[] = [];
-      arr.push(org);
-      this.storageService.state.add(arr, this.storageService.state.component);
-    });
+    const selectedOrgs = [...this.storageService.state.selectedOrgs];
     this.storageService.state.selectedOrgs = [];
     this.storageService.state.selectedOrganization = null;
-    this.storageService.state.add = null;
+
     const url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
-    this.router.navigate(url);
+
+    if (this.storageService.state.add) {
+      // add() is async (HTTP) — it handles navigation on completion
+      const addFn = this.storageService.state.add;
+      const component = this.storageService.state.component;
+      this.storageService.state.add = null;
+      addFn(selectedOrgs, component);
+    } else {
+      this.router.navigate(url);
+    }
   }
 
   updateSelectedRow(count) {
     this.selectedCount = count;
-    this._changeDetectionRef.detectChanges();
   }
 
   removeSelectedOrg(user) {
@@ -155,7 +159,6 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
         item.checkbox = false;
       }
     });
-    this._changeDetectionRef.detectChanges();
   }
 
   public onSubmit(currentPage = 1) {
@@ -237,6 +240,5 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.storageService.state.showOrgTableCheckboxes = false;
     this.storageService.state.selectedOrgs = [];
-    this.subscriptions.unsubscribe();
   }
 }

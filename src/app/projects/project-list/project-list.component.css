@@ -191,19 +191,20 @@
   padding-left: 0px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: 8px 12px;
 }
 
 .advanced-filter .project-filter .filter {
-  min-width: 225px;
-  max-width: 300px;
-  flex: 1 0 calc(22% - 58px);
+  min-width: 200px;
+  max-width: 320px;
+  flex: 1 1 20%;
   margin-bottom: 0px;
 }
 
 .advanced-filter .project-filter .eaDate {
-  flex: 1 0 calc(35% - 58px);
-  max-width: 450px;
+  flex: 1 1 30%;
+  min-width: 280px;
+  max-width: 500px;
 }
 
 .advanced-filter .more-filters {
@@ -219,19 +220,11 @@
 }
 
 .advanced-filter .show-advanced-search-button button {
-  float: right;
-  margin: 0px 0px 6px auto;
-  width: 200px;
+  width: 180px;
 }
 
 .advanced-filter .btn {
   margin: 8px 0px 8px 8px;
-}
-
-.advanced-filter .more-btn {
-  margin: 0px;
-  float: right;
-  margin-left: auto;
 }
 
 .advanced-filter .calendar {
@@ -371,15 +364,6 @@
 
 .advanced-filter .ng-placeholder {
   font-weight: 600;
-}
-
-.advanced-filter .filter-label {
-  display: flex;
-}
-
-.advanced-filter .filter-label p {
-  margin: 0px;
-  align-self: center;
 }
 
 .advanced-filter .filter-row {

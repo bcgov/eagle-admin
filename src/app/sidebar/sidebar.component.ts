@@ -1,25 +1,23 @@
-import { Component, HostBinding, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef, DestroyRef} from '@angular/core';
+import { Router, NavigationEnd, RouterModule } from '@angular/router';
+import { filter, startWith } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { KeycloakService } from '../services/keycloak.service';
 import { SideBarService } from '../services/sidebar.service';
 import { StorageService } from '../services/storage.service';
-import { RouterModule } from '@angular/router';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.css'],
+  styleUrl: './sidebar.component.css',
+  host: { '[class.is-toggled]': 'isOpen' },
   imports: [
-    CommonModule,
     RouterModule,
   ],
-  standalone: true
 })
 
-export class SidebarComponent implements OnInit, OnDestroy {
+export class SidebarComponent implements OnInit {
   public isNavMenuOpen = false;
   public routerSnapshot = null;
   public isInspectorRole = false;
@@ -32,40 +30,42 @@ export class SidebarComponent implements OnInit, OnDestroy {
   public currentMenu = '';
   public showArchiveButton = false;
 
-  private subscriptions = new Subscription();
-
-  @HostBinding('class.is-toggled')
   isOpen = false;
   isArchive = false;
 
+  private destroyRef = inject(DestroyRef);
   private router = inject(Router);
   private storageService = inject(StorageService);
   private keycloakService = inject(KeycloakService);
   private sideBarService = inject(SideBarService);
+  private _changeDetectionRef = inject(ChangeDetectorRef);
 
   constructor() {
-    this.subscriptions.add(
-      this.router.events.pipe(
-        filter(event => event instanceof NavigationEnd)
+    this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd),
+        startWith(null),
+        takeUntilDestroyed(this.destroyRef)
       ).subscribe(event => {
-        this.routerSnapshot = event;
+        this.routerSnapshot = event ?? { urlAfterRedirects: this.router.url };
         this.SetActiveSidebarItem();
-      })
-    );
+        this._changeDetectionRef.markForCheck();
+      });
   }
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.sideBarService.archiveChange.subscribe(isArchive => {
+    this.sideBarService.archiveChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(isArchive => {
         this.isArchive = isArchive;
-      })
-    );
+        this._changeDetectionRef.markForCheck();
+      });
 
-    this.subscriptions.add(
-      this.sideBarService.toggleChange.subscribe(isOpen => {
+    this.sideBarService.toggleChange
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(isOpen => {
         this.isOpen = isOpen;
-      })
-    );
+        this._changeDetectionRef.markForCheck();
+      });
 
     let roles: string[] = [];
     try {
@@ -82,68 +82,27 @@ export class SidebarComponent implements OnInit, OnDestroy {
    * Sets the active menu item in the sibebar.
    */
   SetActiveSidebarItem() {
-    const urlArray = this.routerSnapshot.url.split('/');
+    const urlArray = this.routerSnapshot.urlAfterRedirects.split('/');
+    urlArray.shift(); // remove leading empty segment
 
-    // The first element will be empty, so shift in order to remove it.
-    urlArray.shift();
-    const [mainRoute, mainRouteId, currentMenu] = urlArray;
-    this.mainRouteId = mainRouteId;
-    this.currentMenu = currentMenu && currentMenu.split(';')[0];
+    const [mainRoute, mainRouteId] = urlArray;
 
-    switch (mainRoute) {
-      case 'p':
-        this.showProjectDetails = true;
-        this.showProjectNotificationDetails = false;
-        break;
+    this.showProjectDetails = mainRoute === 'p';
+    this.showProjectNotificationDetails = mainRoute === 'pn';
+    this.mainRouteId = (mainRoute === 'p' || mainRoute === 'pn') ? mainRouteId : mainRoute;
 
-      case 'pn':
-        this.showProjectNotificationDetails = true;
-        this.showProjectDetails = false;
-        break;
-      default:
-        // There is now sub-menu so the main route ID becomes the main route. This is a root level page.
-        this.mainRouteId = mainRoute;
-        this.showProjectNotificationDetails = false;
-        this.showProjectDetails = false;
-    }
-    if (urlArray[0] === 'p') {
-      switch (urlArray[2]) {
-        case 'project-updates': {
-          break;
-        }
-        case 'project-groups': {
-          break;
-        }
-        case 'project-pins': {
-          break;
-        }
-        case 'project-documents': {
-          break;
-        }
-        case 'comment-periods': {
-          break;
-        }
-        case 'milestones': {
-          break;
-        }
-        case 'project-archived-detail': {
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-      this.currentProjectId = urlArray[1];
+    if (mainRoute === 'p') {
+      this.currentProjectId = mainRouteId;
       try {
-        this.currentMenu = urlArray[2];
-        this.currentMenu = urlArray[2].split(';')[0];
+        const segment = urlArray[2].split(';')[0];
+        // 'cp' is comment-period detail subroute; map to parent nav item
+        this.currentMenu = segment === 'cp' ? 'comment-periods' : segment;
       } catch {
-        // When coming from search, it's blank.
+        this.currentMenu = '';
       }
-      this.showProjectDetails = true;
     } else {
-      this.currentProjectId = urlArray[0];
-      this.showProjectDetails = false;
+      this.currentProjectId = mainRoute;
+      this.currentMenu = urlArray[2] ? urlArray[2].split(';')[0] : '';
     }
   }
 
@@ -169,7 +128,5 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.router.navigate(['/pn', currentProjectId, 'project-notification-documents', { notificationProjectId: currentProjectId }]);
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }
+

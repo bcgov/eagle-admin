@@ -22,12 +22,12 @@
       </button>
     </div>
     <div class="results my-2">
-      @if (!loading && tableParams.totalListItems == 0) {
+      @if (!loading() && tableParams.totalListItems == 0) {
         <p>
           No results found for "{{keywords}}"
         </p>
       }
-      @if (!loading && tableParams.totalListItems > 0) {
+      @if (!loading() && tableParams.totalListItems > 0) {
         <div>
           {{tableParams.totalListItems}} result@if (tableParams.totalListItems != 1) {
           <span>s found</span>
@@ -37,13 +37,13 @@
   </div>
 </form>
 
-@if (loading) {
+@if (loading()) {
   <div class="spinner-container">
     <div class="spinner-new rotating"></div>
   </div>
 }
 
-@if (!loading && tableParams.totalListItems != 0) {
+@if (!loading() && tableParams.totalListItems != 0) {
   <app-table-template [columns]="tableColumns" [data]="tableData"
     (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
   </app-table-template>

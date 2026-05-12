@@ -1,46 +1,46 @@
-import { Component, Input, Output, OnInit, EventEmitter, ChangeDetectorRef, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { ToastService } from 'src/app/services/toast.service';
 import { DocumentService } from 'src/app/services/document.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { FormsModule } from '@angular/forms';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './project-document-table-rows.component.html',
-    styleUrls: ['./project-document-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule, ListConverterPipe, FormsModule],
+    styleUrl: './project-document-table-rows.component.css',
+    imports: [DatePipe, ListConverterPipe, FormsModule, RouterModule],
 })
 
 export class DocumentTableRowsComponent implements OnInit, TableComponent {
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private documentService = inject(DocumentService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private logger = inject(LoggingService);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
-  @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
+  selectedCount = output<any>();
 
   public documents: any;
   public paginationData: any;
   public activeLegislationYear: number;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.documents = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.activeLegislationYear = this.data.extraData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.documents = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.activeLegislationYear = this.data().extraData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   selectItem(item) {
@@ -66,12 +66,14 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
 
   goToItem(item) {
     this.activeLegislationYear = 0;
-    // This happens when the api has not done the lookup on the project id
-    // And we get just the string back and not the project object
-    if (item.project && typeof item.project === 'object' && '_id' in item.project) {
-      this.router.navigate(['p', item.project._id, 'project-documents', 'detail', item._id]);
+    // project may be a populated object or a bare string ID
+    const projId = item.project && typeof item.project === 'object'
+      ? item.project._id
+      : item.project;
+    if (projId) {
+      this.router.navigate(['/p', projId, 'project-documents', 'detail', item._id]);
     } else {
-      this.snackBar.open('Uh-oh, couldn\'t open document', 'Close');
+      this.toastService.error('Uh-oh, couldn\'t open document');
     }
   }
 
@@ -80,25 +82,25 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
       this.documentService.unFeature(document._id).subscribe(
         () => {
           document.isFeatured = false;
-          this._changeDetectionRef.detectChanges();
+          this._changeDetectionRef.markForCheck();
         },
         error => {
           this.logger.error('un-feature document failed', 'DocumentTableRowsComponent', error);
-          this.snackBar.open('Could not Un-Favorite document.', '', {duration: 3000});
+          this.toastService.error('Could not Un-Favorite document.');
         }
       );
     } else {
       this.documentService.feature(document._id).subscribe(
         () => {
           document.isFeatured = true;
-          this._changeDetectionRef.detectChanges();
+          this._changeDetectionRef.markForCheck();
         },
         error => {
           this.logger.error('feature document failed', 'DocumentTableRowsComponent', error);
           const message = error.status === 500 ? 'Document could not be validated. Please correct validation errors and try again.' : 'Maximum favorites is 5';
           // move the magic number '5' into a configuration
           // matching config value from service
-          this.snackBar.open('Could not Favorite document: ' + message, '', {duration: 3000});
+          this.toastService.error('Could not Favorite document: ' + message);
         }
       );
     }

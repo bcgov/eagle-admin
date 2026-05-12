@@ -10,9 +10,9 @@
       <h3>DATE RANGE:&nbsp;</h3>
       <p>
         <span class="date-range">
-          {{commentPeriod.dateStarted | date: 'MMM d, y, h:mm:ss a'}} -
-          {{commentPeriod.dateCompleted | date: 'MMM d, y, h:mm:ss a'}}
-        </span> ({{commentPeriod.daysRemaining}})
+          {{commentPeriod().dateStarted | date: 'MMM d, y, h:mm:ss a'}} -
+          {{commentPeriod().dateCompleted | date: 'MMM d, y, h:mm:ss a'}}
+        </span> ({{commentPeriod().daysRemaining}})
       </p>
     </div>
     <div class="col-md-2">
@@ -50,29 +50,29 @@
         <i class="material-icons align-middle">
           question_answer
         </i>
-        Commenting {{commentPeriod.commentPeriodStatus}}
+        Commenting {{commentPeriod().commentPeriodStatus}}
       </p>
     </div>
     @if (projectType === 'currentProject') {
       <div class="col-md-4">
         <h3>MILESTONE(S):</h3>
-        <p id="milestone">{{commentPeriod.milestone | listConverter}}</p>
+        <p id="milestone">{{commentPeriod().milestone | listConverter}}</p>
       </div>
     }
   </div>
   <div class="row">
     <div class="col-md-8">
       <h3>DESCRIPTION</h3>
-      <div id="instructions" [innerHTML]="commentPeriod.instructions  | safeHtml"></div>
-      <p>{{commentPeriod.additionalText}}</p>
-      <p>{{commentPeriod.informationLabel}}</p>
+      <div id="instructions" [innerHTML]="commentPeriod().instructions  | safeHtml"></div>
+      <p>{{commentPeriod().additionalText}}</p>
+      <p>{{commentPeriod().informationLabel}}</p>
     </div>
   </div>
-  @if (commentPeriod.commentTip) {
+  @if (commentPeriod().commentTip) {
     <div class="row">
       <div class="col-md-8">
         <h3>COMMENT TIP</h3>
-        <div id="commentTip" [innerHTML]="commentPeriod.commentTip  | safeHtml"></div>
+        <div class="comment-tip-content" [innerHTML]="commentPeriod().commentTip  | safeHtml"></div>
       </div>
     </div>
   }
@@ -118,12 +118,13 @@
     </div>
   </div>
 
+  @if (commentPeriod().summary) {
   <div class="row">
     <div class="col-md-6">
       <h3>
         <strong>
           TOTAL:&nbsp;
-          {{commentPeriod.summary.Pending + commentPeriod.summary.Deferred + commentPeriod.summary.Published + commentPeriod.summary.Rejected}}
+          {{commentPeriod().summary.Pending + commentPeriod().summary.Deferred + commentPeriod().summary.Published + commentPeriod().summary.Rejected}}
         </strong>
       </h3>
       <div>
@@ -133,6 +134,7 @@
     <div class="col-md-6">
     </div>
   </div>
+  } <!-- @if (commentPeriod().summary) -->
 </section>
 
 @if (projectType === 'currentProject') {
@@ -142,11 +144,11 @@
         <h2>OPEN HOUSE</h2>
       </div>
     </div>
-    @if (commentPeriod.openHouses.length !== 0) {
+    @if (commentPeriod().openHouses.length !== 0) {
       <div class="row">
         <div class="col-12">
           <ul class="list-group">
-            @for (openHouse of commentPeriod.openHouses; track openHouse) {
+            @for (openHouse of commentPeriod().openHouses; track openHouse) {
               <li class="list-group-item">
                 <h3>
                   DATE:&nbsp;
@@ -164,7 +166,7 @@
         </div>
       </div>
     }
-    @if (commentPeriod.openHouses.length === 0) {
+    @if (commentPeriod().openHouses.length === 0) {
       <div>
         <p>There are no open houses associated with this comment period.</p>
       </div>

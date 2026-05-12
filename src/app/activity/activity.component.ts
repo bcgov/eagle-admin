@@ -1,6 +1,6 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
 
@@ -9,7 +9,8 @@ import { Project } from '../models/project';
 import { RecentActivity } from '../models/recentActivity';
 import { SearchTerms } from '../models/search';
 import { ProjectService } from '../services/project.service';
-import { TableObject } from '../shared/components/table-template/table-object';
+import { SearchService } from '../services/search.service';
+import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
@@ -33,20 +34,19 @@ class ActivityFilterObject {
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
-  styleUrls: ['./activity.component.css'],
+  styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
   imports: [FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
 
 })
-export class ActivityComponent implements OnDestroy {
+export class ActivityComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private projectService = inject(ProjectService);
+  private searchService = inject(SearchService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
-
-  private subscriptions = new Subscription();
+  private destroyRef = inject(DestroyRef);
   public readonly constants = Constants;
   public loading = true;
 
@@ -67,7 +67,7 @@ export class ActivityComponent implements OnDestroy {
 
   public filterForUI: ActivityFilterObject = new ActivityFilterObject();
 
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: 'Pin',
       value: 'pinned',
@@ -106,8 +106,7 @@ export class ActivityComponent implements OnDestroy {
   ];
 
   constructor() {
-    this.subscriptions.add(
-      this.projectService.getAll(1, 1000, '+name')
+    this.projectService.getAll(1, 1000, '+name')
         .pipe(
           switchMap((res: any) => {
             this.projects = res.data || [];
@@ -127,28 +126,38 @@ export class ActivityComponent implements OnDestroy {
             if (this.tableParams.sortBy === '') {
               this.tableParams.sortBy = '-dateAdded';
             }
-            return this.route.data;
+            return this.searchService.getSearchResults(
+              this.tableParams.keywords || '',
+              'RecentActivity',
+              null,
+              this.tableParams.currentPage,
+              this.tableParams.pageSize,
+              this.tableParams.sortBy,
+              {},
+              true,
+              this.filterForAPI,
+              ''
+            );
           })
-        )
+        ).pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((res: any) => {
           if (res) {
-            if (res.activities && res.activities[0].data.meta && res.activities[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.activities[0].data.meta[0].searchResultsTotal;
-              this.entries = res.activities[0].data.searchResults;
+            if (res[0].data.meta && res[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+              this.entries = res[0].data.searchResults;
             } else {
               this.tableParams.totalListItems = 0;
               this.entries = [];
             }
             this.setRowData();
             this.loading = false;
-            this._changeDetectionRef.detectChanges();
+            this._changeDetectionRef.markForCheck();
           } else {
             alert('Uh-oh, couldn\'t load valued components');
             // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-        })
-    );
+        });
   }
 
   public selectAction(action) {
@@ -162,24 +171,18 @@ export class ActivityComponent implements OnDestroy {
   }
 
   setRowData() {
-    const list = [];
     if (this.entries && this.entries.length > 0) {
-      this.entries.forEach(item => {
-        list.push(
-          {
-            _id: item._id,
-            project: item.project,
-            headline: item.headline,
-            type: item.type,
-            dateAdded: item.dateAdded,
-            active: item.active,
-            pinned: item.pinned
-          }
-        );
-      });
       this.tableData = new TableObject(
         ActivityTableRowsComponent,
-        list,
+        this.entries.map(item => ({
+          _id: item._id,
+          project: item.project,
+          headline: item.headline,
+          type: item.type,
+          dateAdded: item.dateAdded,
+          active: item.active,
+          pinned: item.pinned
+        })),
         this.tableParams
       );
     }
@@ -199,7 +202,7 @@ export class ActivityComponent implements OnDestroy {
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
     this.loading = true;
-    this._changeDetectionRef.detectChanges();
+    this._changeDetectionRef.markForCheck();
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
@@ -403,9 +406,5 @@ export class ActivityComponent implements OnDestroy {
         ? filter._id === filterToCompare._id
         : filter === filterToCompare;
     }
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

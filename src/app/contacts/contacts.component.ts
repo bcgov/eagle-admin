@@ -1,47 +1,51 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserTableRowsComponent } from './user-table-rows/user-table-rows.component';
 import { SearchTerms } from '../models/search';
 import { User } from '../models/user';
 import { StorageService } from '../services/storage.service';
-import { TableObject } from '../shared/components/table-template/table-object';
+import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { SearchService } from '../services/search.service';
+import { LoadingStateService } from '../services/loading-state.service';
 
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-contacts',
   templateUrl: './contacts.component.html',
-  styleUrls: ['./contacts.component.css'],
-  standalone: true,
+  styleUrl: './contacts.component.css',
   imports: [
-    CommonModule,
     RouterModule,
     FormsModule,
     TableTemplateComponent
 ]
 })
-export class ContactsComponent implements OnInit, OnDestroy {
+export class ContactsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private storageService = inject(StorageService);
+  private searchService = inject(SearchService);
+
+  private destroyRef = inject(DestroyRef);
 
   public terms = new SearchTerms();
-  private subscriptions = new Subscription();
   public users: User[] = null;
-  public loading = true;
+  public loadingState = inject(LoadingStateService);
+  public loading = this.loadingState.getOperationState('search-results');
 
   public documentTableData: TableObject;
-  public documentTableColumns: any[] = [
+  public documentTableColumns: TableColumn[] = [
     {
       name: 'Name',
       value: 'lastName,+firstName',
@@ -74,8 +78,8 @@ export class ContactsComponent implements OnInit, OnDestroy {
   public tableParams: TableParamsObject = new TableParamsObject();
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.route.params.subscribe(params => {
+    this.route.params.pipe(
+      switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
         if (this.tableParams.sortBy === '') {
           this.tableParams.sortBy = '+lastName,+firstName';
@@ -87,22 +91,24 @@ export class ContactsComponent implements OnInit, OnDestroy {
             this.tableParams.keywords
           );
         }
-        this.subscriptions.add(
-          this.route.data.subscribe((res: any) => {
-            if (res && res.users && res.users[0].data.meta && res.users[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.users[0].data.meta[0].searchResultsTotal;
-              this.users = res.users[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.users = [];
-            }
-            this.setDocumentRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          })
+        return this.searchService.getSearchResults(
+          this.tableParams.keywords || '', 'User', null,
+          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
+          {}, false, {}, ''
         );
-      })
-    );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res: any) => {
+      if (res && res[0].data.meta && res[0].data.meta.length > 0) {
+        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+        this.users = res[0].data.searchResults;
+      } else {
+        this.tableParams.totalListItems = 0;
+        this.users = [];
+      }
+      this.setDocumentRowData();
+      this._changeDetectionRef.markForCheck();
+    });
   }
 
   public onSubmit(currentPage = 1) {
@@ -112,7 +118,6 @@ export class ContactsComponent implements OnInit, OnDestroy {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
-    this.loading = true;
 
     // Reset page.
     const params = this.terms.getParams();
@@ -157,7 +162,4 @@ export class ContactsComponent implements OnInit, OnDestroy {
     this.router.navigate(['contacts', 'add']);
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

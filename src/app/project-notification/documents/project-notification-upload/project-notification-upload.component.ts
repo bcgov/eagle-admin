@@ -1,14 +1,15 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, computed, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin, Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { forkJoin } from 'rxjs';
+import { ToastService } from 'src/app/services/toast.service';
 import { DateTime } from 'luxon';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -17,24 +18,39 @@ import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-project-notification-upload',
-    standalone: true,
     imports: [RouterModule, ReactiveFormsModule, NgbDatepickerModule, FileUploadComponent],
     templateUrl: './project-notification-upload.component.html',
-    styleUrls: ['./project-notification-upload.component.css'],
+    styleUrl: './project-notification-upload.component.css',
     
 })
-export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
+export class ProjectNotificationUploadComponent implements OnInit {
   private router = inject(Router);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
   private storageService = inject(StorageService);
   private documentService = inject(DocumentService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private configService = inject(ConfigService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
+  private readonly lists = this.configService.listsSignal;
+
+  public readonly filteredDoctypes2018 = computed(() =>
+    this.lists().filter(i => i.type === 'doctype' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly documentAuthorID = computed(() =>
+    this.lists().filter(i =>
+      (i.name === 'Proponent/Certificate Holder' || i.name === 'EAO') && i.legislation === 2018
+    )
+  );
+  public readonly documentMilestoneID = computed(() =>
+    this.lists().filter(i => i.name === 'Project Notification' && i.legislation === 2018)
+  );
+  public readonly documentPhaseID = computed(() =>
+    this.lists().filter(i => i.name === 'Project Designation' && i.legislation === 2018)
+  );
 
   public currentProject;
   public docTotal: number;
@@ -47,32 +63,22 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
   public docNameInvalid = false;
   public legislationYear = '2018';
   public publishDoc = false;
-  public filteredDoctypes2018: any[] = [];
   public documentMilestone = ['Project Notification'];
   public documentAuthor = ['Proponent', 'EAO'];
   public documentPhase = ['Project Designation'];
-  public documentMilestoneID: any[] = [];
-  public documentAuthorID: any[] = [];
-  public documentPhaseID: any[] = [];
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData;
     this.docTotal = this.storageService.state.currentProject.docTotal;
     this.buildForm();
-    this.initLists();
-  }
-
-  async initLists() {
-    await this.configService.ensureListsLoaded();
-    this.getLists();
-    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+    this.configService.ensureListsLoaded();
   }
 
   buildForm() {
 
     this.myForm = new UntypedFormGroup({
       'description': new UntypedFormControl('Project Notification Document'),
-      'type': new UntypedFormControl({ value: this.filteredDoctypes2018[0] }),
+      'type': new UntypedFormControl(),
       'author': new UntypedFormControl({ value: this.documentAuthor[0] }),
       'date': new UntypedFormControl({ value: new Date() })
     });
@@ -112,10 +118,10 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     if (docAuthor === 'Proponent') {
       docAuthor = 'Proponent/Certificate Holder';
     }
-    const authorID = this.findID(docAuthor, this.documentAuthorID);
+    const authorID = this.findID(docAuthor, this.documentAuthorID());
 
-    const milestoneID = this.findID(this.documentMilestone[0], this.documentMilestoneID);
-    const phaseID = this.findID(this.documentPhase[0], this.documentPhaseID);
+    const milestoneID = this.findID(this.documentMilestone[0], this.documentMilestoneID());
+    const phaseID = this.findID(this.documentPhase[0], this.documentPhaseID());
 
 
     this.documents.forEach(doc => {
@@ -127,7 +133,7 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
       formData.append('documentSource', 'PROJECT-NOTIFICATION');
       formData.append('displayName', doc.documentFileName);
       formData.append('dateUploaded', new Date().toISOString());
-      formData.append('datePosted', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('date').value)).toUTC().toISO());
+      formData.append('datePosted', DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.get('date').value)).toUTC().toISO());
       formData.append('milestone', milestoneID);
       formData.append('type', this.myForm.get('type').value);
       formData.append('description', this.myForm.get('description').value);
@@ -142,29 +148,26 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     this.storageService.state = { type: 'form', data: null };
     this.storageService.state = { type: 'documents', data: null };
 
-    this.subscriptions.add(
-      forkJoin(observables)
-        .subscribe({
-          next: () => { /* onNext */ },
-          error: error => {
-            this.logger.error('document upload failed', 'ProjectNotificationUploadComponent', error);
-            alert('Document upload failed due to a service error.');
-            this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
-            this.loading = false;
-          },
-          complete: () => {
-            this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
-            this.loading = false;
-          }
-        })
-    );
+    forkJoin(observables)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => { /* onNext */ },
+        error: error => {
+          this.logger.error('document upload failed', 'ProjectNotificationUploadComponent', error);
+          this.toastService.error(error.message || 'Could not upload document');
+          this.loading = false;
+        },
+        complete: () => {
+          this.toastService.success('Uploaded successfully!');
+          this.router.navigate(['pn', this.currentProject._id, 'project-notification-documents']);
+          this.loading = false;
+        }
+      });
   }
 
   public addDocuments(files: FileList) {
     if (this.documents.length + this.docTotal >= 20) {
-      this.snackBar.open('Project Notifications can have a maximum of 20 files', null, {
-        duration: 2000,
-      });
+      this.toastService.warning('Project Notifications can have a maximum of 20 files');
       return false;
     }
 
@@ -194,7 +197,6 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
         this.docNameInvalid = false;
       }
     }
-    this._changeDetectionRef.detectChanges();
   }
 
   goBack() {
@@ -213,42 +215,4 @@ export class ProjectNotificationUploadComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
-
-  getLists() {
-    this.configService.lists.forEach(item => {
-      switch (item.name) {
-        case 'Proponent/Certificate Holder':
-          if (item.legislation === 2018) {
-            this.documentAuthorID.push(Object.assign({}, item));
-          }
-          break;
-        case 'EAO':
-          if (item.legislation === 2018) {
-            this.documentAuthorID.push(Object.assign({}, item));
-          }
-          break;
-        case 'Project Notification':
-          if (item.legislation === 2018) {
-            this.documentMilestoneID.push(Object.assign({}, item));
-          }
-          break;
-        case 'Project Designation':
-          if (item.legislation === 2018) {
-            this.documentPhaseID.push(Object.assign({}, item));
-          }
-          break;
-      }
-      switch (item.type) {
-        case 'doctype':
-          if (item.legislation === 2018) {
-            this.filteredDoctypes2018.push(Object.assign({}, item));
-          }
-          break;
-      }
-
-    }, this);
-  }
 }

@@ -1,58 +1,53 @@
-@if (!loading) {
-  <nav class="action-container">
-    @if (commentPeriod) {
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          @if (currentProject.type === 'currentProject') {
-            <a [routerLink]="['/projects']">All Projects</a>
-          }
-          @if (currentProject.type === 'currentProjectNotification') {
-            <a [routerLink]="['/project-notification']">All
-            Project Notifications</a>
-          }
-        </li>
-        <li class="breadcrumb-item">
-          <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
-        </li>
-        <li class="breadcrumb-item" aria-current="page">
-          <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
-        </li>
-        <li class="breadcrumb-item" aria-current="page">
-          <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', commentPeriod._id]">
-            {{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}
-          </a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">
-          Comment
-        </li>
-      </ol>
-    }
-    <div class="btn-container">
-      <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
-      &nbsp;
-      <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit('exit')">
-        Save/Exit
-      </button>
-      @if (pendingCommentCount > 0) {
-        <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit"
-          (click)="onSubmit('next')">
-          Save/Next ({{pendingCommentCount}})
-        </button>
+<nav class="action-container">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+      @if (baseRouteUrl === '/p') {
+        <a [routerLink]="['/projects']">All Projects</a>
       }
-    </div>
-  </nav>
-}
+      @if (baseRouteUrl === '/pn') {
+        <a [routerLink]="['/project-notification']">All
+        Project Notifications</a>
+      }
+    </li>
+    <li class="breadcrumb-item">
+      <a [routerLink]="[baseRouteUrl, project()._id]">{{project().name}}</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+      <a [routerLink]="[baseRouteUrl, project()._id, 'comment-periods']">Comment Periods</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page">
+      <a [routerLink]="[baseRouteUrl, project()._id, 'cp', commentPeriod()._id]">
+        {{commentPeriod().dateStarted | date: 'MMMM d'}} - {{commentPeriod().dateCompleted | date}}
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">
+      Comment
+    </li>
+  </ol>
+  <div class="btn-container">
+    <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
+    &nbsp;
+    <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit('exit')">
+      Save/Exit
+    </button>
+    @if (pendingCommentCount > 0) {
+      <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit"
+        (click)="onSubmit('next')">
+        Save/Next ({{pendingCommentCount}})
+      </button>
+    }
+  </div>
+</nav>
 
-@if (loading) {
+@if (loading()) {
   <div class="spinner-container">
     <div class="spinner-new rotating"></div>
   </div>
 }
 
-@if (!loading) {
-  <main class="container-fluid-padding">
-    @if (commentReviewForm) {
-      <form [formGroup]="commentReviewForm" (ngSubmit)="register()">
+<main class="container-fluid-padding">
+  @if (commentReviewForm) {
+    <form [formGroup]="commentReviewForm" (ngSubmit)="register()">
         <div class="form-row">
           <div class="form-group col-md-8">
             <div class="btn-group btn-group-toggle">
@@ -82,26 +77,26 @@
               <div class="row">
                 <div class="col-md-8">
                   <div>
-                    <h3>Comment #</h3> {{comment.commentId}}
+                    <h3>Comment #</h3> {{commentData.commentId}}
                   </div>
                   <div>
-                    <h3>Date: </h3> {{comment.dateAdded | date: 'medium'}}
+                    <h3>Date: </h3> {{commentData.dateAdded | date: 'medium'}}
                   </div>
                   <div>
-                    <h3>Author: </h3> {{comment.author}}
+                    <h3>Author: </h3> {{commentData.author}}
                   </div>
                   <div>
-                    <h3>Location: </h3> {{comment.location}}
+                    <h3>Location: </h3> {{commentData.location}}
                   </div>
                   <div>
                     <h3>CAC Comment: </h3>
                     <div class="border ms-2 badge badge-pill badge-info"
-                      [ngClass]="{'bg-success': comment.submittedCAC, 'bg-danger': !comment.submittedCAC}">{{comment.submittedCAC
+                      [class.bg-success]="commentData.submittedCAC" [class.bg-danger]="!commentData.submittedCAC">{{commentData.submittedCAC
                     ? 'Yes' : 'No'}}</div>
                   </div>
                   <div class="row">
                     <div class="col-md-12 comment">
-                      {{comment.comment}}
+                      {{commentData.comment}}
                     </div>
                   </div>
                 </div>
@@ -115,10 +110,10 @@
                   <div class="form-row">
                     <div class="form-group col-md-12">
                       <label for="proponentResponse"><b>Attachments</b></label>
-                      @if (comment.documentsList?.length > 0) {
+                      @if (commentData.documentsList?.length > 0) {
                         <div>
                           <ul class="doc-list mb-3">
-                            @for (document of comment.documentsList; track document) {
+                            @for (document of commentData.documentsList; track document) {
                               <li>
                                 <span class="cell icon">
                                   <i class="material-icons">insert_drive_file</i>
@@ -142,7 +137,7 @@
                         </ul>
                       </div>
                     }
-                    @if (comment.documentsList?.length === 0) {
+                    @if (commentData.documentsList?.length === 0) {
                       <div>
                         <p>This comment has no associated documents.</p>
                       </div>
@@ -197,4 +192,3 @@
           </form>
         }
       </main>
-    }

@@ -20,6 +20,7 @@ export class Comment {
   rejectedNotes: string;
   rejectedReason: string;
   documents: Array<string>;
+  valuedComponents: Array<string>;
   submittedCAC: boolean;
 
   // Used for comment review.
@@ -50,6 +51,7 @@ export class Comment {
     this.rejectedNotes = obj && obj.rejectedNotes || null;
     this.rejectedReason = obj && obj.rejectedReason || null;
     this.documents = obj && obj.documents || null;
+    this.valuedComponents = obj && obj.valuedComponents || [];
     this.documentsList = obj && obj.documentsList || [];
     this.submittedCAC = obj && obj.submittedCAC || null;
 

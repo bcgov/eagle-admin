@@ -1,12 +1,3 @@
 <div class="bottom-container project-container">
-  @if (loading) {
-    <div class="spinner-container full-screen">
-      <div class="spinner-new rotating"></div>
-    </div>
-  }
-  @if (!loading) {
-    <div>
-      <router-outlet></router-outlet>
-    </div>
-  }
+  <router-outlet></router-outlet>
 </div>

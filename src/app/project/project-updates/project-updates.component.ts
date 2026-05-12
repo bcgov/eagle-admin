@@ -1,47 +1,49 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { ActivityDetailTableRowsComponent } from 'src/app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { SearchService } from 'src/app/services/search.service';
+import { LoadingStateService } from 'src/app/services/loading-state.service';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
-import { Utils } from 'src/app/shared/utils/utils';
+import { encodeParams } from 'src/app/shared/utils/utils';
 
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-project-updates',
   templateUrl: './project-updates.component.html',
-  styleUrls: ['./project-updates.component.css'],
-  standalone: true,
+  styleUrl: './project-updates.component.css',
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
     TableTemplateComponent
   ]
 })
-export class ProjectUpdatesComponent implements OnInit, OnDestroy {
+export class ProjectUpdatesComponent implements OnInit {
   private storageService = inject(StorageService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private _changeDetectionRef = inject(ChangeDetectorRef);
-  private utils = inject(Utils);
+  private searchService = inject(SearchService);
+  private loadingState = inject(LoadingStateService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
   public terms = new SearchTerms();
   public currentProject;
-  public loading = true;
+  public loading = this.loadingState.getOperationState('search-results');
   public keywords;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public recentActivities;
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: 'Headline',
       value: 'headine',
@@ -57,36 +59,41 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
-    this.subscriptions.add(
-      this.route.params
-        .subscribe(params => {
-          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-          this.tableParams.sortBy = '-dateUpdated';
-        })
-    );
+    this.currentProject = this.storageService.currentProjectData;
+    this.route.params.pipe(
+      switchMap(params => {
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+        this.tableParams.sortBy = '-dateUpdated';
 
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((data: any) => {
-          if (data) {
-            if (data.documents && data.documents[0].data.meta && data.documents[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = data.documents[0].data.meta[0].searchResultsTotal;
-              this.recentActivities = data.documents[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.recentActivities = [];
-            }
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          } else {
-            alert('Uh-oh, couldn\'t load valued components');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
-        })
-    );
+        const projectId = this.route.parent.snapshot.paramMap.get('projId');
+        const pageNum = params.currentPage || 1;
+        const pageSize = params.pageSize || 10;
+        const sortBy = params.sortBy || '-datePosted';
+        const keywords = params.keywords || '';
+
+        return this.searchService.getSearchResults(
+          keywords, 'RecentActivity',
+          [{ 'name': 'project', 'value': projectId }],
+          pageNum, pageSize, sortBy, {}, true, {}, ''
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((data: any) => {
+      if (data) {
+        if (data[0].data.meta && data[0].data.meta.length > 0) {
+          this.tableParams.totalListItems = data[0].data.meta[0].searchResultsTotal;
+          this.recentActivities = data[0].data.searchResults;
+        } else {
+          this.tableParams.totalListItems = 0;
+          this.recentActivities = [];
+        }
+        this.setRowData();
+        this._changeDetectionRef.markForCheck();
+      } else {
+        alert('Uh-oh, couldn\'t load valued components');
+        this.router.navigate(['/search']);
+      }
+    });
   }
 
   setRowData() {
@@ -117,7 +124,7 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = encodeParams(this.tableParams.keywords = this.keywords || '');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
@@ -128,12 +135,9 @@ export class ProjectUpdatesComponent implements OnInit, OnDestroy {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
     params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = this.utils.encodeParams(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = encodeParams(this.tableParams.keywords = this.keywords || '');
     params['pageSize'] = this.tableParams.pageSize = 10;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

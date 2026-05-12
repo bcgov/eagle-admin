@@ -1,9 +1,9 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy} from '@angular/core';
 import { NgbActiveModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
-import { Utils } from '../shared/utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from '../shared/utils/utils';
 
 export enum DayCalculatorModalResult {
   Dismissed,
@@ -18,10 +18,11 @@ export class DayCalculatorResult {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-day-calculator-modal',
     templateUrl: './day-calculator-modal.component.html',
-    styleUrls: ['./day-calculator-modal.component.css'],
-    standalone: true,
+    styleUrl: './day-calculator-modal.component.css',
+    host: { '(document:keydown.escape)': 'onKeydownHandler()' },
     imports: [
     FormsModule,
     NgbDatepickerModule
@@ -29,7 +30,6 @@ export class DayCalculatorResult {
 })
 export class DayCalculatorModalComponent {
   activeModal = inject(NgbActiveModal);
-  private utils = inject(Utils);
 
 
   startDate = null;
@@ -201,16 +201,16 @@ export class DayCalculatorModalComponent {
     // convert NGB Date to Javascript Date
 
     if (startDate) {
-      startDate = this.utils.convertFormGroupNGBDateToJSDate(startDate);
+      startDate = convertFormGroupNGBDateToJSDate(startDate);
     }
     if (endDate) {
-      endDate = this.utils.convertFormGroupNGBDateToJSDate(endDate);
+      endDate = convertFormGroupNGBDateToJSDate(endDate);
     }
     if (suspendDate) {
-      suspendDate = this.utils.convertFormGroupNGBDateToJSDate(suspendDate);
+      suspendDate = convertFormGroupNGBDateToJSDate(suspendDate);
     }
     if (resumeDate) {
-      resumeDate = this.utils.convertFormGroupNGBDateToJSDate(resumeDate);
+      resumeDate = convertFormGroupNGBDateToJSDate(resumeDate);
     }
 
     let startDateLuxon = startDate ? DateTime.fromJSDate(startDate) : null;
@@ -295,7 +295,7 @@ export class DayCalculatorModalComponent {
       // convert Luxon date back to Date() object so it displays in datepicker
 
       const JS_endDate = endDateLuxon.toJSDate();
-      calcRes.endDate = this.utils.convertJSDateToNGBDate(JS_endDate);
+      calcRes.endDate = convertJSDateToNGBDate(JS_endDate);
 
     } else if (endDate && calcRes.numDays) {
       // Find the start date from the end date and number of days
@@ -327,7 +327,7 @@ export class DayCalculatorModalComponent {
 
       // convert Luxon date back to Date() object so it displays in datepicker
       const JS_startDate = startDateLuxon.toJSDate();
-      calcRes.startDate = this.utils.convertJSDateToNGBDate(JS_startDate);
+      calcRes.startDate = convertJSDateToNGBDate(JS_startDate);
     }
     return calcRes;
   }
@@ -354,7 +354,7 @@ export class DayCalculatorModalComponent {
   }
 
   // Handle escape key press.
-  @HostListener('document:keydown.escape', []) onKeydownHandler() {
+  onKeydownHandler() {
     this.dismiss();
   }
 }

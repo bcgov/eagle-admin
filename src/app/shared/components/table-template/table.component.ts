@@ -1,6 +1,8 @@
+import { InputSignal } from '@angular/core';
+import { TableColumn } from './table-object';
 
 export interface TableComponent {
     data: any;
-    columnData: any;
-    smallTable: boolean;
+    columnData: InputSignal<TableColumn[]>;
+    smallTable: any;
   }

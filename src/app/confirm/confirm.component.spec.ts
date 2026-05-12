@@ -19,6 +19,9 @@ describe('ConfirmComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ConfirmComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('title', 'Test');
+    fixture.componentRef.setInput('message', 'Test message');
+    fixture.componentRef.setInput('okOnly', false);
     fixture.detectChanges();
   });
 

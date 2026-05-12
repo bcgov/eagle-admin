@@ -1,37 +1,37 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 
 import { Router } from '@angular/router';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './search-document-table-rows.component.html',
-    styleUrls: ['./search-document-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule, ListConverterPipe],
+    styleUrl: './search-document-table-rows.component.css',
+    imports: [DatePipe, ListConverterPipe],
 })
 
 export class SearchDocumentTableRowsComponent implements OnInit, TableComponent {
   private router = inject(Router);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
 
   public documents: any;
   public paginationData: any;
   public activeLegislationYear: number;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.documents = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.documents = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   goToItem(item) {

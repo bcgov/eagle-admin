@@ -5,7 +5,7 @@ import { LoggingService } from './logging.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
 import Keycloak from 'keycloak-js';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class KeycloakService {
   private configService = inject(ConfigService);
   private logger = inject(LoggingService);

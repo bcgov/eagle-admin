@@ -1,38 +1,39 @@
-import { Component, Input, Output, OnInit, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-application-sort-table-rows]',
     templateUrl: './application-sort-table-rows.component.html',
-    styleUrls: ['./application-sort-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule, ListConverterPipe],
+    styleUrl: './application-sort-table-rows.component.css',
+    imports: [DatePipe, ListConverterPipe, FormsModule],
     
 })
 
 export class ApplicationSortTableRowsComponent implements OnInit, TableComponent {
   private storageService = inject(StorageService);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
 
-  @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  selectedCount = output<any>();
 
   public documents: any;
   public paginationData: any;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.documents = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.documents = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   updateSelectedCount(editedDoc: any): void {

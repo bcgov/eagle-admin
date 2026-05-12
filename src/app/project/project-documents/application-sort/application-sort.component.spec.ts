@@ -1,13 +1,12 @@
 import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
-import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
 import { SearchService } from 'src/app/services/search.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { Utils } from 'src/app/shared/utils/utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { AjaxData } from 'src/app/shared/utils/mock-data';
@@ -28,16 +27,16 @@ describe('DocumentApplicationSortComponent', () => {
   ]);
 
   const mockSearchService = jasmine.createSpyObj('SearchService', [
-    'res'
+    'res', 'getSearchResults'
   ]);
+  mockSearchService.getSearchResults.and.returnValue(of([{ data: { meta: [], searchResults: [] } }]));
 
   const mockDocumentService = jasmine.createSpyObj('DocumentService', [
     'res'
   ]);
 
-  const mockConfigService = jasmine.createSpyObj('ConfigService', [
-    'res'
-  ]);
+  const mockConfigService = jasmine.createSpyObj('ConfigService', ['res']);
+  mockConfigService.lists = [];
 
   const mockTableTemplateUtils = jasmine.createSpyObj('TableTemplateUtils', [
     'updateUrl',
@@ -47,6 +46,7 @@ describe('DocumentApplicationSortComponent', () => {
 
   const utils = new Utils();
 
+  mockStorageService.currentProjectData = AjaxData;
   mockStorageService.state.currentProject = {
     data: AjaxData
   };
@@ -58,8 +58,6 @@ describe('DocumentApplicationSortComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         DocumentApplicationSortComponent,
-        NzPaginationModule,
-        MatSnackBarModule,
         TableTemplateComponent
       ],
       providers: [

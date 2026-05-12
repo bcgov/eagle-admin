@@ -1,26 +1,26 @@
-@if (showInfo) {
+@if (showInfo()) {
   <div class="files-info">
-    Maximum of {{maxFiles}} files, up to {{maxSize}}MB each.
-    <br> Acceptable file types: {{fileExt}}
+    Maximum of {{maxFiles()}} files, up to {{maxSize()}}MB each.
+    <br> Acceptable file types: {{fileExt()}}
     </div>
   }
 
-  <div draggable="true" ngClass="{{dragDropClass}}">
+  <div draggable="true" [class]="dragDropClass">
     <div class="row">
       <div class="col-md-12 text-center">
         <a href="javascript:void(0)" (click)="file.click()">
           <i class="material-icons">file_upload</i>
           Drop files to attach, or browse.
         </a>
-        <input type="file" #file [multiple]="(maxFiles > 1)" (click)="file.value = null" value="" (change)="onFileChange($event)" style="display:none" />
+        <input type="file" #file [multiple]="(maxFiles() > 1)" (click)="file.value = null" value="" (change)="onFileChange($event)" style="display:none" />
       </div>
     </div>
   </div>
 
-  @if (showList && files.length > 0) {
+  @if (showList() && files().length > 0) {
     <div class="files-list">
       <ul>
-        @for (f of files; track f) {
+        @for (f of files(); track f) {
           <li>
             <span class="name">{{f.name}}</span>
             <span class="value">

@@ -1,4 +1,4 @@
-@if (!loading) {
+@if (!loading()) {
   <nav class="action-container" aria-label="breadcrumb">
     @if (navigationObject) {
       <ol class="breadcrumb">
@@ -24,7 +24,7 @@
 }
 
 <main class="container-fluid-padding add-edit-form">
-  @if (loading) {
+  @if (loading()) {
     <div class="spinner-container">
       <div class="spinner-new rotating"></div>
     </div>
@@ -71,7 +71,7 @@
   </app-table-template>
 }
 
-@if (!loading && tableParams.totalListItems != 0) {
+@if (!loading() && tableParams.totalListItems != 0) {
   <div class="btn-group" role="group" aria-label="Action Buttons">
     <div class="input-group-prepend">
       <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i

@@ -1,7 +1,8 @@
-import { Component, OnInit, HostBinding, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, ChangeDetectionStrategy} from '@angular/core';
 
-import { Router, NavigationEnd, RouterModule } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router, NavigationEnd, NavigationStart, NavigationCancel, NavigationError, RouterModule } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { ToggleButtonComponent } from './toggle-button/toggle-button.component';
@@ -9,18 +10,21 @@ import { FooterComponent } from './footer/footer.component';
 import { SideBarService } from './services/sidebar.service';
 import { AnalyticsService } from './services/analytics/analytics.service';
 import { KeycloakService } from './services/keycloak.service';
+import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
-    standalone: true,
+    styleUrl: './app.component.css',
+    host: { '[class.sidebarcontrol]': 'isOpen' },
     imports: [
     RouterModule,
     HeaderComponent,
     SidebarComponent,
     ToggleButtonComponent,
-    FooterComponent
+    FooterComponent,
+    ToastContainerComponent
 ]
 })
 
@@ -30,8 +34,17 @@ export class AppComponent implements OnInit {
   private keycloakService = inject(KeycloakService);
   private router = inject(Router);
 
-  @HostBinding('class.sidebarcontrol')
   isOpen = false;
+
+  private navigating = toSignal(
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationStart || e instanceof NavigationEnd ||
+                  e instanceof NavigationCancel || e instanceof NavigationError),
+      map(e => e instanceof NavigationStart)
+    ),
+    { initialValue: false }
+  );
+  isNavigating = computed(() => this.navigating());
 
   ngOnInit() {
     this.sideBarService.toggleChange.subscribe(isOpen => {

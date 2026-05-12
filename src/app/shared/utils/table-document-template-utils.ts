@@ -4,7 +4,7 @@ import { PlatformLocation } from '@angular/common';
 import { TableDocumentParamsObject } from '../components/table-template/table-document-params-object';
 import { Constants } from './constants';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class TableDocumentTemplateUtils {
   private platformLocation = inject(PlatformLocation);
   private router = inject(Router);

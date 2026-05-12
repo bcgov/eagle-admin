@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy} from '@angular/core';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-map',
     templateUrl: './map.component.html',
-    styleUrls: ['./map.component.css'],
+    styleUrl: './map.component.css',
     
 })
 export class MapComponent {

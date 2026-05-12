@@ -10,19 +10,19 @@
       <div>
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            @if (currentProject.type === 'currentProject') {
+            @if (componentBaseUrl === '/p') {
               <a [routerLink]="['/projects']">All Projects</a>
             }
-            @if (currentProject.type === 'currentProjectNotification') {
+            @if (componentBaseUrl === '/pn') {
               <a
               [routerLink]="['/project-notifications']">All Project Notifications</a>
             }
           </li>
           <li class="breadcrumb-item">
-            <a [routerLink]="[componentBaseUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+            <a [routerLink]="[componentBaseUrl, project()._id]">{{project().name}}</a>
           </li>
           <li class="breadcrumb-item" aria-current="page">
-            <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+            <a [routerLink]="[componentBaseUrl, project()._id, 'comment-periods']">Comment Periods</a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
             Add
@@ -34,26 +34,26 @@
       <div>
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            @if (currentProject.type === 'currentProject') {
+            @if (componentBaseUrl === '/p') {
               <a [routerLink]="['/projects']">All Projects</a>
             }
-            @if (currentProject.type === 'currentProjectNotification') {
+            @if (componentBaseUrl === '/pn') {
               <a
               [routerLink]="['/project-notifications']">All Project Notifications</a>
             }
           </li>
           <li class="breadcrumb-item">
-            <a [routerLink]="[componentBaseUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+            <a [routerLink]="[componentBaseUrl, project()._id]">{{project().name}}</a>
           </li>
           <li class="breadcrumb-item" aria-current="page">
-            <a [routerLink]="[componentBaseUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+            <a [routerLink]="[componentBaseUrl, project()._id, 'comment-periods']">Comment Periods</a>
           </li>
           <li class="breadcrumb-item" aria-current="page">
             <a
-              [routerLink]="[componentBaseUrl, currentProject.data._id, 'cp', commentPeriod._id, 'comment-period-details']">{{commentPeriod.dateStarted
+              [routerLink]="[componentBaseUrl, project()._id, 'cp', currentCommentPeriod._id, 'comment-period-details']">{{currentCommentPeriod.dateStarted
               | date: 'LLLL'}}
               -
-            {{commentPeriod.dateCompleted | date}}</a>
+            {{currentCommentPeriod.dateCompleted | date}}</a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
             Edit
@@ -132,7 +132,7 @@
             </i>
           </h6>
           <p class="text-secondary">
-            Comment Period on the {{infoForCommentPreview}} for {{currentProject.data.name}} Project.
+            Comment Period on the {{infoForCommentPreview}} for {{project().name}} Project.
           </p>
           <div class="renderedTextPreview" [innerHTML]="descriptionPreview  | safeHtml"></div>
         </div>
@@ -180,7 +180,7 @@
           </div>
         </div>
       </div>
-      @if (currentProject.type === 'currentProject') {
+      @if (componentBaseUrl === '/p') {
         <div class="form-row">
           <div class="form-group col-md-6">
             <label for="milestoneSel">Content for Comment [Milestones]*</label>
@@ -193,7 +193,7 @@
           </div>
         </div>
       }
-      @if (currentProject.type === 'currentProject') {
+      @if (componentBaseUrl === '/p') {
         <div formArrayName="openHouses">
           @for (item of commentPeriodForm.get('openHouses')['controls']; track item) {
             <div class="card"
@@ -232,13 +232,13 @@
       <div class="col-md-4">
         &nbsp;
       </div>
-      @if (currentProject.type === 'currentProject') {
+      @if (componentBaseUrl === '/p') {
         <button class="btn btn-primary" (click)="addOpenHouseRow()">
           Add Another Open House
         </button>
       }
       <div class="text-end">
-        <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+        <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
         &nbsp;
         <button [disabled]="!commentPeriodForm.valid" class="btn btn-primary" type="submit"
         (click)="onSubmit()">Save</button>

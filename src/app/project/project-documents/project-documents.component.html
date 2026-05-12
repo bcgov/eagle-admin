@@ -32,7 +32,7 @@
             id="button-d">Delete</button>
 
           @if (currentProject) {
-          <a class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+          <a class="upload-docs" [class.active]="currentProject._id === 'activity'"
             [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">
             <button class="dropdown-item" type="button" id="button-as">
               Sort Applications
@@ -41,7 +41,7 @@
           }
 
           @if (currentProject) {
-          <a class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
+          <a class="upload-docs" [class.active]="currentProject._id === 'activity'"
             [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
             <button class="dropdown-item" type="button" id="button-upl">
               Upload Document(s)
@@ -69,46 +69,46 @@
         <div class="row">
           @if (showAdvancedSearch) {
           <div class="col-md-9">
-            <button type="button" (click)="toggleFilter('milestone');" [ngClass]="{'btn': true, 'milestone-btn': true,
-                'btn-dark': showFilters.milestone,
-                'btn-secondary': !showFilters.milestone && numFilters.milestone > 0,
-                'btn-outline-dark': !showFilters.milestone && numFilters.milestone == 0}">
+            <button type="button" (click)="toggleFilter('milestone');" class="btn milestone-btn"
+              [class.btn-dark]="showFilters.milestone"
+              [class.btn-secondary]="!showFilters.milestone && numFilters.milestone > 0"
+              [class.btn-outline-dark]="!showFilters.milestone && numFilters.milestone == 0">
               Milestone@if (numFilters.milestone > 0 && !showFilters.milestone) {
               <span>&nbsp;({{
                 numFilters.milestone }})</span>
               }
             </button>
-            <button type="button" (click)="toggleFilter('date');" [ngClass]="{'btn': true, 'date-btn': true,
-                'btn-dark': showFilters.date,
-                'btn-secondary': !showFilters.date && numFilters.date > 0,
-                'btn-outline-dark': !showFilters.date && numFilters.date == 0}">
+            <button type="button" (click)="toggleFilter('date');" class="btn date-btn"
+              [class.btn-dark]="showFilters.date"
+              [class.btn-secondary]="!showFilters.date && numFilters.date > 0"
+              [class.btn-outline-dark]="!showFilters.date && numFilters.date == 0">
               Document Date@if (numFilters.date > 0 && !showFilters.date) {
               <span>&nbsp;({{
                 numFilters.date }})</span>
               }
             </button>
-            <button type="button" (click)="toggleFilter('documentAuthorType');" [ngClass]="{'btn': true, 'author-btn': true,
-                'btn-dark': showFilters.documentAuthorType,
-                'btn-secondary': !showFilters.documentAuthorType && numFilters.documentAuthorType > 0,
-                'btn-outline-dark': !showFilters.documentAuthorType && numFilters.documentAuthorType == 0}">
+            <button type="button" (click)="toggleFilter('documentAuthorType');" class="btn author-btn"
+              [class.btn-dark]="showFilters.documentAuthorType"
+              [class.btn-secondary]="!showFilters.documentAuthorType && numFilters.documentAuthorType > 0"
+              [class.btn-outline-dark]="!showFilters.documentAuthorType && numFilters.documentAuthorType == 0">
               Document Author@if (numFilters.documentAuthorType > 0 && !showFilters.documentAuthorType) {
               <span>&nbsp;({{
                 numFilters.documentAuthorType }})</span>
               }
             </button>
-            <button type="button" (click)="toggleFilter('type');" [ngClass]="{'btn': true, 'type-btn': true,
-                'btn-dark': showFilters.type,
-                'btn-secondary': !showFilters.type && numFilters.type > 0,
-                'btn-outline-dark': !showFilters.type && numFilters.type == 0}">
+            <button type="button" (click)="toggleFilter('type');" class="btn type-btn"
+              [class.btn-dark]="showFilters.type"
+              [class.btn-secondary]="!showFilters.type && numFilters.type > 0"
+              [class.btn-outline-dark]="!showFilters.type && numFilters.type == 0">
               Document Type@if (numFilters.type > 0 && !showFilters.type) {
               <span>&nbsp;({{
                 numFilters.type }})</span>
               }
             </button>
-            <button type="button" (click)="toggleFilter('projectPhase');" [ngClass]="{'btn': true, 'type-btn': true,
-                'btn-dark': showFilters.projectPhase,
-                'btn-secondary': !showFilters.projectPhase && numFilters.projectPhase > 0,
-                'btn-outline-dark': !showFilters.projectPhase && numFilters.projectPhase == 0}">
+            <button type="button" (click)="toggleFilter('projectPhase');" class="btn type-btn"
+              [class.btn-dark]="showFilters.projectPhase"
+              [class.btn-secondary]="!showFilters.projectPhase && numFilters.projectPhase > 0"
+              [class.btn-outline-dark]="!showFilters.projectPhase && numFilters.projectPhase == 0">
               Project Phase@if (numFilters.projectPhase > 0 && !showFilters.projectPhase) {
               <span>&nbsp;({{
                 numFilters.projectPhase }})</span>
@@ -117,8 +117,8 @@
             <button class="btn btn-outline-dark" type="button" (click)="clearAll();">Clear All</button>
           </div>
           }
-          <div
-            [ngClass]="{'show-advanced-search-button': true, 'col-md-3': showAdvancedSearch, 'col-md-12': !showAdvancedSearch}">
+          <div class="show-advanced-search-button"
+            [class.col-md-3]="showAdvancedSearch" [class.col-md-12]="!showAdvancedSearch">
             <a [routerLink]="['/search-help']" target="_blank" placement="top" ngbTooltip="Search Help">
               <i class="material-icons md-30">help</i>
             </a>

@@ -23,7 +23,7 @@
     </h1>
     <div [hidden]="tableParams.totalListItems == 0">
       <button class="btn btn-primary me-1" type="button" (click)="onSave()">Save</button>
-      <button class="btn btn-secondary me-1" type="cancel" (click)="onCancel()">cancel</button>
+      <button class="btn btn-secondary me-1" type="button" (click)="onCancel()">cancel</button>
     </div>
     @if (!loading && tableParams.totalListItems != 0) {
       <app-table-template
@@ -34,7 +34,7 @@
         >
       </app-table-template>
     }
-    @if (tableParams.totalListItems == 0) {
+    @if (!loading && tableParams.totalListItems == 0) {
       <div>
         <p>
           No application documents for this project.

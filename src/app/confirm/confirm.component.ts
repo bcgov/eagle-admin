@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 export interface DataModel {
@@ -8,17 +8,18 @@ export interface DataModel {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-confirm',
     templateUrl: './confirm.component.html',
-    styleUrls: ['./confirm.component.css'],
+    styleUrl: './confirm.component.css',
     
 })
 export class ConfirmComponent {
   activeModal = inject(NgbActiveModal);
 
-  @Input() title: string;
-  @Input() message: string;
-  @Input() okOnly: boolean;
+  title: string;
+  message: string;
+  okOnly: boolean;
 
   confirm() {
     this.activeModal.close(true);
