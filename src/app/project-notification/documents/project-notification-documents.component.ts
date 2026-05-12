@@ -1,148 +1,113 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, DestroyRef, ViewEncapsulation, inject, signal } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/services/toast.service';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin, Subscription, firstValueFrom } from 'rxjs';
+import { forkJoin, firstValueFrom } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
-import { ApiService } from 'src/app/services/api';
 import { DocumentService } from 'src/app/services/document.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
-import { Utils } from 'src/app/shared/utils/utils';
+import { encodeString } from 'src/app/shared/utils/utils';
+import { HttpCacheService } from 'src/app/interceptors/http-cache.interceptor';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
 import { Document } from 'src/app/models/document';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-project-notification-documents',
-  standalone: true,
   imports: [
     RouterModule,
     TableTemplateComponent,
-    CommonModule,
     NgbDropdownModule,
     ReactiveFormsModule
   ],
   templateUrl: './project-notification-documents.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  styleUrls: ['./project-notification-documents.component.css'],
-
+  styleUrl: './project-notification-documents.component.css',
 })
-export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy {
-  private _changeDetectionRef = inject(ChangeDetectorRef);
-  private api = inject(ApiService);
+export class ProjectNotificationDocumentsComponent implements OnInit {
   private documentService = inject(DocumentService);
   private modalService = inject(NgbModal);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private searchService = inject(SearchService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private storageService = inject(StorageService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
-  // Must do this to expose the constants to the template,
   public readonly constants = Constants;
 
-  public docsCount = 0;
-  public docs: Document[] = [];
+  private docs: Document[] = [];
 
-  public loading = true;
+  // Signals — OnPush tracks these automatically, no detectChanges() needed
+  public loading = signal(true);
+  public documentTableData = signal<TableObject | null>(null);
+  public selectedCount = signal({ categorized: 0, total: 0 });
+  public canPublish = signal(false);
+  public canUnpublish = signal(false);
+  public currentProject = signal<any>(null);
 
   public tableParams: TableParamsObject = new TableParamsObject();
 
-  public filterForURL: object = {};
-  public filterForAPI: object = {};
-
-  public documentTableData: TableObject;
-  public documentTableColumns: any[] = [
-    {
-      name: 'select_all_box',
-      value: 'select_all_box',
-      width: '5%',
-      nosort: true
-    },
-    {
-      name: 'Name',
-      value: 'displayName',
-      width: '30%',
-    },
-    {
-      name: 'Date',
-      value: 'datePosted',
-      width: '26%',
-    },
-    {
-      name: 'Document Author',
-      value: 'documentAuthor',
-      width: '29%',
-    },
-    {
-      name: 'status',
-      value: 'status',
-      width: '10%',
-    }
+  public documentTableColumns: TableColumn[] = [
+    { name: 'select_all_box', value: 'select_all_box', width: '5%', nosort: true },
+    { name: 'Name', value: 'displayName', width: '30%' },
+    { name: 'Date', value: 'datePosted', width: '26%' },
+    { name: 'Document Author', value: 'documentAuthor', width: '29%' },
+    { name: 'status', value: 'status', width: '10%' },
   ];
 
-  private subscriptions = new Subscription();
-
-  public selectedCount = {
-    categorized: 0,
-    total: 0,
-  };
-  public currentProject;
-  public canPublish;
-  public canUnpublish;
-
-  constructor() {
-    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-  }
-
-  ngOnInit() {
-    this.subscriptions.add(
-      this.route.parent.data
-        .subscribe((res: any) => {
-          this.currentProject = this.storageService.state.currentProject?.data;
-          if (!this.currentProject) {
-            this.storageService.state.currentProject = res.notificationProject;
-            this.currentProject = this.storageService.state.currentProject?.data;
-          }
-
-          if (res.documents) {
-            if (res.documents[0].data && res.documents[0].data.meta.length > 0) {
-              this.docs = res.documents[0].data.searchResults;
+  ngOnInit(): void {
+    // Read project from storage (set by parent component) — no resolver dependency
+    const stored = this.storageService.currentProjectData;
+    if (stored) {
+      this.currentProject.set(stored);
+    } else {
+      // Fallback: load project id from route param (parent route owns :notificationProjectId)
+      const notificationProjectId = this.route.parent?.snapshot.paramMap.get('notificationProjectId');
+      if (!notificationProjectId) {
+        alert('Uh-oh, couldn\'t load documents');
+        this.router.navigate(['/search']);
+        return;
+      }
+      // Load the project before fetching docs
+      this.searchService.getItem(notificationProjectId, 'ProjectNotification')
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res: any) => {
+            if (res?.data) {
+              this.storageService.state.currentProject = { type: 'currentProjectNotification', data: res.data, docTotal: 0 };
+              this.currentProject.set(res.data);
+              this.initTable();
             } else {
-              this.docs = [];
+              alert('Uh-oh, couldn\'t load documents');
+              this.router.navigate(['/search']);
             }
-
-            this.tableParams.sortBy = '-datePosted';
-            this.tableParams.pageSize = 10;
-            this.tableParams.currentPage = 1;
-            this.tableParams.totalListItems = res.documents[0].data.meta[0] ? res.documents[0].data.meta[0].searchResultsTotal : 0;
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.detectChanges();
-          } else {
+          },
+          error: () => {
             alert('Uh-oh, couldn\'t load documents');
-            // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-        })
-    );
+        });
+      return;
+    }
+
+    this.initTable();
   }
 
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      verticalPosition: 'top',
-      horizontalPosition: 'center',
-      duration: 4000
-    });
+  private initTable(): void {
+    this.tableParams.sortBy = '-datePosted';
+    this.tableParams.pageSize = 10;
+    this.tableParams.currentPage = 1;
+    this.refreshDocuments();
   }
 
   public selectAction(action) {
@@ -152,13 +117,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     switch (action) {
       case 'copyLink':
 
-        if (this.documentTableData) {
-          this.documentTableData.data.map(item => {
+        if (this.documentTableData()) {
+          this.documentTableData().data.map(item => {
             if (item.checkbox === true) {
               this.createRowCopy(item);
-              this.openSnackBar(
-                'A  PUBLIC  link to this document has been copied.',
-                'Close'
+              this.toastService.info(
+                'A  PUBLIC  link to this document has been copied.'
               );
             }
           });
@@ -167,34 +131,28 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
       case 'selectAll':
         let someSelected = false;
 
-        if (this.documentTableData) {
-          this.documentTableData.data.map(item => {
-            if (item.checkbox === true) {
-              someSelected = true;
-            }
+        const tableData = this.documentTableData();
+        if (tableData) {
+          tableData.data.forEach(item => {
+            if (item.checkbox === true) { someSelected = true; }
           });
-          this.documentTableData.data.map(item => {
+          tableData.data.forEach(item => {
             item.checkbox = !someSelected;
           });
         }
 
-        this.selectedCount.total = someSelected
-          ? 0
-          : this.documentTableData.data.length;
-
+        this.selectedCount.set({ ...this.selectedCount(), total: someSelected ? 0 : (tableData?.data.length ?? 0) });
         this.setPublishUnpublish();
-
-        this._changeDetectionRef.detectChanges();
         break;
       case 'delete':
         this.deleteDocument();
         break;
       case 'download':
-        if (this.documentTableData) {
-          this.documentTableData.data.map(item => {
+        if (this.documentTableData()) {
+          this.documentTableData().data.map(item => {
             if (item.checkbox === true) {
               promises.push(
-                this.api.downloadDocument(
+                this.documentService.downloadDocument(
                   this.docs.filter(d => d._id === item._id)[0]
                 )
               );
@@ -222,7 +180,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static',
       centered: true,
-      backdropClass: 'custom-backdrop', // Optional: to replicate rgba look
+      backdropClass: 'custom-backdrop',
     });
 
     modalRef.componentInstance.title = 'Publish Document(s)';
@@ -233,11 +191,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     modalRef.result
       .then((isConfirmed) => {
         if (isConfirmed) {
-          this.loading = true;
+          this.loading.set(true);
           const observables = [];
 
-          if (this.documentTableData) {
-            this.documentTableData.data.forEach(item => {
+          const tableData = this.documentTableData();
+          if (tableData) {
+            tableData.data.forEach(item => {
               if (item.checkbox && !item.read.includes('public')) {
                 observables.push(this.documentService.publish(item._id));
               }
@@ -247,21 +206,23 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           forkJoin(observables).subscribe({
             error: err => {
               this.logger.error('publish documents failed', 'ProjectNotificationDocumentsComponent', err);
+              this.toastService.error('Failed to publish document(s).');
+              this.loading.set(false);
             },
             complete: () => {
-              this.loading = false;
-              this.canUnpublish = false;
-              this.canPublish = false;
-              this.onSubmit();
+              this.loading.set(false);
+              this.canUnpublish.set(false);
+              this.canPublish.set(false);
+              this.toastService.success('Document(s) published successfully.');
+              this.refreshDocuments();
             }
           });
         } else {
-          this.loading = false;
+          this.loading.set(false);
         }
       })
       .catch(() => {
-        // Modal dismissed
-        this.loading = false;
+        this.loading.set(false);
       });
   }
 
@@ -280,11 +241,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     modalRef.result
       .then((isConfirmed) => {
         if (isConfirmed) {
-          this.loading = true;
+          this.loading.set(true);
           const observables = [];
 
-          if (this.documentTableData) {
-            this.documentTableData.data.forEach(item => {
+          const tableData = this.documentTableData();
+          if (tableData) {
+            tableData.data.forEach(item => {
               if (item.checkbox && item.read.includes('public')) {
                 observables.push(this.documentService.unPublish(item._id));
               }
@@ -294,21 +256,23 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
           forkJoin(observables).subscribe({
             error: err => {
               this.logger.error('unpublish documents failed', 'ProjectNotificationDocumentsComponent', err);
+              this.toastService.error('Failed to unpublish document(s).');
+              this.loading.set(false);
             },
             complete: () => {
-              this.loading = false;
-              this.canUnpublish = false;
-              this.canPublish = false;
-              this.onSubmit();
+              this.loading.set(false);
+              this.canUnpublish.set(false);
+              this.canPublish.set(false);
+              this.toastService.success('Document(s) unpublished successfully.');
+              this.refreshDocuments();
             }
           });
         } else {
-          this.loading = false;
+          this.loading.set(false);
         }
       })
       .catch(() => {
-        // Modal dismissed
-        this.loading = false;
+        this.loading.set(false);
       });
   }
 
@@ -327,60 +291,70 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     modalRef.result
       .then(async (isConfirmed) => {
         if (isConfirmed) {
-          this.loading = true;
+          this.loading.set(true);
           const itemsToDelete = [];
 
-          if (this.documentTableData) {
-            this.documentTableData.data.forEach(item => {
+          const tableData = this.documentTableData();
+          if (tableData) {
+            tableData.data.forEach(item => {
               if (item.checkbox === true) {
-                itemsToDelete.push(
-                  firstValueFrom(this.documentService.delete(item))
-                );
+                itemsToDelete.push(firstValueFrom(this.documentService.delete(item)));
               }
             });
           }
 
           try {
             await Promise.all(itemsToDelete);
+            this.toastService.success('Document(s) deleted successfully.');
+            this.refreshDocuments();
           } catch (err) {
             this.logger.error('delete documents failed', 'ProjectNotificationDocumentsComponent', err);
-          } finally {
-            this.loading = false;
-            this.onSubmit();
+            this.toastService.error('Failed to delete document(s).');
+            this.loading.set(false);
           }
         }
       })
       .catch(() => {
-        // Modal dismissed
-        this.loading = false;
+        this.loading.set(false);
       });
   }
 
-  public onNumItems() {
-    const params = {};
-    params['ms'] = new Date().getMilliseconds();
+  private refreshDocuments(): void {
+    HttpCacheService.clearByResource('search');
+    this.loading.set(true);
+    const project = this.currentProject();
+    if (!project?._id) { return; }
 
-    this.router.navigate([
-      'pn',
-      this.currentProject._id,
-      'project-notification-documents',
-      params
-    ]);
-  }
+    const sortBy = this.tableParams.sortBy
+      ? (this.tableParams.sortBy.substr(1) === 'displayName'
+          ? this.tableParams.sortBy
+          : `${this.tableParams.sortBy},+displayName`)
+      : '-datePosted,+displayName';
 
-  public onSubmit() {
-    this.loading = true;
-
-    const params = {};
-    params['ms'] = new Date().getMilliseconds();
-    params['notificationProjectId'] = this.currentProject._id;
-
-    this.router.navigate([
-      'pn',
-      this.currentProject._id,
-      'project-notification-documents',
-      params
-    ]);
+    this.searchService.getSearchResults(
+      null,
+      'Document',
+      [],
+      this.tableParams.currentPage,
+      this.tableParams.pageSize,
+      sortBy,
+      { documentSource: 'PROJECT-NOTIFICATION', project: project._id })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        if (res[0].data && res[0].data.meta.length > 0) {
+          this.docs = res[0].data.searchResults;
+          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+        } else {
+          this.docs = [];
+          this.tableParams.totalListItems = 0;
+          this.documentTableData.set(null);
+        }
+        this.setRowData();
+        this.selectedCount.set({ categorized: 0, total: 0 });
+        this.canPublish.set(false);
+        this.canUnpublish.set(false);
+        this.loading.set(false);
+      });
   }
 
   setRowData() {
@@ -405,16 +379,17 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
         };
       });
 
-      this.documentTableData = new TableObject(
+      this.documentTableData.set(new TableObject(
         PnDocumentTableRowsComponent,
         documentList,
         this.tableParams
-      );
+      ));
+    } else {
+      this.documentTableData.set(null);
     }
   }
 
   setColumnSort(column) {
-
     if (this.tableParams.sortBy[0] === '+') {
       this.tableParams.sortBy = `-${column}`;
     } else {
@@ -425,69 +400,71 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
   }
 
   getPaginatedDocs(page) {
-    this.loading = true;
+    this.loading.set(true);
     this.tableParams.currentPage = page;
+    const project = this.currentProject();
+    if (!project?._id) { return; }
 
-    // Use displayName as secondary sort if column has equal values
-    const sortBy = this.tableParams.sortBy.substr(1) === 'displayName' ? this.tableParams.sortBy : `${this.tableParams.sortBy},+displayName`;
+    const sortBy = this.tableParams.sortBy.substr(1) === 'displayName'
+      ? this.tableParams.sortBy
+      : `${this.tableParams.sortBy},+displayName`;
 
-    this.subscriptions.add(
-      this.searchService.getSearchResults(
-        null,
-        'Document',
-        [],
-        this.tableParams.currentPage,
-        this.tableParams.pageSize,
-        sortBy,
-        { documentSource: 'PROJECT-NOTIFICATION', project: this.currentProject._id })
-        .subscribe((res: any) => {
-          this.docs = res[0].data.searchResults;
-          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-
-          this.setRowData();
-
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+    this.searchService.getSearchResults(
+      null,
+      'Document',
+      [],
+      this.tableParams.currentPage,
+      this.tableParams.pageSize,
+      sortBy,
+      { documentSource: 'PROJECT-NOTIFICATION', project: project._id })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        this.docs = res[0].data.searchResults;
+        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+        this.setRowData();
+        this.loading.set(false);
+      });
   }
 
   isEnabled(button) {
+    const total = this.selectedCount().total;
     switch (button) {
       case 'copyLink':
-        return this.selectedCount.total === 1;
+        return total === 1;
       case 'publish':
-        return this.selectedCount.total > 0 && this.canPublish;
+        return total > 0 && this.canPublish();
       case 'unpublish':
-        return this.selectedCount.total > 0 && this.canUnpublish;
+        return total > 0 && this.canUnpublish();
       default:
-        return this.selectedCount.total > 0;
+        return total > 0;
     }
   }
 
   updateSelectedRow(changeEvent) {
-    // Accessing on a keyed index so that the constants can be used.
-    this.selectedCount.total = changeEvent.count;
+    this.selectedCount.set({ ...this.selectedCount(), total: changeEvent.count });
     this.setPublishUnpublish();
   }
 
   setPublishUnpublish() {
-    this.canPublish = false;
-    this.canUnpublish = false;
+    let canPub = false;
+    let canUnpub = false;
 
-    for (const document of this.documentTableData.data) {
-      if (document.checkbox) {
-        if (document.read.includes('public')) {
-          this.canUnpublish = true;
-        } else {
-          this.canPublish = true;
+    const tableData = this.documentTableData();
+    if (tableData) {
+      for (const document of tableData.data) {
+        if (document.checkbox) {
+          if (document.read.includes('public')) {
+            canUnpub = true;
+          } else {
+            canPub = true;
+          }
         }
-      }
-
-      if (this.canPublish && this.canUnpublish) {
-        return;
+        if (canPub && canUnpub) { break; }
       }
     }
+
+    this.canPublish.set(canPub);
+    this.canUnpublish.set(canUnpub);
   }
 
   isNGBDate(date) {
@@ -509,7 +486,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     selBox.style.left = '0';
     selBox.style.top = '0';
     selBox.style.opacity = '0';
-    const safeName = this.utils.encodeString(
+    const safeName = encodeString(
       item.documentFileName,
       true
     );
@@ -541,9 +518,5 @@ export class ProjectNotificationDocumentsComponent implements OnInit, OnDestroy 
     } else {
       return 'results';
     }
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

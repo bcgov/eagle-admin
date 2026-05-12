@@ -1,7 +1,9 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { ReplaySubject, firstValueFrom } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { LoggingService } from './logging.service';
+import { LoadingStateService } from './loading-state.service';
 
 interface EnvConfig {
   logLevel?: number;
@@ -39,10 +41,11 @@ declare global {
  *
  * Lists are lazy-loaded on first access via getLists(), not during init.
  */
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ConfigService {
   private httpClient = inject(HttpClient);
   private logger = inject(LoggingService);
+  private loadingState = inject(LoadingStateService);
 
   constructor() {
     // Expose ConfigService on window for LoggingService to access
@@ -60,6 +63,10 @@ export class ConfigService {
   // UI state
   private _baseLayerName = 'World Topographic';
   private _lists: any[] = [];
+  // ReplaySubject(1) replays the latest lists to any new subscriber immediately.
+  // toSignal() bridges it to Angular's signal graph — zone-safe, no manual detectChanges needed.
+  private readonly _lists$ = new ReplaySubject<any[]>(1);
+  public readonly listsSignal = toSignal(this._lists$, { initialValue: [] as any[] });
   private _listsPromise: Promise<void> | null = null;
   private _regions: any[] = [];
 
@@ -81,6 +88,9 @@ export class ConfigService {
     }
 
     this.configLoaded = true;
+    // Kick off list load in background — overlaps with Keycloak init.
+    // Fire-and-forget; ensureListsLoaded() is idempotent.
+    this.ensureListsLoaded();
   }
 
   /**
@@ -103,18 +113,27 @@ export class ConfigService {
 
   public ensureListsLoaded(): Promise<void> {
     if (!this._listsPromise) {
+      this.loadingState.startLoading('lists', 'Loading document metadata');
       this._listsPromise = (async () => {
         try {
           const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
           const lists = await firstValueFrom(this.httpClient.get<any>(url));
           this._lists = lists?.[0]?.searchResults ?? [];
+          if (this._lists.length === 0) {
+            throw new Error('Lists response was empty');
+          }
+          this._lists$.next(this._lists);
           this.populateRegionsList();
         } catch (e) {
-          this.logger.error('Error loading lists', 'ConfigService', e);
+          this.logger.error('Error loading lists — will retry on next call', 'ConfigService', e);
+          // Reset so next caller triggers a fresh fetch
+          this._listsPromise = null;
+        } finally {
+          this.loadingState.stopLoading('lists');
         }
       })();
     }
-    return this._listsPromise;
+    return this._listsPromise ?? Promise.resolve();
   }
 
   /**
@@ -130,7 +149,6 @@ export class ConfigService {
   }
 
   get lists(): any[] {
-    this.ensureListsLoaded();
     return this._lists;
   }
 

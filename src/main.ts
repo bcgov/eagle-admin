@@ -1,33 +1,19 @@
-import { enableProdMode, importProvidersFrom, inject, provideAppInitializer, ErrorHandler } from '@angular/core';
+import { enableProdMode, inject, provideAppInitializer, ErrorHandler } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { AppRoutingModule } from './app/app-routing.module';
+import { provideRouter, withComponentInputBinding, withNavigationErrorHandler, withRouterConfig } from '@angular/router';
+import { Router } from '@angular/router';
+import { routes } from './app/app-routing.module';
 import { provideHttpClient, withInterceptorsFromDi, withInterceptors, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { environment } from './environments/environment';
-import { NZ_I18N, en_US } from 'ng-zorro-antd/i18n';
-// --- services ---
-import { ApiService } from './app/services/api';
-import { CommentPeriodService } from './app/services/commentperiod.service';
-import { CommentService } from './app/services/comment.service';
+// --- services needed at bootstrap init ---
 import { ConfigService } from './app/services/config.service';
-import { DecisionService } from './app/services/decision.service';
-import { DocumentService } from './app/services/document.service';
-import { ExcelService } from './app/services/excel.service';
 import { KeycloakService } from './app/services/keycloak.service';
-import { NotificationProjectService } from './app/services/notification-project.service';
-import { ProjectService } from './app/services/project.service';
-import { RecentActivityService } from './app/services/recent-activity';
-import { SearchService } from './app/services/search.service';
-import { SideBarService } from './app/services/sidebar.service';
-import { StorageService } from './app/services/storage.service';
-import { UserService } from './app/services/user.service';
-import { Utils } from './app/shared/utils/utils';
-import { TableTemplateUtils } from './app/shared/utils/table-template-utils';
-import { NavigationStackUtils } from './app/shared/utils/navigation-stack-utils';
 import { TokenInterceptor } from './app/shared/utils/token-interceptor';
 import { GlobalErrorHandler } from './app/services/global-error-handler';
 import { loggingInterceptor } from './app/interceptors/logging.interceptor';
+import { httpCacheInterceptor } from './app/interceptors/http-cache.interceptor';
 
 if (environment.production) {
   enableProdMode();
@@ -45,8 +31,15 @@ function initConfig(
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(
-      AppRoutingModule
+    provideRouter(
+      routes,
+      withComponentInputBinding(),
+      withRouterConfig({ paramsInheritanceStrategy: 'always' }),
+      withNavigationErrorHandler((error) => {
+        const router = inject(Router);
+        console.error('Navigation error:', error);
+        router.navigate(['/search']);
+      })
     ),
     provideAppInitializer(() => {
       const initializerFn = (initConfig)(inject(ConfigService), inject(KeycloakService));
@@ -55,28 +48,9 @@ bootstrapApplication(AppComponent, {
     provideAnimations(),
     provideHttpClient(
       withInterceptorsFromDi(),
-      withInterceptors([loggingInterceptor]),
+      withInterceptors([httpCacheInterceptor, loggingInterceptor]),
     ),
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
-    ApiService,
-    CommentPeriodService,
-    CommentService,
-    ConfigService,
-    DecisionService,
-    DocumentService,
-    ExcelService,
-    KeycloakService,
-    NotificationProjectService,
-    ProjectService,
-    RecentActivityService,
-    SearchService,
-    SideBarService,
-    StorageService,
-    UserService,
-    Utils,
-    TableTemplateUtils,
-    NavigationStackUtils,
-    { provide: NZ_I18N, useValue: en_US },
   ]
 });

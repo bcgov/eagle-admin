@@ -1,11 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy} from '@angular/core';
 import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-comment-period-banner',
     templateUrl: './comment-period-banner.component.html',
-    styleUrls: ['./comment-period-banner.component.css'],
+    styleUrl: './comment-period-banner.component.css',
     
 })
 
@@ -18,8 +19,8 @@ export class CommentPeriodBannerComponent implements OnInit {
   public projectId;
 
   ngOnInit() {
-    this.projectId = this.storageService.state.currentProject.data._id;
-    this.commentPeriod = this.storageService.state.currentProject.data.commentPeriodForBanner || null;
+    this.projectId = this.storageService.currentProjectData._id;
+    this.commentPeriod = this.storageService.currentProjectData.commentPeriodForBanner || null;
   }
 
   goToViewComments() {

@@ -4,8 +4,8 @@
       <a [routerLink]="['/project-notifications']">All Project Notifications</a>
     </li>
     <li class="breadcrumb-item">
-      @if (currentProject) {
-        <a [routerLink]="['/pn', currentProject._id, 'details']">{{currentProject.name}}</a>
+      @if (currentProject()) {
+        <a [routerLink]="['/pn', currentProject()!._id, 'details']">{{currentProject()!.name}}</a>
       }
     </li>
     <li class="breadcrumb-item active" aria-current="page">Documents</li>
@@ -29,10 +29,10 @@
           type="button" id="button-dl">Download</button>
           <button (click)="selectAction('delete')" class="dropdown-item" [disabled]="!isEnabled('delete')"
           type="button" id="button-d">Delete</button>
-          @if (currentProject && tableParams.totalListItems < 20) {
+          @if (currentProject() && tableParams.totalListItems < 20) {
             <a class="upload-docs"
-              [ngClass]="{'active': currentProject._id === 'activity'}"
-              [routerLink]="['/pn', currentProject._id, 'project-notification-documents', 'upload']">
+              [ngClass]="{'active': currentProject()!._id === 'activity'}"
+              [routerLink]="['/pn', currentProject()!._id, 'project-notification-documents', 'upload']">
               <button class="dropdown-item" type="button" id="button-upl">
                 Upload Document(s)
               </button>
@@ -44,18 +44,21 @@
   </h1>
   <div class="content-container">
     <div class="table-min-height mt-3">
-      @if (!loading && documentTableData && documentTableData.data.length) {
+      @if (!loading() && documentTableData() && documentTableData()!.data.length) {
         <app-table-template
-          [columns]="documentTableColumns" [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
+          [columns]="documentTableColumns" [data]="documentTableData()" (onColumnSort)='setColumnSort($event)'
           (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='getPaginatedDocs($event)'
           (selectAllClicked)="selectAction('selectAll')">
         </app-table-template>
+      }
+      @if (!loading() && (!documentTableData() || !documentTableData()!.data.length)) {
+        <p class="mt-3 text-muted">No documents found.</p>
       }
     </div>
   </div>
 
   <div>
-    @if (loading) {
+    @if (loading()) {
       <div class="spinner-container">
         <div class="spinner-new rotating"></div>
       </div>

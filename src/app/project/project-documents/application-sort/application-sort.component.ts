@@ -1,57 +1,52 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { CommonModule } from '@angular/common';
+import { ToastService } from 'src/app/services/toast.service';
 import { ApplicationSortTableRowsComponent } from './application-sort-table-rows/application-sort-table-rows.component';
 import { Project } from 'src/app/models/project';
 import { User } from 'src/app/models/user';
-import { ApiService } from 'src/app/services/api';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
-import { Utils } from 'src/app/shared/utils/utils';
+import { createProjectTabModifiers } from 'src/app/shared/utils/utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-application-sort',
-  standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     TableTemplateComponent
   ],
   templateUrl: './application-sort.component.html',
-  styleUrls: ['./application-sort.component.css'],
+  styleUrl: './application-sort.component.css',
 
 })
-export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
+export class DocumentApplicationSortComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  api = inject(ApiService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private storageService = inject(StorageService);
   private searchService = inject(SearchService);
-  private snackBar = inject(MatSnackBar);
-  private utils = inject(Utils);
+  private toastService = inject(ToastService);
   private documentService = inject(DocumentService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private configService = inject(ConfigService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
   public currentProject: Project = null;
   public loading = true;
   public documents: User[] = null;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
-  public tableColumns: any[] = [
+  public tableColumns: TableColumn[] = [
     {
       name: 'Order',
       value: 'sortOrder',
@@ -90,40 +85,50 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData;
     this.storageService.state.editedDocs = [];
-    this.subscriptions.add(
-      this.route.params
-        .pipe(
-          switchMap(params => {
-            this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
-            if (this.tableParams.sortBy === '') {
-              this.tableParams.sortBy = '+sortOrder,-datePosted,+displayName';
-              this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-            }
-            this._changeDetectionRef.detectChanges();
+    this.route.params
+      .pipe(
+        switchMap(params => {
+          this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
+          if (this.tableParams.sortBy === '') {
+            this.tableParams.sortBy = '+sortOrder,-datePosted,+displayName';
+            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
+          }
+          this._changeDetectionRef.markForCheck();
 
-            return this.route.data;
-          }),
-        )
-        .subscribe((res: any) => {
+          const projectId = this.currentProject._id;
+          const tabModifier = createProjectTabModifiers(this.configService.lists);
+          return this.searchService.getSearchResults(
+            this.tableParams.keywords || '',
+            'Document',
+            [{ 'name': 'project', 'value': projectId }],
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.tableParams.sortBy,
+            tabModifier,
+            true
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((res: any) => {
           if (res) {
-            if (res.documents && res.documents[0].data.meta && res.documents[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.documents[0].data.meta[0].searchResultsTotal;
-              this.documents = res.documents[0].data.searchResults;
+            if (res[0].data.meta && res[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+              this.documents = res[0].data.searchResults;
             } else {
               this.tableParams.totalListItems = 0;
               this.documents = [];
             }
             this.setRowData();
             this.loading = false;
-            this._changeDetectionRef.detectChanges();
+            this._changeDetectionRef.markForCheck();
           } else {
-            this.openSnackBar('Uh-oh, couldn\'t load documents', 'Close');
+            this.toastService.error('Uh-oh, couldn\'t load documents');
             this.router.navigate(['/search']);
           }
-        })
-    );
+        });
   }
 
   setRowData() {
@@ -145,12 +150,11 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     this.storageService.state.editedDocs.forEach((document: any) => {
       // document service put id and sort order
       formData.set('sortOrder', document.sortOrder);
-      this.subscriptions.add(
-        this.documentService.update(formData, document._id)
-          .subscribe()
-      );
+      this.documentService.update(formData, document._id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe();
     });
-    this.openSnackBar('Successfully updated sort order.', 'Close');
+    this.toastService.success('Successfully updated sort order.');
     this.router.navigate(['/p/' + this.currentProject._id + '/project-documents']);
   }
 
@@ -180,18 +184,18 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
     const sortBy = this.tableParams.sortBy && this.tableParams.sortBy !== 'null' ? this.tableParams.sortBy : '+sortOrder,-datePosted,+displayName';
     const keywords = this.tableParams.keywords ? this.tableParams.keywords : '';
 
-    const tabModifier = this.utils.createProjectTabModifiers(this.configService.lists);
-    this.subscriptions.add(
-      this.searchService.getSearchResults(
-        keywords,
-        'Document',
-        [{ 'name': 'project', 'value': projectId }],
-        currentPage,
-        pageSize,
-        sortBy,
-        tabModifier,
-        true)
-        .subscribe((res: any) => {
+    const tabModifier = createProjectTabModifiers(this.configService.lists);
+    this.searchService.getSearchResults(
+      keywords,
+      'Document',
+      [{ 'name': 'project', 'value': projectId }],
+      currentPage,
+      pageSize,
+      sortBy,
+      tabModifier,
+      true)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
           if (res && res[0].data.meta && res[0].data.meta.length > 0) {
             this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
             this.documents = res[0].data.searchResults;
@@ -214,23 +218,13 @@ export class DocumentApplicationSortComponent implements OnInit, OnDestroy {
             );
             this.setRowData();
           } else {
-            this.openSnackBar('Uh-oh, couldn\'t load documents', 'Close');
+            this.toastService.error('Uh-oh, couldn\'t load documents');
             this.tableParams.totalListItems = 0;
             this.documents = [];
           }
           this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+          this._changeDetectionRef.markForCheck();
+        });
   }
 
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

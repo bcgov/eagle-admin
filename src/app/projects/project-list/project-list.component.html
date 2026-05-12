@@ -12,12 +12,12 @@
 <div class="search-container">
   <div class="fb-container bg-faded">
     <section class="container-fluid-padding" id="anchor-point">
-      @if (loading) {
+      @if (loading()) {
         <div class="spinner-container">
           <div class="spinner-new rotating"></div>
         </div>
       }
-      @if (!loading) {
+      @if (!loading()) {
         <main>
           <section>
             <h2>Environmental Assessments in British Columbia</h2>
@@ -31,7 +31,7 @@
                     placeholder="Enter keywords to search..." id="keywordInput"
                     [(ngModel)]="tableParams.keywords" />
                   <!-- prevent searching if input is empty or we're already searching -->
-                  @if (!showAdvancedSearch || !isShowingFilter()) {
+                  @if (!showAdvancedSearch() || !isShowingFilter()) {
                     <button
                       class="btn btn-primary search-button btn-append" type="submit">
                       <span>Search</span>
@@ -39,11 +39,8 @@
                   }
                 </div>
                 <div class="advanced-filter">
-                  <div class="row filter-row">
-                    <div class="filter-badges col-md-11 first">
-                      <div class="filter-label">
-                        <p>Filters:</p>
-                      </div>
+                  <div class="d-flex align-items-start flex-wrap filter-row">
+                    <div class="filter-badges flex-grow-1">
                       @for (filter of filterForUI.type; track filter) {
                         <button class="btn filter-badge type">
                           <span class="ng-value-label">{{filter.name}} </span>
@@ -139,22 +136,21 @@
                         </button>
                       }
                     </div>
-                    <div class="col-md-2 last" [ngClass]="{'show-advanced-search-button': true }">
+                    <div class="show-advanced-search-button flex-shrink-0 ms-3">
                       <button class="btn btn-secondary btn-show-advanced" type="button"
-                        (click)="showAdvancedSearch = !showAdvancedSearch;">
-                        @if (showAdvancedSearch) {
-                          <span>Hide Advanced Search</span>
+                        (click)="showAdvancedSearch.set(!showAdvancedSearch());">
+                        @if (showAdvancedSearch()) {
+                          <span>Hide Filters</span>
                         }
-                        @if (!showAdvancedSearch) {
-                          <span>Show Advanced Search</span>
+                        @if (!showAdvancedSearch()) {
+                          <span>Show Filters</span>
                         }
                       </button>
                     </div>
                   </div>
-                  @if (showAdvancedSearch) {
-                    <div class="row filter-row"
-                      [ngClass]="{'filters-hidden': !showAdvancedSearch}">
-                      <div class="project-filter first col-md-11">
+                  @if (showAdvancedSearch()) {
+                    <div class="row filter-row">
+                      <div class="project-filter col-12">
                         <div class="type-filters filter">
                           <ng-select id="type" name="type" multiple="true" bindLabel="name"
                             placeholder="&nbsp;Project Type" [items]="projectTypes"
@@ -263,8 +259,7 @@
                       </ng-template>
                     </ng-select>
                   </div>
-                  @if (showAdvancedSearch && showFilters.more) {
-                    <div class="more-filters filter">
+                  <div class="more-filters filter">
                       <ng-select id="proponent" name="proponent" multiple="true" bindLabel="name"
                         placeholder="&nbsp;Proponent" [items]="proponents"
                         [closeOnSelect]="false" [(ngModel)]="filterForUI.proponent"
@@ -283,9 +278,7 @@
                         </ng-template>
                       </ng-select>
                     </div>
-                  }
-                  @if (showAdvancedSearch && showFilters.more) {
-                    <div class="more-filters filter">
+                  <div class="more-filters filter">
                       <ng-select id="projectPhase" name="projectPhase" multiple="true"
                         groupBy="legislation" bindLabel="name" placeholder="&nbsp;Project Phase"
                         [items]="projectPhases" [closeOnSelect]="false" [markFirst]="false"
@@ -305,8 +298,6 @@
                       </ng-template>
                     </ng-select>
                   </div>
-                }
-                @if (showAdvancedSearch && showFilters.more) {
                   <div class="more-filters filter">
                     <ng-select id="ceaaInvolvement" name="ceaaInvolvement" groupBy="legislation"
                       multiple="true" bindLabel="name" placeholder="&nbsp; IAAC Involvement"
@@ -328,9 +319,7 @@
                     </ng-template>
                   </ng-select>
                 </div>
-              }
-              @if (showAdvancedSearch && showFilters.more) {
-                <div class="more-filters filter">
+                  <div class="more-filters filter">
                   <ng-select id="region" name="region" multiple="true" bindLabel="name"
                     placeholder="&nbsp;Region" [items]="regions" [closeOnSelect]="false"
                     [(ngModel)]="filterForUI.region" [compareWith]="filterCompareWith"
@@ -349,33 +338,10 @@
                     </ng-template>
                   </ng-select>
                 </div>
-              }
-              @if (showAdvancedSearch && showFilters.more) {
-                <div class="eaDate filter">
-                </div>
-              }
             </div>
-            <div class="col-md-2 last">
-              <div class="row controls">
-                @if (showAdvancedSearch) {
-                  <button type="button"
-                    (click)="toggleFilter('more');"
-                                                [ngClass]="{'btn': true, 'more-btn': true,
-                                                                                    'btn-dark': showFilters.more,
-                                                                                    'btn-secondary': !showFilters.more && numFilters.more > 0,
-                                                                                    'btn-outline-dark': !showFilters.more && numFilters.more == 0}">
-                    More Filters&hellip;@if (numFilters.more > 0 && !showFilters.more) {
-                    <span
-                      >&nbsp;({{
-                    numFilters.more }})</span>
-                  }
-                </button>
-              }
-            </div>
-          </div>
         </div>
       }
-      @if (showAdvancedSearch && isShowingFilter()) {
+      @if (showAdvancedSearch() && isShowingFilter()) {
         <button
           class="btn btn-primary search-button" type="submit">
           <span>Search</span>

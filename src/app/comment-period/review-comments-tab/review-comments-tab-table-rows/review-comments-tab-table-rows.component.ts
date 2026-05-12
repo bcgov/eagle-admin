@@ -1,43 +1,41 @@
-import { Component, Input, OnInit, Output, EventEmitter, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { DatePipe } from '@angular/common';
 
 import { Router } from '@angular/router';
-import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-review-comments-tab-table-rows]',
     templateUrl: './review-comments-tab-table-rows.component.html',
-    styleUrls: ['./review-comments-tab-table-rows.component.css'],
-    standalone: true,
-    imports: [CommonModule],
+    styleUrl: './review-comments-tab-table-rows.component.css',
+    imports: [DatePipe],
     
 })
 
 export class ReviewCommentsTabTableRowsComponent implements OnInit, TableComponent {
   private router = inject(Router);
-  private storageService = inject(StorageService);
 
-  @Input() data: TableObject;
-  @Input() columnData: Array<any>;
-  @Input() smallTable: boolean;
-  @Output() selectedCount: EventEmitter<any> = new EventEmitter();
+  data = input.required<TableObject>();
+  columnData = input.required<TableColumn[]>();
+  smallTable = input.required<boolean>();
+  selectedCount = output<any>();
 
   public comments: Comment[];
   public paginationData: any;
   public projectId: string;
   public baseRouteUrl: string;
-  public columns: any;
+  public columns: TableColumn[];
   public useSmallTable: boolean;
 
   ngOnInit() {
-    this.projectId = this.storageService.state.currentProject.data._id;
-    this.comments = this.data.data;
-    this.paginationData = this.data.paginationData;
-    this.baseRouteUrl = this.data.extraData.baseRouteUrl;
-    this.columns = this.columnData;
-    this.useSmallTable = this.smallTable;
+    this.projectId = this.data().extraData.projectId;
+    this.comments = this.data().data;
+    this.paginationData = this.data().paginationData;
+    this.baseRouteUrl = this.data().extraData.baseRouteUrl;
+    this.columns = this.columnData();
+    this.useSmallTable = this.smallTable();
   }
 
   goToItem(comment) {

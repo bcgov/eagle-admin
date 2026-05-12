@@ -1,35 +1,30 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-not-authorized',
     templateUrl: './not-authorized.component.html',
-    styleUrls: ['./not-authorized.component.css'],
-    standalone: true,
-    imports: []
+    styleUrl: './not-authorized.component.css',
 })
-export class NotAuthorizedComponent implements OnInit, OnDestroy {
+export class NotAuthorizedComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
   public loggedout = false;
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.route.queryParamMap
-        .subscribe(paramMap => {
-          this.loggedout = paramMap.get('loggedout') === 'true';
-        })
-    );
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(paramMap => {
+        this.loggedout = paramMap.get('loggedout') === 'true';
+      });
   }
 
   login() {
     window.location.href = window.location.origin + '/admin/search';
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

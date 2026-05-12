@@ -1,5 +1,22 @@
 @import url("src/assets/styles/base/base.css");
 
+.navigation-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #003366 0%, #fcba19 60%, #003366 100%);
+  background-size: 200% 100%;
+  animation: loading-slide 1.2s linear infinite;
+  z-index: 9999;
+}
+
+@keyframes loading-slide {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 :host {
   display: flex;
   flex-direction: column;

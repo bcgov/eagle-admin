@@ -24,6 +24,7 @@
       <div class="spinner-new rotating"></div>
     </div>
   }
+  @if (projectNotification) {
   <h1 id="name">{{projectNotification.name}}</h1>
   <section>
     <h2>Basic Information</h2>
@@ -90,4 +91,5 @@
       <p>{{projectNotification.nature || '-'}}</p>
     </div>
   </section>
+  } <!-- @if (projectNotification) -->
 </main>

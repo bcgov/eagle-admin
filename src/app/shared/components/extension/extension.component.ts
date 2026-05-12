@@ -1,44 +1,47 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { FormsModule, ReactiveFormsModule, UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { from, Subscription } from 'rxjs';
+import { from } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
-import { ApiService } from 'src/app/services/api';
+import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
-import { Utils } from '../../utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from '../../utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-extension',
   templateUrl: './extension.component.html',
-  styleUrls: ['./extension.component.css'],
-  standalone: true,
+  styleUrl: './extension.component.css',
   imports: [
     FormsModule,
     ReactiveFormsModule,
     NgbDatepickerModule
 ]
 })
-export class ExtensionComponent implements OnInit, OnDestroy {
+export class ExtensionComponent implements OnInit {
   private router = inject(Router);
   private navigationStackUtils = inject(NavigationStackUtils);
   private modalService = inject(NgbModal);
-  api = inject(ApiService);
+  api = inject(ProjectService);
   private storageService = inject(StorageService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
-
+  private destroyRef = inject(DestroyRef);
 
   public loading = false;
   public extensionType = 'Extension';
   public extensionOperation = 'Add';
   public navigationObject;
-  public extensionForm: UntypedFormGroup;
+  public extensionForm: FormGroup<{
+    appliedTo: FormControl<string | null>;
+    start: FormControl<unknown>;
+    end: FormControl<unknown>;
+  }>;
   public isEditing = false;
-  private subscriptions = new Subscription();
 
   ngOnInit() {
     if (this.navigationStackUtils.getNavigationStack()) {
@@ -52,18 +55,17 @@ export class ExtensionComponent implements OnInit, OnDestroy {
 
     if (this.storageService.state.extension) {
       this.isEditing = true;
-      this.extensionForm = new UntypedFormGroup({
-        'appliedTo': new UntypedFormControl(this.storageService.state.extension.appliedTo),
-        'start': new UntypedFormControl(),
-        'end': new UntypedFormControl()
+      const ext = this.storageService.state.extension;
+      this.extensionForm = new FormGroup({
+        'appliedTo': new FormControl<string | null>(ext.appliedTo),
+        'start': new FormControl<unknown>(convertJSDateToNGBDate(new Date(ext.start))),
+        'end': new FormControl<unknown>(convertJSDateToNGBDate(new Date(ext.end)))
       });
-      this.extensionForm.controls.start.setValue(this.utils.convertJSDateToNGBDate(new Date(this.storageService.state.extension.start)));
-      this.extensionForm.controls.end.setValue(this.utils.convertJSDateToNGBDate(new Date(this.storageService.state.extension.end)));
     } else {
-      this.extensionForm = new UntypedFormGroup({
-        'appliedTo': new UntypedFormControl(),
-        'start': new UntypedFormControl(),
-        'end': new UntypedFormControl()
+      this.extensionForm = new FormGroup({
+        'appliedTo': new FormControl<string | null>(null),
+        'start': new FormControl<unknown>(null),
+        'end': new FormControl<unknown>(null)
       });
     }
   }
@@ -79,69 +81,49 @@ export class ExtensionComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.message = `Click <strong>OK</strong> to delete this ${this.extensionType}`;
     modalRef.componentInstance.okOnly = false;
 
-    this.subscriptions.add(
-      from(modalRef.result).subscribe({
-        next: (isConfirmed: boolean) => {
-          if (isConfirmed) {
-            this.subscriptions.add(
-              this.api.deleteExtension(this.storageService.state.project, this.storageService.state.extension)
-                .subscribe(
-                  () => this.goBack(),
-                  error => this.logger.error('delete extension failed', 'ExtensionComponent', error)
-                )
+    from(modalRef.result).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (isConfirmed: boolean) => {
+        if (isConfirmed) {
+          this.api.deleteExtension(this.storageService.state.project, this.storageService.state.extension)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(
+              () => this.goBack(),
+              error => this.logger.error('delete extension failed', 'ExtensionComponent', error)
             );
-          }
-        },
-        error: () => {
-          // Modal dismissed, do nothing
         }
-      })
-    );
+      },
+      error: () => {
+        // Modal dismissed, do nothing
+      }
+    });
   }
 
   onSubmit() {
     this.logger.debug('form submitted', 'ExtensionComponent', this.extensionForm.value);
 
     // Make api call to add this to the back-end.
+    const newExtension = {
+      type: this.extensionType,
+      appliedTo: this.extensionForm.value.appliedTo,
+      start: convertFormGroupNGBDateToJSDate(this.extensionForm.value.start),
+      end: convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
+    };
+
     if (this.storageService.state.extension) {
-      // Editing mode
-      // PUT project specific to extensions.
-      const newExtension = {
-        type: this.extensionType,
-        appliedTo: this.extensionForm.value.appliedTo,
-        start: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.start),
-        end: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
-      };
-      const extensionObj = {
-        new: newExtension,
-        old: this.storageService.state.extension
-      };
+      const extensionObj = { new: newExtension, old: this.storageService.state.extension };
       this.logger.debug('updating extension', 'ExtensionComponent', extensionObj);
-      const self = this;
       this.api.editExtension(this.storageService.state.project, extensionObj)
-        .subscribe(res => {
-          this.logger.debug('extension updated', 'ExtensionComponent', res);
-          self.goBack();
-        }, err => {
-          this.logger.error('edit extension failed', 'ExtensionComponent', err);
-        });
+        .subscribe(
+          res => { this.logger.debug('extension updated', 'ExtensionComponent', res); this.goBack(); },
+          err => this.logger.error('edit extension failed', 'ExtensionComponent', err)
+        );
     } else {
-      // New
-      const newExtension = {
-        type: this.extensionType,
-        appliedTo: this.extensionForm.value.appliedTo,
-        start: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.start),
-        end: this.utils.convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
-      };
       this.logger.debug('adding extension', 'ExtensionComponent', newExtension);
-      const self = this;
       this.api.addExtension(this.storageService.state.project, newExtension)
-        .subscribe(res => {
-          this.logger.debug('extension added', 'ExtensionComponent', res);
-          self.goBack();
-        }, err => {
-          this.logger.error('add extension failed', 'ExtensionComponent', err);
-        });
+        .subscribe(
+          res => { this.logger.debug('extension added', 'ExtensionComponent', res); this.goBack(); },
+          err => this.logger.error('add extension failed', 'ExtensionComponent', err)
+        );
     }
   }
 
@@ -151,10 +133,6 @@ export class ExtensionComponent implements OnInit, OnDestroy {
     const url = this.navigationStackUtils.getLastBackUrl();
     this.navigationStackUtils.popNavigationStack();
     this.router.navigate(url);
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 
 }

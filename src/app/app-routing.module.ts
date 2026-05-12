@@ -1,6 +1,14 @@
 // Angular Modules
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
+
+// Resolvers
+import { projectResolver } from './resolvers/project.resolver';
+import { projectNotificationResolver } from './resolvers/project-notification.resolver';
+import { commentPeriodResolver } from './resolvers/comment-period.resolver';
+import { commentResolver } from './resolvers/comment.resolver';
+import { documentResolver } from './resolvers/document.resolver';
+import { fullProjectResolver } from './resolvers/full-project.resolver';
+import { pinsResolver } from './resolvers/pins.resolver';
 
 // Components
 import { ActivityComponent } from './activity/activity.component';
@@ -51,36 +59,12 @@ import { ProjectNotificationUploadComponent } from './project-notification/docum
 import { ProjectDocumentsUploadComponent } from './project/project-documents/project-documents-upload/project-documents-upload.component';
 
 // Resolvers
-import { ActivityComponentResolver } from './activity/activity-component-resolver.services';
-import { ContactsResolver } from './contacts/contacts-resolver.service';
-import { EditContactResolver } from './contacts/add-edit-contact/edit-contact-resolver.services';
-import { EditOrganizationResolver } from './organizations/add-edit-organization/edit-organization-resolver.services';
-import { LinkOrganizationResolver } from './shared/components/link-organization/link-organization-resolver.services';
-import { OrganizationsResolver } from './organizations/organizations-resolver.service';
-import { PinsGlobalComponentResolver } from './project/pins-list/pins-global-resolver.service';
-import { ProjectContactsGroupResolver } from './project/project-groups/project-contact-group-resolver.services';
-import { ProjectGroupResolver } from './project/project-groups/project-group-resolver.services';
-import { ProjectNotificationDocumentsResolver } from './project-notification/documents/project-notification-documents-resolver.service';
-import { ProjectNotificationResolver } from './project-notification/project-notification-resolver.service';
-import { ProjectNotificationsResolver } from './project-notifications/project-notifications-resolver.service';
-import { CommentPeriodResolver } from './comment-period/comment-period-resolver.service';
-import { ReviewCommentResolver } from './comment-period/review-comment/review-comment-resolver.service';
-import { AddDocumentsResolver } from './comment-periods/add-edit-comment-period/add-documents/add-documents-resolver.services';
-import { CommentPeriodsResolver } from './comment-periods/comment-periods-resolver.services';
-import { FullProjectResolver } from './project/full-project-resolver.service';
-import { PinsComponentResolver } from './project/pins-list/pins-component-resolver.services';
-import { ProjectContactsResolver } from './project/project-groups/project-groups-resolver.services';
-import { ProjectListResolver } from './projects/project-list/project-list-resolver.services';
-import { ProjectResolver } from './project/project-resolver.service';
-import { ProjectUpdatesResolver } from './project/project-updates/project-updates-resolver.services';
-import { ApplicationSortResolver } from './project/project-documents/application-sort/application-sort-resolver.service';
-import { DocumentDetailResolver } from './project/project-documents/detail/document-detail-resolver.service';
-import { DocumentsResolver } from './project/project-documents/project-document-resolver.services';
+// (all resolvers removed)
 
 // Guards
 import { AuthGuard } from './services/auth-guard.service';
 
-const routes: Routes = [
+export const routes: Routes = [
   // Authentication & Authorization
   { path: 'login', component: LoginComponent },
   { path: 'not-authorized', component: NotAuthorizedComponent },
@@ -90,7 +74,6 @@ const routes: Routes = [
     path: 'activity',
     component: ActivityComponent,
     canActivate: [AuthGuard],
-    resolve: { activities: ActivityComponentResolver }
   },
   {
     path: 'activity/add',
@@ -101,7 +84,6 @@ const routes: Routes = [
     path: 'activity/:activityId/edit',
     component: AddEditActivityComponent,
     canActivate: [AuthGuard],
-    resolve: { activity: ActivityComponentResolver }
   },
 
   // Contacts
@@ -109,19 +91,16 @@ const routes: Routes = [
     path: 'c/:contactId/edit',
     component: AddEditContactComponent,
     canActivate: [AuthGuard],
-    resolve: { contact: EditContactResolver }
   },
   {
     path: 'c/:contactId/edit/link-org',
     component: LinkOrganizationComponent,
     canActivate: [AuthGuard],
-    resolve: { organizations: LinkOrganizationResolver }
   },
   {
     path: 'contacts',
     component: ContactsComponent,
     canActivate: [AuthGuard],
-    resolve: { users: ContactsResolver }
   },
   {
     path: 'contacts/add',
@@ -132,7 +111,6 @@ const routes: Routes = [
     path: 'contacts/add/link-org',
     component: LinkOrganizationComponent,
     canActivate: [AuthGuard],
-    resolve: { organizations: LinkOrganizationResolver }
   },
 
   // Map & Metrics & Search
@@ -162,19 +140,16 @@ const routes: Routes = [
     path: 'o/:orgId/edit',
     component: AddEditOrganizationComponent,
     canActivate: [AuthGuard],
-    resolve: { organization: EditOrganizationResolver }
   },
   {
     path: 'o/:orgId/edit/link-org',
     component: LinkOrganizationComponent,
     canActivate: [AuthGuard],
-    resolve: { organizations: LinkOrganizationResolver }
   },
   {
     path: 'orgs',
     component: OrganizationsComponent,
     canActivate: [AuthGuard],
-    resolve: { orgs: OrganizationsResolver }
   },
   {
     path: 'orgs/add',
@@ -185,18 +160,13 @@ const routes: Routes = [
     path: 'orgs/add/link-org',
     component: LinkOrganizationComponent,
     canActivate: [AuthGuard],
-    resolve: { organizations: LinkOrganizationResolver }
   },
 
   // Project Notifications
   {
     path: 'pn/:notificationProjectId',
     component: ProjectNotificationComponent,
-    runGuardsAndResolvers: 'always',
-    resolve: {
-      notificationProject: ProjectNotificationResolver,
-      documents: ProjectNotificationDocumentsResolver
-    },
+    resolve: { project: projectNotificationResolver },
     children: [
       {
         path: '',
@@ -226,9 +196,6 @@ const routes: Routes = [
       {
         path: 'comment-periods',
         component: CommentPeriodsComponent,
-        resolve: {
-          commentPeriods: CommentPeriodsResolver
-        },
         canActivate: [AuthGuard],
       },
       {
@@ -238,16 +205,11 @@ const routes: Routes = [
       {
         path: 'comment-periods/add/add-documents',
         component: AddDocumentComponent,
-        resolve: {
-          documents: AddDocumentsResolver
-        }
       },
       {
         path: 'cp/:commentPeriodId',
-        resolve: {
-          commentPeriod: CommentPeriodResolver,
-        },
         canActivate: [AuthGuard],
+        resolve: { commentPeriod: commentPeriodResolver },
         children: [
           {
             path: '',
@@ -265,9 +227,6 @@ const routes: Routes = [
           {
             path: 'edit/add-documents',
             component: AddDocumentComponent,
-            resolve: {
-              documents: AddDocumentsResolver
-            }
           },
           {
             path: 'edit',
@@ -275,9 +234,7 @@ const routes: Routes = [
           },
           {
             path: 'c/:commentId',
-            resolve: {
-              comment: ReviewCommentResolver
-            },
+            resolve: { comment: commentResolver },
             children: [
               {
                 path: '',
@@ -295,36 +252,9 @@ const routes: Routes = [
     ],
   },
   {
-    path: 'pn/:notificationProjectId',
-    resolve: {
-      notificationProject: ProjectNotificationResolver,
-      documents: ProjectNotificationDocumentsResolver
-    },
-    children: [
-      { path: '', redirectTo: 'details', pathMatch: 'full' },
-      {
-        path: 'details',
-        component: ProjectNotificationDetailComponent,
-        canActivate: [AuthGuard]
-      },
-      {
-        path: 'edit',
-        component: AddEditProjectNotificationComponent,
-        canActivate: [AuthGuard]
-      },
-      {
-        path: 'project-notification-documents',
-        component: ProjectNotificationDocumentsComponent,
-        canActivate: [AuthGuard]
-      }
-    ],
-    runGuardsAndResolvers: 'always'
-  },
-  {
     path: 'project-notifications',
     component: ProjectNotificationsComponent,
     canActivate: [AuthGuard],
-    resolve: { notificationProjects: ProjectNotificationsResolver }
   },
   {
     path: 'project-notifications/add',
@@ -336,8 +266,8 @@ const routes: Routes = [
   {
     path: 'p/:projId',
     component: ProjectComponent,
+    resolve: { project: projectResolver },
     runGuardsAndResolvers: 'always',
-    resolve: { project: ProjectResolver },
     children: [
       { path: '', redirectTo: 'project-details', pathMatch: 'full' },
 
@@ -345,6 +275,7 @@ const routes: Routes = [
       {
         path: 'edit',
         component: AddEditProjectComponent,
+        resolve: { fullProject: fullProjectResolver },
         children: [{
           path: '',
           redirectTo: 'form-2002',
@@ -358,7 +289,6 @@ const routes: Routes = [
           path: 'form-2018',
           component: FormTab2018Component
         }],
-        resolve: { fullProject: FullProjectResolver }
       },
       {
         path: 'edit/add-extension',
@@ -379,24 +309,22 @@ const routes: Routes = [
       {
         path: 'edit/:formTab/link-contact',
         component: ContactSelectComponent,
-        resolve: { contacts: ContactsResolver }
       },
       {
         path: 'edit/:formTab/link-org',
         component: LinkOrganizationComponent,
-        resolve: { organizations: LinkOrganizationResolver }
       },
 
       // Project Details & Archived
       {
         path: 'project-archived-detail',
         component: ProjectArchivedDetailComponent,
-        resolve: { fullProject: FullProjectResolver }
+        resolve: { fullProject: fullProjectResolver },
       },
       {
         path: 'project-details',
         component: ProjectDetailComponent,
-        resolve: { fullProject: FullProjectResolver },
+        resolve: { fullProject: fullProjectResolver },
         runGuardsAndResolvers: 'always'
       },
 
@@ -404,17 +332,15 @@ const routes: Routes = [
       {
         path: 'project-documents',
         component: ProjectDocumentsComponent,
-        resolve: { documents: DocumentsResolver }
       },
       {
         path: 'project-documents/application-sort',
         component: DocumentApplicationSortComponent,
-        resolve: { documents: ApplicationSortResolver }
       },
       {
         path: 'project-documents/detail/:docId',
         component: DocumentDetailComponent,
-        resolve: { document: DocumentDetailResolver }
+        resolve: { resolvedDocument: documentResolver },
       },
       {
         path: 'project-documents/edit',
@@ -437,51 +363,43 @@ const routes: Routes = [
       {
         path: 'project-groups',
         component: ProjectGroupsComponent,
-        resolve: { contacts: ProjectContactsResolver }
       },
       {
         path: 'project-groups/g/:groupId/members',
         component: GroupContactComponent,
-        resolve: {
-          group: ProjectGroupResolver,
-          users: ProjectContactsGroupResolver
-        }
       },
       {
         path: 'project-groups/g/:groupId/members/select',
         component: GroupContactSelectComponent,
-        resolve: { contacts: ContactsResolver }
       },
 
       // Project Pins
       {
         path: 'project-pins',
         component: PinsListComponent,
-        resolve: { contacts: PinsComponentResolver }
+        resolve: { contacts: pinsResolver },
       },
       {
         path: 'project-pins/link-org',
         component: LinkOrganizationComponent,
-        resolve: { organizations: PinsGlobalComponentResolver }
+        data: { companyTypeFilter: 'Indigenous Group' }
       },
       {
         path: 'project-pins/select',
         component: LinkOrganizationComponent,
-        resolve: { organizations: PinsGlobalComponentResolver }
+        data: { companyTypeFilter: 'Indigenous Group' }
       },
 
       // Project Updates
       {
         path: 'project-updates',
         component: ProjectUpdatesComponent,
-        resolve: { documents: ProjectUpdatesResolver }
       },
 
       // Comment Periods
       {
         path: 'comment-periods',
         component: CommentPeriodsComponent,
-        resolve: { commentPeriods: CommentPeriodsResolver }
       },
       {
         path: 'comment-periods/add',
@@ -490,11 +408,10 @@ const routes: Routes = [
       {
         path: 'comment-periods/add/add-documents',
         component: AddDocumentComponent,
-        resolve: { documents: AddDocumentsResolver }
       },
       {
         path: 'cp/:commentPeriodId',
-        resolve: { commentPeriod: CommentPeriodResolver },
+        resolve: { commentPeriod: commentPeriodResolver },
         children: [
           { path: '', redirectTo: 'comment-period-details', pathMatch: 'full' },
           {
@@ -512,11 +429,10 @@ const routes: Routes = [
           {
             path: 'edit/add-documents',
             component: AddDocumentComponent,
-            resolve: { documents: AddDocumentsResolver }
           },
           {
             path: 'c/:commentId',
-            resolve: { comment: ReviewCommentResolver },
+            resolve: { comment: commentResolver },
             children: [
               { path: '', redirectTo: 'comment-details', pathMatch: 'full' },
               {
@@ -539,9 +455,6 @@ const routes: Routes = [
     path: 'projects',
     component: ProjectListComponent,
     canActivate: [AuthGuard],
-    resolve: {
-      projects: ProjectListResolver
-    }
   },
   {
     path: 'projects/add',
@@ -563,16 +476,10 @@ const routes: Routes = [
   {
     path: 'projects/add/:formTab/link-contact',
     component: ContactSelectComponent,
-    resolve: {
-      contacts: ContactsResolver
-    }
   },
   {
     path: 'projects/add/:formTab/link-org',
     component: LinkOrganizationComponent,
-    resolve: {
-      organizations: LinkOrganizationResolver
-    }
   },
 
   // Default & Wildcard
@@ -588,40 +495,4 @@ const routes: Routes = [
   }
 ];
 
-@NgModule({
-  imports: [
-    RouterModule.forRoot(routes)
-  ],
-  exports: [
-    RouterModule
-  ],
-  providers: [
-    ActivityComponentResolver,
-    AddDocumentsResolver,
-    ApplicationSortResolver,
-    CommentPeriodResolver,
-    CommentPeriodsResolver,
-    ContactsResolver,
-    DocumentDetailResolver,
-    DocumentsResolver,
-    EditContactResolver,
-    EditOrganizationResolver,
-    FullProjectResolver,
-    LinkOrganizationResolver,
-    OrganizationsResolver,
-    PinsComponentResolver,
-    PinsGlobalComponentResolver,
-    ProjectContactsGroupResolver,
-    ProjectContactsResolver,
-    ProjectGroupResolver,
-    ProjectListResolver,
-    ProjectNotificationDocumentsResolver,
-    ProjectNotificationResolver,
-    ProjectNotificationsResolver,
-    ProjectResolver,
-    ProjectUpdatesResolver,
-    ReviewCommentResolver
-  ]
-})
 
-export class AppRoutingModule { }

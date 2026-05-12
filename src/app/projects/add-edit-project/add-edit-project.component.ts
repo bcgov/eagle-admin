@@ -1,41 +1,39 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { mergeMap } from 'rxjs/operators';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project } from 'src/app/models/project';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-edit-project',
   templateUrl: './add-edit-project.component.html',
-  styleUrls: ['./add-edit-project.component.css'],
-  standalone: true,
+  styleUrl: './add-edit-project.component.css',
   imports: [
-    CommonModule,
     RouterModule,
     TableTemplateComponent,
     NgbDatepickerModule,
     ReactiveFormsModule
   ]
 })
-export class AddEditProjectComponent implements OnInit, OnDestroy {
+export class AddEditProjectComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private snackBar = inject(MatSnackBar);
   private config = inject(ConfigService);
   projectService = inject(ProjectService);
+  private searchService = inject(SearchService);
   private storageService = inject(StorageService);
-  private utils = inject(Utils);
 
 
   // order of items in this tabLinks array is important because it orders the tabs and for the add page we are only adding information to the newest legislations
@@ -45,7 +43,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
     { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
   ];
-  private subscriptions = new Subscription();
+  private destroyRef = inject(DestroyRef);
   public documents: any[] = [];
   public back: any = {};
   public regions: any[] = [];
@@ -60,7 +58,6 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   public publishedLegislation: string;
 
   public pageIsEditing = false;
-
   public loading = true;
 
   ngOnInit() {
@@ -74,6 +71,7 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
     });
     //
     this.route.url
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(urls => {
         this.pageIsEditing = urls.some(url => url.path === 'edit');
         this.storageService.state.pageIsEditing = this.pageIsEditing;
@@ -111,10 +109,19 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
   }
 
   initProject() {
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-          const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+    // When adding a new project, there's no projId — skip loading
+    const projId = this.route.parent?.snapshot.paramMap.get('projId');
+    if (!projId) {
+      this.loading = false;
+      return;
+    }
+    this.searchService.getSearchResults('', 'Project', [], 1, 1, '', { _id: projId }, true, {}, 'all')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        mergeMap(data => this.projectService.getPeopleObjs(data))
+      )
+      .subscribe((data: ISearchResults<FullProject>[]) => {
+          const fullProjectSearchData = extractFromSearchResults(data);
           this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
           if (this.pageIsEditing) {
             this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
@@ -130,17 +137,8 @@ export class AddEditProjectComponent implements OnInit, OnDestroy {
             }
           }
           this.loading = false;
-        })
-    );
+        });
   }
 
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }
+

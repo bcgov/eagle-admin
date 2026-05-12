@@ -91,11 +91,7 @@ jobs:
           rm -f openshift-client-linux.tar.gz
 
       - name: Log into OpenShift
-        uses: redhat-actions/oc-login@v1
-        with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_URL }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
-          namespace: ${{ env.OPENSHIFT_NAMESPACE_TOOLS }}
+        run: oc login ${{ secrets.OPENSHIFT_URL }} --token=${{ secrets.OPENSHIFT_TOKEN }} --insecure-skip-tls-verify=true
 
       - name: Check if image exists and tag if needed
         run: |

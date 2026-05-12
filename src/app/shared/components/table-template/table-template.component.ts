@@ -1,38 +1,32 @@
-import { Component, Input, OnInit, ComponentFactoryResolver, OnDestroy, ViewChild, Output, EventEmitter, SimpleChanges, OnChanges, ViewEncapsulation, inject } from '@angular/core';
-import { MediaMatcher } from '@angular/cdk/layout';
+import { Component, OnInit, OnDestroy, SimpleChanges, OnChanges, ViewEncapsulation, ChangeDetectionStrategy, input, output, viewChild } from '@angular/core';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { TableDirective } from './table.directive';
-import { TableObject } from './table-object';
-import { TableComponent } from './table.component';
+import { TableObject, TableColumn } from './table-object';
 import { Constants } from '../../utils/constants';
-import { CommonModule } from '@angular/common';
-import { NzPaginationModule } from 'ng-zorro-antd/pagination';
-import { NzButtonModule } from 'ng-zorro-antd/button';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-table-template',
   templateUrl: './table-template.component.html',
-  styleUrls: ['./table-template.component.css'],
+  styleUrl: './table-template.component.css',
   encapsulation: ViewEncapsulation.None,
-  standalone: true,
-  imports: [CommonModule, NzPaginationModule, NzButtonModule, TableDirective],
+  imports: [NgbPaginationModule, TableDirective],
 })
 export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
-  private componentFactoryResolver = inject(ComponentFactoryResolver);
-  private media = inject(MediaMatcher);
 
-  @Input() data: TableObject;
-  @Input() columns: any[];
-  @Input() pageSizeArray: number[];
-  @Input() activePageSize: number;
-  @Input() activePage: number = Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
-  @ViewChild(TableDirective, { static: true }) tableHost: TableDirective;
+  data = input.required<TableObject>();
+  columns = input.required<TableColumn[]>();
+  pageSizeArray: number[];
+  activePageSize: number;
+  activePage: number = Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
+  readonly tableHost = viewChild.required(TableDirective);
 
-  @Output() onPageNumUpdate: EventEmitter<any> = new EventEmitter();
-  @Output() onUpdatePageSize: EventEmitter<any> = new EventEmitter();
-  @Output() onItemClicked: EventEmitter<any> = new EventEmitter();
-  @Output() onSelectedRow: EventEmitter<any> = new EventEmitter();
-  @Output() onColumnSort: EventEmitter<any> = new EventEmitter();
-  @Output() selectAllClicked: EventEmitter<any> = new EventEmitter();
+  onPageNumUpdate = output<any>();
+  onUpdatePageSize = output<any>();
+  onItemClicked = output<any>();
+  onSelectedRow = output<any>();
+  onColumnSort = output<any>();
+  selectAllClicked = output<any>();
 
   public column: string = null;
   public interval: any;
@@ -42,40 +36,31 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor() {
     // Detect when the app displays in mobile mode and reload the component.
-    this.mobileQuery = this.media.matchMedia('(max-width: 600px)');
+    this.mobileQuery = window.matchMedia('(max-width: 600px)');
     this.mobileQueryListener = () => this.loadComponent();
     this.mobileQuery.addEventListener('change', this.mobileQueryListener);
   }
 
   ngOnInit() {
-    this.column = this.data.paginationData.sortBy;
+    this.column = this.data().paginationData.sortBy;
     this.loadComponent();
-    this.activePageSize = parseInt(this.data.paginationData.pageSize, 10);
-    const totalItems = parseInt(this.data.paginationData.totalListItems, 10);
-    const pageSizeTemp = totalItems <= 500 ? [10, 25, 50, 100, totalItems] : [10, 25, 50, 100];
-    this.pageSizeArray = pageSizeTemp.filter(function (el: number) { return el >= 10; });
-    this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
-    if (this.activePage !== parseInt(this.data.paginationData.currentPage, 10)) {
-      this.activePage = parseInt(this.data.paginationData.currentPage, 10);
+    this.activePageSize = parseInt(this.data().paginationData.pageSize, 10);
+    this.rebuildPageSizes();
+    if (this.activePage !== parseInt(this.data().paginationData.currentPage, 10)) {
+      this.activePage = parseInt(this.data().paginationData.currentPage, 10);
     }
     this.selectAllInit();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // only run when property "data" changed
-    if (!changes.firstChange && changes['data'].currentValue) {
-      this.data.component = changes['data'].currentValue.component;
-      this.data.data = changes['data'].currentValue.data;
-      this.data.paginationData = changes['data'].currentValue.paginationData;
+    if (!changes['data']?.firstChange && changes['data'].currentValue) {
+      this.data().component = changes['data'].currentValue.component;
+      this.data().data = changes['data'].currentValue.data;
+      this.data().paginationData = changes['data'].currentValue.paginationData;
       this.column = changes['data'].currentValue.paginationData.sortBy;
-      this.data.extraData = changes['data'].currentValue.extraData;
-      
-      // Rebuild pageSizeArray when data changes
-      const totalItems = parseInt(this.data.paginationData.totalListItems, 10);
-      const pageSizeTemp = totalItems <= 500 ? [10, 25, 50, 100, totalItems] : [10, 25, 50, 100];
-      this.pageSizeArray = pageSizeTemp.filter(function (el: number) { return el >= 10; });
-      this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
-      
+      this.data().extraData = changes['data'].currentValue.extraData;
+      this.rebuildPageSizes();
       this.loadComponent();
     }
   }
@@ -85,14 +70,13 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   loadComponent() {
-    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.data.component);
-    const viewContainerRef = this.tableHost.viewContainerRef;
+    const viewContainerRef = this.tableHost().viewContainerRef;
     viewContainerRef.clear();
 
-    const componentRef = viewContainerRef.createComponent(componentFactory);
-    (<TableComponent>componentRef.instance).data = this.data;
-    (<TableComponent>componentRef.instance).columnData = this.columns;
-    (<TableComponent>componentRef.instance).smallTable = this.mobileQuery.matches;
+    const componentRef = viewContainerRef.createComponent(this.data().component);
+    componentRef.setInput('data', this.data());
+    componentRef.setInput('columnData', this.columns());
+    componentRef.setInput('smallTable', this.mobileQuery.matches);
 
     // Don't subscribe if it doesn't exist.
     if (componentRef.instance.selectedCount) {
@@ -113,7 +97,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   updatePageSize(pageSize) {
-    this.data.paginationData.pageSize = pageSize;
+    this.data().paginationData.pageSize = pageSize;
     this.onPageNumUpdate.emit(1);
   }
 
@@ -127,8 +111,8 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
     let someSelected = false;
 
-    if (this.data.data) {
-      this.data.data.forEach(item => {
+    if (this.data().data) {
+      this.data().data.forEach(item => {
         if (item.checkbox === true) {
           someSelected = true;
         }
@@ -143,11 +127,11 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public selectAllInit() {
-    if (this.data.data) {
-      const itemCount = this.data.data.length;
+    if (this.data().data) {
+      const itemCount = this.data().data.length;
       let selectedCount = 0;
 
-      this.data.data.forEach(item => {
+      this.data().data.forEach(item => {
         if (item.checkbox === true) {
           selectedCount += 1;
         }
@@ -155,5 +139,13 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
       this.selectAll = itemCount === selectedCount;
     }
+  }
+
+  private rebuildPageSizes() {
+    const totalItems = parseInt(this.data().paginationData.totalListItems, 10);
+    const base = [10, 25, 50, 100];
+    this.pageSizeArray = (totalItems <= 500 ? [...base, totalItems] : base)
+      .filter(n => n >= 10)
+      .sort((a, b) => a - b);
   }
 }

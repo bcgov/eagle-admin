@@ -1,31 +1,31 @@
 <nav class="action-container" aria-label="breadcrumb">
   <ol class="breadcrumb">
     <li class="breadcrumb-item">
-      @if (currentProject.type === 'currentProject') {
+      @if (baseRouteUrl === '/p') {
         <a [routerLink]="['/projects']">All Projects</a>
       }
-      @if (currentProject.type === 'currentProjectNotification') {
+      @if (baseRouteUrl === '/pn') {
         <a [routerLink]="['/project-notifications']">All
         Project Notifications</a>
       }
     </li>
     <li class="breadcrumb-item">
-      <a [routerLink]="[baseRouteUrl, currentProject.data._id]">{{currentProject.data.name}}</a>
+      <a [routerLink]="[baseRouteUrl, project()._id]">{{project().name}}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'comment-periods']">Comment Periods</a>
+      <a [routerLink]="[baseRouteUrl, project()._id, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, currentProject.data._id, 'cp', commentPeriod._id]">{{commentPeriod.dateStarted |
+      <a [routerLink]="[baseRouteUrl, project()._id, 'cp', commentPeriod()._id]">{{commentPeriod().dateStarted |
         date: 'MMMM d'}} -
-      {{commentPeriod.dateCompleted | date}}</a>
+      {{commentPeriod().dateCompleted | date}}</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
       Add Comment
     </li>
   </ol>
   <div class="btn-container">
-    <button class="btn btn-primary" type="cancel" (click)="onCancel()">Cancel</button>
+    <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
     &nbsp;
     <button [disabled]="!addCommentForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
   </div>
@@ -33,7 +33,7 @@
 
 
 <main class="container-fluid-padding">
-  @if (loading) {
+  @if (loading()) {
     <div class="spinner-container">
       <div class="spinner-new rotating"></div>
     </div>

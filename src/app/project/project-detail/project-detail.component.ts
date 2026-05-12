@@ -1,56 +1,51 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
-import { MatSnackBarRef, SimpleSnackBar, MatSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { ToastService } from 'src/app/services/toast.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription } from 'rxjs';
+
+import { mergeMap } from 'rxjs/operators';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project, ProjectPublishState } from 'src/app/models/project';
 import { ISearchResults } from 'src/app/models/search';
-import { ApiService } from 'src/app/services/api';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { DecisionService } from 'src/app/services/decision.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ProjectService } from 'src/app/services/project.service';
+import { SearchService } from 'src/app/services/search.service';
 import { SideBarService } from 'src/app/services/sidebar.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-project-detail',
     templateUrl: './project-detail.component.html',
-    styleUrls: ['./project-detail.component.css'],
-    standalone: true,
-    imports: [CommonModule, RouterModule, NgbDropdownModule],
+    styleUrl: './project-detail.component.css',
+    imports: [DatePipe, RouterModule, NgbDropdownModule],
 })
 
-
-export class ProjectDetailComponent implements OnInit, OnDestroy {
+export class ProjectDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  snackBar = inject(MatSnackBar);
-  api = inject(ApiService);
-  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private toastService = inject(ToastService);
   private modalService = inject(NgbModal);
   projectService = inject(ProjectService);
+  private searchService = inject(SearchService);
   commentPeriodService = inject(CommentPeriodService);
   sidebarService = inject(SideBarService);
   decisionService = inject(DecisionService);
   private storageService = inject(StorageService);
   documentService = inject(DocumentService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
-
+  private _cdr = inject(ChangeDetectorRef);
 
   public isPublishing = false;
   public isUnpublishing = false;
   public isDeleting = false;
   public project: Project;
-  private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
-  private subscriptions = new Subscription();
   public isPublished: boolean;
   public currentLeg: string;
   public currentLegYear: number;
@@ -62,56 +57,43 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   public disputeResolution: string;
 
   ngOnInit() {
-    // This is to get Region information from List (db) and put into a list(regions)
-    this.subscriptions.add(
-      this.route.parent.data
-        .subscribe(
-          (data: { project: ISearchResults<Project>[] }) => {
-            if (data.project) {
-              const results = this.utils.extractFromSearchResults(data.project);
-              this.project = results ? results[0] : null;
-              this.projectID = this.project._id;
-              const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
-              if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
-                this.currentLegYear = projectPublishState;
-                this.isPublished = true;
-              } else {
-                this.currentLegYear = this.project.legislationYear;
-                this.isPublished = projectPublishState === ProjectPublishState.unpublished ?
-                  false : this.project && this.project.read.includes('public');
-              }
-              this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-              this._changeDetectorRef.detectChanges();
+    const projId = this.route.parent.snapshot.paramMap.get('projId');
+    this.projectID = projId;
+
+    // Load full project data directly (covers both ProjectResolver + FullProjectResolver)
+      this.searchService.getSearchResults('', 'Project', [], 1, 1, '', { _id: projId }, true, {}, 'all')
+        .pipe(mergeMap(data => this.projectService.getPeopleObjs(data)))
+        .subscribe((data: ISearchResults<FullProject>[]) => {
+          if (data && data[0]?.data?.searchResults?.length > 0) {
+            const fullProject = data[0].data.searchResults[0] as any;
+            const projectKey = fullProject.currentLegislationYear;
+            this.project = fullProject[projectKey];
+            this.project._id = this.projectID;
+            this.legislationYearList = fullProject.legislationYearList;
+            this.currentLeg = fullProject.currentLegislationYear;
+            this.substantiallyStarted = (this.project.substantially === true) ? 'Yes' : 'No';
+            this.disputeResolution = (this.project.dispute === true) ? 'Yes' : 'No';
+
+            const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
+            if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
+              this.currentLegYear = projectPublishState;
+              this.isPublished = true;
             } else {
-              alert('Uh-oh, couldn\'t load project');
-              // project not found --> navigate back to search
-              this.router.navigate(['/search']);
+              this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length));
+              const fullProjectRead: string[] = fullProject.read || [];
+              this.isPublished = projectPublishState === ProjectPublishState.unpublished
+                ? false
+                : fullProjectRead.includes('public');
             }
+
+            this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
+            this.checkShowButton();
+            this._cdr.markForCheck();
+          } else {
+            alert('Uh-oh, couldn\'t load project');
+            this.router.navigate(['/search']);
           }
-        ));
-
-    // Get data related to current project
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
-          const projectKey = data.fullProject[0].data.searchResults[0].currentLegislationYear;
-          this.project = data.fullProject[0].data.searchResults[0][projectKey];
-          this.project._id = this.projectID;
-          this.legislationYearList = data.fullProject[0].data.searchResults[0].legislationYearList;
-          this.currentLeg = data.fullProject[0].data.searchResults[0].currentLegislationYear;
-          this.substantiallyStarted = (this.project.substantially === true) ? 'Yes' : 'No';
-          this.disputeResolution = (this.project.dispute === true) ? 'Yes' : 'No';
-
-          // Set published state
-          const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
-          if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
-            this.currentLegYear = projectPublishState;
-          } else { this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length)); }
-          this._changeDetectorRef.detectChanges();
-        }));
-
-    this.checkShowButton();
-
+        });
   }
 
   checkShowButton() {
@@ -172,29 +154,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   private internalDeleteProject() {
-    // this.isDeleting = true;
-
-    // const observables = of(null);
-
-    // observables
-    //   .takeUntil(this.ngUnsubscribe)
-    //   .subscribe(
-    //     () => { // onNext
-    //       // do nothing here - see onCompleted() function below
-    //     },
-    //     error => {
-    //       this.isDeleting = false;
-    //     // TODO: should fully reload project here so we have latest non-deleted objects
-    //     },
-    //     () => { // onCompleted
-    //       this.isDeleting = false;
-    //       // delete succeeded --> navigate back to search
-    //       this.router.navigate(['/search']);
-    //     }
-    //   );
-
     this.isDeleting = false;
-    // delete succeeded --> navigate back to search
     this.router.navigate(['/search']);
   }
 
@@ -219,83 +179,60 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private internalPublishProject() {
     this.isPublishing = true;
 
-    this.subscriptions.add(
-      this.projectService.publish(this.project)
-        .subscribe({
-          next: () => {
-            // do nothing here - see complete below
-          },
-          error: error => {
-            this.isPublishing = false;
-            this.logger.error('publish project failed', 'ProjectDetailComponent', error);
-            alert('Uh-oh, couldn\'t publish project');
-            // TODO: should fully reload project here so we have latest isPublished flags for objects
-          },
-          complete: () => {
-            this.snackBarRef = this.snackBar.open('Project published...', null, { duration: 2000 });
-            // reload all data
-            this.subscriptions.add(
-              this.projectService.getById(this.project._id)
-                .subscribe({
-                  next: project => {
-                    this.isPublishing = false;
-                    this.project = project;
-                    this.isPublished = true;
-                  },
-                  error: error => {
-                    this.isPublishing = false;
-                    this.logger.error('reload project failed', 'ProjectDetailComponent', error);
-                    alert('Uh-oh, couldn\'t reload project');
-                  }
-                })
-            );
-          }
-        })
-    );
+    this.projectService.publish(this.project)
+      .subscribe({
+        next: () => {},
+        error: error => {
+          this.isPublishing = false;
+          this.logger.error('publish project failed', 'ProjectDetailComponent', error);
+          alert('Uh-oh, couldn\'t publish project');
+        },
+        complete: () => {
+          this.toastService.success('Project published...');
+          this.projectService.getById(this.project._id)
+            .subscribe({
+              next: project => {
+                this.isPublishing = false;
+                this.project = project;
+                this.isPublished = true;
+              },
+              error: error => {
+                this.isPublishing = false;
+                this.logger.error('reload project failed', 'ProjectDetailComponent', error);
+                alert('Uh-oh, couldn\'t reload project');
+              }
+            });
+        }
+      });
   }
 
   public unPublishProject() {
     this.isUnpublishing = true;
 
-    this.subscriptions.add(
-      this.projectService.unPublish(this.project)
-        .subscribe({
-          next: () => {
-            // do nothing here - see complete below
-          },
-          error: error => {
-            this.isPublishing = false;
-            this.logger.error('unpublish project failed', 'ProjectDetailComponent', error);
-            alert('Uh-oh, couldn\'t publish project');
-            // TODO: should fully reload project here so we have latest isPublished flags for objects
-          },
-          complete: () => {
-            this.snackBarRef = this.snackBar.open('Project un-published...', null, { duration: 2000 });
-            // reload all data
-            this.subscriptions.add(
-              this.projectService.getById(this.project._id)
-                .subscribe({
-                  next: project => {
-                    this.isPublishing = false;
-                    this.project = project;
-                    this.isPublished = false;
-                  },
-                  error: error => {
-                    this.isPublishing = false;
-                    this.logger.error('reload project failed after unpublish', 'ProjectDetailComponent', error);
-                    alert('Uh-oh, couldn\'t reload project');
-                  }
-                })
-            );
-          }
-        })
-    );
-  }
-
-  ngOnDestroy() {
-    // dismiss any open snackbar
-    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    this.subscriptions.unsubscribe();
+    this.projectService.unPublish(this.project)
+      .subscribe({
+        next: () => {},
+        error: error => {
+          this.isUnpublishing = false;
+          this.logger.error('unpublish project failed', 'ProjectDetailComponent', error);
+          alert('Uh-oh, couldn\'t unpublish project');
+        },
+        complete: () => {
+          this.toastService.success('Project un-published...');
+          this.projectService.getById(this.project._id)
+            .subscribe({
+              next: project => {
+                this.isUnpublishing = false;
+                this.project = project;
+                this.isPublished = false;
+              },
+              error: error => {
+                this.isUnpublishing = false;
+                this.logger.error('reload project failed after unpublish', 'ProjectDetailComponent', error);
+                alert('Uh-oh, couldn\'t reload project');
+              }
+            });
+        }
+      });
   }
 }

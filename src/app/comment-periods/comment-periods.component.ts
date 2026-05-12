@@ -1,44 +1,42 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnInit, ChangeDetectorRef, inject, signal, computed, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
+import { switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommentPeriod } from '../models/commentPeriod';
-import { ApiService } from '../services/api';
 import { CommentPeriodService } from '../services/commentperiod.service';
+import { ConfigService } from '../services/config.service';
 import { StorageService } from '../services/storage.service';
-import { TableObject } from '../shared/components/table-template/table-object';
+import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
 import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/comment-periods-table-rows.component';
 
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
-import { CommonModule } from '@angular/common';
+import { LoadingStateService } from '../services/loading-state.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-comment-periods',
   templateUrl: './comment-periods.component.html',
-  styleUrls: ['./comment-periods.component.css'],
-  standalone: true,
+  styleUrl: './comment-periods.component.css',
   imports: [
-    CommonModule,
     RouterModule,
     TableTemplateComponent
   ]
 })
-export class CommentPeriodsComponent implements OnInit, OnDestroy {
-  private api = inject(ApiService);
+export class CommentPeriodsComponent implements OnInit {
+  private configService = inject(ConfigService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private commentPeriodService = inject(CommentPeriodService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
-
-
-  private subscriptions = new Subscription();
+  private destroyRef = inject(DestroyRef);
 
   public commentPeriods: CommentPeriod[] = null;
-  public commentPeriodTableColumns: any[] = [
+  public commentPeriodTableColumns: TableColumn[] = [
     {
       name: 'Status',
       value: 'commentPeriodStatus',
@@ -73,7 +71,13 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   ];
 
   public commentPeriodTableData: TableObject;
-  public loading = true;
+  public loadingState = inject(LoadingStateService);
+  private currentProjId = signal<string | null>(null);
+  public loading = computed(() => {
+    const projId = this.currentProjId();
+    if (!projId) return false;
+    return this.loadingState.isOperationLoading('comment-periods-' + projId);
+  });
   public currentProject;
   public baseRouteUrl: string;
 
@@ -88,38 +92,35 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     this.baseRouteUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.commentReviewTabParams = null;
 
-    this.route.params.subscribe(params => {
-      this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-      if (this.tableParams.sortBy === '') {
-        this.tableParams.sortBy = '-dateStarted';
+    this.route.params.pipe(
+      switchMap(params => {
+        this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = '-dateStarted';
+        }
+
+        const projectId = this.route.parent.snapshot.paramMap.get('projId')
+          || this.route.parent.snapshot.paramMap.get('notificationProjectId');
+        this.currentProjId.set(projectId);
+        const pageNum = this.tableParams.currentPage || 1;
+        const pageSize = this.tableParams.pageSize || 10;
+        const sortBy = this.tableParams.sortBy || '-dateStarted';
+
+        return this.commentPeriodService.getAllByProjectId(projectId, pageNum, pageSize, sortBy);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((res: any) => {
+      if (res) {
+        this.tableParams.totalListItems = res.totalCount;
+        this.commentPeriods = res.totalCount > 0 ? res.data : [];
+      } else {
+        this.tableParams.totalListItems = 0;
+        this.commentPeriods = [];
       }
+      this.setCPRowData();
+      this._changeDetectionRef.markForCheck();
     });
     this.storageService.state.selectedTab = 0;
-
-    // get data from route resolver
-    this.subscriptions.add(
-      this.route.data
-        .subscribe(
-          (res: any) => {
-            if (res) {
-              this.tableParams.totalListItems = res.commentPeriods.totalCount;
-              if (this.tableParams.totalListItems > 0) {
-                this.commentPeriods = res.commentPeriods.data;
-              } else {
-                this.tableParams.totalListItems = 0;
-                this.commentPeriods = [];
-              }
-              this.setCPRowData();
-              this.loading = false;
-              this._changeDetectionRef.detectChanges();
-            } else {
-              alert('Uh-oh, couldn\'t load comment periods');
-              // project not found --> navigate back to search
-              this.router.navigate(['/search']);
-            }
-          }
-        )
-    );
   }
 
   setColumnSort(column) {
@@ -165,21 +166,18 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
   public getPaginatedComments(pageNumber) {
     // Go to top of page after clicking to a different page.
     window.scrollTo(0, 0);
-    this.loading = true;
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.subscriptions.add(
-      this.commentPeriodService.getAllByProjectId(this.currentProject.data._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
-        .subscribe((res: any) => {
-          this.tableParams.totalListItems = res.totalCount;
-          this.commentPeriods = res.data;
-          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize);
-          this.setCPRowData();
-          this.loading = false;
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+    this.commentPeriodService.getAllByProjectId(this.currentProject.data._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res: any) => {
+        this.tableParams.totalListItems = res.totalCount;
+        this.commentPeriods = res.data;
+        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize);
+        this.setCPRowData();
+        this._changeDetectionRef.markForCheck();
+      });
   }
 
   public addCommentPeriod() {
@@ -187,7 +185,7 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
 
     if (this.currentProject.data.hasMetCommentPeriods) {
       let metURL;
-      switch (this.api.env) {
+      switch (this.configService.config().ENVIRONMENT || 'local') {
         case 'prod':
         case 'demo':
         case 'hotfix':
@@ -208,7 +206,4 @@ export class CommentPeriodsComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

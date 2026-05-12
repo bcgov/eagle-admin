@@ -1,101 +1,97 @@
-import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnInit, input, inject, DestroyRef, ChangeDetectionStrategy, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
+import { FormGroup, FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ToastService } from 'src/app/services/toast.service';
+import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from '../../file-upload/file-upload.component';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
-import { ApiService } from 'src/app/services/api';
+import { DocumentService } from 'src/app/services/document.service';
 import { CommentService } from 'src/app/services/comment.service';
-import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
 import { DateTime } from 'luxon';
-import { Subscription } from 'rxjs';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-add-comment',
     templateUrl: './add-comment.component.html',
-    styleUrls: ['./add-comment.component.css'],
-    standalone: true,
+    styleUrl: './add-comment.component.css',
     imports: [
-      CommonModule,
+      DatePipe,
       FormsModule,
       ReactiveFormsModule,
       RouterModule,
       NgbDatepickerModule,
-      MatSnackBarModule,
       FileUploadComponent
     ]
 })
 
-export class AddCommentComponent implements OnInit, OnDestroy {
-  private api = inject(ApiService);
-  private route = inject(ActivatedRoute);
+export class AddCommentComponent implements OnInit {
+  private api = inject(DocumentService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private commentService = inject(CommentService);
-  private snackBar = inject(MatSnackBar);
-  private storageService = inject(StorageService);
-  private utils = inject(Utils);
+  private toastService = inject(ToastService);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
+  project = input.required<any>();
+  commentPeriod = input.required<CommentPeriod>();
 
-  private subscriptions = new Subscription();
-
-  public currentProject;
   public baseRouteUrl: string;
   public comment = new Comment();
-  public commentPeriod: CommentPeriod;
   public commentFiles: Array<File> = [];
   public documents: Document[] = [];
-  public loading = true;
+  loading = signal(false);
 
-  public addCommentForm: UntypedFormGroup;
+  public addCommentForm: FormGroup<{
+    authorText: FormControl<string | null>;
+    commentText: FormControl<string | null>;
+    dateAdded: FormControl<unknown>;
+    datePosted: FormControl<unknown>;
+    deferralNotesText: FormControl<string | null>;
+    isNamePublic: FormControl<boolean | null>;
+    isDeferred: FormControl<boolean | null>;
+    isPublished: FormControl<boolean | null>;
+    isRejected: FormControl<boolean | null>;
+    locationText: FormControl<string | null>;
+    proponentResponseText: FormControl<string | null>;
+    rejectionNotesText: FormControl<string | null>;
+    publishedNotesText: FormControl<string | null>;
+  }>;
   public anonymousName = 'Anonymous';
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject;
-    this.baseRouteUrl = this.currentProject.type === 'currentProject' ? '/p' : '/pn';
-
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((data: any) => {
-          if (data) {
-            this.commentPeriod = data.commentPeriod;
-            this.initForm();
-          } else {
-            alert('Uh-oh, couldn\'t load comment period');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
-          this.loading = false;
-        }));
+    this.baseRouteUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
+    this.initForm();
   }
 
   private initForm() {
-    this.addCommentForm = new UntypedFormGroup({
-      'authorText': new UntypedFormControl({ value: this.anonymousName, disabled: true }),
-      'commentText': new UntypedFormControl(),
-      'dateAdded': new UntypedFormControl(),
-      'datePosted': new UntypedFormControl({ value: '', disabled: true }),
-      'deferralNotesText': new UntypedFormControl(),
-      'isNamePublic': new UntypedFormControl(),
-      'isDeferred': new UntypedFormControl(),
-      'isPublished': new UntypedFormControl(),
-      'isRejected': new UntypedFormControl(),
-      'locationText': new UntypedFormControl(),
-      'proponentResponseText': new UntypedFormControl(),
-      'rejectionNotesText': new UntypedFormControl(),
-      'publishedNotesText': new UntypedFormControl()
+    this.addCommentForm = new FormGroup({
+      'authorText': new FormControl<string | null>({ value: this.anonymousName, disabled: true }),
+      'commentText': new FormControl<string | null>(null),
+      'dateAdded': new FormControl<unknown>(null),
+      'datePosted': new FormControl<unknown>({ value: '', disabled: true }),
+      'deferralNotesText': new FormControl<string | null>(null),
+      'isNamePublic': new FormControl<boolean | null>(null),
+      'isDeferred': new FormControl<boolean | null>(null),
+      'isPublished': new FormControl<boolean | null>(null),
+      'isRejected': new FormControl<boolean | null>(null),
+      'locationText': new FormControl<string | null>(null),
+      'proponentResponseText': new FormControl<string | null>(null),
+      'rejectionNotesText': new FormControl<string | null>(null),
+      'publishedNotesText': new FormControl<string | null>(null)
     });
     this.addCommentForm.controls.isNamePublic.setValue(false);
-    this.addCommentForm.controls.dateAdded.setValue(this.utils.convertJSDateToNGBDate(new Date()));
+    this.addCommentForm.controls.dateAdded.setValue(convertJSDateToNGBDate(new Date()));
     this.addCommentForm.controls.datePosted.setValue(
-      this.comment.datePosted ? this.utils.convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);
+      this.comment.datePosted ? convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);
     this.addCommentForm.get('isNamePublic').valueChanges
       .subscribe(isPublic => {
         if (!isPublic) {
@@ -112,10 +108,10 @@ export class AddCommentComponent implements OnInit, OnDestroy {
   }
 
   public onSubmit() {
-    this.loading = true;
+    this.loading.set(true);
     this.comment.author = this.addCommentForm.get('authorText').value;
     this.comment.comment = this.addCommentForm.get('commentText').value;
-    this.comment.dateAdded = this.utils.convertFormGroupNGBDateToJSDate(this.addCommentForm.get('dateAdded').value);
+    this.comment.dateAdded = convertFormGroupNGBDateToJSDate(this.addCommentForm.get('dateAdded').value);
     this.comment.isAnonymous = !this.addCommentForm.get('isNamePublic').value;
     this.comment.location = this.addCommentForm.get('locationText').value;
 
@@ -135,32 +131,33 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     }
     this.comment.proponentNotes = this.addCommentForm.get('proponentResponseText').value;
 
-    this.comment.period = this.commentPeriod._id;
+    this.comment.period = this.commentPeriod()._id;
 
     // go through and upload one at a time.
     const documentsForm = this.setDocumentForm();
     this.comment.documentsList = [];
     this.comment.documents = [];
 
-    this.subscriptions.add(
-      this.commentService.add(this.comment, documentsForm)
-        .subscribe({
-          error: error => {
-            this.logger.error('add comment failed', 'AddCommentComponent', error);
-            alert('Uh-oh, couldn\'t add comment');
-          },
-          complete: () => { // onCompleted
-            this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
-            this.loading = false;
-            this.openSnackBar('This comment was updated successfuly.', 'Close');
-          }
-        })
-    );
+    this.commentService.add(this.comment, documentsForm)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false))
+      )
+      .subscribe({
+        error: error => {
+          this.logger.error('add comment failed', 'AddCommentComponent', error);
+          this.toastService.error('Uh-oh, couldn\'t add comment');
+        },
+        complete: () => {
+          this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id]);
+          this.toastService.success('This comment was updated successfuly.');
+        }
+      });
   }
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'cp', this.commentPeriod._id]);
+      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id]);
     }
   }
 
@@ -232,7 +229,7 @@ export class AddCommentComponent implements OnInit, OnDestroy {
     this.documents.map(doc => {
       const formData = new FormData();
       formData.append('upfile', doc.upfile);
-      formData.append('project', this.currentProject.data._id);
+      formData.append('project', this.project()._id);
       formData.append('documentFileName', doc.documentFileName);
       formData.append('internalOriginalName', doc.internalOriginalName);
       formData.append('documentSource', 'COMMENT');
@@ -240,8 +237,8 @@ export class AddCommentComponent implements OnInit, OnDestroy {
       formData.append('datePosted', DateTime.now().toUTC().toISO());
       formData.append('documentAuthor', this.addCommentForm.get('authorText').value);
 
-      if (this.currentProject.type === 'currentProject') {
-        formData.append('legislation', this.currentProject.data.legislationYear.toString());
+      if (this.route.snapshot.paramMap.has('projId')) {
+        formData.append('legislation', this.project().legislationYear.toString());
       }
 
       // todo add authorType? selector?
@@ -285,15 +282,5 @@ export class AddCommentComponent implements OnInit, OnDestroy {
 
   public register() {
     this.logger.debug('Successful registration', 'AddCommentComponent', this.addCommentForm.value);
-  }
-
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

@@ -1,14 +1,15 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject, computed, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
 import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { Router, RouterModule } from '@angular/router';
-import { Subscription, forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { DateTime } from 'luxon';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/services/toast.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -16,60 +17,73 @@ import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-project-documents-upload',
-  standalone: true,
   imports: [FileUploadComponent, NgbDatepickerModule, ReactiveFormsModule, RouterModule],
   templateUrl: './project-documents-upload.component.html',
-  styleUrls: ['./project-documents-upload.component.css'],
+  styleUrl: './project-documents-upload.component.css',
 
 })
-export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
+export class ProjectDocumentsUploadComponent implements OnInit {
   private router = inject(Router);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
   private storageService = inject(StorageService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private documentService = inject(DocumentService);
-  private utils = inject(Utils);
   private configService = inject(ConfigService);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
+  private readonly lists = this.configService.listsSignal;
 
-  public authorsel: any;
+  public readonly filteredDoctypes2002 = computed(() =>
+    this.lists().filter(i => i.type === 'doctype' && i.legislation === 2002)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredDoctypes2018 = computed(() =>
+    this.lists().filter(i => i.type === 'doctype' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredAuthors2002 = computed(() =>
+    this.lists().filter(i => i.type === 'author' && i.legislation === 2002)
+  );
+  public readonly filteredAuthors2018 = computed(() =>
+    this.lists().filter(i => i.type === 'author' && i.legislation === 2018)
+  );
+  public readonly filteredLabels2002 = computed(() =>
+    this.lists().filter(i => i.type === 'label' && i.legislation === 2002)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredLabels2018 = computed(() =>
+    this.lists().filter(i => i.type === 'label' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredProjectPhases2002 = computed(() =>
+    this.lists().filter(i => i.type === 'projectPhase' && i.legislation === 2002)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly filteredProjectPhases2018 = computed(() =>
+    this.lists().filter(i => i.type === 'projectPhase' && i.legislation === 2018)
+      .sort((a, b) => a.listOrder - b.listOrder)
+  );
+  public readonly allLabels = computed(() =>
+    this.lists().filter(i => i.type === 'label')
+  );
+
   public currentProject;
   public projectFiles: Array<File> = [];
   public documents: Document[] = [];
-  public filteredDoctypes2002: any[] = [];
-  public filteredDoctypes2018: any[] = [];
-  public authors: any[] = [];
-  public filteredAuthors2002: any[] = [];
-  public filteredAuthors2018: any[] = [];
-  public labels: any[] = [];
-  public filteredLabels2002: any[] = [];
-  public filteredLabels2018: any[] = [];
   public datePosted: NgbDateStruct = null;
   public dateUploaded: NgbDateStruct = null;
-  public doctypes: any[] = [];
-  public milestones: any[] = [];  // Get this from the project's data.
   public myForm: UntypedFormGroup;
-  public loading = true;
   public docNameInvalid = false;
-  public projectPhases: any[] = [];
-  public filteredProjectPhases2002: any[] = [];
-  public filteredProjectPhases2018: any[] = [];
   public legislationYear = '2018';
   public publishDoc = false;
-  public snackBarTimeout = 5000;
+  public uploadInProgress = false;
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
+    this.currentProject = this.storageService.currentProjectData;
     this.buildForm();
-    this.initLists();
-  }
-
-  async initLists() {
-    await this.configService.ensureListsLoaded();
-    this.getLists();
+    this.configService.ensureListsLoaded();
   }
 
   buildForm() {
@@ -94,65 +108,20 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
     this.myForm.controls.dateUploaded.setValue(todayObj);
   }
 
-  getLists() {
-    this.configService.lists.forEach(item => {
-      switch (item.type) {
-        case 'doctype':
-          this.doctypes.push(Object.assign({}, item));
-          break;
-        case 'author':
-          this.authors.push(Object.assign({}, item));
-          break;
-        case 'label':
-          this.labels.push(Object.assign({}, item));
-          break;
-        case 'projectPhase':
-          this.projectPhases.push(Object.assign({}, item));
-          break;
-      }
-    });
-    this.populateForm();
-  }
-
-  populateForm() {
-    this.filterByLegislationYear();
-    this.loading = false;
-  }
-
-  filterByLegislationYear() {
-    // only have lists for 2002,2018. 2002 list is equivalent to 1996 for now
-    this.filteredDoctypes2002 = this.doctypes.filter(item => item.legislation === 2002);
-    this.filteredDoctypes2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors2002 = this.authors.filter(item => item.legislation === 2002);
-    this.filteredLabels2002 = this.labels.filter(item => item.legislation === 2002);
-    this.filteredLabels2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredProjectPhases2002 = this.projectPhases.filter(item => item.legislation === 2002);
-    this.filteredProjectPhases2002.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-
-    this.filteredDoctypes2018 = this.doctypes.filter(item => item.legislation === 2018);
-    this.filteredDoctypes2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredAuthors2018 = this.authors.filter(item => item.legislation === 2018);
-    this.filteredLabels2018 = this.labels.filter(item => item.legislation === 2018);
-    this.filteredLabels2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
-    this.filteredProjectPhases2018 = this.projectPhases.filter(item => item.legislation === 2018);
-    this.filteredProjectPhases2018.sort((a, b) => (a.listOrder > b.listOrder) ? 1 : -1);
+  addLabels() {
+    this.storageService.state = { type: 'form', data: this.myForm };
+    this.storageService.state = { type: 'documents', data: this.documents };
+    this.storageService.state = { type: 'labels', data: this.allLabels() };
+    this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-documents', 'upload'], label: 'Upload Document(s)' };
+    this.router.navigate(['/p', this.currentProject._id, 'project-documents', 'upload', 'add-label']);
   }
 
   public changeLegislation(event) {
     this.legislationYear = event.target.value;
-
     this.myForm.controls.doctypesel.setValue(null);
     this.myForm.controls.authorsel.setValue(null);
     this.myForm.controls.labelsel.setValue(null);
     this.myForm.controls.projectphasesel.setValue(null);
-  }
-
-  addLabels() {
-    this.storageService.state = { type: 'form', data: this.myForm };
-    this.storageService.state = { type: 'documents', data: this.documents };
-    this.storageService.state = { type: 'labels', data: this.labels };
-    this.storageService.state.back = { url: ['/p', this.currentProject._id, 'project-documents', 'upload'], label: 'Upload Document(s)' };
-    this.router.navigate(['/p', this.currentProject._id, 'project-documents', 'upload', 'add-label']);
   }
 
   register(myForm: UntypedFormGroup) {
@@ -165,7 +134,7 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
   }
 
   public uploadDocuments() {
-    this.loading = true;
+    this.uploadInProgress = true;
 
     // go through and upload one at a time.
     const observables = [];
@@ -183,8 +152,8 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
 
       formData.append('displayName', this.documents.length > 1 ? doc.documentFileName : this.myForm.value.displayName);
       formData.append('milestone', this.myForm.value.labelsel);
-      formData.append('dateUploaded', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('dateUploaded').value)).toUTC().toISO());
-      formData.append('datePosted', DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toUTC().toISO());
+      formData.append('dateUploaded', DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.get('dateUploaded').value)).toUTC().toISO());
+      formData.append('datePosted', DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.get('datePosted').value)).toUTC().toISO());
       formData.append('type', this.myForm.value.doctypesel);
       formData.append('description', this.myForm.value.description);
       formData.append('documentAuthorType', this.myForm.value.authorsel);
@@ -197,13 +166,11 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
     this.storageService.state = { type: 'documents', data: null };
     this.storageService.state = { type: 'labels', data: null };
 
-    this.subscriptions.add(
-      forkJoin(observables)
-        .subscribe({
-          next: () => {
-            // do nothing here - see complete below
-          },
-          error: error => {
+    forkJoin(observables)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {},
+        error: error => {
             this.logger.error('document upload failed', 'ProjectDocumentsUploadComponent', error);
             let message = 'Could not upload document';
             if (error?.error?.message) {
@@ -213,18 +180,15 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
             } else if (error?.statusText) {
               message = `Upload failed: ${error.statusText}`;
             }
-            this.snackBar.open(message, 'Close', { duration: this.snackBarTimeout });
-            this.loading = false;
+            this.toastService.error(message);
+            this.uploadInProgress = false;
           },
-          complete: () => {
-            // delete succeeded --> navigate back to search
-            // Clear out the document state that was stored previously.
-            this.snackBar.open('Uploaded Successfully!', 'Close', { duration: this.snackBarTimeout });
-            this.router.navigate(['p', this.currentProject._id, 'project-documents']);
-            this.loading = false;
-          }
-        })
-    );
+        complete: () => {
+          this.toastService.success('Uploaded Successfully!');
+          this.router.navigate(['p', this.currentProject._id, 'project-documents']);
+          this.uploadInProgress = false;
+        }
+      });
   }
 
   public docNameExists() {
@@ -268,7 +232,6 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
         this.docNameInvalid = false;
       }
     }
-    this._changeDetectionRef.detectChanges();
   }
 
   goBack() {
@@ -285,9 +248,5 @@ export class ProjectDocumentsUploadComponent implements OnInit, OnDestroy {
       this.projectFiles = this.projectFiles.filter(item => (item.name !== doc.documentFileName));
       this.documents = this.documents.filter(item => (item.documentFileName !== doc.documentFileName));
     }
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

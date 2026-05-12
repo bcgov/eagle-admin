@@ -1,13 +1,14 @@
-import { Component, HostListener, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy} from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FormsModule } from '@angular/forms';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-input-modal',
     templateUrl: './input-modal.component.html',
-    styleUrls: ['./input-modal.component.css'],
-    standalone: true,
+    styleUrl: './input-modal.component.css',
+    host: { '(document:keydown.escape)': 'onKeydownHandler()' },
     imports: [
     FormsModule
 ]
@@ -31,7 +32,7 @@ export class InputModalComponent {
   }
 
   // Handle escape key press.
-  @HostListener('document:keydown.escape', []) onKeydownHandler() {
+  onKeydownHandler() {
     this.cancel();
   }
 }

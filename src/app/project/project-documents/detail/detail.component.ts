@@ -1,103 +1,91 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Project } from 'src/app/models/project';
-import { ApiService } from 'src/app/services/api';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, input } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { ToastService } from 'src/app/services/toast.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { formatBytes } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
-import { Subscription } from 'rxjs';
-import { RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ConfigService } from 'src/app/services/config.service';
 
 @Component({
     selector: 'app-detail',
-    standalone: true,
-    imports: [RouterModule, CommonModule, NgbDropdownModule, ListConverterPipe],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [RouterModule, NgbDropdownModule],
     templateUrl: './detail.component.html',
-    styleUrls: ['./detail.component.css'],
-    
+    styleUrl: './detail.component.css',
 })
-export class DocumentDetailComponent implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
+export class DocumentDetailComponent implements OnInit {
   private router = inject(Router);
-  api = inject(ApiService);
-  private _changeDetectionRef = inject(ChangeDetectorRef);
   private storageService = inject(StorageService);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private logger = inject(LoggingService);
-  private utils = inject(Utils);
   private documentService = inject(DocumentService);
+  private configService = inject(ConfigService);
 
-  private subscriptions = new Subscription();
-  public document: Document = null;
-  public currentProject: Project = null;
-  public publishText: string;
-  formatBytes: (bytes: any, decimals?: number) => string;
+  // Resolved via documentResolver + projectResolver (withComponentInputBinding)
+  project = input<any>();
+  resolvedDocument = input.required<Document>();
+
+  public readonly publishText = signal<string>('Publish');
+  public readonly formatBytes = formatBytes;
+
+  // Lists signal from ConfigService — updates reactively when lists load
+  private readonly lists = this.configService.listsSignal;
+
+  // Resolved metadata fields — recompute whenever document or lists change
+  public readonly resolvedType = computed(() => this.resolveListItem(this.resolvedDocument()?.type));
+  public readonly resolvedAuthor = computed(() => this.resolveListItem(this.resolvedDocument()?.documentAuthorType));
+  public readonly resolvedMilestone = computed(() => this.resolveListItem(this.resolvedDocument()?.milestone));
+  public readonly resolvedProjectPhase = computed(() => this.resolveListItem(this.resolvedDocument()?.projectPhase));
+
+  private resolveListItem(id: string | null | undefined): string {
+    if (!id) return '-';
+    const item = this.lists().find((i: any) => i._id === id);
+    return item ? item.name : '-';
+  }
 
   ngOnInit() {
-    this.currentProject = this.storageService.state.currentProject.data;
-    this.formatBytes = this.utils.formatBytes;
-    this.subscriptions.add(
-      this.route.data
-        .subscribe((res: any) => {
-          this.document = res.document;
-          if (this.document.read.includes('public')) {
-            this.publishText = 'Unpublish';
-          } else {
-            this.publishText = 'Publish';
-          }
-          this._changeDetectionRef.detectChanges();
-        })
-    );
+    this.publishText.set(this.resolvedDocument()?.read?.includes('public') ? 'Unpublish' : 'Publish');
+    this.configService.ensureListsLoaded();
   }
 
   onEdit() {
-    this.storageService.state.selectedDocs = [this.document];
-    this.storageService.state.labels = this.document.labels;
-    this.storageService.state.back = { url: ['/p', this.document.project, 'project-documents', 'detail', this.document._id], label: 'View Document' };
-    this.router.navigate(['p', this.document.project, 'project-documents', 'edit']);
+    const doc = this.resolvedDocument();
+    this.storageService.state.selectedDocs = [doc];
+    this.storageService.state.labels = doc.labels;
+    this.storageService.state.back = { url: ['/p', doc.project, 'project-documents', 'detail', doc._id], label: 'View Document' };
+    this.router.navigate(['p', doc.project, 'project-documents', 'edit']);
   }
 
   togglePublish() {
-    if (this.publishText === 'Publish') {
-      this.documentService.publish(this.document._id).subscribe(
+    const doc = this.resolvedDocument();
+    if (this.publishText() === 'Publish') {
+      this.documentService.publish(doc._id).subscribe(
         null,
         error => {
           this.logger.error('publish document failed', 'DocumentDetailComponent', error);
           alert('Uh-oh, couldn\'t update document');
         },
         () => {
-          this.openSnackBar('This document has been published.', 'Close');
+          this.toastService.success('This document has been published.');
         }
       );
-      this.publishText = 'Unpublish';
+      this.publishText.set('Unpublish');
     } else {
-      this.documentService.unPublish(this.document._id).subscribe(
+      this.documentService.unPublish(doc._id).subscribe(
         null,
         error => {
           this.logger.error('unpublish document failed', 'DocumentDetailComponent', error);
           alert('Uh-oh, couldn\'t update document');
         },
         () => {
-          this.openSnackBar('This document has been unpublished.', 'Close');
+          this.toastService.success('This document has been unpublished.');
         }
       );
-      this.publishText = 'Publish';
+      this.publishText.set('Publish');
     }
   }
 
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

@@ -1,7 +1,8 @@
-import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { KeyValuePipe } from '@angular/common';
+import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -13,34 +14,48 @@ import { NotificationProjectService } from 'src/app/services/notification-projec
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { Constants } from 'src/app/shared/utils/constants';
-import { Utils } from 'src/app/shared/utils/utils';
-import { Subscription } from 'rxjs';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-add-edit-notification-project',
-    standalone: true,
-    imports: [CommonModule, NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgSelectModule],
+    imports: [NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgSelectModule, KeyValuePipe, RouterLink],
     templateUrl: './add-edit-project-notification.component.html',
-    styleUrls: ['./add-edit-project-notification.component.css'],
+    styleUrl: './add-edit-project-notification.component.css',
     
 })
 
-export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
-  private _changeDetectorRef = inject(ChangeDetectorRef);
+export class AddEditProjectNotificationComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private configService = inject(ConfigService);
   private notificationProjectService = inject(NotificationProjectService);
   private storageService = inject(StorageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private utils = inject(Utils);
   private projectService = inject(ProjectService);
-
-  private subscriptions = new Subscription();
 
   public isAdd = false;
   public isPublished = false;
   public loading = false;
-  public myForm: UntypedFormGroup;
+  public myForm: FormGroup<{
+    name: FormControl<string | null>;
+    type: FormControl<string | null>;
+    subType: FormControl<string | null>;
+    proponent: FormControl<string | null>;
+    nature: FormControl<string | null>;
+    region: FormControl<string | null>;
+    location: FormControl<string | null>;
+    decision: FormControl<string | null>;
+    decisionDate: FormControl<unknown>;
+    notificationReceivedDate: FormControl<unknown>;
+    description: FormControl<string | null>;
+    notificationThresholdValue: FormControl<string | null>;
+    notificationThresholdUnits: FormControl<string | null>;
+    project: FormControl<string | null>;
+    longitude: FormControl<number | null>;
+    latitude: FormControl<number | null>;
+    trigger: FormControl<unknown>;
+  }>;
   public projectNotification: ProjectNotification = null;
   public regions: any[] = [];
   public subTypeSelected = [];
@@ -73,9 +88,9 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public ngOnInit() {
     this.regions = this.configService.regions;
     // Determine if this an add or edit.
-    this.route.url.subscribe(segments => {
+    this.route.url.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(segments => {
       segments.map(segment => {
-        this.projectNotification = this.storageService.state.currentProject && this.storageService.state.currentProject.data;
+        this.projectNotification = this.storageService.state.currentProject && this.storageService.currentProjectData;
         if (segment.path === 'add') {
           this.isAdd = true;
           if (this.isAdd || !this.projectNotification) {
@@ -100,7 +115,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
             this.getAllProjectsList();
             this.loading = false;
-            this._changeDetectorRef.detectChanges();
           }
         } else if (segment.path === 'edit') {
           if (this.projectNotification.read.includes('public')) {
@@ -109,15 +123,14 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
           const editData = { ...this.projectNotification };
           // new Date(null) will create a date of 31/12/1969, so if decisionDate is null, don't create a date object here.
-          editData.decisionDate = this.projectNotification.decisionDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
-          editData.notificationReceivedDate = this.projectNotification.notificationReceivedDate !== null ? this.utils.convertJSDateToNGBDate(new Date(this.projectNotification.notificationReceivedDate)) : undefined as any;
+          editData.decisionDate = this.projectNotification.decisionDate !== null ? convertJSDateToNGBDate(new Date(this.projectNotification.decisionDate)) : undefined as any;
+          editData.notificationReceivedDate = this.projectNotification.notificationReceivedDate !== null ? convertJSDateToNGBDate(new Date(this.projectNotification.notificationReceivedDate)) : undefined as any;
           this.buildForm(editData);
           this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
           this.unitsSelected = this.PROJECT_NOTIFICATION_THRESHOLD_UNITS[this.myForm.controls.type.value];
 
           this.getAllProjectsList();
           this.loading = false;
-          this._changeDetectorRef.detectChanges();
         }
       });
     });
@@ -125,14 +138,13 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
 
   // loads all the projects for the projects list
   public getAllProjectsList() {
-    this.subscriptions.add(
-      this.projectService.getAll(1, 1000, '+name')
-        .subscribe((res2: any) => {
-          if (res2) {
-            this.projects = res2.data;
-          }
-        })
-    );
+    this.projectService.getAll(1, 1000, '+name')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res2: any) => {
+        if (res2) {
+          this.projects = res2.data;
+        }
+      });
   }
 
   public onSubmit(publish) {
@@ -167,8 +179,8 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       trigger: triggerCSV.join(),
       region: this.myForm.value.region,
       location: this.myForm.value.location,
-      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate)).toJSDate() : null,
-      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate)).toJSDate() : null,
+      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate)).toJSDate() : null,
+      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate)).toJSDate() : null,
       decision: this.myForm.value.decision,
       associatedProjectId: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
       associatedProjectName: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
@@ -190,28 +202,31 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     }
 
     if (this.isAdd) {
-      this.subscriptions.add(
-        this.notificationProjectService.add(notificationProject, publish)
-          .subscribe({
-            error: () => {
-              alert('An error has occurred.');
-            },
-            complete: () => { this.router.navigate(['/project-notifications']); }
-          })
-      );
+      this.notificationProjectService.add(notificationProject, publish)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          error: () => {
+            alert('An error has occurred.');
+          },
+          complete: () => { this.router.navigate(['/project-notifications']); }
+        });
     } else {
       notificationProject._id = this.projectNotification._id;
-      this.subscriptions.add(
-        this.notificationProjectService.save(notificationProject, publish)
-          .subscribe({
-            error: () => {
-              alert('An error has occurred.');
-            },
-            complete: () => {
-              this.router.navigate(['/pn', this.projectNotification._id, 'details']);
-            }
-          })
-      );
+      this.notificationProjectService.save(notificationProject, publish)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (updated) => {
+            this.storageService.state.currentProject = {
+              type: 'currentProjectNotification',
+              data: updated,
+              docTotal: 0
+            };
+            this.router.navigate(['/pn', this.projectNotification._id, 'details']);
+          },
+          error: () => {
+            alert('An error has occurred.');
+          }
+        });
     }
   }
 
@@ -237,24 +252,24 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.myForm = new UntypedFormGroup({
-      'name': new UntypedFormControl(data.name),
-      'type': new UntypedFormControl(data.type),
-      'subType': new UntypedFormControl(data.subType),
-      'proponent': new UntypedFormControl(data.proponent),
-      'nature': new UntypedFormControl(data.nature),
-      'region': new UntypedFormControl(data.region),
-      'location': new UntypedFormControl(data.location),
-      'decision': new UntypedFormControl(data.decision),
-      'decisionDate': new UntypedFormControl(data.decisionDate),
-      'notificationReceivedDate': new UntypedFormControl(data.notificationReceivedDate),
-      'description': new UntypedFormControl(data.description),
-      'notificationThresholdValue': new UntypedFormControl(data.notificationThresholdValue),
-      'notificationThresholdUnits': new UntypedFormControl(data.notificationThresholdUnits),
-      'project': new UntypedFormControl(data.associatedProjectId),
-      'longitude': new UntypedFormControl(data.centroid[1]),
-      'latitude': new UntypedFormControl(data.centroid[0]),
-      'trigger': new UntypedFormControl(this.triggers)
+    this.myForm = new FormGroup({
+      'name': new FormControl<string | null>(data.name),
+      'type': new FormControl<string | null>(data.type),
+      'subType': new FormControl<string | null>(data.subType),
+      'proponent': new FormControl<string | null>(data.proponent),
+      'nature': new FormControl<string | null>(data.nature),
+      'region': new FormControl<string | null>(data.region),
+      'location': new FormControl<string | null>(data.location),
+      'decision': new FormControl<string | null>(data.decision),
+      'decisionDate': new FormControl<unknown>(data.decisionDate),
+      'notificationReceivedDate': new FormControl<unknown>(data.notificationReceivedDate),
+      'description': new FormControl<string | null>(data.description),
+      'notificationThresholdValue': new FormControl<string | null>(data.notificationThresholdValue),
+      'notificationThresholdUnits': new FormControl<string | null>(data.notificationThresholdUnits),
+      'project': new FormControl<string | null>(data.associatedProjectId),
+      'longitude': new FormControl<number | null>(data.centroid[1]),
+      'latitude': new FormControl<number | null>(data.centroid[0]),
+      'trigger': new FormControl<unknown>(this.triggers)
     });
   }
 
@@ -351,7 +366,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
   public onChangeType() {
     this.subTypeSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
     this.unitsSelected = this.PROJECT_NOTIFICATION_THRESHOLD_UNITS[this.myForm.controls.type.value];
-    this._changeDetectorRef.detectChanges();
   }
 
   public onChangeTrigger() {
@@ -363,7 +377,6 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
     });
 
     this.myForm.patchValue(natureModified ? { nature: this.NATURE_MODIFIED } : { nature: this.NATURE_DEFAULT });
-    this._changeDetectorRef.detectChanges();
   }
 
   clearSelectedItem(item: any) {
@@ -377,7 +390,4 @@ export class AddEditProjectNotificationComponent implements OnInit, OnDestroy {
       : filter === filterToCompare;
   }
 
-  public ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

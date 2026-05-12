@@ -9,7 +9,7 @@
 </nav>
 
 <main class="container-fluid-padding">
-  @if (loading) {
+  @if (loading()) {
     <div class="spinner-container">
       <div class="spinner-new rotating"></div>
     </div>
@@ -26,7 +26,7 @@
   </form>
   @if (tableParams.totalListItems > 0) {
     <div>
-      @if (!loading && tableParams.totalListItems != 0) {
+      @if (!loading() && tableParams.totalListItems != 0) {
         <app-table-template [columns]="documentTableColumns"
           [data]="documentTableData" (onColumnSort)='setColumnSort($event)'
           (onSelectedRow)='updateSelectedRow($event)' (onPageNumUpdate)='onSubmit($event)'>

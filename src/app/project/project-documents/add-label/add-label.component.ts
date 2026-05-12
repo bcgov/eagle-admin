@@ -1,48 +1,57 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
-import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-add-label',
-    standalone: true,
     imports: [RouterModule, ReactiveFormsModule],
     templateUrl: './add-label.component.html',
-    styleUrls: ['./add-label.component.css'],
+    styleUrl: './add-label.component.css',
     
 })
-export class AddLabelComponent implements OnInit, OnDestroy {
+export class AddLabelComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private storageService = inject(StorageService);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscriptions = new Subscription();
   public currentProjectId: string;
-  public myForm: UntypedFormGroup;
+  public myForm: FormGroup<{
+    doctypesel: FormControl<string | null>;
+    authorsel: FormControl<string | null>;
+    labelsel: FormControl<string | null>;
+    milestonesel: FormControl<string | null>;
+    datePosted: FormControl<string | null>;
+    dateUploaded: FormControl<string | null>;
+    displayName: FormControl<string | null>;
+    description: FormControl<string | null>;
+    projectphasesel: FormControl<string | null>;
+  }>;
   public labels: any[] = [];
   public back: any = {};
 
   ngOnInit() {
-    this.subscriptions.add(
-      this.route.parent.paramMap
-        .subscribe(params => {
-          this.currentProjectId = params.get('projId');
-        })
-    );
+    this.route.parent.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.currentProjectId = params.get('projId');
+      });
 
-    this.myForm = new UntypedFormGroup({
-      'doctypesel': new UntypedFormControl(),
-      'authorsel': new UntypedFormControl(),
-      'labelsel': new UntypedFormControl(),
-      'milestonesel': new UntypedFormControl(),
-      'datePosted': new UntypedFormControl(),
-      'dateUploaded': new UntypedFormControl(),
-      'displayName': new UntypedFormControl(),
-      'description': new UntypedFormControl(),
-      'projectphasesel': new UntypedFormControl()
+    this.myForm = new FormGroup({
+      'doctypesel': new FormControl<string | null>(null),
+      'authorsel': new FormControl<string | null>(null),
+      'labelsel': new FormControl<string | null>(null),
+      'milestonesel': new FormControl<string | null>(null),
+      'datePosted': new FormControl<string | null>(null),
+      'dateUploaded': new FormControl<string | null>(null),
+      'displayName': new FormControl<string | null>(null),
+      'description': new FormControl<string | null>(null),
+      'projectphasesel': new FormControl<string | null>(null)
     });
 
     this.labels = this.storageService.state.labels;
@@ -55,15 +64,11 @@ export class AddLabelComponent implements OnInit, OnDestroy {
     this.storageService.state.labels = this.labels;
   }
 
-  register(myForm: UntypedFormGroup) {
+  register(myForm: FormGroup) {
     this.logger.debug('Successful registration', 'AddLabelComponent', myForm.value);
   }
 
   cancel() {
     this.router.navigate(this.back.url);
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

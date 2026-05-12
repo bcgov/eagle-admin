@@ -16,7 +16,8 @@
               "xlsx",
               "tinymce",
               "jszip",
-              "js-sha256"
+              "js-sha256",
+              "dlv"
             ],
             "outputPath": {
               "base": "dist",
@@ -36,16 +37,6 @@
               "src/env.js",
               {
                 "glob": "**/*",
-                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                "output": "/assets/"
-              },
-              {
-                "glob": "**/*",
-                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                "output": "/assets/"
-              },
-              {
-                "glob": "**/*",
                 "input": "./node_modules/tinymce/plugins/",
                 "output": "/plugins/"
               },
@@ -53,10 +44,19 @@
                 "glob": "**/*",
                 "input": "./node_modules/tinymce/skins/",
                 "output": "/skins/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/models/",
+                "output": "/models/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/icons/",
+                "output": "/icons/"
               }
             ],
             "styles": [
-              "node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
@@ -67,7 +67,8 @@
               "node_modules/@popperjs/core/dist/umd/popper.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/tinymce/tinymce.min.js",
-              "node_modules/tinymce/themes/silver/theme.min.js"
+              "node_modules/tinymce/themes/silver/theme.min.js",
+              "node_modules/tinymce/models/dom/model.min.js"
             ],
             "browser": "src/main.ts",
             "stylePreprocessorOptions": {
@@ -99,16 +100,6 @@
                 "src/env.js",
                 {
                   "glob": "**/*",
-                  "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                  "output": "/assets/"
-                },
-                {
-                  "glob": "**/*",
-                  "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                  "output": "/assets/"
-                },
-                {
-                  "glob": "**/*",
                   "input": "./node_modules/tinymce/plugins/",
                   "output": "/plugins/"
                 },
@@ -116,6 +107,16 @@
                   "glob": "**/*",
                   "input": "./node_modules/tinymce/skins/",
                   "output": "/skins/"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/tinymce/models/",
+                  "output": "/models/"
+                },
+                {
+                  "glob": "**/*",
+                  "input": "./node_modules/tinymce/icons/",
+                  "output": "/icons/"
                 }
               ]
             }
@@ -158,10 +159,10 @@
               "node_modules/@popperjs/core/dist/umd/popper.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/tinymce/tinymce.min.js",
-              "node_modules/tinymce/themes/silver/theme.min.js"
+              "node_modules/tinymce/themes/silver/theme.min.js",
+              "node_modules/tinymce/models/dom/model.min.js"
             ],
             "styles": [
-              "node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/tinymce/skins/ui/oxide/skin.min.css",
               "node_modules/tinymce/skins/ui/oxide/content.min.css",
@@ -172,16 +173,6 @@
               "src/assets",
               {
                 "glob": "**/*",
-                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                "output": "/assets/"
-              },
-              {
-                "glob": "**/*",
-                "input": "./node_modules/@ant-design/icons-angular/src/inline-svg/",
-                "output": "/assets/"
-              },
-              {
-                "glob": "**/*",
                 "input": "./node_modules/tinymce/plugins/",
                 "output": "/plugins/"
               },
@@ -189,6 +180,16 @@
                 "glob": "**/*",
                 "input": "./node_modules/tinymce/skins/",
                 "output": "/skins/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/models/",
+                "output": "/models/"
+              },
+              {
+                "glob": "**/*",
+                "input": "./node_modules/tinymce/icons/",
+                "output": "/icons/"
               }
             ]
           }

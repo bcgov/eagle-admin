@@ -1,24 +1,24 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, DoCheck, ViewEncapsulation, inject } from '@angular/core';
-import { MatSnackBar, MatSnackBarRef, SimpleSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, inject, DestroyRef, signal, afterRenderEffect } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ToastService } from 'src/app/services/toast.service';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { of, Subscription } from 'rxjs';
+import { of } from 'rxjs';
 
-import { switchMap } from 'rxjs/operators';
+import { switchMap, finalize, timeout } from 'rxjs/operators';
 
 import { DateTime } from 'luxon';
 import { Org } from '../models/org';
 import { SearchTerms } from '../models/search';
 import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
-import { ApiService } from '../services/api';
 import { ConfigService } from '../services/config.service';
 import { OrgService } from '../services/org.service';
 import { SearchService } from '../services/search.service';
-import { TableObject } from '../shared/components/table-template/table-object';
+import { LoadingStateService } from '../services/loading-state.service';
+import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils } from '../shared/utils/table-template-utils';
@@ -53,25 +53,24 @@ class SearchFilterObject {
 @Component({
   selector: 'app-search',
   templateUrl: './search.component.html',
-  styleUrls: ['./search.component.css'],
+  styleUrl: './search.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  standalone: true,
   imports: [
     RouterModule,
     FormsModule,
-    CommonModule,
     NgSelectModule,
     NgbDatepickerModule,
     TableTemplateComponent
   ]
 })
 
-export class SearchComponent implements OnInit, OnDestroy, DoCheck {
-  snackBar = inject(MatSnackBar);
+export class SearchComponent implements OnInit {
+  private toastService = inject(ToastService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
-  api = inject(ApiService);
   private orgService = inject(OrgService);
+  public loadingState = inject(LoadingStateService);
+  public loading = this.loadingState.getOperationState('search-results');
   searchService = inject(SearchService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private router = inject(Router);
@@ -92,7 +91,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public authors: any[] = [];
   public docTypes: any[] = [];
   public projectPhases: any[] = [];
-  public loading = true;
 
   public filterForURL: object = {}; // Not used on this page yet
   public filterForAPI: object = {};
@@ -104,19 +102,18 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     projectType: false,
     eacDecision: false,
     pcp: false,
-    more: false,
     milestone: false,
     date: false,
     documentAuthorType: false,
     docType: false,
-    projectPhase: false
+    projectPhase: false,
+    more: false
   };
 
   public numFilters: object = {
     projectType: 0,
     eacDecision: 0,
     pcp: 0,
-    more: 0,
     milestone: 0,
     date: 0,
     documentAuthorType: 0,
@@ -125,7 +122,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   };
 
   public projectTableData: TableObject;
-  public projectTableColumns: any[] = [
+  public projectTableColumns: TableColumn[] = [
     {
       name: 'Project Name',
       value: 'name',
@@ -159,7 +156,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   ];
 
   public documentTableData: TableObject;
-  public documentTableColumns: any[] = [
+  public documentTableColumns: TableColumn[] = [
     {
       name: 'Document Name',
       value: 'displayName',
@@ -192,11 +189,10 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     }
   ];
 
+  private destroyRef = inject(DestroyRef);
+
   public terms = new SearchTerms();
   public tableParams: TableParamsObject = new TableParamsObject();
-
-  private subscriptions = new Subscription();
-  private snackBarRef: MatSnackBarRef<SimpleSnackBar> = null;
 
   public searching = false;
   public ranSearch = false;
@@ -207,7 +203,20 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   public currentPage = 1;
   public pageSize = 10;
 
-  private togglingOpen = '';
+  private togglingOpen = signal('');
+
+  constructor() {
+    afterRenderEffect(() => {
+      const id = this.togglingOpen();
+      if (id) {
+        const input = document.getElementById(id + '_input');
+        if (input) {
+          (input as HTMLElement).focus();
+          this.togglingOpen.set('');
+        }
+      }
+    });
+  }
 
   public pageSizeArray: number[];
 
@@ -278,18 +287,18 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
     // Fetch proponents and other collections
     // TODO: Put all of these into Lists
-    this.subscriptions.add(
-      this.orgService.getByCompanyType('Proponent/Certificate Holder')
-        .pipe(
-          switchMap((res: any) => {
-            this.proponents = res || [];
+    this.orgService.getByCompanyType('Proponent/Certificate Holder')
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        switchMap((res: any) => {
+          this.proponents = res || [];
 
-            this.commentPeriods = Constants.PCP_COLLECTION;
-            this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
+          this.commentPeriods = Constants.PCP_COLLECTION;
+          this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
-            return this.route.params;
-          }),
-          switchMap((res: any) => {
+          return this.route.params;
+        }),
+        switchMap((res: any) => {
             const params = { ...res };
 
             this.terms.keywords = params.keywords || null;
@@ -349,6 +358,12 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               true,
               this.filterForAPI,
               ''
+            ).pipe(
+              timeout(45000),
+              finalize(() => {
+                this.searching = false;
+                this._changeDetectionRef.markForCheck();
+              })
             );
           })
         )
@@ -369,41 +384,18 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
               this.results = [];
             }
             this.setRowData();
-            this.loading = false;
-            this.searching = false;
             this.ranSearch = true;
-            this._changeDetectionRef.detectChanges();
+            this._changeDetectionRef.markForCheck();
             const pageSizeTemp = [10, 25, 50, 100, this.count];
             this.pageSizeArray = pageSizeTemp.filter(function (el: number) { return el >= 10; });
             this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
           },
           error: (error) => {
             this.logger.error('search failed', 'SearchComponent', error);
-
-            // update variables on error
-            this.loading = false;
-            this.searching = false;
             this.ranSearch = true;
-
-            this.snackBarRef = this.snackBar.open('Error searching projects ...', 'RETRY');
-            this.subscriptions.add(
-              this.snackBarRef.onAction().subscribe(() => this.onSubmit())
-            );
+            this.toastService.error('Error searching projects ...');
           }
-          // No need for complete handler
-        })
-    );
-  }
-
-  ngDoCheck() {
-    if (this.togglingOpen) {
-      // Focus on designated input when pane is opened
-      const input = document.getElementById(this.togglingOpen + '_input');
-      if (input) {
-        input.focus();
-        this.togglingOpen = '';
-      }
-    }
+        });
   }
 
   setRowData() {
@@ -649,7 +641,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
 
   toggleFilter(name) {
     if (this.showFilters[name]) {
-      this.togglingOpen = '';
+      this.togglingOpen.set('');
       this.updateCount(name);
       this.showFilters[name] = false;
     } else {
@@ -660,7 +652,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         }
       });
       this.showFilters[name] = true;
-      this.togglingOpen = name;
+      this.togglingOpen.set(name);
     }
   }
 
@@ -701,8 +693,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     if (name === 'date') {
       num += this.isNGBDate(this.filterForUI.datePostedStart) ? 1 : 0;
       num += this.isNGBDate(this.filterForUI.datePostedEnd) ? 1 : 0;
-    } else if (name === 'more') {
-      num = getCount('region') + this.filterForUI.proponent.length + getCount('CEAAInvolvement') + this.filterForUI.vc.length;
     } else {
       num = getCount(name);
       if (name === 'eacDecision') {
@@ -718,7 +708,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
     this.updateCount('projectType');
     this.updateCount('eacDecision');
     this.updateCount('pcp');
-    this.updateCount('more');
 
     // Documents
     this.updateCount('milestone');
@@ -731,7 +720,6 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
   getPaginatedResults(pageNumber) {
     // Go to top of page after clicking to a different page.
     window.scrollTo(0, 0);
-    this.loading = true;
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(
       this.tableParams,
@@ -749,21 +737,21 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
       delete this.filterForAPI['projectPhase'];
     }
 
-    this.subscriptions.add(
-      this.searchService
-        .getSearchResults(
-          this.terms.keywords,
-          this.terms.dataset,
-          null,
-          pageNumber,
-          this.tableParams.pageSize,
-          this.tableParams.sortBy,
-          {},
-          true,
-          this.filterForAPI,
-          ''
-        )
-        .subscribe({
+    this.searchService
+      .getSearchResults(
+        this.terms.keywords,
+        this.terms.dataset,
+        null,
+        pageNumber,
+        this.tableParams.pageSize,
+        this.tableParams.sortBy,
+        {},
+        true,
+        this.filterForAPI,
+        ''
+      )
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
           next: (res: any) => {
             // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
             // the change so the UI can function as normal
@@ -784,8 +772,7 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
                 this.terms.keywords
               );
               this.setRowData();
-              this.loading = false;
-              this._changeDetectionRef.detectChanges();
+              this._changeDetectionRef.markForCheck();
             } else {
               alert('Uh-oh, couldn\'t load topics');
               // project not found --> navigate back to search
@@ -793,15 +780,11 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
             }
           }
           // No need for error or complete handler here
-        })
-    );
+        });
   }
 
   // reload page with current search terms
   public onSubmit() {
-    // dismiss any open snackbar
-    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
@@ -839,11 +822,5 @@ export class SearchComponent implements OnInit, OnDestroy, DoCheck {
         ? filter._id === filterToCompare._id
         : filter === filterToCompare;
     }
-  }
-
-  ngOnDestroy() {
-    // dismiss any open snackbar
-    if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-    this.subscriptions.unsubscribe();
   }
 }

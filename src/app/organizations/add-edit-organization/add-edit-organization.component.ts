@@ -1,35 +1,52 @@
-import { ActivatedRoute, Router } from '@angular/router';
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { UntypedFormGroup, UntypedFormControl } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormGroup, FormControl } from '@angular/forms';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { EditorModule } from '@tinymce/tinymce-angular';
-import { Subscription } from 'rxjs';
+import { of } from 'rxjs';
+import { map, mergeMap, finalize } from 'rxjs/operators';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
+import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './add-edit-organization.component.html',
-  styleUrls: ['./add-edit-organization.component.css'],
-  standalone: true,
-  imports: [ReactiveFormsModule, EditorModule]
+  styleUrl: './add-edit-organization.component.css',
+  imports: [ReactiveFormsModule, EditorModule, RouterLink]
 })
 
-export class AddEditOrganizationComponent implements OnInit, OnDestroy {
+export class AddEditOrganizationComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private navigationStackUtils = inject(NavigationStackUtils);
   private orgService = inject(OrgService);
   private storageService = inject(StorageService);
-
-  private subscriptions = new Subscription();
+  private searchService = inject(SearchService);
+  private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
 
   public isEditing = false;
   public loading = false;
   public navigationObject;
-  public orgForm: UntypedFormGroup;
+  public orgForm: FormGroup<{
+    description: FormControl<string | null>;
+    name: FormControl<string | null>;
+    country: FormControl<string | null>;
+    postal: FormControl<string | null>;
+    province: FormControl<string | null>;
+    city: FormControl<string | null>;
+    address1: FormControl<string | null>;
+    address2: FormControl<string | null>;
+    companyType: FormControl<string | null>;
+    parentCompany: FormControl<string | null>;
+    companyLegal: FormControl<string | null>;
+    company: FormControl<string | null>;
+  }>;
   public orgId = '';
   public parentOrganizationName = '';
   public parentOrgId = '';
@@ -37,6 +54,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   public tinyMceSettings = {
     skin: false,
     browser_spellcheck: true,
+    promotion: false,
     height: 240
   };
 
@@ -59,62 +77,96 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
       this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
     }
 
-    this.subscriptions.add(
-      this.route.data
-        .subscribe(res => {
-          this.isEditing = Object.keys(res).length === 0 && res.constructor === Object ? false : true;
-          this.orgId = this.isEditing ? res.organization._id : '';
+    const orgId = this.route.snapshot.paramMap.get('orgId');
+    this.isEditing = !!orgId;
+    this.orgId = orgId || '';
 
-          if (this.storageService.state.selectedOrganization) {
-            this.parentOrganizationName = this.storageService.state.selectedOrganization.name;
-            this.parentOrgId = this.storageService.state.selectedOrganization._id;
-          } else if (this.isEditing && res.organization.parentCompany && res.organization.parentCompany !== '') {
-            this.parentOrganizationName = res.organization.parentCompany.data.name;
-            this.parentOrgId = res.organization.parentCompany.data._id;
-          }
+    if (this.storageService.state.selectedOrganization) {
+      this.parentOrganizationName = this.storageService.state.selectedOrganization.name;
+      this.parentOrgId = this.storageService.state.selectedOrganization._id;
+    }
 
-          if (this.storageService.state.orgForm == null) {
-            if (!this.isEditing) {
-              this.buildForm({
-                description: '',
-                name: '',
-                country: '',
-                postal: '',
-                province: '',
-                city: '',
-                address1: '',
-                address2: '',
-                companyType: '',
-                parentCompany: this.parentOrgId,
-                companyLegal: '',
-                company: ''
-              });
-            } else {
-              this.buildForm(res.organization);
+    if (this.storageService.state.orgForm == null) {
+      if (!this.isEditing) {
+        this.buildForm({
+          description: '',
+          name: '',
+          country: '',
+          postal: '',
+          province: '',
+          city: '',
+          address1: '',
+          address2: '',
+          companyType: '',
+          parentCompany: this.parentOrgId,
+          companyLegal: '',
+          company: ''
+        });
+        this.loading = false;
+      } else {
+        this.loading = true;
+        this.searchService.getItem(orgId, 'Organization').pipe(
+            takeUntilDestroyed(this.destroyRef),
+            map((res: any) => res.data),
+            mergeMap((org: any) => {
+              if (!org) { return of(null); }
+              if (!org.parentCompany || org.parentCompany === '') { return of(org); }
+              return this.searchService.getItem(org.parentCompany, 'Organization').pipe(
+                map(parentCompany => {
+                  org.parentCompany = parentCompany;
+                  return org;
+                })
+              );
+            }),
+            finalize(() => { this.loading = false; this.cdr.markForCheck(); })
+          ).subscribe({
+            next: (org: any) => {
+              if (org) {
+                if (!this.storageService.state.selectedOrganization && org.parentCompany && org.parentCompany !== '') {
+                  this.parentOrganizationName = org.parentCompany.data.name;
+                  this.parentOrgId = org.parentCompany.data._id;
+                }
+                this.buildForm(org);
+              } else {
+                this.buildForm({
+                  description: '',
+                  name: '',
+                  country: '',
+                  postal: '',
+                  province: '',
+                  city: '',
+                  address1: '',
+                  address2: '',
+                  companyType: '',
+                  parentCompany: this.parentOrgId,
+                  companyLegal: '',
+                  company: ''
+                });
+              }
             }
-          } else {
-            this.orgForm = this.storageService.state.orgForm;
-            this.orgForm.controls.parentCompany.setValue(this.parentOrgId);
-          }
-          this.loading = false;
-        })
-    );
+          });
+      }
+    } else {
+      this.orgForm = this.storageService.state.orgForm;
+      this.orgForm.controls.parentCompany.setValue(this.parentOrgId);
+      this.loading = false;
+    }
   }
 
   private buildForm(data) {
-    this.orgForm = new UntypedFormGroup({
-      description: new UntypedFormControl(data.description),
-      name: new UntypedFormControl(data.name),
-      country: new UntypedFormControl(data.country),
-      postal: new UntypedFormControl(data.postal),
-      province: new UntypedFormControl(data.province),
-      city: new UntypedFormControl(data.city),
-      address1: new UntypedFormControl(data.address1),
-      address2: new UntypedFormControl(data.address2),
-      companyType: new UntypedFormControl(data.companyType),
-      parentCompany: new UntypedFormControl(this.parentOrgId),
-      companyLegal: new UntypedFormControl(data.companyLegal),
-      company: new UntypedFormControl(data.company)
+    this.orgForm = new FormGroup({
+      description: new FormControl<string | null>(data.description),
+      name: new FormControl<string | null>(data.name),
+      country: new FormControl<string | null>(data.country),
+      postal: new FormControl<string | null>(data.postal),
+      province: new FormControl<string | null>(data.province),
+      city: new FormControl<string | null>(data.city),
+      address1: new FormControl<string | null>(data.address1),
+      address2: new FormControl<string | null>(data.address2),
+      companyType: new FormControl<string | null>(data.companyType),
+      parentCompany: new FormControl<string | null>(this.parentOrgId),
+      companyLegal: new FormControl<string | null>(data.companyLegal),
+      company: new FormControl<string | null>(data.company)
     });
   }
 
@@ -207,7 +259,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
       address1: this.orgForm.controls.address1.value,
       address2: this.orgForm.controls.address2.value,
       companyType: this.orgForm.controls.companyType.value,
-      parentCompany: this.orgForm.controls.parentCompany.value,
+      parentCompany: this.orgForm.controls.parentCompany.value || null,
       companyLegal: this.orgForm.controls.companyLegal.value,
       company: this.orgForm.controls.company.value
     });
@@ -243,7 +295,7 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
   public removeSelectedOrganization() {
     this.storageService.state.selectedOrganization = null;
     this.parentOrganizationName = '';
-    this.orgForm.controls.parentCompany.setValue('');
+    this.orgForm.controls.parentCompany.setValue(null);
   }
 
   public linkOrganization() {
@@ -256,7 +308,4 @@ export class AddEditOrganizationComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
-  }
 }

@@ -14,12 +14,9 @@
 
   <div class="input-group-prepend">
     @if (currentProject) {
-      <a class="upload-docs" [ngClass]="{'active': currentProject._id === 'activity'}"
-        [routerLink]="['/p', currentProject._id, 'project-pins', 'select']">
-        <button (click)="setBackURL('pins')" class="btn btn-outline-secondary me-1" type="button" id="button-d">
-          <i class="material-icons">add</i>Add Participating Indigenous Nation(s)
-        </button>
-      </a>
+      <button (click)="setBackURL()" class="btn btn-outline-secondary me-1" type="button" id="button-d">
+        <i class="material-icons">add</i>Add Participating Indigenous Nation(s)
+      </button>
     }
   </div>
   <br>
@@ -44,11 +41,11 @@
     @if (this.entries) {
       <div class="text-end">
         @if (!this.pinsPublished) {
-          <button (click)="publishPins()" class="btn btn-publish btn-primary" type="button"
+          <button (click)="setPinsPublished(true)" class="btn btn-publish btn-primary" type="button"
           id="button-sa">Publish</button>
         }
         @if (this.pinsPublished) {
-          <button (click)="unpublishPins()" class="btn btn-unpublish btn-primary" type="button"
+          <button (click)="setPinsPublished(false)" class="btn btn-unpublish btn-primary" type="button"
           id="button-sa">Unpublish</button>
         }
       </div>

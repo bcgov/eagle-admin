@@ -1,17 +1,17 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PlatformLocation } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
 import { AddDocumentTableRowsComponent } from './add-document-table-rows/add-document-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
-import { ApiService } from 'src/app/services/api';
+import { DocumentService } from 'src/app/services/document.service';
 import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { TableObject } from 'src/app/shared/components/table-template/table-object';
+import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
-import { CommonModule } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
@@ -19,21 +19,20 @@ import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-add-documents',
-  standalone: true,
   imports: [
-    CommonModule,
+    DatePipe,
     RouterModule,
     FormsModule,
     TableTemplateComponent,
   ],
   templateUrl: './add-documents.component.html',
-  styleUrls: ['./add-documents.component.css'],
+  styleUrl: './add-documents.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 
 })
-export class AddDocumentComponent implements OnInit, OnDestroy {
+export class AddDocumentComponent implements OnInit {
   private _changeDetectionRef = inject(ChangeDetectorRef);
-  private api = inject(ApiService);
+  private api = inject(DocumentService);
   private location = inject(PlatformLocation);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -41,16 +40,16 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
   storageService = inject(StorageService);
   tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
+  private destroyRef = inject(DestroyRef);
 
   public terms = new SearchTerms();
-  private subscriptions = new Subscription();
   public documents: Document[] = null;
   public loading = true;
 
   public isEditing = false;
 
   public documentTableData: TableObject;
-  public documentTableColumns: any[] = [
+  public documentTableColumns: TableColumn[] = [
     {
       name: '',
       value: 'check',
@@ -124,34 +123,46 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
     });
 
     if (!isRedirecting) {
-      this.subscriptions.add(
-        this.route.params.subscribe(params => {
-          this.tableParams.keywords = params.keywords;
-        })
-      );
+      this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+        this.tableParams.keywords = params.keywords;
+      });
 
       this.originalSelectedDocs = Object.assign([], this.storageService.state.selectedDocumentsForCP.data);
 
-      this.subscriptions.add(
-        this.route.data.subscribe((res: any) => {
+      const currentProject = this.storageService.state.currentProject;
+      const projectId = currentProject ? currentProject.data._id : this.route.parent.parent.snapshot.params.projId;
+      const queryParams = this.route.snapshot.queryParams;
+      const pageNum = Number(queryParams['pageNum'] || 1);
+      const pageSize = Number(queryParams['pageSize'] || 10);
+      const sortBy = queryParams['sortBy'] || null;
+      const keywords = this.route.snapshot.params.keywords;
+      let queryModifier: any = {};
+      if (currentProject?.type === 'currentProjectNotification') {
+        queryModifier = { documentSource: 'PROJECT-NOTIFICATION' };
+      } else if (currentProject?.type === 'currentProject') {
+        queryModifier = { documentSource: 'PROJECT' };
+      }
+      this.searchService.getSearchResults(
+          keywords, 'Document',
+          [{ 'name': 'project', 'value': projectId }],
+          pageNum, pageSize, sortBy, queryModifier, false, {}, ''
+        ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
           if (res) {
-            if (res.documents[0].data.meta && res.documents[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res.documents[0].data.meta[0].searchResultsTotal;
-              this.documents = res.documents[0].data.searchResults;
+            if (res[0].data.meta && res[0].data.meta.length > 0) {
+              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
+              this.documents = res[0].data.searchResults;
             } else {
               this.tableParams.totalListItems = 0;
               this.documents = [];
             }
             this.setDocumentRowData();
             this.loading = false;
-            this._changeDetectionRef.detectChanges();
+            this._changeDetectionRef.markForCheck();
           } else {
             alert('Uh-oh, couldn\'t load valued components');
-            // project not found --> navigate back to search
             this.router.navigate(['/search']);
           }
-        })
-      );
+        });
     }
   }
 
@@ -193,7 +204,7 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
         });
 
         this.selectedCount = someSelected ? 0 : this.documentTableData.data.length;
-        this._changeDetectionRef.detectChanges();
+        this._changeDetectionRef.markForCheck();
         break;
       case 'download':
         const promises = [];
@@ -309,24 +320,22 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.subscriptions.add(
-      this.searchService.getSearchResults(
-        this.tableParams.keywords || '',
-        'Document',
-        [{ 'name': 'project', 'value': this.currentProject.data._id }],
-        pageNumber,
-        this.tableParams.pageSize,
-        this.tableParams.sortBy,
-        { documentSource: 'PROJECT' }, false, {}, ''
-      ).subscribe((res: any) => {
+    this.searchService.getSearchResults(
+      this.tableParams.keywords || '',
+      'Document',
+      [{ 'name': 'project', 'value': this.currentProject.data._id }],
+      pageNumber,
+      this.tableParams.pageSize,
+      this.tableParams.sortBy,
+      { documentSource: 'PROJECT' }, false, {}, ''
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
         this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
         this.documents = res[0].data.searchResults;
         this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords || '');
         this.setDocumentRowData();
         this.loading = false;
-        this._changeDetectionRef.detectChanges();
-      })
-    );
+        this._changeDetectionRef.markForCheck();
+      });
   }
 
   removeSelectedDoc(doc) {
@@ -343,9 +352,5 @@ export class AddDocumentComponent implements OnInit, OnDestroy {
       this.storageService.state.selectedDocumentsForCP.data = this.originalSelectedDocs;
       this.router.navigate(navigation);
     }
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
   }
 }

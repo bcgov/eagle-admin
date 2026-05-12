@@ -1,9 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
-import { Observable, Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable } from 'rxjs';
+import { ToastService } from 'src/app/services/toast.service';
 
 import { mergeMap } from 'rxjs/operators';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -17,32 +18,62 @@ import { StorageService } from 'src/app/services/storage.service';
 import { ContactSelectTableRowsComponent } from 'src/app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { Utils } from 'src/app/shared/utils/utils';
+import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'form-tab-2002',
   templateUrl: './form-tab-2002.component.html',
-  styleUrls: ['../add-edit-project.component.css'],
-  standalone: true,
+  styleUrl: '../add-edit-project.component.css',
   imports: [ReactiveFormsModule, NgbDatepickerModule],
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
-  private _changeDetectorRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
   private configService = inject(ConfigService);
   private modalService = inject(NgbModal);
   private navigationStackUtils = inject(NavigationStackUtils);
   private projectService = inject(ProjectService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toastService = inject(ToastService);
   private storageService = inject(StorageService);
-  private utils = inject(Utils);
   private logger = inject(LoggingService);
 
-  private subscriptions = new Subscription();
-  public myForm: UntypedFormGroup;
+  public myForm: FormGroup<{
+    name: FormControl<string | null>;
+    proponent: FormControl<string | null>;
+    currentPhaseName: FormControl<string | null>;
+    build: FormControl<string | null>;
+    type: FormControl<string | null>;
+    sector: FormControl<string | null>;
+    description: FormControl<string | null>;
+    location: FormControl<string | null>;
+    region: FormControl<string | null>;
+    lat: FormControl<number | null>;
+    lon: FormControl<number | null>;
+    addFile: FormControl<unknown>;
+    CEAAInvolvement: FormControl<string | null>;
+    CEAALink: FormControl<string | null>;
+    ea: FormControl<string | null>;
+    capital: FormControl<number | null>;
+    notes: FormControl<string | null>;
+    eaStatus: FormControl<string | null>;
+    eaStatusDate: FormControl<unknown>;
+    status: FormControl<string | null>;
+    projectStatusDate: FormControl<unknown>;
+    eacDecision: FormControl<string | null>;
+    decisionDate: FormControl<unknown>;
+    substantially: FormControl<unknown>;
+    substantiallyDate: FormControl<unknown>;
+    activeStatus: FormControl<unknown>;
+    activeDate: FormControl<unknown>;
+    responsibleEPDId: FormControl<string | null>;
+    responsibleEPD: FormControl<string | null>;
+    projectLeadId: FormControl<string | null>;
+    projectLead: FormControl<string | null>;
+  }>;
   public documents: any[] = [];
   public back: any = {};
   public regions: any[] = [];
@@ -78,8 +109,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.regions = this.configService.regions;
-    this.subscriptions.add(
       this.route.parent.data
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
           this.initProject(data);
           this.initOrg();
@@ -88,16 +119,13 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.getLists();
 
           this.loading = false;
-          try {
-            this._changeDetectorRef.detectChanges();
-          } catch { }
-        }));
+        });
 
     this.back = this.storageService.state.back;
   }
 
   initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
-    const fullProjectSearchData = this.utils.extractFromSearchResults(data.fullProject);
+    const fullProjectSearchData = extractFromSearchResults(data.fullProject);
     this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
     if (this.fullProject) {
       // Need to also check if these keys are non empty. Not just if the key is null. For 96 the 2002 case is being hit which is causing
@@ -110,7 +138,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         this.project = this.fullProject['legislation_1996'];
       }
       this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
-      this.tabIsEditing = !this.utils.isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
+      this.tabIsEditing = !isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
       this.pageIsEditing = this.storageService.state.pageIsEditing;
       this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
@@ -173,38 +201,38 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.myForm = this.buildFormFromData(this.project);
       this.onChangeType();
     } else {
-      this.myForm = new UntypedFormGroup({
-        'name': new UntypedFormControl(),
-        'proponent': new UntypedFormControl(),
-        'currentPhaseName': new UntypedFormControl(this.projectPhases[0]),
-        'build': new UntypedFormControl(),
-        'type': new UntypedFormControl(),
-        'sector': new UntypedFormControl(),
-        'description': new UntypedFormControl(),
-        'location': new UntypedFormControl(),
-        'region': new UntypedFormControl(),
-        'lat': new UntypedFormControl([]),
-        'lon': new UntypedFormControl([]),
-        'addFile': new UntypedFormControl(),
-        'CEAAInvolvement': new UntypedFormControl(),
-        'CEAALink': new UntypedFormControl(),
-        'ea': new UntypedFormControl(),
-        'capital': new UntypedFormControl(),
-        'notes': new UntypedFormControl(),
-        'eaStatus': new UntypedFormControl(),
-        'eaStatusDate': new UntypedFormControl(),
-        'status': new UntypedFormControl(this.PROJECT_STATUS[2]),
-        'projectStatusDate': new UntypedFormControl(),
-        'eacDecision': new UntypedFormControl(this.eacDecisions[0]),
-        'decisionDate': new UntypedFormControl(),
-        'substantially': new UntypedFormControl(),
-        'substantiallyDate': new UntypedFormControl(),
-        'activeStatus': new UntypedFormControl(),
-        'activeDate': new UntypedFormControl(),
-        'responsibleEPDId': new UntypedFormControl(),
-        'responsibleEPD': new UntypedFormControl(),
-        'projectLeadId': new UntypedFormControl(),
-        'projectLead': new UntypedFormControl(),
+      this.myForm = new FormGroup({
+        'name': new FormControl<string | null>(null),
+        'proponent': new FormControl<string | null>(null),
+        'currentPhaseName': new FormControl<string | null>(this.projectPhases[0]),
+        'build': new FormControl<string | null>(null),
+        'type': new FormControl<string | null>(null),
+        'sector': new FormControl<string | null>(null),
+        'description': new FormControl<string | null>(null),
+        'location': new FormControl<string | null>(null),
+        'region': new FormControl<string | null>(null),
+        'lat': new FormControl<number | null>(null),
+        'lon': new FormControl<number | null>(null),
+        'addFile': new FormControl<unknown>(null),
+        'CEAAInvolvement': new FormControl<string | null>(null),
+        'CEAALink': new FormControl<string | null>(null),
+        'ea': new FormControl<string | null>(null),
+        'capital': new FormControl<number | null>(null),
+        'notes': new FormControl<string | null>(null),
+        'eaStatus': new FormControl<string | null>(null),
+        'eaStatusDate': new FormControl<unknown>(null),
+        'status': new FormControl<string | null>(this.PROJECT_STATUS[2]),
+        'projectStatusDate': new FormControl<unknown>(null),
+        'eacDecision': new FormControl<string | null>(this.eacDecisions[0]),
+        'decisionDate': new FormControl<unknown>(null),
+        'substantially': new FormControl<unknown>(null),
+        'substantiallyDate': new FormControl<unknown>(null),
+        'activeStatus': new FormControl<unknown>(null),
+        'activeDate': new FormControl<unknown>(null),
+        'responsibleEPDId': new FormControl<string | null>(null),
+        'responsibleEPD': new FormControl<string | null>(null),
+        'projectLeadId': new FormControl<string | null>(null),
+        'projectLead': new FormControl<string | null>(null),
       });
     }
   }
@@ -287,40 +315,38 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       };
     }
 
-    const theForm = new UntypedFormGroup({
-      'name': new UntypedFormControl(formData.name),
-      'proponent': new UntypedFormControl(formData.proponent),
-      'build': new UntypedFormControl(formData.build),
-      'type': new UntypedFormControl(formData.type),
-      'currentPhaseName': new UntypedFormControl(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
-      'sector': new UntypedFormControl(formData.sector),
-      'description': new UntypedFormControl(formData.description),
-      'location': new UntypedFormControl(formData.location),
-      'region': new UntypedFormControl(formData.region),
-      'lat': new UntypedFormControl(formData.centroid[1]),
-      'lon': new UntypedFormControl(formData.centroid[0]),
-      'addFile': new UntypedFormControl(formData.addFile),
-      'CEAAInvolvement': new UntypedFormControl(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
-      'CEAALink': new UntypedFormControl(formData.CEAALink),
-      'ea': new UntypedFormControl(formData.ea),
-      'capital': new UntypedFormControl(formData.intake.investment),
-      'notes': new UntypedFormControl(formData.intake.investmentNotes),
-      'eaStatus': new UntypedFormControl(formData.eaStatus),
-      'eaStatusDate': new UntypedFormControl(),
-      'status': new UntypedFormControl(formData.status || this.PROJECT_STATUS[2]),
-      'projectStatusDate': new UntypedFormControl(),
-      'eacDecision': new UntypedFormControl(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
-      'decisionDate': new UntypedFormControl(formData.decisionDate ? this.utils.convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
-      'substantially': new UntypedFormControl(formData.substantially),
-      'substantiallyDate': new UntypedFormControl(),
-      'activeStatus': new UntypedFormControl(formData.activeStatus),
-      'activeDate': new UntypedFormControl(),
-      'responsibleEPDId': new UntypedFormControl(formData.responsibleEPDObj._id),
-      'responsibleEPD': new UntypedFormControl(formData.responsibleEPDObj.displayName),
-      'projectLeadId': new UntypedFormControl(formData.projectLeadObj._id),
-      'projectLead': new UntypedFormControl(formData.projectLeadObj.displayName),
-      // 'review180Start': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.review180Start))),
-      // 'review45Start': new FormControl(this.utils.convertJSDateToNGBDate(new Date(formData.review45Start)))
+    const theForm = new FormGroup({
+      'name': new FormControl<string | null>(formData.name),
+      'proponent': new FormControl<string | null>(formData.proponent),
+      'build': new FormControl<string | null>(formData.build),
+      'type': new FormControl<string | null>(formData.type),
+      'currentPhaseName': new FormControl<string | null>(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
+      'sector': new FormControl<string | null>(formData.sector),
+      'description': new FormControl<string | null>(formData.description),
+      'location': new FormControl<string | null>(formData.location),
+      'region': new FormControl<string | null>(formData.region),
+      'lat': new FormControl<number | null>(formData.centroid[1]),
+      'lon': new FormControl<number | null>(formData.centroid[0]),
+      'addFile': new FormControl<unknown>(formData.addFile),
+      'CEAAInvolvement': new FormControl<string | null>(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
+      'CEAALink': new FormControl<string | null>(formData.CEAALink),
+      'ea': new FormControl<string | null>(formData.ea),
+      'capital': new FormControl<number | null>(formData.intake.investment),
+      'notes': new FormControl<string | null>(formData.intake.investmentNotes),
+      'eaStatus': new FormControl<string | null>(formData.eaStatus),
+      'eaStatusDate': new FormControl<unknown>(null),
+      'status': new FormControl<string | null>(formData.status || this.PROJECT_STATUS[2]),
+      'projectStatusDate': new FormControl<unknown>(null),
+      'eacDecision': new FormControl<string | null>(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
+      'decisionDate': new FormControl<unknown>(formData.decisionDate ? convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
+      'substantially': new FormControl<unknown>(formData.substantially),
+      'substantiallyDate': new FormControl<unknown>(null),
+      'activeStatus': new FormControl<unknown>(formData.activeStatus),
+      'activeDate': new FormControl<unknown>(null),
+      'responsibleEPDId': new FormControl<string | null>(formData.responsibleEPDObj._id),
+      'responsibleEPD': new FormControl<string | null>(formData.responsibleEPDObj.displayName),
+      'projectLeadId': new FormControl<string | null>(formData.projectLeadObj._id),
+      'projectLead': new FormControl<string | null>(formData.projectLeadObj.displayName),
     });
     this.sectorsSelected = this.PROJECT_SUBTYPES[formData.type];
     return theForm;
@@ -328,7 +354,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
   onChangeType() {
     this.sectorsSelected = this.PROJECT_SUBTYPES[this.myForm.controls.type.value];
-    this._changeDetectorRef.detectChanges();
   }
 
 
@@ -352,7 +377,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   private getDecisionDate(value) {
     // nb: isNaN(undefined) returns true, while isNaN(null) returns false
     const date = value === null ? undefined : value.day;
-    return isNaN(date) ? null : DateTime.fromJSDate(this.utils.convertFormGroupNGBDateToJSDate(value)).toUTC().toISO();
+    return isNaN(date) ? null : DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(value)).toUTC().toISO();
   }
   convertFormToProject(form) {
     return {
@@ -372,15 +397,15 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'ea': form.controls.ea.value,
       'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
       'eaStatus': form.controls.eaStatus.value,
-      // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
+      // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
       'status': form.controls.status.value,
-      // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
+      // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
       'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
-      // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
+      // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
-      // 'activeDate': form.get('activeDate').value ? new Date(moment(this.utils.convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
+      // 'activeDate': form.get('activeDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
       'projectLeadId': form.controls.projectLeadId.value,
       // extension stuff
@@ -438,10 +463,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.location.value === '') {
       alert('Location cannot be empty.');
       return false;
-    } else if (this.myForm.controls.lon.value === '') {
+    } else if (this.myForm.controls.lon.value == null) {
       alert('Longitude cannot be empty.');
       return false;
-    } else if (this.myForm.controls.lat.value === '') {
+    } else if (this.myForm.controls.lat.value == null) {
       alert('Latitude cannot be empty.');
       return false;
     } else if (this.myForm.controls.lat.value >= 60.01 || this.myForm.controls.lat.value <= 48.20) {
@@ -494,12 +519,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   onUnpublish(): void {
-    this.subscriptions.add(
       this.confirmGuard(`Are you sure you want to <strong>Un-Publish</strong> this project entirely?`)
         .subscribe(
           (confirmation: boolean) => {
             if (confirmation) {
-              this.subscriptions.add(
                 this.projectService.unPublish({
                   ...this.project,
                   _id: this.fullProject._id
@@ -510,24 +533,21 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                     },
                     error: error => {
                       this.logger.error('unpublish project failed', 'FormTab2002Component', error);
-                      this.snackBar.open('Uh-oh, couldn\'t un-publish project', 'Close');
+                      this.toastService.error('Uh-oh, couldn\'t un-publish project');
                     },
                     complete: () => {
                       this.published = false;
-                      this.snackBar.open('Project un-published...', null, { duration: 2000 });
+                      this.toastService.success('Project un-published...');
                       this.setGlobalProjectPublishFlag(ProjectPublishState.unpublished);
                       this.router.navigate(['/p', this.projectId, 'project-details']);
                     }
-                  })
-              );
+                  });
             }
           }
-        )
-    );
+        );
   }
 
   onPublish(): void {
-    this.subscriptions.add(
       this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation}</strong>?`)
         .subscribe(
           (confirmation: boolean) => {
@@ -553,7 +573,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                   () => {
                     this.published = true;
                     this.loading = false;
-                    this.openSnackBar('This project was created and published successfuly.', 'Close');
+                    this.toastService.success('This project was created and published successfuly.');
                     this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }
@@ -566,7 +586,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                     this.published = true;
                     this.loading = false;
                     this.router.navigated = false;
-                    this.openSnackBar('This project was edited and published successfuly.', 'Close');
+                    this.toastService.success('This project was edited and published successfuly.');
                     this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }
@@ -574,8 +594,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
               );
             }
           }
-        )
-    );
+        );
   }
   // TODO: don't lose this
 
@@ -596,12 +615,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         // why are these different at all, why not use a controller for both?
       }
 
-      this.subscriptions.add(
         this.projectService.add(project)
           .subscribe(
             ...postSubscribe
-          )
-      );
+          );
     } else {
       // PUT
       // need to add on legislation year so that we can know where to put it on the root object
@@ -611,20 +628,16 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         _id: this.projectId
       }));
       if (putFunction) {
-        this.subscriptions.add(
           this.projectService.save(project)
             .pipe(mergeMap(() => putFunction(project)))
             .subscribe(
               ...putSubscribe
-            )
-        );
+            );
       } else {
-        this.subscriptions.add(
           this.projectService.save(project)
             .subscribe(
               ...putSubscribe
-            )
-        );
+            );
       }
     }
   }
@@ -642,7 +655,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         () => {
           this.clearStorageService();
           this.loading = false;
-          this.openSnackBar('This project was created successfuly.', 'Close');
+          this.toastService.success('This project was created successfuly.');
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ],
@@ -654,7 +667,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.clearStorageService();
           this.loading = false;
           this.router.navigated = false;
-          this.openSnackBar('This project was edited successfully.', 'Close');
+          this.toastService.success('This project was edited successfully.');
+          this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ]
     );
@@ -689,16 +703,10 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.storageService.state.componentModel = 'User';
     this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
     if (this.tabIsEditing) {
-      this.router.navigate(['/p', this.storageService.state.currentProject.data._id, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
+      this.router.navigate(['/p', this.storageService.currentProjectData._id, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
     } else {
       this.router.navigate(['/projects', 'add', 'form-2002', 'link-contact', { pageSize: 25 }]);
     }
-  }
-
-  public openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {
-      duration: 2000,
-    });
   }
 
   getLists() {
@@ -732,6 +740,5 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   ngOnDestroy() {
     // save state before destructing, helps with switching tabs
     this.storageService.state.form2002 = this.myForm;
-    this.subscriptions.unsubscribe();
   }
 }
