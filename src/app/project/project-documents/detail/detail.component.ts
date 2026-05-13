@@ -25,8 +25,9 @@ export class DocumentDetailComponent implements OnInit {
   private documentService = inject(DocumentService);
   private configService = inject(ConfigService);
 
-  // Resolved via documentResolver + projectResolver (withComponentInputBinding)
-  project = input<any>();
+  // Parent route (p/:projId) resolver populates StorageService before this component initializes,
+  // for both direct URL loads and in-app navigation. Signal captures the value at construction time.
+  public readonly project = signal<any>(this.storageService.currentProjectData);
   resolvedDocument = input.required<Document>();
 
   public readonly publishText = signal<string>('Publish');
