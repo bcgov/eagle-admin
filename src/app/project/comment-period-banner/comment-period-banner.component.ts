@@ -1,19 +1,18 @@
-import { Component, OnInit, inject, ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { StorageService } from 'src/app/services/storage.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-    selector: 'app-comment-period-banner',
-    templateUrl: './comment-period-banner.component.html',
-    styleUrl: './comment-period-banner.component.css',
-    
+  selector: 'app-comment-period-banner',
+  imports: [DatePipe],
+  templateUrl: './comment-period-banner.component.html',
+  styleUrl: './comment-period-banner.component.css',
 })
-
 export class CommentPeriodBannerComponent implements OnInit {
   private router = inject(Router);
   private storageService = inject(StorageService);
-
 
   public commentPeriod;
   public projectId;

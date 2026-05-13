@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, input } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
 import { DocumentService } from 'src/app/services/document.service';
@@ -12,7 +13,7 @@ import { ConfigService } from 'src/app/services/config.service';
 @Component({
     selector: 'app-detail',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [RouterModule, NgbDropdownModule],
+    imports: [RouterModule, NgbDropdownModule, DatePipe],
     templateUrl: './detail.component.html',
     styleUrl: './detail.component.css',
 })
@@ -57,6 +58,14 @@ export class DocumentDetailComponent implements OnInit {
     this.storageService.state.labels = doc.labels;
     this.storageService.state.back = { url: ['/p', doc.project, 'project-documents', 'detail', doc._id], label: 'View Document' };
     this.router.navigate(['p', doc.project, 'project-documents', 'edit']);
+  }
+
+  openDocument() {
+    this.documentService.openDocument(this.resolvedDocument());
+  }
+
+  downloadDocument() {
+    this.documentService.downloadDocument(this.resolvedDocument());
   }
 
   togglePublish() {
