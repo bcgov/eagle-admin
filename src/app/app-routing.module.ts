@@ -340,7 +340,7 @@ export const routes: Routes = [
       {
         path: 'project-documents/detail/:docId',
         component: DocumentDetailComponent,
-        resolve: { resolvedDocument: documentResolver },
+        resolve: { resolvedDocument: documentResolver, project: projectResolver },
       },
       {
         path: 'project-documents/edit',

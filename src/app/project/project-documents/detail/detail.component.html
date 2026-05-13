@@ -24,8 +24,8 @@
             <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
             <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
               <button class="dropdown-item" (click)="onEdit()">Edit</button>
-              <button class="dropdown-item" (click)="api.openDocument(resolvedDocument())">Open</button>
-              <button class="dropdown-item" (click)="api.downloadDocument(resolvedDocument())">Download</button>
+              <button class="dropdown-item" (click)="openDocument()">Open</button>
+              <button class="dropdown-item" (click)="downloadDocument()">Download</button>
               <button class="dropdown-item" (click)="togglePublish()">{{publishText()}}</button>
             </div>
           </div>
