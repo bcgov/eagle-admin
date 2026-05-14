@@ -113,6 +113,8 @@ export function penguinAnalyticsPlugin(pluginConfig: PenguinAnalyticsConfig): An
     document.addEventListener('click', trackActivity, { passive: true });
 
     activityInterval = setInterval(() => {
+      // Skip heartbeat if user idle for more than 5 minutes
+      if (Date.now() - lastActivityTime > 300000) return;
       const secondsSinceActivity = Math.floor((Date.now() - lastActivityTime) / 1000);
       sendEvent(config, {
         eventType: 'User Active',
@@ -123,7 +125,7 @@ export function penguinAnalyticsPlugin(pluginConfig: PenguinAnalyticsConfig): An
           seconds_since_activity: secondsSinceActivity
         }
       });
-    }, 30000);
+    }, 120000);
   };
 
   const handleLinkClick = (event: MouseEvent) => {
@@ -205,7 +207,8 @@ export function penguinAnalyticsPlugin(pluginConfig: PenguinAnalyticsConfig): An
         userId: currentUserId,
         properties: {
           page_name: payload.properties?.name || 'unknown',
-          ...getBrowserContext(),
+          url: window.location.pathname,
+          title: document.title,
           ...payload.properties
         }
       });
@@ -239,7 +242,8 @@ export function penguinAnalyticsPlugin(pluginConfig: PenguinAnalyticsConfig): An
         properties: {
           traits: payload.traits,
           session_start: sessionStartTime,
-          session_id: getSessionId()
+          session_id: getSessionId(),
+          ...getBrowserContext()
         }
       });
     },
