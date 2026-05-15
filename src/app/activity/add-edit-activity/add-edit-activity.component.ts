@@ -232,7 +232,8 @@ export class AddEditActivityComponent implements OnInit {
       this.typeIsPCP = true;
       this.typeIsNotification = false;
       this.typeIsProjectNotificationNews = false;
-      this.myForm.get('pcp')!.enable();
+      // pcp stays disabled until periods load — prevents black bar on empty select
+      this.myForm.controls['pcp'].reset({ value: '', disabled: true });
       this.myForm.get('project')!.enable();
       this.myForm.get('project')!.setValidators(Validators.required);
       this.myForm.get('pcp')!.setValidators(Validators.required);
@@ -307,6 +308,12 @@ export class AddEditActivityComponent implements OnInit {
           const currentPcp = this.myForm.controls['pcp'].value;
           if (!this.periods.some((p: any) => p._id === currentPcp)) {
             this.myForm.controls['pcp'].setValue('');
+          }
+          // Enable pcp select only when periods exist — prevents black bar on empty select
+          if (this.typeIsPCP && this.periods.length > 0) {
+            this.myForm.get('pcp')!.enable();
+          } else {
+            this.myForm.controls['pcp'].reset({ value: '', disabled: true });
           }
           this._cdr.markForCheck();
         }
