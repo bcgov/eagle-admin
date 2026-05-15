@@ -19,7 +19,7 @@ export class NotificationProjectService {
   private projectNotificationList: ProjectNotification[] = [];
 
   getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<object> {
-    const fields = ['name', 'epicProjectID', 'location', 'decisionDate'];
+    const fields = ['name', 'location', 'decisionDate'];
     let qs = `projectNotification?`;
     if (pageNum !== null) { qs += `pageNum=${pageNum - 1}&`; }
     if (pageSize !== null) { qs += `pageSize=${pageSize}&`; }

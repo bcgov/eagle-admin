@@ -66,11 +66,7 @@
       Please select a Project Notification.
     </div>
     }
-    @if (typeIsPCP && projectIsSelected && periods.length === 0) {
-    <div class="alert alert-warning" role="alert">
-      No public comment periods exist for selected project.
-    </div>
-    }
+
     <div class="flex-container">
       <div class="label-pair med">
         @if (!typeIsPCP && !typeIsProjectNotificationNews) {
@@ -123,6 +119,9 @@
             {{period.dateCompleted | date}}</option>
           }
         </select>
+        @if (typeIsPCP && projectIsSelected && periods.length === 0) {
+        <small class="form-text text-danger fw-semibold">⚠ No public comment periods found for this project. Please create one before adding this activity.</small>
+        }
       </div>
     </div>
     <div class="flex-container">
