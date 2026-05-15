@@ -273,7 +273,7 @@ export class AddEditActivityComponent implements OnInit {
 
   public updateProject() {
     const currentProjectId = this.myForm.get('project')!.value;
-    if (currentProjectId === undefined) {
+    if (!currentProjectId) {
       this.projectIsSelected = false;
       this._cdr.markForCheck();
     } else {
