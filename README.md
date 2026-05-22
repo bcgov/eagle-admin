@@ -66,7 +66,7 @@ After installing Node.js 24 and project dependencies, you can use the following 
 ```bash
 yarn start
 ```
-This will start the webpack development server on port 4200. Visit [http://localhost:4200](http://localhost:4200) to view the application.
+This will start the Angular development server on port 4200. Visit [http://localhost:4200](http://localhost:4200) to view the application.
 
 ### Build the Project
 
