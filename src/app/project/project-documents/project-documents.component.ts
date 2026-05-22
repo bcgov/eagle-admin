@@ -169,42 +169,34 @@ export class ProjectDocumentsComponent implements OnInit {
 
   async initLists() {
     await this.configService.ensureListsLoaded();
+
+    // Constrain filter options to the current project's legislation year so that
+    // only relevant milestones/types/authors/phases appear in the dropdowns.
+    // The resolver populates storageService before ngOnInit, so this is safe.
+    const projectLegislation: number = this.storageService.currentProjectData?.legislationYear;
+
     if (this.milestones.length === 0) {
-      const milestones = this.configService.lists.filter(item => item.type === 'label');
-      this.milestones = milestones.slice().sort((a, b) => {
-        if (a.legislation < b.legislation) return -1;
-        if (a.legislation > b.legislation) return 1;
-        return 0;
-      });
+      this.milestones = this.configService.lists
+        .filter(item => item.type === 'label' && (!projectLegislation || item.legislation === projectLegislation))
+        .sort((a, b) => (a.listOrder || 0) - (b.listOrder || 0));
     }
 
     if (this.authors.length === 0) {
-      const authors = this.configService.lists.filter(item => item.type === 'author');
-      this.authors = authors.slice().sort((a, b) => {
-        if (a.legislation < b.legislation) return -1;
-        if (a.legislation > b.legislation) return 1;
-        return 0;
-      });
+      this.authors = this.configService.lists
+        .filter(item => item.type === 'author' && (!projectLegislation || item.legislation === projectLegislation))
+        .sort((a, b) => (a.listOrder || 0) - (b.listOrder || 0));
     }
 
     if (this.types.length === 0) {
-      const types = this.configService.lists.filter(item => item.type === 'doctype');
-      this.types = types.slice().sort((a, b) => {
-        if (a.legislation < b.legislation) return -1;
-        if (a.legislation > b.legislation) return 1;
-        if (a.listOrder < b.listOrder) return -1;
-        if (a.listOrder > b.listOrder) return 1;
-        return 0;
-      });
+      this.types = this.configService.lists
+        .filter(item => item.type === 'doctype' && (!projectLegislation || item.legislation === projectLegislation))
+        .sort((a, b) => (a.listOrder || 0) - (b.listOrder || 0));
     }
 
     if (this.projectPhases.length === 0) {
-      const projectPhases = this.configService.lists.filter(item => item.type === 'projectPhase');
-      this.projectPhases = projectPhases.slice().sort((a, b) => {
-        if (a.legislation < b.legislation) return -1;
-        if (a.legislation > b.legislation) return 1;
-        return 0;
-      });
+      this.projectPhases = this.configService.lists
+        .filter(item => item.type === 'projectPhase' && (!projectLegislation || item.legislation === projectLegislation))
+        .sort((a, b) => (a.listOrder || 0) - (b.listOrder || 0));
     }
       this.route.params
         .pipe(
