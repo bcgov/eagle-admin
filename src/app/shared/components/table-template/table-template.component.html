@@ -42,10 +42,9 @@
         {{data().paginationData.totalListItems}} result@if (data().paginationData.totalListItems != 1) {<span>s</span>} found
       </span>
       <select class="form-select form-select-sm w-auto"
-        [value]="activePageSize"
         (change)="updatePageSize(+$any($event.target).value)">
         @for (size of pageSizeArray; track size) {
-          <option [value]="size">{{size}} / page</option>
+          <option [value]="size" [selected]="size === activePageSize">{{size}} / page</option>
         }
       </select>
     </div>

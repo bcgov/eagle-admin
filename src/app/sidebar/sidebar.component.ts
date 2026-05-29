@@ -85,7 +85,7 @@ export class SidebarComponent implements OnInit {
     const urlArray = this.routerSnapshot.urlAfterRedirects.split('/');
     urlArray.shift(); // remove leading empty segment
 
-    const [mainRoute, mainRouteId] = urlArray;
+    const [mainRoute, mainRouteId] = urlArray.map(s => s.split(';')[0]);
 
     this.showProjectDetails = mainRoute === 'p';
     this.showProjectNotificationDetails = mainRoute === 'pn';

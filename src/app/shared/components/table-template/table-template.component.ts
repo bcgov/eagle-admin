@@ -59,6 +59,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
       this.data().data = changes['data'].currentValue.data;
       this.data().paginationData = changes['data'].currentValue.paginationData;
       this.column = changes['data'].currentValue.paginationData.sortBy;
+      this.activePageSize = parseInt(changes['data'].currentValue.paginationData.pageSize, 10);
       this.data().extraData = changes['data'].currentValue.extraData;
       this.rebuildPageSizes();
       this.loadComponent();
@@ -97,6 +98,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   updatePageSize(pageSize) {
+    this.activePageSize = pageSize;
     this.data().paginationData.pageSize = pageSize;
     this.onPageNumUpdate.emit(1);
   }
