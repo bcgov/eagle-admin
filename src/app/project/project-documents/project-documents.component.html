@@ -64,7 +64,7 @@
         </button>
         }
       </div>
-      @if (!loading) {
+      @if (!loading()) {
       <div class="advanced-search">
         <div class="row">
           @if (showAdvancedSearch) {
@@ -283,12 +283,12 @@
   <div class="content-container">
     @if (this.tableParams.totalListItemsCategorized > 0) {
     <div>
-      @if (!loading && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData &&
+      @if (!loading() && this.tableParams.totalListItemsCategorized != 0 && categorizedDocumentTableData &&
       categorizedDocumentTableData.data.length) {
       <app-table-template [columns]="documentTableColumns" [data]="categorizedDocumentTableData"
         (onColumnSort)='setColumnSort(constants.documentTypes.CATEGORIZED, $event)'
         (onSelectedRow)='updateSelectedRow(constants.documentTypes.CATEGORIZED, $event)'
-        (onPageNumUpdate)='getPaginatedDocs(constants.documentTypes.CATEGORIZED, $event)'
+        (onPageNumUpdate)='onPageChange($event)'
         (selectAllClicked)="selectAction('selectAll')">
       </app-table-template>
       }
@@ -301,7 +301,7 @@
     }
   </div>
   <div>
-    @if (loading) {
+    @if (loading()) {
     <div class="spinner-container">
       <div class="spinner-new rotating"></div>
     </div>

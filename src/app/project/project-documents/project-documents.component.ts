@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
@@ -24,6 +24,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { LoadingStateService } from 'src/app/services/loading-state.service';
 
 
 class DocumentFilterObject {
@@ -63,7 +64,7 @@ export class ProjectDocumentsComponent implements OnInit {
   private storageService = inject(StorageService);
   private tableDocumentTemplateUtils = inject(TableDocumentTemplateUtils);
   private logger = inject(LoggingService);
-  private _cdr = inject(ChangeDetectorRef);
+  private loadingState = inject(LoadingStateService);
 
   // Must do this to expose the constants to the template,
   public readonly constants = Constants;
@@ -79,7 +80,9 @@ export class ProjectDocumentsComponent implements OnInit {
   public projectPhases: any[] = [];
   public legislations: any[] = [];
 
-  public loading = true;
+  private searchLoading = this.loadingState.getOperationState('search-results');
+  private actionLoading = signal(false);
+  public loading = computed(() => this.searchLoading() || this.actionLoading());
 
   public tableParams: TableDocumentParamsObject = new TableDocumentParamsObject();
   public terms = new SearchTerms();
@@ -208,30 +211,18 @@ export class ProjectDocumentsComponent implements OnInit {
 
             this.updateCounts();
 
-            if (this.storageService.state.projectDocumentTableParams == null) {
-              this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
-                params,
-                this.filterForURL
-              );
+            this.tableParams = this.tableDocumentTemplateUtils.getParamsFromUrl(
+              params,
+              this.filterForURL
+            );
 
-              if (this.tableParams.sortByCategorized === '') {
-                this.tableParams.sortByCategorized = '-datePosted,+displayName';
-              }
-
-              if (params.keywords !== undefined) {
-                this.tableParams.keywords =
-                  decodeURIComponent(params.keywords) || '';
-              } else {
-                this.tableParams.keywords = '';
-              }
-
-              this.storageService.state.projectDocumentTableParams = this.tableParams;
-            } else {
-              this.tableParams = this.storageService.state.projectDocumentTableParams;
-              this.tableParams.keywords = decodeURIComponent(
-                this.tableParams.keywords
-              );
+            if (this.tableParams.sortByCategorized === '') {
+              this.tableParams.sortByCategorized = '-datePosted,+displayName';
             }
+
+            this.tableParams.keywords = params.keywords
+              ? decodeURIComponent(params.keywords)
+              : '';
 
             this.currentProject = this.storageService.currentProjectData;
             this.storageService.state.labels = null;
@@ -270,9 +261,6 @@ export class ProjectDocumentsComponent implements OnInit {
             }
 
             this.setRowData();
-
-            this.loading = false;
-            this._cdr.markForCheck();
           } else {
             alert('Uh-oh, couldn\'t load valued components');
             // project not found --> navigate back to search
@@ -388,7 +376,7 @@ export class ProjectDocumentsComponent implements OnInit {
 
     modalRef.result.then((isConfirmed) => {
       if (isConfirmed) {
-        this.loading = true;
+        this.actionLoading.set(true);
         const observables = [];
 
         if (this.categorizedDocumentTableData) {
@@ -403,20 +391,16 @@ export class ProjectDocumentsComponent implements OnInit {
           error: err => {
             this.logger.error('publish documents failed', 'ProjectDocumentsComponent', err);
             this.toastService.error('Failed to publish document(s).');
-            this.loading = false;
-            this._cdr.markForCheck();
+            this.actionLoading.set(false);
           },
           complete: () => {
-            this.loading = false;
+            this.actionLoading.set(false);
             this.canUnpublish = false;
             this.canPublish = false;
             this.toastService.success('Document(s) published successfully.');
             this.onSubmit();
           }
         });
-      } else {
-        this.loading = false;
-        this._cdr.markForCheck();
       }
     }).catch(() => {
       // Handle error
@@ -435,7 +419,7 @@ export class ProjectDocumentsComponent implements OnInit {
 
     modalRef.result.then((isConfirmed) => {
       if (isConfirmed) {
-        this.loading = true;
+        this.actionLoading.set(true);
         const observables = [];
 
         if (this.categorizedDocumentTableData) {
@@ -450,20 +434,16 @@ export class ProjectDocumentsComponent implements OnInit {
           error: err => {
             this.logger.error('unpublish documents failed', 'ProjectDocumentsComponent', err);
             this.toastService.error('Failed to unpublish document(s).');
-            this.loading = false;
-            this._cdr.markForCheck();
+            this.actionLoading.set(false);
           },
           complete: () => {
-            this.loading = false;
+            this.actionLoading.set(false);
             this.canUnpublish = false;
             this.canPublish = false;
             this.toastService.success('Document(s) unpublished successfully.');
             this.onSubmit();
           }
         });
-      } else {
-        this.loading = false;
-        this._cdr.markForCheck();
       }
     }).catch(() => {
       // Handle error
@@ -482,7 +462,7 @@ export class ProjectDocumentsComponent implements OnInit {
 
     modalRef.result.then(async (isConfirmed) => {
       if (isConfirmed) {
-        this.loading = true;
+        this.actionLoading.set(true);
         const itemsToDelete = [];
 
         if (this.categorizedDocumentTableData) {
@@ -495,13 +475,13 @@ export class ProjectDocumentsComponent implements OnInit {
 
         try {
           await Promise.all(itemsToDelete);
+          this.actionLoading.set(false);
           this.toastService.success('Document(s) deleted successfully.');
           this.onSubmit();
         } catch (err) {
           this.logger.error('delete documents failed', 'ProjectDocumentsComponent', err);
           this.toastService.error('Failed to delete document(s).');
-          this.loading = false;
-          this._cdr.markForCheck();
+          this.actionLoading.set(false);
         }
       }
     }).catch(() => {
@@ -542,9 +522,6 @@ export class ProjectDocumentsComponent implements OnInit {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
-
-    this.loading = true;
-    this._cdr.markForCheck();
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
@@ -615,19 +592,11 @@ export class ProjectDocumentsComponent implements OnInit {
   }
 
   setColumnSort(docType, column) {
-    let currentPage;
-
     if (docType === Constants.documentTypes.CATEGORIZED) {
-      currentPage = this.tableParams.currentPageCategorized;
-
-      if (this.tableParams.sortByCategorized.charAt(0) === '+') {
-        this.tableParams.sortByCategorized = '-' + column;
-      } else {
-        this.tableParams.sortByCategorized = '+' + column;
-      }
+      this.tableParams.sortByCategorized =
+        this.tableParams.sortByCategorized.charAt(0) === '+' ? '-' + column : '+' + column;
     }
-
-    this.getPaginatedDocs(docType, currentPage);
+    this.onPageChange(this.tableParams.currentPageCategorized);
   }
 
   isEnabled(button) {
@@ -815,51 +784,20 @@ export class ProjectDocumentsComponent implements OnInit {
     this.updateCount('projectPhase');
   }
 
-  getPaginatedDocs(docType, pageNumber) {
-    // Go to top of page after clicking to a different page.
+  onPageChange(pageNumber: number) {
     window.scrollTo(0, 0);
-    this.loading = true;
+    const params = this.terms.getParams();
+    params['ms'] = new Date().getMilliseconds();
+    params['dataset'] = this.terms.dataset;
+    params['currentPageCategorized'] = pageNumber;
+    params['sortByCategorized'] = this.tableParams.sortByCategorized;
+    params['keywords'] = this.tableParams.keywords;
+    params['pageSizeCategorized'] = this.categorizedDocumentTableData
+      ? this.categorizedDocumentTableData.paginationData.pageSize
+      : this.tableParams.pageSizeCategorized;
+    this.setParamsFromFilters(params);
 
-    this.tableParams = this.tableDocumentTemplateUtils.updateTableParams(
-      docType,
-      this.tableParams,
-      pageNumber,
-    );
-
-    if (docType === Constants.documentTypes.CATEGORIZED) {
-      this.tableParams.pageSizeCategorized = this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0;
-        this.searchService
-          .getSearchResults(
-            this.tableParams.keywords || '',
-            'Document',
-            [
-              { name: 'project', value: this.currentProject._id },
-              { name: 'categorized', value: true }
-            ],
-            pageNumber,
-            this.categorizedDocumentTableData.paginationData.pageSize,
-            this.tableParams.sortByCategorized,
-            { documentSource: 'PROJECT' },
-            true,
-            this.filterForAPI,
-            ''
-          )
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe((res: any) => {
-            this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
-            this.categorizedDocs = res[0].data.searchResults;
-            this.tableDocumentTemplateUtils.updateUrl(
-              this.tableParams.sortByCategorized,
-              this.tableParams.currentPageCategorized,
-              this.categorizedDocumentTableData ? this.categorizedDocumentTableData.paginationData.pageSize : 0,
-              this.filterForURL,
-              this.tableParams.keywords || ''
-            );
-
-            this.setRowData();
-            this.loading = false;
-          });
-    }
+    this.router.navigate(['p', this.currentProject._id, 'project-documents', params]);
   }
 
   // Compares selected options when a dropdown is grouped by legislation.
