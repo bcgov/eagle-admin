@@ -1,10 +1,9 @@
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, inject, signal, computed, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommentPeriod } from '../models/commentPeriod';
 import { CommentPeriodService } from '../services/commentperiod.service';
-import { ConfigService } from '../services/config.service';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
@@ -26,11 +25,9 @@ import { LoadingStateService } from '../services/loading-state.service';
   ]
 })
 export class CommentPeriodsComponent implements OnInit {
-  private configService = inject(ConfigService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private commentPeriodService = inject(CommentPeriodService);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private destroyRef = inject(DestroyRef);
@@ -180,30 +177,5 @@ export class CommentPeriodsComponent implements OnInit {
       });
   }
 
-  public addCommentPeriod() {
-    this.storageService.state.currentProject = this.currentProject;
-
-    if (this.currentProject.data.hasMetCommentPeriods) {
-      let metURL;
-      switch (this.configService.config().ENVIRONMENT || 'local') {
-        case 'prod':
-        case 'demo':
-        case 'hotfix':
-          metURL = 'https://engage.eao.gov.bc.ca/';
-          break;
-        case 'test':
-          metURL = 'https://test.engage.eao.gov.bc.ca/';
-          break;
-        case 'dev':
-        case 'local':
-        default:
-          metURL = 'https://dev.engage.eao.gov.bc.ca/';
-          break;
-      }
-      window.open(`${metURL}engagements/create/form/?project_id=${this.currentProject.data._id}`, '_blank');
-    } else {
-      this.router.navigate([this.baseRouteUrl, this.currentProject.data._id, 'comment-periods', 'add']);
-    }
-  }
-
 }
+
