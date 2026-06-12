@@ -14,7 +14,16 @@ vm.runInNewContext(envJs, sandbox);
 
 const target = sandbox.__env.API_LOCATION || 'http://localhost:3000';
 
-const proxyRule = { target, secure: false, changeOrigin: true };
+const proxyRule = {
+  target,
+  secure: false,
+  changeOrigin: true,
+  // Prevent Angular dev server from timing out long-running proxied requests
+  // (e.g. eagle-demi OCR extraction can take up to 280s).
+  // proxyTimeout = socket timeout toward the target; timeout = inbound socket timeout.
+  proxyTimeout: 350_000,
+  timeout: 350_000,
+};
 
 module.exports = {
   '/api':       proxyRule,

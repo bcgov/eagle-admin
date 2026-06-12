@@ -10,12 +10,12 @@
   window.__env.configEndpoint = false;
 
   // Environment name
-  window.__env.ENVIRONMENT = 'local'; // local | dev | test | prod
-  window.__env.BANNER_COLOUR = 'yellow';
+  window.__env.ENVIRONMENT = 'dev'; // local | dev | test | prod
+  window.__env.BANNER_COLOUR = 'blue';
 
   // API — proxy.conf.js reads API_LOCATION to generate dev server proxy rules
   // The Angular app uses relative paths (/api, /analytics) — never API_LOCATION directly
-  window.__env.API_LOCATION = 'http://localhost:3000';
+  window.__env.API_LOCATION = 'https://eagle-dev.apps.silver.devops.gov.bc.ca';
   window.__env.API_PATH = '/api';
 
   // Keycloak configuration

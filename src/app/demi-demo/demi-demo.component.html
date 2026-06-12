@@ -1,0 +1,240 @@
+<nav class="action-container" aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">
+      OCR
+      <span class="badge bg-warning text-dark ms-2" style="font-size: 0.65rem; vertical-align: middle;">PREVIEW</span>
+    </li>
+  </ol>
+</nav>
+
+<main class="container-fluid-padding">
+  <p class="text-muted mb-3">
+    Upload a document to file it under a project and extract its text content via the eagle-demi service.
+    The file is <strong>stored in MinIO</strong> and a staff-only document record is created, then text is
+    extracted (OCR for scans) into searchable chunks. Supported formats: PDF, DOCX, DOC, PPTX, XLSX.
+    Processing is asynchronous — large documents may take several minutes.
+  </p>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <label for="projectInput" class="form-label fw-bold">Project id</label>
+      <input
+        id="projectInput"
+        type="text"
+        class="form-control"
+        placeholder="24-character project ObjectId"
+        autocomplete="off"
+        (input)="onProjectInput($event)"
+        [disabled]="busy()"
+      />
+      <div class="form-text">Required. The document is filed under this EPIC project.</div>
+
+      <label for="fileInput" class="form-label fw-bold mt-3">Select a document</label>
+      <input
+        id="fileInput"
+        type="file"
+        class="form-control"
+        accept=".pdf,.docx,.doc,.pptx,.xlsx"
+        (change)="onFileSelected($event)"
+        [disabled]="busy() || !projectValid()"
+      />
+      <div class="form-text">
+        Maximum file size: 100 MB.
+        @if (!projectValid()) { <span class="text-warning">Enter a valid project id to enable upload.</span> }
+      </div>
+    </div>
+  </div>
+
+  <!-- Active job — download manager card -->
+  <app-extraction-progress
+    [phase]="phase()"
+    [progress]="uploadProgress()"
+    [queuePosition]="queuePosition()"
+    [fileName]="fileName()"
+    [fileSize]="fileSize()"
+    [taskMeta]="taskMeta()"
+    [jobStartedAt]="startedAt()"
+    [jobProgress]="jobProgress()"
+  />
+
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">
+      <strong>Extraction failed:</strong> {{ error() }}
+    </div>
+  }
+
+  <!-- All demi-extract jobs (from API, refreshed every 10s) -->
+  @if (otherJobs().length > 0) {
+    <div class="card mb-4">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <span class="material-icons text-secondary" style="font-size: 1.1rem;">history</span>
+          <span class="fw-semibold">Extraction jobs</span>
+        </div>
+        <span class="badge text-bg-secondary">{{ otherJobs().length }}</span>
+      </div>
+      <ul class="list-group list-group-flush">
+        @for (job of otherJobs(); track job.jobId) {
+          <li class="list-group-item py-2 px-3">
+            <div class="d-flex align-items-center gap-3">
+
+              <!-- Icon -->
+              <span class="material-icons text-secondary" style="font-size: 1.5rem; flex-shrink: 0;" aria-hidden="true">picture_as_pdf</span>
+
+              <!-- Main content -->
+              <div class="flex-grow-1" style="min-width: 0;">
+                <!-- Row 1: filename + status badge -->
+                <div class="d-flex justify-content-between align-items-baseline gap-2">
+                  <span class="text-truncate fw-semibold small" [title]="job.originalFilename ?? ''">
+                    {{ job.originalFilename ?? '(unnamed)' }}
+                  </span>
+                  <span
+                    class="badge flex-shrink-0"
+                    [class]="job.status === 'completed' ? 'text-bg-success'
+                           : job.status === 'failed'    ? 'text-bg-danger'
+                           : job.status === 'running'   ? 'text-bg-info'
+                           :                              'text-bg-secondary'"
+                  >{{ job.status }}</span>
+                </div>
+                <!-- Row 2: size · user · time -->
+                <div class="text-muted d-flex gap-2 flex-wrap" style="font-size: 0.78rem; margin-top: 2px;">
+                  @if (job.fileSize) {
+                    <span>{{ job.fileSize | number }} bytes</span>
+                    <span>&middot;</span>
+                  }
+                  @if (job.requestedBy) {
+                    <span>{{ job.requestedBy }}</span>
+                    <span>&middot;</span>
+                  }
+                  @if (job.status === 'running' && job.startedAt) {
+                    <span>started {{ job.startedAt | date:'HH:mm' }}</span>
+                  } @else {
+                    <span>{{ (job.completedAt ?? job.startedAt ?? job.createdAt) | date:'MMM d, HH:mm' }}</span>
+                  }
+                  @if (job.error) {
+                    <span>&middot;</span>
+                    <span class="text-danger" [title]="job.error">{{ job.error | slice:0:60 }}{{ (job.error?.length ?? 0) > 60 ? '…' : '' }}</span>
+                  }
+                </div>
+                <!-- Row 3: animated bar for running jobs -->
+                @if (job.status === 'running' || job.status === 'queued') {
+                  <div class="progress mt-1" style="height: 3px;" role="progressbar">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
+                  </div>
+                }
+              </div>
+
+              <!-- Download button -->
+              @if (job.hasResult) {
+                <div class="d-flex gap-1">
+                  @if (job.docId) {
+                    <a
+                      class="btn btn-sm btn-outline-primary flex-shrink-0"
+                      [routerLink]="['/p', job.projectId, 'project-documents', 'detail', job.docId]"
+                      target="_blank"
+                      title="View Document in EPIC"
+                    >
+                      <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">open_in_new</span>
+                    </a>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                      (click)="onDownloadOriginal(job)"
+                      title="Download Original Source"
+                    >
+                      <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">description</span>
+                    </button>
+                  }
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                    (click)="onDownloadJob(job)"
+                    [title]="'Download extracted text for ' + job.originalFilename"
+                  >
+                    <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">download</span>
+                  </button>
+                </div>
+              }
+
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  @if (markdown() !== null && phase() === 'done') {
+    <div class="card mb-4 border-success">
+      <div class="card-header bg-success-subtle d-flex flex-column gap-2">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <span class="fw-semibold text-success">Extraction Complete &mdash; <em>{{ fileName() }}</em></span>
+            @if (docId()) {
+              <div class="btn-group">
+                <a
+                  class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
+                  [routerLink]="['/p', projectId(), 'project-documents', 'detail', docId()]"
+                  target="_blank"
+                >
+                  <span class="material-icons" style="font-size: 0.9rem;">open_in_new</span>
+                  EPIC Document
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
+                  (click)="onDownloadOriginal(null)"
+                  [title]="'Download Original Source'"
+                >
+                  <span class="material-icons" style="font-size: 0.9rem;">description</span>
+                  Original Source
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-success d-flex align-items-center gap-1"
+                  (click)="onDownloadActiveJob()"
+                  [title]="'Download extracted text'"
+                >
+                  <span class="material-icons" style="font-size: 0.9rem;">download</span>
+                  Extracted Text
+                </button>
+              </div>
+            }
+          </div>
+          <span class="badge bg-success">{{ markdown().length | number }} characters</span>
+        </div>
+        
+        <!-- Typesense Search Bar -->
+        @if (docId()) {
+          <div class="d-flex gap-2 align-items-center mt-2">
+            <div class="input-group input-group-sm" style="max-width: 400px;">
+              <span class="input-group-text bg-white"><span class="material-icons" style="font-size: 1rem;">search</span></span>
+              <input type="text" class="form-control border-start-0" placeholder="Search within this document..." (input)="onSearchInput($event)">
+            </div>
+            @if (searchResults().length > 0) {
+              <span class="small text-muted">{{ searchResults().length }} chunks found</span>
+            } @else if (searchQuery()) {
+              <span class="small text-muted">No matches</span>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="card-body p-0">
+        @if (searchQuery()) {
+          <div class="p-3 bg-light" style="max-height: 60vh; overflow-y: auto;">
+            @for (hit of searchResults(); track hit.document.id) {
+              <div class="card mb-2 border-0 shadow-sm">
+                <div class="card-body p-2">
+                  <div class="small text-muted mb-1">Page {{ hit.document.pageNumber }}</div>
+                  <p class="mb-0 small" [innerHTML]="hit.highlights?.[0]?.snippet || hit.document.content | slice:0:300"></p>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <pre class="m-0 p-3" style="max-height: 60vh; overflow-y: auto; white-space: pre-wrap; word-break: break-word; font-size: 0.85rem; background: #f8f9fa;">{{ markdown() }}</pre>
+        }
+      </div>
+    </div>
+  }
+</main>
