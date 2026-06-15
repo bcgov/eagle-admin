@@ -8,6 +8,8 @@ export interface DemiJobStatus {
   status: 'pending' | 'started' | 'success' | 'failure';
   queuePosition: number | null;
   taskMeta?: Record<string, unknown> | null;
+  docId?: string | null;
+  projectId?: string | null;
   fileSize?: number | null;
   originalFilename?: string | null;
   /** Agenda failReason — present when status is 'failure'. */
@@ -95,6 +97,8 @@ export class DemiService {
           status,
           queuePosition:    job.progress?.queuePosition ?? null,
           taskMeta:         job.progress?.taskMeta ?? null,
+          docId:            job.docId ?? null,
+          projectId:        job.projectId ?? null,
           fileSize:         job.fileSize ?? null,
           originalFilename: job.originalFilename ?? null,
           error:            job.error ?? null,

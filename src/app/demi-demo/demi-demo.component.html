@@ -127,6 +127,17 @@
               <!-- Download button -->
               @if (job.hasResult) {
                 <div class="d-flex gap-1">
+                  @if (job.status === 'completed') {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary flex-shrink-0 d-flex align-items-center gap-1"
+                      (click)="viewJob(job)"
+                      title="View extracted text and search"
+                    >
+                      <span class="material-icons" style="font-size: 1rem;">visibility</span>
+                      View
+                    </button>
+                  }
                   @if (job.docId) {
                     <a
                       class="btn btn-sm btn-outline-primary flex-shrink-0"
@@ -168,7 +179,7 @@
       <div class="card-header bg-success-subtle d-flex flex-column gap-2">
         <div class="d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-3">
-            <span class="fw-semibold text-success">Extraction Complete &mdash; <em>{{ fileName() }}</em></span>
+            <span class="fw-semibold text-success">Extraction Results &mdash; <em>{{ fileName() }}</em></span>
             @if (docId()) {
               <div class="btn-group">
                 <a
@@ -207,8 +218,8 @@
         @if (docId()) {
           <div class="d-flex gap-2 align-items-center mt-2">
             <div class="input-group input-group-sm" style="max-width: 400px;">
-              <span class="input-group-text bg-white"><span class="material-icons" style="font-size: 1rem;">search</span></span>
-              <input type="text" class="form-control border-start-0" placeholder="Search within this document..." (input)="onSearchInput($event)">
+              <span class="input-group-text bg-white border-success-subtle"><span class="material-icons" style="font-size: 1rem;">search</span></span>
+              <input type="text" class="form-control border-start-0 border-success-subtle" placeholder="Search within this document..." (input)="onSearchInput($event)">
             </div>
             @if (searchResults().length > 0) {
               <span class="small text-muted">{{ searchResults().length }} chunks found</span>

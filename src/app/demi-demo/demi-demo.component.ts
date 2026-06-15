@@ -12,6 +12,8 @@ interface PersistedJob {
   jobId: string;
   fileName: string;
   fileSize?: number;
+  docId?: string;
+  projectId?: string;
   /** ISO string of when the job started (Agenda lockedAt). Survives page refresh. */
   startedAt?: string;
 }
@@ -124,12 +126,15 @@ export class DemiDemoComponent implements OnInit {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
-      const { jobId, fileName, fileSize, startedAt } = JSON.parse(raw) as PersistedJob;
+      const { jobId, fileName, fileSize, startedAt, docId, projectId } = JSON.parse(raw) as PersistedJob;
       if (!jobId) return;
       this.activeJobId.set(String(jobId));
       this.fileName.set(fileName ?? null);
       this.fileSize.set(fileSize ?? null);
       this.startedAt.set(startedAt ?? null);
+      this.docId.set(docId ?? null);
+      this.projectId.set(projectId ?? '');
+      
       // Skip 'queued' if we know the job was already running — avoids 'Waiting for worker' flash
       this.phase.set(startedAt ? 'processing' : 'queued');
       this.startPolling(jobId);
@@ -138,8 +143,10 @@ export class DemiDemoComponent implements OnInit {
     }
   }
 
-  private saveJob(jobId: string, fileName: string, fileSize?: number, startedAt?: string): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ jobId, fileName, fileSize, startedAt } satisfies PersistedJob));
+  private saveJob(jobId: string, fileName: string, fileSize?: number, startedAt?: string, docId?: string, projectId?: string): void {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+      jobId, fileName, fileSize, startedAt, docId, projectId 
+    } satisfies PersistedJob));
   }
 
   private clearJob(): void {
@@ -158,6 +165,20 @@ export class DemiDemoComponent implements OnInit {
 
   /** A valid-looking Mongo ObjectId is required before upload. */
   projectValid = computed(() => /^[a-f0-9]{24}$/i.test(this.projectId()));
+
+  viewJob(job: AgendaJob): void {
+    if (job.status !== 'completed') return;
+    this.cancel();
+    this.error.set(null);
+    this.markdown.set(null);
+    this.fileName.set(job.originalFilename ?? null);
+    this.fileSize.set(job.fileSize ?? null);
+    this.docId.set(job.docId ?? null);
+    this.projectId.set(job.projectId ?? '');
+    this.activeJobId.set(job.jobId);
+    this.phase.set('done');
+    this.fetchMarkdown(job.jobId);
+  }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -197,10 +218,13 @@ export class DemiDemoComponent implements OnInit {
           }
         } else if (httpEvent.type === HttpEventType.Response) {
           const jobId = httpEvent.body?.jobId;
-          this.docId.set(httpEvent.body?.docId ?? null);
+          const docId = httpEvent.body?.docId;
+          const projId = this.projectId();
+          
+          this.docId.set(docId ?? null);
           if (jobId) {
             this.activeJobId.set(String(jobId));
-            this.saveJob(jobId, file.name, file.size);
+            this.saveJob(jobId, file.name, file.size, undefined, docId, projId);
             this.phase.set('queued');
             this.startPolling(jobId);
           } else {
@@ -228,6 +252,8 @@ export class DemiDemoComponent implements OnInit {
       next: (result) => {
         this.taskMeta.set(result.taskMeta ?? null);
         this.jobProgress.set(result.progress ?? null);
+        if (result.docId) this.docId.set(result.docId);
+        if (result.projectId) this.projectId.set(result.projectId);
         
         if (result.status === 'pending') {
           this.phase.set('queued');
@@ -237,27 +263,13 @@ export class DemiDemoComponent implements OnInit {
           this.queuePosition.set(null);
           if (result.startedAt && !this.startedAt()) {
             this.startedAt.set(result.startedAt);
-            const jobId = this.activeJobId();
-            const name  = this.fileName();
-            if (jobId && name) this.saveJob(jobId, name, this.fileSize() ?? undefined, result.startedAt);
+            this.saveJob(jobId, this.fileName()!, this.fileSize() ?? undefined, result.startedAt, this.docId()!, this.projectId());
           }
         } else if (result.status === 'success') {
           this.stopPolling$.next();
-          this.clearJob();
+          // Keep activeJobId set so the success card shows the results
           this.phase.set('streaming');
-          this.demiService.downloadMarkdown(jobId).subscribe({
-            next: (text) => {
-              this.activeJobId.set(null);
-              this.refreshJobList();
-              this.markdown.set(text || '(No text extracted)');
-              this.phase.set('done');
-            },
-            error: (err) => {
-              const msg = err?.error?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
-              this.error.set(msg);
-              this.phase.set('idle');
-            },
-          });
+          this.fetchMarkdown(jobId);
           this.sub = null;
         } else if (result.status === 'failure') {
           this.clearJob();
@@ -275,6 +287,27 @@ export class DemiDemoComponent implements OnInit {
         this.error.set(msg);
         this.phase.set('idle');
         this.sub = null;
+      },
+    });
+  }
+
+  private fetchMarkdown(jobId: string): void {
+    this.demiService.downloadMarkdown(jobId).subscribe({
+      next: (text) => {
+        this.markdown.set(text || '(No text extracted)');
+        this.phase.set('done');
+        this.refreshJobList();
+      },
+      error: (err) => {
+        let errorBody = err?.error;
+        if (typeof errorBody === 'string') {
+          try {
+            errorBody = JSON.parse(errorBody);
+          } catch { /* not JSON */ }
+        }
+        const msg = errorBody?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
+        this.error.set(msg);
+        this.phase.set('idle');
       },
     });
   }
@@ -308,7 +341,13 @@ export class DemiDemoComponent implements OnInit {
         a.remove();
       },
       error: (err) => {
-        const msg = err?.error?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
+        let errorBody = err?.error;
+        if (typeof errorBody === 'string') {
+          try {
+            errorBody = JSON.parse(errorBody);
+          } catch { /* not JSON */ }
+        }
+        const msg = errorBody?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
         this.error.set(msg);
       },
     });
@@ -329,7 +368,13 @@ export class DemiDemoComponent implements OnInit {
         a.remove();
       },
       error: (err) => {
-        const msg = err?.error?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
+        let errorBody = err?.error;
+        if (typeof errorBody === 'string') {
+          try {
+            errorBody = JSON.parse(errorBody);
+          } catch { /* not JSON */ }
+        }
+        const msg = errorBody?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
         this.error.set(msg);
       },
     });
