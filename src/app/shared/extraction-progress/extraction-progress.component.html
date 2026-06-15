@@ -27,7 +27,13 @@
             <div class="text-muted small mb-2">
               @if (formattedSize()) {<span>{{ formattedSize() }}</span>}
               @if (formattedSize() && elapsed() > 0) {<span class="mx-1">&middot;</span>}
-              @if (elapsed() > 0) {<span>{{ elapsedLabel() }} elapsed</span>}
+              @if (elapsed() > 0) {
+                <span>{{ elapsedLabel() }} elapsed</span>
+                @if (etaLabel()) {
+                  <span class="mx-1">&middot;</span>
+                  <span class="text-info fw-medium">{{ etaLabel() }}</span>
+                }
+              }
             </div>
           }
 

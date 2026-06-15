@@ -113,12 +113,34 @@ export class ExtractionProgressComponent implements OnInit {
     return `${(b / 1_073_741_824).toFixed(2)} GB`;
   });
 
-  protected elapsedLabel = computed(() => {
+  protected elapsedLabel = computed(() => this.formatTime(this.elapsed()));
+
+  /** Estimated time remaining based on current batch progress. */
+  protected etaLabel = computed(() => {
+    const p = this.phase();
+    const jp = this.jobProgress();
     const s = this.elapsed();
+
+    if (p === 'processing' && jp && jp.totalBatches && jp.batch && jp.batch > 0 && s > 5) {
+      const progressRatio = jp.batch / jp.totalBatches;
+      if (progressRatio >= 1) return null;
+
+      const totalEstimated = s / progressRatio;
+      const remaining = Math.max(0, Math.floor(totalEstimated - s));
+
+      // Don't show ETA for very short durations
+      if (remaining < 5) return null;
+
+      return `${this.formatTime(remaining)} remaining`;
+    }
+    return null;
+  });
+
+  private formatTime(s: number): string {
     if (s < 60)   return `${s}s`;
     if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`;
     return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
-  });
+  }
 
   /** Bootstrap colour utility class for the status badge. */
   protected badgeClass = computed(() => {
