@@ -1,10 +1,11 @@
 import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, signal, computed, inject } from '@angular/core';
 import { DatePipe, DecimalPipe, SlicePipe } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
-import { interval, Subject, Subscription, switchMap, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { interval, Subject, Subscription, switchMap, takeUntil, debounceTime, distinctUntilChanged, retry } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { DemiService, AgendaJob } from '../services/demi.service';
 import { ExtractionProgressComponent, ExtractionPhase } from '../shared/extraction-progress/extraction-progress.component';
+import { sanitizeHighlight } from '../shared/utils/sanitize-highlight';
 
 const STORAGE_KEY = 'demi-active-job';
 
@@ -37,7 +38,6 @@ export class DemiDemoComponent implements OnInit {
   uploadProgress = signal(0);
   queuePosition = signal<number | null>(null);
   error = signal<string | null>(null);
-  markdown = signal<string | null>(null);
   fileName = signal<string | null>(null);
   fileSize = signal<number | null>(null);
   taskMeta = signal<Record<string, unknown> | null>(null);
@@ -99,7 +99,14 @@ export class DemiDemoComponent implements OnInit {
       }
       this.demiService.searchDocument(doc, query).subscribe({
         next: (res) => {
-          this.searchResults.set(res?.hits || []);
+          const hits = (res?.hits || []).map((hit: any) => {
+            const raw = hit.highlights?.find((h: any) => h.field === 'content')?.snippet || hit.document?.content || '';
+            return {
+              ...hit,
+              snippet: sanitizeHighlight(raw)
+            };
+          });
+          this.searchResults.set(hits);
         },
         error: (err) => {
           console.error('Search failed', err);
@@ -170,14 +177,12 @@ export class DemiDemoComponent implements OnInit {
     if (job.status !== 'completed') return;
     this.cancel();
     this.error.set(null);
-    this.markdown.set(null);
     this.fileName.set(job.originalFilename ?? null);
     this.fileSize.set(job.fileSize ?? null);
     this.docId.set(job.docId ?? null);
     this.projectId.set(job.projectId ?? '');
     this.activeJobId.set(job.jobId);
     this.phase.set('done');
-    this.fetchMarkdown(job.jobId);
   }
 
   onFileSelected(event: Event): void {
@@ -198,7 +203,6 @@ export class DemiDemoComponent implements OnInit {
     this.fileSize.set(file.size);
     this.taskMeta.set(null);
     this.startedAt.set(null);
-    this.markdown.set(null);
     this.error.set(null);
     this.uploadProgress.set(0);
     this.queuePosition.set(null);
@@ -243,10 +247,11 @@ export class DemiDemoComponent implements OnInit {
     });
   }
 
-  /** Phase 2: Poll every 2.5s until done, then fetch markdown. */
+  /** Phase 2: Poll every 2.5s until done. */
   private startPolling(jobId: string): void {
     this.sub = interval(2500).pipe(
       switchMap(() => this.demiService.pollJob(jobId)),
+      retry(3),
       takeUntil(this.stopPolling$),
     ).subscribe({
       next: (result) => {
@@ -268,8 +273,8 @@ export class DemiDemoComponent implements OnInit {
         } else if (result.status === 'success') {
           this.stopPolling$.next();
           // Keep activeJobId set so the success card shows the results
-          this.phase.set('streaming');
-          this.fetchMarkdown(jobId);
+          this.phase.set('done');
+          this.refreshJobList();
           this.sub = null;
         } else if (result.status === 'failure') {
           this.clearJob();
@@ -287,27 +292,6 @@ export class DemiDemoComponent implements OnInit {
         this.error.set(msg);
         this.phase.set('idle');
         this.sub = null;
-      },
-    });
-  }
-
-  private fetchMarkdown(jobId: string): void {
-    this.demiService.downloadMarkdown(jobId).subscribe({
-      next: (text) => {
-        this.markdown.set(text || '(No text extracted)');
-        this.phase.set('done');
-        this.refreshJobList();
-      },
-      error: (err) => {
-        let errorBody = err?.error;
-        if (typeof errorBody === 'string') {
-          try {
-            errorBody = JSON.parse(errorBody);
-          } catch { /* not JSON */ }
-        }
-        const msg = errorBody?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
-        this.error.set(msg);
-        this.phase.set('idle');
       },
     });
   }

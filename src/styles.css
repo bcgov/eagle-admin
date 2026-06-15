@@ -48,3 +48,12 @@
 body {
   font-family: BCSans, Arial, sans-serif;
 }
+
+/* Typesense search highlight — [innerHTML] bypasses component encapsulation; <mark> tags from adapter */
+mark {
+  background-color: #fff3a3;
+  border-radius: 2px;
+  padding: 0;
+  font-weight: inherit;
+  color: inherit;
+}

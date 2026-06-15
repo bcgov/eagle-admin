@@ -131,7 +131,7 @@ export class ExtractionProgressComponent implements OnInit {
       // Don't show ETA for very short durations
       if (remaining < 5) return null;
 
-      return `${this.formatTime(remaining)} remaining`;
+      return `${this.formatTime(remaining)} estimated time remaining`;
     }
     return null;
   });

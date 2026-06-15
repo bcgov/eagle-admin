@@ -80,14 +80,16 @@ export class DemiService {
    */
   pollJob(jobId: string): Observable<DemiJobStatus> {
     const headers = { 'cache-control': 'no-cache' };
-    return this.http.get<AgendaJob>(`${this.api.pathAPI}/jobs/${jobId}`, { headers }).pipe(
+    const params = new HttpParams().set('_t', Date.now().toString());
+    return this.http.get<AgendaJob>(`${this.api.pathAPI}/jobs/${jobId}`, { headers, params }).pipe(
       map(job => {
         const doclingStatus = job.progress?.doclingStatus;
+        const isDone = job.status === 'completed' || doclingStatus === 'success' || job.progress?.done === true;
         // Map Agenda status + docling status → DemiJobStatus.status
         let status: DemiJobStatus['status'];
         if (job.status === 'failed' || doclingStatus === 'failure') {
           status = 'failure';
-        } else if (job.status === 'completed' || doclingStatus === 'success') {
+        } else if (isDone) {
           status = 'success';
         } else if (job.status === 'running' || doclingStatus === 'started') {
           status = 'started';
@@ -117,7 +119,9 @@ export class DemiService {
     const params = new HttpParams()
       .set('q', query)
       .set('query_by', 'content')
-      .set('filter_by', `documentId:=${docId}`);
+      .set('filter_by', `documentId:=${docId}`)
+      .set('highlight_fields', 'content')
+      .set('highlight_affix_num_tokens', '30');
     return this.http.get(`${this.api.pathAPI}/typesense/collections/document_chunks/documents/search`, { params });
   }
 
