@@ -79,7 +79,8 @@ export class DemiService {
    * Call on an interval until status is 'success' or 'failure'.
    */
   pollJob(jobId: string): Observable<DemiJobStatus> {
-    return this.http.get<AgendaJob>(`${this.api.pathAPI}/jobs/${jobId}`).pipe(
+    const headers = { 'cache-control': 'no-cache' };
+    return this.http.get<AgendaJob>(`${this.api.pathAPI}/jobs/${jobId}`, { headers }).pipe(
       map(job => {
         const doclingStatus = job.progress?.doclingStatus;
         // Map Agenda status + docling status → DemiJobStatus.status
