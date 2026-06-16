@@ -7,16 +7,16 @@ import { LoggingService } from '../services/logging.service';
 export const loggingInterceptor: HttpInterceptorFn = (req, next) => {
   const logger = inject(LoggingService);
 
-  logger.logHttpRequest(req.method, req.url);
+  logger.logHttpRequest(req.method, req.urlWithParams);
 
   return next(req).pipe(
     tap(event => {
       if (event.type === HttpEventType.Response) {
-        logger.logHttpResponse(req.method, req.url, event.status);
+        logger.logHttpResponse(req.method, req.urlWithParams, event.status);
       }
     }),
     catchError(error => {
-      logger.logHttpError(req.method, req.url, error);
+      logger.logHttpError(req.method, req.urlWithParams, error);
       return throwError(() => error);
     })
   );

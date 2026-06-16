@@ -81,9 +81,11 @@ export class ConfigService {
   public async init(): Promise<void> {
     this._config.set({ ...(window.__env || {}) });
 
+    this.logger.info(`Initializing ConfigService in ${this._config().ENVIRONMENT} environment`, 'ConfigService');
     this.logger.debug('env.js values:', 'ConfigService', this._config());
 
     if (this._config().configEndpoint === true) {
+      this.logger.info('Fetching remote configuration from /api/config', 'ConfigService');
       await this.fetchRemoteConfig();
     }
 
@@ -117,11 +119,24 @@ export class ConfigService {
       this._listsPromise = (async () => {
         try {
           const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
-          const lists = await firstValueFrom(this.httpClient.get<any>(url));
-          this._lists = lists?.[0]?.searchResults ?? [];
-          this.logger.debug(`Loaded ${this._lists.length} list items`, 'ConfigService');
+          const response = await firstValueFrom(this.httpClient.get<any>(url));
+          this.logger.debug('Lists API raw response:', 'ConfigService', response);
+          
+          // API usually returns [{ searchResults: [...], meta: [...] }] 
+          // but sometimes (Document schema or local mocks) it might return a direct array.
+          if (Array.isArray(response) && response[0]?.searchResults) {
+            this._lists = response[0].searchResults;
+          } else if (Array.isArray(response)) {
+            this._lists = response;
+          } else if (response?.searchResults) {
+            this._lists = response.searchResults;
+          } else {
+            this._lists = [];
+          }
+
+          this.logger.debug(`Resolved ${this._lists.length} list items`, 'ConfigService');
           if (this._lists.length === 0) {
-            throw new Error('Lists response was empty');
+            throw new Error('Lists response was empty or unrecognized format');
           }
           this._lists$.next(this._lists);
           this.populateRegionsList();

@@ -3,6 +3,7 @@ import { HttpClient, HttpEvent, HttpParams, HttpRequest } from '@angular/common/
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from './api';
+import { LoggingService } from './logging.service';
 
 export interface DemiJobStatus {
   status: 'pending' | 'started' | 'success' | 'failure';
@@ -53,6 +54,7 @@ export interface AgendaJob {
 export class DemiService {
   private api = inject(ApiService);
   private http = inject(HttpClient);
+  private logger = inject(LoggingService);
 
   /**
    * Submit a file for DEMI intake + extraction.
@@ -147,8 +149,11 @@ export class DemiService {
    * API returns up to 20 most recent jobs across all types; we filter client-side.
    */
   listJobs(): Observable<AgendaJob[]> {
+    const url = `${this.api.pathAPI}/jobs`;
+    const params = new HttpParams().set('_t', Date.now().toString());
+    this.logger.debug(`Fetching demi jobs from: ${url}`, 'DemiService');
     return this.http
-      .get<AgendaJob[]>(`${this.api.pathAPI}/jobs`)
+      .get<AgendaJob[]>(url, { params })
       .pipe(map(jobs => jobs.filter(j => j.type === 'demi-extract')));
   }
 }

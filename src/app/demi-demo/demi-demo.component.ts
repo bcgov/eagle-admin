@@ -9,6 +9,7 @@ import { DemiService, AgendaJob } from '../services/demi.service';
 import { DocumentService } from '../services/document.service';
 import { ConfigService } from '../services/config.service';
 import { LoggingService } from '../services/logging.service';
+import { KeycloakService } from '../services/keycloak.service';
 import { Document } from '../models/document';
 import { ExtractionProgressComponent, ExtractionPhase } from '../shared/extraction-progress/extraction-progress.component';
 import { sanitizeHighlight } from '../shared/utils/sanitize-highlight';
@@ -43,6 +44,7 @@ export class DemiDemoComponent implements OnInit {
   private demiService = inject(DemiService);
   private docService = inject(DocumentService);
   private configService = inject(ConfigService);
+  private keycloakService = inject(KeycloakService);
   private logger = inject(LoggingService);
   private destroyRef = inject(DestroyRef);
 
@@ -146,6 +148,10 @@ export class DemiDemoComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.logger.debug('Current user:', 'DemiDemoComponent', {
+      id: this.keycloakService.getId(),
+      roles: this.keycloakService.getUserRoles()
+    });
     this.configService.ensureListsLoaded();
     this.refreshJobList();
     // Refresh list every 10s so running/queued jobs update without page reload.
@@ -197,8 +203,11 @@ export class DemiDemoComponent implements OnInit {
 
   private refreshJobList(): void {
     this.demiService.listJobs().subscribe({
-      next: jobs => this.allJobs.set(jobs),
-      error: () => { /* silently ignore — list is best-effort */ },
+      next: jobs => {
+        this.logger.debug(`Loaded ${jobs.length} demi jobs`, 'DemiDemoComponent', jobs);
+        this.allJobs.set(jobs);
+      },
+      error: (err) => this.logger.error('Failed to list jobs', 'DemiDemoComponent', err),
     });
   }
 
