@@ -2,10 +2,13 @@ import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, signal, compute
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { DatePipe } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
-import { interval, Subject, Subscription, switchMap, takeUntil, debounceTime, distinctUntilChanged, retry } from 'rxjs';
+import { interval, Subject, Subscription, switchMap, debounceTime, retry, timer, tap, Observable } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { DemiService, AgendaJob } from '../services/demi.service';
 import { DocumentService } from '../services/document.service';
+import { ConfigService } from '../services/config.service';
+import { LoggingService } from '../services/logging.service';
 import { Document } from '../models/document';
 import { ExtractionProgressComponent, ExtractionPhase } from '../shared/extraction-progress/extraction-progress.component';
 import { sanitizeHighlight } from '../shared/utils/sanitize-highlight';
@@ -39,6 +42,8 @@ interface PersistedJob {
 export class DemiDemoComponent implements OnInit {
   private demiService = inject(DemiService);
   private docService = inject(DocumentService);
+  private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
   private destroyRef = inject(DestroyRef);
 
   phase = signal<ExtractionPhase>('idle');
@@ -64,12 +69,43 @@ export class DemiDemoComponent implements OnInit {
 
   searchQuery = signal<string>('');
   searchResults = signal<any[]>([]);
+  isSearching = signal(false);
   private searchSubject = new Subject<string>();
 
   isCollapsed = signal(false);
 
+  resolvedDocumentType = computed(() => {
+    const doc = this.documentMeta();
+    if (!doc) return 'Not Categorized';
+    
+    // 1. Prioritize string label if returned by API
+    if (doc.documentType && doc.documentType !== '-') return doc.documentType;
+
+    // 2. Resolve ObjectId via lists
+    const typeId = doc.type;
+    if (!typeId) return 'Not Categorized';
+
+    const lists = this.configService.listsSignal();
+
+    const match = lists.find(item => {
+      // Robust comparison — handle possible ObjectId strings
+      const itemId = String(item._id);
+      const targetId = String(typeId);
+      return itemId === targetId || item.guid === targetId;
+    });
+
+    return match?.name || 'Not Categorized';
+  });
+
+  resolvedExtractedDate = computed(() => {
+    const doc = this.documentMeta();
+    if (!doc) return null;
+    return doc.contentExtractedAt || doc.dateUploaded || doc.datePosted;
+  });
+
   badgeLabel = computed(() => {
     switch (this.phase()) {
+      case 'initializing': return 'Initializing...';
       case 'uploading':  return `Uploading ${this.uploadProgress()}%`;
       case 'queued':     return 'Queued';
       case 'processing': return 'Processing';
@@ -81,6 +117,7 @@ export class DemiDemoComponent implements OnInit {
 
   badgeClass = computed(() => {
     switch (this.phase()) {
+      case 'initializing': return 'text-bg-secondary';
       case 'uploading':  return 'text-bg-primary';
       case 'queued':     return 'text-bg-secondary';
       case 'processing': return 'text-bg-info';
@@ -103,37 +140,35 @@ export class DemiDemoComponent implements OnInit {
 
   /** Active subscription (upload or polling). Replaced on each new file pick. */
   private sub: Subscription | null = null;
-  /** Emitting stops the polling interval. */
-  private stopPolling$ = new Subject<void>();
-  /** Stops the background job-list refresh loop. */
-  private stopRefresh$ = new Subject<void>();
 
   constructor() {
-    this.destroyRef.onDestroy(() => {
-      this.cancel();
-      this.stopRefresh$.next();
-    });
     this.resumeFromStorage();
   }
 
   ngOnInit(): void {
+    this.configService.ensureListsLoaded();
     this.refreshJobList();
     // Refresh list every 10s so running/queued jobs update without page reload.
     interval(10_000)
-      .pipe(takeUntil(this.stopRefresh$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.refreshJobList());
 
     this.searchSubject.pipe(
+      tap(query => {
+        this.searchQuery.set(query);
+        if (query && this.docId()) {
+          this.isSearching.set(true);
+        } else {
+          this.isSearching.set(false);
+          this.searchResults.set([]);
+        }
+      }),
       debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.stopRefresh$)
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(query => {
-      this.searchQuery.set(query);
       const doc = this.docId();
-      if (!query || !doc) {
-        this.searchResults.set([]);
-        return;
-      }
+      if (!query || !doc) return;
+
       this.demiService.searchDocument(doc, query).subscribe({
         next: (res) => {
           const hits = (res?.hits || []).map((hit: any) => {
@@ -144,10 +179,12 @@ export class DemiDemoComponent implements OnInit {
             };
           });
           this.searchResults.set(hits);
+          this.isSearching.set(false);
         },
         error: (err) => {
-          console.error('Search failed', err);
+          this.logger.error('Search failed', 'DemiDemoComponent', err);
           this.searchResults.set([]);
+          this.isSearching.set(false);
         }
       });
     });
@@ -179,8 +216,7 @@ export class DemiDemoComponent implements OnInit {
       this.docId.set(docId ?? null);
       this.projectId.set(projectId ?? '');
       
-      // Skip 'queued' if we know the job was already running — avoids 'Waiting for worker' flash
-      this.phase.set(startedAt ? 'processing' : 'queued');
+      this.phase.set('initializing');
       this.startPolling(jobId);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
@@ -200,7 +236,6 @@ export class DemiDemoComponent implements OnInit {
   private cancel(): void {
     this.sub?.unsubscribe();
     this.sub = null;
-    this.stopPolling$.next();
   }
 
   onProjectInput(event: Event): void {
@@ -228,7 +263,7 @@ export class DemiDemoComponent implements OnInit {
     if (!id) return;
     this.docService.getById(id).subscribe({
       next: (doc) => this.documentMeta.set(doc),
-      error: (err) => console.error('Failed to fetch document metadata', err)
+      error: (err) => this.logger.error('Failed to fetch document metadata', 'DemiDemoComponent', err)
     });
   }
 
@@ -296,10 +331,9 @@ export class DemiDemoComponent implements OnInit {
 
   /** Phase 2: Poll every 2.5s until done. */
   private startPolling(jobId: string): void {
-    this.sub = interval(2500).pipe(
+    this.sub = timer(0, 2500).pipe(
       switchMap(() => this.demiService.pollJob(jobId)),
       retry(3),
-      takeUntil(this.stopPolling$),
     ).subscribe({
       next: (result) => {
         this.taskMeta.set(result.taskMeta ?? null);
@@ -318,12 +352,11 @@ export class DemiDemoComponent implements OnInit {
             this.saveJob(jobId, this.fileName()!, this.fileSize() ?? undefined, result.startedAt, this.docId()!, this.projectId());
           }
         } else if (result.status === 'success') {
-          this.stopPolling$.next();
+          this.cancel();
           // Keep activeJobId set so the success card shows the results
           this.phase.set('done');
           this.fetchDocumentMeta();
           this.refreshJobList();
-          this.sub = null;
         } else if (result.status === 'failure') {
           this.clearJob();
           this.activeJobId.set(null);
@@ -331,8 +364,7 @@ export class DemiDemoComponent implements OnInit {
           const reason = result.error ?? 'The document may be corrupted, password-protected, or too complex.';
           this.error.set(`Extraction failed: ${reason}`);
           this.phase.set('idle');
-          this.stopPolling$.next();
-          this.sub = null;
+          this.cancel();
         }
       },
       error: (err) => {
@@ -346,13 +378,13 @@ export class DemiDemoComponent implements OnInit {
 
   onDownloadJob(job: AgendaJob): void {
     if (!job.hasResult) return;
-    this.executeDownload(job.jobId, job.filename || `${job.jobId}.md`);
+    this.triggerDownload(this.demiService.downloadMarkdown(job.jobId), job.filename || `${job.jobId}.md`);
   }
 
   onDownloadActiveJob(): void {
     const jobId = this.activeJobId();
     if (!jobId) return;
-    this.executeDownload(jobId, `${this.fileName() || jobId}.md`);
+    this.triggerDownload(this.demiService.downloadMarkdown(jobId), `${this.fileName() || jobId}.md`);
   }
 
   onDownloadOriginal(job: AgendaJob | null): void {
@@ -360,35 +392,16 @@ export class DemiDemoComponent implements OnInit {
     const filename = job ? job.originalFilename : this.fileName();
     if (!docId || !filename) return;
 
-    this.demiService.downloadOriginalDocument(docId, filename).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        document.body.appendChild(a);
-        a.style.display = 'none';
-        a.href = url;
-        a.download = filename;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      },
-      error: (err) => {
-        let errorBody = err?.error;
-        if (typeof errorBody === 'string') {
-          try {
-            errorBody = JSON.parse(errorBody);
-          } catch { /* not JSON */ }
-        }
-        const msg = errorBody?.message || err?.message || `Download failed (${err?.status ?? 'unknown'})`;
-        this.error.set(msg);
-      },
-    });
+    this.triggerDownload(this.demiService.downloadOriginalDocument(docId, filename), filename);
   }
 
-  private executeDownload(jobId: string, filename: string): void {
-    this.demiService.downloadMarkdown(jobId).subscribe({
-      next: (text) => {
-        const blob = new Blob([text], { type: 'text/markdown; charset=utf-8' });
+  /**
+   * Helper to trigger a browser file download from an observable.
+   */
+  private triggerDownload(downloadObs: Observable<Blob | string>, filename: string): void {
+    downloadObs.subscribe({
+      next: (data) => {
+        const blob = typeof data === 'string' ? new Blob([data], { type: 'text/markdown; charset=utf-8' }) : data;
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         document.body.appendChild(a);

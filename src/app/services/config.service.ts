@@ -119,6 +119,7 @@ export class ConfigService {
           const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
           const lists = await firstValueFrom(this.httpClient.get<any>(url));
           this._lists = lists?.[0]?.searchResults ?? [];
+          this.logger.debug(`Loaded ${this._lists.length} list items`, 'ConfigService');
           if (this._lists.length === 0) {
             throw new Error('Lists response was empty');
           }

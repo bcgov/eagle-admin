@@ -26,7 +26,8 @@ export class DocumentService {
     'documentType', 'datePosted', 'dateUploaded', 'dateReceived', 'documentSource',
     'internalURL', 'internalMime', 'internalSize', 'checkbox', 'project', 'type',
     'documentAuthor', 'documentAuthorType', 'projectPhase', 'legislation', 'milestone',
-    'description', 'isPublished', 'isFeatured', 'sortOrder', 'secureHitCount', 'publicHitCount'
+    'description', 'isPublished', 'isFeatured', 'sortOrder', 'secureHitCount', 'publicHitCount',
+    'extractionMethod', 'contentExtractedAt'
   ];
 
   private readonly multiDocumentFields = [

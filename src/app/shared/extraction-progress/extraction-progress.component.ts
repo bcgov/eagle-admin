@@ -9,7 +9,7 @@ import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, effect, inject,
  *  streaming  — future: server streams per-page/per-chunk progress (deterministic %)
  *  done       — extraction complete; component is hidden
  */
-export type ExtractionPhase = 'idle' | 'uploading' | 'queued' | 'processing' | 'streaming' | 'done';
+export type ExtractionPhase = 'idle' | 'initializing' | 'uploading' | 'queued' | 'processing' | 'streaming' | 'done';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

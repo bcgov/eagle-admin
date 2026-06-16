@@ -11,7 +11,7 @@ export class Document {
   documentSource: string;
   displayName: string;
   milestone: string;
-  dateUploaded: string;
+  dateUploaded: Date;
   type: string;
   description: string;
   documentAuthor: string;
@@ -21,6 +21,9 @@ export class Document {
   dateUpdated: Date;
   projectPhase: string;
   legislation: number;
+  extractionMethod: string;
+  contentExtractedAt: Date;
+  documentType: string;
 
   checkbox: boolean;
   upfile: File;
@@ -49,16 +52,19 @@ export class Document {
 
     this.displayName = obj && obj.displayName || null;
     this.milestone = obj && obj.milestone || null;
-    this.dateUploaded = obj && obj.dateUploaded || null;
-    this.dateUpdated = obj && obj.dateUpdated || null;
-    this.datePosted = obj && obj.datePosted || null;
-    this.type = obj && obj.type || null;
+    this.dateUploaded = obj && obj.dateUploaded ? new Date(obj.dateUploaded) : null;
+    this.dateUpdated = obj && obj.dateUpdated ? new Date(obj.dateUpdated) : null;
+    this.datePosted = obj && obj.datePosted ? new Date(obj.datePosted) : null;
+    this.type = obj && (obj.type || obj.documentType) || null;
+    this.documentType = obj && obj.documentType || null;
     this.description = obj && obj.description || null;
     this.documentAuthor = obj && obj.documentAuthor || null;
     this.documentAuthorType = obj && obj.documentAuthorType || null;
     this.eaoStatus = obj && obj.eaoStatus || null;
     this.projectPhase = obj && obj.projectPhase || null;
     this.legislation = obj && obj.legislation || null;
+    this.extractionMethod = obj && obj.extractionMethod || null;
+    this.contentExtractedAt = obj && obj.contentExtractedAt ? new Date(obj.contentExtractedAt) : null;
 
     this.checkbox = obj && obj.checkbox || null;
     this.upfile = obj && obj.upfile || null;
