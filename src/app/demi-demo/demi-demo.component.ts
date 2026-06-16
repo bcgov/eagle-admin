@@ -149,7 +149,8 @@ export class DemiDemoComponent implements OnInit {
 
   ngOnInit(): void {
     this.logger.debug('Current user:', 'DemiDemoComponent', {
-      id: this.keycloakService.getId(),
+      guid: this.keycloakService.getUserGuid(),
+      username: this.keycloakService.getPreferredUsername(),
       roles: this.keycloakService.getUserRoles()
     });
     this.configService.ensureListsLoaded();
