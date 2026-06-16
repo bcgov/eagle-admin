@@ -68,11 +68,6 @@ export class ExtractionProgressComponent implements OnInit {
     });
   }
 
-  protected isVisible = computed(() => {
-    const p = this.phase();
-    return p !== 'idle' && p !== 'done';
-  });
-
   protected isDeterminate = computed(() => {
     const p = this.phase();
     if (p === 'uploading') return this.progress() < 100;
@@ -91,18 +86,6 @@ export class ExtractionProgressComponent implements OnInit {
     }
     return 0;
   });
-
-  /** Material Icon name based on file extension. */
-  protected fileIcon = computed(() => {
-    const name = (this.fileName() ?? '').toLowerCase();
-    if (name.endsWith('.pdf'))                               return 'picture_as_pdf';
-    if (name.endsWith('.docx') || name.endsWith('.doc'))    return 'article';
-    if (name.endsWith('.pptx') || name.endsWith('.ppt'))    return 'slideshow';
-    if (name.endsWith('.xlsx') || name.endsWith('.xls'))    return 'table_chart';
-    return 'insert_drive_file';
-  });
-
-  protected displayName = computed(() => this.fileName() ?? 'Document');
 
   protected formattedSize = computed(() => {
     const b = this.fileSize();
@@ -141,27 +124,6 @@ export class ExtractionProgressComponent implements OnInit {
     if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`;
     return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
   }
-
-  /** Bootstrap colour utility class for the status badge. */
-  protected badgeClass = computed(() => {
-    switch (this.phase()) {
-      case 'uploading':  return 'text-bg-primary';
-      case 'queued':     return 'text-bg-secondary';
-      case 'processing': return 'text-bg-info';
-      case 'streaming':  return 'text-bg-info';
-      default:           return 'text-bg-secondary';
-    }
-  });
-
-  protected badgeLabel = computed(() => {
-    switch (this.phase()) {
-      case 'uploading':  return `Uploading ${this.progress()}%`;
-      case 'queued':     return 'Queued';
-      case 'processing': return 'Processing';
-      case 'streaming':  return 'Finalizing';
-      default:           return '';
-    }
-  });
 
   /** Detail line shown under the progress bar. */
   protected stageLabel = computed(() => {

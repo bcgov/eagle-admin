@@ -1,9 +1,12 @@
 import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, signal, computed, inject } from '@angular/core';
-import { DatePipe, DecimalPipe, SlicePipe } from '@angular/common';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+import { DatePipe } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
 import { interval, Subject, Subscription, switchMap, takeUntil, debounceTime, distinctUntilChanged, retry } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { DemiService, AgendaJob } from '../services/demi.service';
+import { DocumentService } from '../services/document.service';
+import { Document } from '../models/document';
 import { ExtractionProgressComponent, ExtractionPhase } from '../shared/extraction-progress/extraction-progress.component';
 import { sanitizeHighlight } from '../shared/utils/sanitize-highlight';
 
@@ -24,10 +27,18 @@ interface PersistedJob {
   selector: 'app-demi-demo',
   templateUrl: './demi-demo.component.html',
   styleUrl: './demi-demo.component.css',
-  imports: [DatePipe, DecimalPipe, ExtractionProgressComponent, RouterLink, SlicePipe],
+  imports: [DatePipe, ExtractionProgressComponent, RouterLink],
+  animations: [
+    trigger('collapseAnimation', [
+      state('expanded', style({ height: '*', opacity: 1, overflow: 'hidden' })),
+      state('collapsed', style({ height: '0px', opacity: 0, overflow: 'hidden' })),
+      transition('expanded <=> collapsed', animate('250ms cubic-bezier(0.4, 0, 0.2, 1)')),
+    ])
+  ]
 })
 export class DemiDemoComponent implements OnInit {
   private demiService = inject(DemiService);
+  private docService = inject(DocumentService);
   private destroyRef = inject(DestroyRef);
 
   phase = signal<ExtractionPhase>('idle');
@@ -35,6 +46,8 @@ export class DemiDemoComponent implements OnInit {
   projectId = signal<string>('');
   /** docId of the Document created by the last submission. */
   docId = signal<string | null>(null);
+  /** Fetched metadata for the active document. */
+  documentMeta = signal<Document | null>(null);
   uploadProgress = signal(0);
   queuePosition = signal<number | null>(null);
   error = signal<string | null>(null);
@@ -52,6 +65,30 @@ export class DemiDemoComponent implements OnInit {
   searchQuery = signal<string>('');
   searchResults = signal<any[]>([]);
   private searchSubject = new Subject<string>();
+
+  isCollapsed = signal(false);
+
+  badgeLabel = computed(() => {
+    switch (this.phase()) {
+      case 'uploading':  return `Uploading ${this.uploadProgress()}%`;
+      case 'queued':     return 'Queued';
+      case 'processing': return 'Processing';
+      case 'streaming':  return 'Finalizing';
+      case 'done':       return 'Extraction Complete';
+      default:           return '';
+    }
+  });
+
+  badgeClass = computed(() => {
+    switch (this.phase()) {
+      case 'uploading':  return 'text-bg-primary';
+      case 'queued':     return 'text-bg-secondary';
+      case 'processing': return 'text-bg-info';
+      case 'streaming':  return 'text-bg-info';
+      case 'done':       return 'text-bg-success';
+      default:           return 'text-bg-secondary';
+    }
+  });
 
   /** Jobs other than the currently active one (avoids duplication with the card). */
   otherJobs = computed(() => {
@@ -100,7 +137,7 @@ export class DemiDemoComponent implements OnInit {
       this.demiService.searchDocument(doc, query).subscribe({
         next: (res) => {
           const hits = (res?.hits || []).map((hit: any) => {
-            const raw = hit.highlights?.find((h: any) => h.field === 'content')?.snippet || hit.document?.content || '';
+            const raw = hit.highlights?.find((h: any) => h.field === 'content')?.value || hit.document?.content || '';
             return {
               ...hit,
               snippet: sanitizeHighlight(raw)
@@ -183,6 +220,16 @@ export class DemiDemoComponent implements OnInit {
     this.projectId.set(job.projectId ?? '');
     this.activeJobId.set(job.jobId);
     this.phase.set('done');
+    this.fetchDocumentMeta();
+  }
+
+  private fetchDocumentMeta(): void {
+    const id = this.docId();
+    if (!id) return;
+    this.docService.getById(id).subscribe({
+      next: (doc) => this.documentMeta.set(doc),
+      error: (err) => console.error('Failed to fetch document metadata', err)
+    });
   }
 
   onFileSelected(event: Event): void {
@@ -274,6 +321,7 @@ export class DemiDemoComponent implements OnInit {
           this.stopPolling$.next();
           // Keep activeJobId set so the success card shows the results
           this.phase.set('done');
+          this.fetchDocumentMeta();
           this.refreshJobList();
           this.sub = null;
         } else if (result.status === 'failure') {

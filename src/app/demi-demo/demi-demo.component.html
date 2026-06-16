@@ -45,190 +45,119 @@
     </div>
   </div>
 
-  <!-- Active job — download manager card -->
-  <app-extraction-progress
-    [phase]="phase()"
-    [progress]="uploadProgress()"
-    [queuePosition]="queuePosition()"
-    [fileName]="fileName()"
-    [fileSize]="fileSize()"
-    [taskMeta]="taskMeta()"
-    [jobStartedAt]="startedAt()"
-    [jobProgress]="jobProgress()"
-  />
-
-  @if (error()) {
-    <div class="alert alert-danger" role="alert">
-      <strong>Extraction failed:</strong> {{ error() }}
-    </div>
-  }
-
-  <!-- All demi-extract jobs (from API, refreshed every 10s) -->
-  @if (otherJobs().length > 0) {
-    <div class="card mb-4">
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center gap-2">
-          <span class="material-icons text-secondary" style="font-size: 1.1rem;">history</span>
-          <span class="fw-semibold">Extraction jobs</span>
-        </div>
-        <span class="badge text-bg-secondary">{{ otherJobs().length }}</span>
-      </div>
-      <ul class="list-group list-group-flush">
-        @for (job of otherJobs(); track job.jobId) {
-          <li class="list-group-item py-2 px-3">
-            <div class="d-flex align-items-center gap-3">
-
-              <!-- Icon -->
-              <span class="material-icons text-secondary" style="font-size: 1.5rem; flex-shrink: 0;" aria-hidden="true">picture_as_pdf</span>
-
-              <!-- Main content -->
-              <div class="flex-grow-1" style="min-width: 0;">
-                <!-- Row 1: filename + status badge -->
-                <div class="d-flex justify-content-between align-items-baseline gap-2">
-                  <span class="text-truncate fw-semibold small" [title]="job.originalFilename ?? ''">
-                    {{ job.originalFilename ?? '(unnamed)' }}
-                  </span>
-                  <span
-                    class="badge flex-shrink-0"
-                    [class]="job.status === 'completed' ? 'text-bg-success'
-                           : job.status === 'failed'    ? 'text-bg-danger'
-                           : job.status === 'running'   ? 'text-bg-info'
-                           :                              'text-bg-secondary'"
-                  >{{ job.status }}</span>
-                </div>
-                <!-- Row 2: size · user · time -->
-                <div class="text-muted d-flex gap-2 flex-wrap" style="font-size: 0.78rem; margin-top: 2px;">
-                  @if (job.fileSize) {
-                    <span>{{ job.fileSize | number }} bytes</span>
-                    <span>&middot;</span>
-                  }
-                  @if (job.requestedBy) {
-                    <span>{{ job.requestedBy }}</span>
-                    <span>&middot;</span>
-                  }
-                  @if (job.status === 'running' && job.startedAt) {
-                    <span>started {{ job.startedAt | date:'HH:mm' }}</span>
-                  } @else {
-                    <span>{{ (job.completedAt ?? job.startedAt ?? job.createdAt) | date:'MMM d, HH:mm' }}</span>
-                  }
-                  @if (job.error) {
-                    <span>&middot;</span>
-                    <span class="text-danger" [title]="job.error">{{ job.error | slice:0:60 }}{{ (job.error?.length ?? 0) > 60 ? '…' : '' }}</span>
-                  }
-                </div>
-                <!-- Row 3: animated bar for running jobs -->
-                @if (job.status === 'running' || job.status === 'queued') {
-                  <div class="progress mt-1" style="height: 3px;" role="progressbar">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated w-100"></div>
-                  </div>
-                }
-              </div>
-
-              <!-- Download button -->
-              <div class="d-flex gap-1">
-                @if (job.status === 'completed') {
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-primary flex-shrink-0 d-flex align-items-center gap-1"
-                    (click)="viewJob(job)"
-                    title="View extracted text and search"
-                  >
-                    <span class="material-icons" style="font-size: 1rem;">visibility</span>
-                    View
-                  </button>
-                }
-                @if (job.docId) {
-                  <a
-                    class="btn btn-sm btn-outline-primary flex-shrink-0"
-                    [routerLink]="['/p', job.projectId, 'project-documents', 'detail', job.docId]"
-                    target="_blank"
-                    title="View Document in EPIC"
-                  >
-                    <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">open_in_new</span>
-                  </a>
-                }
-                @if (job.hasResult) {
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary flex-shrink-0"
-                    (click)="onDownloadOriginal(job)"
-                    title="Download Original Source"
-                  >
-                    <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">description</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary flex-shrink-0"
-                    (click)="onDownloadJob(job)"
-                    [title]="'Download extracted text for ' + job.originalFilename"
-                  >
-                    <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">download</span>
-                  </button>
-                }
-              </div>
-
-            </div>
-          </li>
-        }
-      </ul>
-    </div>
-  }
-
-  @if (phase() === 'done') {
-    <div class="card mb-4 border-primary border-opacity-25 shadow-sm">
-      <div class="card-header text-bg-primary p-3 border-bottom-0">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-          
-          <!-- Title & Filename -->
-          <div class="d-flex flex-column gap-1">
-            <div class="d-flex align-items-center gap-2">
-              <span class="material-icons opacity-75" style="font-size: 1.2rem;">verified</span>
-              <span class="fw-bold text-uppercase tracking-wider small opacity-75">Extraction Results</span>
-            </div>
+  <!-- Active Job — Unified Card (Extracting or Extracted) -->
+  @if (phase() !== 'idle') {
+    <div class="card mb-4 border-primary border-opacity-25 shadow-sm overflow-hidden">
+      
+      <!-- Collapsible Header -->
+      <div 
+        class="card-header text-bg-primary p-3 border-bottom-0"
+        (click)="isCollapsed.set(!isCollapsed())"
+        style="cursor: pointer;"
+        role="button"
+        [attr.aria-expanded]="!isCollapsed()"
+      >
+        <!-- Top Row: Info & Status -->
+        <div class="d-flex justify-content-between align-items-start gap-3">
+          <!-- Info Area -->
+          <div class="d-flex flex-column gap-1" style="min-width: 0;">
             <span class="h5 mb-0 text-truncate" [title]="fileName()">{{ fileName() }}</span>
           </div>
 
-          <!-- Actions -->
-          <div class="d-flex align-items-center gap-2">
-            @if (docId()) {
-              <div class="btn-group bg-white rounded shadow-sm p-1">
-                <a
-                  class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 border-0 px-3"
-                  [routerLink]="['/p', projectId(), 'project-documents', 'detail', docId()]"
-                  target="_blank"
-                >
-                  <span class="material-icons" style="font-size: 0.9rem;">open_in_new</span>
-                  View in EPIC
-                </a>
-                <div class="vr mx-1 opacity-10"></div>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 border-0 px-3"
-                  (click)="onDownloadOriginal(null)"
-                  [title]="'Download Original Source'"
-                >
-                  <span class="material-icons" style="font-size: 0.9rem;">description</span>
-                  Original Source
-                </button>
-                <div class="vr mx-1 opacity-10"></div>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 border-0 px-3"
-                  (click)="onDownloadActiveJob()"
-                  [title]="'Download extracted markdown'"
-                >
-                  <span class="material-icons" style="font-size: 0.9rem;">download</span>
-                  Markdown
-                </button>
-              </div>
-            }
+          <!-- Status -->
+          <div class="d-flex align-items-center gap-3 flex-shrink-0">
+            <span class="badge {{ badgeClass() }} border border-white border-opacity-25 rounded-pill">
+              {{ badgeLabel() }}
+            </span>
+            <span class="material-icons transition-transform" [style.transform]="isCollapsed() ? 'rotate(180deg)' : 'none'">
+              expand_more
+            </span>
           </div>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Bottom Row: Actions -->
         @if (docId()) {
           <div class="mt-3">
-            <div class="input-group input-group-sm shadow-sm" style="max-width: 500px;">
+            <div class="btn-group flex-wrap" (click)="$event.stopPropagation()">
+              <a
+                class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 border-0 px-3"
+                [routerLink]="['/p', projectId(), 'project-documents', 'detail', docId()]"
+                target="_blank"
+              >
+                <span class="material-icons" style="font-size: 0.9rem;">open_in_new</span>
+                View in EPIC
+              </a>
+              <div class="vr mx-1 bg-white opacity-25"></div>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 border-0 px-3"
+                (click)="onDownloadOriginal(null)"
+                [title]="'Download Original Source'"
+              >
+                <span class="material-icons" style="font-size: 0.9rem;">description</span>
+                Source
+              </button>
+              @if (phase() === 'done') {
+                <div class="vr mx-1 bg-white opacity-25"></div>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-light d-flex align-items-center gap-1 border-0 px-3"
+                  (click)="onDownloadActiveJob()"
+                  [title]="'Download extracted text'"
+                >
+                  <span class="material-icons" style="font-size: 0.9rem;">download</span>
+                  Extracted Text
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Card Body -->
+      <div [@collapseAnimation]="isCollapsed() ? 'collapsed' : 'expanded'" class="border-top border-opacity-10 bg-light">
+        @if (phase() !== 'done') {
+          <!-- Progress Content -->
+          <div class="p-4 bg-white">
+            <app-extraction-progress
+              [phase]="phase()"
+              [progress]="uploadProgress()"
+              [queuePosition]="queuePosition()"
+              [fileName]="fileName()"
+              [fileSize]="fileSize()"
+              [taskMeta]="taskMeta()"
+              [jobStartedAt]="startedAt()"
+              [jobProgress]="jobProgress()"
+            />
+          </div>
+        } @else {
+          <!-- Search Content -->
+          @if (documentMeta()) {
+            <div class="bg-white p-4 border-bottom">
+              <h6 class="mb-3 text-secondary text-uppercase tracking-wider small fw-bold">Document Metadata</h6>
+              <div class="row g-3 small">
+                <div class="col-md-6 col-lg-3">
+                  <div class="text-muted">Display Name</div>
+                  <div class="fw-medium text-truncate" [title]="documentMeta()!.displayName">{{ documentMeta()!.displayName }}</div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                  <div class="text-muted">Document Type</div>
+                  <div class="fw-medium">{{ documentMeta()!.documentType || 'Unknown' }}</div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                  <div class="text-muted">Extracted Method</div>
+                  <div class="fw-medium">{{ documentMeta()!.extractionMethod || 'docling' }}</div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                  <div class="text-muted">Extracted Date</div>
+                  <div class="fw-medium">{{ documentMeta()!.dateAdded | date:'medium' }}</div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="bg-primary bg-opacity-10 p-3 border-bottom border-primary border-opacity-10">
+            <div class="input-group input-group-sm shadow-sm mx-auto" style="max-width: 600px;">
               <span class="input-group-text bg-white border-0 text-primary px-3">
                 <span class="material-icons" style="font-size: 1.1rem;">search</span>
               </span>
@@ -239,46 +168,46 @@
                 (input)="onSearchInput($event)"
               >
             </div>
-            <div class="d-flex align-items-center gap-2 mt-2 px-1">
+            <div class="text-center mt-2">
               @if (searchResults().length > 0) {
-                <span class="badge bg-white text-primary border-0 rounded-pill px-3">{{ searchResults().length }} matches</span>
+                <span class="badge bg-primary rounded-pill px-3">{{ searchResults().length }} matches</span>
               } @else if (searchQuery()) {
-                <span class="small text-white opacity-75">No matches found for "{{ searchQuery() }}"</span>
+                <span class="small text-muted">No matches found for "{{ searchQuery() }}"</span>
               } @else {
-                <span class="small text-white opacity-50">Enter a keyword to preview specific document chunks</span>
+                <span class="small text-muted">Enter a keyword to preview specific document chunks</span>
               }
             </div>
           </div>
-        }
-      </div>
 
-      <div class="card-body p-0 bg-light border-top border-opacity-10">
-        @if (searchQuery()) {
-          <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
-            @for (hit of searchResults(); track hit.document.id) {
-              <div class="card mb-3 border-0 shadow-sm rounded-3">
-                <div class="card-body p-3">
-                  <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="badge text-bg-secondary bg-opacity-10 text-secondary border-0 rounded-pill px-3">Page {{ hit.document.pageNumber + 1 }}</span>
-                    <div class="text-muted small d-flex align-items-center gap-1">
-                      <span class="material-icons" style="font-size: 0.9rem;">bolt</span>
-                      Score: {{ hit.highlights?.[0]?.matched_tokens?.length || 0 }}
+          <div class="card-body p-0 bg-light">
+            @if (searchQuery()) {
+              <div class="p-4" style="max-height: 60vh; overflow-y: auto;">
+                @for (hit of searchResults(); track hit.document.id) {
+                  <div class="card mb-3 border-0 shadow-sm rounded-3">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge text-bg-secondary bg-opacity-10 text-secondary border-0 rounded-pill px-3">Page {{ hit.document.pageNumber + 1 }}</span>
+                        <div class="text-muted small d-flex align-items-center gap-1">
+                          <span class="material-icons" style="font-size: 0.9rem;">bolt</span>
+                          Score: {{ hit.highlights?.[0]?.matched_tokens?.length || 0 }}
+                        </div>
+                      </div>
+                      <p class="mb-0 lh-lg text-dark opacity-90" [innerHTML]="hit.snippet"></p>
                     </div>
                   </div>
-                  <p class="mb-0 lh-lg text-dark opacity-90" [innerHTML]="hit.snippet"></p>
+                }
+              </div>
+            } @else {
+              <div class="p-5 text-center text-muted bg-white">
+                <div class="mb-3">
+                  <span class="material-icons opacity-20" style="font-size: 5rem;">manage_search</span>
                 </div>
+                <h5 class="fw-normal opacity-50">Search Content to Preview</h5>
+                <p class="small opacity-50 mx-auto" style="max-width: 400px;">
+                  Extraction is complete. Use the search bar above to verify specific sections of the document without loading the full text.
+                </p>
               </div>
             }
-          </div>
-        } @else {
-          <div class="p-5 text-center text-muted bg-white">
-            <div class="mb-3">
-              <span class="material-icons opacity-20" style="font-size: 5rem;">manage_search</span>
-            </div>
-            <h5 class="fw-normal opacity-50">Search Content to Preview</h5>
-            <p class="small opacity-50 mx-auto" style="max-width: 400px;">
-              Extraction is complete. Use the search bar above to verify specific sections of the document without loading the full text.
-            </p>
           </div>
         }
       </div>

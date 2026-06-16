@@ -121,7 +121,7 @@ export class DemiService {
       .set('query_by', 'content')
       .set('filter_by', `documentId:=${docId}`)
       .set('highlight_fields', 'content')
-      .set('highlight_affix_num_tokens', '30');
+      .set('highlight_full_fields', 'content');
     return this.http.get(`${this.api.pathAPI}/typesense/collections/document_chunks/documents/search`, { params });
   }
 
