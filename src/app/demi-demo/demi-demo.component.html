@@ -238,4 +238,54 @@
       </div>
     </div>
   }
+  <!-- Recent Extractions -->
+  @if (otherJobs().length > 0) {
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mt-4">
+      <div class="card-header bg-white p-4 border-0">
+        <h5 class="mb-0 text-dark fw-bold">Recent Extractions</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-secondary small text-uppercase fw-bold">
+              <tr>
+                <th class="ps-4 border-0">Document Name</th>
+                <th class="border-0">Status</th>
+                <th class="border-0 text-end pe-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="border-top-0">
+              @for (job of otherJobs(); track job.jobId) {
+                <tr>
+                  <td class="ps-4">
+                    <div class="fw-medium text-dark">{{ job.originalFilename }}</div>
+                    <div class="text-muted x-small">ID: {{ job.jobId }}</div>
+                  </td>
+                  <td>
+                    <span class="badge rounded-pill px-2 py-1 small" 
+                      [class.text-bg-success]="job.status === 'completed'"
+                      [class.text-bg-info]="job.status === 'running'"
+                      [class.text-bg-secondary]="job.status === 'queued'"
+                      [class.text-bg-danger]="job.status === 'failed'">
+                      {{ job.status }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex justify-content-end gap-2">
+                      @if (job.status === 'completed') {
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3" (click)="viewJob(job)">View</button>
+                        <button class="btn btn-light btn-sm rounded-circle p-2" (click)="onDownloadJob(job)" title="Download Markdown">
+                          <span class="material-icons text-secondary x-small">download</span>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
 </main>
