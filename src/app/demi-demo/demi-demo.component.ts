@@ -143,6 +143,7 @@ export class DemiDemoComponent implements OnInit {
   /** Active subscription (upload or polling). Replaced on each new file pick. */
   private sub: Subscription | null = null;
 
+  // UI state for document metadata and extraction progress.
   constructor() {
     this.resumeFromStorage();
   }
