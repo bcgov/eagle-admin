@@ -59,6 +59,7 @@ export class AddEditActivityComponent implements OnInit {
   public isPublished = false;
 
   public tinyMceSettings = {
+    license_key: 'gpl',
     skin: false,
     browser_spellcheck: true,
     promotion: false,

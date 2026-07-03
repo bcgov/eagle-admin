@@ -70,6 +70,7 @@ export class AddEditCommentPeriodComponent implements OnInit {
   public areDatesInvalid = false;
 
   public tinyMceSettings = {
+    license_key: 'gpl',
     skin: false,
     browser_spellcheck: true,
     promotion: false,

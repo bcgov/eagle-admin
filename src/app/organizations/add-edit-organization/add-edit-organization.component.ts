@@ -52,6 +52,7 @@ export class AddEditOrganizationComponent implements OnInit {
   public parentOrgId = '';
 
   public tinyMceSettings = {
+    license_key: 'gpl',
     skin: false,
     browser_spellcheck: true,
     promotion: false,

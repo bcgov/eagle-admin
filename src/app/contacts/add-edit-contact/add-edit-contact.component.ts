@@ -68,6 +68,7 @@ export class AddEditContactComponent implements OnInit {
   public contactId = '';
   public contact = null;
   public tinyMceSettings = {
+    license_key: 'gpl',
     skin: false,
     browser_spellcheck: true,
     promotion: false,
