@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommentPeriod } from '../models/commentPeriod';
 import { StorageService } from '../services/storage.service';
 import { DatePipe } from '@angular/common';
-import { MatTabsModule } from '@angular/material/tabs';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommentPeriodDetailsTabComponent } from '../comment-period/comment-period-details-tabs/comment-period-details-tab.component';
 import { ReviewCommentsTabComponent } from '../comment-period/review-comments-tab/review-comments-tab.component';
 
@@ -15,7 +15,7 @@ import { ReviewCommentsTabComponent } from '../comment-period/review-comments-ta
     imports: [
       DatePipe,
       RouterModule,
-      MatTabsModule,
+      NgbNavModule,
       CommentPeriodDetailsTabComponent,
       ReviewCommentsTabComponent,
     ]

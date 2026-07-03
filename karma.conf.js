@@ -2,9 +2,8 @@
 // https://karma-runner.github.io/0.13/config/configuration-file.html
 
 //Set the chrome_bin env here for the pod
-const _puppeteerBin = require('puppeteer').executablePath();
 const _fs = require('fs');
-process.env.CHROME_BIN = _fs.existsSync(_puppeteerBin) ? _puppeteerBin : (process.env.CHROME_BIN || '/usr/bin/chromium');
+process.env.CHROME_BIN = process.env.CHROME_BIN || (_fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
 
 module.exports = function (config) {
   config.set({

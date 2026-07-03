@@ -171,11 +171,13 @@
                       </ng-template>
                     </ng-select>
                   </div>
-                  <div class="form-group filter">
-                    <mat-slide-toggle name="isCAndE"
-                    [(ngModel)]="filterForUI.complianceAndEnforcement"></mat-slide-toggle>
+                  <div class="form-group filter align-items-center d-flex">
+                    <div class="form-check form-switch d-inline-block p-0 m-0">
+                      <input class="form-check-input ms-0" type="checkbox" role="switch" id="isCAndE" name="isCAndE"
+                        [(ngModel)]="filterForUI.complianceAndEnforcement">
+                    </div>
                     &nbsp;
-                    <label for="isCAndE">C&E Announcement</label>
+                    <label for="isCAndE" class="ms-1">C&E Announcement</label>
                   </div>
                 </div>
               </div>

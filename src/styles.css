@@ -32,9 +32,6 @@
 
 /* Third-party Components */
 
-/* Required for Angular Material styling: (ref: https://material.angular.io/guide/theming) */
-@import url("@angular/material/prebuilt-themes/deeppurple-amber.css");
-
 /* For the ng-select multiselect component. */
 @import url("@ng-select/ng-select/themes/default.theme.css");
 

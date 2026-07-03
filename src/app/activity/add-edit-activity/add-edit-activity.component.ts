@@ -5,7 +5,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
 import { RecentActivity } from 'src/app/models/recentActivity';
@@ -28,8 +27,7 @@ import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app
     ReactiveFormsModule,
     RouterModule,
     EditorModule,
-    NgbDatepickerModule,
-    MatSlideToggleModule
+    NgbDatepickerModule
   ]
 })
 export class AddEditActivityComponent implements OnInit {

@@ -23,15 +23,21 @@
 <main class="container-fluid-padding">
   <h1 id="name">{{project().name}} <span class="date">| Comment Period</span></h1>
 
-  <div>
-    <mat-tab-group [selectedIndex]="selectedTab">
-      <mat-tab label="DETAILS">
-        <br>
+    <ul ngbNav #nav="ngbNav" [(activeId)]="selectedTab" class="nav nav-tabs">
+      <li [ngbNavItem]="0" class="nav-item">
+        <button ngbNavLink class="nav-link fw-bold">DETAILS</button>
+        <ng-template ngbNavContent>
+          <br>
           <app-comment-period-details-tab [commentPeriod]="commentPeriod()" [project]="project()"></app-comment-period-details-tab>
-        </mat-tab>
-        <mat-tab label="REVIEW COMMENTS">
+        </ng-template>
+      </li>
+      <li [ngbNavItem]="1" class="nav-item">
+        <button ngbNavLink class="nav-link fw-bold">REVIEW COMMENTS</button>
+        <ng-template ngbNavContent>
+          <br>
           <app-review-comments-tab [project]="project()"></app-review-comments-tab>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
+        </ng-template>
+      </li>
+    </ul>
+    <div [ngbNavOutlet]="nav" class="mt-2"></div>
   </main>

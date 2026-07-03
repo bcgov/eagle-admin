@@ -18,7 +18,6 @@ import { TableTemplateComponent } from '../shared/components/table-template/tabl
 
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 class ActivityFilterObject {
@@ -36,7 +35,7 @@ class ActivityFilterObject {
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgSelectModule, TableTemplateComponent, MatSlideToggleModule, NgbDatepickerModule, RouterModule]
+  imports: [FormsModule, NgSelectModule, TableTemplateComponent, NgbDatepickerModule, RouterModule]
 
 })
 export class ActivityComponent {
