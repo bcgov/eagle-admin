@@ -1,9 +1,9 @@
-import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, signal, computed, inject, effect } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { DatePipe } from '@angular/common';
 import { HttpEventType } from '@angular/common/http';
-import { interval, Subject, Subscription, switchMap, debounceTime, retry, timer, tap, Observable } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { interval, Subject, Subscription, switchMap, debounceTime, retry, timer, tap, Observable, takeWhile, of } from 'rxjs';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { DemiService, AgendaJob } from '../services/demi.service';
 import { DocumentService } from '../services/document.service';
@@ -140,12 +140,62 @@ export class DemiDemoComponent implements OnInit {
     return p === 'uploading' || p === 'queued' || p === 'processing';
   });
 
-  /** Active subscription (upload or polling). Replaced on each new file pick. */
+  /** Active subscription (upload). Replaced on each new file pick. */
   private sub: Subscription | null = null;
+
+  activeJobResource = rxResource({
+    params: () => this.activeJobId(),
+    stream: ({ params: jobId }) => {
+      if (!jobId) {
+        return of(null);
+      }
+      return timer(0, 2500).pipe(
+        switchMap(() => this.demiService.pollJob(jobId)),
+        retry(3),
+        takeWhile(result => result.status === 'pending' || result.status === 'started', true)
+      );
+    }
+  });
 
   // UI state for document metadata and extraction progress.
   constructor() {
     this.resumeFromStorage();
+
+    effect(() => {
+      const result = this.activeJobResource.value();
+      if (!result) return;
+
+      this.taskMeta.set(result.taskMeta ?? null);
+      this.jobProgress.set(result.progress ?? null);
+      if (result.docId) this.docId.set(result.docId);
+      if (result.projectId) this.projectId.set(result.projectId);
+      
+      const jobId = this.activeJobId();
+      if (!jobId) return;
+
+      if (result.status === 'pending') {
+        this.phase.set('queued');
+        this.queuePosition.set(result.queuePosition);
+      } else if (result.status === 'started') {
+        this.phase.set('processing');
+        this.queuePosition.set(null);
+        if (result.startedAt && !this.startedAt()) {
+          this.startedAt.set(result.startedAt);
+          this.saveJob(jobId, this.fileName()!, this.fileSize() ?? undefined, result.startedAt, this.docId()!, this.projectId());
+        }
+      } else if (result.status === 'success') {
+        this.phase.set('done');
+        this.fetchDocumentMeta();
+        this.refreshJobList();
+      } else if (result.status === 'failure') {
+        this.clearJob();
+        this.activeJobId.set(null);
+        this.refreshJobList();
+        const reason = result.error ?? 'The document may be corrupted, password-protected, or too complex.';
+        this.error.set(`Extraction failed: ${reason}`);
+        this.phase.set('idle');
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -228,7 +278,6 @@ export class DemiDemoComponent implements OnInit {
       this.projectId.set(projectId ?? '');
       
       this.phase.set('initializing');
-      this.startPolling(jobId);
     } catch {
       localStorage.removeItem(STORAGE_KEY);
     }
@@ -323,7 +372,6 @@ export class DemiDemoComponent implements OnInit {
             this.activeJobId.set(String(jobId));
             this.saveJob(jobId, file.name, file.size, undefined, docId, projId);
             this.phase.set('queued');
-            this.startPolling(jobId);
           } else {
             this.error.set('No job ID returned from extraction service.');
             this.phase.set('idle');
@@ -340,52 +388,7 @@ export class DemiDemoComponent implements OnInit {
     });
   }
 
-  /** Phase 2: Poll every 2.5s until done. */
-  private startPolling(jobId: string): void {
-    this.sub = timer(0, 2500).pipe(
-      switchMap(() => this.demiService.pollJob(jobId)),
-      retry(3),
-    ).subscribe({
-      next: (result) => {
-        this.taskMeta.set(result.taskMeta ?? null);
-        this.jobProgress.set(result.progress ?? null);
-        if (result.docId) this.docId.set(result.docId);
-        if (result.projectId) this.projectId.set(result.projectId);
-        
-        if (result.status === 'pending') {
-          this.phase.set('queued');
-          this.queuePosition.set(result.queuePosition);
-        } else if (result.status === 'started') {
-          this.phase.set('processing');
-          this.queuePosition.set(null);
-          if (result.startedAt && !this.startedAt()) {
-            this.startedAt.set(result.startedAt);
-            this.saveJob(jobId, this.fileName()!, this.fileSize() ?? undefined, result.startedAt, this.docId()!, this.projectId());
-          }
-        } else if (result.status === 'success') {
-          this.cancel();
-          // Keep activeJobId set so the success card shows the results
-          this.phase.set('done');
-          this.fetchDocumentMeta();
-          this.refreshJobList();
-        } else if (result.status === 'failure') {
-          this.clearJob();
-          this.activeJobId.set(null);
-          this.refreshJobList();
-          const reason = result.error ?? 'The document may be corrupted, password-protected, or too complex.';
-          this.error.set(`Extraction failed: ${reason}`);
-          this.phase.set('idle');
-          this.cancel();
-        }
-      },
-      error: (err) => {
-        const msg = err?.error?.message || err?.message || `Polling failed (${err?.status ?? 'unknown'})`;
-        this.error.set(msg);
-        this.phase.set('idle');
-        this.sub = null;
-      },
-    });
-  }
+
 
   onDownloadJob(job: AgendaJob): void {
     if (!job.hasResult) return;
