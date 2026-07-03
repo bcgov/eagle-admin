@@ -97,7 +97,7 @@ export class ProjectService {
       withLoading(this.loadingState, `project-${projId}`),
       map(projects => {
         // get upcoming comment period if there is one and convert it into a comment period object.
-        if (projects.length > 0) {
+        if (projects && projects.length > 0 && projects[0]) {
           if (projects[0].commentPeriodForBanner && projects[0].commentPeriodForBanner.length > 0) {
             projects[0].commentPeriodForBanner = new CommentPeriod(projects[0].commentPeriodForBanner[0]);
           } else {
@@ -105,7 +105,7 @@ export class ProjectService {
           }
         }
         // return the first (only) project
-        return projects.length > 0 ? new Project(projects[0]) : null;
+        return projects && projects.length > 0 && projects[0] ? new Project(projects[0]) : null;
       }),
       mergeMap(res => {
         const project = res;
