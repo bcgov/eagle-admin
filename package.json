@@ -75,6 +75,8 @@
     "typescript-eslint": "^8.62.1"
   },
   "resolutions": {
-    "esbuild": "0.28.1"
+    "esbuild": "0.28.1",
+    "qs": "6.15.3",
+    "@babel/core": "7.29.7"
   }
 }

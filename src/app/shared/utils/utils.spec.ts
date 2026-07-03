@@ -1,4 +1,5 @@
 import { encodeString } from './utils';
+import { sanitizeHighlight } from './sanitize-highlight';
 
 describe('Utils', () => {
   const filenameWithSpaces = 'Ajax Mine - Information Bulletin.pdf';
@@ -30,3 +31,17 @@ describe('Utils', () => {
     expect(encodedFilename).toBe(expectedFilename);
   });
 });
+
+describe('sanitizeHighlight', () => {
+  it('should preserve mark tags and decode entities safely', () => {
+    const raw = 'Hello <mark>World</mark> &amp; Everyone!';
+    expect(sanitizeHighlight(raw)).toBe('Hello <mark>World</mark> & Everyone!');
+  });
+
+  it('should escape raw HTML tags in plain text portions to prevent XSS', () => {
+    const raw = 'Attack <script>alert(1)</script> <mark>Vulnerable</mark> <div>nested</div>';
+    const clean = sanitizeHighlight(raw);
+    expect(clean).toBe('Attack &lt;script&gt;alert(1)&lt;/script&gt; <mark>Vulnerable</mark> &lt;div&gt;nested&lt;/div&gt;');
+  });
+});
+

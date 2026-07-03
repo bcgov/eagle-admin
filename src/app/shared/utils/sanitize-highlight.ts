@@ -28,14 +28,9 @@ export function sanitizeHighlight(html: string): string {
     } else if (/^<\/mark>$/i.test(part)) {
       result += '</mark>';
     } else {
-      // Text/HTML portion: strip all remaining HTML tags recursively to prevent tag recreation, then decode entities
-      let stripped = part;
-      let prev: string;
-      do {
-        prev = stripped;
-        stripped = stripped.replace(/<[^>]*>/g, '');
-      } while (stripped !== prev);
-      result += decodeHtmlEntities(stripped);
+      // Text portion: decode any existing HTML entities, then escape < and > to prevent tag injection
+      const decoded = decodeHtmlEntities(part);
+      result += decoded.replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
   }
 
