@@ -1,6 +1,5 @@
-import { Component, OnInit, inject, computed, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
+import { Component, OnInit, inject, computed, ChangeDetectionStrategy, ChangeDetectorRef, DestroyRef} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { trigger, state, style, animate, transition } from '@angular/animations';
 import { Router, RouterModule } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from '../confirm/confirm.component';
@@ -16,22 +15,6 @@ import { JwtUtil } from '../shared/utils/jwt-utils';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
-  animations: [
-    trigger('toggleNav', [
-      state('navClosed', style({
-        height: '0',
-      })),
-      state('navOpen', style({
-        height: '*',
-      })),
-      transition('navOpen => navClosed', [
-        animate('0.2s')
-      ]),
-      transition('navClosed => navOpen', [
-        animate('0.2s')
-      ]),
-    ]),
-  ],
   imports: [RouterModule]
 })
 
@@ -65,6 +48,7 @@ export class HeaderComponent implements OnInit {
   private dayCalculatorModal: NgbModalRef = null;
   public showDayCalculatorModal = false;
   private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor() {
     const router = this.router;
@@ -82,6 +66,7 @@ export class HeaderComponent implements OnInit {
           this.welcomeMsg = 'Login';
           this.jwt = null;
         }
+        this.cdr.markForCheck();
       });
   }
 

@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef, DestroyRef} from '@angular/core';
+import { Component, OnInit, inject, computed, ChangeDetectionStrategy, ChangeDetectorRef, DestroyRef} from '@angular/core';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter, startWith } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { KeycloakService } from '../services/keycloak.service';
 import { SideBarService } from '../services/sidebar.service';
 import { StorageService } from '../services/storage.service';
+import { ConfigService } from '../services/config.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,6 +40,9 @@ export class SidebarComponent implements OnInit {
   private keycloakService = inject(KeycloakService);
   private sideBarService = inject(SideBarService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
+  private configService = inject(ConfigService);
+
+  public isProd = computed(() => this.configService.config().ENVIRONMENT === 'prod');
 
   constructor() {
     this.router.events.pipe(

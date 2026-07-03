@@ -189,6 +189,13 @@
 
 .navbar-collapse {
   overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.2s ease-out;
+}
+
+.navbar-collapse.nav-open {
+  max-height: 999px;
+  transition: max-height 0.2s ease-in;
 }
 
 @media (width >= 768px) {
