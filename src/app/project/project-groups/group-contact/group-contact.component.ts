@@ -19,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,7 +27,8 @@ import { LoggingService } from 'src/app/services/logging.service';
   imports: [
     FormsModule,
     RouterModule,
-    TableTemplateComponent
+    TableTemplateComponent,
+    CommonModule
   ],
   templateUrl: './group-contact.component.html',
   styleUrl: './group-contact.component.css',

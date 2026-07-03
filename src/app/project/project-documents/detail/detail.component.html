@@ -82,7 +82,7 @@
         </div>
         <div class="label-pair">
           <h3 for="datePosted">Document Date: </h3>
-          @if (resolvedDocument().datePosted !== '1900-01-01T08:00:00.000Z') {
+          @if ($any(resolvedDocument().datePosted) !== '1900-01-01T08:00:00.000Z') {
             <p id="datePosted">{{resolvedDocument().datePosted | date}}</p>
           }
         </div>

@@ -500,9 +500,7 @@
 <div>
   @if (ranSearch && !searching && count == 0) {
     <p class="search-result">
-      No result@if (count != 1) {
-      <span>s</span>
-      } found for "{{keywords}}"@if (hadFilter) {
+      No results found for "{{keywords}}"@if (hadFilter) {
       <span> with advanced
       filters</span>
     }

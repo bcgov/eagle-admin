@@ -29,7 +29,7 @@
     @if (tableParams.totalListItems > 0) {
       <app-table-template [columns]="commentPeriodTableColumns"
         [data]="commentPeriodTableData" (onColumnSort)='setColumnSort($event)'
-        (onPageNumUpdate)='getPaginatedComments($event, null, null)'>
+        (onPageNumUpdate)='getPaginatedComments($event)'>
       </app-table-template>
     }
 

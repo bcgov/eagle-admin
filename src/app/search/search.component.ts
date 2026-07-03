@@ -98,7 +98,7 @@ export class SearchComponent implements OnInit {
 
   public showAdvancedSearch = true;
 
-  public showFilters: object = {
+  public showFilters: Record<string, boolean> = {
     projectType: false,
     eacDecision: false,
     pcp: false,
@@ -110,7 +110,7 @@ export class SearchComponent implements OnInit {
     more: false
   };
 
-  public numFilters: object = {
+  public numFilters: Record<string, number> = {
     projectType: 0,
     eacDecision: 0,
     pcp: 0,
@@ -199,7 +199,7 @@ export class SearchComponent implements OnInit {
   public keywords: string;
   public hadFilter = false;
 
-  public count = 0; // for template
+  public count: number = 0; // for template
   public currentPage = 1;
   public pageSize = 10;
 

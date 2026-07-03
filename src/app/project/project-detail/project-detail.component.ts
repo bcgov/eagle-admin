@@ -18,13 +18,14 @@ import { StorageService } from 'src/app/services/storage.service';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LoggingService } from 'src/app/services/logging.service';
+import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-period-banner.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-project-detail',
     templateUrl: './project-detail.component.html',
     styleUrl: './project-detail.component.css',
-    imports: [DatePipe, RouterModule, NgbDropdownModule],
+    imports: [DatePipe, RouterModule, NgbDropdownModule, CommentPeriodBannerComponent],
 })
 
 export class ProjectDetailComponent implements OnInit {

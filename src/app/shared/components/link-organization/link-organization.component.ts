@@ -35,7 +35,7 @@ import { SearchService } from 'src/app/services/search.service';
 export class LinkOrganizationComponent implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  protected router = inject(Router);
   private storageService = inject(StorageService);
   protected navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);

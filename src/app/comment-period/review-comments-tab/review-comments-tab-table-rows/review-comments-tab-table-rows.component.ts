@@ -22,7 +22,7 @@ export class ReviewCommentsTabTableRowsComponent implements OnInit, TableCompone
   smallTable = input.required<boolean>();
   selectedCount = output<any>();
 
-  public comments: Comment[];
+  public comments: any[];
   public paginationData: any;
   public projectId: string;
   public baseRouteUrl: string;

@@ -60,7 +60,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
   public regions: any[] = [];
   public subTypeSelected = [];
   public unitsSelected = [];
-  public projects = ['Test'];
+  public projects: any[] = ['Test'];
 
   // Raw files coming in from file uploader
   public newFiles: Array<File> = [];

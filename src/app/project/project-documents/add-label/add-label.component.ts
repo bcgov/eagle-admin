@@ -4,14 +4,14 @@ import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { StorageService } from 'src/app/services/storage.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LoggingService } from 'src/app/services/logging.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-add-label',
-    imports: [RouterModule, ReactiveFormsModule],
+    imports: [RouterModule, ReactiveFormsModule, CommonModule],
     templateUrl: './add-label.component.html',
-    styleUrl: './add-label.component.css',
-    
+    styleUrl: './add-label.component.css'
 })
 export class AddLabelComponent implements OnInit {
   private router = inject(Router);

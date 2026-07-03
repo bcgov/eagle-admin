@@ -165,7 +165,7 @@ export class ProjectNotificationUploadComponent implements OnInit {
       });
   }
 
-  public addDocuments(files: FileList) {
+  public addDocuments(files: any) {
     if (this.documents.length + this.docTotal >= 20) {
       this.toastService.warning('Project Notifications can have a maximum of 20 files');
       return false;

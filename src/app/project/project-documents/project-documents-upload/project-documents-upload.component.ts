@@ -206,7 +206,7 @@ export class ProjectDocumentsUploadComponent implements OnInit {
     }
   }
 
-  public addDocuments(files: FileList) {
+  public addDocuments(files: any) {
     if (files) { // safety check
       for (let i = 0; i < files.length; i++) {
         if (files[i]) {

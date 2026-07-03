@@ -22,7 +22,7 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 class ActivityFilterObject {
   constructor(
-    public type: Array<object> = [],
+    public type: Array<any> = [],
     public dateAddedStart: object = {},
     public dateAddedEnd: object = {},
     public project: Array<Project> = [],

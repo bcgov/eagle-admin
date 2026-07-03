@@ -7,7 +7,7 @@
           <h5>{{commentPeriod.dateStarted | date: 'MMMM d'}} - {{commentPeriod.dateCompleted | date}}</h5>
         </div>
         <div class="col-md-6 text-end">
-          @if (commentPeriod.commentPeriodStatus !== Open) {
+          @if (commentPeriod.commentPeriodStatus !== 'Open') {
             <div>
               <button type="button" id="viewComment" class="btn btn-primary" (click)="goToViewComments()">
                 View Comment Period

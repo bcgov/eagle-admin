@@ -50,7 +50,7 @@
   @if (tableParams.totalListItems != 0) {
     <app-table-template [columns]="tableColumns" [data]="tableData"
       (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-      (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+      (onPageNumUpdate)='getPaginatedDocs($event)'>
     </app-table-template>
 
     <div class="btn-group" role="group" aria-label="Action Buttons">

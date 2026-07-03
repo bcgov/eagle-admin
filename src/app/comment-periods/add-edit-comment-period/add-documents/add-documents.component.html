@@ -137,7 +137,7 @@
     @if (tableParams.totalListItems != 0) {
       <app-table-template [columns]="documentTableColumns"
         [data]="documentTableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-        (onPageNumUpdate)='getPaginatedDocs($event, null, null)'>
+        (onPageNumUpdate)='getPaginatedDocs($event)'>
       </app-table-template>
     }
   </div>

@@ -18,6 +18,7 @@ import { PnDocumentTableRowsComponent } from './project-notification-document-ta
 import { Document } from 'src/app/models/document';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-project-notification-documents',
@@ -25,7 +26,8 @@ import { LoggingService } from 'src/app/services/logging.service';
     RouterModule,
     TableTemplateComponent,
     NgbDropdownModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    CommonModule
   ],
   templateUrl: './project-notification-documents.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

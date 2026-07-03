@@ -151,4 +151,17 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
       .filter(n => n >= 10)
       .sort((a, b) => a - b);
   }
+
+  onHeaderKeyDown(event: KeyboardEvent, entry: any) {
+    void event;
+    void entry;
+  }
+
+  onKeyDown(event: KeyboardEvent) {
+    void event;
+  }
+
+  updateSelectedCount(event: any) {
+    void event;
+  }
 }

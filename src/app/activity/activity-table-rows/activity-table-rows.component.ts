@@ -8,13 +8,14 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { DatePipe } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'tbody[app-activity-table-rows]',
   templateUrl: './activity-table-rows.component.html',
   styleUrl: './activity-table-rows.component.css',
-  imports: [DatePipe],
+  imports: [DatePipe, CommonModule],
 })
 
 export class ActivityTableRowsComponent implements OnInit, TableComponent {

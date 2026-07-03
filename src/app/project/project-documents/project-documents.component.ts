@@ -2,7 +2,7 @@ import { Component, OnInit, inject, DestroyRef, ChangeDetectionStrategy, signal,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
-import { NgbModal, NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbDropdownModule, NgbTooltipModule, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, firstValueFrom } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
@@ -25,6 +25,7 @@ import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 class DocumentFilterObject {
@@ -46,7 +47,9 @@ class DocumentFilterObject {
     RouterModule,
     NgbDropdownModule,
     NgbTooltipModule,
-    TableTemplateComponent
+    TableTemplateComponent,
+    NgSelectModule,
+    NgbDatepickerModule
   ],
   templateUrl: './project-documents.component.html',
   styleUrl: './project-documents.component.css',

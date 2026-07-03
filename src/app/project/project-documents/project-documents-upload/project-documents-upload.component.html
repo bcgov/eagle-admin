@@ -151,7 +151,7 @@
           }
           <div>
             @if (documents && documents.length > 1) {
-              <textarea disabled class="form-control" id="displayName"
+              <textarea [disabled]="true" class="form-control" id="displayName"
               name="displayName" rows="1" formControlName="displayName"></textarea>
             }
             @if (!documents || documents.length < 2) {

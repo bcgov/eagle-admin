@@ -22,8 +22,8 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 
 export class AddEditOrganizationComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private navigationStackUtils = inject(NavigationStackUtils);
+  protected router = inject(Router);
+  protected navigationStackUtils = inject(NavigationStackUtils);
   private orgService = inject(OrgService);
   private storageService = inject(StorageService);
   private searchService = inject(SearchService);

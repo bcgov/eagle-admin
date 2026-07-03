@@ -2,13 +2,14 @@ import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } fro
 
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-group-table-rows',
     templateUrl: './group-table-rows.component.html',
     styleUrl: './group-table-rows.component.css',
-    
+    imports: [FormsModule]
 })
 export class GroupTableRowsComponent implements OnInit {
   private storageService = inject(StorageService);

@@ -72,7 +72,7 @@
               @if (!loading && tableParams.totalListItems != 0) {
                 <app-table-template [columns]="tableColumns"
                   [data]="tableData" (onColumnSort)='setColumnSort($event)' (onSelectedRow)='updateSelectedRow($event)'
-                  (onPageNumUpdate)='getPaginatedContacts($event, null, null)'>
+                  (onPageNumUpdate)='getPaginatedContacts($event)'>
                 </app-table-template>
               }
             </div>

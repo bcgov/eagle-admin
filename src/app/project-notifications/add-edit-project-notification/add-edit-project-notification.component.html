@@ -38,10 +38,10 @@
   }
   @if (myForm) {
   <form [formGroup]="myForm">
-    @if (!isEditing) {
+    @if (isAdd) {
     <h2>Add Project Notification</h2>
     }
-    @if (isEditing) {
+    @if (!isAdd) {
     <h2>Edit Project Notification</h2>
     }
     <p class="sub-headder">INFORMATION IN THIS SECTION DISPLAYS PUBLICLY</p>

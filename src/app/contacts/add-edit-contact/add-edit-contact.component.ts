@@ -30,16 +30,16 @@ export interface DataModel {
 //       otherwise they don't return a result
 export class AddEditContactComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  protected router = inject(Router);
   private logger = inject(LoggingService);
-  private navigationStackUtils = inject(NavigationStackUtils);
+  protected navigationStackUtils = inject(NavigationStackUtils);
   private storageService = inject(StorageService);
   private userService = inject(UserService);
   private searchService = inject(SearchService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
 
-  private navigationObject;
+  protected navigationObject;
 
   public currentProject;
   public contactForm: FormGroup<{

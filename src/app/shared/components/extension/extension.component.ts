@@ -24,8 +24,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 ]
 })
 export class ExtensionComponent implements OnInit {
-  private router = inject(Router);
-  private navigationStackUtils = inject(NavigationStackUtils);
+  protected router = inject(Router);
+  protected navigationStackUtils = inject(NavigationStackUtils);
   private modalService = inject(NgbModal);
   api = inject(ProjectService);
   private storageService = inject(StorageService);

@@ -26,16 +26,16 @@ import { LoadingStateService } from 'src/app/services/loading-state.service';
 
 class ProjectFilterObject {
   constructor(
-    public type: Array<object> = [],
-    public eacDecision: Array<object> = [],
+    public type: Array<any> = [],
+    public eacDecision: Array<any> = [],
     public decisionDateStart: object = {},
     public decisionDateEnd: object = {},
-    public pcp: Array<object> = [],
-    public proponent: Array<Org> = [],
-    public region: Array<object> = [],
+    public pcp: Array<any> = [],
+    public proponent: Array<any> = [],
+    public region: Array<any> = [],
     public CEAAInvolvement: Array<any> = [],
-    public vc: Array<object> = [],
-    public projectPhase: Array<object> = [],
+    public vc: Array<any> = [],
+    public projectPhase: Array<any> = [],
   ) { }
 }
 

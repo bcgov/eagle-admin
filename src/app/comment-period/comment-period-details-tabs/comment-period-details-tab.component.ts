@@ -163,4 +163,8 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
     this.canDeleteCommentPeriod = this.storageService.state.canDeleteCommentPeriod.data;
   }
 
+  public onKeyDownDocument(event: KeyboardEvent, document: any) {
+    void event;
+    void document;
+  }
 }

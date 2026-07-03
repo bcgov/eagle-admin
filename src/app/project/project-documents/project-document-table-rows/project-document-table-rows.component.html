@@ -14,7 +14,7 @@
     <td data-label="Status" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
       <p class="card-text publish-state">
         <i class="material-icons">
-          {{document.status === 'Not Published' ?   'cloud_off' : 'cloud_done' || '-'}}
+          {{document.status === 'Not Published' ? 'cloud_off' : 'cloud_done'}}
         </i>
       </p>
     </td>

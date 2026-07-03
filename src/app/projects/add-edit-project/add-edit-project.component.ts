@@ -12,7 +12,6 @@ import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 
-import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -23,7 +22,6 @@ import { ReactiveFormsModule } from '@angular/forms';
   styleUrl: './add-edit-project.component.css',
   imports: [
     RouterModule,
-    TableTemplateComponent,
     NgbDatepickerModule,
     ReactiveFormsModule
   ]
