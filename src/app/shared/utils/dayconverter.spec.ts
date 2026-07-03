@@ -1,8 +1,7 @@
-import { Utils } from './utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from './utils';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
-describe('sdfasdfas', () => {
-  const myInstance = new Utils();
+describe('DayConverter Utils', () => {
   const inputJSDate = new Date(2010, 6, 14);
   const inputJSDate2 = new Date(2019, 11, 31);
   const inputJSDate3 = new Date(2020, 0, 1);
@@ -11,13 +10,13 @@ describe('sdfasdfas', () => {
   const NGBdate2: NgbDateStruct = { year: 2019, month: 12, day: 31 };
   const NGBdate3: NgbDateStruct = { year: 2020, month: 1, day: 1 };
   const NGBdate4: NgbDateStruct = { year: 2016, month: 7, day: 27 };
-  const calculated1 = myInstance.convertJSDateToNGBDate(inputJSDate);
-  const calculated2 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate);
-  const calculated3 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate2);
-  const calculated4 = myInstance.convertJSDateToNGBDate(inputJSDate2);
-  const calculated5 = myInstance.convertJSDateToNGBDate(inputJSDate3);
-  const calculated6 = myInstance.convertFormGroupNGBDateToJSDate(NGBdate3);
-  const calculated7 = myInstance.convertJSDateToNGBDate(inputJSDate4);
+  const calculated1 = convertJSDateToNGBDate(inputJSDate);
+  const calculated2 = convertFormGroupNGBDateToJSDate(NGBdate);
+  const calculated3 = convertFormGroupNGBDateToJSDate(NGBdate2);
+  const calculated4 = convertJSDateToNGBDate(inputJSDate2);
+  const calculated5 = convertJSDateToNGBDate(inputJSDate3);
+  const calculated6 = convertFormGroupNGBDateToJSDate(NGBdate3);
+  const calculated7 = convertJSDateToNGBDate(inputJSDate4);
 
   it('Test 1: should create a NGB date 2010 july 14', () => {
     expect(calculated1).toEqual(NGBdate);

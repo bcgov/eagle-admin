@@ -10,7 +10,6 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
 import { ApiService } from 'src/app/services/api';
 import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
 
 // Added the declaration of BlankComponent to be used for test routing
 @Component({
@@ -40,11 +39,6 @@ describe('ReviewCommentComponent', () => {
     data: { _id: 12345 }
   };
 
-  const mockUtils = jasmine.createSpyObj('Utils', [
-    'convertJSDateToNGBDate',
-    'convertFormGroupNGBDateToJSDate'
-  ]);
-
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -61,8 +55,7 @@ describe('ReviewCommentComponent', () => {
         ]),
         { provide: ApiService, useValue: mockApiService },
         { provide: CommentService, useValue: mockCommentService },
-        { provide: StorageService, useValue: mockStorageService },
-        { provide: Utils, useValue: mockUtils }
+        { provide: StorageService, useValue: mockStorageService }
       ]
     })
       .compileComponents();

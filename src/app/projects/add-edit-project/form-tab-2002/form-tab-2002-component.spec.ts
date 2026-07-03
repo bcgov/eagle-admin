@@ -6,7 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
-import { Utils } from 'src/app/shared/utils/utils';
+import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
 import { ConfigService } from 'src/app/services/config.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
@@ -21,8 +21,7 @@ describe('FormTab2002', () => {
   const mockApiService = jasmine.createSpyObj('ApiService', [
     'downloadDocument'
   ]);
-  const utils = new Utils();
-  const projectAjaxData = utils.extractFromSearchResults(AjaxData)[0]['legislation_2002'];
+  const projectAjaxData = extractFromSearchResults(AjaxData)[0]['legislation_2002'];
   const mockConfigService = {
     regions: regionsData,
     getLists: () => {
@@ -76,8 +75,7 @@ describe('FormTab2002', () => {
         { provide: ProjectService, useValue: mockProjectService },
         { provide: NgbActiveModal, useValue: {} },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
-        { provide: NavigationStackUtils, useValue: mockNavigationStackUtils },
-        { provide: Utils, useValue: utils }
+        { provide: NavigationStackUtils, useValue: mockNavigationStackUtils }
       ],
       schemas: [NO_ERRORS_SCHEMA]
     })

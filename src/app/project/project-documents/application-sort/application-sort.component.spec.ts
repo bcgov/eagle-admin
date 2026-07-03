@@ -7,7 +7,6 @@ import { StorageService } from 'src/app/services/storage.service';
 import { SearchService } from 'src/app/services/search.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
-import { Utils } from 'src/app/shared/utils/utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { AjaxData } from 'src/app/shared/utils/mock-data';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
@@ -35,16 +34,13 @@ describe('DocumentApplicationSortComponent', () => {
     'res'
   ]);
 
-  const mockConfigService = jasmine.createSpyObj('ConfigService', ['res']);
-  mockConfigService.lists = [];
+  const mockConfigService = { lists: [] };
 
   const mockTableTemplateUtils = jasmine.createSpyObj('TableTemplateUtils', [
     'updateUrl',
     'updateTableParams',
     'getParamsFromUrl'
   ]);
-
-  const utils = new Utils();
 
   mockStorageService.currentProjectData = AjaxData;
   mockStorageService.state.currentProject = {
@@ -67,8 +63,7 @@ describe('DocumentApplicationSortComponent', () => {
         { provide: SearchService, useValue: mockSearchService },
         { provide: DocumentService, useValue: mockDocumentService },
         { provide: ConfigService, useValue: mockConfigService },
-        { provide: TableTemplateUtils, useValue: mockTableTemplateUtils },
-        { provide: Utils, useValue: utils }
+        { provide: TableTemplateUtils, useValue: mockTableTemplateUtils }
       ]
     })
       .compileComponents();

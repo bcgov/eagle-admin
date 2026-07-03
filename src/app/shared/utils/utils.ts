@@ -127,22 +127,3 @@ export function createProjectTabModifiers(list: Array<any>) {
   return queryModifier;
 }
 
-// ---------------------------------------------------------------------------
-// Legacy class wrapper — kept for backwards compatibility with spec files that
-// use `Utils` as an Angular DI token or call `new Utils()`.
-// Do NOT add new usages; import standalone functions directly instead.
-// ---------------------------------------------------------------------------
-/* eslint-disable @typescript-eslint/member-ordering */
-export class Utils {
-  formatDate = formatDate;
-  convertJSDateToNGBDate = convertJSDateToNGBDate;
-  convertFormGroupNGBDateToJSDate = convertFormGroupNGBDateToJSDate;
-  formatBytes = formatBytes;
-  encodeParams = encodeParams;
-  encodeString = encodeString;
-  getFormattedTime = getFormattedTime;
-  extractFromSearchResults = extractFromSearchResults;
-  isEmptyObject = isEmptyObject;
-  natureBuildMapper = natureBuildMapper;
-  createProjectTabModifiers = createProjectTabModifiers;
-}

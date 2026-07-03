@@ -1,5 +1,4 @@
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Utils } from 'src/app/shared/utils/utils';
 import { TestBed, waitForAsync } from '@angular/core/testing';
 import { DayCalculatorResult } from './day-calculator-modal.component';
 import { DayCalculatorModalComponent } from './day-calculator-modal.component';
@@ -21,8 +20,7 @@ describe('DayCalculatorModalComponent', () => {
     TestBed.configureTestingModule({
       imports: [DayCalculatorModalComponent],
       providers: [
-        { provide: NgbActiveModal, useValue: {} },
-        { provide: Utils, useValue: new Utils() }
+        { provide: NgbActiveModal, useValue: {} }
       ]
     }).compileComponents();
 
