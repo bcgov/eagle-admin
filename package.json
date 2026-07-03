@@ -40,7 +40,7 @@
     "luxon": "^3.7.2",
     "rxjs": "^7.8.2",
     "tinymce": "patch:tinymce@npm%3A8.7.0#~/.yarn/patches/tinymce-npm-8.7.0-767e2d8e60.patch",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zone.js": "~0.16.2"
   },
   "devDependencies": {
