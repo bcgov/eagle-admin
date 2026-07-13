@@ -57,7 +57,7 @@ import { SearchComponent } from './search/search.component';
 import { SearchHelpComponent } from './search-help/search-help.component';
 import { ProjectNotificationUploadComponent } from './project-notification/documents/project-notification-upload/project-notification-upload.component';
 import { ProjectDocumentsUploadComponent } from './project/project-documents/project-documents-upload/project-documents-upload.component';
-import { DemiDemoComponent } from './demi-demo/demi-demo.component';
+
 
 // Resolvers
 // (all resolvers removed)
@@ -484,11 +484,7 @@ export const routes: Routes = [
   },
 
   // Default & Wildcard
-  {
-    path: 'demi-demo',
-    component: DemiDemoComponent,
-    canActivate: [AuthGuard],
-  },
+
   {
     path: '',
     component: SearchComponent,

@@ -53,13 +53,5 @@
             <a href="https://intranet.gov.bc.ca/eao/our-work/eguide-2018" id="eguide" target="_blank"><i
             class="material-icons me-3 ">chrome_reader_mode</i>E-Guide</a>
           </section>
-          @if (!isProd()) {
-            <div class="sidebar-section-divider">Preview</div>
-            <section class="preview-nav">
-              <a [class.active]="mainRouteId === 'demi-demo'" id="demi-demo" [routerLink]="['/demi-demo']"><i
-              class="material-icons me-3">science</i>OCR
-                <span class="badge bg-warning text-dark ms-1" style="font-size: 0.6rem; vertical-align: middle;">PREVIEW</span>
-              </a>
-            </section>
-          }
+
         </div>
