@@ -39,12 +39,15 @@
   @if (data().paginationData.totalListItems >= 10) {
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
       <span class="results-count">
-        {{data().paginationData.totalListItems}} result@if (data().paginationData.totalListItems != 1) {<span>s</span>} found
+        Showing {{getshowingStart()}} - {{getshowingEnd()}} of {{data().paginationData.totalListItems}} results
       </span>
       <select class="form-select form-select-sm w-auto"
-        (change)="updatePageSize(+$any($event.target).value)">
+        [(ngModel)]="activePageSize"
+        (ngModelChange)="updatePageSize($event)"
+        (click)="$event.stopPropagation()"
+        (mousedown)="$event.stopPropagation()">
         @for (size of pageSizeArray; track size) {
-          <option [value]="size" [selected]="size === activePageSize">{{size}} / page</option>
+          <option [value]="size">{{size}} / page</option>
         }
       </select>
     </div>

@@ -4,13 +4,15 @@ import { TableDirective } from './table.directive';
 import { TableObject, TableColumn } from './table-object';
 import { Constants } from '../../utils/constants';
 
+import { FormsModule } from '@angular/forms';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-table-template',
   templateUrl: './table-template.component.html',
   styleUrl: './table-template.component.css',
   encapsulation: ViewEncapsulation.None,
-  imports: [NgbPaginationModule, TableDirective],
+  imports: [NgbPaginationModule, TableDirective, FormsModule],
 })
 export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
@@ -44,7 +46,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit() {
     this.column = this.data().paginationData.sortBy;
     this.loadComponent();
-    this.activePageSize = parseInt(this.data().paginationData.pageSize, 10);
+    this.activePageSize = parseInt(this.data().paginationData.pageSize, 10) || Constants.tableDefaults.DEFAULT_PAGE_SIZE;
     this.rebuildPageSizes();
     if (this.activePage !== parseInt(this.data().paginationData.currentPage, 10)) {
       this.activePage = parseInt(this.data().paginationData.currentPage, 10);
@@ -59,7 +61,7 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
       this.data().data = changes['data'].currentValue.data;
       this.data().paginationData = changes['data'].currentValue.paginationData;
       this.column = changes['data'].currentValue.paginationData.sortBy;
-      this.activePageSize = parseInt(changes['data'].currentValue.paginationData.pageSize, 10);
+      this.activePageSize = parseInt(changes['data'].currentValue.paginationData.pageSize, 10) || Constants.tableDefaults.DEFAULT_PAGE_SIZE;
       this.activePage = parseInt(changes['data'].currentValue.paginationData.currentPage, 10);
       this.data().extraData = changes['data'].currentValue.extraData;
       this.rebuildPageSizes();
@@ -150,6 +152,15 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     this.pageSizeArray = (totalItems <= 500 ? [...base, totalItems] : base)
       .filter(n => n >= 10)
       .sort((a, b) => a - b);
+  }
+
+  getshowingStart(): number {
+    return (this.activePage - 1) * this.activePageSize + 1;
+  }
+
+  getshowingEnd(): number {
+    const total = parseInt(this.data().paginationData.totalListItems, 10) || 0;
+    return Math.min(this.activePage * this.activePageSize, total);
   }
 
   onHeaderKeyDown(event: KeyboardEvent, entry: any) {
