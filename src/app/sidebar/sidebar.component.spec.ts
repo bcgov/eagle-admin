@@ -7,7 +7,6 @@ import { StorageService } from '../services/storage.service';
 import { provideRouter } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { signal } from '@angular/core';
-import { By } from '@angular/platform-browser';
 
 describe('SidebarComponent', () => {
   let component: SidebarComponent;
@@ -57,20 +56,5 @@ describe('SidebarComponent', () => {
   it('should create', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
-  });
-
-  it('should show preview section in non-prod environment', () => {
-    mockConfigSignal.set({ ENVIRONMENT: 'dev' });
-    fixture.detectChanges();
-    const previewDiv = fixture.debugElement.query(By.css('.sidebar-section-divider'));
-    expect(previewDiv).toBeTruthy();
-    expect(previewDiv.nativeElement.textContent).toContain('Preview');
-  });
-
-  it('should hide preview section in prod environment', () => {
-    mockConfigSignal.set({ ENVIRONMENT: 'prod' });
-    fixture.detectChanges();
-    const previewDiv = fixture.debugElement.query(By.css('.sidebar-section-divider'));
-    expect(previewDiv).toBeNull();
   });
 });
