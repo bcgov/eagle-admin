@@ -126,20 +126,28 @@ export class CommentPeriod {
 
     // get comment period days remaining and determine commentPeriodStatus of the period
     if (obj && obj.dateStarted && obj.dateCompleted) {
-      const now = DateTime.now();
-      const dateStarted = DateTime.fromJSDate(new Date(obj.dateStarted));
-      const dateCompleted = DateTime.fromJSDate(new Date(obj.dateCompleted));
+      const now = DateTime.now().setZone('America/Vancouver');
+      const dateStarted = DateTime.fromJSDate(new Date(obj.dateStarted)).setZone('America/Vancouver');
+      // When dateCompleted is midnight (admin picked a date with no time), treat the period
+      // as closing at end of that day (11:59:59 PM Pacific) to satisfy "open until 11:59 PM" requirement.
+      const rawEnd = DateTime.fromJSDate(new Date(obj.dateCompleted)).setZone('America/Vancouver');
+      const dateCompleted = (rawEnd.hour === 0 && rawEnd.minute === 0 && rawEnd.second === 0)
+        ? rawEnd.endOf('day')
+        : rawEnd;
 
-      if (now >= dateStarted && now <= dateCompleted) {
+      if (now < dateStarted) {
+        this.commentPeriodStatus = 'Pending';
+        this.daysRemaining = 'Pending';
+      } else if (now >= dateStarted && now <= dateCompleted) {
         this.commentPeriodStatus = 'Open';
-        const days = Math.floor(dateCompleted.diff(now, 'days').days);
-        this.daysRemaining = days + (days === 1 ? ' Day ' : ' Days ') + 'Remaining';
+        const daysRemainingCount = Math.floor(dateCompleted.diff(now, 'days').days);
+        this.daysRemaining = daysRemainingCount === 0 ? 'Final Day' : daysRemainingCount + (daysRemainingCount === 1 ? ' Day ' : ' Days ') + 'Remaining';
       } else if (now > dateCompleted) {
         this.commentPeriodStatus = 'Closed';
         this.daysRemaining = 'Completed';
       } else {
-        this.commentPeriodStatus = 'Pending';
-        this.daysRemaining = 'Pending';
+        this.commentPeriodStatus = 'None';
+        this.daysRemaining = 'None';
       }
     }
 
