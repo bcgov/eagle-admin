@@ -588,6 +588,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
+    if (!this.validateForm()) {
+      return;
+    }
       this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>2018 Environmental Assessment Act</strong>?`)
         .subscribe(
           (confirmation: boolean) => {

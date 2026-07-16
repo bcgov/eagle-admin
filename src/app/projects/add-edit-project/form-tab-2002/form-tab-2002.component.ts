@@ -548,6 +548,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
+    if (!this.validateForm()) {
+      return;
+    }
       this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>${this.project.legislation}</strong>?`)
         .subscribe(
           (confirmation: boolean) => {
