@@ -36,10 +36,10 @@ export class TableTemplateUtils {
 
   public getParamsFromUrl(params, filter = null, defaultPageSize = null, filterFieldList = []) {
     let pageSize = +Constants.tableDefaults.DEFAULT_PAGE_SIZE;
-    if (defaultPageSize !== null) {
-      pageSize = +defaultPageSize;
-    } else if (params.pageSize) {
+    if (params.pageSize) {
       pageSize = +params.pageSize;
+    } else if (defaultPageSize !== null) {
+      pageSize = +defaultPageSize;
     }
     const currentPage = params.currentPage ? +params.currentPage : +Constants.tableDefaults.DEFAULT_CURRENT_PAGE;
     const sortBy = params.sortBy ? params.sortBy : Constants.tableDefaults.DEFAULT_SORT_BY;

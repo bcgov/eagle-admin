@@ -64,3 +64,32 @@
 .results-count {
   white-space: nowrap;
 }
+
+/* Page size dropdown custom styling - black and grey theme, overriding generic outline-secondary yellow hover */
+.page-controls .dropdown .btn-outline-secondary {
+  color: #494949;
+  border-color: #ccc;
+  background-color: #fff;
+  transition: all 0.15s ease-in-out;
+}
+
+.page-controls .dropdown .btn-outline-secondary:hover,
+.page-controls .dropdown .btn-outline-secondary:focus,
+.page-controls .dropdown .btn-outline-secondary:active,
+.page-controls .dropdown .show > .btn-outline-secondary.dropdown-toggle {
+  background-color: #eee !important;
+  color: #000 !important;
+  border-color: #bbb !important;
+}
+
+/* Dropdown item hover styling - grey & black only */
+.page-controls .dropdown-menu .dropdown-item {
+  color: #494949;
+  cursor: pointer;
+}
+
+.page-controls .dropdown-menu .dropdown-item:hover,
+.page-controls .dropdown-menu .dropdown-item:focus {
+  background-color: #eee !important;
+  color: #000 !important;
+}

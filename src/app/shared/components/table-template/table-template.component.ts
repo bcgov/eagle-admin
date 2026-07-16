@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, SimpleChanges, OnChanges, ViewEncapsulation, ChangeDetectionStrategy, input, output, viewChild } from '@angular/core';
-import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPaginationModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { TableDirective } from './table.directive';
 import { TableObject, TableColumn } from './table-object';
 import { Constants } from '../../utils/constants';
@@ -12,7 +12,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './table-template.component.html',
   styleUrl: './table-template.component.css',
   encapsulation: ViewEncapsulation.None,
-  imports: [NgbPaginationModule, TableDirective, FormsModule],
+  imports: [NgbPaginationModule, NgbDropdownModule, TableDirective, FormsModule],
 })
 export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 

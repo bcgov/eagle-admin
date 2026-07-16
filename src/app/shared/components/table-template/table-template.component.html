@@ -41,15 +41,18 @@
       <span class="results-count">
         Showing {{getshowingStart()}} - {{getshowingEnd()}} of {{data().paginationData.totalListItems}} results
       </span>
-      <select class="form-select form-select-sm w-auto"
-        [(ngModel)]="activePageSize"
-        (ngModelChange)="updatePageSize($event)"
-        (click)="$event.stopPropagation()"
-        (mousedown)="$event.stopPropagation()">
-        @for (size of pageSizeArray; track size) {
-          <option [value]="size">{{size}} / page</option>
-        }
-      </select>
+      <div ngbDropdown class="d-inline-block">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" id="pageSizeDropdown" ngbDropdownToggle type="button">
+          {{activePageSize}} / page
+        </button>
+        <div ngbDropdownMenu aria-labelledby="pageSizeDropdown">
+          @for (size of pageSizeArray; track size) {
+            <button ngbDropdownItem type="button" (click)="updatePageSize(size)">
+              {{size}} / page
+            </button>
+          }
+        </div>
+      </div>
     </div>
     <div class="d-flex justify-content-center">
       <ngb-pagination
