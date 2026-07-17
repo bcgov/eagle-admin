@@ -83,9 +83,10 @@ export class ProjectDocumentsComponent implements OnInit {
   public projectPhases: any[] = [];
   public legislations: any[] = [];
 
+  private listsLoading = this.loadingState.getOperationState('lists');
   private searchLoading = this.loadingState.getOperationState('search-results');
   private actionLoading = signal(false);
-  public loading = computed(() => this.searchLoading() || this.actionLoading());
+  public loading = computed(() => this.listsLoading() || this.searchLoading() || this.actionLoading());
 
   public tableParams: TableDocumentParamsObject = new TableDocumentParamsObject();
   public terms = new SearchTerms();
