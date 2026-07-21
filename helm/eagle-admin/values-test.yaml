@@ -5,6 +5,7 @@ image:
   tag: "test"
 
 route:
+  enabled: false
   host: test.projects.eao.gov.bc.ca
 
 resources:
