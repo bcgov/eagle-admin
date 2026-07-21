@@ -136,8 +136,8 @@ export class CommentPeriod {
         : rawEnd;
 
       if (now < dateStarted) {
-        this.commentPeriodStatus = 'Pending';
-        this.daysRemaining = 'Pending';
+        this.commentPeriodStatus = 'Upcoming';
+        this.daysRemaining = 'Upcoming';
       } else if (now >= dateStarted && now <= dateCompleted) {
         this.commentPeriodStatus = 'Open';
         const daysRemainingCount = Math.floor(dateCompleted.diff(now, 'days').days);
