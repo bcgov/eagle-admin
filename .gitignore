@@ -58,7 +58,7 @@ convert-slash-comments.sh
 migrate-scss-to-css.sh
 
 # Internal AI assistant notes
-.github/copilot-instructions.md
+.github/antigravity.md
 .github/instructions/
 CLAUDE.md
 GEMINI.md
