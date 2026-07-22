@@ -5,7 +5,7 @@ image:
   tag: "dev"
 
 route:
-  enabled: false
+  enabled: true
   host: eagle-dev.apps.silver.devops.gov.bc.ca
 
 resources:
