@@ -5,8 +5,11 @@ image:
   tag: "test"
 
 route:
-  enabled: false
-  host: test.projects.eao.gov.bc.ca
+  enabled: true
+  serviceName: rproxy
+  targetPort: "8080-tcp"
+  host: eagle-test.apps.silver.devops.gov.bc.ca
+  path: "/admin/"
 
 resources:
   limits:

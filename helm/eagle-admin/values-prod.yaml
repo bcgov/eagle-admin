@@ -5,8 +5,11 @@ image:
   tag: "prod"
 
 route:
-  enabled: false
+  enabled: true
+  serviceName: rproxy
+  targetPort: "8080-tcp"
   host: projects.eao.gov.bc.ca
+  path: "/admin/"
 
 resources:
   limits:

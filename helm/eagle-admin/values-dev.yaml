@@ -6,7 +6,10 @@ image:
 
 route:
   enabled: true
+  serviceName: rproxy
+  targetPort: "8080-tcp"
   host: eagle-dev.apps.silver.devops.gov.bc.ca
+  path: "/admin/"
 
 resources:
   limits:
