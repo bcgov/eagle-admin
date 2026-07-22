@@ -61,7 +61,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     notes: FormControl<string | null>;
     eaStatus: FormControl<string | null>;
     eaStatusDate: FormControl<unknown>;
-    status: FormControl<string | null>;
     projectStatusDate: FormControl<unknown>;
     eacDecision: FormControl<string | null>;
     decisionDate: FormControl<unknown>;
@@ -221,7 +220,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         'notes': new FormControl<string | null>(null),
         'eaStatus': new FormControl<string | null>(null),
         'eaStatusDate': new FormControl<unknown>(null),
-        'status': new FormControl<string | null>(this.PROJECT_STATUS[2]),
         'projectStatusDate': new FormControl<unknown>(null),
         'eacDecision': new FormControl<string | null>(this.eacDecisions[0]),
         'decisionDate': new FormControl<unknown>(null),
@@ -335,7 +333,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'notes': new FormControl<string | null>(formData.intake.investmentNotes),
       'eaStatus': new FormControl<string | null>(formData.eaStatus),
       'eaStatusDate': new FormControl<unknown>(null),
-      'status': new FormControl<string | null>(formData.status || this.PROJECT_STATUS[2]),
       'projectStatusDate': new FormControl<unknown>(null),
       'eacDecision': new FormControl<string | null>(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
       'decisionDate': new FormControl<unknown>(formData.decisionDate ? convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
@@ -398,7 +395,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
       'eaStatus': form.controls.eaStatus.value,
       // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
-      'status': form.controls.status.value,
       // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
       'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
