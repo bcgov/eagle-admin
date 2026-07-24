@@ -14,6 +14,8 @@ export class Project {
   centroid: any[] = [];
   description: string;
   eacDecision: any;
+  applicableRegulation: string;
+  agencyUrl: string;
   location: string;
   legislation: string;
   legislationYear: number;
@@ -115,6 +117,7 @@ export class Project {
     this.commentPeriodForBanner         = obj && obj.commentPeriodForBanner         || undefined;
     this.description         = obj && obj.description         || undefined;
     this.eacDecision         = obj && obj.eacDecision         || undefined;
+    this.applicableRegulation = obj && obj.applicableRegulation || undefined;
     this.location            = obj && obj.location            || undefined;
     this.name                = obj && obj.name                || undefined;
     this.projectLeadObj         = obj && obj.projectLeadObj         || undefined;

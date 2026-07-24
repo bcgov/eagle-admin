@@ -63,6 +63,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     eaStatusDate: FormControl<unknown>;
     projectStatusDate: FormControl<unknown>;
     eacDecision: FormControl<string | null>;
+    applicableRegulation: FormControl<string | null>;
     decisionDate: FormControl<unknown>;
     substantially: FormControl<unknown>;
     substantiallyDate: FormControl<unknown>;
@@ -83,6 +84,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public legislationYear = 2002;
   public ceaaInvolvements: Array<any> = [];
   public eacDecisions: Array<any> = [];
+  public applicableRegulations: Array<any> = [];
 
   public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
 
@@ -222,6 +224,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         'eaStatusDate': new FormControl<unknown>(null),
         'projectStatusDate': new FormControl<unknown>(null),
         'eacDecision': new FormControl<string | null>(this.eacDecisions[0]),
+        'applicableRegulation': new FormControl<string | null>(null),
         'decisionDate': new FormControl<unknown>(null),
         'substantially': new FormControl<unknown>(null),
         'substantiallyDate': new FormControl<unknown>(null),
@@ -335,6 +338,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'eaStatusDate': new FormControl<unknown>(null),
       'projectStatusDate': new FormControl<unknown>(null),
       'eacDecision': new FormControl<string | null>(formData.eacDecision && formData.eacDecision._id || this.eacDecisions[0]),
+      'applicableRegulation': new FormControl<string | null>(formData.applicableRegulation && formData.applicableRegulation._id || formData.applicableRegulation || null),
       'decisionDate': new FormControl<unknown>(formData.decisionDate ? convertJSDateToNGBDate(new Date(formData.decisionDate)) : null),
       'substantially': new FormControl<unknown>(formData.substantially),
       'substantiallyDate': new FormControl<unknown>(null),
@@ -397,6 +401,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       // 'eaStatusDate': form.get('eaStatusDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value))).toISOString() : null,
       // 'projectStatusDate': form.get('projectStatusDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value))).toISOString() : null,
       'eacDecision': form.controls.eacDecision.value,
+      'applicableRegulation': form.controls.applicableRegulation.value,
       'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
       // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
@@ -480,9 +485,29 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
       alert('You must select an EA Decision');
       return false;
+    } else if (this.isRegulatoryTransfer() && (!this.myForm.controls.applicableRegulation.value || this.myForm.controls.applicableRegulation.value === '')) {
+      alert('You must select an Applicable Regulation');
+      return false;
+    } else if (this.isAdministrativeClosure() && (!this.myForm.controls.decisionDate.value || this.myForm.controls.decisionDate.value === '')) {
+      alert('You must enter an EA Decision Date for Administrative Closure');
+      return false;
     } else {
       return true;
     }
+  }
+
+  isRegulatoryTransfer(): boolean {
+    const decisionId = this.myForm?.controls?.eacDecision?.value;
+    if (!decisionId) return false;
+    const selected = this.eacDecisions?.find(d => d._id === decisionId);
+    return selected ? selected.name === 'Regulatory Transfer' : false;
+  }
+
+  isAdministrativeClosure(): boolean {
+    const decisionId = this.myForm?.controls?.eacDecision?.value;
+    if (!decisionId) return false;
+    const selected = this.eacDecisions?.find(d => d._id === decisionId);
+    return selected ? selected.name === 'Administrative Closure' : false;
   }
 
   setGlobalProjectPublishFlag(state: ProjectPublishState) {
@@ -725,12 +750,16 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         case `projectPhase|${tempLegislationYear}`:
           this.projectPhases.push({ ...item });
           break;
+        case `applicableRegulations|${tempLegislationYear}`:
+          this.applicableRegulations.push({ ...item });
+          break;
         default:
           break;
       }
     });
 
     // Sorts by legislation first and then listOrder for each legislation group.
+    this.applicableRegulations.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);
     this.eacDecisions.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);
     this.ceaaInvolvements.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);
     this.projectPhases.sort((a, b) => a.legislation - b.legislation || a.listOrder - b.listOrder);

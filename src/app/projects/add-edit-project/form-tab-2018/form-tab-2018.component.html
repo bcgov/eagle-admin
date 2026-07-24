@@ -162,6 +162,17 @@
               }
             </select>
           </div>
+          @if (isRegulatoryTransfer()) {
+            <div class="label-pair mt-2">
+              <label for="applicableRegulation">Applicable Regulation* </label>
+              <select class="form-control" name="applicableRegulation" id="applicableRegulation" formControlName="applicableRegulation">
+                <option value="">---Select---</option>
+                @for (regulation of applicableRegulations; track regulation._id) {
+                  <option [ngValue]="regulation._id">{{regulation.name}}</option>
+                }
+              </select>
+            </div>
+          }
           <div class="label-pair">
             <label for="decisionDate">EA Decision Date </label>
             <div class="input-group">
