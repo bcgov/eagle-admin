@@ -28,10 +28,14 @@ COPY . .
 # Configure env.js for deployed environment:
 # - configEndpoint=true: App fetches config from /api/config at runtime
 # - All other config (ENVIRONMENT, ANALYTICS_API_URL, etc.) comes from API
-RUN sed -i 's/configEndpoint = false/configEndpoint = true/' src/env.js
+RUN sed -i 's/window.__env.configEndpoint = false/window.__env.configEndpoint = true/' src/env.js
 
 # Build production bundle
 RUN yarn build
+
+# Fail the build if the sed above matched nothing, or env.js dropped out of the assets list
+RUN grep -qF 'window.__env.configEndpoint = true;' dist/env.js \
+    || { echo 'env.js rewrite did not take: configEndpoint'; exit 1; }
 
 # -----------------------------------------------------------------------------
 # Stage 2: Production nginx Server
@@ -118,7 +122,7 @@ server {
         try_files $uri $uri/ /admin/index.html;
 
         # Runtime config — must never be cached (changes between deployments)
-        location = /env.js {
+        location ~ ^/(admin/)?env\.js$ {
             expires -1;
             add_header Cache-Control "no-cache, no-store, must-revalidate";
         }
