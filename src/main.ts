@@ -53,4 +53,15 @@ bootstrapApplication(AppComponent, {
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
   ]
+}).catch(err => {
+  // Bootstrap failed — config fetch or Keycloak. Stay cause-agnostic: keycloak.service
+  // rejects with no argument, so never blame a specific step in the user-facing text.
+  console.error('Bootstrap failed:', err);
+  const alert = document.createElement('p');
+  alert.setAttribute('role', 'alert');
+  alert.textContent = 'The EPIC admin console could not start. Please try again shortly.';
+  // Replace app-root rather than appending: index.html ships a placeholder spinner inside it,
+  // and nothing else removes it, so appending leaves the page saying "loading" and "could not
+  // start" at the same time.
+  (document.querySelector('app-root') ?? document.body).replaceChildren(alert);
 });

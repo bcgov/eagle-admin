@@ -36,8 +36,9 @@ declare global {
  *
  * DEPLOYED (configEndpoint = true):
  *   - Dockerfile sed sets configEndpoint to true
- *   - App fetches /api/config on startup (nginx serves from ConfigMap)
- *   - ConfigMap values override env.js (except KEYCLOAK_CLIENT_ID — preserved)
+ *   - App fetches /api/config on startup — today rproxy answers it from a ConfigMap, and
+ *     eagle-api serves it from MongoDB once the nginx exact-match block is removed
+ *   - API values override env.js (except KEYCLOAK_CLIENT_ID — preserved)
  *
  * Lists are lazy-loaded on first access via getLists(), not during init.
  */
@@ -96,21 +97,23 @@ export class ConfigService {
   }
 
   /**
-   * Fetch remote config from /api/config (deployed only, non-blocking).
-   * nginx serves this from ConfigMap. On success merges over env.js values.
+   * Fetch remote config from /api/config (deployed only, blocking).
+   * On success merges over env.js values.
    * KEYCLOAK_CLIENT_ID is always preserved from env.js.
+   *
+   * Throws on transport failure or on a payload with no Keycloak URL/realm —
+   * booting on stale env.js defaults would point staff at the wrong identity provider.
    */
   private async fetchRemoteConfig(): Promise<void> {
-    try {
-      const response = await fetch('/api/config', { signal: AbortSignal.timeout(5000) });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const apiConfig: EnvConfig = await response.json();
-      const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
-      this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
-      this.logger.debug('merged with API config:', 'ConfigService', this._config());
-    } catch (e) {
-      this.logger.error('API config fetch failed, using env.js defaults', 'ConfigService', e);
+    const response = await fetch('/api/config', { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const apiConfig: EnvConfig = await response.json();
+    if (!apiConfig.KEYCLOAK_URL || !apiConfig.KEYCLOAK_REALM) {
+      throw new Error('ConfigService: /api/config returned no KEYCLOAK_URL/REALM');
     }
+    const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
+    this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
+    this.logger.debug('merged with API config:', 'ConfigService', this._config());
   }
 
   public ensureListsLoaded(): Promise<void> {
