@@ -5,11 +5,19 @@ image:
   tag: "prod"
 
 route:
-  enabled: true
-  serviceName: rproxy
-  targetPort: "8080-tcp"
-  host: projects.eao.gov.bc.ca
-  path: "/admin/"
+  # Disabled, for the same reason as eagle-api and eagle-public. This chart rendered a Route for
+  # host projects.eao.gov.bc.ca with path "/admin/" and NO `tls.certificate`, while `prod-external`
+  # already serves that host through rproxy and holds the Entrust certificate for it. Host and path
+  # differ as strings, so both routes would be admitted and the public site's HTTPS could be served
+  # by the router's default certificate.
+  #
+  # eagle-api hit the other half of this on 2026-08-20: `helm upgrade` aborted on Route ownership
+  # while the Deployment's OpenShift image trigger rolled the image anyway — a release that reports
+  # failure and changes production regardless.
+  #
+  # `host` and `path` are deliberately not left behind: flipping `enabled` back would otherwise
+  # silently re-create the certless route.
+  enabled: false
 
 resources:
   limits:
