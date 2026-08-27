@@ -11,6 +11,10 @@ route:
   host: eagle-dev.apps.silver.devops.gov.bc.ca
   path: "/admin/"
 
+directRoute:
+  enabled: true
+  host: eagle-admin-6cdc9e-dev.apps.silver.devops.gov.bc.ca
+
 resources:
   limits:
     cpu: 200m
