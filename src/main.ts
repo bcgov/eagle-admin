@@ -10,6 +10,7 @@ import { environment } from './environments/environment';
 // --- services needed at bootstrap init ---
 import { ConfigService } from './app/services/config.service';
 import { KeycloakService } from './app/services/keycloak.service';
+import { accessGate } from './app/access-gate';
 import { TokenInterceptor } from './app/shared/utils/token-interceptor';
 import { GlobalErrorHandler } from './app/services/global-error-handler';
 import { loggingInterceptor } from './app/interceptors/logging.interceptor';
@@ -25,6 +26,8 @@ function initConfig(
 ) {
   return async () => {
     await configService.init();
+    // Never settles while the curtain is up, so nothing below here runs and Angular never boots.
+    await accessGate(configService.config().ACCESS_GATE === true, configService.getApiPath());
     await keycloakService.init();
   };
 }
