@@ -10,7 +10,7 @@ import { environment } from './environments/environment';
 // --- services needed at bootstrap init ---
 import { ConfigService } from './app/services/config.service';
 import { KeycloakService } from './app/services/keycloak.service';
-import { GateService } from './app/services/gate.service';
+import { accessGate } from './app/access-gate';
 import { TokenInterceptor } from './app/shared/utils/token-interceptor';
 import { GlobalErrorHandler } from './app/services/global-error-handler';
 import { loggingInterceptor } from './app/interceptors/logging.interceptor';
@@ -22,16 +22,13 @@ if (environment.production) {
 
 function initConfig(
   configService: ConfigService,
-  keycloakService: KeycloakService,
-  gateService: GateService
+  keycloakService: KeycloakService
 ) {
   return async () => {
     await configService.init();
-    // Keycloak's login-required redirect fires inside init(), so it must not run while the
-    // access curtain is up — GateComponent starts it once the visitor is let through.
-    if (gateService.open()) {
-      await keycloakService.init();
-    }
+    // Never settles while the curtain is up, so nothing below here runs and Angular never boots.
+    await accessGate(configService.config().ACCESS_GATE === true, configService.getApiPath());
+    await keycloakService.init();
   };
 }
 
@@ -48,7 +45,7 @@ bootstrapApplication(AppComponent, {
       })
     ),
     provideAppInitializer(() => {
-      const initializerFn = (initConfig)(inject(ConfigService), inject(KeycloakService), inject(GateService));
+      const initializerFn = (initConfig)(inject(ConfigService), inject(KeycloakService));
       return initializerFn();
     }),
     provideAnimations(),

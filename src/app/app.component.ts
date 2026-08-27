@@ -10,8 +10,6 @@ import { FooterComponent } from './footer/footer.component';
 import { SideBarService } from './services/sidebar.service';
 import { AnalyticsService } from './services/analytics/analytics.service';
 import { KeycloakService } from './services/keycloak.service';
-import { GateService } from './services/gate.service';
-import { GateComponent } from './gate/gate.component';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
 
 @Component({
@@ -26,8 +24,7 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
     SidebarComponent,
     ToggleButtonComponent,
     FooterComponent,
-    ToastContainerComponent,
-    GateComponent
+    ToastContainerComponent
 ]
 })
 
@@ -36,7 +33,6 @@ export class AppComponent implements OnInit {
   private analyticsService = inject(AnalyticsService);
   private keycloakService = inject(KeycloakService);
   private router = inject(Router);
-  protected gate = inject(GateService);
 
   isOpen = false;
 
