@@ -1,12 +1,15 @@
-<app-header></app-header>
-@if (isNavigating()) {
-  <div class="navigation-loading-bar"></div>
+@if (gate.open()) {
+  <app-header></app-header>
+  @if (isNavigating()) {
+    <div class="navigation-loading-bar"></div>
+  }
+  <app-sidebar></app-sidebar>
+  <div class="app-body content" id="scrollTop">
+    <app-toggle-button class="app-toggle"></app-toggle-button>
+    <router-outlet></router-outlet>
+  </div>
+  <app-footer></app-footer>
+  <app-toast-container></app-toast-container>
+} @else {
+  <app-gate></app-gate>
 }
-<app-sidebar></app-sidebar>
-<div class="app-body content" id="scrollTop">
-	<app-toggle-button class="app-toggle"></app-toggle-button>
-	<router-outlet></router-outlet>
-</div>
-<app-footer></app-footer>
-<app-toast-container></app-toast-container>
-<app-toast-container></app-toast-container>
