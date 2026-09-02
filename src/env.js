@@ -25,6 +25,9 @@
   window.__env.KEYCLOAK_ENABLED = true;
   window.__env.REDIRECT_KEY = 'REDIRECT';
 
+  // Application Insights — empty disables browser telemetry (deployed value comes from /api/config)
+  window.__env.APPINSIGHTS_CONNECTION_STRING = '';
+
   // Analytics — proxied through /analytics (eagle-api forwards to penguin-analytics)
   window.__env.ANALYTICS_API_URL = '/analytics';
   window.__env.ANALYTICS_DEBUG = true;

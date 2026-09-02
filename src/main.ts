@@ -12,6 +12,7 @@ import { ConfigService } from './app/services/config.service';
 import { KeycloakService } from './app/services/keycloak.service';
 import { TokenInterceptor } from './app/shared/utils/token-interceptor';
 import { GlobalErrorHandler } from './app/services/global-error-handler';
+import { TelemetryService } from './app/services/telemetry.service';
 import { loggingInterceptor } from './app/interceptors/logging.interceptor';
 import { httpCacheInterceptor } from './app/interceptors/http-cache.interceptor';
 
@@ -21,10 +22,18 @@ if (environment.production) {
 
 function initConfig(
   configService: ConfigService,
-  keycloakService: KeycloakService
+  keycloakService: KeycloakService,
+  telemetryService: TelemetryService
 ) {
   return async () => {
     await configService.init();
+    const apiLocation = configService.config().API_LOCATION;
+    const correlationHosts = [window.location.host];
+    if (apiLocation?.startsWith('http')) correlationHosts.push(new URL(apiLocation).host);
+    // Not awaited: loading the Application Insights chunk must not delay first paint.
+    telemetryService
+      .init(configService.config().APPINSIGHTS_CONNECTION_STRING, 'eagle-admin', correlationHosts)
+      .catch(err => console.error('Telemetry init failed:', err));
     await keycloakService.init();
   };
 }
@@ -42,7 +51,7 @@ bootstrapApplication(AppComponent, {
       })
     ),
     provideAppInitializer(() => {
-      const initializerFn = (initConfig)(inject(ConfigService), inject(KeycloakService));
+      const initializerFn = (initConfig)(inject(ConfigService), inject(KeycloakService), inject(TelemetryService));
       return initializerFn();
     }),
     provideAnimations(),
