@@ -76,6 +76,9 @@ jobs:
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
+          # Re-pull the base tag every build: with the GHA layer cache alone, `apk upgrade` is
+          # reused indefinitely and fixed CVEs never reach the image (Trivy gate red 2026-09-02).
+          pull: true
           push: false
           load: true
           tags: ${{ env.IMAGE_NAME }}:scan
@@ -111,6 +114,9 @@ jobs:
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
+          # Re-pull the base tag every build: with the GHA layer cache alone, `apk upgrade` is
+          # reused indefinitely and fixed CVEs never reach the image (Trivy gate red 2026-09-02).
+          pull: true
           push: true
           tags: |
             ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:dev
