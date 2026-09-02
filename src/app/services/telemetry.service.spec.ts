@@ -6,6 +6,7 @@ describe('TelemetryService', () => {
   let loadSdk: jasmine.Spy;
   let appInsights: { loadAppInsights: jasmine.Spy; addTelemetryInitializer: jasmine.Spy; trackException: jasmine.Spy };
   let initializer: (item: any) => boolean;
+  let sdkConfig: any;
 
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [TelemetryService] });
@@ -17,7 +18,7 @@ describe('TelemetryService', () => {
       trackException: jasmine.createSpy('trackException')
     };
     loadSdk = spyOn<any>(service, 'loadSdk').and.returnValue(
-      Promise.resolve({ ApplicationInsights: function () { return appInsights; } })
+      Promise.resolve({ ApplicationInsights: function (options: any) { sdkConfig = options.config; return appInsights; } })
     );
   });
 
@@ -39,6 +40,12 @@ describe('TelemetryService', () => {
 
     expect(appInsights.loadAppInsights).toHaveBeenCalled();
     expect(appInsights.addTelemetryInitializer).toHaveBeenCalled();
+  });
+
+  it('disables the config-sync plugin remote fetch', async () => {
+    await service.init('InstrumentationKey=abc', 'eagle-admin', ['localhost']);
+
+    expect(sdkConfig.extensionConfig.AppInsightsCfgSyncPlugin).toEqual({ cfgUrl: '', blkCdnCfg: true });
   });
 
   it('buffers early exceptions and flushes them once init completes', async () => {
@@ -123,6 +130,36 @@ describe('TelemetryService', () => {
       expect(exception.baseData.exceptions[0].message).toBe('HTTP GET /api/projects 401');
     });
 
+    it('does not stop stripping at a colon inside the query value', () => {
+      const exception = {
+        baseType: 'ExceptionData',
+        baseData: { message: '/r?date=2026-09-02T10:00:00Z&sig=SECRET 401' }
+      };
+
+      initializer(exception);
+
+      expect(exception.baseData.message).toBe('/r 401');
+    });
+
+    it('strips chained query params joined by &', () => {
+      const exception = { baseType: 'ExceptionData', baseData: { message: '/x?a=1&b=2 tail' } };
+
+      initializer(exception);
+
+      expect(exception.baseData.message).toBe('/x tail');
+    });
+
+    it('leaves a literal question mark alone when it is not a query string', () => {
+      const exception = {
+        baseType: 'ExceptionData',
+        baseData: { message: "Unexpected token '?' at line 3" }
+      };
+
+      initializer(exception);
+
+      expect(exception.baseData.message).toBe("Unexpected token '?' at line 3");
+    });
+
     it('strips query tokens from a multi-line exception stack', () => {
       const exception = {
         baseType: 'ExceptionData',
@@ -162,7 +199,7 @@ describe('TelemetryService', () => {
 
       const frame = exception.baseData.exceptions[0].parsedStack[0];
       expect(frame.fileName).toBe('http://h/app.js');
-      expect(frame.assembly).toBe('at fn (http://h/app.js:1:1)');
+      expect(frame.assembly).toBe('at fn (http://h/app.js)');
     });
 
     it('tags every item with the cloud role', () => {

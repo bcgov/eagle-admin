@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import type { ApplicationInsights, ITelemetryItem } from '@microsoft/applicationinsights-web';
 
 const QUERY_FIELDS = ['uri', 'target', 'name', 'message'];
-const stripQuery = (value: string) => value.replace(/\?[\w%.~-]+=[^\s:)#'"]*(?:&[\w%.~-]+=[^\s:)#'"]*)*/g, '');
+const stripQuery = (value: string) => value.replace(/\?[\w%.~-]+=[^\s)#'"]*/g, '');
 
 /** Send browser errors to Azure Application Insights. Errors only — successful traffic is dropped. */
 @Injectable({ providedIn: 'root' })
@@ -22,7 +22,9 @@ export class TelemetryService {
           correlationHeaderDomains: correlationHosts,
           enableAutoRouteTracking: false,
           // zone.js only forwards rejections raised inside the Angular zone to ErrorHandler
-          enableUnhandledPromiseRejectionTracking: true
+          enableUnhandledPromiseRejectionTracking: true,
+          // disable the config-sync plugin's remote fetch to js.monitor.azure.com on every load
+          extensionConfig: { AppInsightsCfgSyncPlugin: { cfgUrl: '', blkCdnCfg: true } }
         }
       });
       appInsights.loadAppInsights();
