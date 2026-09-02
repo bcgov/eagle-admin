@@ -59,6 +59,15 @@ describe('TelemetryService', () => {
     expect(appInsights.trackException).toHaveBeenCalledTimes(20);
   });
 
+  it('resolves and stays off when the lazy SDK chunk fails to load', async () => {
+    loadSdk.and.returnValue(Promise.reject(new Error('stale chunk 404')));
+
+    await expectAsync(service.init('InstrumentationKey=abc', 'eagle-admin', ['localhost'])).toBeResolved();
+
+    expect(() => service.trackException(new Error('after failed init'))).not.toThrow();
+    expect(appInsights.trackException).not.toHaveBeenCalled();
+  });
+
   it('wraps a non-Error value before tracking it', async () => {
     await service.init('InstrumentationKey=abc', 'eagle-admin', ['localhost']);
     service.trackException('boom', { source: 'Test' });

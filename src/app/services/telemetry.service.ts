@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import type { ApplicationInsights, ITelemetryItem } from '@microsoft/applicationinsights-web';
 
 const QUERY_FIELDS = ['uri', 'target', 'name', 'message'];
-const stripQuery = (value: string) => value.replace(/\?\S*/g, '');
+const stripQuery = (value: string) => value.replace(/\?[\w%.~-]+=[^\s:)#'"]*(?:&[\w%.~-]+=[^\s:)#'"]*)*/g, '');
 
 /** Send browser errors to Azure Application Insights. Errors only — successful traffic is dropped. */
 @Injectable({ providedIn: 'root' })
@@ -13,23 +13,27 @@ export class TelemetryService {
 
   async init(connectionString: string | undefined, role: string, correlationHosts: string[]): Promise<void> {
     if (!connectionString) return;
-    const { ApplicationInsights } = await this.loadSdk();
-    const appInsights = new ApplicationInsights({
-      config: {
-        connectionString,
-        enableCorsCorrelation: true,
-        correlationHeaderDomains: correlationHosts,
-        enableAutoRouteTracking: false,
-        // zone.js only forwards rejections raised inside the Angular zone to ErrorHandler
-        enableUnhandledPromiseRejectionTracking: true
-      }
-    });
-    appInsights.loadAppInsights();
-    appInsights.addTelemetryInitializer(item => this.scrub(item, role));
-    this.appInsights = appInsights;
-    const buffered = this.buffer;
-    this.buffer = [];
-    for (const entry of buffered) this.trackException(entry.error, entry.properties);
+    try {
+      const { ApplicationInsights } = await this.loadSdk();
+      const appInsights = new ApplicationInsights({
+        config: {
+          connectionString,
+          enableCorsCorrelation: true,
+          correlationHeaderDomains: correlationHosts,
+          enableAutoRouteTracking: false,
+          // zone.js only forwards rejections raised inside the Angular zone to ErrorHandler
+          enableUnhandledPromiseRejectionTracking: true
+        }
+      });
+      appInsights.loadAppInsights();
+      appInsights.addTelemetryInitializer(item => this.scrub(item, role));
+      this.appInsights = appInsights;
+      const buffered = this.buffer;
+      this.buffer = [];
+      for (const entry of buffered) this.trackException(entry.error, entry.properties);
+    } catch {
+      // stale hashed chunk after a redeploy, or SDK init failure: stay off, keep buffering
+    }
   }
 
   trackException(error: unknown, properties?: Record<string, string>): void {
