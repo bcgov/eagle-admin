@@ -41,6 +41,24 @@ describe('TelemetryService', () => {
     expect(appInsights.addTelemetryInitializer).toHaveBeenCalled();
   });
 
+  it('buffers early exceptions and flushes them once init completes', async () => {
+    service.trackException(new Error('early'));
+
+    await service.init('InstrumentationKey=x', 'eagle-admin', []);
+
+    expect(appInsights.trackException).toHaveBeenCalledTimes(1);
+    const [envelope] = appInsights.trackException.calls.mostRecent().args;
+    expect(envelope.exception.message).toBe('early');
+  });
+
+  it('drops early exceptions past the buffer limit', async () => {
+    for (let i = 0; i < 21; i++) service.trackException(new Error(`early-${i}`));
+
+    await service.init('InstrumentationKey=x', 'eagle-admin', []);
+
+    expect(appInsights.trackException).toHaveBeenCalledTimes(20);
+  });
+
   it('wraps a non-Error value before tracking it', async () => {
     await service.init('InstrumentationKey=abc', 'eagle-admin', ['localhost']);
     service.trackException('boom', { source: 'Test' });
@@ -81,7 +99,7 @@ describe('TelemetryService', () => {
       const exception = {
         baseType: 'ExceptionData',
         baseData: {
-          message: 'HTTP GET /api/projects?token=abc 401',
+          message: 'HTTP GET /api/x?q=a 500 tail',
           exceptions: [{ message: 'HTTP GET /api/projects?token=abc 401' }]
         }
       };
@@ -92,8 +110,28 @@ describe('TelemetryService', () => {
       expect(failed.baseData.uri).toBe('https://eagle-dev.example.com/api/projects');
       expect(failed.baseData.target).toBe('eagle-dev.example.com');
       expect(failed.baseData.name).toBe('GET /api/projects');
-      expect(exception.baseData.message).toBe('HTTP GET /api/projects');
-      expect(exception.baseData.exceptions[0].message).toBe('HTTP GET /api/projects');
+      expect(exception.baseData.message).toBe('HTTP GET /api/x 500 tail');
+      expect(exception.baseData.exceptions[0].message).toBe('HTTP GET /api/projects 401');
+    });
+
+    it('strips query tokens from a multi-line exception stack', () => {
+      const exception = {
+        baseType: 'ExceptionData',
+        baseData: {
+          exceptions: [{
+            message: 'HTTP GET /api/projects?token=SECRET 401',
+            stack: 'Error: HTTP GET /api/projects?token=SECRET 401\n    at x (http://h/app.js?v=1:1:1)'
+          }]
+        }
+      };
+
+      initializer(exception);
+
+      const stack = exception.baseData.exceptions[0].stack;
+      expect(stack).not.toContain('token=SECRET');
+      expect(stack).not.toContain('?v=1');
+      expect(stack).toContain('/api/projects');
+      expect(stack).toContain('401');
     });
 
     it('tags every item with the cloud role', () => {
