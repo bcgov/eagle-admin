@@ -42,8 +42,10 @@ RUN grep -qF 'window.__env.configEndpoint = true;' dist/env.js \
 # -----------------------------------------------------------------------------
 FROM nginx:1.27-alpine
 
-# Update Alpine packages to latest security patches
-RUN apk upgrade --no-cache
+# CACHEBUST changes every CI build so this layer re-runs and fixed CVEs actually land; a cached
+# `apk upgrade` layer is what kept Trivy red on an already-patched libexpat (2026-09-02).
+ARG CACHEBUST=0
+RUN echo "cachebust=${CACHEBUST}" && apk upgrade --no-cache
 
 # Labels for OpenShift compatibility
 LABEL io.openshift.expose-services="8080:http" \
