@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { TelemetryService } from './telemetry.service';
 
 export enum LogLevel {
   ALL = 0,
@@ -10,6 +11,8 @@ export enum LogLevel {
 
 @Injectable({ providedIn: 'root' })
 export class LoggingService {
+  // TelemetryService has no dependencies, so injecting it here cannot cycle back.
+  private telemetry = inject(TelemetryService);
 
   private get minLevel(): LogLevel {
     const configService = (window as any).__configService;
@@ -30,7 +33,10 @@ export class LoggingService {
     const args: any[] = [`${emoji} ${ts} ${prefix}`, message];
     if (data !== undefined) args.push(data);
     switch (level) {
-      case LogLevel.ERROR: console.error(...args); break;
+      case LogLevel.ERROR:
+        console.error(...args);
+        this.telemetry.trackException(data instanceof Error ? data : new Error(message), source ? { source } : undefined);
+        break;
       case LogLevel.WARN:  console.warn(...args);  break;
       case LogLevel.INFO:  console.info(...args);  break;
       default:             console.log(...args);   break;

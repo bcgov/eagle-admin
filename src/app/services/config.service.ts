@@ -19,6 +19,7 @@ interface EnvConfig {
   ANALYTICS_API_URL?: string | null;
   ANALYTICS_DEBUG?: boolean;
   REDIRECT_KEY?: string;
+  APPINSIGHTS_CONNECTION_STRING?: string;
 }
 
 // env.js sets window.__env before Angular loads
