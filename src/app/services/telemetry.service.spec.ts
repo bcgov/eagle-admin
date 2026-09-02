@@ -143,6 +143,28 @@ describe('TelemetryService', () => {
       expect(stack).toContain('401');
     });
 
+    it('strips query strings from parsedStack fileName and assembly', () => {
+      const exception = {
+        baseType: 'ExceptionData',
+        baseData: {
+          exceptions: [{
+            parsedStack: [{
+              fileName: 'http://h/app.js?v=1',
+              assembly: 'at fn (http://h/app.js?v=1:1:1)',
+              method: 'fn',
+              line: 1
+            }]
+          }]
+        }
+      };
+
+      initializer(exception);
+
+      const frame = exception.baseData.exceptions[0].parsedStack[0];
+      expect(frame.fileName).toBe('http://h/app.js');
+      expect(frame.assembly).toBe('at fn (http://h/app.js:1:1)');
+    });
+
     it('tags every item with the cloud role', () => {
       const item: any = { baseType: 'ExceptionData', baseData: {} };
 

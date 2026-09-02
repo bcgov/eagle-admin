@@ -29,7 +29,9 @@ function initConfig(
     await configService.init();
     const apiLocation = configService.config().API_LOCATION;
     const correlationHosts = [window.location.host];
-    if (apiLocation?.startsWith('http')) correlationHosts.push(new URL(apiLocation).host);
+    if (apiLocation?.startsWith('http')) {
+      try { correlationHosts.push(new URL(apiLocation).host); } catch { /* malformed API_LOCATION, keep default host */ }
+    }
     // Not awaited: loading the Application Insights chunk must not delay first paint.
     telemetryService
       .init(configService.config().APPINSIGHTS_CONNECTION_STRING, 'eagle-admin', correlationHosts)
