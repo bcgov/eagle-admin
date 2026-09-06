@@ -876,6 +876,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@digitalspace/eagle-analytics-client@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@digitalspace/eagle-analytics-client@npm:0.1.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40digitalspace%2Feagle-analytics-client%2F0.1.0%2Ff86c86ef429ffb880796fe78e6ba3c1d694b580f"
+  checksum: 10c0/b490452b9a689903f334ecfa159e800164bdc30f484fbb60d2322763b4cecb15d296d0a9b65ab85bf0d2bd246decc69b6a465971747a583c1da0cbae2af0798f
+  languageName: node
+  linkType: hard
+
 "@esbuild/aix-ppc64@npm:0.28.1":
   version: 0.28.1
   resolution: "@esbuild/aix-ppc64@npm:0.28.1"
@@ -3249,6 +3256,7 @@ __metadata:
     "@angular/platform-browser": "npm:22.0.5"
     "@angular/platform-browser-dynamic": "npm:22.0.5"
     "@angular/router": "npm:22.0.5"
+    "@digitalspace/eagle-analytics-client": "npm:0.1.0"
     "@microsoft/applicationinsights-web": "npm:^3.4.3"
     "@ng-bootstrap/ng-bootstrap": "npm:^21.0.0"
     "@ng-select/ng-select": "npm:^23.2.0"
