@@ -876,6 +876,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@digitalspace/eagle-analytics-client@file:./vendor/eagle-analytics-client::locator=base-app%40workspace%3A.":
+  version: 0.1.0
+  resolution: "@digitalspace/eagle-analytics-client@file:./vendor/eagle-analytics-client#./vendor/eagle-analytics-client::hash=ba6520&locator=base-app%40workspace%3A."
+  checksum: 10c0/db1c3d758fa61cfeb05653cc3f168d0c964334b148e0dba25664e06ad0d784612f675f7dd16f4e3aedb99d7025e90b614fa65371bdece6eb5ea46c1174de9721
+  languageName: node
+  linkType: hard
+
 "@esbuild/aix-ppc64@npm:0.28.1":
   version: 0.28.1
   resolution: "@esbuild/aix-ppc64@npm:0.28.1"
@@ -3249,6 +3256,7 @@ __metadata:
     "@angular/platform-browser": "npm:22.0.5"
     "@angular/platform-browser-dynamic": "npm:22.0.5"
     "@angular/router": "npm:22.0.5"
+    "@digitalspace/eagle-analytics-client": "file:./vendor/eagle-analytics-client"
     "@microsoft/applicationinsights-web": "npm:^3.4.3"
     "@ng-bootstrap/ng-bootstrap": "npm:^21.0.0"
     "@ng-select/ng-select": "npm:^23.2.0"

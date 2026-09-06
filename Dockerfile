@@ -19,6 +19,9 @@ WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 
+# The analytics client is a directory dependency, so it has to be here before install resolves it
+COPY vendor ./vendor
+
 # Install dependencies (uses node-modules linker per .yarnrc.yml)
 RUN corepack enable && yarn install --immutable
 

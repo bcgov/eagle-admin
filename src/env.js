@@ -31,4 +31,7 @@
   // Analytics — proxied through /analytics (eagle-api forwards to penguin-analytics)
   window.__env.ANALYTICS_API_URL = '/analytics';
   window.__env.ANALYTICS_DEBUG = true;
+
+  // eagle-analytics ingest base — relative on deployed envs, e.g. /analytics; empty keeps the client off
+  window.__env.EAGLE_ANALYTICS_URL = '';
 }(this));
