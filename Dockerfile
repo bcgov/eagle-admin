@@ -19,8 +19,12 @@ WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn ./.yarn
 
-# Install dependencies (uses node-modules linker per .yarnrc.yml)
-RUN corepack enable && yarn install --immutable
+# Install dependencies (uses node-modules linker per .yarnrc.yml).
+# @digitalspace packages come from GitHub Packages; the token arrives as a BuildKit secret so it
+# stays out of the image layers. Without it yarn fails on the registry with a 403.
+RUN --mount=type=secret,id=gh_packages_token \
+    corepack enable && \
+    GH_PACKAGES_TOKEN="$(cat /run/secrets/gh_packages_token 2>/dev/null)" yarn install --immutable
 
 # Copy source code (node_modules already exists from previous layer)
 COPY . .

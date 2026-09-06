@@ -46,6 +46,8 @@ jobs:
           cache: "yarn"
 
       - run: yarn install --immutable
+        env:
+          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
       - run: yarn lint
       - run: yarn test-ci
       - run: yarn build
@@ -77,6 +79,8 @@ jobs:
           push: false
           load: true
           tags: ${{ env.IMAGE_NAME }}:scan
+          secrets: |
+            gh_packages_token=${{ secrets.GH_PACKAGES_TOKEN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -115,6 +119,8 @@ jobs:
             ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:dev
             ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:ci-latest
             ${{ secrets.OPENSHIFT_REPOSITORY }}/${{ env.OPENSHIFT_NAMESPACE_TOOLS }}/${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.SHA }}
+          secrets: |
+            gh_packages_token=${{ secrets.GH_PACKAGES_TOKEN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
