@@ -85,4 +85,48 @@ describe('AnalyticsService', () => {
       .toEqual(['User Identified', 'Report Generated']);
     expect(await flushedEvents()).toEqual([]);
   });
+
+  it('fans page views out to both penguin and the eagle-analytics client', async () => {
+    configSignal.set({ ANALYTICS_API_URL: '/analytics', EAGLE_ANALYTICS_URL: EAGLE_URL });
+    service.initialize();
+
+    // Penguin only reports page views once a user is identified.
+    service.identify('user-123');
+    service.page('Project Details', { project_id: '123' });
+
+    expect((await penguinPosts(2)).map(p => p.eventType))
+      .toEqual(['User Identified', 'Page Viewed']);
+
+    const events = await flushedEvents();
+    expect(beaconSpy.calls.mostRecent().args[0]).toBe(`${EAGLE_URL}/events`);
+    expect(events.map(e => e.eventType)).toContain('Page Viewed');
+
+    const viewed = events.find(e => e.eventType === 'Page Viewed');
+    expect(viewed.properties.page_name).toBe('Project Details');
+    expect(viewed.properties.project_id).toBe('123');
+    expect(viewed.userId).toBe('user-123');
+    expect(viewed.sourceApp).toBe('eagle-admin');
+  });
+
+  it('resets the eagle-analytics client on logout, leaving penguin unchanged', async () => {
+    configSignal.set({ ANALYTICS_API_URL: '/analytics', EAGLE_ANALYTICS_URL: EAGLE_URL });
+    service.initialize();
+
+    service.identify('user-123');
+    const beforeReset = await flushedEvents();
+    const sessionBefore = beforeReset[0].sessionId;
+
+    service.reset();
+
+    expect((await penguinPosts(2)).map(p => p.eventType))
+      .toEqual(['User Identified', 'Session Ended']);
+
+    // The client's reset ends the old session and starts a fresh one.
+    const events = await flushedEvents();
+    expect(events.map(e => e.eventType)).toContain('Session Started');
+
+    const started = events.find(e => e.eventType === 'Session Started');
+    expect(started.sessionId).not.toBe(sessionBefore);
+    expect(started.userId).toBeUndefined();
+  });
 });
