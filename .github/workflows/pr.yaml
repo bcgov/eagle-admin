@@ -40,8 +40,6 @@ jobs:
           cache: "yarn"
 
       - run: yarn install --immutable
-        env:
-          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
       - run: yarn lint
       - run: yarn test-ci
       - run: yarn build
