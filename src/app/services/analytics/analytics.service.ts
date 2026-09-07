@@ -44,7 +44,7 @@ export class AnalyticsService {
     if (this.initialized) return;
 
     const config = this.configService.config();
-    const debug = config.ANALYTICS_DEBUG ?? (config.ENVIRONMENT === 'local');
+    const debug = config.ENVIRONMENT === 'local';
     const apiUrl = config.EAGLE_ANALYTICS_URL || '';
 
     // An empty apiUrl yields a no-op instance, so an unset EAGLE_ANALYTICS_URL leaves the client off.
