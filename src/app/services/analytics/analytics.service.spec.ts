@@ -81,6 +81,16 @@ describe('AnalyticsService', () => {
     expect(tracked.sourceApp).toBe('eagle-admin');
   });
 
+  it('trims trailing slashes off EAGLE_ANALYTICS_URL', async () => {
+    setConfig({ EAGLE_ANALYTICS_URL: `${EAGLE_URL}///` });
+    service.initialize();
+
+    service.track('Report Generated');
+
+    await flushedEvents();
+    expect(beaconSpy.calls.mostRecent().args[0]).toBe(`${EAGLE_URL}/events`);
+  });
+
   it('sends page views to the eagle-analytics client', async () => {
     setConfig({ EAGLE_ANALYTICS_URL: EAGLE_URL });
     service.initialize();

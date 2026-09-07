@@ -10,6 +10,10 @@ beside it rather than inside it.
 | Tarball | `eagle-analytics-client-0.1.1.tgz` |
 | sha256 | `d785a4115d2feeb420d1642e34fd6932145b37433636e801131c94595d6c6ad6` |
 
+There is no source here, only the built output. The Development and Releases sections of `README.md`
+and the `scripts` and `devDependencies` in `package.json` describe the upstream `client/` directory
+and do not work in this one. Change the code upstream and vendor a new release; never edit `dist/`.
+
 The directory is a plain path dependency, so no registry and no token are involved:
 
 ```json
