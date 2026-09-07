@@ -28,9 +28,6 @@
   // Application Insights — empty disables browser telemetry (deployed value comes from /api/config)
   window.__env.APPINSIGHTS_CONNECTION_STRING = '';
 
-  // Analytics
-  window.__env.ANALYTICS_DEBUG = true;
-
   // eagle-analytics ingest base — relative on deployed envs; empty keeps the client off
   window.__env.EAGLE_ANALYTICS_URL = '';
 }(this));
