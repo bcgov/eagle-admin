@@ -1,6 +1,6 @@
 {
   "name": "@digitalspace/eagle-analytics-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser client for the EPIC analytics ingest API. No runtime dependencies.",
   "license": "Apache-2.0",
   "type": "module",
@@ -23,6 +23,9 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/digitalspace/eagle-analytics.git",
@@ -30,5 +33,21 @@
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --target es2020",
+    "test": "vitest run --environment jsdom",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.0",
+    "jsdom": "^25.0.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "yarn@4.12.0"
 }

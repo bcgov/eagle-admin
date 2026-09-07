@@ -179,6 +179,11 @@ function trafficSource() {
 
 // src/transport.ts
 var MAX_PROPERTIES_BYTES = 8e3;
+function trimTrailingSlashes(url) {
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end -= 1;
+  return url.slice(0, end);
+}
 function normalizeEventType(eventType) {
   return eventType?.trim().substring(0, 100) || "unknown";
 }
@@ -254,7 +259,7 @@ function createAnalytics(config) {
     if (debug) console.warn(`[analytics] ${message}`, detail);
   };
   const transport = createTransport({
-    url: `${config.apiUrl.replace(/\/+$/, "")}/events`,
+    url: `${trimTrailingSlashes(config.apiUrl)}/events`,
     batchSize: BATCH_SIZE,
     doFetch: config.fetch ?? ((input, init) => globalThis.fetch(input, init)),
     onError: (err) => log("send failed", err)

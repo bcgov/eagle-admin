@@ -6,16 +6,34 @@ It queues events, batches them, and posts them to `POST ${apiUrl}/events`. On pa
 
 ## Install
 
-This is a vendored copy of `client/` from the `eagle-analytics` repository at tag `client-v0.1.0`:
-`package.json`, `README.md` and the built `dist/`. It is a plain directory dependency, so no
-registry and no token are involved:
+Published to GitHub Packages, which asks for a token on every install even though this repository is
+public. The registry line on its own gets a 401.
 
-```json
-"@digitalspace/eagle-analytics-client": "file:./vendor/eagle-analytics-client"
+`eagle-public` and `eagle-admin` are both Yarn 4, which ignores `.npmrc`, so the config goes in
+`.yarnrc.yml`:
+
+```yaml
+npmScopes:
+  digitalspace:
+    npmRegistryServer: "https://npm.pkg.github.com"
+    npmAlwaysAuth: true
+    npmAuthToken: "${GH_PACKAGES_TOKEN:-}"
 ```
 
-To take a newer version, build `client/` in `eagle-analytics` at the new tag, copy `dist/`,
-`package.json` and `README.md` over this directory, and run `yarn install`.
+An npm or Yarn 1 consumer uses `.npmrc` instead:
+
+```
+@digitalspace:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${GH_PACKAGES_TOKEN}
+```
+
+```sh
+yarn add @digitalspace/eagle-analytics-client
+```
+
+In GitHub Actions the workflow's own `GITHUB_TOKEN` is enough once this package grants that
+repository read access. Anywhere else the token is a classic personal access token with
+`read:packages`.
 
 ## React
 
@@ -82,7 +100,70 @@ Nothing here throws into the host app: listener and method bodies are guarded, a
 - The full URL is sent only under enhanced tracking, because query strings can carry search terms.
 - The ingest Function derives coarse geography from the request IP and never stores the IP.
 
-## Source
+## Development
 
-Sources, tests and the build live in `client/` in the `eagle-analytics` repository. Change the code
-there, not here.
+```sh
+yarn install
+yarn test        # vitest, jsdom
+yarn typecheck
+yarn build       # dist/index.js (ESM), dist/index.cjs, and .d.ts / .d.cts types
+```
+
+## Releases
+
+The tag drives the publish, and it has to match the version in `package.json`.
+
+1. Bump `version` in `client/package.json` on `main`.
+2. Tag that commit `client-vX.Y.Z` with the same numbers.
+3. Push the tag.
+
+```sh
+git tag client-v0.1.0
+git push origin client-v0.1.0
+```
+
+Pushing the tag runs `.github/workflows/publish-client.yaml`: it compares the tag against
+`package.json` and stops there if they disagree, then typechecks, tests, builds and publishes to
+GitHub Packages. The run's own `GITHUB_TOKEN` is the only credential.
+
+It then creates the GitHub release for the tag, if it does not exist yet, and attaches two files:
+
+| Asset | What it is |
+|---|---|
+| `eagle-analytics-client-X.Y.Z.tgz` | `yarn pack` of `client/`: `package.json`, `README.md` and the built `dist/`. |
+| `SHA256SUMS` | Checksum of the tarball, and of each file in `dist/`. |
+
+`dist/` is gitignored, so the tag alone carries no build. The release assets are the only thing that
+ties a vendored copy to a version.
+
+The registry will not accept a version it already holds, so a bad publish needs a new patch version
+rather than a moved tag.
+
+## Vendoring
+
+`eagle-admin` and `eagle-public` do not install from GitHub Packages. They keep a copy under
+`vendor/eagle-analytics-client/` and depend on the directory, so no token is involved. Take a new
+version from the release, not from a local build. Nobody else can check a local build.
+
+```sh
+VERSION=0.1.0
+gh release download "client-v${VERSION}" -R digitalspace/eagle-analytics \
+  -p "eagle-analytics-client-${VERSION}.tgz" -p SHA256SUMS
+
+# Fails loudly if the tarball is not the one the release run built.
+sha256sum -c SHA256SUMS --ignore-missing
+
+tar -xzf "eagle-analytics-client-${VERSION}.tgz"      # extracts to package/
+( cd package && sha256sum -c ../SHA256SUMS --ignore-missing )   # checks each dist file
+```
+
+Then, in the consumer repository:
+
+1. Replace `vendor/eagle-analytics-client/` with `package/`'s `dist/`, `package.json` and
+   `README.md`.
+2. Record the tag and the tarball's sha256 in that directory's `README.md`, so the next person can
+   tell which release the checked-in `dist/` came from without rebuilding it.
+3. Run `yarn install` and commit.
+
+Nothing else needs changing: the dependency stays
+`"@digitalspace/eagle-analytics-client": "file:./vendor/eagle-analytics-client"`.
