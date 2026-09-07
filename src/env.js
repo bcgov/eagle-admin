@@ -14,7 +14,7 @@
   window.__env.BANNER_COLOUR = 'blue';
 
   // API — proxy.conf.js reads API_LOCATION to generate dev server proxy rules
-  // The Angular app uses relative paths (/api, /analytics) — never API_LOCATION directly
+  // The Angular app uses relative paths (/api) — never API_LOCATION directly
   window.__env.API_LOCATION = 'https://eagle-dev.apps.silver.devops.gov.bc.ca';
   window.__env.API_PATH = '/api';
 
@@ -28,10 +28,9 @@
   // Application Insights — empty disables browser telemetry (deployed value comes from /api/config)
   window.__env.APPINSIGHTS_CONNECTION_STRING = '';
 
-  // Analytics — proxied through /analytics (eagle-api forwards to penguin-analytics)
-  window.__env.ANALYTICS_API_URL = '/analytics';
+  // Analytics
   window.__env.ANALYTICS_DEBUG = true;
 
-  // eagle-analytics ingest base — relative on deployed envs, e.g. /analytics; empty keeps the client off
+  // eagle-analytics ingest base — relative on deployed envs; empty keeps the client off
   window.__env.EAGLE_ANALYTICS_URL = '';
 }(this));
