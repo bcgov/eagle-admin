@@ -11,6 +11,7 @@ describe('AnalyticsService', () => {
   let configSignal: any;
   let beaconSpy: jasmine.Spy;
   let fetchSpy: jasmine.Spy;
+  let penguinKeyReads: number;
 
   /** The eagle-analytics client batches; a pagehide flushes the queue through sendBeacon. */
   async function flushedEvents(): Promise<any[]> {
@@ -20,16 +21,25 @@ describe('AnalyticsService', () => {
     return JSON.parse(await body.text()).events;
   }
 
-  /** Penguin posts one fetch per event, but analytics.io dispatches them off its own queue. */
-  async function penguinPosts(expected: number): Promise<any[]> {
-    for (let attempt = 0; attempt < 50 && fetchSpy.calls.count() < expected; attempt++) {
-      await new Promise(resolve => setTimeout(resolve, 10));
-    }
-    return fetchSpy.calls.allArgs().map(([, init]) => JSON.parse(init.body));
+  /**
+   * Config whose retired penguin key counts its own reads, so the specs can prove nothing
+   * looks at ANALYTICS_API_URL any more.
+   */
+  function setConfig(values: Record<string, unknown>): void {
+    const config: Record<string, unknown> = { ...values };
+    Object.defineProperty(config, 'ANALYTICS_API_URL', {
+      enumerable: true,
+      get: () => {
+        penguinKeyReads++;
+        return '/analytics';
+      }
+    });
+    configSignal.set(config);
   }
 
   beforeEach(() => {
     configSignal = signal({});
+    penguinKeyReads = 0;
     beaconSpy = spyOn(navigator, 'sendBeacon').and.returnValue(true);
     fetchSpy = spyOn(window, 'fetch').and.resolveTo(new Response('', { status: 202 }));
 
@@ -52,15 +62,12 @@ describe('AnalyticsService', () => {
     await flushedEvents();
   });
 
-  it('fans track and identify out to both penguin and the eagle-analytics client', async () => {
-    configSignal.set({ ANALYTICS_API_URL: '/analytics', EAGLE_ANALYTICS_URL: EAGLE_URL });
+  it('sends track and identify to the eagle-analytics client from EAGLE_ANALYTICS_URL', async () => {
+    setConfig({ EAGLE_ANALYTICS_URL: EAGLE_URL });
     service.initialize();
 
     service.identify('user-123', { username: 'jsmith' });
     service.track('Report Generated', { format: 'pdf' });
-
-    expect((await penguinPosts(2)).map(p => p.eventType))
-      .toEqual(['User Identified', 'Report Generated']);
 
     const events = await flushedEvents();
     expect(beaconSpy.calls.mostRecent().args[0]).toBe(`${EAGLE_URL}/events`);
@@ -74,32 +81,15 @@ describe('AnalyticsService', () => {
     expect(tracked.sourceApp).toBe('eagle-admin');
   });
 
-  it('leaves penguin tracking alone when EAGLE_ANALYTICS_URL is empty', async () => {
-    configSignal.set({ ANALYTICS_API_URL: '/analytics', EAGLE_ANALYTICS_URL: '' });
+  it('sends page views to the eagle-analytics client', async () => {
+    setConfig({ EAGLE_ANALYTICS_URL: EAGLE_URL });
     service.initialize();
 
-    service.identify('user-123');
-    service.track('Report Generated');
-
-    expect((await penguinPosts(2)).map(p => p.eventType))
-      .toEqual(['User Identified', 'Report Generated']);
-    expect(await flushedEvents()).toEqual([]);
-  });
-
-  it('fans page views out to both penguin and the eagle-analytics client', async () => {
-    configSignal.set({ ANALYTICS_API_URL: '/analytics', EAGLE_ANALYTICS_URL: EAGLE_URL });
-    service.initialize();
-
-    // Penguin only reports page views once a user is identified.
     service.identify('user-123');
     service.page('Project Details', { project_id: '123' });
 
-    expect((await penguinPosts(2)).map(p => p.eventType))
-      .toEqual(['User Identified', 'Page Viewed']);
-
     const events = await flushedEvents();
     expect(beaconSpy.calls.mostRecent().args[0]).toBe(`${EAGLE_URL}/events`);
-    expect(events.map(e => e.eventType)).toContain('Page Viewed');
 
     const viewed = events.find(e => e.eventType === 'Page Viewed');
     expect(viewed.properties.page_name).toBe('Project Details');
@@ -108,8 +98,8 @@ describe('AnalyticsService', () => {
     expect(viewed.sourceApp).toBe('eagle-admin');
   });
 
-  it('resets the eagle-analytics client on logout, leaving penguin unchanged', async () => {
-    configSignal.set({ ANALYTICS_API_URL: '/analytics', EAGLE_ANALYTICS_URL: EAGLE_URL });
+  it('resets the eagle-analytics client on logout', async () => {
+    setConfig({ EAGLE_ANALYTICS_URL: EAGLE_URL });
     service.initialize();
 
     service.identify('user-123');
@@ -118,15 +108,40 @@ describe('AnalyticsService', () => {
 
     service.reset();
 
-    expect((await penguinPosts(2)).map(p => p.eventType))
-      .toEqual(['User Identified', 'Session Ended']);
-
     // The client's reset ends the old session and starts a fresh one.
     const events = await flushedEvents();
+    expect(events.map(e => e.eventType)).toContain('Session Ended');
     expect(events.map(e => e.eventType)).toContain('Session Started');
 
     const started = events.find(e => e.eventType === 'Session Started');
     expect(started.sessionId).not.toBe(sessionBefore);
     expect(started.userId).toBeUndefined();
+  });
+
+  it('sends nothing anywhere when EAGLE_ANALYTICS_URL is empty', async () => {
+    setConfig({ EAGLE_ANALYTICS_URL: '' });
+    service.initialize();
+
+    service.identify('user-123');
+    service.track('Report Generated');
+    service.page('Project Details');
+    service.reset();
+
+    expect(await flushedEvents()).toEqual([]);
+    // Penguin used to post one fetch per event off ANALYTICS_API_URL; that path is gone.
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('never reads the retired ANALYTICS_API_URL config key', async () => {
+    setConfig({ EAGLE_ANALYTICS_URL: EAGLE_URL });
+    service.initialize();
+
+    service.identify('user-123');
+    service.track('Report Generated');
+    service.page('Project Details');
+    service.reset();
+    await flushedEvents();
+
+    expect(penguinKeyReads).toBe(0);
   });
 });

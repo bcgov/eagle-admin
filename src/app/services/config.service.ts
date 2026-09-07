@@ -16,7 +16,6 @@ interface EnvConfig {
   KEYCLOAK_URL?: string;
   KEYCLOAK_REALM?: string;
   KEYCLOAK_ENABLED?: boolean;
-  ANALYTICS_API_URL?: string | null;
   ANALYTICS_DEBUG?: boolean;
   EAGLE_ANALYTICS_URL?: string | null;
   REDIRECT_KEY?: string;
@@ -34,7 +33,7 @@ declare global {
  * LOCAL DEV (configEndpoint = false):
  *   - Uses env.js values directly (src/env.js)
  *   - proxy.conf.js reads API_LOCATION from env.js to generate dev server proxy rules
- *   - App uses relative paths (/api, /analytics) — never API_LOCATION directly
+ *   - App uses relative paths (/api) — never API_LOCATION directly
  *
  * DEPLOYED (configEndpoint = true):
  *   - Dockerfile sed sets configEndpoint to true
