@@ -19,6 +19,10 @@ route:
   # silently re-create the certless route.
   enabled: false
 
+directRoute:
+  enabled: true
+  host: eagle-admin-6cdc9e-prod.apps.silver.devops.gov.bc.ca
+
 resources:
   limits:
     cpu: 250m
