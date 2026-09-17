@@ -6,7 +6,6 @@ image:
 
 route:
   enabled: true
-  serviceName: eagle-admin
   targetPort: "8080-tcp"
   host: eagle-test.apps.silver.devops.gov.bc.ca
   path: "/admin/"
