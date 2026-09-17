@@ -23,6 +23,7 @@ route:
   # from this chart is never right — `prod-external` already serves that host through rproxy and
   # carries its certificate — so prod must not have to remember to opt out. dev and test opt IN.
   enabled: false
+  serviceName: eagle-admin  # rproxy is retired; dev/test Routes go straight to this chart's Service
   host: ""  # Set in values-{env}.yaml
   path: "/admin/"
   tls:
