@@ -299,10 +299,6 @@ export class AddEditActivityComponent implements OnInit {
       this.myForm.get('pcp')!.setValidators(Validators.required);
       this.myForm.get('project')!.updateValueAndValidity();
       this.myForm.get('pcp')!.updateValueAndValidity();
-      if (this.projectIsSelected) {
-        this.loadPcpsForProject(this.myForm.get('project')!.value);
-        this.loadProjectLocation(this.myForm.get('project')!.value);
-      }
     } else if (this.myForm.get('type')!.value === this.activityTypes[1]) { // Notification
       this.typeIsNotification = true;
       this.typeIsPCP = false;
@@ -329,6 +325,10 @@ export class AddEditActivityComponent implements OnInit {
       off('pcp');
     }
     this.myForm.updateValueAndValidity();
+    // A type change can reset the project or its document source; updateProject() owns both.
+    if (userChange) {
+      this.updateProject();
+    }
     this._cdr.markForCheck();
   }
 

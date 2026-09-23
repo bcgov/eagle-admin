@@ -208,6 +208,33 @@ describe('AddEditActivityComponent', () => {
       expect(sentBody(recentActivityService.add).engagementUrl).toBe('https://engage.gov.bc.ca/x');
     });
 
+    describe('switching to a type with no project', () => {
+      function pickThenSwitchToPcp(): AddEditActivityComponent {
+        const component = create(null);
+        searchService.getSearchResults.and.returnValue(of([{ data: { searchResults: [
+          { _id: 'd1', documentFileName: 'site.jpg' }, { _id: 'd2', documentFileName: 'report.pdf' }
+        ] } }] as any));
+        fillNews(component);
+        component.myForm.patchValue({ featuredImageDocument: 'd1', featuredImageAlt: 'x', attachments: ['d2'] });
+        component.myForm.patchValue({ type: 'Project Notification Public Comment Period' });
+        component.updateType(true);
+        return component;
+      }
+
+      it('sends no featured image and no attachments from the old project', () => {
+        const component = pickThenSwitchToPcp();
+        component.save('draft');
+        expect(sentBody(recentActivityService.add).featuredImage).toBeNull();
+        expect(sentBody(recentActivityService.add).attachments).toEqual([]);
+      });
+
+      it('stops listing the old project documents in the pickers', () => {
+        const component = pickThenSwitchToPcp();
+        expect(component.documents).toEqual([]);
+        expect(component.imageDocuments).toEqual([]);
+      });
+    });
+
     it('sends project null for a post type with no project, and the form stays valid', () => {
       const component = create(null);
       component.myForm.patchValue({

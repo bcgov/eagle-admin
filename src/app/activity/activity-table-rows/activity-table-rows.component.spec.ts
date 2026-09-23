@@ -3,22 +3,21 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { PinsTableRowsComponent } from './pins-table-rows.component';
+import { ActivityTableRowsComponent } from './activity-table-rows.component';
 import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { ProjectService } from 'src/app/services/project.service';
 import { ToastService } from 'src/app/services/toast.service';
 
-describe('PinsTableRowsComponent', () => {
-  let component: PinsTableRowsComponent;
+describe('ActivityTableRowsComponent', () => {
+  let component: ActivityTableRowsComponent;
   let http: HttpTestingController;
   let toastService: jasmine.SpyObj<ToastService>;
 
   beforeEach(() => {
     toastService = jasmine.createSpyObj('ToastService', ['error']);
     TestBed.configureTestingModule({
-      imports: [PinsTableRowsComponent],
+      imports: [ActivityTableRowsComponent],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
@@ -26,13 +25,12 @@ describe('PinsTableRowsComponent', () => {
         { provide: ConfigService, useValue: { getApiPath: () => '/api' } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'debug']) },
         { provide: ToastService, useValue: toastService },
-        { provide: ProjectService, useValue: jasmine.createSpyObj('ProjectService', ['deletePin']) },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: NgbModal, useValue: jasmine.createSpyObj('NgbModal', ['open']) }
       ]
     });
     // No detectChanges: togglePin needs no rendered rows.
-    component = TestBed.createComponent(PinsTableRowsComponent).componentInstance;
+    component = TestBed.createComponent(ActivityTableRowsComponent).componentInstance;
     http = TestBed.inject(HttpTestingController);
   });
 
