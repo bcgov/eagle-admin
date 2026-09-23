@@ -25,3 +25,13 @@ tr:hover {
   font-size: .8rem;
 }
 
+
+.scheduled-flag {
+  background: #1a5a96;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px 4px;
+  border-radius: 5px;
+  font-size: .8rem;
+}

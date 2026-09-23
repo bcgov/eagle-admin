@@ -24,11 +24,37 @@
   }
   @if (myForm && !loading) {
   <form [formGroup]="myForm" novalidate>
-    <h2>Activity Post</h2>
+    <h2>Update <span class="badge bg-secondary ms-2">{{statusText}}</span></h2>
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="category">Category* </label>
+        <select id="category" class="form-control" formControlName="category" (change)="updateCategory()">
+          @for (category of categories(); track category) {
+          <option [ngValue]="category">{{category}}</option>
+          }
+        </select>
+      </div>
+      @if (myForm.get('category')!.value === corporate) {
+      <div class="label-pair">
+        <label for="subject">Subject* </label>
+        <select id="subject" class="form-control" formControlName="subject" (change)="updateCategory()">
+          @for (subject of subjects(); track subject) {
+          <option [ngValue]="subject">{{subject}}</option>
+          }
+        </select>
+        @if (subjects().length === 0) {
+        <small class="form-text">No subjects set up yet. Ask an administrator to add one to the updateSubject list.</small>
+        }
+        @if (myForm.hasError('subjectRequired')) {
+        <small class="form-text text-danger">Corporate updates need a subject.</small>
+        }
+      </div>
+      }
+    </div>
     <div class="flex-container">
       <div class="label-pair">
         <label for="type">Type* </label>
-        <select required default="select" class="form-control" formControlName="type" (change)="updateType()">
+        <select required default="select" class="form-control" formControlName="type" (change)="updateType(true)">
           @for (type of activityTypes; track type) {
           <option [ngValue]="type">{{type}}</option>
           }
@@ -52,6 +78,22 @@
     </div>
     <div class="flex-container">
       <div class="label-pair lrg">
+        <label for="shortHeadline">Short headline</label>
+        <input id="shortHeadline" formControlName="shortHeadline" type="text" class="form-control"
+          [attr.maxlength]="shortHeadlineMax" aria-describedby="shortHeadlineCount" />
+        <small id="shortHeadlineCount" class="form-text">{{myForm.get('shortHeadline')!.value?.length || 0}} / {{shortHeadlineMax}}. Used in lists and emails; the headline is used when empty.</small>
+      </div>
+    </div>
+    <div class="flex-container">
+      <div class="label-pair lrg">
+        <label for="summary">Summary</label>
+        <textarea id="summary" formControlName="summary" rows="3" class="form-control"
+          [attr.maxlength]="summaryMax" aria-describedby="summaryCount"></textarea>
+        <small id="summaryCount" class="form-text">{{myForm.get('summary')!.value?.length || 0}} / {{summaryMax}}. Plain text; the first paragraph of the content is used when empty.</small>
+      </div>
+    </div>
+    <div class="flex-container">
+      <div class="label-pair lrg">
         <label for="content">Content* </label>
         <editor required [init]="tinyMceSettings" name="content" id="content" formControlName="content"></editor>
       </div>
@@ -59,6 +101,11 @@
     @if (typeIsPCP && !projectIsSelected) {
     <div class="alert alert-warning" role="alert">
       Please select a project.
+    </div>
+    }
+    @if (myForm.hasError('projectRequired')) {
+    <div class="alert alert-warning" role="alert">
+      Please select a project. Only Corporate updates can be saved without one.
     </div>
     }
     @if (typeIsProjectNotificationNews && !projectIsSelected) {
@@ -136,6 +183,59 @@
           type="text" class="form-control" />
       </div>
     </div>
+    <div class="flex-container">
+      <div class="label-pair med">
+        <label for="featuredImage">Featured image</label>
+        <ng-select labelForId="featuredImage" formControlName="featuredImageDocument" [items]="imageDocuments"
+          bindValue="_id" bindLabel="displayName" placeholder="Pick an image from the project documents"
+          [notFoundText]="projectIsSelected ? 'No image documents in this project' : 'Select a project first'"></ng-select>
+      </div>
+      <div class="label-pair med">
+        <label for="featuredImageAlt">Image alt text{{myForm.get('featuredImageDocument')!.value ? '*' : ''}}</label>
+        <input id="featuredImageAlt" formControlName="featuredImageAlt" type="text" class="form-control" />
+        @if (myForm.hasError('altRequired')) {
+        <small class="form-text text-danger">Describe the image for people who cannot see it.</small>
+        }
+      </div>
+    </div>
+    <div class="flex-container">
+      <div class="label-pair lrg">
+        <label for="attachments">Attachments</label>
+        <ng-select labelForId="attachments" formControlName="attachments" [items]="documents" [multiple]="true"
+          bindValue="_id" bindLabel="displayName" placeholder="Pick project documents"
+          [notFoundText]="projectIsSelected ? 'No documents in this project' : 'Select a project first'"></ng-select>
+      </div>
+    </div>
+    <div class="flex-container">
+      <div class="label-pair med">
+        <label for="regions">Regions</label>
+        <ng-select labelForId="regions" formControlName="regions" [items]="regionOptions" [multiple]="true"
+          placeholder="None"></ng-select>
+      </div>
+      <div class="label-pair med">
+        <label for="location">Location</label>
+        <input id="location" formControlName="location" type="text" class="form-control"
+          placeholder="Project location is used when empty" />
+      </div>
+    </div>
+    <div class="flex-container">
+      <div class="label-pair lrg">
+        <label for="engagementUrl">Engagement URL</label>
+        <input id="engagementUrl" formControlName="engagementUrl" type="url" class="form-control"
+          placeholder="https://" />
+        @if (myForm.get('engagementUrl')!.hasError('httpUrl')) {
+        <small class="form-text text-danger">Enter a full link starting with http:// or https://.</small>
+        }
+      </div>
+    </div>
+    <div class="flex-container">
+      <div class="label-pair">
+        <label for="publishDate">Publish date</label>
+        <input id="publishDate" formControlName="publishDate" type="datetime-local" class="form-control"
+          [min]="minPublishDate" />
+        <small class="form-text">Set a future date and time, then choose Schedule.</small>
+      </div>
+    </div>
       <div class="label-pair align-items-center">
         <div class="form-check form-switch d-inline-block p-0 m-0">
           <input class="form-check-input ms-0" type="checkbox" role="switch" id="complianceAndEnforcement" formControlName="complianceAndEnforcement">
@@ -148,15 +248,37 @@
   <div class="me-">
     <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
     &nbsp;
-    <button class="btn btn-primary me-1" [disabled]="!myForm.valid" type="submit" (click)="onSubmit()">Save</button>
+    <button class="btn btn-outline-primary" type="button" (click)="openPreview(previewTpl)">Preview</button>
     &nbsp;
-    @if (!this.isPublished) {
-    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()">Save
-      & Publish</button>
+    @if (statusText !== 'Draft') {
+    <button class="btn btn-primary me-1" [disabled]="!myForm.valid || saving" type="button" (click)="save('keep')">Save</button>
+    &nbsp;
     }
-    @if (this.isPublished) {
-    <button class="btn btn-unpublish" [disabled]="!myForm.valid" type="publish" (click)="togglePublish()">Unpublish</button>
+    <button class="btn btn-primary me-1" [disabled]="!myForm.valid || saving" type="button" (click)="save('draft')">Save draft</button>
+    &nbsp;
+    <!-- Publish on a live Update would reset its publish date; Save keeps it. -->
+    @if (statusText !== 'Published') {
+    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || saving" type="button" (click)="save('publish')">Publish</button>
+    &nbsp;
     }
+    <button class="btn btn-primary" [disabled]="!myForm.valid || saving || !canSchedule()" type="button" (click)="save('schedule')">Schedule</button>
   </div>
+
+  <ng-template #previewTpl let-modal>
+    <div class="modal-header">
+      <h2 class="modal-title h5">Preview</h2>
+      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+      <article>
+        <h1 class="h3">{{myForm.get('headline')!.value}}</h1>
+        <p class="lead">{{previewSummary}}</p>
+        @if (previewImage; as image) {
+        <img class="img-fluid mb-3" [src]="image.url" [alt]="image.alt" />
+        }
+        <div [innerHTML]="myForm.get('content')!.value"></div>
+      </article>
+    </div>
+  </ng-template>
   } <!-- end @if (myForm && !loading) -->
 </main>

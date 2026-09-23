@@ -10,6 +10,8 @@ import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { UPDATE_CONFLICT_MESSAGE, isConflict } from 'src/app/activity/update-rules';
 
 
 @Component({
@@ -26,6 +28,7 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
   private recentActivityService = inject(RecentActivityService);
   private projectService = inject(ProjectService);
   private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   data = input.required<TableObject>();
@@ -79,15 +82,18 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
   }
 
   togglePin(activity) {
-    activity.pinned = !activity.pinned;
-    this.recentActivityService.save(activity)
+    this.recentActivityService.togglePin(activity)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this._changeDetectionRef.markForCheck();
         },
         error: error => {
+          if (isConflict(error)) {
+            this.toastService.error(UPDATE_CONFLICT_MESSAGE);
+          }
           this.logger.error('save activity failed', 'PinsTableRowsComponent', error);
+          this._changeDetectionRef.markForCheck();
         }
       });
   }
