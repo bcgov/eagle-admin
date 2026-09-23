@@ -94,11 +94,12 @@ export class ActivityComponent {
     },
     {
       name: 'Status',
-      value: 'active',
-      width: '8%'
+      value: 'status',
+      width: '8%',
+      nosort: true
     },
     {
-      name: 'Delete',
+      name: 'Archive',
       width: '5%',
       nosort: true
     }
@@ -180,6 +181,9 @@ export class ActivityComponent {
           type: item.type,
           dateAdded: item.dateAdded,
           active: item.active,
+          status: item.status,
+          publishDate: item.publishDate,
+          dateUpdated: item.dateUpdated,
           pinned: item.pinned
         })),
         this.tableParams

@@ -9,6 +9,8 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { DatePipe } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
 import { CommonModule } from '@angular/common';
+import { ToastService } from 'src/app/services/toast.service';
+import { StatusLabel, UPDATE_CONFLICT_MESSAGE, isConflict, statusLabel } from '../update-rules';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +26,7 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   private modalService = inject(NgbModal);
   private recentActivityService = inject(RecentActivityService);
   private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   data = input.required<TableObject>();
@@ -32,7 +35,12 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
 
   public entries: any;
   public paginationData: any;
-  public dropdownItems = ['Edit', 'Delete'];
+  public statusClass: Record<StatusLabel, string> = {
+    Published: 'active-flag',
+    Scheduled: 'scheduled-flag',
+    Draft: 'inactive-flag',
+    Archived: 'inactive-flag'
+  };
   public columns: TableColumn[];
   public useSmallTable: boolean;
 
@@ -43,26 +51,33 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
     this.useSmallTable = this.smallTable();
   }
 
-  deleteActivity(activity) {
+  statusOf(entry): StatusLabel {
+    return statusLabel(entry);
+  }
+
+  archiveActivity(activity) {
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static',
     });
-    modalRef.componentInstance.title = 'Delete Activity';
-    modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Activity or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.title = 'Archive Update';
+    modalRef.componentInstance.message = 'Click <strong>OK</strong> to archive this Update and remove it from the public site, or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
     modalRef.result
       .then(isConfirmed => {
         if (isConfirmed) {
-          this.recentActivityService.delete(activity)
-            .subscribe(
-              () => {
-                this.entries.splice(this.entries.indexOf(activity), 1);
+          this.recentActivityService.archive(activity)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: () => {
+                activity.status = 'archived';
+                activity.active = false;
                 this._changeDetectionRef.markForCheck();
               },
-              error => {
-                this.logger.error('delete activity failed', 'ActivityTableRowsComponent', error);
-              });
+              error: error => {
+                this.logger.error('archive activity failed', 'ActivityTableRowsComponent', error);
+              }
+            });
         }
       })
       .catch(() => {
@@ -71,12 +86,17 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   }
 
   togglePin(activity) {
-    activity.pinned = !activity.pinned;
-    this.recentActivityService.save(activity)
+    this.recentActivityService.togglePin(activity)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => { this._changeDetectionRef.markForCheck(); },
-        error: error => this.logger.error('save activity failed', 'ActivityTableRowsComponent', error)
+        error: error => {
+          if (isConflict(error)) {
+            this.toastService.error(UPDATE_CONFLICT_MESSAGE);
+          }
+          this.logger.error('save activity failed', 'ActivityTableRowsComponent', error);
+          this._changeDetectionRef.markForCheck();
+        }
       });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, input, output, DestroyRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy, input, output, DestroyRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EMPTY, from } from 'rxjs';
@@ -6,7 +6,6 @@ import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ProjectService } from 'src/app/services/project.service';
-import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -20,10 +19,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 })
 
 export class PinsTableRowsComponent implements OnInit, TableComponent {
-  private _changeDetectionRef = inject(ChangeDetectorRef);
   private router = inject(Router);
   private modalService = inject(NgbModal);
-  private recentActivityService = inject(RecentActivityService);
   private projectService = inject(ProjectService);
   private logger = inject(LoggingService);
   private destroyRef = inject(DestroyRef);
@@ -76,20 +73,6 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
         }
       }
     });
-  }
-
-  togglePin(activity) {
-    activity.pinned = !activity.pinned;
-    this.recentActivityService.save(activity)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this._changeDetectionRef.markForCheck();
-        },
-        error: error => {
-          this.logger.error('save activity failed', 'PinsTableRowsComponent', error);
-        }
-      });
   }
 
   goToItem(activity) {

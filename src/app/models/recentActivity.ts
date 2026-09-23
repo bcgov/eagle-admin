@@ -13,6 +13,18 @@ export class RecentActivity {
     notificationName: string;
     pinned: boolean;
     complianceAndEnforcement: boolean;
+    category: string;
+    shortHeadline: string;
+    summary: string;
+    featuredImage: { document: string; alt: string } | null;
+    attachments: string[];
+    regions: string[];
+    location: string;
+    engagementUrl: string;
+    subject: string;
+    status: 'draft' | 'published' | 'archived';
+    publishDate: Date | string;
+    dateUpdated: string;
 
     constructor(obj?: any) {
         this._id = obj?._id ?? null;
@@ -29,5 +41,17 @@ export class RecentActivity {
         this.active = obj?.active ?? null;
         this.pinned = obj?.pinned ?? null;
         this.complianceAndEnforcement = obj?.complianceAndEnforcement ?? null;
+        this.category = obj?.category ?? null;
+        this.shortHeadline = obj?.shortHeadline ?? null;
+        this.summary = obj?.summary ?? null;
+        this.featuredImage = obj?.featuredImage ?? null;
+        this.attachments = obj?.attachments ?? [];
+        this.regions = obj?.regions ?? [];
+        this.location = obj?.location ?? null;
+        this.engagementUrl = obj?.engagementUrl ?? null;
+        this.subject = obj?.subject ?? null;
+        this.status = obj?.status ?? null;
+        this.publishDate = obj?.publishDate ?? null;
+        this.dateUpdated = obj?.dateUpdated ?? null;
     }
 }
