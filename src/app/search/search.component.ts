@@ -21,7 +21,7 @@ import { LoadingStateService } from '../services/loading-state.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
-import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 import { LoggingService } from '../services/logging.service';
@@ -303,6 +303,7 @@ export class SearchComponent implements OnInit {
 
             this.terms.keywords = params.keywords || null;
             this.terms.dataset = params.dataset || 'Document';
+            this.terms.sortBy = params.sortBy || null;
 
             this.setFiltersFromParams(params);
 
@@ -315,7 +316,9 @@ export class SearchComponent implements OnInit {
             // query string. Previously these were ignored on a refresh
             const filterKeys = Object.keys(this.filterForAPI);
             const hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
-            if (Object.keys(this.terms.getParams()).length === 0
+            // A sort alone is not a search; keep the landing view.
+            const searchKeys = Object.keys(this.terms.getParams()).filter(key => key !== 'sortBy');
+            if (searchKeys.length === 0
               && !this.hasFilter()
               && !hasFilterFromQueryString) {
               return of(null);
@@ -353,7 +356,7 @@ export class SearchComponent implements OnInit {
               null,
               this.currentPage,
               this.pageSize,
-              null,
+              this.terms.sortBy,
               {},
               true,
               this.filterForAPI,
@@ -452,18 +455,14 @@ export class SearchComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.startsWith('+')) {
-      this.terms.sortBy = '-' + column;
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.terms.sortBy = '+' + column;
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedResults(this.tableParams.currentPage);
+    this.terms.sortBy = this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedResults(1);
   }
 
   handleRadioChange(value) {
     this.terms.dataset = value;
+    // Sort keys differ between datasets.
+    this.terms.sortBy = null;
 
     this.hideAllFilters();
     this.clearAllFilters();

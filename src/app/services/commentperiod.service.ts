@@ -36,7 +36,7 @@ export class CommentPeriodService {
   };
 
   getAllByProjectId(projId: string, pageNum = 1, pageSize = 10, sortBy: string = null): Observable<object> {
-    const fields = ['project', 'dateStarted', 'dateCompleted', 'isMet', 'metURLAdmin'];
+    const fields = ['project', 'dateStarted', 'dateCompleted', 'isMet', 'metURLAdmin', 'isPublished'];
     let qs = `commentperiod?&project=${projId}&`;
     if (pageNum !== null) { qs += `pageNum=${pageNum - 1}&`; }
     if (pageSize !== null) { qs += `pageSize=${pageSize}&`; }

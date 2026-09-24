@@ -9,7 +9,7 @@ import { SearchTerms } from 'src/app/models/search';
 import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
-import { TableTemplateUtils } from '../../utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../../utils/table-template-utils';
 import { SearchService } from 'src/app/services/search.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { FormsModule } from '@angular/forms';
@@ -134,12 +134,8 @@ export class ContactSelectComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedDocs(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedDocs(1);
   }
 
   getPaginatedDocs(pageNumber, reset = false) {

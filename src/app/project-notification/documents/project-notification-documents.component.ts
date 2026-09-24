@@ -18,6 +18,7 @@ import { PnDocumentTableRowsComponent } from './project-notification-document-ta
 import { Document } from 'src/app/models/document';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
   selector: 'app-project-notification-documents',
@@ -390,13 +391,9 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy[0] === '+') {
-      this.tableParams.sortBy = `-${column}`;
-    } else {
-      this.tableParams.sortBy = `+${column}`;
-    }
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
 
-    this.getPaginatedDocs(this.tableParams.currentPage);
+    this.getPaginatedDocs(1);
   }
 
   getPaginatedDocs(page) {

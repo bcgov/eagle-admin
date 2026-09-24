@@ -73,6 +73,20 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     this.onColumnSort.emit(property);
   }
 
+  // Value for aria-sort; also drives the header arrow. Whole sort matches multi-key columns
+  // (e.g. Contacts Name `lastName,+firstName`); falls back to the first key otherwise.
+  public sortState(property: string): 'ascending' | 'descending' | 'none' {
+    const whole = this.column ?? '';
+    if (whole.slice(1) === property) {
+      return whole.charAt(0) === '+' ? 'ascending' : 'descending';
+    }
+    const primary = whole.split(',')[0] ?? '';
+    if (primary.slice(1) !== property) {
+      return 'none';
+    }
+    return primary.charAt(0) === '+' ? 'ascending' : 'descending';
+  }
+
   loadComponent() {
     const viewContainerRef = this.tableHost().viewContainerRef;
     viewContainerRef.clear();
@@ -161,11 +175,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   getshowingEnd(): number {
     const total = parseInt(this.data().paginationData.totalListItems, 10) || 0;
     return Math.min(this.activePage * this.activePageSize, total);
-  }
-
-  onHeaderKeyDown(event: KeyboardEvent, entry: any) {
-    void event;
-    void entry;
   }
 
   onKeyDown(event: KeyboardEvent) {
