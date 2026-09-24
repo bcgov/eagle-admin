@@ -46,15 +46,13 @@ export class ProjectUpdatesComponent implements OnInit {
   public tableColumns: TableColumn[] = [
     {
       name: 'Headline',
-      value: 'headine',
-      width: '80%',
-      nosort: true
+      value: 'headline',
+      width: '80%'
     },
     {
       name: 'Date',
-      value: 'dateUpdated',
-      width: '20%',
-      nosort: true
+      value: 'dateAdded',
+      width: '20%'
     }
   ];
 
@@ -63,18 +61,17 @@ export class ProjectUpdatesComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        this.tableParams.sortBy = '-dateUpdated';
+        if (this.tableParams.sortBy === '') {
+          this.tableParams.sortBy = '-dateAdded';
+        }
 
         const projectId = this.route.parent.snapshot.paramMap.get('projId');
-        const pageNum = params.currentPage || 1;
-        const pageSize = params.pageSize || 10;
-        const sortBy = params.sortBy || '-datePosted';
         const keywords = params.keywords || '';
 
         return this.searchService.getSearchResults(
           keywords, 'RecentActivity',
           [{ 'name': 'project', 'value': projectId }],
-          pageNum, pageSize, sortBy, {}, true, {}, ''
+          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, {}, true, {}, ''
         );
       }),
       takeUntilDestroyed(this.destroyRef)
@@ -112,31 +109,20 @@ export class ProjectUpdatesComponent implements OnInit {
     }
   }
 
-  public onSubmit() {
-    // dismiss any open snackbar
-    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
-
-    const params = this.terms.getParams();
-    params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.tableParams.currentPage = 1;
-    params['sortBy'] = this.tableParams.sortBy = '-datePosted';
-    params['keywords'] = encodeParams(this.tableParams.keywords = this.keywords || '');
-    params['pageSize'] = this.tableParams.pageSize = 10;
-    this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
+  setColumnSort(column: string) {
+    this.tableParams.sortBy = (this.tableParams.sortBy === '+' + column ? '-' : '+') + column;
+    this.onSubmit();
   }
 
-  getPaginatedDocs(pageNumber) {
+  public onSubmit(pageNumber = 1) {
+    // Router ignores navigation to the same URL; the timestamp forces a reload.
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
-    params['sortBy'] = this.tableParams.sortBy = '-datePosted';
+    params['sortBy'] = this.tableParams.sortBy;
     params['keywords'] = encodeParams(this.tableParams.keywords = this.keywords || '');
-    params['pageSize'] = this.tableParams.pageSize = 10;
+    params['pageSize'] = this.tableParams.pageSize;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
 

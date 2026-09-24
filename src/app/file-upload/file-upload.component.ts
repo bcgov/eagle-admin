@@ -28,6 +28,13 @@ export class FileUploadComponent {
   files = input<Array<File>>([]);
   showInfo = input(true);
   showList = input(true);
+  /** Text before the browse button, e.g. 'Drag photos here or'. */
+  hint = input('');
+  action = input('Drop files to attach, or browse.');
+  /** File picker filter, e.g. 'image/png,image/jpeg'. */
+  accept = input('');
+  /** Id of help text for the browse button. */
+  describedBy = input<string | null>(null);
   filesChange = output<File[]>();
   public errors: Array<string> = [];
 

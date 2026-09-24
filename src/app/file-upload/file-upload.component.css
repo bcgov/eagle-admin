@@ -22,11 +22,25 @@
   font-size: 1rem;
 }
 
-.dragarea a,
-.droparea a {
-  color: #007bff;
+.hint {
+  color: var(--font-gray);
+  font-size: 0.875rem;
+}
+
+.browse {
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: none;
+  color: var(--link-color);
   font-size: 0.875rem;
   font-weight: 700;
+  text-decoration: underline;
+}
+
+.browse:focus-visible {
+  outline: 3px solid var(--fc-focus-border-color);
+  outline-offset: 2px;
 }
 
 .dragarea {

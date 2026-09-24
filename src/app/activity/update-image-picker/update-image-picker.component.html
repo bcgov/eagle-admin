@@ -1,0 +1,50 @@
+<div class="modal-header">
+  <h2 class="modal-title h5" [id]="titleId">{{heading}}</h2>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss()"></button>
+</div>
+<div class="modal-body">
+  <label for="imagePickerSearch" class="form-label fw-semibold">Search by name</label>
+  <input id="imagePickerSearch" ngbAutofocus type="search" class="form-control" autocomplete="off" [value]="query()"
+    (input)="query.set($any($event.target).value)" aria-describedby="imagePickerHelp" />
+  <p id="imagePickerHelp" class="form-text mb-3">
+    {{max > 1 ? 'Pick up to ' + max + '.' : 'Pick one.'}}
+    @if (hasNonPublic) {
+    Documents marked Not public must be published in the project's Documents before you can use them.
+    }
+  </p>
+
+  @if (visible.length) {
+  <ul class="picker-grid list-unstyled mb-0" aria-label="Project images">
+    @for (doc of visible; track doc._id) {
+    @let checked = isSelected(doc);
+    <li>
+      <label class="picker-card" [class.is-selected]="checked">
+        <input [type]="max === 1 ? 'radio' : 'checkbox'" [attr.name]="max === 1 ? titleId + 'Pick' : null"
+          class="form-check-input" [checked]="checked" [disabled]="!canPick(doc)" (change)="toggle(doc)" />
+        <span class="picker-frame">
+          @if (isPublic(doc)) {
+          <img [src]="fetchUrl(doc)" alt="" loading="lazy" />
+          } @else {
+          <i class="material-icons" aria-hidden="true">image</i>
+          }
+        </span>
+        <span class="picker-name">{{name(doc)}}</span>
+        @if (attached.has(doc._id)) {
+        <span class="badge bg-secondary align-self-start">Added</span>
+        } @else if (!isPublic(doc)) {
+        <span class="badge bg-secondary align-self-start">Not public</span>
+        }
+      </label>
+    </li>
+    }
+  </ul>
+  } @else {
+  <p class="mb-0">No images match "{{query()}}".</p>
+  }
+</div>
+<div class="modal-footer">
+  <span class="me-auto form-text mt-0" aria-live="polite">{{selected().length}} of {{max}} selected</span>
+  <button type="button" class="btn btn-outline-primary" (click)="activeModal.dismiss()">Cancel</button>
+  <button type="button" class="btn btn-primary" [disabled]="!selected().length" (click)="done()">
+    {{addLabel}}</button>
+</div>

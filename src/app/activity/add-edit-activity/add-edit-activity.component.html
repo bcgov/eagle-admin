@@ -183,27 +183,23 @@
           type="text" class="form-control" />
       </div>
     </div>
-    <div class="flex-container">
-      <div class="label-pair med">
-        <label for="featuredImage">Featured image</label>
-        <ng-select labelForId="featuredImage" formControlName="featuredImageDocument" [items]="imageDocuments"
-          bindValue="_id" bindLabel="displayName" placeholder="Pick an image from the project documents"
-          [notFoundText]="projectIsSelected ? 'No image documents in this project' : 'Select a project first'"></ng-select>
-      </div>
-      <div class="label-pair med">
-        <label for="featuredImageAlt">Image alt text{{myForm.get('featuredImageDocument')!.value ? '*' : ''}}</label>
-        <input id="featuredImageAlt" formControlName="featuredImageAlt" type="text" class="form-control" />
-        @if (myForm.hasError('altRequired')) {
-        <small class="form-text text-danger">Describe the image for people who cannot see it.</small>
-        }
-      </div>
-    </div>
+    <app-update-image-field idPrefix="featuredImage" heading="Featured image"
+      help="One image for the top of the Update. JPG, PNG, WebP or GIF, up to 10 MB."
+      [max]="1" [rows]="featuredRows" [docs]="imageDocs()" [srcs]="imageSrcs()" [choices]="imageDocuments"
+      [choicesLoading]="documentsLoading" [choicesFailed]="documentsFailed" [projectId]="projectIsSelected ? myForm.get('project')!.value : null"
+      (added)="addFeaturedImage($event)" (removed)="removeFeaturedImage()"></app-update-image-field>
+    <app-update-image-field idPrefix="image" heading="Photos"
+      [help]="'Up to ' + imagesMax + ' photos, shown in this order. JPG, PNG, WebP or GIF, up to 10 MB each.'"
+      [max]="imagesMax" [rows]="photoRows" [docs]="imageDocs()" [srcs]="imageSrcs()" [choices]="imageDocuments"
+      [choicesLoading]="documentsLoading" [choicesFailed]="documentsFailed" [projectId]="projectIsSelected ? myForm.get('project')!.value : null"
+      (added)="addPhotos($event)" (removed)="removeImage($event)" (moved)="moveImage($event)"></app-update-image-field>
     <div class="flex-container">
       <div class="label-pair lrg">
         <label for="attachments">Attachments</label>
         <ng-select labelForId="attachments" formControlName="attachments" [items]="documents" [multiple]="true"
           bindValue="_id" bindLabel="displayName" placeholder="Pick project documents"
-          [notFoundText]="projectIsSelected ? 'No documents in this project' : 'Select a project first'"></ng-select>
+          [notFoundText]="!projectIsSelected ? 'Select a project first'
+            : documentsFailed ? 'Could not load project documents' : 'No documents in this project'"></ng-select>
       </div>
     </div>
     <div class="flex-container">
@@ -228,14 +224,6 @@
         }
       </div>
     </div>
-    <div class="flex-container">
-      <div class="label-pair">
-        <label for="publishDate">Publish date</label>
-        <input id="publishDate" formControlName="publishDate" type="datetime-local" class="form-control"
-          [min]="minPublishDate" />
-        <small class="form-text">Set a future date and time, then choose Schedule.</small>
-      </div>
-    </div>
       <div class="label-pair align-items-center">
         <div class="form-check form-switch d-inline-block p-0 m-0">
           <input class="form-check-input ms-0" type="checkbox" role="switch" id="complianceAndEnforcement" formControlName="complianceAndEnforcement">
@@ -243,40 +231,98 @@
         &nbsp;
         <label for="complianceAndEnforcement" class="ms-1">This is a C&E Announcement</label>
       </div>
+    @if (choosesPublishTime) {
+    <section>
+      <h2 id="publishingHeading">Publishing</h2>
+      <fieldset class="form-group" aria-labelledby="publishingHeading">
+        <div class="label-pair">
+          <div class="radio-group">
+            <div class="radio">
+              <input type="radio" id="publishNow" value="now" formControlName="publishWhen" aria-describedby="publishWhenHelp" />
+              <label for="publishNow">&nbsp;Publish immediately</label>
+            </div>
+            <div class="radio">
+              <input type="radio" id="publishLater" value="later" formControlName="publishWhen" aria-describedby="publishWhenHelp" />
+              <label for="publishLater">&nbsp;Schedule for later</label>
+            </div>
+          </div>
+          <small id="publishWhenHelp" class="form-text">{{publishLater
+            ? 'Goes live on the public site on the date and time you pick.'
+            : 'Goes live on the public site as soon as you publish.'}}</small>
+        </div>
+        @if (publishLater) {
+        <div class="label-pair">
+          <label for="publishDate">Publish date and time</label>
+          <div class="input-group">
+            <input id="publishDate" type="text" class="form-control" placeholder="yyyy-mm-dd" name="publishDate"
+              formControlName="publishDate" ngbDatepicker #publishDatePicker="ngbDatepicker" [minDate]="minPublishDate" />
+            <button class="btn btn-outline-secondary calendar" (click)="publishDatePicker.toggle()" type="button"
+              aria-label="Open calendar"></button>
+          </div>
+          <ngb-timepicker formControlName="publishTime" [meridian]="true"></ngb-timepicker>
+          @if (myForm.get('publishDate')!.value && !canSchedule()) {
+          <small class="form-text text-danger">Pick a date and time in the future.</small>
+          }
+        </div>
+        }
+      </fieldset>
+    </section>
+    }
   </form>
-  &nbsp;
-  <div class="me-">
-    <button class="btn btn-primary" type="button" (click)="onCancel()">Cancel</button>
-    &nbsp;
-    <button class="btn btn-outline-primary" type="button" (click)="openPreview(previewTpl)">Preview</button>
-    &nbsp;
-    @if (statusText !== 'Draft') {
-    <button class="btn btn-primary me-1" [disabled]="!myForm.valid || saving" type="button" (click)="save('keep')">Save</button>
-    &nbsp;
+  <div role="status">
+    @if (altNeeded) {
+    <p id="altNeeded" class="text-danger mt-3 mb-0">Add alt text to every image before you save.</p>
     }
-    <button class="btn btn-primary me-1" [disabled]="!myForm.valid || saving" type="button" (click)="save('draft')">Save draft</button>
-    &nbsp;
-    <!-- Publish on a live Update would reset its publish date; Save keeps it. -->
-    @if (statusText !== 'Published') {
-    <button class="btn btn-primary btn-publish" [disabled]="!myForm.valid || saving" type="button" (click)="save('publish')">Publish</button>
-    &nbsp;
+    @if (primaryGoesLive && nonPublicImages.length) {
+    <p id="publishBlocked" class="text-danger mt-3 mb-0">
+      {{primaryAction.label}} is off: {{nonPublicImages.join(', ')}} {{nonPublicImages.length === 1 ? 'is' : 'are'}} not public.
+      Publish {{nonPublicImages.length === 1 ? 'it' : 'them'}} in the project's Documents, or remove {{nonPublicImages.length === 1 ? 'it' : 'them'}} from this Update.
+    </p>
     }
-    <button class="btn btn-primary" [disabled]="!myForm.valid || saving || !canSchedule()" type="button" (click)="save('schedule')">Schedule</button>
+  </div>
+  <div class="btn-toolbar justify-content-between gap-2 mt-3">
+    <button class="btn btn-outline-primary" type="button" (click)="onCancel()">Cancel</button>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="btn btn-outline-primary" type="button" (click)="openPreview(previewTpl)">Preview</button>
+      <button class="btn" [class.btn-primary]="!toDraft" [class.btn-unpublish]="!!toDraft"
+        [attr.aria-describedby]="altNeeded ? 'altNeeded' : null"
+        [disabled]="!myForm.valid || saving" type="button" (click)="save('draft')">{{toDraft?.label ?? 'Save draft'}}</button>
+      <button class="btn btn-primary btn-publish" type="button" (click)="save(primaryAction.action)"
+        [attr.aria-describedby]="[altNeeded ? 'altNeeded' : '', primaryGoesLive && nonPublicImages.length ? 'publishBlocked' : ''].join(' ').trim() || null"
+        [disabled]="!myForm.valid || saving || (primaryAction.action === 'schedule' && !canSchedule()) || (primaryGoesLive && nonPublicImages.length > 0)">{{primaryAction.label}}</button>
+    </div>
   </div>
 
   <ng-template #previewTpl let-modal>
-    <div class="modal-header">
-      <h2 class="modal-title h5">Preview</h2>
-      <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    <!-- Headline as the dialog title, as the public site's Update reader shows it. -->
+    <div class="modal-header border-bottom-0">
+      <h1 class="modal-title h5 fw-bold" id="updatePreviewTitle">{{myForm.get('headline')!.value || 'No headline yet'}}</h1>
+      <button type="button" class="btn-close" aria-label="Close preview" (click)="modal.dismiss()"></button>
     </div>
     <div class="modal-body">
       <article>
-        <h1 class="h3">{{myForm.get('headline')!.value}}</h1>
         <p class="lead">{{previewSummary}}</p>
         @if (previewImage; as image) {
-        <img class="img-fluid mb-3" [src]="image.url" [alt]="image.alt" />
+        <figure class="mb-3">
+          <img class="img-fluid" [src]="image.url" [alt]="image.alt" />
+          @if (image.caption) {
+          <figcaption class="small text-muted mt-1">{{image.caption}}</figcaption>
+          }
+        </figure>
         }
         <div [innerHTML]="myForm.get('content')!.value"></div>
+        @if (previewImages.length) {
+        <div class="row g-3 mt-2">
+          @for (image of previewImages; track $index) {
+          <figure class="col-6 col-md-4 mb-0">
+            <img class="img-fluid" [src]="image.url" [alt]="image.alt" />
+            @if (image.caption) {
+            <figcaption class="small text-muted mt-1">{{image.caption}}</figcaption>
+            }
+          </figure>
+          }
+        </div>
+        }
       </article>
     </div>
   </ng-template>

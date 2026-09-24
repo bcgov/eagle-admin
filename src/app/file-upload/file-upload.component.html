@@ -8,11 +8,14 @@
   <div draggable="true" [class]="dragDropClass">
     <div class="row">
       <div class="col-md-12 text-center">
-        <a href="javascript:void(0)" (click)="file.click()">
-          <i class="material-icons">file_upload</i>
-          Drop files to attach, or browse.
-        </a>
-        <input type="file" #file [multiple]="(maxFiles() > 1)" (click)="file.value = null" value="" (change)="onFileChange($event)" style="display:none" />
+        @if (hint()) {
+        <span class="hint">{{hint()}}</span>
+        }
+        <button type="button" class="browse" [attr.aria-describedby]="describedBy()" (click)="file.click()">
+          <i class="material-icons" aria-hidden="true">file_upload</i>
+          {{action()}}
+        </button>
+        <input type="file" #file [multiple]="(maxFiles() > 1)" [attr.accept]="accept() || null" (click)="file.value = null" value="" (change)="onFileChange($event)" style="display:none" />
       </div>
     </div>
   </div>
@@ -25,7 +28,7 @@
             <span class="name">{{f.name}}</span>
             <span class="value">
               <button type="button" class="btn btn-danger btn-xs" (click)="removeFile(f)" title="Remove this file">
-                <i class="material-icons">clear</i>
+                <i class="material-icons" aria-hidden="true">clear</i>
                 <span>Remove</span>
               </button>
             </span>
@@ -36,11 +39,11 @@
   }
 
   @if (errors.length > 0) {
-    <div class="errors-list">
+    <div class="errors-list" role="alert">
       <ul>
         @for (err of errors; track err) {
           <li>
-            <i class="material-icons">error</i>&nbsp;{{err}}</li>
+            <i class="material-icons" aria-hidden="true">error</i>&nbsp;{{err}}</li>
           }
         </ul>
       </div>
