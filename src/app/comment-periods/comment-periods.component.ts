@@ -7,7 +7,7 @@ import { CommentPeriodService } from '../services/commentperiod.service';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/comment-periods-table-rows.component';
 
 import { RouterModule } from '@angular/router';
@@ -37,7 +37,9 @@ export class CommentPeriodsComponent implements OnInit {
     {
       name: 'Status',
       value: 'commentPeriodStatus',
-      width: '10%'
+      width: '10%',
+      // Status comes from both dates vs now; no single stored field orders it.
+      nosort: true
     },
     {
       name: 'Start Date',
@@ -52,7 +54,9 @@ export class CommentPeriodsComponent implements OnInit {
     {
       name: 'Days Remaining',
       value: 'daysRemaining',
-      width: '15%'
+      width: '15%',
+      // Same order as End Date, so one sortable column is enough.
+      nosort: true
     },
     {
       name: 'Published',
@@ -121,8 +125,8 @@ export class CommentPeriodsComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    this.tableParams.sortBy = (this.tableParams.sortBy.startsWith('+') ? '-' : '+') + column;
-    this.getPaginatedComments(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedComments(1);
   }
 
   setCPRowData() {

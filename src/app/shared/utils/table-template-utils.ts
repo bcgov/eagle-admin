@@ -4,6 +4,11 @@ import { PlatformLocation } from '@angular/common';
 import { TableParamsObject } from '../components/table-template/table-params-object';
 import { Constants } from './constants';
 
+// Same column flips direction; a new column starts ascending.
+export function nextSortBy(current: string, column: string): string {
+  return current === `+${column}` ? `-${column}` : `+${column}`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class TableTemplateUtils {
   private platformLocation = inject(PlatformLocation);

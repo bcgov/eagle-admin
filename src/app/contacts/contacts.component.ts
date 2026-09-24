@@ -9,7 +9,7 @@ import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
-import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { SearchService } from '../services/search.service';
 import { LoadingStateService } from '../services/loading-state.service';
 
@@ -53,7 +53,7 @@ export class ContactsComponent implements OnInit {
     },
     {
       name: 'Organization',
-      value: 'org',
+      value: 'org.name',
       width: '25%'
     },
     {
@@ -143,12 +143,8 @@ export class ContactsComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.onSubmit(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.onSubmit(1);
   }
 
   updateSelectedRow(count) {

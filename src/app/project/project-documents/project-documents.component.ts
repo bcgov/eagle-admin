@@ -26,6 +26,7 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
 import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
 
 
 class DocumentFilterObject {
@@ -402,7 +403,7 @@ export class ProjectDocumentsComponent implements OnInit {
             this.canUnpublish = false;
             this.canPublish = false;
             this.toastService.success('Document(s) published successfully.');
-            this.onSubmit();
+            this.onSubmit(this.tableParams.currentPageCategorized);
           }
         });
       }
@@ -445,7 +446,7 @@ export class ProjectDocumentsComponent implements OnInit {
             this.canUnpublish = false;
             this.canPublish = false;
             this.toastService.success('Document(s) unpublished successfully.');
-            this.onSubmit();
+            this.onSubmit(this.tableParams.currentPageCategorized);
           }
         });
       }
@@ -481,7 +482,10 @@ export class ProjectDocumentsComponent implements OnInit {
           await Promise.all(itemsToDelete);
           this.actionLoading.set(false);
           this.toastService.success('Document(s) deleted successfully.');
-          this.onSubmit();
+          // Step back when the delete empties the last page.
+          const { currentPageCategorized, totalListItemsCategorized, pageSizeCategorized } = this.tableParams;
+          const lastPage = Math.max(1, Math.ceil((totalListItemsCategorized - itemsToDelete.length) / pageSizeCategorized));
+          this.onSubmit(Math.min(currentPageCategorized, lastPage));
         } catch (err) {
           this.logger.error('delete documents failed', 'ProjectDocumentsComponent', err);
           this.toastService.error('Failed to delete document(s).');
@@ -522,7 +526,7 @@ export class ProjectDocumentsComponent implements OnInit {
     ]);
   }
 
-  public onSubmit() {
+  public onSubmit(pageNumber = 1) {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
@@ -530,8 +534,8 @@ export class ProjectDocumentsComponent implements OnInit {
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
-    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
-    params['sortByCategorized'] = this.tableParams.sortByCategorized = '-datePosted,+displayName';
+    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = pageNumber;
+    params['sortByCategorized'] = this.tableParams.sortByCategorized;
     params['keywords'] = encodeParams(
       (this.tableParams.keywords = this.tableParams.keywords || '')
     );
@@ -597,10 +601,9 @@ export class ProjectDocumentsComponent implements OnInit {
 
   setColumnSort(docType, column) {
     if (docType === Constants.documentTypes.CATEGORIZED) {
-      this.tableParams.sortByCategorized =
-        this.tableParams.sortByCategorized.charAt(0) === '+' ? '-' + column : '+' + column;
+      this.tableParams.sortByCategorized = nextSortBy(this.tableParams.sortByCategorized, column);
     }
-    this.onPageChange(this.tableParams.currentPageCategorized);
+    this.onPageChange(1);
   }
 
   isEnabled(button) {

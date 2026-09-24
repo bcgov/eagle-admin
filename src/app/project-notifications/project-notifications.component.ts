@@ -9,7 +9,7 @@ import { TableObject, TableColumn } from '../shared/components/table-template/ta
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { SearchService } from '../services/search.service';
 import { LoadingStateService } from '../services/loading-state.service';
-import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
 
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
@@ -63,7 +63,7 @@ export class ProjectNotificationsComponent implements OnInit {
     },
     {
       name: 'Decision',
-      value: 'notificationDecision',
+      value: 'decision',
       width: '15%'
     }
   ];
@@ -129,12 +129,8 @@ export class ProjectNotificationsComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.onSubmit(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.onSubmit(1);
   }
 
   updateSelectedRow(count) {
