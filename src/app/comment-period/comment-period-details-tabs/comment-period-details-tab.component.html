@@ -16,18 +16,18 @@
       </p>
     </div>
     <div class="col-md-2">
-      <div ngbDropdown placement="bottom-right">
+      <div ngbDropdown container="body" placement="bottom-end top-end">
         <button class="btn btn-primary" id="actionDropdown" (click)="checkIfCanDelete()" ngbDropdownToggle>Actions</button>
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button class="dropdown-item" (click)="editCommentPeriod()">Edit</button>
-          <button class="dropdown-item" (click)="addComment()">Add a comment</button>
-          <button class="dropdown-item" (click)="exportCommentsForStaff()">Export All Comments</button>
+          <button ngbDropdownItem (click)="editCommentPeriod()">Edit</button>
+          <button ngbDropdownItem (click)="addComment()">Add a comment</button>
+          <button ngbDropdownItem (click)="exportCommentsForStaff()">Export All Comments</button>
           @if (projectType === 'currentProject') {
-            <button class="dropdown-item" (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
+            <button ngbDropdownItem (click)="exportCommentsForProponents()">Export Comments For Proponents</button>
           }
-          <button class="dropdown-item" (click)="togglePublishState()">{{publishAction}}</button>
+          <button ngbDropdownItem (click)="togglePublishState()">{{publishAction}}</button>
           @if (canDeleteCommentPeriod) {
-            <button class="dropdown-item" (click)="deleteCommentPeriod()">Delete</button>
+            <button ngbDropdownItem (click)="deleteCommentPeriod()">Delete</button>
           }
         </div>
       </div>

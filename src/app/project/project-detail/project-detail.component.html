@@ -11,12 +11,12 @@
 @if (project && project._id) {
   <main class="container-fluid-padding">
     <h1 id="name" class="heading-bar">{{project.name}}
-      <span ngbDropdown>
+      <span ngbDropdown container="body" placement="bottom-end top-end">
         <button class="btn btn-primary action-drop-button" id="actionDropdown" ngbDropdownToggle>Actions</button>
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button class="dropdown-item" [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
-          Document</button>
-          <button class="dropdown-item" (click)="editProject()">Edit</button>
+          <a ngbDropdownItem [routerLink]="['/p', project._id, 'project-documents', 'upload']">Upload
+          Document</a>
+          <button ngbDropdownItem (click)="editProject()">Edit</button>
         </div>
       </span>
     </h1>

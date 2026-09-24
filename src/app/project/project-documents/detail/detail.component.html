@@ -20,13 +20,13 @@
       <h1>
         <div class="d-flex">
           <div>Details</div>
-          <div class="ms-auto" ngbDropdown placement="bottom-right">
+          <div class="ms-auto" ngbDropdown container="body" placement="bottom-end top-end">
             <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
             <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-              <button class="dropdown-item" (click)="onEdit()">Edit</button>
-              <button class="dropdown-item" (click)="openDocument()">Open</button>
-              <button class="dropdown-item" (click)="downloadDocument()">Download</button>
-              <button class="dropdown-item" (click)="togglePublish()">{{publishText()}}</button>
+              <button ngbDropdownItem (click)="onEdit()">Edit</button>
+              <button ngbDropdownItem (click)="openDocument()">Open</button>
+              <button ngbDropdownItem (click)="downloadDocument()">Download</button>
+              <button ngbDropdownItem (click)="togglePublish()">{{publishText()}}</button>
             </div>
           </div>
         </div>

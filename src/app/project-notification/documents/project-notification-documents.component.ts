@@ -18,7 +18,6 @@ import { PnDocumentTableRowsComponent } from './project-notification-document-ta
 import { Document } from 'src/app/models/document';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
-import { CommonModule } from '@angular/common';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
 
 @Component({
@@ -27,8 +26,7 @@ import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
     RouterModule,
     TableTemplateComponent,
     NgbDropdownModule,
-    ReactiveFormsModule,
-    CommonModule
+    ReactiveFormsModule
   ],
   templateUrl: './project-notification-documents.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

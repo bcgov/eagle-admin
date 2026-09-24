@@ -15,38 +15,30 @@
   <h1>
     <div class="d-flex">
       <div>Documents</div>
-      <div class="ms-auto" ngbDropdown placement="bottom-right">
+      <div class="ms-auto" ngbDropdown container="body" placement="bottom-end top-end">
         <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button (click)="selectAction('edit')" class="dropdown-item" [disabled]="!isEnabled('edit')" type="button"
+          <button (click)="selectAction('edit')" ngbDropdownItem [disabled]="!isEnabled('edit')" type="button"
             id="button-e">Edit</button>
-          <button (click)="selectAction('publish')" class="dropdown-item" [disabled]="!isEnabled('publish')"
+          <button (click)="selectAction('publish')" ngbDropdownItem [disabled]="!isEnabled('publish')"
             type="button" id="button-p">Publish</button>
-          <button (click)="selectAction('unpublish')" class="dropdown-item" [disabled]="!isEnabled('unpublish')"
+          <button (click)="selectAction('unpublish')" ngbDropdownItem [disabled]="!isEnabled('unpublish')"
             type="button" id="button-u">Unpublish</button>
-          <button (click)="selectAction('copyLink')" class="dropdown-item" [disabled]="!isEnabled('copyLink')"
+          <button (click)="selectAction('copyLink')" ngbDropdownItem [disabled]="!isEnabled('copyLink')"
             type="button" id="button-cl">Link</button>
-          <button (click)="selectAction('download')" class="dropdown-item" [disabled]="!isEnabled('download')"
+          <button (click)="selectAction('download')" ngbDropdownItem [disabled]="!isEnabled('download')"
             type="button" id="button-dl">Download</button>
-          <button (click)="selectAction('delete')" class="dropdown-item" [disabled]="!isEnabled('delete')" type="button"
+          <button (click)="selectAction('delete')" ngbDropdownItem [disabled]="!isEnabled('delete')" type="button"
             id="button-d">Delete</button>
 
           @if (currentProject) {
-          <a class="upload-docs" [class.active]="currentProject._id === 'activity'"
-            [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">
-            <button class="dropdown-item" type="button" id="button-as">
-              Sort Applications
-            </button>
-          </a>
+          <a ngbDropdownItem id="button-as"
+            [routerLink]="['/p', currentProject._id, 'project-documents', 'application-sort']">Sort Applications</a>
           }
 
           @if (currentProject) {
-          <a class="upload-docs" [class.active]="currentProject._id === 'activity'"
-            [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">
-            <button class="dropdown-item" type="button" id="button-upl">
-              Upload Document(s)
-            </button>
-          </a>
+          <a ngbDropdownItem id="button-upl"
+            [routerLink]="['/p', currentProject._id, 'project-documents', 'upload']">Upload Document(s)</a>
           }
         </div>
       </div>
@@ -142,7 +134,7 @@
                 </div>
                 <div class="row">
                   <div class="form-group">
-                    <ng-select id="milestone" name="milestone" multiple="true" bindLabel="name"
+                    <ng-select appendTo="body" id="milestone" name="milestone" multiple="true" bindLabel="name"
                       placeholder="Type Milestone" [items]="milestones" [markFirst]="false" [closeOnSelect]="false"
                       [(ngModel)]="filterForUI.milestone" [compareWith]="filterCompareWith">
                       <ng-template ng-label-tmp let-item="item">
@@ -173,7 +165,7 @@
               <div class="col-md-6">
                 <div class="input-group">
                   <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePostedStart"
-                    [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker #datePostedStartPicker="ngbDatepicker"
+                    [(ngModel)]="filterForUI.datePostedStart" ngbDatepicker container="body" #datePostedStartPicker="ngbDatepicker"
                     [minDate]="constants.minPickerDate" [maxDate]="constants.maxPickerDate">
                   <button class="btn btn-outline-secondary calendar" (click)="datePostedStartPicker.toggle()"
                     type="button">
@@ -184,7 +176,7 @@
               <div class="col-md-6">
                 <div class="input-group">
                   <input type="text" class="form-control" placeholder="yyyy-mm-dd" name="datePostedEnd"
-                    [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker #datePostedEndPicker="ngbDatepicker"
+                    [(ngModel)]="filterForUI.datePostedEnd" ngbDatepicker container="body" #datePostedEndPicker="ngbDatepicker"
                     [minDate]="constants.minPickerDate" [maxDate]="constants.maxPickerDate">
                   <button class="btn btn-outline-secondary calendar" (click)="datePostedEndPicker.toggle()"
                     type="button">
@@ -206,7 +198,7 @@
                 </div>
                 <div class="row">
                   <div class="form-group">
-                    <ng-select id="documentAuthorType" name="documentAuthorType" multiple="true" bindLabel="name"
+                    <ng-select appendTo="body" id="documentAuthorType" name="documentAuthorType" multiple="true" bindLabel="name"
                       placeholder="Type Document Author" [items]="authors" [markFirst]="false"
                       [closeOnSelect]="false" [(ngModel)]="filterForUI.documentAuthorType"
                       [compareWith]="filterCompareWith">
@@ -228,7 +220,7 @@
                 </div>
                 <div class="row">
                   <div class="form-group">
-                    <ng-select id="type" name="type" multiple="true" bindLabel="name"
+                    <ng-select appendTo="body" id="type" name="type" multiple="true" bindLabel="name"
                       placeholder="Type Document Type" [items]="types" [markFirst]="false" [closeOnSelect]="false"
                       [(ngModel)]="filterForUI.type" [compareWith]="filterCompareWith">
                       <ng-template ng-label-tmp let-item="item">
@@ -254,7 +246,7 @@
                 </div>
                 <div class="row">
                   <div class="form-group">
-                    <ng-select id="projectPhase" name="projectPhase" multiple="true" bindLabel="name"
+                    <ng-select appendTo="body" id="projectPhase" name="projectPhase" multiple="true" bindLabel="name"
                       placeholder="Type Project Phase" [items]="projectPhases" [markFirst]="false"
                       [closeOnSelect]="false" [(ngModel)]="filterForUI.projectPhase" [compareWith]="filterCompareWith">
                       <ng-template ng-label-tmp let-item="item">

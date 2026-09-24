@@ -5,15 +5,15 @@
     </li>
     <li class="breadcrumb-item active">{{projectNotification && projectNotification.name}}</li>
   </ol>
-  <div ngbDropdown placement="bottom-right" class="d-inline-block">
+  <div ngbDropdown container="body" placement="bottom-end top-end" class="d-inline-block">
     <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
     <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-      <button class="dropdown-item" (click)="edit()">Edit</button>
+      <button ngbDropdownItem (click)="edit()">Edit</button>
       @if (!isPublished) {
-        <button class="dropdown-item" (click)="publish()">Publish</button>
+        <button ngbDropdownItem (click)="publish()">Publish</button>
       }
       @if (isPublished) {
-        <button class="dropdown-item" (click)="unPublish()">Un-Publish</button>
+        <button ngbDropdownItem (click)="unPublish()">Un-Publish</button>
       }
     </div>
   </div>

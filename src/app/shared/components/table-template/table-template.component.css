@@ -105,14 +105,15 @@
   border-color: #bbb !important;
 }
 
-/* Dropdown item hover styling - grey & black only */
-.page-controls .dropdown-menu .dropdown-item {
+/* Menu is appended to body, so it cannot be scoped under .page-controls */
+.page-size-menu .dropdown-item {
   color: #494949;
   cursor: pointer;
 }
 
-.page-controls .dropdown-menu .dropdown-item:hover,
-.page-controls .dropdown-menu .dropdown-item:focus {
+.page-size-menu .dropdown-item:hover,
+.page-size-menu .dropdown-item:focus,
+.page-size-menu .dropdown-item:active {
   background-color: #eee !important;
   color: #000 !important;
 }
