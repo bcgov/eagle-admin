@@ -121,7 +121,7 @@
           <label for="inputAddress">Document Date*</label>
           <div class="input-group">
             <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="docDate"
-              formControlName="datePosted" ngbDatepicker #datePostedPicker="ngbDatepicker" />
+              formControlName="datePosted" ngbDatepicker container="body" #datePostedPicker="ngbDatepicker" />
             <button class="btn btn-outline-secondary calendar" (click)="datePostedPicker.toggle()"
             type="button"></button>
           </div>
@@ -130,7 +130,7 @@
           <label for="inputAddress">Upload Date*</label>
           <div class="input-group">
             <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="dateUploaded"
-              formControlName="dateUploaded" ngbDatepicker #dateUploadedPicker="ngbDatepicker" />
+              formControlName="dateUploaded" ngbDatepicker container="body" #dateUploadedPicker="ngbDatepicker" />
             <button class="btn btn-outline-secondary calendar" (click)="dateUploadedPicker.toggle()"
             type="button"></button>
           </div>

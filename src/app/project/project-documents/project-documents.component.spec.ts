@@ -1,0 +1,75 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
+import { ConfigService } from 'src/app/services/config.service';
+import { DocumentService } from 'src/app/services/document.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { SearchService } from 'src/app/services/search.service';
+import { StorageService } from 'src/app/services/storage.service';
+
+import { ProjectDocumentsComponent } from './project-documents.component';
+
+describe('ProjectDocumentsComponent Actions menu', () => {
+  let fixture: ComponentFixture<ProjectDocumentsComponent>;
+
+  const pressArrowDown = (target: Element) =>
+    target.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+
+  beforeEach(async () => {
+    const searchService = jasmine.createSpyObj('SearchService', ['getSearchResults']);
+    searchService.getSearchResults.and.returnValue(of([{ data: { meta: [], searchResults: [] } }]));
+
+    await TestBed.configureTestingModule({
+      imports: [ProjectDocumentsComponent],
+      providers: [
+        provideRouter([]),
+        { provide: SearchService, useValue: searchService },
+        { provide: ConfigService, useValue: { lists: [], ensureListsLoaded: () => Promise.resolve() } },
+        { provide: StorageService, useValue: { currentProjectData: { _id: 'proj123', name: 'Test Project' }, state: {} } },
+        { provide: DocumentService, useValue: {} },
+        { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['log', 'warn', 'error']) }
+      ]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ProjectDocumentsComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  async function openActions(): Promise<HTMLButtonElement> {
+    const toggle: HTMLButtonElement = fixture.nativeElement.querySelector('#actionDropdown');
+    toggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return toggle;
+  }
+
+  it('renders the open Actions menu under document.body, outside the component', async () => {
+    await openActions();
+
+    const menu = document.querySelector('[aria-labelledby="actionDropdown"]');
+    expect(menu).not.toBeNull();
+    expect(document.body.contains(menu)).toBeTrue();
+    expect(fixture.nativeElement.contains(menu)).toBeFalse();
+  });
+
+  it('makes Upload Document(s) a link to the project upload route', async () => {
+    await openActions();
+
+    const upload = document.querySelector('#button-upl');
+    expect(upload.tagName).toBe('A');
+    expect(upload.getAttribute('href')).toBe('/p/proj123/project-documents/upload');
+  });
+
+  it('moves focus through the enabled menu items with ArrowDown', async () => {
+    const toggle = await openActions();
+
+    pressArrowDown(toggle);
+    expect(document.activeElement.id).toBe('button-as');
+
+    pressArrowDown(document.activeElement);
+    expect(document.activeElement.id).toBe('button-upl');
+  });
+});

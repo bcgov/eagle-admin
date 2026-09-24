@@ -41,11 +41,11 @@
       <span class="results-count">
         Showing {{getshowingStart()}} - {{getshowingEnd()}} of {{data().paginationData.totalListItems}} results
       </span>
-      <div ngbDropdown class="d-inline-block">
+      <div ngbDropdown container="body" placement="bottom-end top-end" class="d-inline-block">
         <button class="btn btn-outline-secondary btn-sm dropdown-toggle" id="pageSizeDropdown" ngbDropdownToggle type="button">
           {{activePageSize}} / page
         </button>
-        <div ngbDropdownMenu aria-labelledby="pageSizeDropdown">
+        <div ngbDropdownMenu class="page-size-menu" aria-labelledby="pageSizeDropdown">
           @for (size of pageSizeArray; track size) {
             <button ngbDropdownItem type="button" (click)="updatePageSize(size)">
               {{size}} / page

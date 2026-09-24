@@ -16,27 +16,22 @@
   <h1>
     <div class="d-flex">
       <div>Documents</div>
-      <div class="ms-auto" ngbDropdown placement="bottom-right">
+      <div class="ms-auto" ngbDropdown container="body" placement="bottom-end top-end">
         <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
         <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
-          <button (click)="selectAction('publish')" class="dropdown-item" [disabled]="!isEnabled('publish')"
+          <button (click)="selectAction('publish')" ngbDropdownItem [disabled]="!isEnabled('publish')"
           type="button" id="button-p">Publish</button>
-          <button (click)="selectAction('unpublish')" class="dropdown-item"
+          <button (click)="selectAction('unpublish')" ngbDropdownItem
           [disabled]="!isEnabled('unpublish')" type="button" id="button-u">Unpublish</button>
-          <button (click)="selectAction('copyLink')" class="dropdown-item" [disabled]="!isEnabled('copyLink')"
+          <button (click)="selectAction('copyLink')" ngbDropdownItem [disabled]="!isEnabled('copyLink')"
           type="button" id="button-cl">Link</button>
-          <button (click)="selectAction('download')" class="dropdown-item" [disabled]="!isEnabled('download')"
+          <button (click)="selectAction('download')" ngbDropdownItem [disabled]="!isEnabled('download')"
           type="button" id="button-dl">Download</button>
-          <button (click)="selectAction('delete')" class="dropdown-item" [disabled]="!isEnabled('delete')"
+          <button (click)="selectAction('delete')" ngbDropdownItem [disabled]="!isEnabled('delete')"
           type="button" id="button-d">Delete</button>
           @if (currentProject() && tableParams.totalListItems < 20) {
-            <a class="upload-docs"
-              [ngClass]="{'active': currentProject()!._id === 'activity'}"
-              [routerLink]="['/pn', currentProject()!._id, 'project-notification-documents', 'upload']">
-              <button class="dropdown-item" type="button" id="button-upl">
-                Upload Document(s)
-              </button>
-            </a>
+            <a ngbDropdownItem id="button-upl"
+              [routerLink]="['/pn', currentProject()!._id, 'project-notification-documents', 'upload']">Upload Document(s)</a>
           }
         </div>
       </div>

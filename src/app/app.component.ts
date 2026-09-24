@@ -3,6 +3,8 @@ import { Component, OnInit, computed, inject, ChangeDetectionStrategy} from '@an
 import { Router, NavigationEnd, NavigationStart, NavigationCancel, NavigationError, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
+import { hide } from '@popperjs/core';
 import { HeaderComponent } from './header/header.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { ToggleButtonComponent } from './toggle-button/toggle-button.component';
@@ -45,6 +47,11 @@ export class AppComponent implements OnInit {
     { initialValue: false }
   );
   isNavigating = computed(() => this.navigating());
+
+  constructor() {
+    // Menus appended to body would paint over the fixed header once their toggle scrolls out of .app-body.
+    inject(NgbDropdownConfig).popperOptions = options => ({ ...options, modifiers: [...(options.modifiers ?? []), hide] });
+  }
 
   ngOnInit() {
     this.sideBarService.toggleChange.subscribe(isOpen => {

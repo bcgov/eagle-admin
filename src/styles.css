@@ -54,3 +54,8 @@ mark {
   font-weight: inherit;
   color: inherit;
 }
+
+/* Set by the popper hide modifier (app.component.ts) when a dropdown's toggle is scrolled out of view */
+[data-popper-reference-hidden] {
+  visibility: hidden;
+}

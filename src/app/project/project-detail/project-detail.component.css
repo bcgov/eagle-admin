@@ -5,6 +5,7 @@
 }
 
 .action-drop-button {
+  float: right;
   padding-right: 30px;
   padding-left: 30px;
   margin-right: 40px;
@@ -52,10 +53,6 @@
     margin-left: 10px;
     color: #fff;
   }
-}
-
-button {
-  float: right;
 }
 
 h1 {
