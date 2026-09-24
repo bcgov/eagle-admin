@@ -32,6 +32,29 @@
   border-bottom: 2px solid #007bff;
 } */
 
+/* Sort control is a real button for keyboard use, styled as plain header text. */
+.sort-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+/* Columns that do not sort keep the two-per-row mobile header grid of sortable ones. */
+@media screen and (width <= 600px) {
+  .table thead th:not(.sortable) {
+    flex: 50%;
+    max-width: 50%;
+    border-color: #fff;
+  }
+}
+
 .table td {
   border: none;
   display: table-cell;

@@ -15,3 +15,10 @@
 - 2026-09-23: Archived Updates need a status filter in the activity list (`and=status=archived`).
 - 2026-09-23: toLocalInputValue drops seconds, so a plain Save of a scheduled Update rewrites its publishDate to the minute.
 - 2026-09-23: CSS nits: `.scheduled-flag` repeats the flag styles (share one base class); spacing of the new form rows.
+
+## Sorting
+
+- 2026-09-24 eagle-admin: Comment periods Published column sorts by `isPublished`, but the cell shows `read` (which can include `public`); make the sort key and the cell use the same field.
+- 2026-09-24 eagle-admin: The mobile block in table-template.component.css copies the header rule in table.css (lines 139-145). Change that global selector to `.table thead th` and delete the component copy.
+- 2026-09-24 eagle-admin: The select-all header icon in table-template.component.html only works by mouse: it is aria-hidden and cannot take focus. Make it a button with a label.
+- 2026-09-24 eagle-admin: table-template sets aria-sort="none" on every unsorted header. ARIA 1.2 puts aria-sort on one header at a time, so return null for unsorted headers instead.

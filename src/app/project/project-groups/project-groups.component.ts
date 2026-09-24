@@ -18,7 +18,7 @@ import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 
@@ -91,14 +91,14 @@ export class ProjectGroupsComponent implements OnInit {
           this.loadingState.startLoading('project-groups');
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
           if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = '-dateAdded';
+            this.tableParams.sortBy = '+name';
             this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           }
 
           const projectId = this.route.parent?.snapshot.paramMap.get('projId') ?? this.route.snapshot.params['projId'];
           const pageNum = this.tableParams.currentPage || 1;
           const pageSize = this.tableParams.pageSize || 25;
-          const sortBy = this.tableParams.sortBy || '+displayName';
+          const sortBy = this.tableParams.sortBy;
 
           return this.searchService.getSearchResults(
             '', 'Group', [],
@@ -293,12 +293,8 @@ export class ProjectGroupsComponent implements OnInit {
   }
 
   setColumnSort(column: string) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.onSubmit(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.onSubmit(1);
   }
 
   // Called via storage service in shared module.

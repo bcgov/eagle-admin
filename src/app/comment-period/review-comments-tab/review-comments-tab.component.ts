@@ -6,7 +6,7 @@ import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { Comment } from 'src/app/models/comment';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
@@ -196,12 +196,8 @@ export class ReviewCommentsTabComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedComments(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedComments(1);
   }
 
   getPaginatedComments(pageNumber) {

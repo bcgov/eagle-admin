@@ -12,7 +12,7 @@ import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { createProjectTabModifiers } from 'src/app/shared/utils/utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
@@ -54,7 +54,7 @@ export class DocumentApplicationSortComponent implements OnInit {
     },
     {
       name: 'Name',
-      value: 'name',
+      value: 'displayName',
       width: '30%'
     },
     {
@@ -163,12 +163,8 @@ export class DocumentApplicationSortComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedDocs(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedDocs(1);
   }
 
   getPaginatedDocs(pageNumber) {

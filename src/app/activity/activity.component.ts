@@ -13,7 +13,7 @@ import { SearchService } from '../services/search.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
-import { TableTemplateUtils } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 import { FormsModule } from '@angular/forms';
@@ -192,12 +192,8 @@ export class ActivityComponent {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.onSubmit(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.onSubmit(1);
   }
 
   public onSubmit(pageNumber = 1) {
@@ -211,7 +207,7 @@ export class ActivityComponent {
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
-    params['sortBy'] = this.tableParams.sortBy = '';
+    params['sortBy'] = this.tableParams.sortBy;
     params['keywords'] = this.tableParams.keywords;
     params['pageSize'] = this.tableParams.pageSize;
 
