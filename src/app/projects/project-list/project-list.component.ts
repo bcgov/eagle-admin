@@ -18,7 +18,7 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -447,12 +447,8 @@ export class ProjectListComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedProjects(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedProjects(1);
   }
 
   getPaginatedProjects(pageNumber) {
@@ -528,7 +524,7 @@ export class ProjectListComponent implements OnInit {
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = currentPage;
-    params['sortBy'] = this.tableParams.sortBy = '';
+    params['sortBy'] = this.tableParams.sortBy;
     params['keywords'] = this.tableParams.keywords;
     params['pageSize'] = this.tableParams.pageSize;
 

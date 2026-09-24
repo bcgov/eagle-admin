@@ -11,7 +11,7 @@ import { Org } from 'src/app/models/org';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
-import { TableTemplateUtils } from '../../utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from '../../utils/table-template-utils';
 import { TableObject, TableColumn } from '../table-template/table-object';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableTemplateComponent } from '../table-template/table-template.component';
@@ -54,7 +54,8 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     {
       name: '',
       value: '',
-      width: '10%'
+      width: '10%',
+      nosort: true
     },
     {
       name: 'Name',
@@ -202,12 +203,8 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.onSubmit(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.onSubmit(1);
   }
 
   createOrganization() {

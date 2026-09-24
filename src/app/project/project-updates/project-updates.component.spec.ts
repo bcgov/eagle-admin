@@ -39,7 +39,7 @@ describe('ProjectUpdatesComponent', () => {
   function clickHeader(name: string) {
     const header = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('th'))
       .find(th => th.textContent!.trim() === name)!;
-    header.click();
+    header.querySelector('button')!.click();
   }
 
   it('lists newest first by date added when the URL names no sort', () => {

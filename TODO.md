@@ -23,3 +23,10 @@
 - 2026-09-24 eagle-admin: dismiss() in update-image-field focuses the Add button, which is not rendered when remaining() is 0. Fall back to the last Remove button.
 - 2026-09-24 eagle-admin: the image picker switches to radio mode whenever max is 1, even for Photos with one slot left. The opener should pass a multiple flag.
 - 2026-09-24 eagle-admin: the file-upload browse link changed from <a> to <button class="browse">. Check project-documents-upload, project-notification-upload and add-comment.
+
+## Sorting
+
+- 2026-09-24 eagle-admin: Comment periods Published column sorts by `isPublished`, but the cell shows `read` (which can include `public`); make the sort key and the cell use the same field.
+- 2026-09-24 eagle-admin: The mobile block in table-template.component.css copies the header rule in table.css (lines 139-145). Change that global selector to `.table thead th` and delete the component copy.
+- 2026-09-24 eagle-admin: The select-all header icon in table-template.component.html only works by mouse: it is aria-hidden and cannot take focus. Make it a button with a label.
+- 2026-09-24 eagle-admin: table-template sets aria-sort="none" on every unsorted header. ARIA 1.2 puts aria-sort on one header at a time, so return null for unsorted headers instead.

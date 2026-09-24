@@ -14,7 +14,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
@@ -102,9 +102,12 @@ export class GroupContactComponent implements OnInit {
     const projId = this.route.parent.snapshot.paramMap.get('projId');
     const groupId = this.route.snapshot.paramMap.get('groupId');
     const snap = this.route.snapshot;
-    const pageNum = snap.params.pageNum || 1;
-    const pageSize = snap.params.pageSize || 10;
+    const pageNum = +snap.params.currentPage || 1;
+    const pageSize = +snap.params.pageSize || 10;
     const sortBy = snap.params.sortBy || '+displayName';
+    this.tableParams.currentPage = pageNum;
+    this.tableParams.pageSize = pageSize;
+    this.tableParams.sortBy = sortBy;
 
     forkJoin([
       this.projectService.getGroupMembers(projId, groupId, pageNum, pageSize, sortBy),
@@ -112,7 +115,6 @@ export class GroupContactComponent implements OnInit {
     ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([users, group]: [any, any]) => {
           if (users && users[0] && users[0].total_items > 0) {
             this.tableParams.totalListItems = users[0].total_items;
-            this.tableParams.pageSize = 10;
             this.users = users[0].results;
           } else {
             this.tableParams.totalListItems = 0;
@@ -152,13 +154,9 @@ export class GroupContactComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
 
-    this.getPaginatedContacts(this.tableParams.currentPage);
+    this.getPaginatedContacts(1);
   }
 
   updateSelectedRow(count) {

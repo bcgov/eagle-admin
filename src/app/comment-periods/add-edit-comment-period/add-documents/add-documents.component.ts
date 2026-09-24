@@ -9,7 +9,7 @@ import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -248,7 +248,7 @@ export class AddDocumentComponent implements OnInit {
     params['ms'] = new Date().getMilliseconds();
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = 1;
-    params['sortBy'] = this.tableParams.sortBy = '';
+    params['sortBy'] = this.tableParams.sortBy;
     params['keywords'] = encodeURIComponent(this.tableParams.keywords || '').replace(/\(/g, '%28').replace(/\)/g, '%29');
     params['pageSize'] = this.tableParams.pageSize = 10;
 
@@ -292,12 +292,8 @@ export class AddDocumentComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedDocs(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedDocs(1);
   }
 
   isEnabled(button) {

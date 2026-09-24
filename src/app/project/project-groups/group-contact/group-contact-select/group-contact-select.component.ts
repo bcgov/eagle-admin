@@ -8,7 +8,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { SearchService } from 'src/app/services/search.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -167,12 +167,8 @@ export class GroupContactSelectComponent implements OnInit {
   }
 
   setColumnSort(column) {
-    if (this.tableParams.sortBy.charAt(0) === '+') {
-      this.tableParams.sortBy = '-' + column;
-    } else {
-      this.tableParams.sortBy = '+' + column;
-    }
-    this.getPaginatedDocs(this.tableParams.currentPage);
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
+    this.getPaginatedDocs(1);
   }
 
   getPaginatedDocs(pageNumber, reset = false) {
