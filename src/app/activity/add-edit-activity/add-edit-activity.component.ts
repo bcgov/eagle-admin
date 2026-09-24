@@ -1,16 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, DestroyRef, TemplateRef, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, DestroyRef, TemplateRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { EditorModule } from '@tinymce/tinymce-angular';
-import { NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule, NgbModal, NgbTimepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
-import { RecentActivity } from 'src/app/models/recentActivity';
+import { RecentActivity, UpdateImage } from 'src/app/models/recentActivity';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
+import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
+import { LoggingService } from 'src/app/services/logging.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
@@ -19,11 +22,25 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import {
-  CORPORATE_CATEGORY, PublishAction, SHORT_HEADLINE_MAX, SUMMARY_MAX, StatusFields, UPDATE_CONFLICT_MESSAGE, httpUrlValidator,
-  isConflict, keepStatusFields, listNames, publishFields, statusLabel, summaryOrFallback, toLocalInputValue, updateRulesValidator
+  CORPORATE_CATEGORY, IMAGE_CAPTION_MAX, IMAGE_CREDIT_MAX, IMAGES_MAX, PublishAction, SHORT_HEADLINE_MAX, SUMMARY_MAX, StatusFields, StatusLabel, UPDATE_CONFLICT_MESSAGE,
+  documentId, httpUrlValidator, imageRowValidator, isConflict, keepStatusFields, listNames, publishFields, statusLabel, summaryOrFallback,
+  updateRulesValidator
 } from '../update-rules';
+import { AddedImage, ImageRow, UpdateImageFieldComponent } from '../update-image-field/update-image-field.component';
+import {
+  UPDATE_IMAGE_SOURCE, blocksPublish, captionLine, documentName, imageSrc, isPublicDocument, toUpdateImage
+} from '../update-image-field/update-images';
 
 const IMAGE_FILE = /\.(png|jpe?g|gif|webp)$/i;
+const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featuredImageCredit: '' };
+
+interface PreviewImage { url: string; alt: string; caption: string }
+
+/** Label and confirm text for moving a live Update back to draft. */
+const TO_DRAFT: Partial<Record<StatusLabel, { label: string; message: string }>> = {
+  Published: { label: 'Unpublish', message: 'Unpublishing removes this Update from the public site and moves it to draft.' },
+  Scheduled: { label: 'Unschedule', message: 'Unscheduling moves this Update to draft, so it will not go live on its date.' }
+};
 
 @Component({
   selector: 'app-add-edit-activity',
@@ -37,7 +54,9 @@ const IMAGE_FILE = /\.(png|jpe?g|gif|webp)$/i;
     RouterModule,
     EditorModule,
     NgbDatepickerModule,
-    NgSelectModule
+    NgbTimepickerModule,
+    NgSelectModule,
+    UpdateImageFieldComponent
   ]
 })
 export class AddEditActivityComponent implements OnInit {
@@ -49,7 +68,9 @@ export class AddEditActivityComponent implements OnInit {
   private notificationProjectService = inject(NotificationProjectService);
   private commentPeriodService = inject(CommentPeriodService);
   private searchService = inject(SearchService);
+  private documentService = inject(DocumentService);
   private configService = inject(ConfigService);
+  private logger = inject(LoggingService);
   private modalService = inject(NgbModal);
   private destroyRef = inject(DestroyRef);
   private _cdr = inject(ChangeDetectorRef);
@@ -68,16 +89,29 @@ export class AddEditActivityComponent implements OnInit {
   public typeIsNotification = false;
   public typeIsProjectNotificationNews = false;
   public projectIsSelected = false;
-  public statusText = 'Draft';
+  public statusText: StatusLabel = 'Draft';
   public documents: any[] = [];
   public imageDocuments: any[] = [];
+  public documentsLoading = false;
+  public documentsFailed = false;
+  /** Every image document an image row may point at: project images, Update uploads, fresh uploads. */
+  public readonly imageDocs = signal(new Map<string, any>());
+  /** Previews that the public fetch URL cannot serve: fresh uploads and non-public documents. */
+  public readonly imageSrcs = signal(new Map<string, string>());
+  /** Ids whose private thumbnail is downloading. */
+  private readonly srcsLoading = new Set<string>();
+  private destroyed = false;
+  public featuredRows: ImageRow[] = [];
+  public photoRows: ImageRow[] = [];
+  private readonly documentsFor = new Subject<{ projectId: string; source: string } | null>();
 
   public readonly shortHeadlineMax = SHORT_HEADLINE_MAX;
   public readonly summaryMax = SUMMARY_MAX;
+  public readonly imagesMax = IMAGES_MAX;
   public readonly corporate = CORPORATE_CATEGORY;
   public readonly categories = computed(() => listNames(this.configService.listsSignal(), 'updateCategory'));
   public readonly subjects = computed(() => listNames(this.configService.listsSignal(), 'updateSubject'));
-  public readonly minPublishDate = toLocalInputValue(new Date());
+  public minPublishDate = convertJSDateToNGBDate(new Date());
   public saving = false;
   private loadedProjectId: string | null = null;
 
@@ -122,12 +156,19 @@ export class AddEditActivityComponent implements OnInit {
   };
 
   ngOnInit() {
+    this.destroyRef.onDestroy(() => {
+      this.destroyed = true;
+      this.imageSrcs().forEach(url => URL.revokeObjectURL(url));
+    });
+    this.watchProjectDocuments();
     this.configService.ensureListsLoaded();
     const activityId = this.route.snapshot.paramMap.get('activityId');
     if (activityId) {
       this.searchService.getItem(activityId, 'RecentActivity').pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
         this.isEditing = true;
         this.buildForm(res.data);
+        this.rememberDocs([res.data.featuredImage?.document, ...(res.data.images || []).map((image: UpdateImage) => image.document)]
+          .filter(doc => doc?._id));
         this.activity = res.data;
         this.statusText = statusLabel(res.data);
         // Type first: it decides which document source updateProject() loads from.
@@ -182,19 +223,47 @@ export class AddEditActivityComponent implements OnInit {
   }
 
   public canSchedule(): boolean {
-    const value = this.myForm?.get('publishDate')!.value;
-    return !!value && new Date(value) > new Date();
+    const scheduled = this.myForm && this.scheduledDate();
+    return !!scheduled && scheduled > new Date();
   }
 
-  public get isLive(): boolean {
-    return this.statusText === 'Published' || this.statusText === 'Scheduled';
+  public get publishLater(): boolean {
+    return this.myForm.get('publishWhen')!.value === 'later';
+  }
+
+  /** Drafts and scheduled Updates pick when to go live; published and archived ones keep their date. */
+  public get choosesPublishTime(): boolean {
+    return this.statusText === 'Draft' || this.statusText === 'Scheduled';
+  }
+
+  public get primaryAction(): { label: string; action: PublishAction | 'keep' } {
+    if (this.statusText === 'Published') {
+      return { label: 'Update', action: 'keep' };
+    }
+    if (this.statusText === 'Archived') {
+      return { label: 'Save', action: 'keep' };
+    }
+    return this.publishLater ? { label: 'Schedule', action: 'schedule' } : { label: 'Publish', action: 'publish' };
+  }
+
+  /** Set when saving as a draft takes a live Update off its schedule or the public site. */
+  public get toDraft(): { label: string; message: string } | undefined {
+    return TO_DRAFT[this.statusText];
+  }
+
+  /** Null unless scheduling with a full date and time; a cleared timepicker is null too. */
+  private scheduledDate(): Date | null {
+    const date = this.myForm.get('publishDate')!.value;
+    const time = this.myForm.get('publishTime')!.value;
+    return this.publishLater && date && time ? convertFormGroupNGBDateToJSDate(date, time) : null;
   }
 
   public save(action: PublishAction | 'keep') {
-    if (action === 'draft' && this.isLive) {
+    const toDraft = this.toDraft;
+    if (action === 'draft' && toDraft) {
       const modalRef = this.modalService.open(ConfirmComponent, { backdrop: 'static' });
-      modalRef.componentInstance.title = 'Move to draft';
-      modalRef.componentInstance.message = 'Saving as a draft removes this Update from the public site. Click <strong>OK</strong> to continue or <strong>Cancel</strong> to go back.';
+      modalRef.componentInstance.title = toDraft.label;
+      modalRef.componentInstance.message = `${toDraft.message} Click <strong>OK</strong> to continue or <strong>Cancel</strong> to go back.`;
       modalRef.componentInstance.okOnly = false;
       modalRef.result.then(ok => ok && this.send(action)).catch(() => { /* dismissed */ });
       return;
@@ -206,7 +275,7 @@ export class AddEditActivityComponent implements OnInit {
     const form = this.myForm.controls;
     const type = form.type.value;
     const imageDoc = form.featuredImageDocument.value;
-    const scheduled = form.publishDate.value ? new Date(form.publishDate.value) : null;
+    const scheduled = this.scheduledDate();
     let statusFields: StatusFields;
     try {
       statusFields = action === 'keep' ? keepStatusFields(this.activity, scheduled) : publishFields(action, scheduled);
@@ -231,7 +300,10 @@ export class AddEditActivityComponent implements OnInit {
       category: form.category.value,
       shortHeadline: form.shortHeadline.value,
       summary: form.summary.value,
-      featuredImage: imageDoc ? { document: imageDoc, alt: form.featuredImageAlt.value.trim() } : null,
+      featuredImage: imageDoc ? toUpdateImage({
+        document: imageDoc, alt: form.featuredImageAlt.value, caption: form.featuredImageCaption.value, credit: form.featuredImageCredit.value
+      }) : null,
+      images: this.images.getRawValue().map(toUpdateImage),
       attachments: form.attachments.value || [],
       regions: form.regions.value || [],
       location: form.location.value,
@@ -256,20 +328,159 @@ export class AddEditActivityComponent implements OnInit {
   }
 
   public openPreview(template: TemplateRef<unknown>) {
-    this.modalService.open(template, { size: 'lg', scrollable: true });
+    this.modalService.open(template, { size: 'lg', scrollable: true, ariaLabelledBy: 'updatePreviewTitle' });
   }
 
   public get previewSummary(): string {
     return summaryOrFallback(this.myForm.get('summary')!.value, this.myForm.get('content')!.value);
   }
 
-  public get previewImage(): { url: string; alt: string } | null {
-    const doc = this.documents.find(d => d._id === this.myForm.get('featuredImageDocument')!.value);
-    if (!doc) {
-      return null;
+  public get previewImage(): PreviewImage | null {
+    const form = this.myForm.controls;
+    const url = this.imageUrl(form.featuredImageDocument.value);
+    return url ? {
+      url, alt: form.featuredImageAlt.value,
+      caption: captionLine({ caption: form.featuredImageCaption.value, credit: form.featuredImageCredit.value })
+    } : null;
+  }
+
+  public get previewImages(): PreviewImage[] {
+    return this.images.getRawValue()
+      .map(row => ({ url: this.imageUrl(row.document), alt: row.alt, caption: captionLine(row) }))
+      .filter((row): row is PreviewImage => !!row.url);
+  }
+
+  private imageUrl(id: string | null): string | null {
+    return imageSrc(id, this.imageDocs(), this.imageSrcs());
+  }
+
+  /** Picked images and attachments the public cannot see. The API refuses to publish an Update that shows them. */
+  public get nonPublicImages(): string[] {
+    const attachments = (this.myForm.get('attachments')!.value || [])
+      .map((id: any) => this.documents.find(doc => doc._id === documentId(id)));
+    return [...this.pickedImageIds().map(id => this.imageDocs().get(id)), ...attachments].filter(blocksPublish).map(documentName);
+  }
+
+  private pickedImageIds(): string[] {
+    return [this.myForm.get('featuredImageDocument')!.value, ...this.images.getRawValue().map(row => row.document)].filter(Boolean);
+  }
+
+  /** Some picked image has no alt text, so the form is invalid until it gets one. */
+  public get altNeeded(): boolean {
+    return this.myForm.hasError('altRequired') || this.images.controls.some(row => row.hasError('altRequired'));
+  }
+
+  /** The primary action leaves the Update live, so its images must be public. */
+  public get primaryGoesLive(): boolean {
+    const action = this.primaryAction.action;
+    return action === 'publish' || action === 'schedule' || this.statusText === 'Published' || this.statusText === 'Scheduled';
+  }
+
+  /** Rebuild the row arrays the image fields show. Call after every change to the picked images. */
+  private syncImageRows() {
+    const form = this.myForm.controls;
+    const row = (control: (name: string) => AbstractControl, prefix = '') => ({
+      document: control(prefix ? `${prefix}Document` : 'document') as UntypedFormControl,
+      alt: control(prefix ? `${prefix}Alt` : 'alt') as UntypedFormControl,
+      caption: control(prefix ? `${prefix}Caption` : 'caption') as UntypedFormControl,
+      credit: control(prefix ? `${prefix}Credit` : 'credit') as UntypedFormControl
+    });
+    this.featuredRows = form.featuredImageDocument.value ? [row(name => form[name], 'featuredImage')] : [];
+    this.photoRows = this.images.controls.map(group => row(name => group.get(name)!));
+    this.releaseImageSrcs();
+    this._cdr.markForCheck();
+  }
+
+  public get images(): UntypedFormArray {
+    return this.myForm.get('images') as UntypedFormArray;
+  }
+
+  private imageRow(image?: Partial<UpdateImage>): UntypedFormGroup {
+    return new UntypedFormGroup({
+      'document': new UntypedFormControl(documentId(image?.document)),
+      'alt': new UntypedFormControl(image?.alt || ''),
+      'caption': new UntypedFormControl(image?.caption || '', Validators.maxLength(IMAGE_CAPTION_MAX)),
+      'credit': new UntypedFormControl(image?.credit || '', Validators.maxLength(IMAGE_CREDIT_MAX))
+    }, { validators: imageRowValidator });
+  }
+
+  public addFeaturedImage([image]: AddedImage[]) {
+    this.addImageDocs([image]);
+    this.myForm.patchValue({ featuredImageDocument: image.doc._id, ...NO_FEATURED_TEXT });
+    this.syncImageRows();
+  }
+
+  public removeFeaturedImage() {
+    this.myForm.patchValue({ featuredImageDocument: null, ...NO_FEATURED_TEXT });
+    this.syncImageRows();
+  }
+
+  public addPhotos(added: AddedImage[]) {
+    // Never drops in practice: the field caps adds at remaining(), which counts uploads in flight.
+    const room = added.slice(0, IMAGES_MAX - this.images.length);
+    this.addImageDocs(room);
+    room.forEach(({ doc }) => this.images.push(this.imageRow({ document: doc._id })));
+    this.syncImageRows();
+  }
+
+  public moveImage({ index, step }: { index: number; step: -1 | 1 }) {
+    const row = this.images.at(index);
+    this.images.removeAt(index, { emitEvent: false });
+    this.images.insert(index + step, row);
+    this.syncImageRows();
+  }
+
+  public removeImage(index: number) {
+    this.images.removeAt(index);
+    this.syncImageRows();
+  }
+
+  private addImageDocs(added: AddedImage[]) {
+    this.rememberDocs(added.map(({ doc }) => doc));
+    added.forEach(({ doc, src }) => src && this.setImageSrc(doc._id, src));
+  }
+
+  private setImageSrc(id: string, url: string) {
+    const old = this.imageSrcs().get(id);
+    if (old && old !== url) {
+      URL.revokeObjectURL(old);
     }
-    const name = encodeURIComponent(doc.documentFileName || doc.displayName || 'image');
-    return { url: `/api/document/${doc._id}/fetch/${name}`, alt: this.myForm.get('featuredImageAlt')!.value };
+    this.imageSrcs.update(current => new Map(current).set(id, url));
+  }
+
+  /** Revoke previews no row shows any more. */
+  private releaseImageSrcs() {
+    const picked = new Set(this.pickedImageIds());
+    const stale = [...this.imageSrcs()].filter(([id]) => !picked.has(id));
+    if (stale.length) {
+      stale.forEach(([, url]) => URL.revokeObjectURL(url));
+      this.imageSrcs.update(current => new Map([...current].filter(([id]) => picked.has(id))));
+    }
+  }
+
+  private rememberDocs(docs: any[]) {
+    if (docs.length) {
+      this.imageDocs.update(current => new Map([...current, ...docs.map(doc => [doc._id, doc] as [string, any])]));
+    }
+  }
+
+  /** The admin fetch URL needs no token only for public documents; load the rest with the staff token. */
+  private loadPrivateThumbnails() {
+    this.pickedImageIds()
+      .filter(id => !this.imageSrcs().has(id) && !this.srcsLoading.has(id) && !isPublicDocument(this.imageDocs().get(id)))
+      .forEach(id => {
+        this.srcsLoading.add(id);
+        this.documentService.downloadResource(id)
+          .then(blob => {
+            // The form may be gone or the image removed while the file downloaded.
+            if (blob?.size && !this.destroyed && this.pickedImageIds().includes(id)) {
+              this.setImageSrc(id, URL.createObjectURL(blob));
+              this._cdr.markForCheck();
+            }
+          })
+          .catch(() => { /* the row shows the placeholder */ })
+          .finally(() => this.srcsLoading.delete(id));
+      });
   }
 
   public updateCategory() {
@@ -336,12 +547,14 @@ export class AddEditActivityComponent implements OnInit {
     const currentProjectId = this.myForm.get('project')!.value || null;
     if (this.loadedProjectId && currentProjectId !== this.loadedProjectId) {
       // Picked documents belong to the previous project.
-      this.myForm.patchValue({ featuredImageDocument: null, featuredImageAlt: '', attachments: [] });
+      this.myForm.patchValue({ featuredImageDocument: null, ...NO_FEATURED_TEXT, attachments: [] });
+      this.images.clear();
+      this.syncImageRows();
     }
     this.loadedProjectId = currentProjectId;
     if (!currentProjectId) {
       this.projectIsSelected = false;
-      this.setDocuments([]);
+      this.documentsFor.next(null);
       this._cdr.markForCheck();
     } else {
       this.projectIsSelected = true;
@@ -354,15 +567,41 @@ export class AddEditActivityComponent implements OnInit {
     }
   }
 
-  // Same project document search the comment period picker uses; first 1000, newest first.
   public loadProjectDocuments(projectId: string) {
-    const documentSource = this.typeIsProjectNotificationNews ? 'PROJECT-NOTIFICATION' : 'PROJECT';
-    this.searchService.getSearchResults('', 'Document', [{ name: 'project', value: projectId }], 1, 1000, '-datePosted', { documentSource })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        this.setDocuments(res?.[0]?.data?.searchResults || []);
+    this.documentsFor.next({ projectId, source: this.typeIsProjectNotificationNews ? 'PROJECT-NOTIFICATION' : 'PROJECT' });
+  }
+
+  /** Loads documents for the latest project only; a newer pick cancels the older search. */
+  private watchProjectDocuments() {
+    // Same project document search the comment period picker uses; first 1000, newest first. Null marks a failed search.
+    const search = (projectId: string, source: string) => this.searchService
+      .getSearchResults('', 'Document', [{ name: 'project', value: projectId }], 1, 1000, '-datePosted', { documentSource: source })
+      .pipe(
+        map((res: any): any[] | null => res?.[0]?.data?.searchResults || []),
+        catchError(error => {
+          this.logger.warn(`Project ${source} document search failed`, 'AddEditActivityComponent', error);
+          return of(null);
+        })
+      );
+    this.documentsFor.pipe(
+      switchMap(request => {
+        this.documentsLoading = !!request;
+        this.documentsFailed = false;
         this._cdr.markForCheck();
-      });
+        // Images uploaded from Update forms live apart from the project's Documents list.
+        return request
+          ? forkJoin([search(request.projectId, request.source), search(request.projectId, UPDATE_IMAGE_SOURCE)])
+          : of([[], []]);
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(([docs, updateImages]) => {
+      this.documentsFailed = docs === null;
+      this.setDocuments(docs ?? []);
+      this.rememberDocs([...this.imageDocuments, ...(updateImages ?? [])]);
+      this.documentsLoading = false;
+      this.loadPrivateThumbnails();
+      this._cdr.markForCheck();
+    });
   }
 
   private setDocuments(docs: any[]) {
@@ -404,6 +643,10 @@ export class AddEditActivityComponent implements OnInit {
   }
 
   buildForm(data: any) {
+    const published = data.publishDate ? new Date(data.publishDate) : null;
+    const today = new Date();
+    // A stored date before today must not fail the picker's minDate check, or the row cannot be saved.
+    this.minPublishDate = convertJSDateToNGBDate(published && published < today ? published : today);
     this.myForm = new UntypedFormGroup({
       'headline': new UntypedFormControl(data.headline, Validators.required),
       'content': new UntypedFormControl(data.content, Validators.required),
@@ -421,14 +664,22 @@ export class AddEditActivityComponent implements OnInit {
       'category': new UntypedFormControl(data.category || null, this.isEditing ? null : Validators.required),
       'shortHeadline': new UntypedFormControl(data.shortHeadline || '', Validators.maxLength(SHORT_HEADLINE_MAX)),
       'summary': new UntypedFormControl(data.summary || '', Validators.maxLength(SUMMARY_MAX)),
-      'featuredImageDocument': new UntypedFormControl(data.featuredImage?.document || null),
+      'featuredImageDocument': new UntypedFormControl(documentId(data.featuredImage?.document)),
       'featuredImageAlt': new UntypedFormControl(data.featuredImage?.alt || ''),
+      'featuredImageCaption': new UntypedFormControl(data.featuredImage?.caption || '', Validators.maxLength(IMAGE_CAPTION_MAX)),
+      'featuredImageCredit': new UntypedFormControl(data.featuredImage?.credit || '', Validators.maxLength(IMAGE_CREDIT_MAX)),
+      'images': new UntypedFormArray((data.images || []).map((image: UpdateImage) => this.imageRow(image)),
+        Validators.maxLength(IMAGES_MAX)),
       'attachments': new UntypedFormControl(data.attachments || []),
       'regions': new UntypedFormControl(data.regions || []),
       'location': new UntypedFormControl(data.location || ''),
       'engagementUrl': new UntypedFormControl(data.engagementUrl || '', httpUrlValidator),
       'subject': new UntypedFormControl(data.subject || null),
-      'publishDate': new UntypedFormControl(toLocalInputValue(data.publishDate || null)),
+      'publishWhen': new UntypedFormControl(published && published > today ? 'later' : 'now'),
+      'publishDate': new UntypedFormControl(published ? convertJSDateToNGBDate(published) : null),
+      'publishTime': new UntypedFormControl(
+        published ? { hour: published.getHours(), minute: published.getMinutes() } : { hour: 9, minute: 0 }),
     }, { validators: updateRulesValidator });
+    this.syncImageRows();
   }
 }

@@ -45,7 +45,7 @@
 
 @if (!loading() && tableParams.totalListItems != 0) {
   <app-table-template [columns]="tableColumns" [data]="tableData"
-    (onPageNumUpdate)='getPaginatedDocs($event)'>
+    (onColumnSort)='setColumnSort($event)' (onPageNumUpdate)='onSubmit($event)'>
   </app-table-template>
 }
 </div>

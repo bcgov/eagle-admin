@@ -1,3 +1,10 @@
+export interface UpdateImage {
+    document: string;
+    alt: string;
+    caption?: string;
+    credit?: string;
+}
+
 export class RecentActivity {
     _id: string;
     project: any;
@@ -16,7 +23,8 @@ export class RecentActivity {
     category: string;
     shortHeadline: string;
     summary: string;
-    featuredImage: { document: string; alt: string } | null;
+    featuredImage: UpdateImage | null;
+    images: UpdateImage[];
     attachments: string[];
     regions: string[];
     location: string;
@@ -45,6 +53,7 @@ export class RecentActivity {
         this.shortHeadline = obj?.shortHeadline ?? null;
         this.summary = obj?.summary ?? null;
         this.featuredImage = obj?.featuredImage ?? null;
+        this.images = obj?.images ?? [];
         this.attachments = obj?.attachments ?? [];
         this.regions = obj?.regions ?? [];
         this.location = obj?.location ?? null;

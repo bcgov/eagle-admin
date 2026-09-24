@@ -2,6 +2,9 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export const SHORT_HEADLINE_MAX = 70;
 export const SUMMARY_MAX = 280;
+export const IMAGES_MAX = 5;
+export const IMAGE_CAPTION_MAX = 300;
+export const IMAGE_CREDIT_MAX = 150;
 export const CORPORATE_CATEGORY = 'Corporate';
 export const UPDATE_CONFLICT_MESSAGE = 'This update was changed by someone else. Reload to see the latest.';
 
@@ -37,10 +40,24 @@ export const httpUrlValidator: ValidatorFn = (control: AbstractControl): Validat
   }
 };
 
-/** Group rules: alt text with a featured image; subject for Corporate, project for the rest. */
-export const updateRulesValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+/** Caption and credit length errors for an image. */
+function imageTextErrors(caption: string | null, credit: string | null): ValidationErrors {
   const errors: ValidationErrors = {};
+  if ((caption || '').length > IMAGE_CAPTION_MAX) {
+    errors.captionTooLong = true;
+  }
+  if ((credit || '').length > IMAGE_CREDIT_MAX) {
+    errors.creditTooLong = true;
+  }
+  return errors;
+}
+
+/** Group rules: alt text and caption/credit limits for a featured image; subject for Corporate, project for the rest. */
+export const updateRulesValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
   const value = (name: string) => group.get(name)?.value;
+  const errors: ValidationErrors = value('featuredImageDocument')
+    ? imageTextErrors(value('featuredImageCaption'), value('featuredImageCredit'))
+    : {};
 
   if (value('featuredImageDocument') && !(value('featuredImageAlt') || '').trim()) {
     errors.altRequired = true;
@@ -61,6 +78,21 @@ export const updateRulesValidator: ValidatorFn = (group: AbstractControl): Valid
 
   return Object.keys(errors).length ? errors : null;
 };
+
+/** Photo row rules: every row needs a picked document and alt text; caption and credit stay within limits. */
+export const imageRowValidator: ValidatorFn = (row: AbstractControl): ValidationErrors | null => {
+  const errors = imageTextErrors(row.get('caption')?.value, row.get('credit')?.value);
+  if (!row.get('document')?.value) {
+    errors.documentRequired = true;
+  }
+  if (!(row.get('alt')?.value || '').trim()) {
+    errors.altRequired = true;
+  }
+  return Object.keys(errors).length ? errors : null;
+};
+
+/** Id of a document reference the API sends either populated or as a bare id. */
+export const documentId = (doc: any): string | null => doc?._id ?? doc ?? null;
 
 /**
  * Map an authoring action to the stored status fields. `active` follows status so
@@ -116,14 +148,4 @@ export function summaryOrFallback(summary: string, content: string): string {
   const paragraphs = Array.from(doc.querySelectorAll('p')).map(p => (p.textContent || '').trim());
   const first = paragraphs.find(text => text) ?? (doc.body.textContent || '').trim();
   return first.slice(0, SUMMARY_MAX);
-}
-
-/** Date to the `YYYY-MM-DDTHH:mm` local value a datetime-local input expects. */
-export function toLocalInputValue(date: Date | string | null): string {
-  if (!date) {
-    return '';
-  }
-  const d = new Date(date);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

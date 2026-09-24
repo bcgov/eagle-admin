@@ -1,0 +1,129 @@
+<section class="image-field" [attr.aria-labelledby]="idPrefix() + 'Heading'">
+  <h3 [id]="idPrefix() + 'Heading'" class="h5 mb-1">{{heading()}}</h3>
+  @if (help()) {
+  <p [id]="idPrefix() + 'Help'" class="form-text mt-0">{{help()}}</p>
+  }
+
+  @for (row of rows(); track row.document; let i = $index, first = $first, last = $last) {
+  @let doc = docOf(row);
+  @let thumb = src(row);
+  <fieldset class="image-row">
+    <legend class="h6" [class.visually-hidden]="!multiple()">{{multiple() ? 'Photo ' + (i + 1) : heading()}}</legend>
+    <div class="image-row-body">
+      <div class="image-thumb">
+        <div class="image-frame">
+          @if (thumb) {
+          <img [src]="thumb" alt="" />
+          } @else {
+          <i class="material-icons" aria-hidden="true">image</i>
+          }
+        </div>
+        <small class="image-name">{{name(doc)}}</small>
+      </div>
+      <div class="image-fields">
+        @if (blocksPublish(doc)) {
+        <p class="form-text text-danger mt-0" [id]="id(i, 'Status')">
+          <span class="badge bg-secondary me-1">Not public</span>
+          Publish it in the project's Documents before this Update goes live, or remove it.
+        </p>
+        } @else if (doc?.documentSource === updateImageSource && !isPublic(doc)) {
+        <p class="form-text mt-0" [id]="id(i, 'Status')">Goes public when this Update is published.</p>
+        }
+        <div class="label-pair lrg">
+          <label [for]="id(i, 'Alt')">Image alt text*</label>
+          <input [id]="id(i, 'Alt')" [formControl]="row.alt" type="text" class="form-control"
+            [attr.aria-invalid]="altMissing(row)" [attr.aria-describedby]="altMissing(row) ? id(i, 'AltError') : null" />
+          @if (altMissing(row)) {
+          <small [id]="id(i, 'AltError')" class="form-text text-danger">Describe the image for people who cannot see it.</small>
+          }
+        </div>
+        @let captionOver = (row.caption.value?.length || 0) > captionMax;
+        <div class="label-pair med">
+          <label [for]="id(i, 'Caption')">Caption</label>
+          <input [id]="id(i, 'Caption')" [formControl]="row.caption" type="text" class="form-control"
+            [attr.maxlength]="captionMax" [attr.aria-invalid]="captionOver" [attr.aria-describedby]="id(i, 'CaptionCount')" />
+          <small [id]="id(i, 'CaptionCount')" class="form-text" [class.text-danger]="captionOver">{{row.caption.value?.length || 0}} / {{captionMax}}{{captionOver ? '. Shorten the caption.' : ''}}</small>
+        </div>
+        @let creditOver = (row.credit.value?.length || 0) > creditMax;
+        <div class="label-pair">
+          <label [for]="id(i, 'Credit')">Credit</label>
+          <input [id]="id(i, 'Credit')" [formControl]="row.credit" type="text" class="form-control"
+            [attr.maxlength]="creditMax" [attr.aria-invalid]="creditOver" [attr.aria-describedby]="id(i, 'CreditCount')" />
+          <small [id]="id(i, 'CreditCount')" class="form-text" [class.text-danger]="creditOver">{{row.credit.value?.length || 0}} / {{creditMax}}{{creditOver ? '. Shorten the credit.' : ''}}</small>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          @if (multiple()) {
+          <button type="button" class="btn btn-sm btn-outline-primary" [id]="id(i, 'Up')" [disabled]="first"
+            [attr.aria-label]="'Move up photo ' + (i + 1)" (click)="move(i, -1)">Move up</button>
+          <button type="button" class="btn btn-sm btn-outline-primary" [id]="id(i, 'Down')" [disabled]="last"
+            [attr.aria-label]="'Move down photo ' + (i + 1)" (click)="move(i, 1)">Move down</button>
+          }
+          <button type="button" class="btn btn-sm btn-outline-danger" [id]="id(i, 'Remove')"
+            [attr.aria-label]="multiple() ? 'Remove photo ' + (i + 1) : 'Remove ' + heading().toLowerCase()"
+            [attr.aria-describedby]="idPrefix() + 'RemoveHelp'" (click)="remove(i)">Remove</button>
+        </div>
+      </div>
+    </div>
+  </fieldset>
+  }
+
+  @for (item of uploads(); track item) {
+  <div class="image-row">
+    <div class="image-row-body">
+      <div class="image-thumb">
+        <div class="image-frame">
+          @if (item.src) {
+          <img [src]="item.src" alt="" />
+          } @else {
+          <i class="material-icons" aria-hidden="true">broken_image</i>
+          }
+        </div>
+      </div>
+      <div class="image-fields">
+        <p class="fw-bold text-break mb-1">{{item.file.name}}</p>
+        @if (item.error) {
+        <p class="form-text text-danger mt-0">{{item.error}}</p>
+        <div>
+          <button type="button" class="btn btn-sm btn-outline-primary" [attr.aria-label]="'Dismiss ' + item.file.name"
+            (click)="dismiss(item)">Dismiss</button>
+        </div>
+        } @else {
+        <div class="progress" role="progressbar" [attr.aria-label]="'Uploading ' + item.file.name"
+          aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="item.progress">
+          <div class="progress-bar" [style.width.%]="item.progress"></div>
+        </div>
+        <small class="form-text">Uploading, {{item.progress}}%</small>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  @if (rows().length) {
+  <small [id]="idPrefix() + 'RemoveHelp'" class="form-text d-block mb-2">Remove takes an image off this Update. The file stays in the project.</small>
+  }
+
+  @if (remaining() > 0) {
+  @if (projectId()) {
+  <div class="image-add" [id]="idPrefix() + 'Add'">
+    <app-file-upload [maxFiles]="remaining()" [maxSize]="0" fileExt="" [showInfo]="false" [showList]="false"
+      [files]="pending" [hint]="multiple() ? 'Drag photos here or' : 'Drag a photo here or'"
+      [action]="multiple() ? 'Upload photos' : 'Upload a photo'" [accept]="accept" [describedBy]="addHelpIds()"
+      (filesChange)="onFiles($event)"></app-file-upload>
+    <div class="image-add-pick">
+      <button type="button" class="btn btn-outline-primary" [id]="idPrefix() + 'Choose'"
+        [disabled]="choicesLoading() || !choices().length" [attr.aria-describedby]="addHelpIds()"
+        (click)="choose()">Choose from project documents</button>
+      <small [id]="idPrefix() + 'ChooseHelp'" class="form-text" [class.text-danger]="!choicesLoading() && choicesFailed()">{{choicesLoading()
+        ? 'Loading project documents.'
+        : choicesFailed() ? 'Could not load project documents. Reload the page to try again.'
+        : choices().length ? choices().length + (choices().length === 1 ? ' image' : ' images') + ' in this project.' : 'No images in this project\'s documents yet.'}}</small>
+    </div>
+  </div>
+  } @else {
+  <p class="form-text">Select a project to add {{multiple() ? 'photos' : 'an image'}}.</p>
+  }
+  }
+
+  <div class="visually-hidden" aria-live="polite">{{status()}}</div>
+</section>

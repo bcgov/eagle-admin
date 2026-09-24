@@ -13,5 +13,13 @@
 - 2026-09-23: Confirm dialog wording for Save draft and Archive needs a plain-language pass.
 - 2026-09-23: A user type change re-runs updateProject and reloads documents and location; skip the reload when the project did not change.
 - 2026-09-23: Archived Updates need a status filter in the activity list (`and=status=archived`).
-- 2026-09-23: toLocalInputValue drops seconds, so a plain Save of a scheduled Update rewrites its publishDate to the minute.
+- 2026-09-23: scheduledDate() in add-edit-activity builds publishDate from the date picker and ngb-timepicker (hour and minute only), so saving a scheduled Update rewrites its publishDate to the minute.
 - 2026-09-23: CSS nits: `.scheduled-flag` repeats the flag styles (share one base class); spacing of the new form rows.
+- 2026-09-24 eagle-admin: the Update image picker loads full-size originals as thumbnails (update-image-picker.component.html); there is no thumbnail service yet.
+- 2026-09-24 eagle-admin: the IMAGE_FILE regex in add-edit-activity.component.ts copies IMAGE_TYPES in update-image-field.component.ts. Export one list. The "10 MB" help text repeats IMAGE_MAX_MB.
+- 2026-09-24 eagle-admin: the nonPublicImages attachment check only sees loaded documents: none while loading, none after a failed search, only the first 1000. Say so when the check cannot run.
+- 2026-09-24 eagle-admin: caption and credit length are checked twice (Validators.maxLength and imageTextErrors). Keep one.
+- 2026-09-24 eagle-admin: the "Not public" and "Goes public" status ids in update-image-field.component.html are not in the alt input's aria-describedby.
+- 2026-09-24 eagle-admin: dismiss() in update-image-field focuses the Add button, which is not rendered when remaining() is 0. Fall back to the last Remove button.
+- 2026-09-24 eagle-admin: the image picker switches to radio mode whenever max is 1, even for Photos with one slot left. The opener should pass a multiple flag.
+- 2026-09-24 eagle-admin: the file-upload browse link changed from <a> to <button class="browse">. Check project-documents-upload, project-notification-upload and add-comment.

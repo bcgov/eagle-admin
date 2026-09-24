@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpEvent } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import JSZip from 'jszip';
@@ -10,6 +11,12 @@ import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 import { encodeString, formatDate, getFormattedTime } from '../shared/utils/utils';
+
+/** Admin URL that streams a document inline. */
+export function documentFetchUrl(document: Pick<Document, '_id' | 'documentSource' | 'internalOriginalName' | 'documentFileName'>): string {
+  const filename = document.documentSource === 'COMMENT' ? document.internalOriginalName : document.documentFileName;
+  return `/api/document/${document._id}/fetch/${encodeString(filename, true)}`;
+}
 
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
@@ -92,12 +99,22 @@ export class DocumentService {
   }
 
   add(formData: FormData, publish = false): Observable<Document> {
-    const fields = ['documentFileName', 'internalOriginalName', 'displayName', 'internalURL', 'internalMime', 'isFeatured'];
-    let qs = `document?fields=${this.api.buildValues(fields)}`;
-    if (publish) { qs += `&publish=${publish}`; }
-    return this.api.post<Document>(qs, formData).pipe(
+    return this.api.post<Document>(this.addPath(publish), formData).pipe(
       catchError(error => this.api.handleError(error))
     );
+  }
+
+  /** Same as add(), but emits upload progress events before the saved document. */
+  addWithProgress(formData: FormData): Observable<HttpEvent<Document>> {
+    return this.api.post<HttpEvent<Document>>(this.addPath(false), formData, { reportProgress: true, observe: 'events' }).pipe(
+      catchError(error => this.api.handleError(error))
+    );
+  }
+
+  private addPath(publish: boolean): string {
+    const fields = ['documentFileName', 'internalOriginalName', 'displayName', 'internalURL', 'internalMime', 'isFeatured'];
+    const qs = `document?fields=${this.api.buildValues(fields)}`;
+    return publish ? `${qs}&publish=${publish}` : qs;
   }
 
   update(formData: FormData, _id: any): Observable<Document> {
@@ -136,7 +153,7 @@ export class DocumentService {
     );
   }
 
-  private downloadResource(id: string): Promise<Blob> {
+  downloadResource(id: string): Promise<Blob> {
     return this.api.get<Blob>(`document/${id}/download`, { responseType: 'blob' }).toPromise();
   }
 
@@ -160,9 +177,7 @@ export class DocumentService {
   }
 
   public async openDocument(document: Document): Promise<void> {
-    let filename = document.documentSource === 'COMMENT' ? document.internalOriginalName : document.documentFileName;
-    filename = encodeString(filename, true);
-    window.open('/api/document/' + document._id + '/fetch/' + filename, '_blank');
+    window.open(documentFetchUrl(document), '_blank');
   }
 
   public async exportComments(period: string, projectName: string, format: string): Promise<void> {
