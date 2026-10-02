@@ -1,0 +1,257 @@
+# =============================================================================
+# Deploy to Azure Production (LIVE SITE once Front Door routes /admin/ to storage)
+# =============================================================================
+# Builds a release tag already verified on test and publishes it to the production
+# storage account's static website under `$web/admin/`, then purges `/admin/*` on
+# Front Door so the edge serves the new index.html and env.js.
+#
+#   gh workflow run "Deploy to Azure Production" -f version=v2.5.31
+#
+# Upload, cache headers and checks live in scripts/azure-static.sh, shared with test.
+# =============================================================================
+
+name: Deploy to Azure Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag verified on test (e.g., v1.2.3)'
+        required: true
+        type: string
+      smoke:
+        description: 'Smoke test SITE_URL after the purge (off until Front Door routes /admin/ to storage)'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-azure-prod
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  # Production storage account names start with this. Test and prod differ only by
+  # environment variables, so a mis-set variable would otherwise cross the estates.
+  PROD_STORAGE_PREFIX: eagleadmprod
+
+jobs:
+  check-release:
+    name: Check the ${{ inputs.version }} release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      # Draft releases are invisible to a read-only token. Runs no checkout or third-party code.
+      contents: write
+    steps:
+      - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          # No leading zeros, no suffix: only a plain release tag goes live.
+          if [[ ! "$VERSION" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Version must be a release tag in format v1.2.3, never a branch or prerelease"
+            exit 1
+          fi
+
+      - name: Verify the release exists and is not a prerelease
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          prerelease=$(gh release view "$VERSION" --json isPrerelease --jq '.isPrerelease') \
+            || { echo "::error::no GitHub Release for $VERSION; run Create Release Tag first"; exit 1; }
+          [ "$prerelease" = "false" ] \
+            || { echo "::error::$VERSION is marked as a prerelease and cannot go to production"; exit 1; }
+
+  build:
+    name: Build ${{ inputs.version }}
+    needs: check-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Dependency install scripts run here, so this job holds no deploy credentials.
+    permissions:
+      contents: read
+    outputs:
+      commit: ${{ steps.tag.outputs.commit }}
+    steps:
+      - name: Checkout repository at version tag
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: refs/tags/${{ inputs.version }}
+
+      - name: Verify the tag
+        id: tag
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --quiet origin
+          tag_commit=$(git rev-parse -q --verify "refs/tags/$VERSION^{commit}") \
+            || { echo "::error::tag $VERSION does not exist; verify it on test first"; exit 1; }
+          [ "$tag_commit" = "$(git rev-parse HEAD)" ] \
+            || { echo "::error::checked out $(git rev-parse HEAD), but $VERSION is $tag_commit"; exit 1; }
+          echo "commit=$tag_commit" >> "$GITHUB_OUTPUT"
+          echo "building $VERSION ($tag_commit)"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24'
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Unit tests
+        run: yarn test-ci
+
+      - name: Stamp env.js for prod
+        run: bash scripts/azure-static.sh stamp prod
+
+      - name: Build
+        run: yarn build
+
+      - name: Verify build output
+        run: bash scripts/azure-static.sh verify prod
+
+      - name: Record build file list
+        run: bash scripts/azure-static.sh manifest
+
+      - name: Upload build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: admin-dist
+          path: |
+            dist
+            dist.sha256
+          include-hidden-files: true
+          if-no-files-found: error
+
+  deploy:
+    name: Publish ${{ inputs.version }} to Azure production
+    needs: build
+    runs-on: ubuntu-latest
+    # Room for the smoke test's wait on the purged edge.
+    timeout-minutes: 25
+    # The environment name is the OIDC subject on the federated credential;
+    # renaming it breaks Azure login.
+    environment: azure-prod
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      AFD_PROFILE: ${{ vars.AZURE_FRONTDOOR_PROFILE }}
+      AFD_ENDPOINT_NAME: ${{ vars.AZURE_FRONTDOOR_ENDPOINT_NAME }}
+      AFD_RESOURCE_GROUP: ${{ vars.AZURE_FRONTDOOR_RESOURCE_GROUP }}
+    steps:
+      # Only for scripts/azure-static.sh; the build comes from the artifact.
+      - name: Checkout repository at version tag
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: refs/tags/${{ inputs.version }}
+
+      - name: Verify the tag and the deployment targets
+        env:
+          VERSION: ${{ inputs.version }}
+          SMOKE: ${{ inputs.smoke }}
+          BUILD_COMMIT: ${{ needs.build.outputs.commit }}
+        run: |
+          set -euo pipefail
+          [ "$(git rev-parse HEAD)" = "$BUILD_COMMIT" ] \
+            || { echo "::error::$VERSION moved from $BUILD_COMMIT to $(git rev-parse HEAD) during this run"; exit 1; }
+          for name in STORAGE_ACCOUNT AFD_PROFILE AFD_ENDPOINT_NAME AFD_RESOURCE_GROUP; do
+            [ -n "${!name}" ] \
+              || { echo "::error::$name is empty; set its AZURE_* variable on the azure-prod environment"; exit 1; }
+          done
+          case "$STORAGE_ACCOUNT" in
+            "$PROD_STORAGE_PREFIX"*) ;;
+            *) echo "::error::AZURE_STORAGE_ACCOUNT '$STORAGE_ACCOUNT' does not start with '$PROD_STORAGE_PREFIX'; this run points at a non-production account"; exit 1 ;;
+          esac
+          if [ "$SMOKE" = "true" ]; then
+            [ -n "$SITE_URL" ] \
+              || { echo "::error::variable SITE_URL is empty on the azure-prod environment; set it or run with smoke=false"; exit 1; }
+          fi
+          echo "deploying $VERSION ($BUILD_COMMIT) to $STORAGE_ACCOUNT"
+
+      - name: Download build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: admin-dist
+
+      - name: Check the build arrived intact
+        run: bash scripts/azure-static.sh check-manifest
+
+      - name: Azure login
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Needs Storage Account Contributor (static website setting) and
+      # Storage Blob Data Contributor (uploads) on the account.
+      - name: Publish to $web/admin/
+        run: bash scripts/azure-static.sh publish
+
+      # index.html and env.js keep their names across deploys; without a purge the edge
+      # can keep serving the previous ones.
+      - name: Purge /admin/* on Front Door
+        run: |
+          set -euo pipefail
+          az afd endpoint purge \
+            --profile-name "$AFD_PROFILE" \
+            --endpoint-name "$AFD_ENDPOINT_NAME" \
+            --resource-group "$AFD_RESOURCE_GROUP" \
+            --content-paths '/admin/*' --output none
+          echo "purge of /admin/* complete"
+
+      - name: Smoke test
+        if: inputs.smoke
+        env:
+          # The purge returns before every edge location serves the new files.
+          SMOKE_ATTEMPTS: '30'
+          SMOKE_DELAY: '20'
+        run: bash scripts/azure-static.sh smoke prod
+
+      - name: Report failure to job summary
+        if: failure()
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          {
+            echo "### Azure production deploy of $VERSION failed"
+            echo "If the publish step passed, \`\$web/admin/\` on $STORAGE_ACCOUNT already holds the new build and may be live."
+            echo "Check $SITE_URL/admin/, then re-run this workflow with the previous good tag to roll back."
+            echo "Smoke failures on the deep link, \`/admin/nope.js\` or \`/api/config\` point at the Front Door rules, not the upload."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Kept apart so contents: write never shares a job with the deploy credentials.
+  release:
+    name: Publish the ${{ inputs.version }} GitHub Release
+    needs: deploy
+    # Same as the OpenShift "Deploy to Prod": the draft becomes the published release,
+    # only after a passing smoke test, which proves the site serves this build.
+    if: inputs.smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Publish GitHub Release
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release edit "$VERSION" --draft=false
