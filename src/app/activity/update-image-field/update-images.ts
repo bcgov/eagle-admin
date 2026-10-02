@@ -4,6 +4,15 @@ import { documentFetchUrl } from 'src/app/services/document.service';
 /** documentSource of images uploaded from the Update form; the API publishes them with the Update. */
 export const UPDATE_IMAGE_SOURCE = 'UPDATE';
 
+// The API refuses a file whose name extension does not map to its MIME type.
+export const IMAGE_TYPES = new Map(Object.entries({
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif'
+}));
+export const IMAGE_MAX_MB = 10;
+
+/** MIME type the API expects for an image file name, or undefined when it is not an image name. */
+export const imageType = (fileName: string): string | undefined => IMAGE_TYPES.get(/\.([^.]+)$/.exec(fileName)?.[1].toLowerCase() ?? '');
+
 export const isPublicDocument = (doc: any): boolean => !!doc?.read?.includes('public');
 
 /** A picked project document the public cannot read. Update uploads do not count: they go public with the Update. */

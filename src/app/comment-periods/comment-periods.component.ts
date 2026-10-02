@@ -132,14 +132,6 @@ export class CommentPeriodsComponent implements OnInit {
   setCPRowData() {
     const cpList = [];
     this.commentPeriods.forEach(commentPeriod => {
-      // Determine if the CP is published by checking in read is Public
-      let isPublished = 'Not Published';
-      commentPeriod.read.forEach(element => {
-        if (element === 'public') {
-          isPublished = 'Published';
-        }
-      });
-
       cpList.push(
         {
           commentPeriodStatus: commentPeriod.commentPeriodStatus,
@@ -148,7 +140,8 @@ export class CommentPeriodsComponent implements OnInit {
           daysRemaining: commentPeriod.daysRemaining,
           isMet: commentPeriod.isMet,
           metURLAdmin: commentPeriod.metURLAdmin,
-          read: isPublished,
+          // Same field the Published column sorts on in the API.
+          read: commentPeriod.isPublished ? 'Published' : 'Not Published',
           // TODO: Figure out pending, deferred, published, rejected
           // commmentData:
           _id: commentPeriod._id,

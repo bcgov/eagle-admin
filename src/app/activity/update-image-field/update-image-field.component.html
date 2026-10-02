@@ -1,5 +1,5 @@
 <section class="image-field" [attr.aria-labelledby]="idPrefix() + 'Heading'">
-  <h3 [id]="idPrefix() + 'Heading'" class="h5 mb-1">{{heading()}}</h3>
+  <h3 [id]="idPrefix() + 'Heading'" class="h5 mb-1" tabindex="-1">{{heading()}}</h3>
   @if (help()) {
   <p [id]="idPrefix() + 'Help'" class="form-text mt-0">{{help()}}</p>
   }
@@ -21,18 +21,19 @@
         <small class="image-name">{{name(doc)}}</small>
       </div>
       <div class="image-fields">
-        @if (blocksPublish(doc)) {
+        @let status = statusOf(doc);
+        @if (status === 'notPublic') {
         <p class="form-text text-danger mt-0" [id]="id(i, 'Status')">
           <span class="badge bg-secondary me-1">Not public</span>
           Publish it in the project's Documents before this Update goes live, or remove it.
         </p>
-        } @else if (doc?.documentSource === updateImageSource && !isPublic(doc)) {
+        } @else if (status === 'goesPublic') {
         <p class="form-text mt-0" [id]="id(i, 'Status')">Goes public when this Update is published.</p>
         }
         <div class="label-pair lrg">
           <label [for]="id(i, 'Alt')">Image alt text*</label>
           <input [id]="id(i, 'Alt')" [formControl]="row.alt" type="text" class="form-control"
-            [attr.aria-invalid]="altMissing(row)" [attr.aria-describedby]="altMissing(row) ? id(i, 'AltError') : null" />
+            [attr.aria-invalid]="altMissing(row)" [attr.aria-describedby]="altDescribedBy(row, i, status)" />
           @if (altMissing(row)) {
           <small [id]="id(i, 'AltError')" class="form-text text-danger">Describe the image for people who cannot see it.</small>
           }

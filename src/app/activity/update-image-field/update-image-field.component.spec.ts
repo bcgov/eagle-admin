@@ -181,5 +181,66 @@ describe('UpdateImageFieldComponent', () => {
       flush();
       expect(document.activeElement).toBe(query('button.browse'));
     }));
+
+    it('moves to the last Remove button after a dismiss when no slots are left', fakeAsync(() => {
+      fixture.componentRef.setInput('max', 2);
+      fixture.componentRef.setInput('rows', [row('d1')]);
+      fixture.detectChanges();
+      choose(image('notes.txt', 'text/plain'));
+      choose(image());
+      saved();
+      flush();
+      expect(query('button.browse')).toBeNull();
+      query('button[aria-label="Dismiss notes.txt"]').click();
+      fixture.detectChanges();
+      flush();
+      expect(focusedId()).toBe('image1Remove');
+    }));
+
+    it('moves to the heading after a dismiss when uploads fill every slot and no rows exist', fakeAsync(() => {
+      fixture.componentRef.setInput('max', 1);
+      fixture.detectChanges();
+      choose(image('notes.txt', 'text/plain'));
+      choose(image());
+      query('button[aria-label="Dismiss notes.txt"]').click();
+      fixture.detectChanges();
+      flush();
+      expect(focusedId()).toBe('imageHeading');
+    }));
+  });
+
+  describe('alt text description', () => {
+    const altDescribedBy = () => query('#image0Alt').getAttribute('aria-describedby');
+
+    function showRow(doc: any) {
+      fixture.componentRef.setInput('docs', new Map([['d1', { _id: 'd1', ...doc }]]));
+      fixture.componentRef.setInput('rows', [row('d1')]);
+      fixture.detectChanges();
+    }
+
+    it('points at the Not public note', () => {
+      showRow({ read: ['staff'], documentSource: 'PROJECT' });
+      expect(query('#image0Status').textContent).toContain('Not public');
+      expect(altDescribedBy()).toBe('image0Status');
+    });
+
+    it('points at the Goes public note', () => {
+      showRow({ read: [], documentSource: 'UPDATE' });
+      expect(query('#image0Status').textContent).toContain('Goes public');
+      expect(altDescribedBy()).toBe('image0Status');
+    });
+
+    it('points at both the status note and the alt error once alt text is left empty', () => {
+      showRow({ read: ['staff'], documentSource: 'PROJECT' });
+      fixture.componentInstance.rows()[0].alt.markAsTouched();
+      fixture.componentRef.setInput('rows', [...fixture.componentInstance.rows()]);
+      fixture.detectChanges();
+      expect(altDescribedBy()).toBe('image0Status image0AltError');
+    });
+
+    it('has no description for a public image with alt text missing but untouched', () => {
+      showRow({ read: ['public'], documentSource: 'PROJECT' });
+      expect(altDescribedBy()).toBeNull();
+    });
   });
 });

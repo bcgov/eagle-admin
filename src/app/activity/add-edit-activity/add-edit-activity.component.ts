@@ -22,16 +22,15 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import {
-  CORPORATE_CATEGORY, IMAGE_CAPTION_MAX, IMAGE_CREDIT_MAX, IMAGES_MAX, PublishAction, SHORT_HEADLINE_MAX, SUMMARY_MAX, StatusFields, StatusLabel, UPDATE_CONFLICT_MESSAGE,
+  CORPORATE_CATEGORY, IMAGES_MAX, PublishAction, SHORT_HEADLINE_MAX, SUMMARY_MAX, StatusFields, StatusLabel, UPDATE_CONFLICT_MESSAGE,
   documentId, httpUrlValidator, imageRowValidator, isConflict, keepStatusFields, listNames, publishFields, statusLabel, summaryOrFallback,
   updateRulesValidator
 } from '../update-rules';
 import { AddedImage, ImageRow, UpdateImageFieldComponent } from '../update-image-field/update-image-field.component';
 import {
-  UPDATE_IMAGE_SOURCE, blocksPublish, captionLine, documentName, imageSrc, isPublicDocument, toUpdateImage
+  IMAGE_MAX_MB, UPDATE_IMAGE_SOURCE, blocksPublish, captionLine, documentName, imageSrc, imageType, isPublicDocument, toUpdateImage
 } from '../update-image-field/update-images';
 
-const IMAGE_FILE = /\.(png|jpe?g|gif|webp)$/i;
 const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featuredImageCredit: '' };
 
 interface PreviewImage { url: string; alt: string; caption: string }
@@ -108,6 +107,7 @@ export class AddEditActivityComponent implements OnInit {
   public readonly shortHeadlineMax = SHORT_HEADLINE_MAX;
   public readonly summaryMax = SUMMARY_MAX;
   public readonly imagesMax = IMAGES_MAX;
+  public readonly imageMaxMb = IMAGE_MAX_MB;
   public readonly corporate = CORPORATE_CATEGORY;
   public readonly categories = computed(() => listNames(this.configService.listsSignal(), 'updateCategory'));
   public readonly subjects = computed(() => listNames(this.configService.listsSignal(), 'updateSubject'));
@@ -255,7 +255,13 @@ export class AddEditActivityComponent implements OnInit {
   private scheduledDate(): Date | null {
     const date = this.myForm.get('publishDate')!.value;
     const time = this.myForm.get('publishTime')!.value;
-    return this.publishLater && date && time ? convertFormGroupNGBDateToJSDate(date, time) : null;
+    if (!this.publishLater || !date || !time) {
+      return null;
+    }
+    const picked = convertFormGroupNGBDateToJSDate(date, time);
+    const stored = this.activity?.publishDate ? new Date(this.activity.publishDate) : null;
+    // The timepicker has no seconds; an unchanged minute keeps the stored instant.
+    return stored && Math.floor(stored.getTime() / 60000) * 60000 === picked.getTime() ? stored : picked;
   }
 
   public save(action: PublishAction | 'keep') {
@@ -399,8 +405,8 @@ export class AddEditActivityComponent implements OnInit {
     return new UntypedFormGroup({
       'document': new UntypedFormControl(documentId(image?.document)),
       'alt': new UntypedFormControl(image?.alt || ''),
-      'caption': new UntypedFormControl(image?.caption || '', Validators.maxLength(IMAGE_CAPTION_MAX)),
-      'credit': new UntypedFormControl(image?.credit || '', Validators.maxLength(IMAGE_CREDIT_MAX))
+      'caption': new UntypedFormControl(image?.caption || ''),
+      'credit': new UntypedFormControl(image?.credit || '')
     }, { validators: imageRowValidator });
   }
 
@@ -607,7 +613,7 @@ export class AddEditActivityComponent implements OnInit {
   private setDocuments(docs: any[]) {
     this.documents = docs;
     this.imageDocuments = docs.filter(d =>
-      d.internalMime ? d.internalMime.startsWith('image/') : IMAGE_FILE.test(d.documentFileName || ''));
+      d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }
 
   public loadProjectLocation(projectId: string) {
@@ -666,8 +672,8 @@ export class AddEditActivityComponent implements OnInit {
       'summary': new UntypedFormControl(data.summary || '', Validators.maxLength(SUMMARY_MAX)),
       'featuredImageDocument': new UntypedFormControl(documentId(data.featuredImage?.document)),
       'featuredImageAlt': new UntypedFormControl(data.featuredImage?.alt || ''),
-      'featuredImageCaption': new UntypedFormControl(data.featuredImage?.caption || '', Validators.maxLength(IMAGE_CAPTION_MAX)),
-      'featuredImageCredit': new UntypedFormControl(data.featuredImage?.credit || '', Validators.maxLength(IMAGE_CREDIT_MAX)),
+      'featuredImageCaption': new UntypedFormControl(data.featuredImage?.caption || ''),
+      'featuredImageCredit': new UntypedFormControl(data.featuredImage?.credit || ''),
       'images': new UntypedFormArray((data.images || []).map((image: UpdateImage) => this.imageRow(image)),
         Validators.maxLength(IMAGES_MAX)),
       'attachments': new UntypedFormControl(data.attachments || []),

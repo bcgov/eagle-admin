@@ -112,15 +112,15 @@ export class ProjectService {
         if (!project) {
           return of(null as Project);
         }
-        if (project.projectLeadId == null && project.responsibleEPDId == null) {
+        if (!project.projectLeadId && !project.responsibleEPDId) {
           return of(new Project(project));
         }
         // now get the rest of the data for this project
         return this._getExtraAppData(
           new Project(project),
           {
-            getresponsibleEPD: project.responsibleEPDId !== null && project.responsibleEPDId !== '' || project.responsibleEPDId !== undefined,
-            getprojectLead: project.projectLeadId !== null && project.projectLeadId !== '' || project.projectLeadId !== undefined
+            getresponsibleEPD: !!project.responsibleEPDId,
+            getprojectLead: !!project.projectLeadId
           }
         );
       }),

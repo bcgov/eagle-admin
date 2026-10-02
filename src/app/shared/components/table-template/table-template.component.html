@@ -11,15 +11,9 @@
               </div>
             }
             @if (entry.name === 'select_all_box') {
-              <div>
-                @if (selectAll === false) {
-                  <i class="material-icons" aria-hidden="true"
-                  (click)="selectAction()" (keydown)="onKeyDown($event)">check_box_outline_blank</i>
-                }
-                @if (selectAll === true) {
-                  <i class="material-icons" aria-hidden="true" (click)="selectAction()" (keydown)="onKeyDown($event)">check_box</i>
-                }
-              </div>
+              <button type="button" class="select-all-button" [attr.aria-label]="selectAllLabel" (click)="selectAction()">
+                <i class="material-icons" aria-hidden="true">{{selectAll ? 'check_box' : 'check_box_outline_blank'}}</i>
+              </button>
             }
           } @else {
             <button type="button" class="sort-button" (click)="sort(entry.value)">

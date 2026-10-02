@@ -75,6 +75,7 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
                 this._changeDetectionRef.markForCheck();
               },
               error: error => {
+                this.toastService.error('Update not archived. Try again.');
                 this.logger.error('archive activity failed', 'ActivityTableRowsComponent', error);
               }
             });

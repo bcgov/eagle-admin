@@ -136,13 +136,16 @@ td {
     border-bottom: 0;
   }
 
+  .table thead th {
+    flex: 50%;
+    max-width: 50%;
+    border-color: #fff;
+  }
+
   .table thead th.sortable {
     transition: border-color ease-out 0.2s;
     cursor: pointer;
-    flex: 50%;
     user-select: none;
-    max-width: 50%;
-    border-color: #fff;
   }
 }
 
