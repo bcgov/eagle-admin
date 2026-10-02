@@ -32,7 +32,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
 
   public column: string = null;
   public interval: any;
-  public selectAll = false;
   public mobileQuery: MediaQueryList;
   private mobileQueryListener: () => void;
 
@@ -51,7 +50,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     if (this.activePage !== parseInt(this.data().paginationData.currentPage, 10)) {
       this.activePage = parseInt(this.data().paginationData.currentPage, 10);
     }
-    this.selectAllInit();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -125,44 +123,22 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     this.mobileQuery.removeEventListener('change', this.mobileQueryListener);
   }
 
+  private get someSelected(): boolean {
+    return !!this.data().data?.some(item => item.checkbox === true);
+  }
+
+  public get allSelected(): boolean {
+    const rows = this.data().data;
+    return !!rows?.length && rows.every(item => item.checkbox === true);
+  }
+
   /** What a click does: consumers clear the selection when any row is checked, else check every row. */
   public get selectAllLabel(): string {
-    return this.data().data?.some(item => item.checkbox === true) ? 'Clear selection' : 'Select all rows';
+    return this.someSelected ? 'Clear selection' : 'Select all rows';
   }
 
   public selectAction() {
-    this.selectAll = !this.selectAll;
-
-    let someSelected = false;
-
-    if (this.data().data) {
-      this.data().data.forEach(item => {
-        if (item.checkbox === true) {
-          someSelected = true;
-        }
-      });
-
-      if (someSelected && this.selectAll) {
-        this.selectAll = false;
-      }
-    }
-
-    this.selectAllClicked.emit({ selectAll: this.selectAll });
-  }
-
-  public selectAllInit() {
-    if (this.data().data) {
-      const itemCount = this.data().data.length;
-      let selectedCount = 0;
-
-      this.data().data.forEach(item => {
-        if (item.checkbox === true) {
-          selectedCount += 1;
-        }
-      });
-
-      this.selectAll = itemCount === selectedCount;
-    }
+    this.selectAllClicked.emit({ selectAll: !this.someSelected });
   }
 
   private rebuildPageSizes() {

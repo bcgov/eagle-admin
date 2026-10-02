@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectorRef, Component, input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TableTemplateComponent } from './table-template.component';
 import { TableColumn, TableObject } from './table-object';
@@ -119,16 +119,26 @@ describe('TableTemplateComponent headers', () => {
     const selectColumn: TableColumn = { name: 'select_all_box', value: 'select_all_box', width: '5%', nosort: true };
     const selectButton = (fixture: ComponentFixture<TableTemplateComponent>): HTMLButtonElement =>
       fixture.nativeElement.querySelector('thead button.select-all-button');
+    // A click on a row checkbox marks the table for check; ticking rows in a test does not.
+    const rowsTicked = (fixture: ComponentFixture<TableTemplateComponent>) => {
+      fixture.debugElement.injector.get(ChangeDetectorRef).markForCheck();
+      fixture.detectChanges();
+    };
+    const selectIcon = (fixture: ComponentFixture<TableTemplateComponent>): string =>
+      selectButton(fixture).querySelector('i').textContent.trim();
+    // Tick the rows the way the documents pages do: they ignore the payload and read the rows.
+    const tickLikeDocumentsPage = (fixture: ComponentFixture<TableTemplateComponent>, rows: any[], emitted: any[]) =>
+      fixture.componentInstance.selectAllClicked.subscribe(value => {
+        emitted.push(value);
+        const someSelected = rows.some(row => row.checkbox === true);
+        rows.forEach(row => row.checkbox = !someSelected);
+      });
 
     it('is a button that selects every row, then offers to clear', () => {
       const rows = [{ checkbox: false }];
       const fixture = render('+name', [selectColumn, ...columns], rows);
       const emitted: any[] = [];
-      // Tick the rows the way the documents pages do.
-      fixture.componentInstance.selectAllClicked.subscribe(value => {
-        emitted.push(value);
-        rows.forEach(row => row.checkbox = value.selectAll);
-      });
+      tickLikeDocumentsPage(fixture, rows, emitted);
 
       expect(selectButton(fixture).getAttribute('aria-label')).toBe('Select all rows');
       selectButton(fixture).click();
@@ -157,6 +167,31 @@ describe('TableTemplateComponent headers', () => {
       selectButton(fixture).click();
 
       expect(emitted).toEqual([{ selectAll: false }]);
+    });
+
+    it('shows a ticked icon once every row is ticked by hand', () => {
+      const rows = [{ checkbox: false }, { checkbox: false }];
+      const fixture = render('+name', [selectColumn, ...columns], rows);
+
+      rows.forEach(row => row.checkbox = true);
+      rowsTicked(fixture);
+
+      expect(selectIcon(fixture)).toBe('check_box');
+    });
+
+    it('follows the rows, not its last click, once staff untick them by hand', () => {
+      const rows = [{ checkbox: false }, { checkbox: false }];
+      const fixture = render('+name', [selectColumn, ...columns], rows);
+      const emitted: any[] = [];
+      tickLikeDocumentsPage(fixture, rows, emitted);
+      selectButton(fixture).click();
+
+      rows.forEach(row => row.checkbox = false);
+      rowsTicked(fixture);
+      expect(selectIcon(fixture)).toBe('check_box_outline_blank');
+      selectButton(fixture).click();
+
+      expect(emitted).toEqual([{ selectAll: true }, { selectAll: true }]);
     });
   });
 });

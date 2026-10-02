@@ -13,7 +13,3 @@
 - 2026-09-24 eagle-admin: the nonPublicImages attachment check only sees loaded documents: none while loading, none after a failed search, only the first 1000. Say so when the check cannot run.
 - 2026-09-24 eagle-admin: the image picker switches to radio mode whenever max is 1, even for Photos with one slot left. The opener should pass a multiple flag.
 - 2026-09-24 eagle-admin: the file-upload browse link changed from <a> to <button class="browse">. Check project-documents-upload, project-notification-upload and add-comment.
-
-## Sorting
-
-- 2026-10-02 eagle-admin: table-template select-all icon and `selectAllClicked` payload still follow the `selectAll` flag, which goes stale once rows are ticked by hand; drive both from the rows, as `selectAllLabel` does. Its spec's stand-in consumer should copy the documents pages (`checkbox = !someSelected`).
