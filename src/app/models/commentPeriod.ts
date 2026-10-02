@@ -150,9 +150,5 @@ export class CommentPeriod {
         this.daysRemaining = 'None';
       }
     }
-
-    if (obj && obj.read) {
-      this.isPublished = obj.read.includes('public');
-    }
   }
 }

@@ -16,5 +16,4 @@
 
 ## Sorting
 
-- 2026-09-24 eagle-admin: Comment periods Published column sorts by `isPublished`, but the cell shows `read` (which can include `public`); make the sort key and the cell use the same field.
 - 2026-10-02 eagle-admin: table-template select-all icon and `selectAllClicked` payload still follow the `selectAll` flag, which goes stale once rows are ticked by hand; drive both from the rows, as `selectAllLabel` does. Its spec's stand-in consumer should copy the documents pages (`checkbox = !someSelected`).
