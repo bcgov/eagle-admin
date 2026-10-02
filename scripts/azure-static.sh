@@ -4,6 +4,8 @@
 #
 #   azure-static.sh stamp <test|prod>   before `yarn build`: same env.js rewrite as the Dockerfile
 #   azure-static.sh verify <test|prod>  after `yarn build`: guard dist/env.js and dist/index.html
+#   azure-static.sh manifest            after `verify`: record dist/ file hashes in dist.sha256
+#   azure-static.sh check-manifest      after the artifact download: fail unless dist/ matches dist.sha256
 #   azure-static.sh publish             needs STORAGE_ACCOUNT; enables the static website, uploads dist/
 #   azure-static.sh smoke <test|prod>   needs SITE_URL, MAIN_BUNDLE, ASSET_PROBE; checks the live site
 #
@@ -12,6 +14,8 @@
 set -euo pipefail
 
 DIST='dist'
+# Outside dist/ so publish never uploads it.
+MANIFEST='dist.sha256'
 PREFIX='admin'
 NOSTORE='no-cache, no-store, must-revalidate'
 NOCACHE='no-cache'
@@ -103,6 +107,22 @@ verify() {
   [ -n "$main" ] || die "the build emitted no main-*.js bundle"
   grep -qF "$main" "$DIST/index.html" || die "index.html does not reference $main"
   echo "build ok: $main, env.js stamped for $env_name"
+}
+
+list_dist() {
+  (cd "$DIST" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 -r sha256sum)
+}
+
+manifest() {
+  [ -f "$DIST/index.html" ] || die "$DIST/index.html missing: run yarn build first"
+  list_dist > "$MANIFEST"
+  echo "recorded $(wc -l < "$MANIFEST") files in $MANIFEST"
+}
+
+check_manifest() {
+  [ -f "$MANIFEST" ] || die "$MANIFEST missing: the build artifact is incomplete"
+  list_dist | diff -u "$MANIFEST" - || die "$DIST differs from the file list the build job recorded"
+  echo "$DIST matches $MANIFEST ($(wc -l < "$MANIFEST") files)"
 }
 
 enable_static_website() {
@@ -269,7 +289,9 @@ shift || true
 case "$cmd" in
   stamp) stamp "$@" ;;
   verify) verify "$@" ;;
+  manifest) manifest ;;
+  check-manifest) check_manifest ;;
   publish) publish ;;
   smoke) smoke "$@" ;;
-  *) die "usage: $0 stamp|verify|smoke <test|prod>, or $0 publish" ;;
+  *) die "usage: $0 stamp|verify|smoke <test|prod>, or $0 manifest|check-manifest|publish" ;;
 esac
