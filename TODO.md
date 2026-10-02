@@ -17,6 +17,4 @@
 ## Sorting
 
 - 2026-09-24 eagle-admin: Comment periods Published column sorts by `isPublished`, but the cell shows `read` (which can include `public`); make the sort key and the cell use the same field.
-- 2026-09-24 eagle-admin: The mobile block in table-template.component.css copies the header rule in table.css (lines 139-145). Change that global selector to `.table thead th` and delete the component copy.
-- 2026-09-24 eagle-admin: The select-all header icon in table-template.component.html only works by mouse: it is aria-hidden and cannot take focus. Make it a button with a label.
-- 2026-09-24 eagle-admin: table-template sets aria-sort="none" on every unsorted header. ARIA 1.2 puts aria-sort on one header at a time, so return null for unsorted headers instead.
+- 2026-10-02 eagle-admin: table-template select-all icon and `selectAllClicked` payload still follow the `selectAll` flag, which goes stale once rows are ticked by hand; drive both from the rows, as `selectAllLabel` does. Its spec's stand-in consumer should copy the documents pages (`checkbox = !someSelected`).

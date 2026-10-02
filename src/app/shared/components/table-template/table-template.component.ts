@@ -73,16 +73,16 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
     this.onColumnSort.emit(property);
   }
 
-  // Value for aria-sort; also drives the header arrow. Whole sort matches multi-key columns
-  // (e.g. Contacts Name `lastName,+firstName`); falls back to the first key otherwise.
-  public sortState(property: string): 'ascending' | 'descending' | 'none' {
+  // Value for aria-sort, null when unsorted (ARIA allows it on one header); also drives the header arrow.
+  // Whole sort matches multi-key columns (e.g. Contacts Name `lastName,+firstName`); falls back to the first key otherwise.
+  public sortState(property: string): 'ascending' | 'descending' | null {
     const whole = this.column ?? '';
     if (whole.slice(1) === property) {
       return whole.charAt(0) === '+' ? 'ascending' : 'descending';
     }
     const primary = whole.split(',')[0] ?? '';
     if (primary.slice(1) !== property) {
-      return 'none';
+      return null;
     }
     return primary.charAt(0) === '+' ? 'ascending' : 'descending';
   }
@@ -123,6 +123,11 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   ngOnDestroy() {
     clearInterval(this.interval);
     this.mobileQuery.removeEventListener('change', this.mobileQueryListener);
+  }
+
+  /** What a click does: consumers clear the selection when any row is checked, else check every row. */
+  public get selectAllLabel(): string {
+    return this.data().data?.some(item => item.checkbox === true) ? 'Clear selection' : 'Select all rows';
   }
 
   public selectAction() {
@@ -175,10 +180,6 @@ export class TableTemplateComponent implements OnInit, OnChanges, OnDestroy {
   getshowingEnd(): number {
     const total = parseInt(this.data().paginationData.totalListItems, 10) || 0;
     return Math.min(this.activePage * this.activePageSize, total);
-  }
-
-  onKeyDown(event: KeyboardEvent) {
-    void event;
   }
 
   updateSelectedCount(event: any) {

@@ -18,11 +18,11 @@ const columns: TableColumn[] = [
   { name: 'Status', value: 'status', width: '20%', nosort: true }
 ];
 
-function render(sortBy: string): ComponentFixture<TableTemplateComponent> {
+function render(sortBy: string, cols: TableColumn[] = columns, rows: any[] = []): ComponentFixture<TableTemplateComponent> {
   const fixture = TestBed.createComponent(TableTemplateComponent);
   const params = new TableParamsObject(10, 1, 0, sortBy);
-  fixture.componentRef.setInput('data', new TableObject(StubRowsComponent, [], params));
-  fixture.componentRef.setInput('columns', columns);
+  fixture.componentRef.setInput('data', new TableObject(StubRowsComponent, rows, params));
+  fixture.componentRef.setInput('columns', cols);
   fixture.detectChanges();
   return fixture;
 }
@@ -49,10 +49,10 @@ describe('TableTemplateComponent headers', () => {
     expect(header(fixture, 'Name').getAttribute('aria-sort')).toBe('descending');
   });
 
-  it('marks columns that are not the current sort as none', () => {
+  it('leaves aria-sort off columns that are not the current sort', () => {
     const fixture = render('+name');
 
-    expect(header(fixture, 'Date Posted').getAttribute('aria-sort')).toBe('none');
+    expect(header(fixture, 'Date Posted').hasAttribute('aria-sort')).toBeFalse();
   });
 
   it('shows the up arrow only on an ascending column', () => {
@@ -113,5 +113,50 @@ describe('TableTemplateComponent headers', () => {
     header(fixture, 'Date Posted').querySelector('button').click();
 
     expect(emitted).toEqual(['datePosted']);
+  });
+
+  describe('select all', () => {
+    const selectColumn: TableColumn = { name: 'select_all_box', value: 'select_all_box', width: '5%', nosort: true };
+    const selectButton = (fixture: ComponentFixture<TableTemplateComponent>): HTMLButtonElement =>
+      fixture.nativeElement.querySelector('thead button.select-all-button');
+
+    it('is a button that selects every row, then offers to clear', () => {
+      const rows = [{ checkbox: false }];
+      const fixture = render('+name', [selectColumn, ...columns], rows);
+      const emitted: any[] = [];
+      // Tick the rows the way the documents pages do.
+      fixture.componentInstance.selectAllClicked.subscribe(value => {
+        emitted.push(value);
+        rows.forEach(row => row.checkbox = value.selectAll);
+      });
+
+      expect(selectButton(fixture).getAttribute('aria-label')).toBe('Select all rows');
+      selectButton(fixture).click();
+      fixture.detectChanges();
+
+      expect(emitted).toEqual([{ selectAll: true }]);
+      expect(selectButton(fixture).getAttribute('aria-label')).toBe('Clear selection');
+    });
+
+    it('offers Select all rows again once every row is unticked', () => {
+      const fixture = render('+name', [selectColumn, ...columns], [{ checkbox: false }]);
+
+      // Nothing ticks the rows, as when staff untick each one after select all.
+      selectButton(fixture).click();
+      fixture.detectChanges();
+
+      expect(selectButton(fixture).getAttribute('aria-label')).toBe('Select all rows');
+    });
+
+    it('is labelled Clear selection when some rows are checked, since a click clears them', () => {
+      const fixture = render('+name', [selectColumn, ...columns], [{ checkbox: true }, { checkbox: false }]);
+      const emitted: any[] = [];
+      fixture.componentInstance.selectAllClicked.subscribe(value => emitted.push(value));
+
+      expect(selectButton(fixture).getAttribute('aria-label')).toBe('Clear selection');
+      selectButton(fixture).click();
+
+      expect(emitted).toEqual([{ selectAll: false }]);
+    });
   });
 });
