@@ -16,12 +16,13 @@ tr:hover {
   font-size: .8rem;
 }
 
+/* B.C. Design System success and danger border tokens: white text on them passes AA. */
 .active-flag {
-  background: #5BB75C;
+  background: #42814a;
 }
 
 .inactive-flag {
-  background: red;
+  background: #ce3e39;
 }
 
 .scheduled-flag {

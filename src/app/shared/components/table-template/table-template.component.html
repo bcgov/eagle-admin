@@ -12,7 +12,7 @@
             }
             @if (entry.name === 'select_all_box') {
               <button type="button" class="select-all-button" [attr.aria-label]="selectAllLabel" (click)="selectAction()">
-                <i class="material-icons" aria-hidden="true">{{selectAll ? 'check_box' : 'check_box_outline_blank'}}</i>
+                <i class="material-icons" aria-hidden="true">{{allSelected ? 'check_box' : 'check_box_outline_blank'}}</i>
               </button>
             }
           } @else {

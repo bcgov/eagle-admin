@@ -7,7 +7,7 @@
   <input id="imagePickerSearch" ngbAutofocus type="search" class="form-control" autocomplete="off" [value]="query()"
     (input)="query.set($any($event.target).value)" aria-describedby="imagePickerHelp" />
   <p id="imagePickerHelp" class="form-text mb-3">
-    {{max > 1 ? 'Pick up to ' + max + '.' : 'Pick one.'}}
+    {{multiple ? 'Pick up to ' + max + '.' : 'Pick one.'}}
     @if (hasNonPublic) {
     Documents marked Not public must be published in the project's Documents before you can use them.
     }
@@ -19,7 +19,7 @@
     @let checked = isSelected(doc);
     <li>
       <label class="picker-card" [class.is-selected]="checked">
-        <input [type]="max === 1 ? 'radio' : 'checkbox'" [attr.name]="max === 1 ? titleId + 'Pick' : null"
+        <input [type]="multiple ? 'checkbox' : 'radio'" [attr.name]="multiple ? null : titleId + 'Pick'"
           class="form-check-input" [checked]="checked" [disabled]="!canPick(doc)" (change)="toggle(doc)" />
         <span class="picker-frame">
           @if (isPublic(doc)) {

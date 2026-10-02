@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, DestroyRef, TemplateRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { Subject, catchError, distinctUntilChanged, forkJoin, map, of, switchMap } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -90,6 +90,8 @@ export class AddEditActivityComponent implements OnInit {
   public projectIsSelected = false;
   public statusText: StatusLabel = 'Draft';
   public documents: any[] = [];
+  /** Public documents, plus non-public ones already attached so staff can still remove them. */
+  public attachmentChoices: any[] = [];
   public imageDocuments: any[] = [];
   public documentsLoading = false;
   public documentsFailed = false;
@@ -367,6 +369,12 @@ export class AddEditActivityComponent implements OnInit {
     return [...this.pickedImageIds().map(id => this.imageDocs().get(id)), ...attachments].filter(blocksPublish).map(documentName);
   }
 
+  /** nonPublicImages cannot vouch for an attachment missing from the loaded documents: still loading, failed, or past the first 1000. */
+  public get attachmentsUnchecked(): boolean {
+    const ids: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
+    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => doc._id === id)));
+  }
+
   private pickedImageIds(): string[] {
     return [this.myForm.get('featuredImageDocument')!.value, ...this.images.getRawValue().map(row => row.document)].filter(Boolean);
   }
@@ -551,7 +559,8 @@ export class AddEditActivityComponent implements OnInit {
 
   public updateProject() {
     const currentProjectId = this.myForm.get('project')!.value || null;
-    if (this.loadedProjectId && currentProjectId !== this.loadedProjectId) {
+    const projectChanged = currentProjectId !== this.loadedProjectId;
+    if (this.loadedProjectId && projectChanged) {
       // Picked documents belong to the previous project.
       this.myForm.patchValue({ featuredImageDocument: null, ...NO_FEATURED_TEXT, attachments: [] });
       this.images.clear();
@@ -568,7 +577,9 @@ export class AddEditActivityComponent implements OnInit {
       if (this.typeIsPCP) {
         this.loadPcpsForProject(currentProjectId);
       }
-      this.loadProjectLocation(currentProjectId);
+      if (projectChanged) {
+        this.loadProjectLocation(currentProjectId);
+      }
       this.loadProjectDocuments(currentProjectId);
     }
   }
@@ -590,6 +601,8 @@ export class AddEditActivityComponent implements OnInit {
         })
       );
     this.documentsFor.pipe(
+      // A type change keeps the project; search again only when the project or document source changes.
+      distinctUntilChanged((a, b) => a?.projectId === b?.projectId && a?.source === b?.source),
       switchMap(request => {
         this.documentsLoading = !!request;
         this.documentsFailed = false;
@@ -612,6 +625,8 @@ export class AddEditActivityComponent implements OnInit {
 
   private setDocuments(docs: any[]) {
     this.documents = docs;
+    const attached = new Set((this.myForm.get('attachments')!.value || []).map(documentId));
+    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.has(doc._id));
     this.imageDocuments = docs.filter(d =>
       d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }

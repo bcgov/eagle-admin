@@ -196,10 +196,11 @@
     <div class="flex-container">
       <div class="label-pair lrg">
         <label for="attachments">Attachments</label>
-        <ng-select labelForId="attachments" formControlName="attachments" [items]="documents" [multiple]="true"
+        <ng-select labelForId="attachments" formControlName="attachments" [items]="attachmentChoices" [multiple]="true"
           bindValue="_id" bindLabel="displayName" placeholder="Pick project documents"
           [notFoundText]="!projectIsSelected ? 'Select a project first'
-            : documentsFailed ? 'Could not load project documents' : 'No documents in this project'"></ng-select>
+            : documentsFailed ? 'Could not load project documents' : 'No public documents in this project'"></ng-select>
+        <small class="form-text">Only public documents are listed. Publish a document in the project's Documents to attach it.</small>
       </div>
     </div>
     <div class="flex-container">
@@ -277,6 +278,11 @@
     <p id="publishBlocked" class="text-danger mt-3 mb-0">
       {{primaryAction.label}} is off: {{nonPublicImages.join(', ')}} {{nonPublicImages.length === 1 ? 'is' : 'are'}} not public.
       Publish {{nonPublicImages.length === 1 ? 'it' : 'them'}} in the project's Documents, or remove {{nonPublicImages.length === 1 ? 'it' : 'them'}} from this Update.
+    </p>
+    }
+    @if (primaryGoesLive && attachmentsUnchecked) {
+    <p id="attachmentsUnchecked" class="mt-3 mb-0">
+      {{documentsLoading ? 'Checking whether every attachment is public.' : 'Could not check whether every attachment is public. Make sure each one is public in the project\'s Documents.'}}
     </p>
     }
   </div>

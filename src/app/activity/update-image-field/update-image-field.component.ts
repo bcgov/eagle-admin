@@ -218,6 +218,7 @@ export class UpdateImageFieldComponent {
       heading: this.multiple() ? 'Choose photos from project documents' : 'Choose an image from project documents',
       docs: this.choices(),
       max: this.remaining(),
+      multiple: this.multiple(),
       attached: this.attachedIds()
     });
     ref.result.then((docs: any[]) => {
