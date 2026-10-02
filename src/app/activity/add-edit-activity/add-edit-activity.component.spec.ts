@@ -171,6 +171,25 @@ describe('AddEditActivityComponent', () => {
       expect(recentActivityService.save).not.toHaveBeenCalled();
     });
 
+    it('moves a Scheduled Update to draft after Unschedule is confirmed', async () => {
+      render('a1', { ...base, status: 'published', publishDate: '2099-01-02T22:30:00Z' });
+      const modalRef = { componentInstance: {} as any, result: Promise.resolve(true) };
+      (TestBed.inject(NgbModal).open as jasmine.Spy).and.returnValue(modalRef);
+      footerButton('Unschedule').click();
+      await fixture.whenStable();
+      expect(modalRef.componentInstance.title).toBe('Unschedule');
+      expect(sentBody(recentActivityService.save).status).toBe('draft');
+    });
+
+    it('sends one request when Publish is clicked twice', () => {
+      const component = render(null);
+      recentActivityService.add.and.returnValue(new Subject<any>());
+      fillNews(component);
+      footerButton('Publish').click();
+      footerButton('Publish').click();
+      expect(recentActivityService.add).toHaveBeenCalledTimes(1);
+    });
+
     it('preselects Schedule for later with the stored date on a Scheduled Update', () => {
       const component = render('a1', { ...base, status: 'published', publishDate: '2099-01-02T22:30:00Z' });
       expect((query('#publishLater') as HTMLInputElement).checked).toBeTrue();
@@ -307,6 +326,14 @@ describe('AddEditActivityComponent', () => {
       expect(toastService.error).toHaveBeenCalledWith('This update was changed by someone else. Reload to see the latest.');
       expect(TestBed.inject(Router).navigate).not.toHaveBeenCalled();
     });
+
+    it('names the server error in the toast and lets staff save again', () => {
+      const component = create('a1', row);
+      recentActivityService.save.and.returnValue(throwError(() => new Error('Server down')));
+      component.save('keep');
+      expect(toastService.error).toHaveBeenCalledWith('Update not saved: Server down');
+      expect(component.saving).toBeFalse();
+    });
   });
 
   describe('saving a new Update', () => {
@@ -378,6 +405,14 @@ describe('AddEditActivityComponent', () => {
       component.myForm.patchValue({ subject: 'Policy' });
       component.save('draft');
       expect(sentBody(recentActivityService.add).subject).toBeNull();
+    });
+
+    it('sends the subject for a Corporate Update', () => {
+      const component = create(null);
+      fillNews(component);
+      component.myForm.patchValue({ category: 'Corporate', subject: 'Policy' });
+      component.save('draft');
+      expect(sentBody(recentActivityService.add).subject).toBe('Policy');
     });
 
     it('sends no featured image when none is picked, and a trimmed engagement URL', () => {
@@ -519,6 +554,41 @@ describe('AddEditActivityComponent', () => {
         expect(query('#publishBlocked')).toBeNull();
       });
 
+      it('offers only public documents as attachments', () => {
+        const component = renderNews([publicDoc('d1', 'Plan.pdf'), privateDoc('d2', 'Draft.pdf')]);
+        expect(component.attachmentChoices.map(doc => doc._id)).toEqual(['d1']);
+      });
+
+      it('keeps a non-public attachment already on the Update on offer, so it can be removed', () => {
+        const component = render(null);
+        searchService.getSearchResults.and.returnValue(of([{ data: { searchResults: [privateDoc('d2', 'Draft.pdf')] } }] as any));
+        component.myForm.patchValue({ attachments: ['d2'] });
+        fillNews(component);
+        expect(component.attachmentChoices.map(doc => doc._id)).toEqual(['d2']);
+      });
+
+      it('says the attachments could not be checked when the document search fails', () => {
+        const component = render(null);
+        searchService.getSearchResults.and.returnValue(throwError(() => new Error('search down')));
+        fillNews(component);
+        component.myForm.patchValue({ attachments: ['d2'] });
+        footerButtons();
+        expect(query('#attachmentsUnchecked').textContent).toContain('Could not check whether every attachment is public');
+      });
+
+      it('says the attachments could not be checked when one is past the loaded documents', () => {
+        const component = renderNews([publicDoc('d1', 'Plan.pdf')]);
+        component.myForm.patchValue({ attachments: ['d1', 'd9'] });
+        expect(component.attachmentsUnchecked).toBeTrue();
+      });
+
+      it('has no unchecked note when every attachment is loaded', () => {
+        const component = renderNews([publicDoc('d1', 'Plan.pdf')]);
+        component.myForm.patchValue({ attachments: ['d1'] });
+        footerButtons();
+        expect(query('#attachmentsUnchecked')).toBeNull();
+      });
+
       it('still lets a draft with a non-public photo be saved', () => {
         const component = renderNews();
         component.addPhotos([{ doc: privateDoc('i1', 'Site plan.jpg') }]);
@@ -610,6 +680,29 @@ describe('AddEditActivityComponent', () => {
       late.next([{ data: { searchResults: [{ _id: 'p1doc', documentFileName: 'p1doc.pdf' }] } }]);
       late.complete();
       expect(component.documents.map(doc => doc._id)).toEqual(['p2doc']);
+    });
+
+    it('does not search again or reload the location when a type change keeps the project and source', () => {
+      const component = create(null);
+      fillNews(component);
+      const projectService = TestBed.inject(ProjectService) as jasmine.SpyObj<ProjectService>;
+      searchService.getSearchResults.calls.reset();
+      projectService.getById.calls.reset();
+      component.myForm.patchValue({ type: 'Public Comment Period' });
+      component.updateType(true);
+      expect(searchService.getSearchResults).not.toHaveBeenCalled();
+      expect(projectService.getById).not.toHaveBeenCalled();
+    });
+
+    it('searches again when a type change switches the document source', () => {
+      const component = create(null);
+      fillNews(component);
+      searchService.getSearchResults.calls.reset();
+      component.myForm.patchValue({ type: 'Project Notification News' });
+      component.updateType(true);
+      expect(searchService.getSearchResults.calls.allArgs().map(args => args[6])).toEqual([
+        { documentSource: 'PROJECT-NOTIFICATION' }, { documentSource: 'UPDATE' }
+      ]);
     });
   });
 });
