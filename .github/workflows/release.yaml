@@ -1,0 +1,75 @@
+# =============================================================================
+# Create Release Tag
+# =============================================================================
+# Cuts the `vX.Y.Z` tag and a draft GitHub Release from the branch this runs on.
+# Deploys nothing: the Azure deploy workflows take the tag as their source.
+#
+# Shared with "Deploy to Test" (OpenShift), which runs the same two steps when the
+# tag or release is missing. Both skip whatever already exists, so either one can
+# run first. "Deploy to Prod" publishes the draft.
+# =============================================================================
+
+name: Create Release Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.2.3)'
+        required: true
+        type: string
+
+concurrency:
+  group: release-tag
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must be in format v1.2.3"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Create Git tag
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "Tag $VERSION already exists at $(git rev-parse --short "$VERSION^{commit}") - skipping"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$VERSION" -m "Release $VERSION"
+            git push origin "$VERSION"
+            echo "Tagged $(git rev-parse --short HEAD) as $VERSION"
+          fi
+
+      - name: Create GitHub Release (draft)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists - skipping"
+          else
+            gh release create "$VERSION" \
+              --title "Release $VERSION" \
+              --generate-notes \
+              --draft
+          fi

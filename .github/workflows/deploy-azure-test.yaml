@@ -1,0 +1,138 @@
+# =============================================================================
+# Deploy to Azure Test
+# =============================================================================
+# Builds an existing release tag and publishes it to the test storage account's
+# static website under `$web/admin/`, served at <SITE_URL>/admin/ through Front Door.
+# Cut the tag first with "Create Release Tag" (or "Deploy to Test").
+#
+#   gh workflow run "Deploy to Azure Test" -f version=v2.5.31
+#   gh workflow run "Deploy to Azure Test" -f version=v2.5.31 -f smoke=false
+#
+# Upload, cache headers and checks live in scripts/azure-static.sh, shared with prod.
+# =============================================================================
+
+name: Deploy to Azure Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Existing version tag (e.g., v1.2.3)'
+        required: true
+        type: string
+      smoke:
+        description: 'Smoke test SITE_URL after upload (off until Front Door routes /admin/ to storage)'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: deploy-azure-test
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Publish ${{ inputs.version }} to Azure test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The environment name is the OIDC subject on the federated credential;
+    # renaming it breaks Azure login.
+    environment: azure-test
+    env:
+      STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+      SITE_URL: ${{ vars.SITE_URL }}
+    steps:
+      - name: Validate version format
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must be an existing tag in format v1.2.3, never a branch"
+            exit 1
+          fi
+
+      - name: Checkout repository at version tag
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: refs/tags/${{ inputs.version }}
+
+      - name: Verify the tag and the deployment targets
+        env:
+          VERSION: ${{ inputs.version }}
+          SMOKE: ${{ inputs.smoke }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --quiet origin
+          tag_commit=$(git rev-parse -q --verify "refs/tags/$VERSION^{commit}") \
+            || { echo "::error::tag $VERSION does not exist; run Create Release Tag first"; exit 1; }
+          [ "$tag_commit" = "$(git rev-parse HEAD)" ] \
+            || { echo "::error::checked out $(git rev-parse HEAD), but $VERSION is $tag_commit"; exit 1; }
+          [ -n "$STORAGE_ACCOUNT" ] \
+            || { echo "::error::variable AZURE_STORAGE_ACCOUNT is empty on the azure-test environment"; exit 1; }
+          case "$STORAGE_ACCOUNT" in
+            *prod*) echo "::error::AZURE_STORAGE_ACCOUNT '$STORAGE_ACCOUNT' looks like production; fix the azure-test environment variable"; exit 1 ;;
+          esac
+          if [ "$SMOKE" = "true" ]; then
+            [ -n "$SITE_URL" ] \
+              || { echo "::error::variable SITE_URL is empty on the azure-test environment; set it or run with smoke=false"; exit 1; }
+          fi
+          echo "deploying $VERSION ($tag_commit) to $STORAGE_ACCOUNT"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24'
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Unit tests
+        run: yarn test-ci
+
+      - name: Stamp env.js for test
+        run: bash scripts/azure-static.sh stamp test
+
+      - name: Build
+        run: yarn build
+
+      - name: Verify build output
+        run: bash scripts/azure-static.sh verify test
+
+      - name: Azure login
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Needs Storage Account Contributor (static website setting) and
+      # Storage Blob Data Contributor (uploads) on the account.
+      - name: Publish to $web/admin/
+        run: bash scripts/azure-static.sh publish
+
+      - name: Smoke test
+        if: inputs.smoke
+        run: bash scripts/azure-static.sh smoke test
+
+      - name: Report failure to job summary
+        if: failure()
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          {
+            echo "### Azure test deploy of $VERSION failed"
+            echo "If the publish step passed, \`\$web/admin/\` on $STORAGE_ACCOUNT already holds the new build."
+            echo "Smoke failures on the deep link, \`/admin/nope.js\` or \`/api/config\` point at the Front Door rules, not the upload."
+            echo "To roll back, re-run this workflow with the previous good tag."
+          } >> "$GITHUB_STEP_SUMMARY"
