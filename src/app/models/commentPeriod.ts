@@ -79,7 +79,8 @@ export class CommentPeriod {
     this.instructions = obj && obj.instructions || null;
     this.isClassified = obj?.isClassified ?? null;
     this.isMet = obj?.isMet ?? null;
-    this.isPublished = obj?.isPublished ?? null;
+    // Legacy periods never stored isPublished; their public `read` is the published state.
+    this.isPublished = obj?.isPublished ?? obj?.read?.includes('public') ?? null;
     this.isResolved = obj?.isResolved ?? null;
     this.isVetted = obj?.isVetted ?? null;
     this.metURLAdmin = obj && obj.metURLAdmin || null;
