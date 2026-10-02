@@ -5,33 +5,25 @@ tr:hover {
     background-color: #e2f1ff;
 }
 
-.active-flag {
-  background: #5BB75C;
+.active-flag,
+.inactive-flag,
+.scheduled-flag {
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 3px 8px 4px;
   border-radius: 5px;
   font-size: .8rem;
+}
+
+.active-flag {
+  background: #5BB75C;
 }
 
 .inactive-flag {
   background: red;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 3px 8px 4px;
-  border-radius: 5px;
-  font-size: .8rem;
 }
-
 
 .scheduled-flag {
   background: #1a5a96;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 3px 8px 4px;
-  border-radius: 5px;
-  font-size: .8rem;
 }

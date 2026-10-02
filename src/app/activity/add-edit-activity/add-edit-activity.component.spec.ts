@@ -262,6 +262,27 @@ describe('AddEditActivityComponent', () => {
       expect(component.myForm.get('publishDate')!.errors).toBeNull();
     });
 
+    it('keeps the stored seconds when a scheduled Update is saved with its time unchanged', () => {
+      const component = create('a1', { ...row, publishDate: '2099-01-02T17:30:45.123Z' });
+      component.save('keep');
+      expect(sentBody(recentActivityService.save).publishDate).toEqual(new Date('2099-01-02T17:30:45.123Z'));
+    });
+
+    it('sends the picked minute when the scheduled time is changed', () => {
+      const stored = new Date('2099-01-02T17:30:45.123Z');
+      const component = create('a1', { ...row, publishDate: stored.toISOString() });
+      component.myForm.patchValue({ publishTime: { hour: stored.getHours(), minute: stored.getMinutes() + 1 } });
+      component.save('keep');
+      expect(sentBody(recentActivityService.save).publishDate).toEqual(
+        new Date(stored.getFullYear(), stored.getMonth(), stored.getDate(), stored.getHours(), stored.getMinutes() + 1));
+    });
+
+    it('shows no required mark on Category, which an existing Update may lack', () => {
+      render('a1', row);
+      expect(query('label[for=category]').textContent.trim()).toBe('Category');
+      expect(query('#category').hasAttribute('aria-required')).toBeFalse();
+    });
+
     it('Save keeps a published Update published, through PUT', () => {
       const component = create('a1', row);
       component.save('keep');
@@ -289,6 +310,12 @@ describe('AddEditActivityComponent', () => {
   });
 
   describe('saving a new Update', () => {
+    it('marks Category as required', () => {
+      render(null);
+      expect(query('label[for=category]').textContent.trim()).toBe('Category*');
+      expect(query('#category').getAttribute('aria-required')).toBe('true');
+    });
+
     it('sends a draft as inactive, through POST', () => {
       const component = create(null);
       fillNews(component);

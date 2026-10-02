@@ -1,4 +1,4 @@
-import { blocksPublish, captionLine, imageSrc, toUpdateImage } from './update-images';
+import { blocksPublish, captionLine, imageSrc, imageType, toUpdateImage } from './update-images';
 
 describe('update images', () => {
   describe('blocksPublish', () => {
@@ -76,6 +76,20 @@ describe('update images', () => {
 
     it('is empty with neither', () => {
       expect(captionLine({})).toBe('');
+    });
+  });
+
+  describe('imageType', () => {
+    it('maps an image extension to its MIME type, in any case', () => {
+      expect(imageType('Dam.JPG')).toBe('image/jpeg');
+    });
+
+    it('needs a dot before the extension', () => {
+      expect(imageType('png')).toBeUndefined();
+    });
+
+    it('ignores object property names', () => {
+      expect(imageType('x.constructor')).toBeUndefined();
     });
   });
 });

@@ -27,8 +27,8 @@
     <h2>Update <span class="badge bg-secondary ms-2">{{statusText}}</span></h2>
     <div class="flex-container">
       <div class="label-pair">
-        <label for="category">Category* </label>
-        <select id="category" class="form-control" formControlName="category" (change)="updateCategory()">
+        <label for="category">Category{{isEditing ? '' : '*'}}</label>
+        <select id="category" class="form-control" [attr.aria-required]="!isEditing || null" formControlName="category" (change)="updateCategory()">
           @for (category of categories(); track category) {
           <option [ngValue]="category">{{category}}</option>
           }
@@ -184,12 +184,12 @@
       </div>
     </div>
     <app-update-image-field idPrefix="featuredImage" heading="Featured image"
-      help="One image for the top of the Update. JPG, PNG, WebP or GIF, up to 10 MB."
+      [help]="'One image for the top of the Update. JPG, PNG, WebP or GIF, up to ' + imageMaxMb + ' MB.'"
       [max]="1" [rows]="featuredRows" [docs]="imageDocs()" [srcs]="imageSrcs()" [choices]="imageDocuments"
       [choicesLoading]="documentsLoading" [choicesFailed]="documentsFailed" [projectId]="projectIsSelected ? myForm.get('project')!.value : null"
       (added)="addFeaturedImage($event)" (removed)="removeFeaturedImage()"></app-update-image-field>
     <app-update-image-field idPrefix="image" heading="Photos"
-      [help]="'Up to ' + imagesMax + ' photos, shown in this order. JPG, PNG, WebP or GIF, up to 10 MB each.'"
+      [help]="'Up to ' + imagesMax + ' photos, shown in this order. JPG, PNG, WebP or GIF, up to ' + imageMaxMb + ' MB each.'"
       [max]="imagesMax" [rows]="photoRows" [docs]="imageDocs()" [srcs]="imageSrcs()" [choices]="imageDocuments"
       [choicesLoading]="documentsLoading" [choicesFailed]="documentsFailed" [projectId]="projectIsSelected ? myForm.get('project')!.value : null"
       (added)="addPhotos($event)" (removed)="removeImage($event)" (moved)="moveImage($event)"></app-update-image-field>

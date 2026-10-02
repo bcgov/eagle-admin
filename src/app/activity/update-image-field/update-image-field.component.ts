@@ -7,13 +7,9 @@ import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
 import { DocumentService } from 'src/app/services/document.service';
 import { UpdateImagePickerComponent } from '../update-image-picker/update-image-picker.component';
 import { IMAGE_CAPTION_MAX, IMAGE_CREDIT_MAX } from '../update-rules';
-import { UPDATE_IMAGE_SOURCE, blocksPublish, documentName, imageSrc, isPublicDocument } from './update-images';
-
-// The API refuses a file whose name extension does not map to its MIME type.
-const IMAGE_TYPES: Record<string, string> = {
-  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif'
-};
-const IMAGE_MAX_MB = 10;
+import {
+  IMAGE_MAX_MB, IMAGE_TYPES, UPDATE_IMAGE_SOURCE, blocksPublish, documentName, imageSrc, imageType, isPublicDocument
+} from './update-images';
 
 export interface ImageRow {
   document: FormControl;
@@ -27,6 +23,8 @@ export interface AddedImage {
   /** Local preview of a file just uploaded. */
   src?: string;
 }
+
+type ImageStatus = 'notPublic' | 'goesPublic' | null;
 
 interface Upload {
   file: File;
@@ -72,7 +70,7 @@ export class UpdateImageFieldComponent {
   readonly attachedIds = computed(() => new Set(this.rows().map(row => row.document.value)));
   /** Help text ids for the add buttons. */
   readonly addHelpIds = computed(() => [this.help() ? `${this.idPrefix()}Help` : '', `${this.idPrefix()}ChooseHelp`].join(' ').trim());
-  readonly accept = [...new Set(Object.values(IMAGE_TYPES))].join(',');
+  readonly accept = [...new Set(IMAGE_TYPES.values())].join(',');
   readonly captionMax = IMAGE_CAPTION_MAX;
   readonly creditMax = IMAGE_CREDIT_MAX;
   public pending: File[] = [];
@@ -102,12 +100,24 @@ export class UpdateImageFieldComponent {
     return documentName(doc) || 'Image';
   }
 
-  blocksPublish = blocksPublish;
-  isPublic = isPublicDocument;
-  updateImageSource = UPDATE_IMAGE_SOURCE;
+  /** Publish status note for a row's document, if it needs one. */
+  statusOf(doc: any): ImageStatus {
+    if (blocksPublish(doc)) {
+      return 'notPublic';
+    }
+    return doc?.documentSource === UPDATE_IMAGE_SOURCE && !isPublicDocument(doc) ? 'goesPublic' : null;
+  }
 
   altMissing(row: ImageRow): boolean {
     return !!row.document.value && !(row.alt.value || '').trim() && (row.alt.touched || row.alt.dirty);
+  }
+
+  altDescribedBy(row: ImageRow, index: number, status: ImageStatus): string | null {
+    const ids = [
+      status ? this.id(index, 'Status') : '',
+      this.altMissing(row) ? this.id(index, 'AltError') : ''
+    ].filter(Boolean);
+    return ids.length ? ids.join(' ') : null;
   }
 
   onFiles(files: File[]) {
@@ -118,8 +128,7 @@ export class UpdateImageFieldComponent {
       return;
     }
     const started: Upload[] = picked.map(file => {
-      const extension = file.name.split('.').pop()!.toLowerCase();
-      const error = IMAGE_TYPES[extension] !== file.type ? 'Not a JPG, PNG, WebP or GIF image, or its name does not match its type.'
+      const error = imageType(file.name) !== file.type ? 'Not a JPG, PNG, WebP or GIF image, or its name does not match its type.'
         : file.size > IMAGE_MAX_MB * 1024 * 1024 ? `Larger than ${IMAGE_MAX_MB} MB.` : null;
       return { file, error, progress: 0, src: error ? null : URL.createObjectURL(file) };
     });
@@ -184,7 +193,9 @@ export class UpdateImageFieldComponent {
   dismiss(item: Upload) {
     this.drop(item);
     this.uploads.update(list => list.filter(u => u !== item));
-    this.focusLater(this.addFocusTarget());
+    // With no slots left the upload area is not rendered; fall back to the last Remove button, else the heading.
+    const rows = this.rows().length;
+    this.focusLater(this.remaining() > 0 ? this.addFocusTarget() : rows ? this.id(rows - 1, 'Remove') : `${this.idPrefix()}Heading`);
   }
 
   private drop(item: Upload) {
@@ -241,7 +252,7 @@ export class UpdateImageFieldComponent {
   private focusLater(id: string) {
     setTimeout(() => {
       const el = document.getElementById(id);
-      const target = el?.matches('button, input') ? el : el?.querySelector<HTMLElement>('button:not([disabled])');
+      const target = el?.matches('button, input, [tabindex]') ? el : el?.querySelector<HTMLElement>('button:not([disabled])');
       target?.focus();
     });
   }

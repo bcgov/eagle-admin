@@ -13,9 +13,11 @@ describe('ActivityTableRowsComponent', () => {
   let component: ActivityTableRowsComponent;
   let http: HttpTestingController;
   let toastService: jasmine.SpyObj<ToastService>;
+  let modal: jasmine.SpyObj<NgbModal>;
 
   beforeEach(() => {
     toastService = jasmine.createSpyObj('ToastService', ['error']);
+    modal = jasmine.createSpyObj('NgbModal', ['open']);
     TestBed.configureTestingModule({
       imports: [ActivityTableRowsComponent],
       providers: [
@@ -26,10 +28,10 @@ describe('ActivityTableRowsComponent', () => {
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'debug']) },
         { provide: ToastService, useValue: toastService },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
-        { provide: NgbModal, useValue: jasmine.createSpyObj('NgbModal', ['open']) }
+        { provide: NgbModal, useValue: modal }
       ]
     });
-    // No detectChanges: togglePin needs no rendered rows.
+    // No detectChanges: togglePin and archiveActivity need no rendered rows.
     component = TestBed.createComponent(ActivityTableRowsComponent).componentInstance;
     http = TestBed.inject(HttpTestingController);
   });
@@ -56,5 +58,37 @@ describe('ActivityTableRowsComponent', () => {
 
     expect(row.pinned).toBeFalse();
     expect(toastService.error).toHaveBeenCalledWith('This update was changed by someone else. Reload to see the latest.');
+  });
+
+  describe('archiveActivity', () => {
+    async function confirmArchive(row: object) {
+      const result = Promise.resolve(true);
+      modal.open.and.returnValue({ componentInstance: {}, result } as any);
+      component.archiveActivity(row);
+      await result;
+    }
+
+    it('marks the row archived when the API accepts it', async () => {
+      const row = { _id: 'a1', status: 'published', active: true };
+
+      await confirmArchive(row);
+      const req = http.expectOne('/api/recentActivity/a1');
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ _id: 'a1', status: 'archived' });
+
+      expect(row.status).toBe('archived');
+      expect(row.active).toBeFalse();
+      expect(toastService.error).not.toHaveBeenCalled();
+    });
+
+    it('keeps the row and shows an error toast when the archive fails', async () => {
+      const row = { _id: 'a1', status: 'published', active: true };
+
+      await confirmArchive(row);
+      http.expectOne('/api/recentActivity/a1').flush(null, { status: 500, statusText: 'Server Error' });
+
+      expect(row.status).toBe('published');
+      expect(toastService.error).toHaveBeenCalledWith('Update not archived. Try again.');
+    });
   });
 });
