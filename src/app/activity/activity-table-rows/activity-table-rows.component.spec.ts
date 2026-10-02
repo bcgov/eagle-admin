@@ -8,6 +8,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { TableObject } from 'src/app/shared/components/table-template/table-object';
 
 describe('ActivityTableRowsComponent', () => {
   let component: ActivityTableRowsComponent;
@@ -89,6 +90,34 @@ describe('ActivityTableRowsComponent', () => {
 
       expect(row.status).toBe('published');
       expect(toastService.error).toHaveBeenCalledWith('Update not archived. Try again.');
+    });
+  });
+
+  describe('status flags', () => {
+    // WCAG 2 relative luminance of a computed rgb() colour.
+    function luminance(rgb: string): number {
+      const [r, g, b] = rgb.match(/\d+/g)!.slice(0, 3).map(v => Number(v) / 255)
+        .map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function flagContrast(status: string): number {
+      const fixture = TestBed.createComponent(ActivityTableRowsComponent);
+      fixture.componentRef.setInput('data', new TableObject(ActivityTableRowsComponent, [{ _id: 'a1', headline: 'H', status }]));
+      fixture.componentRef.setInput('columnData', Array(7).fill({ width: '10%' }));
+      fixture.componentRef.setInput('smallTable', false);
+      fixture.detectChanges();
+      const style = getComputedStyle(fixture.nativeElement.querySelector('td[data-label="Status"] span'));
+      const [light, dark] = [luminance(style.color), luminance(style.backgroundColor)].sort((a, b) => b - a);
+      return (light + 0.05) / (dark + 0.05);
+    }
+
+    it('gives the Published flag AA text contrast', () => {
+      expect(flagContrast('published')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('gives the Draft flag AA text contrast', () => {
+      expect(flagContrast('draft')).toBeGreaterThanOrEqual(4.5);
     });
   });
 });
