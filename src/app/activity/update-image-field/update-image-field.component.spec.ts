@@ -243,4 +243,27 @@ describe('UpdateImageFieldComponent', () => {
       expect(altDescribedBy()).toBeNull();
     });
   });
+
+  describe('choosing from project documents', () => {
+    function openPicker(): any {
+      const picker = { componentInstance: {} as any, result: new Promise(() => { /* left open */ }) };
+      (TestBed.inject(NgbModal).open as jasmine.Spy).and.returnValue(picker);
+      fixture.componentRef.setInput('choices', [{ _id: 'c1', read: ['public'] }]);
+      fixture.detectChanges();
+      query('#imageChoose').click();
+      return picker.componentInstance;
+    }
+
+    it('opens the picker in multiple mode for Photos with one slot left', () => {
+      fixture.componentRef.setInput('rows', ['d1', 'd2', 'd3', 'd4'].map(row));
+      const picker = openPicker();
+      expect(picker.max).toBe(1);
+      expect(picker.multiple).toBeTrue();
+    });
+
+    it('opens the picker in single mode for a one-image field', () => {
+      fixture.componentRef.setInput('max', 1);
+      expect(openPicker().multiple).toBeFalse();
+    });
+  });
 });

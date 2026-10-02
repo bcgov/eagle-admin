@@ -11,5 +11,4 @@
 - 2026-10-02 eagle-admin: status flags fail AA contrast (white on `#5BB75C` about 2.5:1, white on `red` about 4.0:1); pick darker tokens. The `.active-flag`/`.inactive-flag` styles are still copied in pins-list, activity-detail-table-rows and activity.component.css.
 - 2026-09-24 eagle-admin: the Update image picker loads full-size originals as thumbnails (update-image-picker.component.html); there is no thumbnail service yet.
 - 2026-09-24 eagle-admin: the nonPublicImages attachment check only sees loaded documents: none while loading, none after a failed search, only the first 1000. Say so when the check cannot run.
-- 2026-09-24 eagle-admin: the image picker switches to radio mode whenever max is 1, even for Photos with one slot left. The opener should pass a multiple flag.
 - 2026-09-24 eagle-admin: the file-upload browse link changed from <a> to <button class="browse">. Check project-documents-upload, project-notification-upload and add-comment.

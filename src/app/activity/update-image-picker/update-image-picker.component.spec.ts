@@ -8,7 +8,7 @@ describe('UpdateImagePickerComponent', () => {
   let fixture: ComponentFixture<UpdateImagePickerComponent>;
   let activeModal: jasmine.SpyObj<NgbActiveModal>;
 
-  function open(options: Partial<Pick<UpdateImagePickerComponent, 'docs' | 'max' | 'attached'>>) {
+  function open(options: Partial<Pick<UpdateImagePickerComponent, 'docs' | 'max' | 'multiple' | 'attached'>>) {
     activeModal = jasmine.createSpyObj('NgbActiveModal', ['close', 'dismiss']);
     TestBed.configureTestingModule({
       imports: [UpdateImagePickerComponent],
@@ -40,13 +40,13 @@ describe('UpdateImagePickerComponent', () => {
 
   describe('which images can be picked', () => {
     it('does not offer a document the public cannot see', () => {
-      open({ docs: [doc('a'), doc('b', ['staff'])], max: 5 });
+      open({ docs: [doc('a'), doc('b', ['staff'])], max: 5, multiple: true });
       expect(card('b.jpg').disabled).toBeTrue();
       expect(card('a.jpg').disabled).toBeFalse();
     });
 
     it('does not offer an image already on the Update, and marks it Added', () => {
-      open({ docs: [doc('a'), doc('b')], max: 5, attached: new Set(['b']) });
+      open({ docs: [doc('a'), doc('b')], max: 5, multiple: true, attached: new Set(['b']) });
       expect(card('b.jpg').disabled).toBeTrue();
       expect(card('b.jpg').closest('label')!.textContent).toContain('Added');
     });
@@ -54,7 +54,7 @@ describe('UpdateImagePickerComponent', () => {
 
   describe('picking several photos', () => {
     it('returns the picked photos in the order they were picked', () => {
-      open({ docs: [doc('a'), doc('b'), doc('c')], max: 5 });
+      open({ docs: [doc('a'), doc('b'), doc('c')], max: 5, multiple: true });
       pick('c.jpg');
       pick('a.jpg');
       expect(addButton().textContent!.trim()).toBe('Add 2 photos');
@@ -63,7 +63,7 @@ describe('UpdateImagePickerComponent', () => {
     });
 
     it('drops a photo when it is picked again', () => {
-      open({ docs: [doc('a'), doc('b')], max: 5 });
+      open({ docs: [doc('a'), doc('b')], max: 5, multiple: true });
       pick('a.jpg');
       pick('b.jpg');
       pick('a.jpg');
@@ -72,7 +72,7 @@ describe('UpdateImagePickerComponent', () => {
     });
 
     it('stops offering more photos once the limit is reached, but keeps picked ones changeable', () => {
-      open({ docs: [doc('a'), doc('b'), doc('c')], max: 2 });
+      open({ docs: [doc('a'), doc('b'), doc('c')], max: 2, multiple: true });
       pick('a.jpg');
       pick('b.jpg');
       expect(card('c.jpg').disabled).toBeTrue();
@@ -80,9 +80,17 @@ describe('UpdateImagePickerComponent', () => {
     });
 
     it('keeps Add off until something is picked', () => {
-      open({ docs: [doc('a')], max: 5 });
+      open({ docs: [doc('a')], max: 5, multiple: true });
       expect(addButton().disabled).toBeTrue();
     });
+  });
+
+  it('keeps checkboxes for photos with one slot left', () => {
+    open({ docs: [doc('a'), doc('b')], max: 1, multiple: true });
+    pick('a.jpg');
+    expect(card('a.jpg').type).toBe('checkbox');
+    expect(card('b.jpg').disabled).toBeTrue();
+    expect(addButton().textContent!.trim()).toBe('Add 1 photo');
   });
 
   describe('picking one image', () => {

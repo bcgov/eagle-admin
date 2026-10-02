@@ -18,6 +18,8 @@ export class UpdateImagePickerComponent {
   heading = 'Choose images';
   docs: any[] = [];
   max = 1;
+  /** Checkboxes for a field that takes several images, even with one slot left. */
+  multiple = false;
   attached = new Set<string>();
 
   readonly query = signal('');
@@ -40,7 +42,7 @@ export class UpdateImagePickerComponent {
 
   get addLabel(): string {
     const count = this.selected().length;
-    if (this.max === 1) {
+    if (!this.multiple) {
       return 'Add image';
     }
     return count ? `Add ${count} ${count === 1 ? 'photo' : 'photos'}` : 'Add photos';
@@ -54,14 +56,14 @@ export class UpdateImagePickerComponent {
     if (!isPublicDocument(doc) || this.attached.has(doc._id)) {
       return false;
     }
-    return this.max === 1 || this.isSelected(doc) || this.selected().length < this.max;
+    return !this.multiple || this.isSelected(doc) || this.selected().length < this.max;
   }
 
   toggle(doc: any) {
     const picked = this.selected();
     if (this.isSelected(doc)) {
       this.selected.set(picked.filter(id => id !== doc._id));
-    } else if (this.max === 1) {
+    } else if (!this.multiple) {
       this.selected.set([doc._id]);
     } else if (picked.length < this.max) {
       this.selected.set([...picked, doc._id]);
