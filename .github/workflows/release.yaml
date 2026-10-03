@@ -4,9 +4,8 @@
 # Cuts the `vX.Y.Z` tag and a draft GitHub Release from the branch this runs on.
 # Deploys nothing: the Azure deploy workflows take the tag as their source.
 #
-# Both this workflow and "Deploy to Test" (OpenShift) create the tag and the draft
-# release only when missing, so either one can run first. The two steps are copied
-# in deploy-to-test.yaml; change both together. "Deploy to Prod" publishes the draft.
+# Only this workflow creates the tag and the draft release, each only when missing.
+# "Deploy to Azure Production" publishes the draft.
 # =============================================================================
 
 name: Create Release Tag

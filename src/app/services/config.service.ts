@@ -35,7 +35,7 @@ declare global {
  *   - App uses relative paths (/api) — never API_LOCATION directly
  *
  * DEPLOYED (configEndpoint = true):
- *   - Dockerfile sed sets configEndpoint to true
+ *   - `scripts/azure-static.sh stamp` sets configEndpoint to true
  *   - App fetches /api/config on startup — today rproxy answers it from a ConfigMap, and
  *     eagle-api serves it from MongoDB once the nginx exact-match block is removed
  *   - API values override env.js (except KEYCLOAK_CLIENT_ID — preserved)
