@@ -36,8 +36,8 @@ declare global {
  *
  * DEPLOYED (configEndpoint = true):
  *   - `scripts/azure-static.sh stamp` sets configEndpoint to true
- *   - App fetches /api/config on startup — today rproxy answers it from a ConfigMap, and
- *     eagle-api serves it from MongoDB once the nginx exact-match block is removed
+ *   - App fetches /api/config on startup; behind Front Door the /api/* route sends it
+ *     to eagle-api, which answers from its environment
  *   - API values override env.js (except KEYCLOAK_CLIENT_ID — preserved)
  *
  * Lists are lazy-loaded on first access via getLists(), not during init.
@@ -157,7 +157,7 @@ export class ConfigService {
 
   /**
    * Get the API path for making API calls.
-   * Always relative — proxy.conf.js (local) or nginx (deployed) handles routing.
+   * Always relative — proxy.conf.js (local) or the Front Door /api/* route (deployed) handles routing.
    */
   public getApiPath(): string {
     return this._config().API_PATH || '/api';

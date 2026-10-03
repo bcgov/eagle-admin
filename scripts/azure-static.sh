@@ -83,7 +83,7 @@ export_env() {
 stamp() {
   local env_name
   env_name=$(target_env "${1:-}")
-  # Turn on /api/config; everything else comes from it at boot.
+  # Turn on /api/config; other values come from it at boot, except ENVIRONMENT below.
   sed -i 's/window.__env.configEndpoint = false/window.__env.configEndpoint = true/' src/env.js
   # Read before /api/config answers, so the baked value must not say 'dev'.
   sed -i "s/window.__env.ENVIRONMENT = '[a-z]*';/window.__env.ENVIRONMENT = '$env_name';/" src/env.js
