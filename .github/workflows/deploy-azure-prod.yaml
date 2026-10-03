@@ -241,8 +241,8 @@ jobs:
   release:
     name: Publish the ${{ inputs.version }} GitHub Release
     needs: deploy
-    # Same as the OpenShift "Deploy to Prod": the draft becomes the published release,
-    # only after a passing smoke test, which proves the site serves this build.
+    # The draft becomes the published release only after a passing smoke test,
+    # which proves the site serves this build.
     if: inputs.smoke
     runs-on: ubuntu-latest
     timeout-minutes: 5

@@ -2,7 +2,7 @@
 # Publishes the eagle-admin build to an Azure storage static website under `$web/admin/`
 # and checks the result through the public host. Shared by the deploy-azure-* workflows.
 #
-#   azure-static.sh stamp <test|prod>   before `yarn build`: same env.js rewrite as the Dockerfile
+#   azure-static.sh stamp <test|prod>   before `yarn build`: rewrite src/env.js for a deployed build
 #   azure-static.sh verify <test|prod>  after `yarn build`: guard dist/env.js and dist/index.html
 #   azure-static.sh manifest            after `verify`: record dist/ file hashes in dist.sha256
 #   azure-static.sh check-manifest      after the artifact download: fail unless dist/ matches dist.sha256
@@ -83,7 +83,7 @@ export_env() {
 stamp() {
   local env_name
   env_name=$(target_env "${1:-}")
-  # Same rewrite as the Dockerfile: everything else comes from /api/config at boot.
+  # Turn on /api/config; other values come from it at boot, except ENVIRONMENT below.
   sed -i 's/window.__env.configEndpoint = false/window.__env.configEndpoint = true/' src/env.js
   # Read before /api/config answers, so the baked value must not say 'dev'.
   sed -i "s/window.__env.ENVIRONMENT = '[a-z]*';/window.__env.ENVIRONMENT = '$env_name';/" src/env.js

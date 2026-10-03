@@ -3,7 +3,7 @@
 # =============================================================================
 # Builds an existing release tag and publishes it to the test storage account's
 # static website under `$web/admin/`, served at <SITE_URL>/admin/ through Front Door.
-# Cut the tag first with "Create Release Tag" (or "Deploy to Test").
+# Cut the tag first with "Create Release Tag".
 #
 #   gh workflow run "Deploy to Azure Test" -f version=v2.5.31
 #   gh workflow run "Deploy to Azure Test" -f version=v2.5.31 -f smoke=false
