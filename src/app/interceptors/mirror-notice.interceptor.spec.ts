@@ -33,17 +33,33 @@ describe('mirrorNoticeInterceptor', () => {
     expect(toast.info).toHaveBeenCalledOnceWith('Saved. It will appear in search within a few minutes.');
   });
 
-  it('shows the notice for a DELETE with mirrored false', async () => {
-    const result = firstValueFrom(http.delete('/api/document/d1'));
-    backend.expectOne('/api/document/d1').flush({ mirrored: false });
+  it('shows the save notice for a PUT with mirrored false', async () => {
+    const result = firstValueFrom(http.put('/api/project/p1', { name: 'p' }));
+    backend.expectOne('/api/project/p1').flush({ _id: 'p1', mirrored: false });
     await result;
 
     expect(toast.info).toHaveBeenCalledOnceWith(MIRROR_PENDING_MESSAGE);
   });
 
+  it('shows the delete notice for a DELETE with mirrored false', async () => {
+    const result = firstValueFrom(http.delete('/api/document/d1'));
+    backend.expectOne('/api/document/d1').flush({ mirrored: false });
+    await result;
+
+    expect(toast.info).toHaveBeenCalledOnceWith('Deleted. Search may still show it for a while.');
+  });
+
   it('shows nothing when a POST comes back with mirrored true', async () => {
     const result = firstValueFrom(http.post('/api/project', { name: 'p' }));
     backend.expectOne('/api/project').flush({ _id: 'p1', mirrored: true });
+    await result;
+
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it('shows nothing when a POST body has no mirrored field', async () => {
+    const result = firstValueFrom(http.post('/api/project', { name: 'p' }));
+    backend.expectOne('/api/project').flush({ _id: 'p1' });
     await result;
 
     expect(toast.info).not.toHaveBeenCalled();

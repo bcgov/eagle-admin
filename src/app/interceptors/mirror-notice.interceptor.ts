@@ -4,6 +4,7 @@ import { tap } from 'rxjs/operators';
 import { ToastService } from '../services/toast.service';
 
 export const MIRROR_PENDING_MESSAGE = 'Saved. It will appear in search within a few minutes.';
+export const MIRROR_PENDING_DELETE_MESSAGE = 'Deleted. Search may still show it for a while.';
 
 const WRITE_METHODS = new Set(['POST', 'PUT', 'DELETE']);
 
@@ -21,7 +22,7 @@ export const mirrorNoticeInterceptor: HttpInterceptorFn = (req, next) => {
       }
       const body: unknown = event.body;
       if (typeof body === 'object' && body !== null && (body as { mirrored?: unknown }).mirrored === false) {
-        toast.info(MIRROR_PENDING_MESSAGE);
+        toast.info(req.method === 'DELETE' ? MIRROR_PENDING_DELETE_MESSAGE : MIRROR_PENDING_MESSAGE);
       }
     })
   );
