@@ -15,6 +15,7 @@ import { GlobalErrorHandler } from './app/services/global-error-handler';
 import { TelemetryService } from './app/services/telemetry.service';
 import { loggingInterceptor } from './app/interceptors/logging.interceptor';
 import { httpCacheInterceptor } from './app/interceptors/http-cache.interceptor';
+import { mirrorNoticeInterceptor } from './app/interceptors/mirror-notice.interceptor';
 
 if (environment.production) {
   enableProdMode();
@@ -59,7 +60,7 @@ bootstrapApplication(AppComponent, {
     provideAnimations(),
     provideHttpClient(
       withInterceptorsFromDi(),
-      withInterceptors([httpCacheInterceptor, loggingInterceptor]),
+      withInterceptors([httpCacheInterceptor, loggingInterceptor, mirrorNoticeInterceptor]),
     ),
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
