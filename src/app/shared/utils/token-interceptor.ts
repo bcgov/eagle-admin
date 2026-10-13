@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, finalize, share, switchMap } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
+import { isUnderPath } from './api-path';
 
 /**
  * Adds the bearer token to same-origin requests under the eagle-api or DEMI path, and nowhere else
@@ -18,7 +19,9 @@ export class TokenInterceptor implements HttpInterceptor {
   private refresh$: Observable<unknown> | null = null;
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
-    if (!this.isOwnApi(request.url)) {
+    const ownApi = [this.configService.getApiPath(), this.configService.getDemiApiPath()]
+      .some(base => isUnderPath(request.url, base));
+    if (!ownApi) {
       return next.handle(request);
     }
 
@@ -33,19 +36,6 @@ export class TokenInterceptor implements HttpInterceptor {
         );
       })
     );
-  }
-
-  private isOwnApi(url: string): boolean {
-    const origin = window.location.origin;
-    const target = new URL(url, origin);
-    if (target.origin !== origin) {
-      return false;
-    }
-    return [this.configService.getApiPath(), this.configService.getDemiApiPath()].some(base => {
-      const prefix = new URL(base, origin);
-      const path = prefix.pathname.replace(/\/+$/, '');
-      return prefix.origin === origin && (target.pathname === path || target.pathname.startsWith(`${path}/`));
-    });
   }
 
   private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {

@@ -2,6 +2,8 @@ import { HttpEvent, HttpInterceptorFn, HttpResponse } from '@angular/common/http
 import { inject } from '@angular/core';
 import { Observable, finalize, of, shareReplay, tap } from 'rxjs';
 import { LoggingService } from '../services/logging.service';
+import { ConfigService } from '../services/config.service';
+import { isUnderPath } from '../shared/utils/api-path';
 
 interface CacheEntry {
   response: HttpResponse<any>;
@@ -69,6 +71,18 @@ class HttpCacheService {
     }
     return cleared;
   }
+
+  /** Invalidate every cache entry whose path is `base` or below it. */
+  clearUnderPath(base: string): number {
+    let cleared = 0;
+    for (const key of Array.from(this.cache.keys())) {
+      if (isUnderPath(key, base)) {
+        this.cache.delete(key);
+        cleared++;
+      }
+    }
+    return cleared;
+  }
 }
 
 const cacheService = new HttpCacheService();
@@ -77,6 +91,7 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
   const logger = inject(LoggingService);
 
   if (req.method !== 'GET') {
+    const config = inject(ConfigService);
     // On mutation, invalidate all cached GETs for the same resource type.
     // Uses resource-type extraction to handle trailing slash / ID / action path variations.
     return next(req).pipe(
@@ -89,6 +104,11 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
           }
           // Mutations may affect search/aggregation results
           cacheService.clearByResource('search');
+          // eagle-api pushes each write to DEMI, whose kind names differ, so drop every cached DEMI read.
+          if (isUnderPath(req.url, config.getApiPath())) {
+            const demi = cacheService.clearUnderPath(config.getDemiApiPath());
+            logger.debug(`Cache invalidated ${demi} DEMI entries after ${req.method} ${req.url}`, 'HttpCache');
+          }
         }
       })
     );
