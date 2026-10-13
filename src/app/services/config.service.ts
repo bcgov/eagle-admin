@@ -12,6 +12,7 @@ interface EnvConfig {
   BANNER_COLOUR?: string;
   API_PATH?: string;
   API_LOCATION?: string;
+  DEMI_API_PATH?: string;
   KEYCLOAK_CLIENT_ID?: string;
   KEYCLOAK_URL?: string;
   KEYCLOAK_REALM?: string;
@@ -161,6 +162,11 @@ export class ConfigService {
    */
   public getApiPath(): string {
     return this._config().API_PATH || '/api';
+  }
+
+  /** Base path for DEMI native reads. Relative, same origin; the edge forwards it to DEMI. */
+  public getDemiApiPath(): string {
+    return this._config().DEMI_API_PATH || '/demi/api';
   }
 
   get isConfigLoaded(): boolean {

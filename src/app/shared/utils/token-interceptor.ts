@@ -1,97 +1,56 @@
 import { HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, Subject, throwError } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, finalize, share, switchMap } from 'rxjs/operators';
+import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
+import { isUnderPath } from './api-path';
 
 /**
- * Intercepts all http requests and allows for the request and/or response to be manipulated.
- *
- * @export
- * @class TokenInterceptor
- * @implements {HttpInterceptor}
+ * Adds the bearer token to same-origin requests under the eagle-api or DEMI path, and nowhere else
+ * (presigned object-store URLs and other hosts must never see it).
+ * On a 401 or 403 from those paths it refreshes the token once and retries the request.
  */
 @Injectable({ providedIn: 'root' })
 export class TokenInterceptor implements HttpInterceptor {
   private auth = inject(KeycloakService);
+  private configService = inject(ConfigService);
 
-  private refreshTokenInProgress = false;
+  private refresh$: Observable<unknown> | null = null;
 
-  private tokenRefreshedSource = new Subject();
-  private tokenRefreshed$ = this.tokenRefreshedSource.asObservable();
-
-  /**
-   * Main request intercept handler to automatically add the bearer auth token to every request.
-   * If the auth token expires mid-request, the requests 403 response will be caught, the auth token will be refreshed, and the request will be re-tried.
-   *
-   * @param {HttpRequest<any>} request
-   * @param {HttpHandler} next
-   * @returns {Observable<HttpEvent<any>>}
-   * @memberof TokenInterceptor
-   */
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
-    request = this.addAuthHeader(request);
+    const ownApi = [this.configService.getApiPath(), this.configService.getDemiApiPath()]
+      .some(base => isUnderPath(request.url, base));
+    if (!ownApi) {
+      return next.handle(request);
+    }
 
-    return next.handle(request).pipe(
+    return next.handle(this.addAuthHeader(request)).pipe(
       catchError(error => {
-        if (error.status === 403) {
-          return this.refreshToken().pipe(
-            switchMap(() => {
-              request = this.addAuthHeader(request);
-              return next.handle(request);
-            }),
-            catchError((err) => {
-              return throwError(() => err);
-            })
-          );
+        if (error.status !== 401 && error.status !== 403) {
+          return throwError(() => error);
         }
-        return throwError(() => error);
+        return this.refreshToken().pipe(
+          catchError(() => throwError(() => error)),
+          switchMap(() => next.handle(this.addAuthHeader(request)))
+        );
       })
     );
   }
 
-  /**
-   * Fetches and adds the bearer auth token to the request.
-   *
-   * @private
-   * @param {HttpRequest<any>} request to modify
-   * @returns {HttpRequest<any>}
-   * @memberof TokenInterceptor
-   */
   private addAuthHeader(request: HttpRequest<any>): HttpRequest<any> {
     const authToken: string = this.auth.getToken() || '';
-
-    request = request.clone({
-      setHeaders: { Authorization: 'Bearer ' + authToken }
-    });
-
-    return request;
+    return request.clone({ setHeaders: { Authorization: 'Bearer ' + authToken } });
   }
 
-  /**
-   * Attempts to refresh the auth token.
-   *
-   * @private
-   * @returns {Observable<any>}
-   * @memberof TokenInterceptor
-   */
-  private refreshToken(): Observable<any> {
-    if (this.refreshTokenInProgress) {
-      return new Observable(observer => {
-        this.tokenRefreshed$.subscribe(() => {
-          observer.next(null);
-          observer.complete();
-        });
-      });
-    } else {
-      this.refreshTokenInProgress = true;
-
-      return this.auth.refreshToken().pipe(
-        tap(() => {
-          this.refreshTokenInProgress = false;
-          this.tokenRefreshedSource.next(null);
-        })
+  // One refresh shared by every request that failed while it runs; cleared on success or failure.
+  private refreshToken(): Observable<unknown> {
+    if (!this.refresh$) {
+      this.refresh$ = this.auth.refreshToken().pipe(
+        finalize(() => { this.refresh$ = null; }),
+        share()
       );
     }
+    return this.refresh$;
   }
 }

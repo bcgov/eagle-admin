@@ -18,6 +18,9 @@
   window.__env.API_LOCATION = 'https://eagle-dev.apps.silver.devops.gov.bc.ca';
   window.__env.API_PATH = '/api';
 
+  // DEMI native reads — same-origin path the edge forwards to DEMI; /api/config can override it
+  window.__env.DEMI_API_PATH = '/demi/api';
+
   // Keycloak configuration
   window.__env.KEYCLOAK_CLIENT_ID = 'eagle-admin-console';
   window.__env.KEYCLOAK_URL = 'https://dev.loginproxy.gov.bc.ca/auth';

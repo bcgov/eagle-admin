@@ -91,4 +91,23 @@ describe('ConfigService', () => {
     await service.init();
     expect(service.config().KEYCLOAK_CLIENT_ID).toBe('eagle-admin-console');
   });
+
+  it('defaults the DEMI path to /demi/api when no source sets DEMI_API_PATH', async () => {
+    window.__env = { ...deployedEnv, configEndpoint: false };
+
+    await service.init();
+    expect(service.getDemiApiPath()).toBe('/demi/api');
+  });
+
+  it('takes DEMI_API_PATH from /api/config over env.js', async () => {
+    window.__env = { ...deployedEnv, DEMI_API_PATH: '/demi/api' };
+    spyOn(window, 'fetch').and.returnValue(fakeResponse(true, {
+      KEYCLOAK_URL: 'https://dev.loginproxy.gov.bc.ca/auth',
+      KEYCLOAK_REALM: 'eao-epic',
+      DEMI_API_PATH: '/demi-next/api'
+    }));
+
+    await service.init();
+    expect(service.getDemiApiPath()).toBe('/demi-next/api');
+  });
 });
