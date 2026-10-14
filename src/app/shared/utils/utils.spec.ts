@@ -1,4 +1,4 @@
-import { encodeString } from './utils';
+import { createProjectTabModifiers, encodeString, filterCompareWith } from './utils';
 import { sanitizeHighlight } from './sanitize-highlight';
 
 describe('Utils', () => {
@@ -29,6 +29,44 @@ describe('Utils', () => {
     const encodedFilename = encodeString(filennameWithMixed, true);
     const expectedFilename = 'Ajax%20%28Mine%29%20Lead_Silver%20%7BTag%7D';
     expect(encodedFilename).toBe(expectedFilename);
+  });
+});
+
+describe('filterCompareWith', () => {
+  it('matches two List rows with the same id', () => {
+    expect(filterCompareWith({ id: 'a1', name: 'Phase' }, { id: 'a1', name: 'Phase (copy)' })).toBeTrue();
+  });
+
+  it('does not match List rows with different ids', () => {
+    expect(filterCompareWith({ id: 'a1' }, { id: 'b2' })).toBeFalse();
+  });
+
+  it('matches organizations by their _id', () => {
+    expect(filterCompareWith({ _id: 'o1', id: 'x' }, { _id: 'o1', id: 'y' })).toBeTrue();
+  });
+
+  it('matches regions by code', () => {
+    expect(filterCompareWith({ code: 'north', id: 'x' }, { code: 'north', id: 'y' })).toBeTrue();
+  });
+});
+
+describe('createProjectTabModifiers', () => {
+  const lists = [
+    { id: 'type02', type: 'doctype', name: 'Application Materials', legislation: 2002 },
+    { id: 'mile18', type: 'label', name: 'Revised EAC Application', legislation: 2018 },
+    { id: 'amend02', type: 'projectPhase', name: 'Post Decision - Amendment', legislation: 2002 },
+    { id: 'early02', type: 'projectPhase', name: 'Early Engagement', legislation: 2002 }
+  ];
+
+  it('builds the query from List row ids', () => {
+    const modifier = createProjectTabModifiers(lists);
+
+    expect(modifier.type.split(',')).toContain('type02');
+    expect(modifier.milestone.split(',')).toContain('mile18');
+  });
+
+  it('leaves the amendment phase out of the project phases', () => {
+    expect(createProjectTabModifiers(lists).projectPhase).toBe('early02');
   });
 });
 

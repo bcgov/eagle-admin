@@ -499,14 +499,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   isRegulatoryTransfer(): boolean {
     const decisionId = this.myForm?.controls?.eacDecision?.value;
     if (!decisionId) return false;
-    const selected = this.eacDecisions?.find(d => d._id === decisionId);
+    const selected = this.eacDecisions?.find(d => d.id === decisionId);
     return selected ? selected.name === 'Regulatory Transfer' : false;
   }
 
   isAdministrativeClosure(): boolean {
     const decisionId = this.myForm?.controls?.eacDecision?.value;
     if (!decisionId) return false;
-    const selected = this.eacDecisions?.find(d => d._id === decisionId);
+    const selected = this.eacDecisions?.find(d => d.id === decisionId);
     return selected ? selected.name === 'Administrative Closure' : false;
   }
 

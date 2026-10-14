@@ -44,7 +44,7 @@ export class DocumentDetailComponent implements OnInit {
 
   private resolveListItem(id: string | null | undefined): string {
     if (!id) return '-';
-    const item = this.lists().find((i: any) => i._id === id);
+    const item = this.lists().find(i => i.id === id);
     return item ? item.name : '-';
   }
 

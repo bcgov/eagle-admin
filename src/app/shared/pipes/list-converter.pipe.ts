@@ -18,7 +18,7 @@ export class ListConverterPipe implements PipeTransform {
       return '-';
     }
     // Grab the item from the constant lists, returning the name field of the object.
-    const item = this.configService.lists.filter(listItem => listItem._id === objectid);
+    const item = this.configService.lists.filter(listItem => listItem.id === objectid);
     if (item.length !== 0) {
       return item[0].name;
     } else {

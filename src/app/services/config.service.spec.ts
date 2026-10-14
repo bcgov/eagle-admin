@@ -1,9 +1,11 @@
 import { ConfigService } from './config.service';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LoggingService } from './logging.service';
 import { LoadingStateService } from './loading-state.service';
+import { KeycloakService } from './keycloak.service';
+import { List } from '../models/demi/list';
 
 describe('ConfigService', () => {
   let service: ConfigService;
@@ -30,6 +32,7 @@ describe('ConfigService', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         ConfigService,
+        { provide: KeycloakService, useValue: { keycloakEnabled: true } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) },
         { provide: LoadingStateService, useValue: jasmine.createSpyObj('LoadingStateService', ['startLoading', 'stopLoading']) }
       ]
@@ -109,5 +112,71 @@ describe('ConfigService', () => {
 
     await service.init();
     expect(service.getDemiApiPath()).toBe('/demi-next/api');
+  });
+
+  describe('lists', () => {
+    let http: HttpTestingController;
+
+    const row = (n: number, type = 'doctype'): List =>
+      ({ id: `5cf00c03a266b7e1877504${String(n).padStart(2, '0')}`, name: `Item ${n}`, type, legislation: 2018, listOrder: n });
+    const rows = (from: number, count: number) => Array.from({ length: count }, (_, i) => row(from + i));
+
+    // ensureListsLoaded asks for page 1, then awaits it before asking for the rest.
+    async function nextListsRequest(page: number): Promise<TestRequest> {
+      await new Promise(resolve => setTimeout(resolve));
+      return http.expectOne(r => r.url === '/demi/api/lists' && r.params.get('page') === String(page));
+    }
+
+    beforeEach(() => {
+      http = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => http.verify());
+
+    it('asks DEMI for page 1 with a page size and the total count', async () => {
+      const loaded = service.ensureListsLoaded();
+
+      const req = await nextListsRequest(1);
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('pageSize')).toBe('100');
+      expect(req.request.params.get('count')).toBe('true');
+      req.flush([row(1)], { headers: { 'x-total-count': '1' } });
+      await loaded;
+    });
+
+    it('pages until x-total-count rows are loaded', async () => {
+      const loaded = service.ensureListsLoaded();
+
+      (await nextListsRequest(1)).flush(rows(0, 100), { headers: { 'x-total-count': '230' } });
+      (await nextListsRequest(2)).flush(rows(100, 100));
+      (await nextListsRequest(3)).flush(rows(200, 30));
+      await loaded;
+
+      expect(service.lists.length).toBe(230);
+      expect(service.lists[229].id).toBe(row(229).id);
+    });
+
+    it('keeps rows keyed by the DEMI id, so a document field resolves by id', async () => {
+      const region = row(7, 'region');
+      const loaded = service.ensureListsLoaded();
+
+      (await nextListsRequest(1)).flush([row(1), region], { headers: { 'x-total-count': '2' } });
+      await loaded;
+
+      expect(service.listsSignal().find(l => l.id === region.id)?.name).toBe('Item 7');
+      expect(service.regions).toEqual(['Item 7']);
+    });
+
+    it('treats an answer without x-total-count as a failure and fetches again on the next call', async () => {
+      const first = service.ensureListsLoaded();
+      (await nextListsRequest(1)).flush([row(1)]);
+      await first;
+      expect(service.lists).toEqual([]);
+
+      const retry = service.ensureListsLoaded();
+      (await nextListsRequest(1)).flush([row(1)], { headers: { 'x-total-count': '1' } });
+      await retry;
+      expect(service.lists.length).toBe(1);
+    });
   });
 });

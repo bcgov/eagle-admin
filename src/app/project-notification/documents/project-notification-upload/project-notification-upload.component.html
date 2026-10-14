@@ -33,7 +33,7 @@
           <label for="type">Document Type* </label>
           <select required class="form-control" formControlName="type">
             @for (type of filteredDoctypes2018(); track type) {
-              <option [ngValue]="type._id">{{type.name}}</option>
+              <option [ngValue]="type.id">{{type.name}}</option>
             }
           </select>
         </div>

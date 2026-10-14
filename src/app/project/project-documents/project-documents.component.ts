@@ -17,7 +17,7 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
 import { TableDocumentTemplateUtils } from 'src/app/shared/utils/table-document-template-utils';
-import { encodeParams, encodeString } from 'src/app/shared/utils/utils';
+import { encodeParams, encodeString, filterCompareWith } from 'src/app/shared/utils/utils';
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
 import { Document } from 'src/app/models/document';
 import { FormsModule } from '@angular/forms';
@@ -687,10 +687,10 @@ export class ProjectDocumentsComponent implements OnInit {
   }
 
   setFiltersFromParams(params) {
-    this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
-    this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
-    this.paramsToCollectionFilters(params, 'type', this.types, '_id');
-    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
+    this.paramsToCollectionFilters(params, 'milestone', this.milestones, 'id');
+    this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, 'id');
+    this.paramsToCollectionFilters(params, 'type', this.types, 'id');
+    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
 
     this.paramsToDateFilters(params, 'datePostedStart');
     this.paramsToDateFilters(params, 'datePostedEnd');
@@ -721,10 +721,10 @@ export class ProjectDocumentsComponent implements OnInit {
   }
 
   setParamsFromFilters(params) {
-    this.collectionFilterToParams(params, 'milestone', '_id');
-    this.collectionFilterToParams(params, 'documentAuthorType', '_id');
-    this.collectionFilterToParams(params, 'type', '_id');
-    this.collectionFilterToParams(params, 'projectPhase', '_id');
+    this.collectionFilterToParams(params, 'milestone', 'id');
+    this.collectionFilterToParams(params, 'documentAuthorType', 'id');
+    this.collectionFilterToParams(params, 'type', 'id');
+    this.collectionFilterToParams(params, 'projectPhase', 'id');
 
     this.dateFilterToParams(params, 'datePostedStart');
     this.dateFilterToParams(params, 'datePostedEnd');
@@ -817,7 +817,7 @@ export class ProjectDocumentsComponent implements OnInit {
   }
 
   clearSelectedItem(filter: string, item: any) {
-    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option.id !== item.id);
   }
 
   private createRowCopy(item): void {
@@ -853,17 +853,7 @@ export class ProjectDocumentsComponent implements OnInit {
     });
   }
 
-  public filterCompareWith(filter: any, filterToCompare: any) {
-    if (filter.hasOwnProperty('code')) {
-      return filter && filterToCompare
-        ? filter.code === filterToCompare.code
-        : filter === filterToCompare;
-    } else if (filter.hasOwnProperty('_id')) {
-      return filter && filterToCompare
-        ? filter._id === filterToCompare._id
-        : filter === filterToCompare;
-    }
-  }
+  public readonly filterCompareWith = filterCompareWith;
 
   public onPageLimitClick(pageLimit: number | string) {
     if (pageLimit === 'all') {

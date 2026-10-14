@@ -11,6 +11,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
+import { List } from 'src/app/models/demi/list';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,7 +62,8 @@ export class DocumentEditComponent implements OnInit {
     this.lists().filter(i => i.type === 'projectPhase' && i.legislation === 2018)
       .sort((a, b) => a.listOrder - b.listOrder)
   );
-  public readonly allLabels = computed(() =>
+  // add-label toggles `selected` on these shared rows.
+  public readonly allLabels = computed((): Array<List & { selected?: boolean }> =>
     this.lists().filter(i => i.type === 'label')
   );
 

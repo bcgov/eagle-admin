@@ -187,7 +187,7 @@
             <select required class="form-control" formControlName="milestoneSel">
               <option disabled selected value>-- select an option --</option>
               @for (milestone of milestones; track milestone) {
-                <option [ngValue]="milestone._id">{{milestone.name}}</option>
+                <option [ngValue]="milestone.id">{{milestone.name}}</option>
               }
             </select>
           </div>

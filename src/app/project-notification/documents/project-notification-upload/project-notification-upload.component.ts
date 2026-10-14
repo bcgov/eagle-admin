@@ -103,7 +103,7 @@ export class ProjectNotificationUploadComponent implements OnInit {
     let id = 'null';
     for (let i = 0; i < objArr.length; i++) {
       if (objArr[i].name === name) {
-        id = objArr[i]._id;
+        id = objArr[i].id;
         break;
       }
     }
