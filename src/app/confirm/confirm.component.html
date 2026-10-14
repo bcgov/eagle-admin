@@ -8,9 +8,9 @@
       <p [innerHTML]="message || 'Are you sure?'"></p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary" (click)="activeModal.close(true)">OK</button>
+      <button type="button" class="btn btn-primary" (click)="activeModal.close(true)">{{ okLabel || 'OK' }}</button>
       @if (!okOnly) {
-      <button type="button" class="btn btn-light" (click)="activeModal.dismiss()">Cancel</button>
+      <button type="button" class="btn btn-light" (click)="activeModal.dismiss()">{{ cancelLabel || 'Cancel' }}</button>
       }
     </div>
   </div>

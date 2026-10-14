@@ -20,6 +20,8 @@ export class ConfirmComponent {
   title: string;
   message: string;
   okOnly: boolean;
+  okLabel: string;
+  cancelLabel: string;
 
   confirm() {
     this.activeModal.close(true);

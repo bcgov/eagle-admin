@@ -12,6 +12,12 @@ import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/services/toast.service';
 import { StatusLabel, UPDATE_CONFLICT_MESSAGE, isConflict, statusLabel } from '../update-rules';
 
+/** What archiving changes for the public, by current status; drafts were never public. */
+const ARCHIVE_MESSAGE: Partial<Record<StatusLabel, string>> = {
+  Published: 'It will be removed from the public site.',
+  Scheduled: 'It will not go live on its date.'
+};
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'tbody[app-activity-table-rows]',
@@ -59,9 +65,11 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static',
     });
-    modalRef.componentInstance.title = 'Archive Update';
-    modalRef.componentInstance.message = 'Click <strong>OK</strong> to archive this Update and remove it from the public site, or <strong>Cancel</strong> to return to the list.';
+    modalRef.componentInstance.title = 'Archive this Update?';
+    modalRef.componentInstance.message = ARCHIVE_MESSAGE[this.statusOf(activity)] ?? 'It will be marked as archived.';
     modalRef.componentInstance.okOnly = false;
+    modalRef.componentInstance.okLabel = 'Archive';
+    modalRef.componentInstance.cancelLabel = 'Keep';
 
     modalRef.result
       .then(isConfirmed => {

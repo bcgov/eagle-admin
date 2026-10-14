@@ -159,7 +159,12 @@ describe('AddEditActivityComponent', () => {
       (TestBed.inject(NgbModal).open as jasmine.Spy).and.returnValue(modalRef);
       footerButton('Unpublish').click();
       await fixture.whenStable();
-      expect(modalRef.componentInstance.title).toBe('Unpublish');
+      expect(modalRef.componentInstance).toEqual(jasmine.objectContaining({
+        title: 'Unpublish this Update?',
+        message: 'It will be removed from the public site and moved to draft.',
+        okLabel: 'Unpublish',
+        cancelLabel: 'Keep published'
+      }));
       expect(sentBody(recentActivityService.save).status).toBe('draft');
     });
 
@@ -177,7 +182,12 @@ describe('AddEditActivityComponent', () => {
       (TestBed.inject(NgbModal).open as jasmine.Spy).and.returnValue(modalRef);
       footerButton('Unschedule').click();
       await fixture.whenStable();
-      expect(modalRef.componentInstance.title).toBe('Unschedule');
+      expect(modalRef.componentInstance).toEqual(jasmine.objectContaining({
+        title: 'Unschedule this Update?',
+        message: 'It will move to draft and will not go live on its date.',
+        okLabel: 'Unschedule',
+        cancelLabel: 'Keep scheduled'
+      }));
       expect(sentBody(recentActivityService.save).status).toBe('draft');
     });
 

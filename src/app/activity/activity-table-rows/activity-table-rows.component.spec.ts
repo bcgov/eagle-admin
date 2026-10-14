@@ -82,6 +82,46 @@ describe('ActivityTableRowsComponent', () => {
       expect(toastService.error).not.toHaveBeenCalled();
     });
 
+    function askArchive(row: object) {
+      const componentInstance: any = {};
+      modal.open.and.returnValue({ componentInstance, result: new Promise(() => {}) } as any);
+      component.archiveActivity(row);
+      return componentInstance;
+    }
+
+    it('asks in plain words, with Archive and Keep buttons', () => {
+      const dialog = askArchive({ _id: 'a1', status: 'published', publishDate: '2026-01-01T00:00:00Z' });
+
+      expect(dialog.title).toBe('Archive this Update?');
+      expect(dialog.message).toBe('It will be removed from the public site.');
+      expect(dialog.okLabel).toBe('Archive');
+      expect(dialog.cancelLabel).toBe('Keep');
+    });
+
+    it('tells a scheduled Update it will not go live', () => {
+      const dialog = askArchive({ _id: 'a1', status: 'published', publishDate: '2099-01-01T00:00:00Z' });
+
+      expect(dialog.message).toBe('It will not go live on its date.');
+    });
+
+    it('says nothing about the public site for a draft', () => {
+      const dialog = askArchive({ _id: 'a1', status: 'draft' });
+
+      expect(dialog.message).toBe('It will be marked as archived.');
+    });
+
+    it('sends no archive request when Keep is chosen', async () => {
+      const row = { _id: 'a1', status: 'published', active: true };
+      const result = Promise.reject(false);
+      modal.open.and.returnValue({ componentInstance: {}, result } as any);
+
+      component.archiveActivity(row);
+      await result.catch(() => undefined);
+
+      http.expectNone('/api/recentActivity/a1');
+      expect(row.status).toBe('published');
+    });
+
     it('keeps the row and shows an error toast when the archive fails', async () => {
       const row = { _id: 'a1', status: 'published', active: true };
 
