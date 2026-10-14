@@ -25,3 +25,6 @@ export interface Organization {
   dateAdded?: string | null;
   dateUpdated?: string | null;
 }
+
+/** A proponent picker option: an organization of company type `Proponent/Certificate Holder`. */
+export type Proponent = Pick<Organization, 'id' | 'name'>;

@@ -13,11 +13,22 @@ export const IMAGE_MAX_MB = 10;
 /** MIME type the API expects for an image file name, or undefined when it is not an image name. */
 export const imageType = (fileName: string): string | undefined => IMAGE_TYPES.get(/\.([^.]+)$/.exec(fileName)?.[1].toLowerCase() ?? '');
 
-export const isPublicDocument = (doc: any): boolean => !!doc?.read?.includes('public');
+/**
+ * Whether the public can read a document; undefined when the row says nothing.
+ * Eagle upload answers carry `read`; DEMI rows leave `read` out and carry `isPublished`.
+ */
+function publicState(doc: any): boolean | undefined {
+  if (Array.isArray(doc?.read)) {
+    return doc.read.includes('public');
+  }
+  return typeof doc?.isPublished === 'boolean' ? doc.isPublished : undefined;
+}
+
+export const isPublicDocument = (doc: any): boolean => publicState(doc) === true;
 
 /** A picked project document the public cannot read. Update uploads do not count: they go public with the Update. */
 export const blocksPublish = (doc: any): boolean =>
-  Array.isArray(doc?.read) && doc.documentSource !== UPDATE_IMAGE_SOURCE && !doc.read.includes('public');
+  publicState(doc) === false && doc.documentSource !== UPDATE_IMAGE_SOURCE;
 
 /** Name staff see for a document. */
 export const documentName = (doc: any): string => doc?.displayName || doc?.documentFileName || '';

@@ -1,7 +1,7 @@
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, shareReplay } from 'rxjs/operators';
-import { Observable, firstValueFrom } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GroupsTableRowsComponent } from './project-groups-table-rows/project-groups-table-rows.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -10,7 +10,7 @@ import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { InputModalComponent } from 'src/app/input-modal/input-modal.component';
 import { SearchTerms } from 'src/app/models/search';
 import { Group } from 'src/app/models/demi/group';
-import { User, contactExportRow, nativeSort, tableSort } from 'src/app/models/demi/user';
+import { User, contactExportRow } from 'src/app/models/demi/user';
 import { ExcelService } from 'src/app/services/excel.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { UserService, emptyPageOnError } from 'src/app/services/user.service';
@@ -19,7 +19,7 @@ import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy, nativeSort, tableSort } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 
@@ -82,16 +82,6 @@ export class ProjectGroupsComponent implements OnInit {
     }
   ];
 
-  private demiProject: { eagleId: string; id$: Observable<string> } | null = null;
-
-  /** DEMI project id for the route's Eagle id, read once per project. */
-  private demiProjectId(eagleId: string): Observable<string> {
-    if (this.demiProject?.eagleId !== eagleId) {
-      this.demiProject = { eagleId, id$: this.userService.getDemiProjectId(eagleId).pipe(shareReplay(1)) };
-    }
-    return this.demiProject.id$;
-  }
-
   ngOnInit() {
     this.currentProject.set(this.storageService.currentProjectData);
 
@@ -107,12 +97,11 @@ export class ProjectGroupsComponent implements OnInit {
             this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           }
 
-          const eagleProjectId = this.route.parent?.snapshot.paramMap.get('projId') ?? this.route.snapshot.params['projId'];
           const pageNum = this.tableParams.currentPage || 1;
           const pageSize = this.tableParams.pageSize || 25;
 
-          return this.demiProjectId(eagleProjectId).pipe(
-            switchMap(projectId => this.userService.listProjectGroups(projectId, pageNum, pageSize, sort)),
+          // Groups are keyed by the DEMI project id, which the project resolver keeps beside the Eagle `_id`.
+          return this.userService.listProjectGroups(this.currentProject().demiId, pageNum, pageSize, sort).pipe(
             emptyPageOnError<Group>(err => {
               this.logger.error('Failed to load groups', 'ProjectGroupsComponent', err);
               this.toastService.error('Groups could not be loaded.');

@@ -40,7 +40,7 @@ describe('CommentService', () => {
         { provide: KeycloakService, useValue: { keycloakEnabled: true } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['error', 'success']) },
-        { provide: DocumentService, useValue: jasmine.createSpyObj('DocumentService', ['add', 'publish', 'unPublish', 'getByMultiId']) }
+        { provide: DocumentService, useValue: jasmine.createSpyObj('DocumentService', ['add', 'publish', 'unPublish']) }
       ]
     });
     service = TestBed.inject(CommentService);

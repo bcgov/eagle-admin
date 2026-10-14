@@ -1,5 +1,6 @@
 import { Constants } from './constants';
 import { ISearchResults } from 'src/app/models/search';
+import { DemiDocumentFilters } from 'src/app/models/demi/document';
 
 // Patch encodeURIComponent once at module load to also encode !, ', (, ), *
 const _origEncode = encodeURIComponent;
@@ -59,14 +60,14 @@ export function encodeString(filename: string, isUrl: boolean): string {
   return filename.replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_');
 }
 
-export function getFormattedTime(date: Date): string {
-  const y = date.getFullYear();
-  const m = date.getMonth() + 1;
-  const d = date.getDate();
-  const h = date.getHours();
-  const mi = date.getMinutes();
-  const s = date.getSeconds();
-  return `${y}-${m}-${d}-${h}-${mi}-${s}`;
+/** Saves a blob the page already holds as a file named `filename`. */
+export function saveBlob(blob: Blob, filename: string): void {
+  const url = window.URL.createObjectURL(blob);
+  const a = window.document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
 }
 
 export function extractFromSearchResults<T>(results: ISearchResults<T>[]): T[] | null {
@@ -90,14 +91,8 @@ export function natureBuildMapper(key: string): string {
   return natureObj ? natureObj.nature : key;
 }
 
-function getIdsByName(terms: Array<any>, list: Array<any>) {
-  return terms.map(term => {
-    const listItem = list.find(item => item.name === term.name && item.legislation === term.legislation);
-    return { name: term.name, id: listItem?.id ?? null };
-  });
-}
-
-export function createProjectTabModifiers(list: Array<any>) {
+/** `GET /documents` filters for the application sort screen: application materials and memos at the application milestones, outside amendment phases. */
+export function applicationDocumentFilters(list: Array<any>, project: string): DemiDocumentFilters {
   const types = [
     { legislation: 2002, name: 'Application Materials' },
     { legislation: 2018, name: 'Application Materials' },
@@ -113,18 +108,22 @@ export function createProjectTabModifiers(list: Array<any>) {
     { legislation: 2018, name: 'Post Decision - Amendment' }
   ];
 
-  const amendmentPhaseIds = getIdsByName(applications, list).map(t => t.id);
+  // Match on type too: some names, such as 'Application Review', are both a phase and a milestone.
+  const ids = (type: string, terms: Array<{ legislation: number; name: string }>): string[] => list
+    .filter(item => item.type === type && terms.some(term => term.name === item.name && term.legislation === item.legislation))
+    .map(item => item.id);
+  const amendmentPhaseIds = ids('projectPhase', applications);
   const phases = list
     .filter(item => item.type === 'projectPhase' && !amendmentPhaseIds.includes(item.id))
-    .map(item => item.id)
-    .join(',');
+    .map(item => item.id);
 
-  const typeIds = getIdsByName(types, list).map(t => t.id).join(',');
-  const milestoneIds = getIdsByName(milestones, list).map(m => m.id).join(',');
-
-  const queryModifier: any = { documentSource: 'PROJECT', type: typeIds, milestone: milestoneIds };
-  if (phases) { queryModifier['projectPhase'] = phases; }
-  return queryModifier;
+  return {
+    project,
+    documentSource: 'PROJECT',
+    typeId: ids('doctype', types),
+    milestoneId: ids('label', milestones),
+    projectPhaseId: phases.length ? phases : undefined
+  };
 }
 
 /** ng-select `compareWith` for filter options: regions by `code`, organizations by `_id`, List rows by `id`. */

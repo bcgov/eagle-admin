@@ -12,7 +12,8 @@ import { StorageService } from 'src/app/services/storage.service';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { List } from 'src/app/models/demi/list';
-import { eagleWriteId, eagleWriteProjectId } from 'src/app/models/demi/document-write';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
+import { eagleWriteProjectId } from 'src/app/models/demi/document-write';
 import { legacyDocumentRow } from './legacy-document-row';
 
 @Component({

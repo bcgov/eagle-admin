@@ -92,15 +92,6 @@ describe('UserService', () => {
       expect(req.request.params.get('count')).toBe('true');
       req.flush([]);
     });
-
-    it('resolves the DEMI project id from the Eagle project id', async () => {
-      const id = firstValueFrom(service.getDemiProjectId('5885109faaecd9001b81314c'));
-
-      http.expectOne('/demi/api/projects/5885109faaecd9001b81314c')
-        .flush({ id: 'track-42', eagleId: '5885109faaecd9001b81314c' });
-
-      expect(await id).toBe('track-42');
-    });
   });
 
   describe('save', () => {

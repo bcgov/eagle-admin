@@ -1,6 +1,6 @@
 import { CommentPeriod } from '../models/commentPeriod';
 import { DemiCommentPeriod } from '../models/demi/comment-period';
-import { isEagleId } from '../models/demi/demi-ids';
+import { eagleWriteId } from '../models/demi/demi-ids';
 
 /** The realm role the admin app signs staff in with (see `KeycloakService.isAuthorized`). */
 export const STAFF_ROLE = 'sysadmin';
@@ -18,7 +18,7 @@ export type LegacyCommentPeriod = CommentPeriod & { demiId: string; readOnly: bo
  */
 export function toLegacyCommentPeriod(row: DemiCommentPeriod, roles: string[] = []): LegacyCommentPeriod {
   const { id, eagleId, projectId, projectEagleId, ...rest } = row;
-  const writeId = eagleId ?? (isEagleId(id) ? id : null);
+  const writeId = eagleWriteId({ id, eagleId });
   const period = new CommentPeriod({
     ...rest,
     _id: writeId ?? id,

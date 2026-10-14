@@ -95,8 +95,8 @@ describe('ProjectService', () => {
       expect((await project)._id).toBe(EAGLE_ID);
     });
 
-    it('getById fills only the lead when the EPD is null, from DEMI users', async () => {
-      const project = firstValueFrom(service.getById('p1'));
+    it('getForEdit fills only the lead when the EPD is null, from DEMI users', async () => {
+      const project = firstValueFrom(service.getForEdit('p1'));
 
       http.expectOne(r => r.url.startsWith('/api/project/p1?'))
         .flush([{ _id: 'p1', projectLeadId: 'u1', responsibleEPDId: null }]);
@@ -124,8 +124,8 @@ describe('ProjectService', () => {
       expect(legislation2002.projectLeadObj._id).toBe('u1');
     });
 
-    it('getById fills the EPD when the lead is null', async () => {
-      const project = firstValueFrom(service.getById('p1'));
+    it('getForEdit fills the EPD when the lead is null', async () => {
+      const project = firstValueFrom(service.getForEdit('p1'));
 
       http.expectOne(r => r.url.startsWith('/api/project/p1?'))
         .flush([{ _id: 'p1', projectLeadId: null, responsibleEPDId: 'u2' }]);

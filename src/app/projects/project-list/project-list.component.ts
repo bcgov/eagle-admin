@@ -8,7 +8,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { DateTime } from 'luxon';
-import { DemiList } from 'src/app/models/demi/demi-list';
+import { DEMI_MAX_PAGE_SIZE, DemiList } from 'src/app/models/demi/demi-list';
+import { Proponent } from 'src/app/models/demi/organization';
 import { DemiProject } from 'src/app/models/demi/project';
 import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
 import { SearchTerms } from 'src/app/models/search';
@@ -20,21 +21,13 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy, nativeSort } from 'src/app/shared/utils/table-template-utils';
 import { filterCompareWith } from 'src/app/shared/utils/utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
-
-interface Proponent {
-  id: string;
-  name: string;
-}
-
-/** DEMI's page cap for signed-in reads; test holds about 300 proponents. */
-const PROPONENT_PAGE_SIZE = 1000;
 
 class ProjectFilterObject {
   constructor(
@@ -189,7 +182,7 @@ export class ProjectListComponent implements OnInit {
   private loadProponents(): Observable<Proponent[]> {
     return this.demiApi.list<Proponent>('organizations', {
       sort: 'name',
-      pageSize: PROPONENT_PAGE_SIZE,
+      pageSize: DEMI_MAX_PAGE_SIZE,
       filters: { companyType: 'Proponent/Certificate Holder' }
     }).pipe(
       map(page => page.rows),
@@ -204,8 +197,7 @@ export class ProjectListComponent implements OnInit {
     return this.projectService.list({
       page: this.tableParams.currentPage,
       pageSize: this.tableParams.pageSize,
-      // DEMI sorts projects by name only.
-      sort: this.tableParams.sortBy === '-name' ? '-name' : 'name',
+      sort: nativeSort(this.tableParams.sortBy, 'name'),
       q: this.tableParams.keywords || undefined,
       filters: this.filterForAPI
     }).pipe(withLoading(this.loadingState, 'project-list'));

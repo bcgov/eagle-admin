@@ -30,7 +30,7 @@ describe('ProjectNotificationDetailComponent', () => {
   }
 
   beforeEach(() => {
-    documents = jasmine.createSpyObj('DocumentService', ['listNative', 'publish', 'unPublish', 'downloadDocument']);
+    documents = jasmine.createSpyObj('DocumentService', ['listNative', 'publish', 'unPublish', 'downloadNative']);
     documents.listNative.and.returnValue(of({ rows: [LINKED, UNLINKED] as any[], total: 2 }));
     documents.publish.and.returnValue(of({} as any));
     documents.unPublish.and.returnValue(of({} as any));

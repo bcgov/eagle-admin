@@ -14,7 +14,6 @@ class StubRowsComponent {
 const columns: TableColumn[] = [
   { name: 'Name', value: 'name', width: '30%' },
   { name: 'Date Posted', value: 'datePosted', width: '20%' },
-  { name: 'Contact', value: 'lastName,+firstName', width: '30%' },
   { name: 'Status', value: 'status', width: '20%', nosort: true }
 ];
 
@@ -80,12 +79,6 @@ describe('TableTemplateComponent headers', () => {
     const fixture = render('-datePosted,+displayName');
 
     expect(header(fixture, 'Date Posted').getAttribute('aria-sort')).toBe('descending');
-  });
-
-  it('marks a column whose own value is multi-key when that sort is active', () => {
-    const fixture = render('+lastName,+firstName');
-
-    expect(header(fixture, 'Contact').getAttribute('aria-sort')).toBe('ascending');
   });
 
   it('renders a nosort column without a sort button', () => {

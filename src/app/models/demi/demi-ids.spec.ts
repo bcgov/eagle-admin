@@ -1,4 +1,4 @@
-import { isEagleId } from './demi-ids';
+import { eagleWriteId, isEagleId } from './demi-ids';
 
 describe('isEagleId', () => {
   it('accepts a 24-hex Mongo ObjectId in lower case', () => {
@@ -27,5 +27,31 @@ describe('isEagleId', () => {
 
   it('rejects null', () => {
     expect(isEagleId(null)).toBeFalse();
+  });
+});
+
+describe('eagleWriteId', () => {
+  it('keeps the _id of a legacy row', () => {
+    expect(eagleWriteId({ _id: '5886936ba4acd4014b81ef3c' })).toBe('5886936ba4acd4014b81ef3c');
+  });
+
+  it('uses the eagleId of a native row whose own id is a DEMI uuid', () => {
+    expect(eagleWriteId({ eagleId: '5886936ba4acd4014b81ef3c' })).toBe('5886936ba4acd4014b81ef3c');
+  });
+
+  it('prefers the legacy _id when a row carries both ids', () => {
+    expect(eagleWriteId({ _id: 'legacy', eagleId: 'native' })).toBe('legacy');
+  });
+
+  it('treats an empty _id as absent', () => {
+    expect(eagleWriteId({ _id: '', eagleId: 'native' })).toBe('native');
+  });
+
+  it('uses the DEMI id of a mirrored row, which is the Eagle id', () => {
+    expect(eagleWriteId({ id: '5886936ba4acd4014b81ef3c' })).toBe('5886936ba4acd4014b81ef3c');
+  });
+
+  it('answers null for a DEMI-only row', () => {
+    expect(eagleWriteId({ id: '3f2b8a1e-6c1d-4b8e-9f3a-2d7c5e0a1b4c', eagleId: null })).toBeNull();
   });
 });

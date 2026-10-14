@@ -1,19 +1,21 @@
 import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { ToastService } from 'src/app/services/toast.service';
 import { ApplicationSortTableRowsComponent } from './application-sort-table-rows/application-sort-table-rows.component';
-import { Project } from 'src/app/models/project';
-import { User } from 'src/app/models/user';
+import { DemiDocument } from 'src/app/models/demi/document';
+import { DemiList } from 'src/app/models/demi/demi-list';
+import { LegacyProject } from 'src/app/models/demi/project-legacy';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
-import { createProjectTabModifiers } from 'src/app/shared/utils/utils';
+import { TableTemplateUtils, nextSortBy, tableSort } from 'src/app/shared/utils/table-template-utils';
+import { applicationDocumentFilters } from 'src/app/shared/utils/utils';
+import { legacyDocumentRow, nativeDocumentSort } from '../document-edit/legacy-document-row';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
 
@@ -33,16 +35,15 @@ export class DocumentApplicationSortComponent implements OnInit {
   private router = inject(Router);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private storageService = inject(StorageService);
-  private searchService = inject(SearchService);
   private toastService = inject(ToastService);
   private documentService = inject(DocumentService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private configService = inject(ConfigService);
   private destroyRef = inject(DestroyRef);
 
-  public currentProject: Project = null;
+  public currentProject: LegacyProject = null;
   public loading = true;
-  public documents: User[] = null;
+  public documents: any[] = null;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
@@ -60,7 +61,8 @@ export class DocumentApplicationSortComponent implements OnInit {
     {
       name: 'Status',
       value: 'status',
-      width: '5%'
+      width: '5%',
+      nosort: true
     },
     {
       name: 'Date',
@@ -70,17 +72,20 @@ export class DocumentApplicationSortComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      width: '10%'
+      width: '10%',
+      nosort: true
     }
   ];
 
@@ -91,44 +96,49 @@ export class DocumentApplicationSortComponent implements OnInit {
       .pipe(
         switchMap(params => {
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 10);
-          if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = '+sortOrder,-datePosted,+displayName';
-            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
-          }
+          this.tableParams.sortBy = tableSort(this.nativeSort(this.tableParams.sortBy));
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           this._changeDetectionRef.markForCheck();
-
-          const projectId = this.currentProject._id;
-          const tabModifier = createProjectTabModifiers(this.configService.lists);
-          return this.searchService.getSearchResults(
-            this.tableParams.keywords || '',
-            'Document',
-            [{ 'name': 'project', 'value': projectId }],
-            this.tableParams.currentPage,
-            this.tableParams.pageSize,
-            this.tableParams.sortBy,
-            tabModifier,
-            true
-          );
+          return this.fetchDocuments(this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, this.tableParams.keywords);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe((res: any) => {
-          if (res) {
-            if (res[0].data.meta && res[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-              this.documents = res[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.documents = [];
-            }
-            this.setRowData();
-            this.loading = false;
-            this._changeDetectionRef.markForCheck();
-          } else {
-            this.toastService.error('Uh-oh, couldn\'t load documents');
-            this.router.navigate(['/search']);
-          }
-        });
+      .subscribe(page => this.showPage(page));
+  }
+
+  /** DEMI sorts documents by one key; any other sort, such as an old multi-key URL, falls back to the sort order. */
+  private nativeSort(sortBy: string | null | undefined): string {
+    return nativeDocumentSort(sortBy) ?? 'sortOrder';
+  }
+
+  /** One page of this project's application documents. Documents carry the DEMI project id, not the Eagle one. */
+  private fetchDocuments(page: number, pageSize: number, sortBy: string, keywords: string): Observable<DemiList<DemiDocument>> {
+    return this.documentService.listNative({
+      page: page || 1,
+      pageSize: pageSize || 10,
+      count: true,
+      sort: this.nativeSort(sortBy),
+      q: keywords || undefined,
+      filters: applicationDocumentFilters(this.configService.lists, this.currentProject.demiId)
+    });
+  }
+
+  /** Shows a page, keeping sort orders edited on earlier pages. */
+  private showPage(page: DemiList<DemiDocument>) {
+    const edited = new Map<string, any>((this.storageService.state.editedDocs ?? []).map((doc: any) => [doc._id, doc]));
+    this.tableParams.totalListItems = page.total ?? 0;
+    this.documents = page.rows.map(row => {
+      const doc = legacyDocumentRow(row);
+      const previous = doc._id ? edited.get(doc._id) : undefined;
+      return {
+        ...doc,
+        status: doc.isPublished ? 'Published' : 'Not Published',
+        sortOrder: previous ? previous.sortOrder : doc.sortOrder
+      };
+    });
+    this.setRowData();
+    this.loading = false;
+    this._changeDetectionRef.markForCheck();
   }
 
   setRowData() {
@@ -147,7 +157,8 @@ export class DocumentApplicationSortComponent implements OnInit {
 
   onSave() {
     const formData = new FormData();
-    this.storageService.state.editedDocs.forEach((document: any) => {
+    // A document with no Eagle id cannot be written through eagle-api.
+    this.storageService.state.editedDocs.filter((document: any) => document._id).forEach((document: any) => {
       // document service put id and sort order
       formData.set('sortOrder', document.sortOrder);
       this.documentService.update(formData, document._id)
@@ -172,55 +183,19 @@ export class DocumentApplicationSortComponent implements OnInit {
     window.scrollTo(0, 0);
     this.loading = true;
 
-    this.tableParams.currentPage = pageNumber;
+    const currentPage = pageNumber || 1;
+    const pageSize = this.tableData?.paginationData.pageSize || 10;
+    const sortBy = tableSort(this.nativeSort(this.tableParams.sortBy));
+    const keywords = this.tableParams.keywords || '';
+    this.tableParams.currentPage = currentPage;
+    this.tableParams.sortBy = sortBy;
 
-    const projectId = this.currentProject._id;
-    const currentPage = pageNumber ? pageNumber : 1;
-    const pageSize = this.tableData.paginationData.pageSize ? this.tableData.paginationData.pageSize : 10;
-    const sortBy = this.tableParams.sortBy && this.tableParams.sortBy !== 'null' ? this.tableParams.sortBy : '+sortOrder,-datePosted,+displayName';
-    const keywords = this.tableParams.keywords ? this.tableParams.keywords : '';
-
-    const tabModifier = createProjectTabModifiers(this.configService.lists);
-    this.searchService.getSearchResults(
-      keywords,
-      'Document',
-      [{ 'name': 'project', 'value': projectId }],
-      currentPage,
-      pageSize,
-      sortBy,
-      tabModifier,
-      true)
+    this.fetchDocuments(currentPage, pageSize, sortBy, keywords)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-          if (res && res[0].data.meta && res[0].data.meta.length > 0) {
-            this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-            this.documents = res[0].data.searchResults;
-            // update values that have been edited previously
-            this.documents.forEach((document: any) => {
-              if (this.storageService.state.editedDocs && this.storageService.state.editedDocs.length > 0) {
-                this.storageService.state.editedDocs.forEach((editedDocument: any) => {
-                  if (document._id === editedDocument._id) {
-                    document.sortOrder = editedDocument.sortOrder;
-                  }
-                });
-              }
-            });
-            this.tableTemplateUtils.updateUrl(
-              sortBy,
-              currentPage,
-              pageSize,
-              null,
-              keywords
-            );
-            this.setRowData();
-          } else {
-            this.toastService.error('Uh-oh, couldn\'t load documents');
-            this.tableParams.totalListItems = 0;
-            this.documents = [];
-          }
-          this.loading = false;
-          this._changeDetectionRef.markForCheck();
-        });
+      .subscribe(page => {
+        this.tableTemplateUtils.updateUrl(sortBy, currentPage, pageSize, null, keywords);
+        this.showPage(page);
+      });
   }
 
 }

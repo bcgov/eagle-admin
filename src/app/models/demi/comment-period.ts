@@ -1,4 +1,4 @@
-import { isEagleId } from './demi-ids';
+import { WriteIds, eagleWriteId } from './demi-ids';
 
 /**
  * A native DEMI comment period row (`GET <DEMI_API_PATH>/comment-periods`). Fields hidden from the caller are left out.
@@ -81,15 +81,12 @@ const DEMI_ONLY_FIELDS = [
   'id', 'eagleId', 'periodId', 'projectId', 'projectEagleId', 'projectName', 'sourceSystem', 'read', 'sources', 'isDeleted'
 ];
 
-/**
- * The Eagle id eagle-api writes a row under: `_id` on a legacy body, else the native row's Eagle id. ENGAGE owns its
- * rows, so they are read-only here, as is a native row with no Eagle id; both throw.
- */
-export function eagleWriteId(row: { _id?: string; id?: string; eagleId?: string; sourceSystem?: string }, kind: string): string {
+/** {@link eagleWriteId} for a comment or period write. ENGAGE rows and rows with no Eagle id are read-only here: both throw. */
+export function requireEagleWriteId(row: WriteIds & { sourceSystem?: string }, kind: string): string {
   if (!('_id' in row) && row.sourceSystem === 'engage') {
     throw new Error(`This ${kind} is managed in ENGAGE and cannot be changed here.`);
   }
-  const id = '_id' in row ? row._id : row.eagleId ?? (isEagleId(row.id) ? row.id : null);
+  const id = eagleWriteId(row);
   if (!id) {
     throw new Error(notInEagle(kind));
   }
@@ -109,7 +106,7 @@ export function toEagleWriteBody(row: object, kind: string, parent: Record<strin
   if (isNew && !parentKnown) {
     throw new Error(notInEagle(kind));
   }
-  const _id = isNew ? null : eagleWriteId(row, kind);
+  const _id = isNew ? null : requireEagleWriteId(row, kind);
   const body: any = { ...row, ...(parentKnown ? parent : {}), _id };
   DEMI_ONLY_FIELDS.forEach(field => delete body[field]);
   return body;

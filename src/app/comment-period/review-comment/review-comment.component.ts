@@ -7,7 +7,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
 import { DemiComment, NextPendingComment } from 'src/app/models/demi/comment';
 import { DemiDocument } from 'src/app/models/demi/document';
-import { eagleWriteId as documentEagleId } from 'src/app/models/demi/document-write';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { ReviewComment } from 'src/app/resolvers/comment.resolver';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentService } from 'src/app/services/comment.service';
@@ -115,8 +115,8 @@ export class ReviewCommentComponent implements OnChanges {
     }
     // eagle-api publishes attachments by Eagle id; a DEMI-only document is left as it is.
     const documentsList = this.commentData.documentsList
-      .filter(document => documentEagleId(document))
-      .map(document => ({ _id: documentEagleId(document), eaoStatus: document.eaoStatus }));
+      .filter(document => eagleWriteId(document))
+      .map(document => ({ _id: eagleWriteId(document), eaoStatus: document.eaoStatus }));
     const { nextId } = this.nextPending();
 
     // save() reads `documentsList` off the comment; a non-literal argument keeps it out of the excess-property check.

@@ -3,7 +3,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { OrgService, orgSort } from './org.service';
+import { OrgService } from './org.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
@@ -96,16 +96,6 @@ describe('OrgService', () => {
 
       await expectAsync(row).toBeRejectedWithError('Organization not found');
       expect(toast.error).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('orgSort', () => {
-    it('keeps a descending name sort', () => {
-      expect(orgSort('-name')).toBe('-name');
-    });
-
-    it('falls back to name for a column DEMI cannot sort on', () => {
-      expect(orgSort('+companyType')).toBe('name');
     });
   });
 

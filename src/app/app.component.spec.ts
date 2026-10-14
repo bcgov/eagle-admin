@@ -7,12 +7,12 @@ import { AnalyticsService } from './services/analytics/analytics.service';
 import { KeycloakService } from './services/keycloak.service';
 import { SideBarService } from './services/sidebar.service';
 
-// A body-container dropdown whose toggle sits inside a small scroll area,
-// like the Actions menus inside .app-body.
+// A body-container dropdown whose toggle sits inside a small scroll area, like the Actions menus inside .app-body.
+// Fixed to the viewport: karma's frame is ~440px tall, so content above the fixture (reporter failure text) hid the toggle.
 @Component({
   imports: [NgbDropdownModule],
   template: `
-    <div id="scroller" style="height: 100px; overflow: auto">
+    <div id="scroller" style="position: fixed; top: 0; left: 0; height: 100px; overflow: auto">
       <div ngbDropdown container="body">
         <button id="toggle" ngbDropdownToggle>Actions</button>
         <div id="menu" ngbDropdownMenu><button ngbDropdownItem>Edit</button></div>

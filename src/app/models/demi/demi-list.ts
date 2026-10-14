@@ -1,3 +1,6 @@
+/** DEMI's largest `pageSize` for a signed-in read. */
+export const DEMI_MAX_PAGE_SIZE = 1000;
+
 /** One page of a DEMI native list. `total` is set only when the request asked for `count=true`. */
 export interface DemiList<T> {
   rows: T[];

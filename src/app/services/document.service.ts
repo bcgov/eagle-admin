@@ -28,27 +28,6 @@ export class DocumentService {
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
-  public isMS = !!(window.navigator as any).msSaveOrOpenBlob;
-  private _cachedDocument: Document | null = null;
-
-  private readonly documentFields = [
-    '_addedBy', 'documentFileName', 'labels', 'internalOriginalName', 'displayName',
-    'documentType', 'datePosted', 'dateUploaded', 'dateReceived', 'documentSource',
-    'internalURL', 'internalMime', 'internalSize', 'checkbox', 'project', 'type',
-    'documentAuthor', 'documentAuthorType', 'projectPhase', 'legislation', 'milestone',
-    'description', 'isPublished', 'isFeatured', 'sortOrder', 'secureHitCount', 'publicHitCount',
-    'extractionMethod', 'contentExtractedAt'
-  ];
-
-  private readonly multiDocumentFields = [
-    '_id', 'eaoStatus', 'submittedCAC', 'internalOriginalName', 'documentFileName',
-    'labels', 'internalSize', 'displayName', 'documentType', 'datePosted',
-    'dateUploaded', 'dateReceived', 'documentSource', 'internalURL', 'internalMime',
-    'checkbox', 'project', 'type', 'documentAuthor', 'documentAuthorType',
-    'projectPhase', 'milestone', 'description', 'isPublished', 'isFeatured',
-    'sortOrder', 'secureHitCount', 'publicHitCount'
-  ];
-
   /** One page of DEMI documents. `filters.project` takes the DEMI project id. */
   listNative(params: DemiDocumentListParams = {}): Observable<DemiList<DemiDocument>> {
     return this.demiApi.list<DemiDocument>('documents', params).pipe(
@@ -73,21 +52,28 @@ export class DocumentService {
     );
   }
 
+  /** Presigned https URL for the document's file; null when DEMI hides the document or answers no https URL. */
+  downloadUrlNative(id: string): Observable<string | null> {
+    // Asked with the bearer, so staff-only rows resolve. DemiApiService.get builds `<kind>/<id>`: this reads `documents/<id>/download`.
+    return this.demiApi.get<DemiDocumentDownload>(`documents/${encodeURIComponent(id)}`, 'download').pipe(
+      map(body => {
+        const url: unknown = body?.url;
+        if (typeof url === 'string' && /^https:\/\//i.test(url)) {
+          return url;
+        }
+        this.logger.error(`Download URL for document ${id} is missing or not https`, 'DocumentService');
+        return null;
+      }),
+      catchError(() => of(null))
+    );
+  }
+
   /** Saves the document's file by navigating to its presigned URL; the bytes never pass through HttpClient. */
   async downloadNative(id: string): Promise<void> {
-    let url: unknown;
-    try {
-      // Asked with the bearer, so staff-only rows resolve. DemiApiService.get builds `<kind>/<id>`: this reads `documents/<id>/download`.
-      const body = await firstValueFrom(this.demiApi.get<DemiDocumentDownload>(`documents/${encodeURIComponent(id)}`, 'download').pipe(
-        withLoading(this.loadingState, `demi-document-download-${id}`, 'Preparing download')
-      ));
-      url = body?.url;
-    } catch {
-      this.toast.error('Failed to download document.');
-      return;
-    }
-    if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
-      this.logger.error(`Download URL for document ${id} is missing or not https`, 'DocumentService');
+    const url = await firstValueFrom(this.downloadUrlNative(id).pipe(
+      withLoading(this.loadingState, `demi-document-download-${id}`, 'Preparing download')
+    ));
+    if (!url) {
       this.toast.error('Failed to download document.');
       return;
     }
@@ -99,41 +85,6 @@ export class DocumentService {
   private readFailed<T>(toastMessage: string, fallback: T): Observable<T> {
     this.toast.error(toastMessage);
     return of(fallback);
-  }
-
-  getByMultiId(ids: Array<string>): Observable<Array<Document>> {
-    const qs = `document?docIds=${this.api.buildValues(ids)}&fields=${this.api.buildValues(this.multiDocumentFields)}`;
-    return this.api.get<Document[]>(qs).pipe(
-      withLoading(this.loadingState, `documents-multi-${ids.join(',')}`, 'Loading documents'),
-      map((res: any) => res?.length ? res.map((doc: any) => new Document(doc)) : []),
-      catchError(error => {
-        this.logger.error('Failed to get documents by ids', 'DocumentService', error);
-        this.toast.error('Failed to load documents.');
-        return of([] as Document[]);
-      })
-    );
-  }
-
-  getById(documentId: string, forceReload = false): Observable<Document> {
-    if (!forceReload && this._cachedDocument && this._cachedDocument._id === documentId) {
-      return of(this._cachedDocument);
-    }
-    const qs = `document/${documentId}?fields=${this.api.buildValues(this.documentFields)}`;
-    return this.api.get<Document[]>(qs).pipe(
-      withLoading(this.loadingState, `document-${documentId}`, 'Loading document'),
-      map((res: any) => {
-        if (res?.length) {
-          this._cachedDocument = new Document(res[0]);
-          return this._cachedDocument;
-        }
-        return null;
-      }),
-      catchError(error => {
-        this.logger.error(`Failed to get document ${documentId}`, 'DocumentService', error);
-        this.toast.error('Failed to load document.');
-        return of(null as Document);
-      })
-    );
   }
 
   add(formData: FormData, publish = false): Observable<Document> {
@@ -189,29 +140,6 @@ export class DocumentService {
     return this.api.put<Document>(`document/${docId}/unfeature`, {}).pipe(
       catchError(error => this.api.handleError(error))
     );
-  }
-
-  downloadResource(id: string): Promise<Blob> {
-    return this.api.get<Blob>(`document/${id}/download`, { responseType: 'blob' }).toPromise();
-  }
-
-  public async downloadDocument(document: Document): Promise<void> {
-    const blob = await this.downloadResource(document._id);
-    let filename = document.documentSource === 'COMMENT' ? document.internalOriginalName : document.documentFileName;
-    filename = encodeString(filename, false);
-    if (this.isMS) {
-      (window.navigator as any).msSaveBlob(blob, filename);
-    } else {
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement('a');
-      window.document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    }
   }
 
   public async openDocument(document: Document): Promise<void> {

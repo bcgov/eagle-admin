@@ -1,4 +1,4 @@
-import { createProjectTabModifiers, encodeString, filterCompareWith } from './utils';
+import { applicationDocumentFilters, encodeString, filterCompareWith } from './utils';
 import { sanitizeHighlight } from './sanitize-highlight';
 
 describe('Utils', () => {
@@ -50,23 +50,28 @@ describe('filterCompareWith', () => {
   });
 });
 
-describe('createProjectTabModifiers', () => {
+describe('applicationDocumentFilters', () => {
   const lists = [
     { id: 'type02', type: 'doctype', name: 'Application Materials', legislation: 2002 },
+    { id: 'phase02', type: 'projectPhase', name: 'Application Review', legislation: 2002 },
+    { id: 'mile02', type: 'label', name: 'Application Review', legislation: 2002 },
     { id: 'mile18', type: 'label', name: 'Revised EAC Application', legislation: 2018 },
     { id: 'amend02', type: 'projectPhase', name: 'Post Decision - Amendment', legislation: 2002 },
     { id: 'early02', type: 'projectPhase', name: 'Early Engagement', legislation: 2002 }
   ];
 
-  it('builds the query from List row ids', () => {
-    const modifier = createProjectTabModifiers(lists);
-
-    expect(modifier.type.split(',')).toContain('type02');
-    expect(modifier.milestone.split(',')).toContain('mile18');
+  it('builds native filters from List row ids, leaving out terms with no List row', () => {
+    expect(applicationDocumentFilters(lists, 'demi-p1')).toEqual({
+      project: 'demi-p1',
+      documentSource: 'PROJECT',
+      typeId: ['type02'],
+      milestoneId: ['mile02', 'mile18'],
+      projectPhaseId: ['phase02', 'early02']
+    });
   });
 
-  it('leaves the amendment phase out of the project phases', () => {
-    expect(createProjectTabModifiers(lists).projectPhase).toBe('early02');
+  it('sends no phase filter when the List has no phases', () => {
+    expect(applicationDocumentFilters([], 'demi-p1').projectPhaseId).toBeUndefined();
   });
 });
 

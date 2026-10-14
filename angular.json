@@ -15,7 +15,6 @@
               "rxjs",
               "xlsx",
               "tinymce",
-              "jszip",
               "js-sha256",
               "dlv"
             ],

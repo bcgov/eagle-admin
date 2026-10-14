@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, DestroyRef, TemplateRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable, Subject, catchError, distinctUntilChanged, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
+import { Observable, Subject, catchError, distinctUntilChanged, finalize, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -17,11 +17,12 @@ import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
+import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { DemiCommentPeriod } from 'src/app/models/demi/comment-period';
-import { isEagleId } from 'src/app/models/demi/demi-ids';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
-import { DemiUpdate, updateEagleId, updateParentId } from 'src/app/models/demi/update';
+import { DemiUpdate, updateParentId } from 'src/app/models/demi/update';
 import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
@@ -176,7 +177,7 @@ export class AddEditActivityComponent implements OnInit {
       this.recentActivityService.getNative(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((row: DemiUpdate) => {
         this.isEditing = true;
         // Eagle ids, as the form and eagle-api writes use them.
-        const data = { ...row, _id: updateEagleId(row), project: updateParentId(row) };
+        const data = { ...row, _id: eagleWriteId(row), project: updateParentId(row) };
         this.buildForm(data);
         this.activity = data;
         this.statusText = statusLabel(data);
@@ -203,7 +204,7 @@ export class AddEditActivityComponent implements OnInit {
       });
     }
 
-    this.projectService.list({ pageSize: 1000 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.projectService.list({ pageSize: DEMI_MAX_PAGE_SIZE }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: page => {
         this.projects = page.rows.map(toLegacyProject).filter(project => project._id);
         this.loading = false;
@@ -213,7 +214,7 @@ export class AddEditActivityComponent implements OnInit {
     });
 
     // A project notification's DEMI id is its Eagle id.
-    this.demiApi.list<{ id: string; name: string }>('notifications', { pageSize: 1000, sort: 'name' })
+    this.demiApi.list<{ id: string; name: string }>('notifications', { pageSize: DEMI_MAX_PAGE_SIZE, sort: 'name' })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: page => { this.projectNotifications = page.rows.map(row => ({ _id: row.id, name: row.name })); },
@@ -485,22 +486,21 @@ export class AddEditActivityComponent implements OnInit {
     }
   }
 
-  /** The admin fetch URL needs no token only for public documents; load the rest with the staff token. */
+  /** The admin fetch URL needs no token only for public documents; the rest show from a presigned DEMI URL. */
   private loadPrivateThumbnails() {
     this.pickedImageIds()
       .filter(id => !this.imageSrcs().has(id) && !this.srcsLoading.has(id) && !isPublicDocument(this.imageDocs().get(id)))
       .forEach(id => {
         this.srcsLoading.add(id);
-        this.documentService.downloadResource(id)
-          .then(blob => {
-            // The form may be gone or the image removed while the file downloaded.
-            if (blob?.size && !this.destroyed && this.pickedImageIds().includes(id)) {
-              this.setImageSrc(id, URL.createObjectURL(blob));
+        this.documentService.downloadUrlNative(id)
+          .pipe(finalize(() => this.srcsLoading.delete(id)))
+          .subscribe(url => {
+            // The form may be gone or the image removed while the URL loaded; with no URL the row shows the placeholder.
+            if (url && !this.destroyed && this.pickedImageIds().includes(id)) {
+              this.setImageSrc(id, url);
               this._cdr.markForCheck();
             }
-          })
-          .catch(() => { /* the row shows the placeholder */ })
-          .finally(() => this.srcsLoading.delete(id));
+          });
       });
   }
 
@@ -599,7 +599,7 @@ export class AddEditActivityComponent implements OnInit {
   private watchProjectDocuments() {
     // First 1000 of the parent's documents of one source, newest first. Null marks a failed search.
     const search = (parentId: string | null, source: string): Observable<any[] | null> => parentId
-      ? this.demiApi.list<DemiDocument>('documents', { pageSize: 1000, sort: '-datePosted', filters: sourceFilters(parentId, source) })
+      ? this.demiApi.list<DemiDocument>('documents', { pageSize: DEMI_MAX_PAGE_SIZE, sort: '-datePosted', filters: sourceFilters(parentId, source) })
         .pipe(
           map(page => page.rows.map(legacyDocumentRow)),
           catchError(error => {
@@ -677,13 +677,13 @@ export class AddEditActivityComponent implements OnInit {
   public loadPcpsForProject(projectId: string) {
     this.demiProject(projectId)
       .pipe(
-        switchMap(project => project ? this.commentPeriodService.listByProject(project.demiId, { pageSize: 1000 }) : of({ rows: [] })),
+        switchMap(project => project ? this.commentPeriodService.listByProject(project.demiId, { pageSize: DEMI_MAX_PAGE_SIZE }) : of({ rows: [] })),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(page => {
         // An update's pcp is the period's Eagle id; a period eagle-api does not hold cannot be picked.
         this.periods = page.rows
-          .map((period: DemiCommentPeriod) => ({ ...period, _id: period.eagleId ?? (isEagleId(period.id) ? period.id : null) }))
+          .map((period: DemiCommentPeriod) => ({ ...period, _id: eagleWriteId(period) }))
           .filter(period => period._id);
         // Preserve the current PCP selection if it exists in the loaded periods.
         // Only reset when the current value is no longer valid (e.g. user switched projects).

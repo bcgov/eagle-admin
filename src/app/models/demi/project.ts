@@ -28,6 +28,10 @@ export interface DemiProject {
   proponentId?: string | null;
   proponentName?: string | null;
   region?: string;
+  /** Eagle `status`. */
+  projectState?: string;
+  /** Eagle `location`. */
+  address?: string;
   build?: string;
   centroid?: { type: string; coordinates: number[] } | null;
   eacDecision?: DemiListRef;

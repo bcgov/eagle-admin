@@ -44,6 +44,7 @@ describe('nativeDocumentSort', () => {
   it('keeps the sort keys DEMI allows, without a + prefix', () => {
     expect(nativeDocumentSort('-datePosted')).toBe('-datePosted');
     expect(nativeDocumentSort('+displayName')).toBe('displayName');
+    expect(nativeDocumentSort('-sortOrder')).toBe('-sortOrder');
   });
 
   it('drops keys DEMI cannot sort by', () => {

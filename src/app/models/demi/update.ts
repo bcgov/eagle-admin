@@ -1,5 +1,4 @@
 import { UpdateImage } from '../recentActivity';
-import { isEagleId } from './demi-ids';
 
 /**
  * A native DEMI update row (`GET <DEMI_API_PATH>/updates`). `id` is the Eagle id.
@@ -47,11 +46,6 @@ const UPDATE_SORT_KEYS = ['dateAdded', 'dateUpdated', 'publishDate'];
 export function nativeUpdateSort(sortBy: string | null | undefined): string | undefined {
   const match = /^([+-]?)(\w+)$/.exec(sortBy ?? '');
   return match && UPDATE_SORT_KEYS.includes(match[2]) ? `${match[1] === '-' ? '-' : ''}${match[2]}` : undefined;
-}
-
-/** The update's Eagle id, or null for a row eagle-api does not hold. */
-export function updateEagleId(row: Pick<DemiUpdate, 'id' | 'eagleId'>): string | null {
-  return row.eagleId ?? (isEagleId(row.id) ? row.id : null);
 }
 
 /** The Eagle id of the parent project or project notification, or null for an update with none. */

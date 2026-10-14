@@ -9,8 +9,8 @@ import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
-import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
-import { OrgService, ORG_LIST_LOADING, orgSort } from '../services/org.service';
+import { TableTemplateUtils, nextSortBy, nativeSort } from '../shared/utils/table-template-utils';
+import { OrgService, ORG_LIST_LOADING } from '../services/org.service';
 import { LoadingStateService } from '../services/loading-state.service';
 
 import { FormsModule } from '@angular/forms';
@@ -117,7 +117,7 @@ export class OrganizationsComponent implements OnInit {
             page: this.tableParams.currentPage,
             pageSize: this.tableParams.pageSize,
             count: true,
-            sort: orgSort(this.tableParams.sortBy),
+            sort: nativeSort(this.tableParams.sortBy, 'name'),
             q: this.tableParams.keywords || undefined,
             filters: { companyType: companyType.length ? companyType : undefined }
           });

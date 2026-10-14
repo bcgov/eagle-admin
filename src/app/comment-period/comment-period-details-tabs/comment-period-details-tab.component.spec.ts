@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 
 import { CommentPeriodDetailsTabComponent } from './comment-period-details-tab.component';
 import { ConfigService } from 'src/app/services/config.service';
@@ -20,7 +21,14 @@ describe('CommentPeriodDetailsTabComponent', () => {
   let http: HttpTestingController;
   let link: jasmine.Spy;
 
+  let documents: jasmine.SpyObj<DocumentService>;
+
   function create(row: Partial<DemiCommentPeriod> = {}) {
+    documents = jasmine.createSpyObj('DocumentService', ['byIdsNative', 'downloadNative']);
+    documents.byIdsNative.and.returnValue(of([
+      { id: 'd1', projectId: 'track-1', displayName: 'Public notice', isPublished: true },
+      { id: 'd2', projectId: 'track-1', displayName: 'Draft letter', isPublished: false }
+    ]));
     TestBed.configureTestingModule({
       imports: [CommentPeriodDetailsTabComponent],
       providers: [
@@ -28,7 +36,7 @@ describe('CommentPeriodDetailsTabComponent', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ConfigService, useValue: { getDemiApiPath: () => '/demi/api', lists: [] } },
-        { provide: DocumentService, useValue: jasmine.createSpyObj('DocumentService', ['getByMultiId']) },
+        { provide: DocumentService, useValue: documents },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'debug']) },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['info', 'error', 'success']) },
         { provide: StorageService, useValue: { state: { currentProject: { type: 'currentProject' }, canDeleteCommentPeriod: { data: false } } } }
@@ -97,6 +105,29 @@ describe('CommentPeriodDetailsTabComponent', () => {
     it('offers only the exports on an ENGAGE period', () => {
       create({ sourceSystem: 'engage' });
       expect(menuItems()).toEqual(['Export All Comments', 'Export Comments For Proponents']);
+    });
+  });
+
+  describe('related documents', () => {
+    beforeEach(() => create({ relatedDocuments: ['d1', 'd2'] }));
+
+    function rows(): HTMLElement[] {
+      return Array.from(fixture.nativeElement.querySelectorAll('.doc-list li'));
+    }
+
+    it('reads the related documents from DEMI by id', () => {
+      expect(documents.byIdsNative).toHaveBeenCalledWith(['d1', 'd2']);
+      expect(rows().map(row => row.querySelector('.cell__txt-content').textContent.trim())).toEqual(['Public notice', 'Draft letter']);
+    });
+
+    it('marks each document published or not from isPublished', () => {
+      expect(rows().map(row => row.querySelector('.publish-state .material-icons').textContent.trim())).toEqual(['cloud_done', 'cloud_off']);
+    });
+
+    it('downloads a document by its DEMI id', () => {
+      rows()[1].click();
+
+      expect(documents.downloadNative).toHaveBeenCalledWith('d2');
     });
   });
 });

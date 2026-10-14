@@ -14,11 +14,18 @@ import { nativeCommentPeriod } from 'src/app/models/demi/comment-period.fixture'
 
 describe('AddEditCommentPeriodComponent', () => {
   let commentPeriodService: jasmine.SpyObj<CommentPeriodService>;
+  let documentService: jasmine.SpyObj<DocumentService>;
+  let storage: { state: any };
 
   // Form-logic specs skip detectChanges, so the TinyMCE template never renders.
   function openForEdit(period: CommentPeriod): AddEditCommentPeriodComponent {
     commentPeriodService = jasmine.createSpyObj('CommentPeriodService', ['save', 'add']);
     commentPeriodService.save.and.returnValue(of(period));
+    documentService = jasmine.createSpyObj('DocumentService', ['byIdsNative']);
+    documentService.byIdsNative.and.returnValue(of([
+      { id: '5c0a6c1b2e3f4a5b6c7d8e01', eagleId: '5c0a6c1b2e3f4a5b6c7d8e01', projectId: 'track-1', displayName: 'Notice', documentFileName: 'notice.pdf' }
+    ]));
+    storage = { state: {} };
 
     TestBed.configureTestingModule({
       imports: [AddEditCommentPeriodComponent],
@@ -33,8 +40,8 @@ describe('AddEditCommentPeriodComponent', () => {
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         { provide: CommentPeriodService, useValue: commentPeriodService },
         { provide: ConfigService, useValue: { lists: [] } },
-        { provide: DocumentService, useValue: jasmine.createSpyObj('DocumentService', ['getByMultiId']) },
-        { provide: StorageService, useValue: { state: {} } },
+        { provide: DocumentService, useValue: documentService },
+        { provide: StorageService, useValue: storage },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['warn', 'error', 'info', 'debug']) }
       ]
@@ -69,5 +76,14 @@ describe('AddEditCommentPeriodComponent', () => {
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/p', 'p1', 'cp', period._id]);
     expect(component.commentPeriodForm).toBeUndefined();
     expect(commentPeriodService.save).not.toHaveBeenCalled();
+  });
+
+  it('reads the related documents from DEMI by id as rows keyed on the Eagle id', () => {
+    openForEdit(new CommentPeriod({ _id: 'cp1', relatedDocuments: ['5c0a6c1b2e3f4a5b6c7d8e01'], read: ['staff'] }));
+
+    expect(documentService.byIdsNative).toHaveBeenCalledWith(['5c0a6c1b2e3f4a5b6c7d8e01']);
+    const [doc] = storage.state.selectedDocumentsForCP.data;
+    expect(doc._id).toBe('5c0a6c1b2e3f4a5b6c7d8e01');
+    expect(doc.documentFileName).toBe('notice.pdf');
   });
 });
