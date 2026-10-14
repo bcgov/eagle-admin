@@ -106,8 +106,22 @@ describe('ProjectService', () => {
 
       const result = await project;
       expect(result.projectLeadObj.displayName).toBe('Lead Person');
+      expect(result.projectLeadObj._id).toBe('u1');
       expect(result.responsibleEPDObj).toBeUndefined();
       expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('getPeopleObjs gives the edit form contacts keyed on the Eagle user _id', async () => {
+      const legislation2002 = { name: 'Mine', responsibleEPDId: 'u2', projectLeadId: 'u1' } as any;
+      const data = [{ data: { searchResults: [{ legislationYearList: [2002], legislation_2002: legislation2002 }] } }];
+      const done = firstValueFrom(service.getPeopleObjs(data));
+
+      http.expectOne(r => r.url === '/demi/api/users')
+        .flush([{ id: 'u1', eagleId: 'u1', displayName: 'Lead' }, { id: 'u2', eagleId: 'u2', displayName: 'EPD' }]);
+      await done;
+
+      expect(legislation2002.responsibleEPDObj._id).toBe('u2');
+      expect(legislation2002.projectLeadObj._id).toBe('u1');
     });
 
     it('getById fills the EPD when the lead is null', async () => {

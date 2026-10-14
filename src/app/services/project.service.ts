@@ -180,8 +180,9 @@ export class ProjectService {
     );
   }
 
-  private usersById(ids: string[]): Observable<Map<string, UserRow>> {
-    return this.getUsers(ids).pipe(map(rows => new Map(rows.map(row => [row.id, row]))));
+  // Contact pickers and the edit forms read the Eagle `_id`; DEMI user ids are the Eagle ids.
+  private usersById(ids: string[]): Observable<Map<string, UserRow & { _id: string }>> {
+    return this.getUsers(ids).pipe(map(rows => new Map(rows.map(row => [row.id, { ...row, _id: row.id }]))));
   }
 
   public getPeopleObjs(data): Observable<any> {
