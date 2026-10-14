@@ -21,13 +21,13 @@ export function orgSort(sortBy: string | null | undefined): string {
 
 /**
  * Eagle write body for an organization. A body with `_id` is already Eagle-shaped and goes unchanged;
- * a native DEMI row (`id`, no `_id`) is converted. Temporary until writes move off eagle-api.
+ * native input (`id` or, for a new row, no id at all) is converted. Temporary until writes move off eagle-api.
  */
-export function toEagleOrg(body: Org | Organization): Org {
-  if ('_id' in body || !('id' in body)) {
+export function toEagleOrg(body: Org | Partial<Organization>): Org {
+  if ('_id' in body) {
     return body as Org;
   }
-  return new Org({ ...body, _id: body.id });
+  return new Org({ ...body, _id: body.id ?? null });
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,7 +38,7 @@ export class OrgService {
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
-  save(input: Org | Organization): Observable<Org> {
+  save(input: Org | Partial<Organization>): Observable<Org> {
     const org = toEagleOrg(input);
     return this.api.put<Org>(`organization/${org._id}`, org).pipe(
       catchError(error => {
@@ -49,7 +49,7 @@ export class OrgService {
     );
   }
 
-  add(org: Org | Organization): Observable<Org> {
+  add(org: Org | Partial<Organization>): Observable<Org> {
     return this.api.post<Org>('organization/', toEagleOrg(org)).pipe(
       catchError(error => {
         this.logger.error('Failed to add org', 'OrgService', error);

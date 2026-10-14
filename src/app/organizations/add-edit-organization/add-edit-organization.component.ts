@@ -7,7 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { of } from 'rxjs';
 import { catchError, map, mergeMap, finalize } from 'rxjs/operators';
-import { Org } from 'src/app/models/org';
+import { Organization } from 'src/app/models/demi/organization';
 import { OrgService } from 'src/app/services/org.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -233,20 +233,11 @@ export class AddEditOrganizationComponent implements OnInit {
       return;
     }
 
-    const org = new Org({
-      description: this.orgForm.controls.description.value,
-      name: this.orgForm.controls.name.value,
-      country: this.orgForm.controls.country.value,
-      postal: this.orgForm.controls.postal.value,
-      province: this.orgForm.controls.province.value,
-      city: this.orgForm.controls.city.value,
-      address1: this.orgForm.controls.address1.value,
-      address2: this.orgForm.controls.address2.value,
-      companyType: this.orgForm.controls.companyType.value,
-      parentCompany: this.orgForm.controls.parentCompany.value || null,
-      companyLegal: this.orgForm.controls.companyLegal.value,
-      company: this.orgForm.controls.company.value
-    });
+    // Form controls carry the native field names; OrgService maps the body to the eagle-api shape.
+    const org: Partial<Organization> = {
+      ...this.orgForm.getRawValue(),
+      parentCompany: this.orgForm.controls.parentCompany.value || null
+    };
 
     this.clearStorageService();
     if (!this.isEditing) {
@@ -259,8 +250,7 @@ export class AddEditOrganizationComponent implements OnInit {
           }
         });
     } else {
-      org._id = this.orgId;
-      this.orgService.save(org)
+      this.orgService.save({ ...org, id: this.orgId })
         .subscribe(() => {
           this.router.navigate(['orgs']);
         });

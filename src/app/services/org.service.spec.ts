@@ -132,6 +132,15 @@ describe('OrgService', () => {
       req.flush({});
     });
 
+    it('converts new native input to an Eagle body with no _id on add', () => {
+      service.add({ name: 'New Org', companyType: 'Ministry' }).subscribe();
+
+      const req = http.expectOne('/api/organization/');
+      expect(req.request.body._id).toBeNull();
+      expect(req.request.body.companyType).toBe('Ministry');
+      req.flush({});
+    });
+
     it('posts a new Eagle-shaped org unchanged on add', () => {
       const created = new Org({ name: 'New Org' });
 

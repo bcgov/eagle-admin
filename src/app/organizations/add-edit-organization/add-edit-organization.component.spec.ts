@@ -14,16 +14,18 @@ const PARENT = { id: 'parent1', name: 'Parent Co' } as Organization;
 
 describe('AddEditOrganizationComponent edit load', () => {
   let toast: jasmine.SpyObj<ToastService>;
+  let save: jasmine.Spy;
 
   // Runs ngOnInit without rendering, so the TinyMCE editor never loads.
   function load(reads: Record<string, Observable<Organization>>): AddEditOrganizationComponent {
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
+    save = jasmine.createSpy('save').and.returnValue(of({}));
     TestBed.configureTestingModule({
       imports: [AddEditOrganizationComponent],
       providers: [
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ orgId: 'child1' }) } } },
-        { provide: OrgService, useValue: { getOrganization: (id: string) => reads[id] } },
+        { provide: OrgService, useValue: { getOrganization: (id: string) => reads[id], save } },
         { provide: StorageService, useValue: { state: {} } },
         { provide: ToastService, useValue: toast },
         { provide: NavigationStackUtils, useValue: { getNavigationStack: () => null } }
@@ -54,5 +56,17 @@ describe('AddEditOrganizationComponent edit load', () => {
     load({ child1: throwError(() => new Error('Organization not found')) });
 
     expect(toast.error).toHaveBeenCalled();
+  });
+
+  it('saves the edited row as native input keyed by the route id', () => {
+    const component = load({ child1: of(CHILD), parent1: of(PARENT) });
+    component.orgForm.controls.name.setValue('Renamed Co');
+
+    component.onSubmit();
+
+    const body = save.calls.mostRecent().args[0];
+    expect(body.id).toBe('child1');
+    expect(body.name).toBe('Renamed Co');
+    expect('_id' in body).toBeFalse();
   });
 });
