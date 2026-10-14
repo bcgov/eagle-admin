@@ -1,23 +1,31 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, forkJoin, merge } from 'rxjs';
+import { Observable, of, merge, throwError } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
+import { DemiApiService } from './demi-api.service';
 import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
-import { SearchService } from './search.service';
 import { CommentPeriod } from '../models/commentPeriod';
 import { FullProject } from '../models/fullProject';
 import { Org } from '../models/org';
 import { Project } from '../models/project';
+import { DemiProject } from '../models/demi/project';
+import { toLegacyProject } from '../models/demi/project-legacy';
+import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { extractFromSearchResults, natureBuildMapper } from '../shared/utils/utils';
 
+export const READ_ONLY_PROJECT = 'This project has no Eagle id, so it cannot be changed here.';
 
 interface GetParameters {
   getresponsibleEPD?: boolean;
   getprojectLead?: boolean;
+}
+
+interface UserRow {
+  id: string;
 }
 
 const PROJECT_FIELDS = [
@@ -42,23 +50,38 @@ const PROJECT_FIELDS = [
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
   private api = inject(ApiService);
-  private searchService = inject(SearchService);
+  private demiApi = inject(DemiApiService);
   private loadingState = inject(LoadingStateService);
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
   private projectList: Project[] = [];
 
-  getCount(): Observable<number> {
-    return this.api.head('project', { observe: 'response' }).pipe(
-      withLoading(this.loadingState, 'project-count'),
-      map((res: any) => parseInt(res.headers.get('x-total-count'), 10)),
-      catchError(error => {
-        this.logger.error('Failed to get project count', 'ProjectService', error);
-        this.toast.error('Failed to load project count.');
-        return of(0);
-      })
-    );
+  /** One page of DEMI projects, sorted by name unless `params.sort` says otherwise. */
+  list(params: DemiListParams = {}): Observable<DemiList<DemiProject>> {
+    return this.demiApi.list<DemiProject>('projects', { count: true, sort: 'name', ...params });
+  }
+
+  /** A DEMI project by DEMI id or Eagle id. */
+  getNative(id: string): Observable<DemiProject> {
+    return this.demiApi.get<DemiProject>('projects', id);
+  }
+
+  getUsers<T extends UserRow>(ids: string[]): Observable<T[]> {
+    return this.demiApi.byIds<T>('users', ids);
+  }
+
+  getGroup<T>(groupId: string): Observable<T> {
+    return this.demiApi.get<T>('groups', groupId);
+  }
+
+  /** Comment periods of one project. `demiProjectId` is the DEMI project id, not the Eagle id. */
+  getCommentPeriods<T>(demiProjectId: string, params: DemiListParams = {}): Observable<DemiList<T>> {
+    return this.demiApi.list<T>('comment-periods', {
+      count: true,
+      ...params,
+      filters: { ...params.filters, project: demiProjectId }
+    });
   }
 
   getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<object> {
@@ -89,6 +112,15 @@ export class ProjectService {
   }
 
   getById(projId: string, cpStart: string = null, cpEnd: string = null): Observable<Project> {
+    return this.loadFromEagle(projId, cpStart, cpEnd);
+  }
+
+  /** The project as eagle-api stores it, for the edit form. Reads `project/<eagleId>` until the form saves through DEMI. */
+  getForEdit(eagleId: string): Observable<Project> {
+    return this.loadFromEagle(eagleId, null, null);
+  }
+
+  private loadFromEagle(projId: string, cpStart: string, cpEnd: string): Observable<Project> {
     let qs = `project/${projId}?populate=true`;
     if (cpStart !== null) { qs += `&cpStart[since]=${cpStart}`; }
     if (cpEnd !== null) { qs += `&cpEnd[until]=${cpEnd}`; }
@@ -133,21 +165,24 @@ export class ProjectService {
   }
 
   private _getExtraAppData(project: Project, { getresponsibleEPD = false, getprojectLead = false }: GetParameters): Observable<Project> {
-    return forkJoin([
-      getresponsibleEPD ? this.searchService.getItem(project.responsibleEPDId.toString(), 'User') : of(null),
-      getprojectLead ? this.searchService.getItem(project.projectLeadId.toString(), 'User') : of(null)
-    ]).pipe(
-      map(payloads => {
+    const epdId = getresponsibleEPD ? project.responsibleEPDId.toString() : '';
+    const leadId = getprojectLead ? project.projectLeadId.toString() : '';
+    return this.usersById([epdId, leadId]).pipe(
+      map(users => {
         if (getresponsibleEPD) {
-          project.responsibleEPDObj = payloads[0].data;
+          project.responsibleEPDObj = users.get(epdId);
         }
         if (getprojectLead) {
-          project.projectLeadObj = payloads[1].data;
+          project.projectLeadObj = users.get(leadId);
         }
-        // finally update the object and return
         return project;
       })
     );
+  }
+
+  // Contact pickers and the edit forms read the Eagle `_id`; DEMI user ids are the Eagle ids.
+  private usersById(ids: string[]): Observable<Map<string, UserRow & { _id: string }>> {
+    return this.getUsers(ids).pipe(map(rows => new Map(rows.map(row => [row.id, { ...row, _id: row.id }]))));
   }
 
   public getPeopleObjs(data): Observable<any> {
@@ -174,16 +209,10 @@ export class ProjectService {
       if (!epdId && !leadId) {
         return of(data);
       }
-      peopleObjs.push(forkJoin([
-        this.searchService.getItem(epdId, 'User'),
-        this.searchService.getItem(leadId, 'User')
-      ]).pipe(
-        map(payloads => {
-          if (payloads) {
-            project.responsibleEPDObj = payloads[0].data;
-            project.projectLeadObj = payloads[1].data;
-            // finally update the object and return
-          }
+      peopleObjs.push(this.usersById([epdId, leadId]).pipe(
+        map(users => {
+          project.responsibleEPDObj = users.get(epdId);
+          project.projectLeadObj = users.get(leadId);
           return data;
         })
       ));
@@ -203,57 +232,44 @@ export class ProjectService {
   }
 
   // update existing project
-  save(orig: Project): Observable<Project> {
-    const proj = JSON.parse(JSON.stringify(orig));
-    if (proj.description) {
-      proj.description = proj.description.replace(/\n/g, '\\n');
-    }
-    return this.api.put<Project>(`project/${proj._id}`, proj).pipe(
-      catchError(error => this.api.handleError(error))
+  save(orig: Project | DemiProject): Observable<Project> {
+    return this.eagleWrite(orig, legacy => {
+      const proj = JSON.parse(JSON.stringify(legacy));
+      if (proj.description) {
+        proj.description = proj.description.replace(/\n/g, '\\n');
+      }
+      return this.api.put<Project>(`project/${proj._id}`, proj);
+    });
+  }
+
+  delete(proj: Project | DemiProject): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.delete<Project>(`project/${p._id}`));
+  }
+
+  publish(proj: Project | DemiProject): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.put<Project>(`project/${p._id}/publish`, p));
+  }
+
+  unPublish(proj: Project | DemiProject): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.put<Project>(`project/${p._id}/unpublish`, p));
+  }
+
+  addExtension(proj: Project | DemiProject, extension: any): Observable<any> {
+    return this.eagleWrite(proj, p => this.api.post<any>(`project/${p._id}/extension`, extension));
+  }
+
+  editExtension(proj: Project | DemiProject, extension: any): Observable<any> {
+    return this.eagleWrite(proj, p => this.api.put<any>(`project/${p._id}/extension`, extension));
+  }
+
+  deleteExtension(proj: Project | DemiProject, extension: any): Observable<any> {
+    return this.eagleWrite(proj, p =>
+      this.api.delete<any>(`project/${p._id}/extension?item=${encodeURIComponent(JSON.stringify(extension))}`)
     );
   }
 
-  delete(proj: Project): Observable<Project> {
-    return this.api.delete<Project>(`project/${proj._id}`).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  publish(proj: Project): Observable<Project> {
-    return this.api.put<Project>(`project/${proj._id}/publish`, proj).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  unPublish(proj: Project): Observable<Project> {
-    return this.api.put<Project>(`project/${proj._id}/unpublish`, proj).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  addExtension(proj: Project, extension: any): Observable<any> {
-    return this.api.post<any>(`project/${proj._id}/extension`, extension).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  editExtension(proj: Project, extension: any): Observable<any> {
-    return this.api.put<any>(`project/${proj._id}/extension`, extension).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  deleteExtension(proj: Project, extension: any): Observable<any> {
-    const qs = `project/${proj._id}/extension?item=${encodeURIComponent(JSON.stringify(extension))}`;
-    return this.api.delete<any>(qs).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  addPins(proj: Project, pins: any): Observable<Project> {
-    return this.api.post<Project>(`project/${proj._id}/pin`, pins).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  addPins(proj: Project | DemiProject, pins: any): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/pin`, pins));
   }
 
   deletePin(projId: string, pin: string): Observable<Project> {
@@ -284,10 +300,8 @@ export class ProjectService {
     );
   }
 
-  addGroup(proj: Project, group: any): Observable<Project> {
-    return this.api.post<Project>(`project/${proj._id}/group`, { group }).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  addGroup(proj: Project | DemiProject, group: any): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/group`, { group }));
   }
 
   saveGroup(projectId: any, groupId: any, groupObj: any): Observable<Project> {
@@ -296,10 +310,8 @@ export class ProjectService {
     );
   }
 
-  deleteGroup(proj: Project, group: string): Observable<Project> {
-    return this.api.delete<Project>(`project/${proj._id}/group/${group}`).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  deleteGroup(proj: Project | DemiProject, group: string): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.delete<Project>(`project/${p._id}/group/${group}`));
   }
 
   getGroupMembers(proj: string, groupId: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
@@ -312,15 +324,20 @@ export class ProjectService {
     );
   }
 
-  addGroupMembers(proj: Project, groupId: string, members: any): Observable<Project> {
-    return this.api.post<Project>(`project/${proj._id}/group/${groupId}/members`, members).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  addGroupMembers(proj: Project | DemiProject, groupId: string, members: any): Observable<Project> {
+    return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/group/${groupId}/members`, members));
   }
 
   deleteGroupMembers(projectId: string, groupId: string, member: string): Observable<Project> {
     return this.api.delete<Project>(`project/${projectId}/group/${groupId}/members/${member}`).pipe(
       catchError(error => this.api.handleError(error))
     );
+  }
+
+  /** Eagle writes key on the Eagle id: a DEMI row maps to the legacy project first, and one without an Eagle id is read-only. */
+  private eagleWrite<T>(proj: Project | DemiProject, send: (legacy: Project) => Observable<T>): Observable<T> {
+    const legacy = '_id' in proj ? proj as Project : toLegacyProject(proj as DemiProject);
+    const request = legacy._id ? send(legacy) : throwError(() => new Error(READ_ONLY_PROJECT));
+    return request.pipe(catchError(error => this.api.handleError(error)));
   }
 }
