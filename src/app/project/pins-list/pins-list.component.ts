@@ -6,6 +6,7 @@ import { ToastService } from 'src/app/services/toast.service';
 
 import { PinsTableRowsComponent } from './pins-table-rows/pins-table-rows.component';
 import { Org } from 'src/app/models/org';
+import { DemiProject } from 'src/app/models/demi/project';
 import { SearchTerms } from 'src/app/models/search';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -15,6 +16,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { pinsPage } from './pins-page';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,10 +80,7 @@ export class PinsListComponent implements OnInit {
     this.currentProject = this.storageService.currentProjectData ?? null;
     this.storageService.state.selectedUsers = null;
 
-    // params subscription: keeps tableParams in sync AND re-fetches data on re-navigation.
-    // skip(1): first emit is the initial load — route.data resolver handles that.
-    // Subsequent emits (ms-param navigation after add/delete) trigger a fresh API fetch
-    // because Angular Router won't re-run resolvers on same-route matrix-param changes.
+    // skip(1): the resolver covers the first load; the router does not re-run it on matrix-param changes.
     this.route.params
       .pipe(
         tap(params => {
@@ -94,48 +93,32 @@ export class PinsListComponent implements OnInit {
         switchMap(() => {
           this.loading = true;
           this.cdr.markForCheck();
-          return this.projectService.getPins(
-            this.currentProject._id,
-            this.tableParams.currentPage,
-            this.tableParams.pageSize,
-            this.tableParams.sortBy
-          );
+          return this.projectService.getNative(this.route.parent.snapshot.paramMap.get('projId'));
         }),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
-        next: (contacts: any) => {
-          this.processContacts(contacts);
-        },
+        next: (row: DemiProject) => this.showPins(row),
         error: err => {
-          this.logger.error('getPins re-fetch failed', 'PinsListComponent', err);
+          this.logger.error('pins re-fetch failed', 'PinsListComponent', err);
           this.loading = false;
           this.cdr.markForCheck();
         }
       });
 
-    // data subscription: resolver pre-fetches contacts before component activates
     this.route.data
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        this.processContacts(res?.contacts);
-      });
+      .subscribe((res: any) => this.showPins(res?.contacts));
   }
   isEnabled() {
     return this.selectedCount > 0;
   }
 
-  private processContacts(contacts: any) {
-    this.entries = [];
-    if (contacts && contacts.length > 0 && contacts[0]?.results) {
-      if (contacts[0].read.includes('public')) {
-        this.pinsPublished = true;
-      }
-      contacts[0].results.forEach(contact => this.entries.push(new Org(contact)));
-      this.tableParams.totalListItems = contacts[0].total_items;
-    } else {
-      this.tableParams.totalListItems = 0;
-    }
+  private showPins(row: DemiProject) {
+    this.pinsPublished = row?.['pinsPublished'] === true;
+    const page = pinsPage(row?.pins, this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize);
+    this.entries = page.rows.map(pin => new Org(pin));
+    this.tableParams.totalListItems = page.total;
     this.setRowData();
     this.loading = false;
     this.cdr.markForCheck();
