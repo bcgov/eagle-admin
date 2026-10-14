@@ -263,8 +263,8 @@ export class ProjectDocumentsComponent implements OnInit {
   /** Native list query for the current URL state. Documents carry the DEMI project id, not the Eagle one. */
   listParams(): DemiDocumentListParams {
     const ids = (name: string) => this.filterForAPI[name]?.split(',');
-    // `documentSource` (DEMI #592) is not in DemiDocumentFilters yet; it keeps comment attachments out, as the old search did.
-    const filters: DemiDocumentFilters & { documentSource: string } = {
+    // Comment attachments stay out, as the old search did.
+    const filters: DemiDocumentFilters = {
       project: this.currentProject.demiId,
       documentSource: 'PROJECT',
       milestoneId: ids('milestone'),

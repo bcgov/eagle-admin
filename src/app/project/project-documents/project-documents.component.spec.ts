@@ -189,10 +189,7 @@ describe('ProjectDocumentsComponent paging and sort', () => {
     expect(navigatedParams().currentPageCategorized).toBe(1);
   }));
 
-  // Typed loosely: `documentSource` is not in DemiDocumentFilters yet.
-  function listQuery(): object {
-    return documentService.listNative.calls.mostRecent().args[0];
-  }
+  const listQuery = () => documentService.listNative.calls.mostRecent().args[0];
 
   it('lists documents by the DEMI project id with page, size, count and sort', fakeAsync(() => {
     load([doc('d21', false)], 21);

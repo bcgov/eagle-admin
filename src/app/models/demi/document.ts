@@ -47,6 +47,8 @@ export type DemiDocumentFilters = {
   milestoneId?: string | string[];
   projectPhaseId?: string | string[];
   documentAuthorTypeId?: string | string[];
+  /** `PROJECT` leaves comment attachments out. */
+  documentSource?: string | string[];
   isFeatured?: boolean;
   legislation?: number | number[];
   /** ISO date, inclusive. */
