@@ -3,13 +3,13 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { NotificationProjectService, toEagleNotification } from './notification-project.service';
+import { NotificationProjectService } from './notification-project.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { ProjectNotification } from '../models/projectNotification';
-import { DemiNotification } from '../models/demi/notification';
+import { DemiNotification, legacyNotification } from '../models/demi/notification';
 
 const NATIVE = {
   id: '6a3c4c034e547e4250daf03b',
@@ -109,14 +109,13 @@ describe('NotificationProjectService', () => {
   });
 
   describe('save', () => {
-    it('puts a native row to eagle-api under its Eagle id with the Eagle project id', () => {
-      service.save({ ...NATIVE, id: 'native-1' }, true).subscribe();
+    it('puts a notification read from DEMI under its Eagle id with the publish flag', () => {
+      const row = legacyNotification({ ...NATIVE, id: 'native-1' });
+      service.save(row, true).subscribe();
 
       const req = http.expectOne('/api/projectNotification/6a3c4c034e547e4250daf03b?publish=true');
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body._id).toBe('6a3c4c034e547e4250daf03b');
-      expect(req.request.body.associatedProjectId).toBe('5885109faaecd9001b81314c');
-      expect(req.request.body.id).toBeUndefined();
+      expect(req.request.body).toBe(row);
       req.flush({});
     });
 
@@ -128,17 +127,5 @@ describe('NotificationProjectService', () => {
       expect(req.request.body).toBe(legacy);
       req.flush({});
     });
-  });
-});
-
-describe('toEagleNotification', () => {
-  it('sends a new notification with neither id unchanged', () => {
-    const fresh = new ProjectNotification({ name: 'New' });
-
-    expect(toEagleNotification(fresh)).toBe(fresh);
-  });
-
-  it('maps a native row to the Eagle id', () => {
-    expect(toEagleNotification({ ...NATIVE, id: 'native-1' })._id).toBe(NATIVE.eagleId);
   });
 });

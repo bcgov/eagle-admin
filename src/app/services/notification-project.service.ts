@@ -15,17 +15,6 @@ import { DemiNotification, LegacyNotification, legacyNotification, notificationS
 /** Loading-state key for the notifications table. */
 export const NOTIFICATION_LIST_LOADING = 'project-notifications';
 
-/**
- * Eagle write body for a notification. A body with `_id`, or a new one with no `id`, is Eagle-shaped and goes
- * unchanged; a native row is mapped. `associatedProjectId` already holds an Eagle project id in both shapes.
- */
-export function toEagleNotification(body: ProjectNotification | LegacyNotification | DemiNotification): ProjectNotification | LegacyNotification {
-  if ('_id' in body && body._id || !('id' in body)) {
-    return body as ProjectNotification | LegacyNotification;
-  }
-  return legacyNotification(body);
-}
-
 @Injectable({ providedIn: 'root' })
 export class NotificationProjectService {
   private api = inject(ApiService);
@@ -66,17 +55,16 @@ export class NotificationProjectService {
     );
   }
 
-  save(pn: ProjectNotification | LegacyNotification | DemiNotification, publish: boolean = null): Observable<ProjectNotification> {
-    const body = toEagleNotification(pn);
-    let qs = `projectNotification/${body._id}`;
+  save(pn: ProjectNotification | LegacyNotification, publish: boolean = null): Observable<ProjectNotification> {
+    let qs = `projectNotification/${pn._id}`;
     if (publish !== null) { qs += `?publish=${publish}`; }
-    return this.api.put<ProjectNotification>(qs, body).pipe(
+    return this.api.put<ProjectNotification>(qs, pn).pipe(
       catchError(error => this.api.handleError(error))
     );
   }
 
-  add(pn: ProjectNotification | DemiNotification, publish = false): Observable<ProjectNotification> {
-    return this.api.post<ProjectNotification>(`projectNotification?publish=${publish}`, toEagleNotification(pn)).pipe(
+  add(pn: ProjectNotification, publish = false): Observable<ProjectNotification> {
+    return this.api.post<ProjectNotification>(`projectNotification?publish=${publish}`, pn).pipe(
       catchError(error => this.api.handleError(error))
     );
   }
