@@ -1,14 +1,11 @@
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { mergeMap } from 'rxjs/operators';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project } from 'src/app/models/project';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
-import { ProjectService } from 'src/app/services/project.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 
@@ -29,8 +26,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 export class AddEditProjectComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private config = inject(ConfigService);
-  projectService = inject(ProjectService);
-  private searchService = inject(SearchService);
   private storageService = inject(StorageService);
 
 
@@ -107,21 +102,13 @@ export class AddEditProjectComponent implements OnInit {
   }
 
   initProject() {
-    // When adding a new project, there's no projId — skip loading
-    const projId = this.route.parent?.snapshot.paramMap.get('projId');
-    if (!projId) {
-      this.loading = false;
-      return;
-    }
-    this.searchService.getSearchResults('', 'Project', [], 1, 1, '', { _id: projId }, true, {}, 'all')
-      .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        mergeMap(data => this.projectService.getPeopleObjs(data))
-      )
-      .subscribe((data: ISearchResults<FullProject>[]) => {
-          const fullProjectSearchData = extractFromSearchResults(data);
+    // Not getForEdit: it returns only the current legislation's fields, and the tabs read every legislation_* block.
+    this.route.data
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: { fullProject?: ISearchResults<FullProject>[] }) => {
+          const fullProjectSearchData = data.fullProject ? extractFromSearchResults(data.fullProject) : null;
           this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-          if (this.pageIsEditing) {
+          if (this.pageIsEditing && this.fullProject) {
             this.publishedLegislation = this.fullProject.currentLegislationYear.toString();
             if (this.publishedLegislation) {
               this.project = this.fullProject[this.publishedLegislation];

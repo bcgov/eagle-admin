@@ -1,15 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from 'src/app/services/toast.service';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
-import { SearchTerms } from 'src/app/models/search';
-import { User } from 'src/app/models/user';
+import { Group } from 'src/app/models/demi/group';
+import { User, contactExportRow } from 'src/app/models/demi/user';
 import { ExcelService } from 'src/app/services/excel.service';
 import { ProjectService } from 'src/app/services/project.service';
-import { SearchService } from 'src/app/services/search.service';
+import { UserService } from 'src/app/services/user.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
@@ -20,6 +21,14 @@ import { TableTemplateComponent } from 'src/app/shared/components/table-template
 import { GroupTableRowsComponent } from './group-table-rows/group-table-rows.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { CommonModule } from '@angular/common';
+
+/** `rows` ordered by a table `sortBy` such as `+displayName` or `-email`. */
+function sortContacts(rows: User[], sortBy: string): User[] {
+  const desc = sortBy.startsWith('-');
+  const field = sortBy.replace(/^[+-]/, '') || 'displayName';
+  const text = (row: User) => String(row[field] ?? '');
+  return [...rows].sort((a, b) => (desc ? -1 : 1) * text(a).localeCompare(text(b)));
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,19 +51,20 @@ export class GroupContactComponent implements OnInit {
   private projectService = inject(ProjectService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private searchService = inject(SearchService);
+  private userService = inject(UserService);
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
   private destroyRef = inject(DestroyRef);
 
-  private groupId: any = null;
+  private groupId: string = null;
+  /** Every member DEMI returns; the table shows one sorted page of it. */
+  private members: User[] = [];
 
   public currentProject;
-  public terms = new SearchTerms();
   public users: User[] = null;
-  public group: any = null;
+  public group: Group = null;
   public loading = true;
   public tempGroupName = '';
 
@@ -95,62 +105,66 @@ export class GroupContactComponent implements OnInit {
     this.currentProject = this.storageService.currentProjectData;
     this.storageService.state.selectedUsers = null;
 
-    this.route.paramMap.subscribe(params => {
-      this.groupId = params.get('groupId');
-    });
-
-    const projId = this.route.parent.snapshot.paramMap.get('projId');
-    const groupId = this.route.snapshot.paramMap.get('groupId');
     const snap = this.route.snapshot;
-    const pageNum = +snap.params.currentPage || 1;
-    const pageSize = +snap.params.pageSize || 10;
-    const sortBy = snap.params.sortBy || '+displayName';
-    this.tableParams.currentPage = pageNum;
-    this.tableParams.pageSize = pageSize;
-    this.tableParams.sortBy = sortBy;
+    this.groupId = snap.paramMap.get('groupId');
+    this.tableParams.currentPage = +snap.params.currentPage || 1;
+    this.tableParams.pageSize = +snap.params.pageSize || 10;
+    const sortable = this.tableColumns.filter(column => !column.nosort).map(column => column.value);
+    const urlSort: string = snap.params.sortBy ?? '';
+    // An old or hand-edited sort (e.g. `+lastName,+firstName`) would leave the list unsorted.
+    this.tableParams.sortBy = sortable.includes(urlSort.slice(1)) && /^[+-]/.test(urlSort) ? urlSort : '+displayName';
 
-    forkJoin([
-      this.projectService.getGroupMembers(projId, groupId, pageNum, pageSize, sortBy),
-      this.searchService.getSearchResults('', 'Group', [], 1, 1, null, { _id: groupId }, false, {}, '')
-    ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([users, group]: [any, any]) => {
-          if (users && users[0] && users[0].total_items > 0) {
-            this.tableParams.totalListItems = users[0].total_items;
-            this.users = users[0].results;
-          } else {
-            this.tableParams.totalListItems = 0;
-            this.users = [];
-          }
-
-          if (group && group[0].data && group[0].data.meta && group[0].data.meta.length > 0) {
-            this.group = group[0].data.searchResults[0];
-            this.tempGroupName = this.group.name;
-          } else {
-            this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
-          }
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.markForCheck();
+    this.userService.getGroup(this.groupId).pipe(
+      switchMap(group => this.userService.getUsersByIds(group.members ?? []).pipe(map(members => ({ group, members })))),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: ({ group, members }) => {
+        this.group = group;
+        this.tempGroupName = group.name;
+        this.members = members;
+        const missing = new Set((group.members ?? []).filter(Boolean)).size - members.length;
+        if (missing > 0) {
+          this.toastService.warning(`${missing} member${missing === 1 ? '' : 's'} could not be read and ${missing === 1 ? 'is' : 'are'} not shown.`);
         }
-      );
+        this.showPage();
+        this.loading = false;
+        this._changeDetectionRef.markForCheck();
+      },
+      error: err => {
+        this.logger.error('group load failed', 'GroupContactComponent', err);
+        this.toastService.error('This group could not be loaded.');
+        this.router.navigate(['/p', this.currentProject._id, 'project-groups']);
+      }
+    });
   }
 
   isEnabled(button) {
     if (button === 'selectAll') {
-      return this.users.length > 0;
+      return (this.users?.length ?? 0) > 0;
     } else {
       return this.selectedCount > 0;
     }
   }
 
+  private showPage() {
+    const lastPage = Math.max(1, Math.ceil(this.members.length / this.tableParams.pageSize));
+    this.tableParams.currentPage = Math.min(this.tableParams.currentPage, lastPage);
+    const { currentPage, pageSize, sortBy } = this.tableParams;
+    // Rows are reused across pages; a tick on a page no longer shown must not count.
+    this.members.forEach(member => member.checkbox = false);
+    this.selectedCount = 0;
+    const start = (currentPage - 1) * pageSize;
+    this.users = sortContacts(this.members, sortBy).slice(start, start + pageSize);
+    this.tableParams.totalListItems = this.members.length;
+    this.setRowData();
+  }
+
   setRowData() {
-    if (this.users && this.users.length > 0) {
-      const list = [...this.users];
-      this.tableData = new TableObject(
-        GroupTableRowsComponent,
-        list,
-        this.tableParams
-      );
-    }
+    this.tableData = new TableObject(
+      GroupTableRowsComponent,
+      [...(this.users ?? [])],
+      this.tableParams
+    );
   }
 
   setColumnSort(column) {
@@ -181,13 +195,8 @@ export class GroupContactComponent implements OnInit {
         this.deleteItems();
         break;
       case 'selectAll':
-        let someSelected = false;
-        this.tableData.data.map((item) => {
-          if (item.checkbox === true) {
-            someSelected = true;
-          }
-          item.checkbox = !someSelected;
-        });
+        const someSelected = this.tableData.data.some((item: User) => item.checkbox === true);
+        this.tableData.data.forEach((item: User) => item.checkbox = !someSelected);
 
         this.selectedCount = someSelected ? 0 : this.tableData.data.length;
         this._changeDetectionRef.markForCheck();
@@ -195,98 +204,30 @@ export class GroupContactComponent implements OnInit {
     }
   }
 
-  async copyEmail() {
-    const itemsToExport = [];
-    this.tableData.data.map((item) => {
-      if (item.checkbox === true) {
-        itemsToExport.push(item);
-      }
-    });
-    const list = [];
-    itemsToExport.map(member => {
-      list.push(member);
-    });
-
-    const filteredArray = list.reduce((unique, item) => {
-      return unique.includes(item) ? unique : [...unique, item];
-    }, []);
-
-    // Get all the user emails
-    const csvData = [];
-    filteredArray.map((item) => {
-      csvData.push(
-        this.searchService.getItem(item._id, 'User').toPromise()
-      );
-    });
-    this.loading = false;
-    return Promise.all(csvData)
-      .then((data) => {
-        // Reload main page.
-        let userData = '';
-        data.map(p => {
-          userData += p.data.email + ';';
-        });
-        const selBox = document.createElement('textarea');
-        selBox.style.position = 'fixed';
-        selBox.style.left = '0';
-        selBox.style.top = '0';
-        selBox.style.opacity = '0';
-        selBox.value = userData;
-        document.body.appendChild(selBox);
-        selBox.focus();
-        selBox.select();
-        document.execCommand('copy');
-        document.body.removeChild(selBox);
-        this.toastService.success('Emails have been copied to your clipboard.');
-      });
+  private selectedRows(): User[] {
+    return this.tableData.data.filter((item: User) => item.checkbox === true);
   }
 
-  async exportItems() {
-    const itemsToExport = [];
-    this.tableData.data.map((item) => {
-      if (item.checkbox === true) {
-        itemsToExport.push(item);
-      }
-    });
-    const list = [];
-    itemsToExport.map(member => {
-      list.push(member);
-    });
+  copyEmail() {
+    const userData = this.selectedRows().map(user => user.email).filter(Boolean).map(email => email + ';').join('');
+    const selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = userData;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+    this.toastService.success('Emails have been copied to your clipboard.');
+  }
 
-    const filteredArray = list.reduce((unique, item) => {
-      return unique.includes(item) ? unique : [...unique, item];
-    }, []);
-
-    // Get all the user emails
-    const csvData = [];
-    filteredArray.map((item) => {
-      csvData.push(
-        this.searchService.getItem(item._id, 'User').toPromise()
-      );
-    });
-    this.loading = false;
-    return Promise.all(csvData)
-      .then((data) => {
-        // Reload main page.
-        const userData = [];
-        data.map(p => {
-          userData.push({
-            name: p.data.firstName + ' ' + p.data.lastName,
-            title: p.data.title,
-            organization: p.data.orgName,
-            phone: p.data.phoneNumber,
-            address: p.data.address1 + (p.data.address2 === '' ? '' : p.data.address2),
-            city: p.data.city,
-            province: p.data.province,
-            postal: p.data.postalCode,
-            email: p.data.email
-          });
-        });
-        this.logger.debug('export data prepared', 'GroupContactComponent', userData);
-
-        // Export to CSV
-        this.excelService.exportAsExcelFile(userData, 'contactList');
-      });
+  exportItems() {
+    const userData = this.selectedRows().map(contactExportRow);
+    this.logger.debug('export data prepared', 'GroupContactComponent', userData);
+    this.excelService.exportAsExcelFile(userData, 'contactList');
   }
 
   setBackURL() {
@@ -297,7 +238,7 @@ export class GroupContactComponent implements OnInit {
     this.storageService.state.rowComponent = GroupTableRowsComponent;
     this.storageService.state.sortBy = this.tableParams.sortBy;
     this.storageService.state.groupId = this.groupId;
-    this.storageService.state.selectedUsers = [...this.users];
+    this.storageService.state.selectedUsers = [...this.members];
 
     this.navigationStackUtils.pushNavigationStack(
       ['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members'],
@@ -323,52 +264,35 @@ export class GroupContactComponent implements OnInit {
     this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', 'select', { pageSize: 25 }]);
   }
 
-  update(contacts, component) {
-    // Determine the members to add.
-    const membersToAdd = [];
-    contacts.filter((thing) => {
-      const idx = component.users.findIndex((t) => {
-        return (t._id === thing._id);
-      });
-      if (idx === -1) {
-        membersToAdd.push(thing._id);
-      }
-    });
-
-    // Determine the members to remove.
-    const membersToRemove = [];
-    component.users.filter((thing) => {
-      const idx = contacts.findIndex((t) => {
-        return (t._id === thing._id);
-      });
-      if (idx === -1) {
-        membersToRemove.push(thing._id);
-      }
-    });
+  /** Called by the contact picker with the full chosen list; `component` is this screen. */
+  update(contacts: User[], component: GroupContactComponent) {
+    const chosen = new Set(contacts.map(contact => contact.id));
+    const current = new Set(component.members.map(member => member.id));
+    const membersToAdd = [...chosen].filter(id => !current.has(id));
+    const membersToRemove = [...current].filter(id => !chosen.has(id));
 
     const observables = [];
     if (membersToAdd.length > 0) {
       observables.push(component.projectService.addGroupMembers(component.currentProject, component.groupId, membersToAdd));
     }
-    if (membersToRemove.length > 0) {
-      membersToRemove.map(item => {
-        observables.push(component.projectService.deleteGroupMembers(component.currentProject._id, component.groupId, item));
-      });
-    }
+    membersToRemove.forEach(id => {
+      observables.push(component.projectService.deleteGroupMembers(component.currentProject._id, component.groupId, id));
+    });
 
+    const membersRoute = ['/p', component.currentProject._id, 'project-groups', 'g', component.groupId, 'members'];
     if (observables.length > 0) {
       forkJoin(observables)
-        .subscribe(
-          () => { // onCompleted
-            component.router.navigate(['/p', component.currentProject._id, 'project-groups', 'g', component.groupId, 'members']);
-          },
-          error => {
-            this.logger.error('update group members failed', 'GroupContactComponent', error);
-            alert('Uh-oh, couldn\'t edit project');
-          },
-        );
+        .subscribe({
+          next: () => component.router.navigate(membersRoute),
+          error: error => {
+            component.logger.error('update group members failed', 'GroupContactComponent', error);
+            component.toastService.error('Some member changes could not be saved.');
+            // Reload so the list shows what was written.
+            component.router.navigate(membersRoute);
+          }
+        });
     } else {
-      component.router.navigate(['/p', component.currentProject._id, 'project-groups', 'g', component.groupId, 'members']);
+      component.router.navigate(membersRoute);
     }
   }
 
@@ -382,62 +306,49 @@ export class GroupContactComponent implements OnInit {
       'Click <strong>OK</strong> to remove or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
-    modalRef.result.then((isConfirmed) => {
-      if (isConfirmed) {
-        this.loading = true;
-        const itemsToDelete = [];
-        this.tableData.data.map((item) => {
-          if (item.checkbox === true) {
-            itemsToDelete.push({
-              promise: this.projectService.deleteGroupMembers(this.currentProject._id, this.groupId, item._id).toPromise(),
-              item: item
-            });
-          }
-        });
-
-        this.loading = false;
-
-        return Promise.all(itemsToDelete).then(() => {
-          // Reload page.
-          const params = this.terms.getParams();
-          params['ms'] = new Date().getMilliseconds();
-          this.router.navigate(['/p', this.currentProject._id, 'project-groups', 'g', this.groupId, 'members', params]);
-        });
+    return modalRef.result.then((isConfirmed) => {
+      if (!isConfirmed) {
+        return;
       }
-      this.loading = false;
+      const ids = [...new Set(this.selectedRows().map(item => item.id))];
+      return Promise.allSettled(ids.map(id =>
+        firstValueFrom(this.projectService.deleteGroupMembers(this.currentProject._id, this.groupId, id))
+      )).then(results => {
+        const removed = new Set(ids.filter((_, i) => results[i].status === 'fulfilled'));
+        const failed = ids.length - removed.size;
+        if (failed > 0) {
+          this.logger.error('remove group members failed', 'GroupContactComponent', results);
+          this.toastService.error(`${failed} of ${ids.length} contacts could not be removed.`);
+        }
+        this.members = this.members.filter(member => !removed.has(member.id));
+        this.showPage();
+        this._changeDetectionRef.markForCheck();
+      });
     }).catch(() => {
-      // Handle error
+      // Modal dismissed.
     });
   }
 
   getPaginatedContacts(pageNumber) {
     // Go to top of page after clicking to a different page.
     window.scrollTo(0, 0);
-    this.loading = true;
-
-    // refresh the page
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
     this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, '');
-
-    this.projectService.getGroupMembers(this.currentProject._id, this.groupId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-          // Incoming users
-          this.tableParams.totalListItems = res[0].total_items;
-          this.users = res[0].results;
-
-          this.setRowData();
-          this.loading = false;
-          this._changeDetectionRef.markForCheck();
-        });
+    this.showPage();
+    this._changeDetectionRef.markForCheck();
   }
 
   async saveName() {
-    const groupObj = { name: this.tempGroupName };
-    await this.projectService.saveGroup(this.currentProject._id, this.group._id, groupObj).toPromise();
-    this.group.name = this.tempGroupName;
-    this.toastService.success('Group name has been updated');
+    try {
+      await firstValueFrom(this.projectService.saveGroup(this.currentProject._id, this.group.id, { name: this.tempGroupName }));
+      this.group.name = this.tempGroupName;
+      this._changeDetectionRef.markForCheck();
+      this.toastService.success('Group name has been updated');
+    } catch (err) {
+      this.logger.error('group rename failed', 'GroupContactComponent', err);
+      this.toastService.error('The group name could not be saved.');
+    }
   }
 
 }

@@ -3,13 +3,15 @@ import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchTerms } from 'src/app/models/search';
-import { User } from 'src/app/models/user';
+import { User, nativeSort, tableSort } from 'src/app/models/demi/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
-import { SearchService } from 'src/app/services/search.service';
+import { UserService, emptyPageOnError } from 'src/app/services/user.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
@@ -33,7 +35,9 @@ export class GroupContactSelectComponent implements OnInit {
   navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   storageService = inject(StorageService);
-  private searchService = inject(SearchService);
+  private userService = inject(UserService);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   public navigationObject;
@@ -51,7 +55,9 @@ export class GroupContactSelectComponent implements OnInit {
 
   ngOnInit() {
     this.currentProject = this.storageService.currentProjectData;
-    this.tableColumns = this.storageService.state.tableColumns;
+    // DEMI sorts contacts by name only.
+    this.tableColumns = this.storageService.state.tableColumns?.map((column: TableColumn) =>
+      column.value === 'displayName' ? column : { ...column, nosort: true });
 
     if (this.navigationStackUtils.getNavigationStack()) {
       this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
@@ -63,26 +69,27 @@ export class GroupContactSelectComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = this.storageService.state.sortBy;
+        // The members screen may hand over a client-side sort (email, organization); DEMI sorts by name only.
+        const sort = nativeSort(this.tableParams.sortBy || this.storageService.state.sortBy, 'displayName');
+        if (this.tableParams.sortBy !== tableSort(sort)) {
+          this.tableParams.sortBy = tableSort(sort);
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
         this._changeDetectionRef.markForCheck();
-        return this.searchService.getSearchResults(
-          this.tableParams.keywords || '', 'User', null,
-          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
-          {}, false, {}, ''
-        );
+        return this.userService.listUsers({
+          q: this.tableParams.keywords,
+          page: this.tableParams.currentPage,
+          pageSize: this.tableParams.pageSize,
+          sort
+        }).pipe(emptyPageOnError<User>(err => {
+          this.logger.error('contact list failed', 'GroupContactSelectComponent', err);
+          this.toastService.error('Contacts could not be loaded.');
+        }));
       }),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((res: any) => {
-      if (res && res.length > 0 && res[0].data.meta && res[0].data.meta.length > 0) {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.entries = res[0].data.searchResults;
-      } else {
-        this.tableParams.totalListItems = 0;
-        this.entries = [];
-      }
+    ).subscribe(({ rows, total }) => {
+      this.tableParams.totalListItems = total ?? 0;
+      this.entries = rows;
       this.setRowData();
       this.loading = false;
       this._changeDetectionRef.markForCheck();
@@ -90,20 +97,16 @@ export class GroupContactSelectComponent implements OnInit {
   }
 
   setRowData() {
-    const list = [];
-    if (this.entries && this.entries.length > 0) {
-      this.entries.map((item: any) => {
-        item.checkbox = this.storageService.state.selectedUsers.some(element => {
-          return item._id === element._id;
-        });
-        list.push(item);
-      });
-      this.tableData = new TableObject(
-        this.storageService.state.rowComponent,
-        list,
-        this.tableParams
-      );
-    }
+    const chosen = new Set((this.storageService.state.selectedUsers as User[]).map(user => user.id));
+    const list = (this.entries ?? []).map(item => {
+      item.checkbox = chosen.has(item.id);
+      return item;
+    });
+    this.tableData = new TableObject(
+      this.storageService.state.rowComponent,
+      list,
+      this.tableParams
+    );
   }
 
   goBack() {
@@ -203,10 +206,10 @@ export class GroupContactSelectComponent implements OnInit {
 
   removeSelectedUser(user) {
     this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (element) {
-      return element._id !== user._id;
+      return element.id !== user.id;
     });
     this.tableData.data.map(item => {
-      if (user._id === item._id) {
+      if (user.id === item.id) {
         item.checkbox = false;
       }
     });
