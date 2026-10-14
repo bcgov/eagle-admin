@@ -1,7 +1,7 @@
 import { ApiService } from './api';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
@@ -33,7 +33,10 @@ describe('api', () => {
     }).compileComponents();
   });
 
-  it('searchKeywords removed from eagle-admin ApiService (uses SearchService instead)', () => {
-    pending('searchKeywords removed from ApiService');
+  it('get reads from the eagle-api path', () => {
+    const http = TestBed.inject(HttpTestingController);
+    TestBed.inject(ApiService).get('project/p1').subscribe();
+
+    expect(http.expectOne('https://test-api.gov.bc.ca/api/project/p1').request.method).toBe('GET');
   });
 });

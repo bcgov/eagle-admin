@@ -11,8 +11,8 @@
       </p>
     </td>
     <td data-label="Date" [style.width]="!useSmallTable && columns[2].width">{{document.datePosted | date:'longDate'}}</td>
-    <td data-label="Type" [style.width]="!useSmallTable && columns[3].width">{{document.type | listConverter}}</td>
-    <td data-label="Milestone" [style.width]="!useSmallTable && columns[4].width">{{document.milestone | listConverter}}</td>
+    <td data-label="Type" [style.width]="!useSmallTable && columns[3].width">{{document.type || '-'}}</td>
+    <td data-label="Milestone" [style.width]="!useSmallTable && columns[4].width">{{document.milestone || '-'}}</td>
     <td data-label="Legislation" [style.width]="!useSmallTable && columns[5].width">{{document.legislation || '-'}}</td>
   </tr>
 }

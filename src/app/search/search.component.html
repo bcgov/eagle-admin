@@ -54,15 +54,6 @@
                         numFilters.eacDecision }})</span>
                       }
                     </button>
-              <button type="button" (click)="toggleFilter('pcp');" class="btn pcp-btn"
-                [class.btn-dark]="showFilters.pcp"
-                [class.btn-secondary]="!showFilters.pcp && numFilters.pcp > 0"
-                [class.btn-outline-dark]="!showFilters.pcp && numFilters.pcp == 0">
-                      Public Comment Period@if (numFilters.pcp > 0 && !showFilters.pcp) {
-                      <span>&nbsp;({{ numFilters.pcp
-                      }})</span>
-                    }
-                  </button>
                 <button class="btn btn-outline-dark" type="button" (click)="clearAllFilters();">Clear All</button>
                 <button type="button" (click)="toggleFilter('more');" class="btn"
                   [class.btn-dark]="showFilters.more"
@@ -221,25 +212,6 @@
               </button>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-}
-@if (showAdvancedSearch && showFilters.pcp) {
-  <div class="pcp-filters project-filter row">
-    <div class="col-md-3 filter-border">
-      <div class="col-md-12">
-        <div class="row">
-          <b>Public Comment Period</b>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          <ng-select id="pcp" name="pcp" multiple="true" bindLabel="name" placeholder="Type Comment Period"
-            [items]="commentPeriods" [closeOnSelect]="false" [(ngModel)]="filterForUI.pcp"
-            [compareWith]="filterCompareWith">
-          </ng-select>
         </div>
       </div>
     </div>
@@ -433,8 +405,7 @@
             <div class="form-group">
               <ng-select id="docType" name="docType" multiple="true" bindLabel="name" groupBy="legislation"
                 placeholder="Type Document Type" [items]="docTypes" [markFirst]="false" [closeOnSelect]="false"
-                [(ngModel)]="filterForUI.docType" [compareWith]="compareDropdownOptions"
-                [compareWith]="filterCompareWith">
+                [(ngModel)]="filterForUI.docType" [compareWith]="filterCompareWith">
                 <ng-template ng-label-tmp let-item="item">
                   <span class="ng-value-icon left" (click)="clearSelectedItem('docType', item)"
                   aria-hidden="true" (keydown)="clearSelectedItem('docType', item)">×</span>
