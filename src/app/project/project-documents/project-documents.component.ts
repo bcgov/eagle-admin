@@ -4,13 +4,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ToastService } from 'src/app/services/toast.service';
 import { NgbModal, NgbDropdownModule, NgbTooltipModule, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, firstValueFrom } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { finalize, switchMap } from 'rxjs/operators';
 import { DateTime } from 'luxon';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { SearchTerms } from 'src/app/models/search';
 import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableDocumentParamsObject } from 'src/app/shared/components/table-template/table-document-params-object';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
@@ -20,6 +19,8 @@ import { TableDocumentTemplateUtils } from 'src/app/shared/utils/table-document-
 import { encodeParams, encodeString, filterCompareWith } from 'src/app/shared/utils/utils';
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
 import { Document } from 'src/app/models/document';
+import { DemiDocument, DemiDocumentFilters, DemiDocumentListParams } from 'src/app/models/demi/document';
+import { eagleWriteId } from 'src/app/models/demi/document-write';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
@@ -28,6 +29,18 @@ import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
 
+
+const NATIVE_SORT_KEYS = ['datePosted', 'displayName'];
+
+/** First sort key of a URL `sortBy`, when DEMI can sort on it; else newest first. Keeps the `+`/`-` the table shows. */
+function toNativeSort(sortBy: string | null | undefined): string {
+  const first = (sortBy || '').split(',')[0];
+  const field = first.replace(/^[+-]/, '');
+  if (!NATIVE_SORT_KEYS.includes(field)) {
+    return '-datePosted';
+  }
+  return first.startsWith('-') ? first : `+${field}`;
+}
 
 class DocumentFilterObject {
   constructor(
@@ -63,7 +76,6 @@ export class ProjectDocumentsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toastService = inject(ToastService);
-  private searchService = inject(SearchService);
   private configService = inject(ConfigService);
   private storageService = inject(StorageService);
   private tableDocumentTemplateUtils = inject(TableDocumentTemplateUtils);
@@ -76,7 +88,7 @@ export class ProjectDocumentsComponent implements OnInit {
   private activeLegislationYear: number;
 
   public categorizedDocsCount = 0;
-  public categorizedDocs: Document[] = [];
+  public categorizedDocs: DemiDocument[] = [];
 
   public milestones: any[] = [];
   public authors: any[] = [];
@@ -85,9 +97,9 @@ export class ProjectDocumentsComponent implements OnInit {
   public legislations: any[] = [];
 
   private listsLoading = this.loadingState.getOperationState('lists');
-  private searchLoading = this.loadingState.getOperationState('search-results');
+  private listLoading = signal(false);
   private actionLoading = signal(false);
-  public loading = computed(() => this.listsLoading() || this.searchLoading() || this.actionLoading());
+  public loading = computed(() => this.listsLoading() || this.listLoading() || this.actionLoading());
 
   public tableParams: TableDocumentParamsObject = new TableDocumentParamsObject();
   public terms = new SearchTerms();
@@ -133,6 +145,7 @@ export class ProjectDocumentsComponent implements OnInit {
     {
       name: 'Status',
       value: 'status',
+      nosort: true,
       width: '7%'
     },
     {
@@ -143,21 +156,25 @@ export class ProjectDocumentsComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
+      nosort: true,
       width: '14%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
+      nosort: true,
       width: '14%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
+      nosort: true,
       width: '10%'
     },
     {
       name: 'Feature',
       value: 'isFeatured',
+      nosort: true,
       width: '6%'
     }
   ];
@@ -221,9 +238,7 @@ export class ProjectDocumentsComponent implements OnInit {
               this.filterForURL
             );
 
-            if (this.tableParams.sortByCategorized === '') {
-              this.tableParams.sortByCategorized = '-datePosted,+displayName';
-            }
+            this.tableParams.sortByCategorized = toNativeSort(this.tableParams.sortByCategorized);
 
             this.tableParams.keywords = params.keywords
               ? decodeURIComponent(params.keywords)
@@ -232,46 +247,39 @@ export class ProjectDocumentsComponent implements OnInit {
             this.currentProject = this.storageService.currentProjectData;
             this.storageService.state.labels = null;
 
-            const projectId = this.currentProject._id;
-            const sortBy = this.tableParams.sortByCategorized || '-datePosted,+displayName';
-            const pageNum = this.tableParams.currentPageCategorized || 1;
-            const pageSize = this.tableParams.pageSizeCategorized || 10;
-            const keywords = this.tableParams.keywords || '';
-
-            return this.searchService.getSearchResults(
-              keywords,
-              'Document',
-              [
-                { name: 'project', value: projectId },
-                { name: 'categorized', value: true }
-              ],
-              pageNum,
-              pageSize,
-              sortBy,
-              { documentSource: 'PROJECT' },
-              true,
-              this.filterForAPI,
-              ''
+            this.listLoading.set(true);
+            return this.documentService.listNative(this.listParams()).pipe(
+              finalize(() => this.listLoading.set(false))
             );
           })
         )
-        .subscribe((res: any) => {
-          if (res && res[0]) {
-            if (res[0].data && res[0].data.meta.length > 0) {
-              this.tableParams.totalListItemsCategorized = res[0].data.meta[0].searchResultsTotal;
-              this.categorizedDocs = res[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItemsCategorized = 0;
-              this.categorizedDocs = [];
-            }
-
-            this.setRowData();
-          } else {
-            alert('Uh-oh, couldn\'t load valued components');
-            // project not found --> navigate back to search
-            this.router.navigate(['/search']);
-          }
+        .subscribe(res => {
+          this.tableParams.totalListItemsCategorized = res.total ?? 0;
+          this.categorizedDocs = res.rows;
+          this.setRowData();
         });
+  }
+
+  /** Native list query for the current URL state. Documents carry the DEMI project id, not the Eagle one. */
+  listParams(): DemiDocumentListParams {
+    const ids = (name: string) => this.filterForAPI[name]?.split(',');
+    const filters: DemiDocumentFilters = {
+      project: this.currentProject.demiId,
+      milestoneId: ids('milestone'),
+      typeId: ids('type'),
+      documentAuthorTypeId: ids('documentAuthorType'),
+      projectPhaseId: ids('projectPhase'),
+      datePostedStart: this.filterForAPI['datePostedStart'],
+      datePostedEnd: this.filterForAPI['datePostedEnd']
+    };
+    return {
+      page: this.tableParams.currentPageCategorized || 1,
+      pageSize: this.tableParams.pageSizeCategorized || 10,
+      count: true,
+      sort: this.tableParams.sortByCategorized.replace(/^\+/, ''),
+      q: this.tableParams.keywords || undefined,
+      filters
+    };
   }
 
   public selectAction(action) {
@@ -316,18 +324,12 @@ export class ProjectDocumentsComponent implements OnInit {
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
-              selectedDocs.push(
-                this.categorizedDocs.filter(d => d._id === item._id)[0]
-              );
+              selectedDocs.push(this.categorizedDocs.find(d => d.id === item.id));
             }
           });
         }
         // Store and send to the edit page.
         this.storageService.state.selectedDocs = selectedDocs;
-        // Set labels if doc size === 1
-        if (selectedDocs.length === 1) {
-          this.storageService.state.labels = selectedDocs[0].labels;
-        }
 
         this.router.navigate([
           'p',
@@ -343,11 +345,7 @@ export class ProjectDocumentsComponent implements OnInit {
         if (this.categorizedDocumentTableData && this.currentTab === Constants.documentTypes.CATEGORIZED) {
           this.categorizedDocumentTableData.data.map(item => {
             if (item.checkbox === true) {
-              promises.push(
-                this.documentService.downloadDocument(
-                  this.categorizedDocs.filter(d => d._id === item._id)[0]
-                )
-              );
+              promises.push(this.documentService.downloadNative(item.id));
             }
           });
         }
@@ -363,10 +361,6 @@ export class ProjectDocumentsComponent implements OnInit {
         this.unpublishDocument();
         break;
     }
-  }
-
-  navSearchHelp() {
-    this.router.navigate(['/search-help']);
   }
 
   public publishDocument() {
@@ -386,8 +380,8 @@ export class ProjectDocumentsComponent implements OnInit {
 
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
-            if (item.checkbox && !item.read.includes('public')) {
-              observables.push(this.documentService.publish(item._id));
+            if (item.checkbox && !item.isPublished && eagleWriteId(item)) {
+              observables.push(this.documentService.publish(eagleWriteId(item)));
             }
           });
         }
@@ -429,8 +423,8 @@ export class ProjectDocumentsComponent implements OnInit {
 
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
-            if (item.checkbox && item.read.includes('public')) {
-              observables.push(this.documentService.unPublish(item._id));
+            if (item.checkbox && item.isPublished && eagleWriteId(item)) {
+              observables.push(this.documentService.unPublish(eagleWriteId(item)));
             }
           });
         }
@@ -472,8 +466,8 @@ export class ProjectDocumentsComponent implements OnInit {
 
         if (this.categorizedDocumentTableData) {
           this.categorizedDocumentTableData.data.map(item => {
-            if (item.checkbox === true) {
-              itemsToDelete.push(firstValueFrom(this.documentService.delete(item)));
+            if (item.checkbox === true && eagleWriteId(item)) {
+              itemsToDelete.push(firstValueFrom(this.documentService.delete({ _id: eagleWriteId(item) } as Document)));
             }
           });
         }
@@ -495,35 +489,6 @@ export class ProjectDocumentsComponent implements OnInit {
     }).catch(() => {
       // Modal dismissed
     });
-  }
-
-  public onNumItems(numItems) {
-    // dismiss any open snackbar
-    // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
-
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
-
-    const params = this.terms.getParams();
-    params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
-    params['currentPageCategorized'] = this.tableParams.currentPageCategorized = 1;
-    params['sortByCategorized'] = this.tableParams.sortByCategorized;
-    params['keywords'] = this.tableParams.keywords;
-
-    if (numItems === 'max') {
-      params['pageSizeCategorized'] = this.tableParams.totalListItemsCategorized;
-    } else {
-      params['pageSizeCategorized'] = this.tableParams.pageSizeCategorized = numItems;
-    }
-
-    this.router.navigate([
-      'p',
-      this.currentProject._id,
-      'project-documents',
-      params
-    ]);
   }
 
   public onSubmit(pageNumber = 1) {
@@ -561,22 +526,18 @@ export class ProjectDocumentsComponent implements OnInit {
 
       this.categorizedDocs.forEach(document => {
         documentList.push({
+          id: document.id,
+          eagleId: document.eagleId,
+          projectEagleId: document.projectEagleId || this.currentProject._id,
           displayName: document.displayName,
           documentFileName: document.documentFileName,
           datePosted: document.datePosted,
-          status: document.read.includes('public')
-            ? 'Published'
-            : 'Not Published',
+          status: document.isPublished ? 'Published' : 'Not Published',
+          isPublished: document.isPublished,
           type: document.type,
           milestone: document.milestone,
           legislation: document.legislation,
-          _id: document._id,
-          project: document.project,
-          read: document.read,
-          isFeatured: document.isFeatured,
-          sortOrder: document.sortOrder,
-          publicHitCount: document.publicHitCount,
-          secureHitCount: document.secureHitCount
+          isFeatured: document.isFeatured
         });
       });
 
@@ -632,8 +593,9 @@ export class ProjectDocumentsComponent implements OnInit {
     this.canUnpublish = false;
 
     for (const document of this.categorizedDocumentTableData.data) {
-      if (document.checkbox) {
-        if (document.read.includes('public')) {
+      // A row with no Eagle id cannot be written through eagle-api.
+      if (document.checkbox && eagleWriteId(document)) {
+        if (document.isPublished) {
           this.canUnpublish = true;
         } else {
           this.canPublish = true;
@@ -807,15 +769,6 @@ export class ProjectDocumentsComponent implements OnInit {
     this.router.navigate(['p', this.currentProject._id, 'project-documents', params]);
   }
 
-  // Compares selected options when a dropdown is grouped by legislation.
-  compareDropdownOptions(optionA: any, optionB: any) {
-    if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
-      return true;
-    }
-
-    return false;
-  }
-
   clearSelectedItem(filter: string, item: any) {
     this.filterForUI[filter] = this.filterForUI[filter].filter(option => option.id !== item.id);
   }
@@ -832,7 +785,7 @@ export class ProjectDocumentsComponent implements OnInit {
     );
     selBox.value =
       window.location.origin +
-      `/api/document/${item._id}/fetch/${safeName}`;
+      `/api/document/${item.eagleId || item.id}/fetch/${safeName}`;
     document.body.appendChild(selBox);
     selBox.focus();
     selBox.select();
@@ -840,36 +793,6 @@ export class ProjectDocumentsComponent implements OnInit {
     document.body.removeChild(selBox);
   }
 
-  /**
-   * Groups documents into categorized.
-   *
-   * @param documents Array of documents.
-   */
-  public groupDocuments(documents: any[]): void {
-    documents.forEach(document => {
-      if (document.milestone && document.documentType && document.documentAuthorType) {
-        this.categorizedDocs.push(document);
-      }
-    });
-  }
-
   public readonly filterCompareWith = filterCompareWith;
-
-  public onPageLimitClick(pageLimit: number | string) {
-    if (pageLimit === 'all') {
-      this.tableParams.pageSizeCategorized = this.tableParams.totalListItemsCategorized;
-    }
-
-    this.onSubmit();
-  }
-
-
-  public getResultTerm(count) {
-    if (count === 1) {
-      return 'result';
-    } else {
-      return 'results';
-    }
-  }
 
 }

@@ -5,7 +5,8 @@ import { ToastService } from 'src/app/services/toast.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { formatBytes } from 'src/app/shared/utils/utils';
-import { Document } from 'src/app/models/document';
+import { DemiDocument } from 'src/app/models/demi/document';
+import { eagleWriteId } from 'src/app/models/demi/document-write';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ConfigService } from 'src/app/services/config.service';
@@ -28,74 +29,55 @@ export class DocumentDetailComponent implements OnInit {
   // Parent route (p/:projId) resolver populates StorageService before this component initializes,
   // for both direct URL loads and in-app navigation. Signal captures the value at construction time.
   public readonly project = signal<any>(this.storageService.currentProjectData);
-  resolvedDocument = input.required<Document>();
+  resolvedDocument = input.required<DemiDocument>();
 
-  public readonly publishText = signal<string>('Publish');
-  public readonly formatBytes = formatBytes;
-
-  // Lists signal from ConfigService — updates reactively when lists load
-  private readonly lists = this.configService.listsSignal;
-
-  // Resolved metadata fields — recompute whenever document or lists change
-  public readonly resolvedType = computed(() => this.resolveListItem(this.resolvedDocument()?.type));
-  public readonly resolvedAuthor = computed(() => this.resolveListItem(this.resolvedDocument()?.documentAuthorType));
-  public readonly resolvedMilestone = computed(() => this.resolveListItem(this.resolvedDocument()?.milestone));
-  public readonly resolvedProjectPhase = computed(() => this.resolveListItem(this.resolvedDocument()?.projectPhase));
-
-  private resolveListItem(id: string | null | undefined): string {
-    if (!id) return '-';
-    const item = this.lists().find(i => i.id === id);
-    return item ? item.name : '-';
-  }
+  public readonly published = signal(false);
+  /** Eagle id the publish and edit writes need; null for a DEMI-only row. */
+  public readonly writeId = computed(() => eagleWriteId(this.resolvedDocument()));
+  public readonly fileSize = computed(() => {
+    const size = this.resolvedDocument().fileSize;
+    return formatBytes(size == null || size === '' ? null : Number(size));
+  });
 
   ngOnInit() {
-    this.publishText.set(this.resolvedDocument()?.read?.includes('public') ? 'Unpublish' : 'Publish');
-    this.configService.ensureListsLoaded();
+    this.published.set(this.resolvedDocument().isPublished === true);
   }
 
   onEdit() {
     const doc = this.resolvedDocument();
+    const projId = this.project()._id;
     this.storageService.state.selectedDocs = [doc];
-    this.storageService.state.labels = doc.labels;
-    this.storageService.state.back = { url: ['/p', doc.project, 'project-documents', 'detail', doc._id], label: 'View Document' };
-    this.router.navigate(['p', doc.project, 'project-documents', 'edit']);
+    this.storageService.state.back = { url: ['/p', projId, 'project-documents', 'detail', doc.id], label: 'View Document' };
+    this.router.navigate(['p', projId, 'project-documents', 'edit']);
   }
 
+  /** Opens a published file in a new tab. The navigation carries no bearer, so DEMI serves it only when public. */
   openDocument() {
-    this.documentService.openDocument(this.resolvedDocument());
+    const id = encodeURIComponent(this.resolvedDocument().id);
+    window.open(`${this.configService.getDemiApiPath()}/documents/${id}/download?inline=1`, '_blank', 'noopener');
   }
 
   downloadDocument() {
-    this.documentService.downloadDocument(this.resolvedDocument());
+    this.documentService.downloadNative(this.resolvedDocument().id);
   }
 
   togglePublish() {
-    const doc = this.resolvedDocument();
-    if (this.publishText() === 'Publish') {
-      this.documentService.publish(doc._id).subscribe(
-        null,
-        error => {
-          this.logger.error('publish document failed', 'DocumentDetailComponent', error);
-          alert('Uh-oh, couldn\'t update document');
-        },
-        () => {
-          this.toastService.success('This document has been published.');
-        }
-      );
-      this.publishText.set('Unpublish');
-    } else {
-      this.documentService.unPublish(doc._id).subscribe(
-        null,
-        error => {
-          this.logger.error('unpublish document failed', 'DocumentDetailComponent', error);
-          alert('Uh-oh, couldn\'t update document');
-        },
-        () => {
-          this.toastService.success('This document has been unpublished.');
-        }
-      );
-      this.publishText.set('Publish');
+    const id = this.writeId();
+    if (!id) {
+      return;
     }
+    const publish = !this.published();
+    const write = publish ? this.documentService.publish(id) : this.documentService.unPublish(id);
+    write.subscribe({
+      error: error => {
+        this.logger.error(`${publish ? 'publish' : 'unpublish'} document failed`, 'DocumentDetailComponent', error);
+        this.published.set(!publish);
+        this.toastService.error('Could not update the document.');
+      },
+      complete: () => {
+        this.toastService.success(`This document has been ${publish ? 'published' : 'unpublished'}.`);
+      }
+    });
+    this.published.set(publish);
   }
-
 }

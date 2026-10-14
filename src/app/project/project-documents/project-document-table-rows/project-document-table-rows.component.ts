@@ -5,16 +5,16 @@ import { DocumentService } from 'src/app/services/document.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { DatePipe } from '@angular/common';
-import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
 import { FormsModule } from '@angular/forms';
 import { LoggingService } from 'src/app/services/logging.service';
+import { eagleWriteId } from 'src/app/models/demi/document-write';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'tbody[app-document-table-rows]',
     templateUrl: './project-document-table-rows.component.html',
     styleUrl: './project-document-table-rows.component.css',
-    imports: [DatePipe, ListConverterPipe, FormsModule, RouterModule],
+    imports: [DatePipe, FormsModule, RouterModule],
 })
 
 export class DocumentTableRowsComponent implements OnInit, TableComponent {
@@ -66,20 +66,15 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
 
   goToItem(item) {
     this.activeLegislationYear = 0;
-    // project may be a populated object or a bare string ID
-    const projId = item.project && typeof item.project === 'object'
-      ? item.project._id
-      : item.project;
-    if (projId) {
-      this.router.navigate(['/p', projId, 'project-documents', 'detail', item._id]);
-    } else {
-      this.toastService.error('Uh-oh, couldn\'t open document');
-    }
+    this.router.navigate(['/p', item.projectEagleId, 'project-documents', 'detail', item.id]);
   }
 
   favoriteDocument(document) {
-    if (document.isFeatured) {
-      this.documentService.unFeature(document._id).subscribe(
+    const id = eagleWriteId(document);
+    if (!id) {
+      this.toastService.error('This document exists only in DEMI and cannot be featured here.');
+    } else if (document.isFeatured) {
+      this.documentService.unFeature(id).subscribe(
         () => {
           document.isFeatured = false;
           this._changeDetectionRef.markForCheck();
@@ -90,7 +85,7 @@ export class DocumentTableRowsComponent implements OnInit, TableComponent {
         }
       );
     } else {
-      this.documentService.feature(document._id).subscribe(
+      this.documentService.feature(id).subscribe(
         () => {
           document.isFeatured = true;
           this._changeDetectionRef.markForCheck();
