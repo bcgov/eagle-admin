@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api';
 import { DemiApiService } from './demi-api.service';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Org } from '../models/org';
 import { Organization } from '../models/demi/organization';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
@@ -84,24 +84,17 @@ export class OrgService {
     return this.demiApi.list<Organization>('organizations', params).pipe(
       withLoading(this.loadingState, ORG_LIST_LOADING),
       catchError(error => {
-        this.reportReadFailure(error);
+        this.logger.error('Failed to load organizations', 'OrgService', error);
+        this.toast.error('Failed to load organizations.');
         return of({ rows: [], total: 0 });
       })
     );
   }
 
+  /** One organization from DEMI. Errors pass through untoasted: some callers can carry on without the row. */
   getOrganization(id: string): Observable<Organization> {
     return this.demiApi.get<Organization>('organizations', id).pipe(
-      withLoading(this.loadingState, `org-${id}`),
-      catchError(error => {
-        this.reportReadFailure(error);
-        return throwError(() => error);
-      })
+      withLoading(this.loadingState, `org-${id}`)
     );
-  }
-
-  private reportReadFailure(error: Error): void {
-    this.logger.error('Failed to load organizations', 'OrgService', error);
-    this.toast.error('Failed to load organizations.');
   }
 }

@@ -10,6 +10,7 @@ import { catchError, map, mergeMap, finalize } from 'rxjs/operators';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
@@ -27,6 +28,7 @@ export class AddEditOrganizationComponent implements OnInit {
   private storageService = inject(StorageService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
+  private toast = inject(ToastService);
 
   public isEditing = false;
   public loading = false;
@@ -118,11 +120,14 @@ export class AddEditOrganizationComponent implements OnInit {
           ).subscribe({
             next: ({ org, parent }) => {
               if (!this.storageService.state.selectedOrganization && org.parentCompany) {
-                this.parentOrganizationName = parent?.name ?? '';
+                // Show the bare id when the parent is unreadable, so the kept link stays visible.
+                this.parentOrganizationName = parent?.name ?? org.parentCompany;
                 this.parentOrgId = org.parentCompany;
               }
               this.buildForm(org);
-            }
+            },
+            // ApiService.handleError has already logged it.
+            error: () => this.toast.error('Failed to load organization.')
           });
       }
     } else {

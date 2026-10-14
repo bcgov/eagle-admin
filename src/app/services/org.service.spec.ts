@@ -88,13 +88,14 @@ describe('OrgService', () => {
       expect((await row).name).toBe(NATIVE_ORG.name);
     });
 
-    it('passes a missing row on as an error', async () => {
+    it('passes a missing row on as an error and leaves the toast to the caller', async () => {
       const row = firstValueFrom(service.getOrganization('gone'));
 
       http.expectOne('/demi/api/organizations/gone')
         .flush({ error: 'Organization not found' }, { status: 404, statusText: 'Not Found' });
 
       await expectAsync(row).toBeRejectedWithError('Organization not found');
+      expect(toast.error).not.toHaveBeenCalled();
     });
   });
 
