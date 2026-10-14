@@ -129,6 +129,20 @@ describe('AddEditActivityComponent', () => {
       expect(sentBody(recentActivityService.add).publishDate).toEqual(new Date(2099, 0, 2, 14, 30));
     });
 
+    it('offers the C&E toggle on a new Update and sends it', () => {
+      const component = render(null);
+      fillNews(component);
+      expect(query('#complianceAndEnforcement')).not.toBeNull();
+      component.myForm.patchValue({ complianceAndEnforcement: true });
+      footerButton('Publish').click();
+      expect(sentBody(recentActivityService.add).complianceAndEnforcement).toBeTrue();
+    });
+
+    it('hides the C&E toggle when editing, since the save leaves the flag to Eagle', () => {
+      render('a1', base);
+      expect(query('#complianceAndEnforcement')).toBeNull();
+    });
+
     it('keeps Schedule disabled until a date is picked', () => {
       const component = render(null);
       fillNews(component);
@@ -766,6 +780,7 @@ describe('AddEditActivityComponent', () => {
 
     it('leaves the C&E flag out of the save, since DEMI rows do not carry it', () => {
       const component = create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
+      component.myForm.patchValue({ complianceAndEnforcement: true });
       component.save('draft');
       expect('complianceAndEnforcement' in sentBody(recentActivityService.save)).toBeFalse();
     });

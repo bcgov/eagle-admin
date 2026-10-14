@@ -322,8 +322,8 @@ export class AddEditActivityComponent implements OnInit {
       subject: form.category.value === CORPORATE_CATEGORY ? form.subject.value : null,
       ...statusFields
     });
-    // DEMI rows do not carry the flag and the form has no control for it; leave Eagle's value alone.
-    if (this.isEditing && !('complianceAndEnforcement' in this.activity)) {
+    // DEMI rows do not carry the flag, so the edit form hides it; leave Eagle's value alone.
+    if (this.isEditing) {
       delete (activity as Partial<RecentActivity>).complianceAndEnforcement;
     }
 

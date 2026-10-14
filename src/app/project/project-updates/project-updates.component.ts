@@ -9,6 +9,9 @@ import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { UPDATE_LIST_ERROR_MESSAGE } from 'src/app/activity/update-rules';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
@@ -38,6 +41,8 @@ export class ProjectUpdatesComponent implements OnInit {
   private recentActivityService = inject(RecentActivityService);
   private loadingState = inject(LoadingStateService);
   private destroyRef = inject(DestroyRef);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
 
   public terms = new SearchTerms();
   public currentProject;
@@ -90,7 +95,11 @@ export class ProjectUpdatesComponent implements OnInit {
         this.setRowData();
         this._changeDetectionRef.markForCheck();
       },
-      error: () => this.router.navigate(['/search'])
+      error: error => {
+        this.logger.error('Project update list failed', 'ProjectUpdatesComponent', error);
+        this.toastService.error(UPDATE_LIST_ERROR_MESSAGE);
+        this.router.navigate(['/search']);
+      }
     });
   }
 

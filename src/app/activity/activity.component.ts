@@ -8,6 +8,9 @@ import { DemiUpdate, nativeUpdateSort } from '../models/demi/update';
 import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
 import { ProjectService } from '../services/project.service';
+import { LoggingService } from '../services/logging.service';
+import { ToastService } from '../services/toast.service';
+import { UPDATE_LIST_ERROR_MESSAGE } from './update-rules';
 import { RecentActivityService } from '../services/recent-activity';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
@@ -43,6 +46,8 @@ export class ActivityComponent {
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private destroyRef = inject(DestroyRef);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
   public loading = true;
 
   public tableParams: TableParamsObject = new TableParamsObject();
@@ -141,7 +146,11 @@ export class ActivityComponent {
             this.loading = false;
             this._changeDetectionRef.markForCheck();
           },
-          error: () => this.router.navigate(['/search'])
+          error: error => {
+            this.logger.error('Update list failed', 'ActivityComponent', error);
+            this.toastService.error(UPDATE_LIST_ERROR_MESSAGE);
+            this.router.navigate(['/search']);
+          }
         });
   }
 

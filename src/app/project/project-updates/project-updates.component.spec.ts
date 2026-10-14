@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { LoggingService } from 'src/app/services/logging.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { ProjectUpdatesComponent } from './project-updates.component';
 
@@ -11,11 +12,15 @@ describe('ProjectUpdatesComponent', () => {
   let fixture: ComponentFixture<ProjectUpdatesComponent>;
   let updates: jasmine.SpyObj<RecentActivityService>;
   let navigate: jasmine.Spy;
+  let logger: jasmine.SpyObj<LoggingService>;
+  let toast: jasmine.SpyObj<ToastService>;
 
-  function open(urlParams: Record<string, string> = {}, total = 3, project: any = { _id: 'eagle-p1', demiId: 'track-p1', name: 'Mine' }) {
+  function open(urlParams: Record<string, string> = {}, total = 3, project: any = { _id: 'eagle-p1', demiId: 'track-p1', name: 'Mine' }, page?: Observable<any>) {
     const rows = Array.from({ length: Math.min(total, 10) }, (_, i) => ({ id: `a${i}`, headline: `Update ${i}`, dateAdded: '2026-09-01T00:00:00Z' }));
     updates = jasmine.createSpyObj('RecentActivityService', ['list']);
-    updates.list.and.returnValue(of({ rows, total } as any));
+    updates.list.and.returnValue(page ?? of({ rows, total } as any));
+    logger = jasmine.createSpyObj('LoggingService', ['debug', 'warn', 'error', 'info']);
+    toast = jasmine.createSpyObj('ToastService', ['error']);
     TestBed.configureTestingModule({
       imports: [ProjectUpdatesComponent],
       providers: [
@@ -23,7 +28,8 @@ describe('ProjectUpdatesComponent', () => {
         { provide: ActivatedRoute, useValue: { params: of(urlParams), snapshot: {}, parent: { snapshot: { paramMap: convertToParamMap({ projId: 'track-p1' }), data: { project } } } } },
         { provide: RecentActivityService, useValue: updates },
         { provide: StorageService, useValue: { currentProjectData: { _id: 'p1', name: 'Mine' } } },
-        { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'warn', 'error', 'info']) }
+        { provide: LoggingService, useValue: logger },
+        { provide: ToastService, useValue: toast }
       ]
     });
     // updateUrl rewrites the browser address bar; keep the test runner's page where it is.
@@ -51,6 +57,14 @@ describe('ProjectUpdatesComponent', () => {
   it('sends the URL keywords and page as the native q and page', () => {
     open({ keywords: 'dam safety', currentPage: '2', pageSize: '25' }, 60);
     expect(listed()).toEqual(jasmine.objectContaining({ q: 'dam safety', page: 2, pageSize: 25 }));
+  });
+
+  it('logs a failed list, tells the user, and goes to search', () => {
+    const failure = new Error('DEMI 503');
+    open({}, 3, undefined, throwError(() => failure));
+    expect(logger.error).toHaveBeenCalledWith('Project update list failed', 'ProjectUpdatesComponent', failure);
+    expect(toast.error).toHaveBeenCalledWith('Could not load updates.');
+    expect(navigate).toHaveBeenCalledWith(['/search']);
   });
 
   it('reads nothing for a project with no Eagle id, which cannot have updates', () => {

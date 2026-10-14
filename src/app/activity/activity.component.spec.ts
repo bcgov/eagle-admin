@@ -1,20 +1,26 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { ActivityComponent } from './activity.component';
 import { ProjectService } from '../services/project.service';
 import { RecentActivityService } from '../services/recent-activity';
+import { LoggingService } from '../services/logging.service';
+import { ToastService } from '../services/toast.service';
 
 describe('ActivityComponent', () => {
   let component: ActivityComponent;
   let navigate: jasmine.Spy;
   let updates: jasmine.SpyObj<RecentActivityService>;
+  let logger: jasmine.SpyObj<LoggingService>;
+  let toast: jasmine.SpyObj<ToastService>;
 
-  function create(urlParams: Record<string, string>) {
+  function create(urlParams: Record<string, string>, page: Observable<any> = of({ rows: [], total: 0 })) {
     // Keep the Karma page URL untouched when the table utils rewrite the address bar.
     spyOn(window.history, 'replaceState');
     updates = jasmine.createSpyObj('RecentActivityService', ['list']);
-    updates.list.and.returnValue(of({ rows: [], total: 0 }));
+    updates.list.and.returnValue(page);
+    logger = jasmine.createSpyObj('LoggingService', ['error']);
+    toast = jasmine.createSpyObj('ToastService', ['error']);
     const projects = [{ id: 'track-1', eagleId: 'e1', name: 'One' }, { id: 'track-2', name: 'Track only' }];
     TestBed.configureTestingModule({
       imports: [ActivityComponent],
@@ -22,7 +28,9 @@ describe('ActivityComponent', () => {
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { params: of(urlParams) } },
         { provide: ProjectService, useValue: { list: () => of({ rows: projects }) } },
-        { provide: RecentActivityService, useValue: updates }
+        { provide: RecentActivityService, useValue: updates },
+        { provide: LoggingService, useValue: logger },
+        { provide: ToastService, useValue: toast }
       ]
     });
     navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
@@ -40,6 +48,15 @@ describe('ActivityComponent', () => {
       page: 3, pageSize: 25, sort: '-dateAdded', q: 'dam',
       filters: { project: 'e1', type: ['News', 'Public Comment Period'] }
     });
+  });
+
+  it('logs a failed list, tells the user, and goes to search', () => {
+    const failure = new Error('DEMI 503');
+    create({}, throwError(() => failure));
+
+    expect(logger.error).toHaveBeenCalledWith('Update list failed', 'ActivityComponent', failure);
+    expect(toast.error).toHaveBeenCalledWith('Could not load updates.');
+    expect(navigate).toHaveBeenCalledWith(['/search']);
   });
 
   it('offers only projects with an Eagle id, which updates can point at', () => {
