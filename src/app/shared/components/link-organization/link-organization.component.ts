@@ -7,7 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { LinkOrganizationTableRowsComponent } from './link-organization-table-rows/link-organization-table-rows.component';
-import { Org } from 'src/app/models/org';
+import { Organization } from 'src/app/models/demi/organization';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
@@ -17,7 +17,7 @@ import { TableParamsObject } from '../table-template/table-params-object';
 import { TableTemplateComponent } from '../table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
-import { SearchService } from 'src/app/services/search.service';
+import { OrgService, ORG_LIST_LOADING, orgSort } from 'src/app/services/org.service';
 
 
 @Component({
@@ -40,12 +40,12 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   protected navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
-  private searchService = inject(SearchService);
+  private orgService = inject(OrgService);
   private loadingState = inject(LoadingStateService);
 
   public terms = new SearchTerms();
-  public organizations: Org[] = null;
-  public loading = this.loadingState.getOperationState('search-results');
+  public organizations: Organization[] = null;
+  public loading = this.loadingState.getOperationState(ORG_LIST_LOADING);
 
   public isEditing = false;
 
@@ -65,7 +65,8 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     {
       name: 'Company Type',
       value: 'companyType',
-      width: '45%'
+      width: '45%',
+      nosort: true
     }
   ];
 
@@ -88,8 +89,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
   }
 
   // Detect pins context from static route data; pins routes filter by Indigenous Group
-  const companyTypeFilter = this.route.snapshot.data.companyTypeFilter;
-  const filterForApi = companyTypeFilter ? { companyType: companyTypeFilter } : {};
+  const companyType: string | undefined = this.route.snapshot.data.companyTypeFilter;
 
   this.route.params.pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -103,20 +103,18 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           this.tableParams.sortBy = '+name';
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
-        return this.searchService.getSearchResults(
-          this.tableParams.keywords || '', 'Organization', null,
-          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
-          {}, false, filterForApi, ''
-        );
+        return this.orgService.listOrganizations({
+          page: this.tableParams.currentPage,
+          pageSize: this.tableParams.pageSize,
+          count: true,
+          sort: orgSort(this.tableParams.sortBy),
+          q: this.tableParams.keywords || undefined,
+          filters: { companyType }
+        });
       })
-    ).subscribe((res: any) => {
-      if (res && res[0].data.meta && res[0].data.meta.length > 0) {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.organizations = res[0].data.searchResults;
-      } else {
-        this.tableParams.totalListItems = 0;
-        this.organizations = [];
-      }
+    ).subscribe(res => {
+      this.tableParams.totalListItems = res.total ?? 0;
+      this.organizations = res.rows;
       this.setRowData();
       this.selectedCount = 0;
     });
@@ -188,7 +186,8 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           {
             name: organization.name,
             companyType: organization.companyType,
-            _id: organization._id,
+            // Pickers downstream (contacts, project pins) read the Eagle `_id`.
+            _id: organization.id,
             isEditing: this.isEditing,
             contactId: this.contactId
           }

@@ -40,6 +40,6 @@ export class OrganizationsTableRowsComponent implements OnInit {
     this.navigationStackUtils.clearNavigationStack();
 
     this.storageService.state.orgTableParams = this.data().paginationData;
-    this.router.navigate(['o', organization._id, 'edit']);
+    this.router.navigate(['o', organization.id, 'edit']);
   }
 }

@@ -6,10 +6,9 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { of } from 'rxjs';
-import { map, mergeMap, finalize } from 'rxjs/operators';
+import { catchError, map, mergeMap, finalize } from 'rxjs/operators';
 import { Org } from 'src/app/models/org';
 import { OrgService } from 'src/app/services/org.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
@@ -26,7 +25,6 @@ export class AddEditOrganizationComponent implements OnInit {
   protected navigationStackUtils = inject(NavigationStackUtils);
   private orgService = inject(OrgService);
   private storageService = inject(StorageService);
-  private searchService = inject(SearchService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
 
@@ -106,44 +104,24 @@ export class AddEditOrganizationComponent implements OnInit {
         this.loading = false;
       } else {
         this.loading = true;
-        this.searchService.getItem(orgId, 'Organization').pipe(
+        this.orgService.getOrganization(orgId).pipe(
             takeUntilDestroyed(this.destroyRef),
-            map((res: any) => res.data),
-            mergeMap((org: any) => {
-              if (!org) { return of(null); }
-              if (!org.parentCompany || org.parentCompany === '') { return of(org); }
-              return this.searchService.getItem(org.parentCompany, 'Organization').pipe(
-                map(parentCompany => {
-                  org.parentCompany = parentCompany;
-                  return org;
-                })
+            mergeMap(org => {
+              if (!org.parentCompany) { return of({ org, parent: null }); }
+              // A parent DEMI cannot return must not block editing the child.
+              return this.orgService.getOrganization(org.parentCompany).pipe(
+                map(parent => ({ org, parent })),
+                catchError(() => of({ org, parent: null }))
               );
             }),
             finalize(() => { this.loading = false; this.cdr.markForCheck(); })
           ).subscribe({
-            next: (org: any) => {
-              if (org) {
-                if (!this.storageService.state.selectedOrganization && org.parentCompany && org.parentCompany !== '') {
-                  this.parentOrganizationName = org.parentCompany.data.name;
-                  this.parentOrgId = org.parentCompany.data._id;
-                }
-                this.buildForm(org);
-              } else {
-                this.buildForm({
-                  description: '',
-                  name: '',
-                  country: '',
-                  postal: '',
-                  province: '',
-                  city: '',
-                  address1: '',
-                  address2: '',
-                  companyType: '',
-                  parentCompany: this.parentOrgId,
-                  companyLegal: '',
-                  company: ''
-                });
+            next: ({ org, parent }) => {
+              if (!this.storageService.state.selectedOrganization && org.parentCompany) {
+                this.parentOrganizationName = parent?.name ?? '';
+                this.parentOrgId = org.parentCompany;
               }
+              this.buildForm(org);
             }
           });
       }
