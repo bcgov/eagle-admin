@@ -1,8 +1,9 @@
 import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, ChangeDetectorRef, inject, signal, computed, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
+import { Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommentPeriod } from '../models/commentPeriod';
+import { LegacyCommentPeriod, toLegacyCommentPeriod } from './comment-period-legacy';
 import { CommentPeriodService } from '../services/commentperiod.service';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
@@ -13,6 +14,11 @@ import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/c
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 import { LoadingStateService } from '../services/loading-state.service';
+import { DemiCommentPeriod } from '../models/demi/comment-period';
+import { DemiList } from '../models/demi/demi-list';
+
+const SORT_FIELDS = ['dateStarted', 'dateCompleted'];
+const DEFAULT_SORT = '-dateStarted';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,7 +38,7 @@ export class CommentPeriodsComponent implements OnInit {
   private tableTemplateUtils = inject(TableTemplateUtils);
   private destroyRef = inject(DestroyRef);
 
-  public commentPeriods: CommentPeriod[] = null;
+  public commentPeriods: LegacyCommentPeriod[] = null;
   public commentPeriodTableColumns: TableColumn[] = [
     {
       name: 'Status',
@@ -61,7 +67,9 @@ export class CommentPeriodsComponent implements OnInit {
     {
       name: 'Published',
       value: 'isPublished',
-      width: '15%'
+      width: '15%',
+      // DEMI sorts comment periods on dateStarted and dateCompleted only.
+      nosort: true
     },
     {
       name: 'Comment Data',
@@ -73,11 +81,12 @@ export class CommentPeriodsComponent implements OnInit {
 
   public commentPeriodTableData: TableObject;
   public loadingState = inject(LoadingStateService);
+  /** DEMI project id, or the notification id for a notification's periods. */
   private currentProjId = signal<string | null>(null);
   public loading = computed(() => {
     const projId = this.currentProjId();
     if (!projId) return false;
-    return this.loadingState.isOperationLoading('comment-periods-' + projId);
+    return this.loadingState.isOperationLoading('comment-periods-native-' + projId);
   });
   public currentProject;
   public baseRouteUrl: string;
@@ -96,31 +105,14 @@ export class CommentPeriodsComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = '-dateStarted';
+        if (!SORT_FIELDS.includes(this.tableParams.sortBy?.replace(/^[-+]/, ''))) {
+          this.tableParams.sortBy = DEFAULT_SORT;
         }
-
-        const projectId = this.route.parent.snapshot.paramMap.get('projId')
-          || this.route.parent.snapshot.paramMap.get('notificationProjectId');
-        this.currentProjId.set(projectId);
-        const pageNum = this.tableParams.currentPage || 1;
-        const pageSize = this.tableParams.pageSize || 10;
-        const sortBy = this.tableParams.sortBy || '-dateStarted';
-
-        return this.commentPeriodService.getAllByProjectId(projectId, pageNum, pageSize, sortBy);
+        this.currentProjId.set(this.parentId());
+        return this.listPeriods();
       }),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((res: any) => {
-      if (res) {
-        this.tableParams.totalListItems = res.totalCount;
-        this.commentPeriods = res.totalCount > 0 ? res.data : [];
-      } else {
-        this.tableParams.totalListItems = 0;
-        this.commentPeriods = [];
-      }
-      this.setCPRowData();
-      this._changeDetectionRef.markForCheck();
-    });
+    ).subscribe(page => this.showPage(page));
     this.storageService.state.selectedTab = 0;
   }
 
@@ -140,11 +132,9 @@ export class CommentPeriodsComponent implements OnInit {
           daysRemaining: commentPeriod.daysRemaining,
           isMet: commentPeriod.isMet,
           metURLAdmin: commentPeriod.metURLAdmin,
-          // Same field the Published column sorts on in the API.
           read: commentPeriod.isPublished ? 'Published' : 'Not Published',
-          // TODO: Figure out pending, deferred, published, rejected
-          // commmentData:
           _id: commentPeriod._id,
+          demiId: commentPeriod.demiId,
           project: commentPeriod.project
         }
       );
@@ -163,15 +153,38 @@ export class CommentPeriodsComponent implements OnInit {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.commentPeriodService.getAllByProjectId(this.currentProject.data._id, pageNumber, this.tableParams.pageSize, this.tableParams.sortBy)
+    this.listPeriods()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        this.tableParams.totalListItems = res.totalCount;
-        this.commentPeriods = res.data;
+      .subscribe(page => {
         this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize);
-        this.setCPRowData();
-        this._changeDetectionRef.markForCheck();
+        this.showPage(page);
       });
+  }
+
+  /** Periods store the DEMI project id; a notification's periods store the notification id, which is its route id. */
+  private parentId(): string | null {
+    const parent = this.route.parent.snapshot;
+    return parent.paramMap.get('notificationProjectId') ?? parent.data?.['project']?.demiId ?? null;
+  }
+
+  private listPeriods(): Observable<DemiList<DemiCommentPeriod>> {
+    const projectId = this.currentProjId();
+    if (!projectId) {
+      return of({ rows: [], total: 0 });
+    }
+    return this.commentPeriodService.listByProject(projectId, {
+      page: this.tableParams.currentPage || 1,
+      pageSize: this.tableParams.pageSize || 10,
+      // A leading `+` would reach DEMI as a space.
+      sort: this.tableParams.sortBy.replace(/^\+/, '')
+    });
+  }
+
+  private showPage(page: DemiList<DemiCommentPeriod>) {
+    this.commentPeriods = page.rows.map(row => toLegacyCommentPeriod(row));
+    this.tableParams.totalListItems = page.total ?? this.commentPeriods.length;
+    this.setCPRowData();
+    this._changeDetectionRef.markForCheck();
   }
 
 }

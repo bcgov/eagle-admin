@@ -1,9 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ChangeDetectionStrategy, input } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { ToastService } from 'src/app/services/toast.service';
 import { Router, RouterModule } from '@angular/router';
-import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
+import { ConfigService } from 'src/app/services/config.service';
+import { encodeString, formatDate } from 'src/app/shared/utils/utils';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -31,6 +34,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 export class CommentPeriodDetailsTabComponent implements OnInit {
   private commentPeriodService = inject(CommentPeriodService);
   private documentService = inject(DocumentService);
+  private http = inject(HttpClient);
+  private configService = inject(ConfigService);
   private router = inject(Router);
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
@@ -38,7 +43,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
   private _cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
 
-  commentPeriod = input.required<CommentPeriod>();
+  commentPeriod = input.required<LegacyCommentPeriod>();
   project = input.required<any>();
 
   public commentPeriodPublishedStatus: string;
@@ -143,14 +148,28 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
   }
 
   public exportCommentsForStaff() {
-    // Export comments with fields relevant to staff to CSV
-    this.toastService.info('Download Initiated');
-    this.documentService.exportComments(this.commentPeriod()._id, this.projectName, 'staff');
+    this.exportComments('eao');
   }
+
   public exportCommentsForProponents() {
-    // Export comments with fields relevant to proponents to CSV
+    this.exportComments('proponent');
+  }
+
+  /** DEMI sends staff columns unless `audience=proponent` asks for the proponent file. */
+  private exportComments(audience: 'eao' | 'proponent') {
     this.toastService.info('Download Initiated');
-    this.documentService.exportComments(this.commentPeriod()._id, this.projectName, 'proponent');
+    const periodId = encodeURIComponent(this.commentPeriod().demiId);
+    const url = `${this.configService.getDemiApiPath()}/commentperiods/${periodId}/comments/export`;
+    const params: Record<string, string> = audience === 'proponent' ? { audience } : {};
+    this.http.get(url, { params, responseType: 'blob' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: blob => saveBlob(blob, encodeString(`${this.projectName.split(' ').join('_')}-${audience}-${formatDate(new Date())}.csv`, true)),
+        error: err => {
+          this.logger.error(`Failed to export comments for period ${periodId}`, 'CommentPeriodDetailsTabComponent', err);
+          this.toastService.error('Failed to export comments.');
+        }
+      });
   }
 
   public downloadDocument(document) {
@@ -167,4 +186,13 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
     void event;
     void document;
   }
+}
+
+function saveBlob(blob: Blob, filename: string) {
+  const url = window.URL.createObjectURL(blob);
+  const a = window.document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
 }

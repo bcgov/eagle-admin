@@ -9,6 +9,8 @@ import { DocumentService } from 'src/app/services/document.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { toLegacyCommentPeriod } from '../comment-period-legacy';
+import { nativeCommentPeriod } from 'src/app/models/demi/comment-period.fixture';
 
 describe('AddEditCommentPeriodComponent', () => {
   let commentPeriodService: jasmine.SpyObj<CommentPeriodService>;
@@ -57,5 +59,15 @@ describe('AddEditCommentPeriodComponent', () => {
     component.onSubmit();
 
     expect(commentPeriodService.save.calls.mostRecent().args[0].isPublished).toBe(true);
+  });
+
+  it('sends a read-only period back to its details page without opening the form', () => {
+    const period = toLegacyCommentPeriod(nativeCommentPeriod({ sourceSystem: 'engage' }), ['sysadmin']);
+    const component = openForEdit(period);
+
+    expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith('This comment period cannot be edited here.');
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/p', 'p1', 'cp', period._id]);
+    expect(component.commentPeriodForm).toBeUndefined();
+    expect(commentPeriodService.save).not.toHaveBeenCalled();
   });
 });
