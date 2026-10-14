@@ -35,10 +35,12 @@ const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featu
 
 interface PreviewImage { url: string; alt: string; caption: string }
 
+interface ToDraft { label: string; message: string; keep: string }
+
 /** Label and confirm text for moving a live Update back to draft. */
-const TO_DRAFT: Partial<Record<StatusLabel, { label: string; message: string }>> = {
-  Published: { label: 'Unpublish', message: 'Unpublishing removes this Update from the public site and moves it to draft.' },
-  Scheduled: { label: 'Unschedule', message: 'Unscheduling moves this Update to draft, so it will not go live on its date.' }
+const TO_DRAFT: Partial<Record<StatusLabel, ToDraft>> = {
+  Published: { label: 'Unpublish', message: 'It will be removed from the public site and moved to draft.', keep: 'Keep published' },
+  Scheduled: { label: 'Unschedule', message: 'It will move to draft and will not go live on its date.', keep: 'Keep scheduled' }
 };
 
 @Component({
@@ -249,7 +251,7 @@ export class AddEditActivityComponent implements OnInit {
   }
 
   /** Set when saving as a draft takes a live Update off its schedule or the public site. */
-  public get toDraft(): { label: string; message: string } | undefined {
+  public get toDraft(): ToDraft | undefined {
     return TO_DRAFT[this.statusText];
   }
 
@@ -270,9 +272,11 @@ export class AddEditActivityComponent implements OnInit {
     const toDraft = this.toDraft;
     if (action === 'draft' && toDraft) {
       const modalRef = this.modalService.open(ConfirmComponent, { backdrop: 'static' });
-      modalRef.componentInstance.title = toDraft.label;
-      modalRef.componentInstance.message = `${toDraft.message} Click <strong>OK</strong> to continue or <strong>Cancel</strong> to go back.`;
+      modalRef.componentInstance.title = `${toDraft.label} this Update?`;
+      modalRef.componentInstance.message = toDraft.message;
       modalRef.componentInstance.okOnly = false;
+      modalRef.componentInstance.okLabel = toDraft.label;
+      modalRef.componentInstance.cancelLabel = toDraft.keep;
       modalRef.result.then(ok => ok && this.send(action)).catch(() => { /* dismissed */ });
       return;
     }

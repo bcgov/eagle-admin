@@ -28,4 +28,21 @@ describe('ConfirmComponent', () => {
   it('should be created', () => {
     expect(component).toBeTruthy();
   });
+
+  function buttonLabels(): string[] {
+    return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.modal-footer button'))
+      .map(b => b.textContent.trim());
+  }
+
+  it('labels the buttons OK and Cancel by default', () => {
+    expect(buttonLabels()).toEqual(['OK', 'Cancel']);
+  });
+
+  it('shows the button labels a caller sets', () => {
+    fixture = TestBed.createComponent(ConfirmComponent);
+    fixture.componentInstance.okLabel = 'Archive';
+    fixture.componentInstance.cancelLabel = 'Keep';
+    fixture.detectChanges();
+    expect(buttonLabels()).toEqual(['Archive', 'Keep']);
+  });
 });
