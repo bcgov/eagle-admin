@@ -1,6 +1,6 @@
 import { Component, OnInit, input, inject, ChangeDetectionStrategy} from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { CommentPeriod } from '../models/commentPeriod';
+import { LegacyCommentPeriod } from '../comment-periods/comment-period-legacy';
 import { StorageService } from '../services/storage.service';
 import { DatePipe } from '@angular/common';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -26,7 +26,7 @@ export class CommentPeriodComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   project = input.required<any>();
-  commentPeriod = input.required<CommentPeriod>();
+  commentPeriod = input.required<LegacyCommentPeriod>();
 
   public baseRouteUrl: string;
   public selectedTab = 0;
