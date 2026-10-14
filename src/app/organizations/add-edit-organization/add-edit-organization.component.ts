@@ -6,11 +6,11 @@ import { FormGroup, FormControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { of } from 'rxjs';
-import { map, mergeMap, finalize } from 'rxjs/operators';
-import { Org } from 'src/app/models/org';
+import { catchError, map, mergeMap, finalize } from 'rxjs/operators';
+import { Organization } from 'src/app/models/demi/organization';
 import { OrgService } from 'src/app/services/org.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 
 @Component({
@@ -26,9 +26,9 @@ export class AddEditOrganizationComponent implements OnInit {
   protected navigationStackUtils = inject(NavigationStackUtils);
   private orgService = inject(OrgService);
   private storageService = inject(StorageService);
-  private searchService = inject(SearchService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
+  private toast = inject(ToastService);
 
   public isEditing = false;
   public loading = false;
@@ -106,45 +106,28 @@ export class AddEditOrganizationComponent implements OnInit {
         this.loading = false;
       } else {
         this.loading = true;
-        this.searchService.getItem(orgId, 'Organization').pipe(
+        this.orgService.getOrganization(orgId).pipe(
             takeUntilDestroyed(this.destroyRef),
-            map((res: any) => res.data),
-            mergeMap((org: any) => {
-              if (!org) { return of(null); }
-              if (!org.parentCompany || org.parentCompany === '') { return of(org); }
-              return this.searchService.getItem(org.parentCompany, 'Organization').pipe(
-                map(parentCompany => {
-                  org.parentCompany = parentCompany;
-                  return org;
-                })
+            mergeMap(org => {
+              if (!org.parentCompany) { return of({ org, parent: null }); }
+              // A parent DEMI cannot return must not block editing the child.
+              return this.orgService.getOrganization(org.parentCompany).pipe(
+                map(parent => ({ org, parent })),
+                catchError(() => of({ org, parent: null }))
               );
             }),
             finalize(() => { this.loading = false; this.cdr.markForCheck(); })
           ).subscribe({
-            next: (org: any) => {
-              if (org) {
-                if (!this.storageService.state.selectedOrganization && org.parentCompany && org.parentCompany !== '') {
-                  this.parentOrganizationName = org.parentCompany.data.name;
-                  this.parentOrgId = org.parentCompany.data._id;
-                }
-                this.buildForm(org);
-              } else {
-                this.buildForm({
-                  description: '',
-                  name: '',
-                  country: '',
-                  postal: '',
-                  province: '',
-                  city: '',
-                  address1: '',
-                  address2: '',
-                  companyType: '',
-                  parentCompany: this.parentOrgId,
-                  companyLegal: '',
-                  company: ''
-                });
+            next: ({ org, parent }) => {
+              if (!this.storageService.state.selectedOrganization && org.parentCompany) {
+                // Show the bare id when the parent is unreadable, so the kept link stays visible.
+                this.parentOrganizationName = parent?.name ?? org.parentCompany;
+                this.parentOrgId = org.parentCompany;
               }
-            }
+              this.buildForm(org);
+            },
+            // ApiService.handleError has already logged it.
+            error: () => this.toast.error('Failed to load organization.')
           });
       }
     } else {
@@ -250,20 +233,11 @@ export class AddEditOrganizationComponent implements OnInit {
       return;
     }
 
-    const org = new Org({
-      description: this.orgForm.controls.description.value,
-      name: this.orgForm.controls.name.value,
-      country: this.orgForm.controls.country.value,
-      postal: this.orgForm.controls.postal.value,
-      province: this.orgForm.controls.province.value,
-      city: this.orgForm.controls.city.value,
-      address1: this.orgForm.controls.address1.value,
-      address2: this.orgForm.controls.address2.value,
-      companyType: this.orgForm.controls.companyType.value,
-      parentCompany: this.orgForm.controls.parentCompany.value || null,
-      companyLegal: this.orgForm.controls.companyLegal.value,
-      company: this.orgForm.controls.company.value
-    });
+    // Form controls carry the native field names; OrgService maps the body to the eagle-api shape.
+    const org: Partial<Organization> = {
+      ...this.orgForm.getRawValue(),
+      parentCompany: this.orgForm.controls.parentCompany.value || null
+    };
 
     this.clearStorageService();
     if (!this.isEditing) {
@@ -276,8 +250,7 @@ export class AddEditOrganizationComponent implements OnInit {
           }
         });
     } else {
-      org._id = this.orgId;
-      this.orgService.save(org)
+      this.orgService.save({ ...org, id: this.orgId })
         .subscribe(() => {
           this.router.navigate(['orgs']);
         });

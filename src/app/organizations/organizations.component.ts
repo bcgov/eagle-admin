@@ -3,14 +3,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import { OrganizationsTableRowsComponent } from './organizations-table-rows/organizations-table-rows.component';
-import { Org } from '../models/org';
+import { Organization } from '../models/demi/organization';
 import { SearchTerms } from '../models/search';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
-import { SearchService } from '../services/search.service';
+import { OrgService, ORG_LIST_LOADING, orgSort } from '../services/org.service';
 import { LoadingStateService } from '../services/loading-state.service';
 
 import { FormsModule } from '@angular/forms';
@@ -36,12 +36,12 @@ export class OrganizationsComponent implements OnInit {
   private navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private storageService = inject(StorageService);
-  private searchService = inject(SearchService);
+  private orgService = inject(OrgService);
   public loadingState = inject(LoadingStateService);
-  public loading = this.loadingState.getOperationState('search-results');
+  public loading = this.loadingState.getOperationState(ORG_LIST_LOADING);
 
   public terms = new SearchTerms();
-  public organizations: Org[] = null;
+  public organizations: Organization[] = null;
 
   public tableData: TableObject;
   public tableColumns: TableColumn[] = [
@@ -53,12 +53,14 @@ export class OrganizationsComponent implements OnInit {
     {
       name: 'Organization Type',
       value: 'companyType',
-      width: '20%'
+      width: '20%',
+      nosort: true
     },
     {
       name: 'Company Legal',
       value: 'companyLegal',
-      width: '35%'
+      width: '35%',
+      nosort: true
     },
     {
       name: 'Action',
@@ -107,29 +109,27 @@ export class OrganizationsComponent implements OnInit {
             this.setFilterButtons();
           }
 
-          const filterObj = this.tableParams.filter?.companyType
+          const companyType = this.tableParams.filter?.companyType
             ? this.getFiltersForApi(this.tableParams.filter.companyType)
-            : {};
+            : [];
 
-          return this.searchService.getSearchResults(
-            this.tableParams.keywords || '', 'Organization', null,
-            this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
-            {}, false, filterObj, ''
-          );
+          return this.orgService.listOrganizations({
+            page: this.tableParams.currentPage,
+            pageSize: this.tableParams.pageSize,
+            count: true,
+            sort: orgSort(this.tableParams.sortBy),
+            q: this.tableParams.keywords || undefined,
+            filters: { companyType: companyType.length ? companyType : undefined }
+          });
         })
-      ).subscribe((res: any) => {
-        if (res && res[0].data.meta && res[0].data.meta.length > 0) {
-          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-          this.organizations = res[0].data.searchResults;
-        } else {
-          this.tableParams.totalListItems = 0;
-          this.organizations = [];
-        }
+      ).subscribe(res => {
+        this.tableParams.totalListItems = res.total ?? 0;
+        this.organizations = res.rows;
         this.setRowData();
       });
   }
 
-  private getFiltersForApi(typeFilterString: string): object {
+  private getFiltersForApi(typeFilterString: string): string[] {
     const typeFiltersFromRoute = typeFilterString.split(',');
     const typeFiltersForApi = [];
     if (typeFiltersFromRoute.includes('indigenousGroup')) { typeFiltersForApi.push('Indigenous Group'); }
@@ -142,7 +142,7 @@ export class OrganizationsComponent implements OnInit {
     if (typeFiltersFromRoute.includes('otherGovernment')) { typeFiltersForApi.push('Other Government'); }
     if (typeFiltersFromRoute.includes('communityGroup')) { typeFiltersForApi.push('Community Group'); }
     if (typeFiltersFromRoute.includes('other')) { typeFiltersForApi.push('Other'); }
-    return { companyType: typeFiltersForApi.toString() };
+    return typeFiltersForApi;
   }
 
   public onSubmit(currentPage = 1) {
@@ -156,7 +156,6 @@ export class OrganizationsComponent implements OnInit {
     // Reset page.
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();
-    params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = currentPage;
     params['pageSize'] = this.tableParams.pageSize;
     params['keywords'] = this.tableParams.keywords;
