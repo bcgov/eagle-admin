@@ -13,9 +13,8 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { Constants } from 'src/app/shared/utils/constants';
 import { encodeString } from 'src/app/shared/utils/utils';
-import { HttpCacheService } from 'src/app/interceptors/http-cache.interceptor';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
-import { Document } from 'src/app/models/document';
+import { legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
@@ -46,7 +45,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
 
   public readonly constants = Constants;
 
-  private docs: Document[] = [];
+  private docs: any[] = [];
 
   // Signals — OnPush tracks these automatically, no detectChanges() needed
   public loading = signal(true);
@@ -62,8 +61,8 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
     { name: 'select_all_box', value: 'select_all_box', width: '5%', nosort: true },
     { name: 'Name', value: 'displayName', width: '30%' },
     { name: 'Date', value: 'datePosted', width: '26%' },
-    { name: 'Document Author', value: 'documentAuthor', width: '29%' },
-    { name: 'status', value: 'status', width: '10%' },
+    { name: 'Document Author', value: 'documentAuthor', width: '29%', nosort: true },
+    { name: 'status', value: 'status', width: '10%', nosort: true },
   ];
 
   ngOnInit(): void {
@@ -198,7 +197,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
           const tableData = this.documentTableData();
           if (tableData) {
             tableData.data.forEach(item => {
-              if (item.checkbox && !item.read.includes('public')) {
+              if (item.checkbox && !item.isPublished) {
                 observables.push(this.documentService.publish(item._id));
               }
             });
@@ -248,7 +247,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
           const tableData = this.documentTableData();
           if (tableData) {
             tableData.data.forEach(item => {
-              if (item.checkbox && item.read.includes('public')) {
+              if (item.checkbox && item.isPublished) {
                 observables.push(this.documentService.unPublish(item._id));
               }
             });
@@ -321,39 +320,33 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
   }
 
   private refreshDocuments(): void {
-    HttpCacheService.clearByResource('search');
     this.loading.set(true);
     const project = this.currentProject();
     if (!project?._id) { return; }
 
-    const sortBy = this.tableParams.sortBy
-      ? (this.tableParams.sortBy.substr(1) === 'displayName'
-          ? this.tableParams.sortBy
-          : `${this.tableParams.sortBy},+displayName`)
-      : '-datePosted,+displayName';
+    this.loadDocuments(project._id, () => {
+      this.selectedCount.set({ categorized: 0, total: 0 });
+      this.canPublish.set(false);
+      this.canUnpublish.set(false);
+    });
+  }
 
-    this.searchService.getSearchResults(
-      null,
-      'Document',
-      [],
-      this.tableParams.currentPage,
-      this.tableParams.pageSize,
-      sortBy,
-      { documentSource: 'PROJECT-NOTIFICATION', project: project._id })
+  /** Notification documents store the notification id as their project. */
+  private loadDocuments(notificationId: string, onLoaded?: () => void): void {
+    this.documentService.listNative({
+      page: this.tableParams.currentPage,
+      pageSize: this.tableParams.pageSize,
+      count: true,
+      sort: nativeDocumentSort(this.tableParams.sortBy) ?? '-datePosted',
+      filters: { project: notificationId }
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        if (res[0].data && res[0].data.meta.length > 0) {
-          this.docs = res[0].data.searchResults;
-          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        } else {
-          this.docs = [];
-          this.tableParams.totalListItems = 0;
-          this.documentTableData.set(null);
-        }
+      .subscribe(res => {
+        // Publish, unpublish and delete go to eagle-api by Eagle id, so DEMI-only rows are left out.
+        this.docs = res.rows.map(legacyDocumentRow).filter(doc => doc._id);
+        this.tableParams.totalListItems = res.total ?? 0;
         this.setRowData();
-        this.selectedCount.set({ categorized: 0, total: 0 });
-        this.canPublish.set(false);
-        this.canUnpublish.set(false);
+        onLoaded?.();
         this.loading.set(false);
       });
   }
@@ -366,17 +359,14 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
           documentFileName: document.documentFileName,
           documentAuthor: document.documentAuthor,
           datePosted: document.datePosted,
-          status: document['status'],
+          isPublished: !!document.isPublished,
           type: '',
           milestone: '',
           legislation: 2018,
           _id: document._id,
           project: document.project,
-          read: document.read,
           isFeatured: false,
           sortOrder: 0,
-          publicHitCount: document.publicHitCount,
-          secureHitCount: document.secureHitCount,
         };
       });
 
@@ -402,25 +392,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
     const project = this.currentProject();
     if (!project?._id) { return; }
 
-    const sortBy = this.tableParams.sortBy.substr(1) === 'displayName'
-      ? this.tableParams.sortBy
-      : `${this.tableParams.sortBy},+displayName`;
-
-    this.searchService.getSearchResults(
-      null,
-      'Document',
-      [],
-      this.tableParams.currentPage,
-      this.tableParams.pageSize,
-      sortBy,
-      { documentSource: 'PROJECT-NOTIFICATION', project: project._id })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        this.docs = res[0].data.searchResults;
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.setRowData();
-        this.loading.set(false);
-      });
+    this.loadDocuments(project._id);
   }
 
   isEnabled(button) {
@@ -450,7 +422,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
     if (tableData) {
       for (const document of tableData.data) {
         if (document.checkbox) {
-          if (document.read.includes('public')) {
+          if (document.isPublished) {
             canUnpub = true;
           } else {
             canPub = true;
