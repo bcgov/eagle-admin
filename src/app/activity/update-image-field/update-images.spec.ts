@@ -1,4 +1,4 @@
-import { blocksPublish, captionLine, imageSrc, imageType, toUpdateImage } from './update-images';
+import { blocksPublish, captionLine, imageSrc, imageType, isPublicDocument, toUpdateImage } from './update-images';
 
 describe('update images', () => {
   describe('blocksPublish', () => {
@@ -20,6 +20,32 @@ describe('update images', () => {
 
     it('does not block a missing document', () => {
       expect(blocksPublish(undefined)).toBeFalse();
+    });
+
+    it('blocks an unpublished DEMI row, which has no read list', () => {
+      expect(blocksPublish({ documentSource: 'PROJECT', isPublished: false })).toBeTrue();
+    });
+
+    it('lets a published DEMI row through', () => {
+      expect(blocksPublish({ documentSource: 'PROJECT', isPublished: true })).toBeFalse();
+    });
+  });
+
+  describe('isPublicDocument', () => {
+    it('reads a published DEMI row as public', () => {
+      expect(isPublicDocument({ _id: 'd1', isPublished: true })).toBeTrue();
+    });
+
+    it('reads an unpublished DEMI row as not public', () => {
+      expect(isPublicDocument({ _id: 'd1', isPublished: false })).toBeFalse();
+    });
+
+    it('takes an Eagle read list over isPublished', () => {
+      expect(isPublicDocument({ _id: 'd1', read: ['staff'], isPublished: true })).toBeFalse();
+    });
+
+    it('treats a row with neither field as not public', () => {
+      expect(isPublicDocument({ _id: 'd1' })).toBeFalse();
     });
   });
 

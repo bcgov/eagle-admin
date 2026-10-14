@@ -1,4 +1,4 @@
-import { nextSortBy } from './table-template-utils';
+import { nativeSort, nextSortBy, tableSort } from './table-template-utils';
 
 describe('nextSortBy', () => {
   it('flips an ascending sort on the same column to descending', () => {
@@ -24,12 +24,32 @@ describe('nextSortBy', () => {
   it('starts ascending when the current sort is empty', () => {
     expect(nextSortBy('', 'name')).toBe('+name');
   });
+});
 
-  it('flips a multi-key column sort on its first key', () => {
-    expect(nextSortBy('+lastName,+firstName', 'lastName,+firstName')).toBe('-lastName,+firstName');
+describe('nativeSort', () => {
+  it('keeps a descending sort on the allowed field', () => {
+    expect(nativeSort('-displayName', 'displayName')).toBe('-displayName');
   });
 
-  it('flips a descending multi-key column sort back to ascending', () => {
-    expect(nextSortBy('-lastName,+firstName', 'lastName,+firstName')).toBe('+lastName,+firstName');
+  it('sends an ascending table sort without the plus sign', () => {
+    expect(nativeSort('+displayName', 'displayName')).toBe('displayName');
+  });
+
+  it('falls back to the allowed field for an old multi-column sort', () => {
+    expect(nativeSort('-lastName,+firstName', 'displayName')).toBe('displayName');
+  });
+
+  it('falls back to the allowed field when there is no sort', () => {
+    expect(nativeSort(undefined, 'name')).toBe('name');
+  });
+});
+
+describe('tableSort', () => {
+  it('adds the plus sign the table header expects', () => {
+    expect(tableSort('displayName')).toBe('+displayName');
+  });
+
+  it('keeps a descending sort as is', () => {
+    expect(tableSort('-name')).toBe('-name');
   });
 });

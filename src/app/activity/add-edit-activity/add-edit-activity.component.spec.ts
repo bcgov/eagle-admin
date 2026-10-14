@@ -491,8 +491,9 @@ describe('AddEditActivityComponent', () => {
   });
 
   describe('photos and featured image', () => {
-    const publicDoc = (_id: string, name: string) => ({ _id, displayName: name, documentFileName: name, documentSource: 'PROJECT', read: ['public'] });
-    const privateDoc = (_id: string, name: string) => ({ _id, displayName: name, documentFileName: name, documentSource: 'PROJECT', read: ['staff'] });
+    // DEMI rows leave out `read`; `isPublished` says whether the public can read them.
+    const publicDoc = (_id: string, name: string) => ({ _id, displayName: name, documentFileName: name, documentSource: 'PROJECT', isPublished: true });
+    const privateDoc = (_id: string, name: string) => ({ _id, displayName: name, documentFileName: name, documentSource: 'PROJECT', isPublished: false });
     const photoIds = (component: AddEditActivityComponent) => component.photoRows.map(row => row.document.value);
     const statusMessage = () => (query('[role=status] #altNeeded')?.textContent ?? '').trim();
 

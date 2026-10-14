@@ -31,13 +31,11 @@ export function isSelectableDocument(row: { _id?: string | null; documentSource?
 
 /** `GET /documents` filters for one parent's documents of one `documentSource`. */
 export function sourceFilters(project: string, documentSource: string): DemiDocumentFilters {
-  // Typed, not cast: `documentSource` is not in DemiDocumentFilters on this branch yet.
-  const filters: DemiDocumentFilters & { documentSource: string } = { project, documentSource };
-  return filters;
+  return { project, documentSource };
 }
 
-/** Table sort (`-datePosted`, `+displayName`) as a native documents `sort`; keys DEMI cannot sort by are dropped. */
+/** Table sort (`-datePosted`, `+sortOrder`) as a native documents `sort`; keys DEMI cannot sort by are dropped. */
 export function nativeDocumentSort(sortBy: string | null | undefined): string | undefined {
   const key = sortBy?.replace(/^\+/, '');
-  return key && /^-?(datePosted|displayName)$/.test(key) ? key : undefined;
+  return key && /^-?(datePosted|displayName|sortOrder)$/.test(key) ? key : undefined;
 }

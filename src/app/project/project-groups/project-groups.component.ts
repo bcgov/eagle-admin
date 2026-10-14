@@ -10,7 +10,7 @@ import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { InputModalComponent } from 'src/app/input-modal/input-modal.component';
 import { SearchTerms } from 'src/app/models/search';
 import { Group } from 'src/app/models/demi/group';
-import { User, contactExportRow, nativeSort, tableSort } from 'src/app/models/demi/user';
+import { User, contactExportRow } from 'src/app/models/demi/user';
 import { ExcelService } from 'src/app/services/excel.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { UserService, emptyPageOnError } from 'src/app/services/user.service';
@@ -19,7 +19,7 @@ import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy, nativeSort, tableSort } from 'src/app/shared/utils/table-template-utils';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 

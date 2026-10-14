@@ -35,7 +35,6 @@
     "@popperjs/core": "^2.11.8",
     "@tinymce/tinymce-angular": "^9",
     "bootstrap": "^5.3.8",
-    "jszip": "^3.10.1",
     "keycloak-angular": "^22.0.0",
     "keycloak-js": "^26.2.4",
     "luxon": "^3.7.2",

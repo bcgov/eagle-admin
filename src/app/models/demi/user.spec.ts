@@ -1,32 +1,4 @@
-import { User, contactExportRow, nativeSort, tableSort } from './user';
-
-describe('nativeSort', () => {
-  it('keeps a descending sort on the allowed field', () => {
-    expect(nativeSort('-displayName', 'displayName')).toBe('-displayName');
-  });
-
-  it('sends an ascending table sort without the plus sign', () => {
-    expect(nativeSort('+displayName', 'displayName')).toBe('displayName');
-  });
-
-  it('falls back to the allowed field for an old multi-column sort', () => {
-    expect(nativeSort('-lastName,+firstName', 'displayName')).toBe('displayName');
-  });
-
-  it('falls back to the allowed field when there is no sort', () => {
-    expect(nativeSort(undefined, 'name')).toBe('name');
-  });
-});
-
-describe('tableSort', () => {
-  it('adds the plus sign the table header expects', () => {
-    expect(tableSort('displayName')).toBe('+displayName');
-  });
-
-  it('keeps a descending sort as is', () => {
-    expect(tableSort('-name')).toBe('-name');
-  });
-});
+import { User, contactExportRow } from './user';
 
 describe('contactExportRow', () => {
   it('joins both address lines with a space', () => {

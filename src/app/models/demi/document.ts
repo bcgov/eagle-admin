@@ -33,6 +33,8 @@ export interface DemiDocument {
   dateUploaded?: string | null;
   isFeatured?: boolean;
   isPublished?: boolean;
+  /** Staff-set order on the application sort screen. */
+  sortOrder?: number | null;
   eaoStatus?: string;
   legislation?: number | null;
   region?: string;
@@ -56,7 +58,7 @@ export type DemiDocumentFilters = {
   datePostedEnd?: string;
 };
 
-/** List query for documents. Sortable fields: `datePosted`, `displayName`. */
+/** List query for documents. Sortable fields: `datePosted`, `displayName`, `sortOrder`. */
 export type DemiDocumentListParams = Omit<DemiListParams, 'filters' | 'ids'> & { filters?: DemiDocumentFilters };
 
 /** `GET /documents/:id/download` answer. `url` is presigned and short-lived. */

@@ -65,16 +65,3 @@ export function contactExportRow(user: User) {
     email: user.email
   };
 }
-
-/**
- * DEMI `sort` for a kind that sorts by one `field` only: a table `sortBy` of `-<field>` sorts descending,
- * anything else (another column, an old URL) falls back to ascending `field`.
- */
-export function nativeSort(sortBy: string | null | undefined, field: string): string {
-  return sortBy?.split(',')[0] === `-${field}` ? `-${field}` : field;
-}
-
-/** Table `sortBy` for a DEMI sort, so the header arrow matches what the list was sorted by. */
-export function tableSort(sort: string): string {
-  return sort.startsWith('-') ? sort : `+${sort}`;
-}

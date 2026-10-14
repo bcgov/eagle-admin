@@ -14,11 +14,6 @@ import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 /** Loading-state key for {@link OrgService.listOrganizations}. */
 export const ORG_LIST_LOADING = 'orgs-list';
 
-/** DEMI sorts organizations on `name` only, so any other table sort falls back to name ascending. */
-export function orgSort(sortBy: string | null | undefined): string {
-  return sortBy === '-name' ? '-name' : 'name';
-}
-
 /**
  * Eagle write body for an organization. A body with `_id` is already Eagle-shaped and goes unchanged;
  * native input (`id` or, for a new row, no id at all) is converted. Temporary until writes move off eagle-api.

@@ -11,13 +11,13 @@ import { Organization } from 'src/app/models/demi/organization';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
-import { TableTemplateUtils, nextSortBy } from '../../utils/table-template-utils';
+import { TableTemplateUtils, nextSortBy, nativeSort } from '../../utils/table-template-utils';
 import { TableObject, TableColumn } from '../table-template/table-object';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableTemplateComponent } from '../table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
-import { OrgService, ORG_LIST_LOADING, orgSort } from 'src/app/services/org.service';
+import { OrgService, ORG_LIST_LOADING } from 'src/app/services/org.service';
 
 
 @Component({
@@ -107,7 +107,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           page: this.tableParams.currentPage,
           pageSize: this.tableParams.pageSize,
           count: true,
-          sort: orgSort(this.tableParams.sortBy),
+          sort: nativeSort(this.tableParams.sortBy, 'name'),
           q: this.tableParams.keywords || undefined,
           filters: { companyType }
         });
