@@ -1,24 +1,26 @@
 import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy} from '@angular/core';
-import { ToastService } from 'src/app/services/toast.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { NgbModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 
-import { mergeMap } from 'rxjs/operators';
-import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project, ProjectPublishState } from 'src/app/models/project';
 import { ISearchResults } from 'src/app/models/search';
-import { CommentPeriodService } from 'src/app/services/commentperiod.service';
-import { DecisionService } from 'src/app/services/decision.service';
-import { DocumentService } from 'src/app/services/document.service';
+import { DemiProject } from 'src/app/models/demi/project';
+import { toLegacyProject } from 'src/app/models/demi/project-legacy';
 import { ProjectService } from 'src/app/services/project.service';
-import { SearchService } from 'src/app/services/search.service';
 import { SideBarService } from 'src/app/services/sidebar.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LoggingService } from 'src/app/services/logging.service';
 import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-period-banner.component';
+import { BannerPeriodRow, bannerPeriod } from './banner-period';
+
+interface ProjectUser {
+  id: string;
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,70 +33,71 @@ import { CommentPeriodBannerComponent } from '../comment-period-banner/comment-p
 export class ProjectDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private toastService = inject(ToastService);
-  private modalService = inject(NgbModal);
-  projectService = inject(ProjectService);
-  private searchService = inject(SearchService);
-  commentPeriodService = inject(CommentPeriodService);
-  sidebarService = inject(SideBarService);
-  decisionService = inject(DecisionService);
+  private projectService = inject(ProjectService);
+  private sidebarService = inject(SideBarService);
   private storageService = inject(StorageService);
-  documentService = inject(DocumentService);
   private logger = inject(LoggingService);
   private _cdr = inject(ChangeDetectorRef);
 
-  public isPublishing = false;
-  public isUnpublishing = false;
-  public isDeleting = false;
   public project: Project;
   public isPublished: boolean;
-  public currentLeg: string;
   public currentLegYear: number;
   public showArchivedButton = false;
-  public legislationYearList;
-  public currentProject: Project;
+  public legislationYearList: number[] = [];
   public projectID: string;
   public substantiallyStarted: string;
   public disputeResolution: string;
 
   ngOnInit() {
-    const projId = this.route.parent.snapshot.paramMap.get('projId');
-    this.projectID = projId;
+    this.projectID = this.route.parent.snapshot.paramMap.get('projId');
+    // DEMI keeps only the current legislation block, so the archived years still come from eagle-api.
+    const fullProject = this.route.snapshot.data['fullProject'] as ISearchResults<FullProject>[];
+    this.legislationYearList = fullProject?.[0]?.data?.searchResults?.[0]?.legislationYearList ?? [];
 
-    // Load full project data directly (covers both ProjectResolver + FullProjectResolver)
-      this.searchService.getSearchResults('', 'Project', [], 1, 1, '', { _id: projId }, true, {}, 'all')
-        .pipe(mergeMap(data => this.projectService.getPeopleObjs(data)))
-        .subscribe((data: ISearchResults<FullProject>[]) => {
-          if (data && data[0]?.data?.searchResults?.length > 0) {
-            const fullProject = data[0].data.searchResults[0] as any;
-            const projectKey = fullProject.currentLegislationYear;
-            this.project = fullProject[projectKey];
-            this.project._id = this.projectID;
-            this.legislationYearList = fullProject.legislationYearList;
-            this.currentLeg = fullProject.currentLegislationYear;
-            this.substantiallyStarted = (this.project.substantially === true) ? 'Yes' : 'No';
-            this.disputeResolution = (this.project.dispute === true) ? 'Yes' : 'No';
+    this.projectService.getNative(this.projectID).pipe(
+      switchMap(row => forkJoin({
+        users: this.projectService.getUsers<ProjectUser>([row.responsibleEPDId as string, row.projectLeadId as string]),
+        periods: this.projectService.getCommentPeriods<BannerPeriodRow>(row.id, { sort: '-dateStarted', pageSize: 100 })
+      }).pipe(map(({ users, periods }) => ({ project: this.toProject(row, users, periods.rows), published: row.isPublished === true }))))
+    ).subscribe({
+      next: ({ project, published }) => this.show(project, published),
+      error: error => {
+        this.logger.error('load project failed', 'ProjectDetailComponent', error);
+        alert('Uh-oh, couldn\'t load project');
+        this.router.navigate(['/search']);
+      }
+    });
+  }
 
-            const projectPublishState = this.storageService.state['projectPublishState_' + this.project._id];
-            if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
-              this.currentLegYear = projectPublishState;
-              this.isPublished = true;
-            } else {
-              this.currentLegYear = Number((this.currentLeg).substring(this.currentLeg.length - 4, this.currentLeg.length));
-              const fullProjectRead: string[] = fullProject.read || [];
-              this.isPublished = projectPublishState === ProjectPublishState.unpublished
-                ? false
-                : fullProjectRead.includes('public');
-            }
+  private toProject(row: DemiProject, users: ProjectUser[], periods: BannerPeriodRow[]): Project {
+    const project = toLegacyProject(row);
+    // DEMI renamed these two Eagle fields.
+    project.status = row['projectState'] as string;
+    project.location = row['address'] as string;
+    project.responsibleEPDObj = users.find(user => user.id === row.responsibleEPDId);
+    project.projectLeadObj = users.find(user => user.id === row.projectLeadId);
+    project.commentPeriodForBanner = bannerPeriod(periods);
+    return project;
+  }
 
-            this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
-            this.checkShowButton();
-            this._cdr.markForCheck();
-          } else {
-            alert('Uh-oh, couldn\'t load project');
-            this.router.navigate(['/search']);
-          }
-        });
+  private show(project: Project, published: boolean) {
+    this.substantiallyStarted = (project.substantially === true) ? 'Yes' : 'No';
+    this.disputeResolution = (project.dispute === true) ? 'Yes' : 'No';
+
+    // The edit form leaves this flag so the badge is right before the saved project reads back.
+    const projectPublishState = this.storageService.state['projectPublishState_' + project._id];
+    if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
+      this.currentLegYear = projectPublishState;
+      this.isPublished = true;
+    } else {
+      this.currentLegYear = project.legislationYear;
+      this.isPublished = projectPublishState === ProjectPublishState.unpublished ? false : published;
+    }
+
+    this.storageService.state.currentProject = { type: 'currentProject', data: project };
+    this.project = project;
+    this.checkShowButton();
+    this._cdr.markForCheck();
   }
 
   checkShowButton() {
@@ -122,118 +125,5 @@ export class ProjectDetailComponent implements OnInit {
     this.storageService.state.rowComponent = null;
     this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
     this.router.navigate(['p', this.project._id, 'edit', { 1996: 'form-2002', 2002: 'form-2002', 2018: 'form-2018' }[this.project.legislationYear]]);
-  }
-
-  public deleteProject() {
-    if (this.project['numComments'] > 0) {
-      const modalRefCannotDelete = this.modalService.open(ConfirmComponent, {
-        backdrop: 'static',
-        centered: true,
-      });
-      modalRefCannotDelete.componentInstance.title = 'Cannot Delete Project';
-      modalRefCannotDelete.componentInstance.message = 'A project with submitted comments cannot be deleted.';
-      modalRefCannotDelete.componentInstance.okOnly = true; // Set okOnly to true for only OK button
-
-      return;
-    }
-
-    const modalRef = this.modalService.open(ConfirmComponent, {
-      backdrop: 'static',
-      centered: true,
-    });
-    modalRef.componentInstance.title = 'Confirm Deletion';
-    modalRef.componentInstance.message = 'Do you really want to delete this project?';
-    modalRef.componentInstance.okOnly = false; // Set okOnly to false for both OK and Cancel options
-
-    modalRef.result.then((result) => {
-      if (result) {
-        this.internalDeleteProject();
-      }
-    }).catch(() => {
-      // Handle error
-    });
-  }
-
-  private internalDeleteProject() {
-    this.isDeleting = false;
-    this.router.navigate(['/search']);
-  }
-
-  public publishProject() {
-    const modalRef = this.modalService.open(ConfirmComponent, {
-      backdrop: 'static', // Prevent closing when clicking outside the modal
-      centered: true, // Center the modal on the screen
-    });
-    modalRef.componentInstance.title = 'Confirm Publish';
-    modalRef.componentInstance.message = 'Publishing this project will make it visible to the public. Are you sure you want to proceed?';
-    modalRef.componentInstance.okOnly = false; // Set okOnly to false for both OK and Cancel buttons
-
-    modalRef.result.then((result) => {
-      if (result) {
-        this.internalPublishProject();
-      }
-    }).catch(() => {
-      // Handle error
-    });
-  }
-
-  private internalPublishProject() {
-    this.isPublishing = true;
-
-    this.projectService.publish(this.project)
-      .subscribe({
-        next: () => {},
-        error: error => {
-          this.isPublishing = false;
-          this.logger.error('publish project failed', 'ProjectDetailComponent', error);
-          alert('Uh-oh, couldn\'t publish project');
-        },
-        complete: () => {
-          this.toastService.success('Project published...');
-          this.projectService.getById(this.project._id)
-            .subscribe({
-              next: project => {
-                this.isPublishing = false;
-                this.project = project;
-                this.isPublished = true;
-              },
-              error: error => {
-                this.isPublishing = false;
-                this.logger.error('reload project failed', 'ProjectDetailComponent', error);
-                alert('Uh-oh, couldn\'t reload project');
-              }
-            });
-        }
-      });
-  }
-
-  public unPublishProject() {
-    this.isUnpublishing = true;
-
-    this.projectService.unPublish(this.project)
-      .subscribe({
-        next: () => {},
-        error: error => {
-          this.isUnpublishing = false;
-          this.logger.error('unpublish project failed', 'ProjectDetailComponent', error);
-          alert('Uh-oh, couldn\'t unpublish project');
-        },
-        complete: () => {
-          this.toastService.success('Project un-published...');
-          this.projectService.getById(this.project._id)
-            .subscribe({
-              next: project => {
-                this.isUnpublishing = false;
-                this.project = project;
-                this.isPublished = false;
-              },
-              error: error => {
-                this.isUnpublishing = false;
-                this.logger.error('reload project failed after unpublish', 'ProjectDetailComponent', error);
-                alert('Uh-oh, couldn\'t reload project');
-              }
-            });
-        }
-      });
   }
 }
