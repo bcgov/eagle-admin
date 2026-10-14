@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpRequest } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
@@ -12,8 +13,13 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { StorageService } from 'src/app/services/storage.service';
 
 const PERIOD_ID = '598b6eb61ecbc9001dfeba55';
+
+// The delete check counts published comments with pageSize=1; the table page is never that small here.
+const isPublishedCount = (req: HttpRequest<unknown>) => req.url === '/demi/api/comments' && req.params.get('pageSize') === '1';
+const isPage = (req: HttpRequest<unknown>) => req.url === '/demi/api/comments' && req.params.get('pageSize') !== '1';
 
 describe('ReviewCommentsTabComponent', () => {
   let http: HttpTestingController;
@@ -48,10 +54,17 @@ describe('ReviewCommentsTabComponent', () => {
   }
 
   function listRequest(): TestRequest {
-    return http.expectOne(req => req.url === '/demi/api/comments');
+    return http.expectOne(isPage);
   }
 
-  afterEach(() => http.verify());
+  function canDelete(): boolean {
+    return TestBed.inject(StorageService).state.canDeleteCommentPeriod.data;
+  }
+
+  afterEach(() => {
+    http.match(req => req.url === '/demi/api/comments');
+    http.verify();
+  });
 
   it('lists the period\'s comments with one eaoStatus param per toggled filter', () => {
     create({ pending: 'true', rejected: 'true', currentPage: '2', pageSize: '25', sortBy: '+dateAdded' });
@@ -90,5 +103,33 @@ describe('ReviewCommentsTabComponent', () => {
     expect(fixture.componentInstance.commentTableData.data[0]).toEqual(jasmine.objectContaining({
       _id: '59a0593a6356080019383e16', period: PERIOD_ID, attachments: 1
     }));
+  });
+
+  it('allows deleting the period only when DEMI counts no published comment in it', () => {
+    create({ pending: 'true' });
+
+    const count = http.expectOne(isPublishedCount);
+    expect(count.request.params.get('period')).toBe(PERIOD_ID);
+    expect(count.request.params.getAll('eaoStatus')).toEqual(['Published']);
+    expect(canDelete()).toBeFalse();
+    count.flush([], { headers: { 'x-total-count': '0' } });
+
+    expect(canDelete()).toBeTrue();
+  });
+
+  it('keeps delete off when a published comment exists', () => {
+    create({});
+
+    http.expectOne(isPublishedCount).flush([{ id: 'c1' }], { headers: { 'x-total-count': '4' } });
+
+    expect(canDelete()).toBeFalse();
+  });
+
+  it('keeps delete off when the published count cannot be read', () => {
+    create({});
+
+    http.expectOne(isPublishedCount).flush('down', { status: 503, statusText: 'Service Unavailable' });
+
+    expect(canDelete()).toBeFalse();
   });
 });

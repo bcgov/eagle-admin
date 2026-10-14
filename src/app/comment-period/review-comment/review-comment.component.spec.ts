@@ -139,4 +139,18 @@ describe('ReviewCommentComponent', () => {
 
     expect(documents.publish).toHaveBeenCalledWith('5a0000000000000000000001');
   });
+
+  it('shows and saves the next comment when Save/Next swaps the resolved comment', () => {
+    create(reviewComment({ eaoStatus: 'Published', publishedNotes: 'Old' }));
+    answerNextPending(3);
+    spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+
+    fixture.componentRef.setInput('comment', reviewComment({ id: NEXT_ID, eagleId: NEXT_ID, commentId: 13, eaoStatus: 'Pending' }));
+    fixture.detectChanges();
+    answerNextPending(2);
+
+    expect(fixture.componentInstance.commentReviewForm.controls.isPublished.value).toBeFalse();
+    fixture.componentInstance.onSubmit('exit');
+    expect(http.expectOne(`/api/comment/${NEXT_ID}`).request.body.eaoStatus).toBe('Pending');
+  });
 });

@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { CommentService } from 'src/app/services/comment.service';
+import { DemiApiService } from 'src/app/services/demi-api.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
@@ -30,6 +31,7 @@ export class ReviewCommentsTabComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
   private commentService = inject(CommentService);
+  private demi = inject(DemiApiService);
   private route = inject(ActivatedRoute);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
@@ -118,16 +120,13 @@ export class ReviewCommentsTabComponent implements OnInit {
     this.baseRouteUrl = (this.storageService.state.currentProject?.type ?? 'currentProject') === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.selectedTab = 0;
 
+    this.checkCanDelete();
     this.loadComments()
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(({ rows, total }) => {
           this.tableParams.totalListItems = total ?? 0;
           this.comments = rows;
           this.setCommentRowData();
-          // A period with a published comment cannot be deleted.
-          this.storageService.state.canDeleteCommentPeriod = {
-            type: 'canDeleteCommentPeriod', data: !rows.some(comment => comment.eaoStatus === 'Published')
-          };
           this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
           this.loading = false;
           this.cdr.markForCheck();
@@ -202,6 +201,23 @@ export class ReviewCommentsTabComponent implements OnInit {
           this.loading = false;
           this.cdr.markForCheck();
         });
+  }
+
+  /**
+   * A period with a published comment cannot be deleted. Counted over the whole period, not the page on screen, and
+   * read without listByPeriod's fallback so a failed read leaves deletion off.
+   */
+  private checkCanDelete() {
+    this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: false };
+    this.demi.list<DemiComment>('comments', { pageSize: 1, count: true, filters: { period: this.commentPeriodId, eaoStatus: ['Published'] } })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ total }) => {
+          this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: total === 0 };
+        },
+        // DemiApiService already logged it; deletion stays off.
+        error: () => undefined
+      });
   }
 
   /** The current page, filtered to the toggled statuses; none toggled shows every status. */
