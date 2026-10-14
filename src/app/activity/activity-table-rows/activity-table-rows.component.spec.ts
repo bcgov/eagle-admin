@@ -32,15 +32,31 @@ describe('ActivityTableRowsComponent', () => {
         { provide: NgbModal, useValue: modal }
       ]
     });
-    // No detectChanges: togglePin and archiveActivity need no rendered rows.
-    component = TestBed.createComponent(ActivityTableRowsComponent).componentInstance;
+    // No detectChanges: togglePin and archiveActivity need no rendered rows. Inputs set so a stray tick cannot fail ngOnInit.
+    const fixture = TestBed.createComponent(ActivityTableRowsComponent);
+    fixture.componentRef.setInput('data', new TableObject(ActivityTableRowsComponent, []));
+    fixture.componentRef.setInput('columnData', []);
+    fixture.componentRef.setInput('smallTable', false);
+    component = fixture.componentInstance;
     http = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => http.verify());
 
+  it('opens a row by its DEMI id and shows the joined project name', () => {
+    const fixture = TestBed.createComponent(ActivityTableRowsComponent);
+    fixture.componentRef.setInput('data', new TableObject(ActivityTableRowsComponent, [{ id: 'a1', projectName: 'Site C', headline: 'H' }]));
+    fixture.componentRef.setInput('columnData', Array(7).fill({ width: '10%' }));
+    fixture.componentRef.setInput('smallTable', false);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('td[data-label="Project"]').textContent.trim()).toBe('Site C');
+    fixture.nativeElement.querySelector('td[data-label="Headline"]').click();
+    expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/activity', 'a1', 'edit']);
+  });
+
   it('sends the dateUpdated from the first save with the second toggle', () => {
-    const row = { _id: 'a1', pinned: false, dateUpdated: 'd1' };
+    const row = { id: 'a1', eagleId: 'a1', pinned: false, dateUpdated: 'd1' };
 
     component.togglePin(row);
     http.expectOne('/api/recentActivity/a1').flush({ _id: 'a1', pinned: true, dateUpdated: 'd2' });
@@ -52,7 +68,7 @@ describe('ActivityTableRowsComponent', () => {
   });
 
   it('flips the pin back and shows the changed-by-someone-else toast on 409', () => {
-    const row = { _id: 'a1', pinned: false, dateUpdated: 'stale' };
+    const row = { id: 'a1', eagleId: 'a1', pinned: false, dateUpdated: 'stale' };
 
     component.togglePin(row);
     http.expectOne('/api/recentActivity/a1').flush(null, { status: 409, statusText: 'Conflict' });
@@ -70,7 +86,7 @@ describe('ActivityTableRowsComponent', () => {
     }
 
     it('marks the row archived when the API accepts it', async () => {
-      const row = { _id: 'a1', status: 'published', active: true };
+      const row = { id: 'a1', eagleId: 'a1', status: 'published', active: true };
 
       await confirmArchive(row);
       const req = http.expectOne('/api/recentActivity/a1');
@@ -90,7 +106,7 @@ describe('ActivityTableRowsComponent', () => {
     }
 
     it('asks in plain words, with Archive and Keep buttons', () => {
-      const dialog = askArchive({ _id: 'a1', status: 'published', publishDate: '2026-01-01T00:00:00Z' });
+      const dialog = askArchive({ id: 'a1', eagleId: 'a1', status: 'published', publishDate: '2026-01-01T00:00:00Z' });
 
       expect(dialog.title).toBe('Archive this Update?');
       expect(dialog.message).toBe('It will be removed from the public site.');
@@ -99,19 +115,19 @@ describe('ActivityTableRowsComponent', () => {
     });
 
     it('tells a scheduled Update it will not go live', () => {
-      const dialog = askArchive({ _id: 'a1', status: 'published', publishDate: '2099-01-01T00:00:00Z' });
+      const dialog = askArchive({ id: 'a1', eagleId: 'a1', status: 'published', publishDate: '2099-01-01T00:00:00Z' });
 
       expect(dialog.message).toBe('It will not go live on its date.');
     });
 
     it('says nothing about the public site for a draft', () => {
-      const dialog = askArchive({ _id: 'a1', status: 'draft' });
+      const dialog = askArchive({ id: 'a1', eagleId: 'a1', status: 'draft' });
 
       expect(dialog.message).toBe('It will be marked as archived.');
     });
 
     it('sends no archive request when Keep is chosen', async () => {
-      const row = { _id: 'a1', status: 'published', active: true };
+      const row = { id: 'a1', eagleId: 'a1', status: 'published', active: true };
       const result = Promise.reject(false);
       modal.open.and.returnValue({ componentInstance: {}, result } as any);
 
@@ -123,7 +139,7 @@ describe('ActivityTableRowsComponent', () => {
     });
 
     it('keeps the row and shows an error toast when the archive fails', async () => {
-      const row = { _id: 'a1', status: 'published', active: true };
+      const row = { id: 'a1', eagleId: 'a1', status: 'published', active: true };
 
       await confirmArchive(row);
       http.expectOne('/api/recentActivity/a1').flush(null, { status: 500, statusText: 'Server Error' });
@@ -143,7 +159,7 @@ describe('ActivityTableRowsComponent', () => {
 
     function flagContrast(status: string): number {
       const fixture = TestBed.createComponent(ActivityTableRowsComponent);
-      fixture.componentRef.setInput('data', new TableObject(ActivityTableRowsComponent, [{ _id: 'a1', headline: 'H', status }]));
+      fixture.componentRef.setInput('data', new TableObject(ActivityTableRowsComponent, [{ id: 'a1', eagleId: 'a1', headline: 'H', status }]));
       fixture.componentRef.setInput('columnData', Array(7).fill({ width: '10%' }));
       fixture.componentRef.setInput('smallTable', false);
       fixture.detectChanges();

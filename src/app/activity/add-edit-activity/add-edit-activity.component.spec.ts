@@ -9,35 +9,40 @@ import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
-import { SearchService } from 'src/app/services/search.service';
+import { DemiApiService } from 'src/app/services/demi-api.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 describe('AddEditActivityComponent', () => {
-  let searchService: jasmine.SpyObj<SearchService>;
+  let demiApi: jasmine.SpyObj<DemiApiService>;
   let recentActivityService: jasmine.SpyObj<RecentActivityService>;
   let toastService: jasmine.SpyObj<ToastService>;
   let documentService: jasmine.SpyObj<DocumentService>;
+  let commentPeriodService: jasmine.SpyObj<CommentPeriodService>;
   let fixture: ComponentFixture<AddEditActivityComponent>;
+
+  // Test rows use Eagle field names; DEMI answers with `id`, `eagleId` and the parent's Eagle id in `projectId`.
+  const nativeOf = ({ _id, project, ...rest }: any) => ({ ...rest, id: _id, eagleId: _id, projectId: project ?? null });
+  const demiProject = (eagleId: string) => ({ id: `track-${eagleId}`, eagleId, name: eagleId, location: 'Kamloops' });
+  const docs = (rows: any[]) => of({ rows } as any);
+  const documentSearches = () => demiApi.list.calls.allArgs().filter(args => args[0] === 'documents').map(args => args[1]!.filters as any);
+  const searchedSources = () => documentSearches().map(filters => filters.documentSource);
 
   // Form-logic specs skip detectChanges; only the button specs render the template.
   function create(activityId: string | null, row: any = null, periods: any[] = [], realModal = false): AddEditActivityComponent {
-    searchService = jasmine.createSpyObj('SearchService', ['getItem', 'getSearchResults']);
-    searchService.getItem.and.returnValue(of({ data: row } as any));
-    searchService.getSearchResults.and.returnValue(of([{ data: { searchResults: [] } }] as any));
-    recentActivityService = jasmine.createSpyObj('RecentActivityService', ['add', 'save']);
+    demiApi = jasmine.createSpyObj('DemiApiService', ['list']);
+    demiApi.list.and.returnValue(docs([]));
+    recentActivityService = jasmine.createSpyObj('RecentActivityService', ['getNative', 'add', 'save']);
+    recentActivityService.getNative.and.returnValue(of(row && nativeOf(row)));
     recentActivityService.add.and.returnValue(of({}));
     recentActivityService.save.and.returnValue(of({}));
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error']);
-    const projectService = jasmine.createSpyObj('ProjectService', ['getAll', 'getById']);
-    projectService.getAll.and.returnValue(of({ data: [] }));
-    projectService.getById.and.returnValue(of({ location: 'Kamloops' }));
-    const notificationProjectService = jasmine.createSpyObj('NotificationProjectService', ['getAll']);
-    notificationProjectService.getAll.and.returnValue(of({ data: [] }));
-    const commentPeriodService = jasmine.createSpyObj('CommentPeriodService', ['getAllByProjectId']);
-    commentPeriodService.getAllByProjectId.and.returnValue(of({ data: periods }));
+    const projectService = jasmine.createSpyObj('ProjectService', ['list', 'getNative']);
+    projectService.list.and.returnValue(of({ rows: [demiProject('p1'), demiProject('p2')] }));
+    projectService.getNative.and.callFake((id: string) => of(demiProject(id)));
+    commentPeriodService = jasmine.createSpyObj('CommentPeriodService', ['listByProject']);
+    commentPeriodService.listByProject.and.returnValue(of({ rows: periods }));
     documentService = jasmine.createSpyObj('DocumentService', ['addWithProgress', 'downloadResource']);
     documentService.downloadResource.and.resolveTo(new Blob());
 
@@ -47,11 +52,10 @@ describe('AddEditActivityComponent', () => {
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(activityId ? { activityId } : {}) } } },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         ...(realModal ? [] : [{ provide: NgbModal, useValue: jasmine.createSpyObj('NgbModal', ['open']) }]),
-        { provide: SearchService, useValue: searchService },
+        { provide: DemiApiService, useValue: demiApi },
         { provide: RecentActivityService, useValue: recentActivityService },
         { provide: ToastService, useValue: toastService },
         { provide: ProjectService, useValue: projectService },
-        { provide: NotificationProjectService, useValue: notificationProjectService },
         { provide: CommentPeriodService, useValue: commentPeriodService },
         { provide: DocumentService, useValue: documentService },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['warn', 'error', 'info', 'debug']) },
@@ -242,7 +246,7 @@ describe('AddEditActivityComponent', () => {
     it('restores the saved comment period when the type is switched back to PCP', () => {
       const component = create('a1', {
         _id: 'a1', type: 'Public Comment Period', project: 'p1', pcp: 'c1', dateAdded: '2026-09-01T00:00:00Z'
-      }, [{ _id: 'c1' }]);
+      }, [{ id: 'c1', eagleId: 'c1' }]);
       component.myForm.patchValue({ type: 'News' });
       component.updateType(true);
       component.myForm.patchValue({ type: 'Public Comment Period' });
@@ -260,9 +264,7 @@ describe('AddEditActivityComponent', () => {
     it('loads Project Notification News documents from the project notification source', () => {
       create('a1', row);
       // A second search loads the images uploaded from Update forms.
-      expect(searchService.getSearchResults.calls.allArgs().map(args => args[6])).toEqual([
-        { documentSource: 'PROJECT-NOTIFICATION' }, { documentSource: 'UPDATE' }
-      ]);
+      expect(searchedSources()).toEqual(['PROJECT-NOTIFICATION', 'UPDATE']);
     });
 
     it('keeps the saved featured image on load', () => {
@@ -437,9 +439,9 @@ describe('AddEditActivityComponent', () => {
     describe('switching to a type with no project', () => {
       function pickThenSwitchToPcp(): AddEditActivityComponent {
         const component = create(null);
-        searchService.getSearchResults.and.returnValue(of([{ data: { searchResults: [
+        demiApi.list.and.returnValue(docs([
           { _id: 'd1', documentFileName: 'site.jpg' }, { _id: 'd2', documentFileName: 'report.pdf' }
-        ] } }] as any));
+        ]));
         fillNews(component);
         component.myForm.patchValue({ featuredImageDocument: 'd1', featuredImageAlt: 'x', attachments: ['d2'] });
         component.myForm.patchValue({ type: 'Project Notification Public Comment Period' });
@@ -537,7 +539,7 @@ describe('AddEditActivityComponent', () => {
     describe('images the public cannot see', () => {
       function renderNews(projectDocs: any[] = []): AddEditActivityComponent {
         const component = render(null);
-        searchService.getSearchResults.and.returnValue(of([{ data: { searchResults: projectDocs } }] as any));
+        demiApi.list.and.returnValue(docs(projectDocs));
         fillNews(component);
         return component;
       }
@@ -571,7 +573,7 @@ describe('AddEditActivityComponent', () => {
 
       it('keeps a non-public attachment already on the Update on offer, so it can be removed', () => {
         const component = render(null);
-        searchService.getSearchResults.and.returnValue(of([{ data: { searchResults: [privateDoc('d2', 'Draft.pdf')] } }] as any));
+        demiApi.list.and.returnValue(docs([privateDoc('d2', 'Draft.pdf')]));
         component.myForm.patchValue({ attachments: ['d2'] });
         fillNews(component);
         expect(component.attachmentChoices.map(doc => doc._id)).toEqual(['d2']);
@@ -579,7 +581,7 @@ describe('AddEditActivityComponent', () => {
 
       it('says the attachments could not be checked when the document search fails', () => {
         const component = render(null);
-        searchService.getSearchResults.and.returnValue(throwError(() => new Error('search down')));
+        demiApi.list.and.returnValue(throwError(() => new Error('search down')));
         fillNews(component);
         component.myForm.patchValue({ attachments: ['d2'] });
         footerButtons();
@@ -666,14 +668,14 @@ describe('AddEditActivityComponent', () => {
   });
 
   describe('project document search', () => {
-    const found = (id: string) => of([{ data: { searchResults: [{ _id: id, documentFileName: `${id}.pdf` }] } }] as any);
+    const found = (id: string) => docs([{ _id: id, documentFileName: `${id}.pdf` }]);
 
     it('clears the load error as soon as a new project search starts', () => {
       const component = create(null);
-      searchService.getSearchResults.and.returnValue(throwError(() => new Error('search down')));
+      demiApi.list.and.returnValue(throwError(() => new Error('search down')));
       fillNews(component);
       expect(component.documentsFailed).toBeTrue();
-      searchService.getSearchResults.and.returnValue(new Subject<any>());
+      demiApi.list.and.returnValue(new Subject<any>());
       component.myForm.patchValue({ project: 'p2' });
       component.updateProject();
       expect(component.documentsFailed).toBeFalse();
@@ -682,12 +684,12 @@ describe('AddEditActivityComponent', () => {
     it('keeps the documents of the latest project when an older search answers late', () => {
       const component = create(null);
       const late = new Subject<any>();
-      searchService.getSearchResults.and.callFake(((_keys: string, _schema: string, filters: any[]) =>
-        filters[0].value === 'p1' ? late : found('p2doc')) as any);
+      demiApi.list.and.callFake(((_kind: string, params: any) =>
+        params.filters.project === 'track-p1' ? late : found('p2doc')) as any);
       fillNews(component);
       component.myForm.patchValue({ project: 'p2' });
       component.updateProject();
-      late.next([{ data: { searchResults: [{ _id: 'p1doc', documentFileName: 'p1doc.pdf' }] } }]);
+      late.next({ rows: [{ _id: 'p1doc', documentFileName: 'p1doc.pdf' }] });
       late.complete();
       expect(component.documents.map(doc => doc._id)).toEqual(['p2doc']);
     });
@@ -696,23 +698,76 @@ describe('AddEditActivityComponent', () => {
       const component = create(null);
       fillNews(component);
       const projectService = TestBed.inject(ProjectService) as jasmine.SpyObj<ProjectService>;
-      searchService.getSearchResults.calls.reset();
-      projectService.getById.calls.reset();
+      demiApi.list.calls.reset();
+      projectService.getNative.calls.reset();
       component.myForm.patchValue({ type: 'Public Comment Period' });
       component.updateType(true);
-      expect(searchService.getSearchResults).not.toHaveBeenCalled();
-      expect(projectService.getById).not.toHaveBeenCalled();
+      expect(demiApi.list).not.toHaveBeenCalled();
+      expect(projectService.getNative).not.toHaveBeenCalled();
     });
 
     it('searches again when a type change switches the document source', () => {
       const component = create(null);
       fillNews(component);
-      searchService.getSearchResults.calls.reset();
+      demiApi.list.calls.reset();
       component.myForm.patchValue({ type: 'Project Notification News' });
       component.updateType(true);
-      expect(searchService.getSearchResults.calls.allArgs().map(args => args[6])).toEqual([
-        { documentSource: 'PROJECT-NOTIFICATION' }, { documentSource: 'UPDATE' }
-      ]);
+      expect(searchedSources()).toEqual(['PROJECT-NOTIFICATION', 'UPDATE']);
+    });
+  });
+  describe('DEMI reads', () => {
+    const pcpRow = { _id: 'a1', type: 'Public Comment Period', project: 'p9', pcp: 'c1', dateAdded: '2026-09-01T00:00:00Z' };
+
+    it('edits the update under its Eagle id and keeps the Eagle project id', () => {
+      const component = create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
+      expect(recentActivityService.getNative).toHaveBeenCalledWith('a1');
+      component.save('draft');
+      expect(sentBody(recentActivityService.save)._id).toBe('a1');
+      expect(sentBody(recentActivityService.save).project).toBe('p9');
+    });
+
+    it('lists comment periods by the DEMI project id, resolving a project missing from the list by its Eagle id', () => {
+      create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
+      const projectService = TestBed.inject(ProjectService) as jasmine.SpyObj<ProjectService>;
+      expect(projectService.getNative).toHaveBeenCalledWith('p9');
+      expect(commentPeriodService.listByProject.calls.mostRecent().args[0]).toBe('track-p9');
+    });
+
+    it('offers only comment periods eagle-api holds, under their Eagle id', () => {
+      const component = create('a1', pcpRow, [{ id: 'engage-1' }, { id: 'engage-2', eagleId: 'c1' }]);
+      expect(component.periods.map(period => period._id)).toEqual(['c1']);
+      expect(component.myForm.get('pcp')!.value).toBe('c1');
+    });
+
+    it('searches project documents by the DEMI project id', () => {
+      const component = create(null);
+      fillNews(component);
+      expect(documentSearches().map(filters => filters.project)).toEqual(['track-p1', 'track-p1']);
+    });
+
+    it('searches project notification documents by the notification id', () => {
+      create('a1', { _id: 'a1', type: 'Project Notification News', project: 'pn1', dateAdded: '2026-09-01T00:00:00Z' });
+      expect(documentSearches().map(filters => filters.project)).toEqual(['pn1', 'pn1']);
+    });
+
+    it('offers project notifications from DEMI under their Eagle id', () => {
+      const component = create(null);
+      demiApi.list.and.returnValue(docs([{ id: 'pn1', name: 'Altares' }]));
+      // create() ran ngOnInit against an empty stub; load again with the row.
+      component.ngOnInit();
+      expect(demiApi.list).toHaveBeenCalledWith('notifications', { pageSize: 1000, sort: 'name' });
+      expect(component.projectNotifications).toEqual([{ _id: 'pn1', name: 'Altares' }]);
+    });
+
+    it('fills the project location from the DEMI project', () => {
+      const component = create('a1', pcpRow);
+      expect(component.myForm.get('projectLocation')!.value).toBe('Kamloops');
+    });
+
+    it('leaves the C&E flag out of the save, since DEMI rows do not carry it', () => {
+      const component = create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
+      component.save('draft');
+      expect('complianceAndEnforcement' in sentBody(recentActivityService.save)).toBeFalse();
     });
   });
 });

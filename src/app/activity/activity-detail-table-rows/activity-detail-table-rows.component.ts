@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { DatePipe } from '@angular/common';
+import { DemiUpdate } from 'src/app/models/demi/update';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
@@ -33,8 +34,8 @@ export class ActivityDetailTableRowsComponent implements OnInit, TableComponent 
     this.useSmallTable = this.smallTable();
   }
 
-  goToItem(activity) {
-    this.logger.debug('navigating to activity', 'ActivityDetailTableRowsComponent', { id: activity._id });
-    this.router.navigate(['/activity', activity._id, 'edit']);
+  goToItem(activity: DemiUpdate) {
+    this.logger.debug('navigating to activity', 'ActivityDetailTableRowsComponent', { id: activity.id });
+    this.router.navigate(['/activity', activity.id, 'edit']);
   }
 }

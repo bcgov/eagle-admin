@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
+import { DemiUpdate } from 'src/app/models/demi/update';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
@@ -109,8 +110,8 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
       });
   }
 
-  goToItem(activity) {
-    this.logger.debug('navigating to activity', 'ActivityTableRowsComponent', { id: activity._id });
-    this.router.navigate(['/activity', activity._id, 'edit']);
+  goToItem(activity: DemiUpdate) {
+    this.logger.debug('navigating to activity', 'ActivityTableRowsComponent', { id: activity.id });
+    this.router.navigate(['/activity', activity.id, 'edit']);
   }
 }
