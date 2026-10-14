@@ -1,4 +1,4 @@
-import { DemiDocument } from 'src/app/models/demi/document';
+import { DemiDocument, DemiDocumentFilters } from 'src/app/models/demi/document';
 import { eagleWriteId, eagleWriteProjectId } from 'src/app/models/demi/document-write';
 
 /**
@@ -26,6 +26,13 @@ export function legacyDocumentRow(row: any): any {
  */
 export function isSelectableDocument(row: { _id?: string | null; documentSource?: string }, documentSource: string): boolean {
   return !!row._id && row.documentSource === documentSource;
+}
+
+/** `GET /documents` filters for one parent's documents of one `documentSource`. */
+export function sourceFilters(project: string, documentSource: string): DemiDocumentFilters {
+  // Typed, not cast: `documentSource` is not in DemiDocumentFilters on this branch yet.
+  const filters: DemiDocumentFilters & { documentSource: string } = { project, documentSource };
+  return filters;
 }
 
 /** Table sort (`-datePosted`, `+displayName`) as a native documents `sort`; keys DEMI cannot sort by are dropped. */

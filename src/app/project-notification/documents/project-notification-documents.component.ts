@@ -14,7 +14,7 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { Constants } from 'src/app/shared/utils/constants';
 import { encodeString } from 'src/app/shared/utils/utils';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
-import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
+import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
@@ -338,7 +338,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
       pageSize: this.tableParams.pageSize,
       count: true,
       sort: nativeDocumentSort(this.tableParams.sortBy) ?? '-datePosted',
-      filters: { project: notificationId }
+      filters: sourceFilters(notificationId, 'PROJECT-NOTIFICATION')
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {

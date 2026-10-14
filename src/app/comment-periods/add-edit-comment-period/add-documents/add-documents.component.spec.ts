@@ -61,15 +61,14 @@ describe('AddDocumentComponent', () => {
 
     const req = http.expectOne(r => r.url === '/demi/api/documents');
     expect(req.request.params.get('project')).toBe('demi-project-1');
-    // DEMI main answers 400 to a `documentSource` filter.
-    expect(req.request.params.has('documentSource')).toBeFalse();
+    expect(req.request.params.getAll('documentSource')).toEqual(['PROJECT']);
     expect(req.request.params.get('page')).toBe('1');
     expect(req.request.params.get('pageSize')).toBe('10');
     expect(req.request.params.get('count')).toBe('true');
     req.flush([]);
   });
 
-  it('keeps every row on the page but lets select-all link only project documents with an Eagle id', () => {
+  it('lets select-all link only project documents with an Eagle id', () => {
     setProject({ _id: 'eagle-project-1', demiId: 'demi-project-1', name: 'Project' });
     const fixture = render();
     http.expectOne(r => r.url === '/demi/api/documents').flush([
@@ -126,6 +125,7 @@ describe('AddDocumentComponent', () => {
 
     const req = http.expectOne(r => r.url === '/demi/api/documents');
     expect(req.request.params.get('project')).toBe('notification-1');
+    expect(req.request.params.getAll('documentSource')).toEqual(['PROJECT-NOTIFICATION']);
     req.flush([
       { id: 'n1', eagleId: 'n1', projectId: 'notification-1', documentSource: 'PROJECT-NOTIFICATION', displayName: 'Notice letter' },
       { id: 'c1', eagleId: 'c1', projectId: 'notification-1', documentSource: 'COMMENT', displayName: 'Attachment' }

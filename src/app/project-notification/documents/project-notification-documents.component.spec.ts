@@ -45,8 +45,7 @@ describe('ProjectNotificationDocumentsComponent', () => {
     expect(req.request.params.get('project')).toBe('notification-1');
     expect(req.request.params.get('sort')).toBe('-datePosted');
     expect(req.request.params.get('count')).toBe('true');
-    // DEMI main answers 400 to a `documentSource` filter.
-    expect(req.request.params.has('documentSource')).toBeFalse();
+    expect(req.request.params.getAll('documentSource')).toEqual(['PROJECT-NOTIFICATION']);
     req.flush([
       { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'notification-1', documentSource: 'PROJECT-NOTIFICATION', displayName: 'Notice letter', isPublished: true }
     ], { headers: { 'x-total-count': '1' } });

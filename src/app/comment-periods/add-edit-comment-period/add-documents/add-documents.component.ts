@@ -12,7 +12,7 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
-import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
+import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { ToastService } from 'src/app/services/toast.service';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -247,6 +247,10 @@ export class AddDocumentComponent implements OnInit {
     }
   }
 
+  private get documentSource(): string {
+    return this.storageService.state.currentProject?.type === 'currentProjectNotification' ? 'PROJECT-NOTIFICATION' : 'PROJECT';
+  }
+
   private loadDocuments(page: number, pageSize: number, sortBy: string, keywords: string, onLoaded?: () => void) {
     this.documentsProjectId().pipe(
       switchMap(project => {
@@ -254,7 +258,10 @@ export class AddDocumentComponent implements OnInit {
           this.toast.error('Could not load documents for this project.');
           return of({ rows: [], total: 0 });
         }
-        return this.api.listNative({ page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined, filters: { project } });
+        return this.api.listNative({
+          page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined,
+          filters: sourceFilters(project, this.documentSource)
+        });
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(res => {
@@ -284,12 +291,11 @@ export class AddDocumentComponent implements OnInit {
 
   setDocumentRowData() {
     const documentList = [];
-    const documentSource = this.currentProject?.type === 'currentProjectNotification' ? 'PROJECT-NOTIFICATION' : 'PROJECT';
     if (this.documents && this.documents.length > 0) {
       this.documents.forEach(document => {
         documentList.push(
           {
-            selectable: isSelectableDocument(document, documentSource),
+            selectable: isSelectableDocument(document, this.documentSource),
             displayName: document.displayName,
             datePosted: document.datePosted,
             type: document.type,
