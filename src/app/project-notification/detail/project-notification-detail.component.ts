@@ -2,10 +2,10 @@ import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ChangeDetecti
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { ProjectNotification } from 'src/app/models/projectNotification';
+import { LegacyNotification } from 'src/app/models/demi/notification';
+import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { DocumentService } from 'src/app/services/document.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { DatePipe } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -24,13 +24,12 @@ export class ProjectNotificationDetailComponent implements OnInit {
   private router = inject(Router);
   notificationProjectService = inject(NotificationProjectService);
   documentService = inject(DocumentService);
-  private searchService = inject(SearchService);
   private storageService = inject(StorageService);
   private destroyRef = inject(DestroyRef);
   private logger = inject(LoggingService);
   private _cdr = inject(ChangeDetectorRef);
 
-  public projectNotification: ProjectNotification = null;
+  public projectNotification: LegacyNotification = null;
   public loading = false;
   public isPublished = false;
   public documents = [];
@@ -52,14 +51,14 @@ export class ProjectNotificationDetailComponent implements OnInit {
     }
 
     this.loading = true;
-    this.searchService.getSearchResults(
-      null, 'Document', [], 1, 100, '-datePosted,+displayName',
-      { documentSource: 'PROJECT-NOTIFICATION', project: this.projectNotification._id }
-    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (searchRes: any) => {
-        if (searchRes[0]?.data?.searchResults) {
-          this.documents = searchRes[0].data.searchResults;
-        }
+    // Notification documents store the notification id as their project.
+    this.documentService.listNative({
+      pageSize: 100,
+      sort: '-datePosted',
+      filters: sourceFilters(this.projectNotification._id, 'PROJECT-NOTIFICATION')
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.documents = res.rows.map(legacyDocumentRow);
         this.loading = false;
         this._cdr.markForCheck();
       },
@@ -78,8 +77,8 @@ export class ProjectNotificationDetailComponent implements OnInit {
     this.loading = true;
     const observables = [];
 
-    // Publish the documents
-    this.documents.forEach(item => {
+    // Publish the documents; one with no Eagle record cannot be written.
+    this.documents.filter(item => item._id).forEach(item => {
       observables.push(this.documentService.publish(item._id));
     });
 
@@ -100,7 +99,7 @@ export class ProjectNotificationDetailComponent implements OnInit {
     const observables = [];
 
     // Un-publish the documents
-    this.documents.forEach(item => {
+    this.documents.filter(item => item._id).forEach(item => {
       observables.push(this.documentService.unPublish(item._id));
     });
 

@@ -7,7 +7,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { DocumentService } from 'src/app/services/document.service';
-import { SearchService } from 'src/app/services/search.service';
+import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
@@ -18,6 +18,7 @@ import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort, sourceFilt
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
+import { legacyNotification } from 'src/app/models/demi/notification';
 
 @Component({
   selector: 'app-project-notification-documents',
@@ -37,7 +38,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
   private modalService = inject(NgbModal);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private searchService = inject(SearchService);
+  private notificationService = inject(NotificationProjectService);
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
   private logger = inject(LoggingService);
@@ -79,13 +80,14 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
         return;
       }
       // Load the project before fetching docs
-      this.searchService.getItem(notificationProjectId, 'ProjectNotification')
+      this.notificationService.getNative(notificationProjectId)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: (res: any) => {
-            if (res?.data) {
-              this.storageService.state.currentProject = { type: 'currentProjectNotification', data: res.data, docTotal: 0 };
-              this.currentProject.set(res.data);
+          next: row => {
+            if (row) {
+              const notification = legacyNotification(row);
+              this.storageService.state.currentProject = { type: 'currentProjectNotification', data: notification, docTotal: 0 };
+              this.currentProject.set(notification);
               this.initTable();
             } else {
               alert('Uh-oh, couldn\'t load documents');
