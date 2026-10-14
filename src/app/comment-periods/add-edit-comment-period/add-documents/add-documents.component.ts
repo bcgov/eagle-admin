@@ -12,7 +12,6 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
-import { DemiDocumentFilters } from 'src/app/models/demi/document';
 import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { ToastService } from 'src/app/services/toast.service';
 import { DatePipe } from '@angular/common';
@@ -174,7 +173,7 @@ export class AddDocumentComponent implements OnInit {
           }
         });
 
-        const selectable = this.documentTableData.data.filter(isSelectableDocument);
+        const selectable = this.documentTableData.data.filter(item => item.selectable);
         selectable.forEach((item) => {
           item.checkbox = !someSelected;
           if (item.checkbox) {
@@ -249,17 +248,13 @@ export class AddDocumentComponent implements OnInit {
   }
 
   private loadDocuments(page: number, pageSize: number, sortBy: string, keywords: string, onLoaded?: () => void) {
-    const notification = this.storageService.state.currentProject?.type === 'currentProjectNotification';
-    // DEMI PR #592 adds this filter; the shared filter type does not list it yet.
-    const documentSource = notification ? 'PROJECT-NOTIFICATION' : 'PROJECT';
     this.documentsProjectId().pipe(
       switchMap(project => {
         if (!project) {
           this.toast.error('Could not load documents for this project.');
           return of({ rows: [], total: 0 });
         }
-        const filters = { project, documentSource } as DemiDocumentFilters;
-        return this.api.listNative({ page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined, filters });
+        return this.api.listNative({ page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined, filters: { project } });
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(res => {
@@ -289,10 +284,12 @@ export class AddDocumentComponent implements OnInit {
 
   setDocumentRowData() {
     const documentList = [];
+    const documentSource = this.currentProject?.type === 'currentProjectNotification' ? 'PROJECT-NOTIFICATION' : 'PROJECT';
     if (this.documents && this.documents.length > 0) {
       this.documents.forEach(document => {
         documentList.push(
           {
+            selectable: isSelectableDocument(document, documentSource),
             displayName: document.displayName,
             datePosted: document.datePosted,
             type: document.type,

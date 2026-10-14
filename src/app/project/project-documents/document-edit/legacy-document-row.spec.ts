@@ -1,4 +1,18 @@
-import { legacyDocumentRow, nativeDocumentSort } from './legacy-document-row';
+import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort } from './legacy-document-row';
+
+describe('isSelectableDocument', () => {
+  it('accepts a row of the screen\'s source with an Eagle id', () => {
+    expect(isSelectableDocument({ _id: 'e1', documentSource: 'PROJECT' }, 'PROJECT')).toBeTrue();
+  });
+
+  it('refuses a comment attachment on a project screen', () => {
+    expect(isSelectableDocument({ _id: 'e1', documentSource: 'COMMENT' }, 'PROJECT')).toBeFalse();
+  });
+
+  it('refuses a row with no Eagle id', () => {
+    expect(isSelectableDocument({ _id: null, documentSource: 'PROJECT' }, 'PROJECT')).toBeFalse();
+  });
+});
 
 describe('legacyDocumentRow', () => {
   it('returns a legacy row unchanged', () => {

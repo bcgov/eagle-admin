@@ -61,26 +61,43 @@ describe('AddDocumentComponent', () => {
 
     const req = http.expectOne(r => r.url === '/demi/api/documents');
     expect(req.request.params.get('project')).toBe('demi-project-1');
-    expect(req.request.params.getAll('documentSource')).toEqual(['PROJECT']);
+    // DEMI main answers 400 to a `documentSource` filter.
+    expect(req.request.params.has('documentSource')).toBeFalse();
     expect(req.request.params.get('page')).toBe('1');
     expect(req.request.params.get('pageSize')).toBe('10');
     expect(req.request.params.get('count')).toBe('true');
     req.flush([]);
   });
 
-  it('keeps DEMI-only rows on the page but lets select-all link only rows with an Eagle id', () => {
+  it('keeps every row on the page but lets select-all link only project documents with an Eagle id', () => {
     setProject({ _id: 'eagle-project-1', demiId: 'demi-project-1', name: 'Project' });
     const fixture = render();
     http.expectOne(r => r.url === '/demi/api/documents').flush([
-      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'demi-project-1', displayName: 'Report' },
-      { id: 'uuid-2', eagleId: null, projectId: 'demi-project-1', displayName: 'DEMI only' }
-    ], { headers: { 'x-total-count': '2' } });
+      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'demi-project-1', documentSource: 'PROJECT', displayName: 'Report' },
+      { id: 'uuid-2', eagleId: null, projectId: 'demi-project-1', documentSource: 'PROJECT', displayName: 'DEMI only' },
+      { id: 'uuid-3', eagleId: 'eagle-doc-3', projectId: 'demi-project-1', documentSource: 'COMMENT', displayName: 'Attachment' }
+    ], { headers: { 'x-total-count': '3' } });
 
     fixture.componentInstance.selectAction('selectAll');
 
-    expect(fixture.componentInstance.documentTableData.data.length).toBe(2);
+    expect(fixture.componentInstance.documentTableData.data.length).toBe(3);
     expect(storage.state.selectedDocumentsForCP.data.map(d => d._id)).toEqual(['eagle-doc-1']);
     expect(fixture.componentInstance.selectedCount).toBe(1);
+  });
+
+  it('disables the checkbox of a comment attachment', async () => {
+    setProject({ _id: 'eagle-project-1', demiId: 'demi-project-1', name: 'Project' });
+    const fixture = render();
+    http.expectOne(r => r.url === '/demi/api/documents').flush([
+      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'demi-project-1', documentSource: 'PROJECT', displayName: 'Report' },
+      { id: 'uuid-3', eagleId: 'eagle-doc-3', projectId: 'demi-project-1', documentSource: 'COMMENT', displayName: 'Attachment' }
+    ], { headers: { 'x-total-count': '2' } });
+    fixture.detectChanges();
+    // NgModel applies `disabled` after a microtask.
+    await fixture.whenStable();
+
+    const boxes: HTMLInputElement[] = Array.from(fixture.nativeElement.querySelectorAll('input[type="checkbox"][aria-label="Checkbox for row item"]'));
+    expect(boxes.map(b => b.disabled)).toEqual([false, true]);
   });
 
   it('resolves the DEMI project id when the stored project has none', () => {
@@ -103,13 +120,18 @@ describe('AddDocumentComponent', () => {
     http.expectNone(r => r.url === '/demi/api/documents');
   });
 
-  it('lists a notification\'s documents by the notification id', () => {
+  it('lists a notification\'s documents by the notification id and links only notification documents', () => {
     setProject({ _id: 'notification-1', name: 'Notice' }, 'currentProjectNotification');
-    render();
+    const fixture = render();
 
     const req = http.expectOne(r => r.url === '/demi/api/documents');
     expect(req.request.params.get('project')).toBe('notification-1');
-    expect(req.request.params.getAll('documentSource')).toEqual(['PROJECT-NOTIFICATION']);
-    req.flush([]);
+    req.flush([
+      { id: 'n1', eagleId: 'n1', projectId: 'notification-1', documentSource: 'PROJECT-NOTIFICATION', displayName: 'Notice letter' },
+      { id: 'c1', eagleId: 'c1', projectId: 'notification-1', documentSource: 'COMMENT', displayName: 'Attachment' }
+    ]);
+    fixture.componentInstance.selectAction('selectAll');
+
+    expect(storage.state.selectedDocumentsForCP.data.map(d => d._id)).toEqual(['n1']);
   });
 });

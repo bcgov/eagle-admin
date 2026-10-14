@@ -45,13 +45,29 @@ describe('ProjectNotificationDocumentsComponent', () => {
     expect(req.request.params.get('project')).toBe('notification-1');
     expect(req.request.params.get('sort')).toBe('-datePosted');
     expect(req.request.params.get('count')).toBe('true');
-    expect(req.request.params.getAll('documentSource')).toEqual(['PROJECT-NOTIFICATION']);
+    // DEMI main answers 400 to a `documentSource` filter.
+    expect(req.request.params.has('documentSource')).toBeFalse();
     req.flush([
-      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'notification-1', displayName: 'Notice letter', isPublished: true }
+      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'notification-1', documentSource: 'PROJECT-NOTIFICATION', displayName: 'Notice letter', isPublished: true }
     ], { headers: { 'x-total-count': '1' } });
 
     const rows = fixture.componentInstance.documentTableData().data;
     expect(rows.map(d => d._id)).toEqual(['eagle-doc-1']);
     expect(rows[0].isPublished).toBeTrue();
+  });
+
+  it('lets select-all pick only notification documents, so comment attachments cannot be published', () => {
+    const fixture = TestBed.createComponent(ProjectNotificationDocumentsComponent);
+    fixture.detectChanges();
+    http.expectOne(r => r.url === '/demi/api/documents').flush([
+      { id: 'n1', eagleId: 'n1', projectId: 'notification-1', documentSource: 'PROJECT-NOTIFICATION', displayName: 'Notice letter' },
+      { id: 'c1', eagleId: 'c1', projectId: 'notification-1', documentSource: 'COMMENT', displayName: 'Attachment' }
+    ]);
+
+    fixture.componentInstance.selectAction('selectAll');
+
+    const rows = fixture.componentInstance.documentTableData().data;
+    expect(rows.filter(d => d.checkbox).map(d => d._id)).toEqual(['n1']);
+    expect(fixture.componentInstance.selectedCount().total).toBe(1);
   });
 });

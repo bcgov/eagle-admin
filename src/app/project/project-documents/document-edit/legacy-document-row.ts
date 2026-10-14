@@ -20,9 +20,12 @@ export function legacyDocumentRow(row: any): any {
   };
 }
 
-/** A mapped row can be linked, published or deleted only when it has an Eagle id: those writes go to eagle-api. */
-export function isSelectableDocument(row: { _id?: string | null }): boolean {
-  return !!row._id;
+/**
+ * Whether a mapped row may be linked, published or deleted on a screen for `documentSource` documents.
+ * Those writes go to eagle-api by Eagle id, and `GET /documents` also returns other sources, such as comment attachments.
+ */
+export function isSelectableDocument(row: { _id?: string | null; documentSource?: string }, documentSource: string): boolean {
+  return !!row._id && row.documentSource === documentSource;
 }
 
 /** Table sort (`-datePosted`, `+displayName`) as a native documents `sort`; keys DEMI cannot sort by are dropped. */
