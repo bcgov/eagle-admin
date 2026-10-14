@@ -80,10 +80,6 @@ export class ApiService {
     return this.http.delete<T>(`${this.pathAPI}/${path}`, options || {}) as Observable<T>;
   }
 
-  head(path: string, options?: any): Observable<any> {
-    return this.http.head(`${this.pathAPI}/${path}`, options || {});
-  }
-
   login(username: string, password: string): Observable<boolean> {
     return this.http.post<LocalLoginResponse>(`${this.pathAPI}/login/token`, { username, password })
       .pipe(

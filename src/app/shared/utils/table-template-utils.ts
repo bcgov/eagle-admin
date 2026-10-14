@@ -28,23 +28,20 @@ export class TableTemplateUtils {
   private router = inject(Router);
 
 
+  /** Writes table state to the URL as matrix params. Values are escaped; a filter's commas stay as list separators. */
   public updateUrl(sortString, currentPage, pageSize, filter = null, keywords = '') {
     let currentUrl = this.router.url;
     currentUrl = (this.platformLocation as any).getBaseHrefFromDOM() + currentUrl.slice(1);
     currentUrl = currentUrl.split(';')[0];
     currentUrl += `;currentPage=${currentPage};pageSize=${pageSize}`;
-    if (keywords !== '') { currentUrl += `;keywords=${keywords}`; }
-    if (sortString !== '' && sortString !== null) { currentUrl += `;sortBy=${sortString}`; }
+    if (keywords) { currentUrl += `;keywords=${encodeURIComponent(keywords)}`; }
+    if (sortString) { currentUrl += `;sortBy=${encodeURIComponent(sortString)}`; }
     if (filter !== null && Object.keys(filter).length > 0) {
       Object.keys(filter).forEach(key => {
         if (filter[key] === true || filter[key] === false) {
           currentUrl += `;${key}=${filter[key]}`;
         } else {
-          currentUrl += `;${key}=`;
-          filter[key].split(',').forEach(item => {
-            currentUrl += `${item},`;
-          });
-          currentUrl = currentUrl.slice(0, -1);
+          currentUrl += `;${key}=${filter[key].split(',').map(encodeURIComponent).join(',')}`;
         }
       });
     }

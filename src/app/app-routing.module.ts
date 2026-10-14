@@ -36,7 +36,6 @@ import { GroupContactSelectComponent } from './project/project-groups/group-cont
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
-import { MetricsComponent } from './metrics/metrics.component';
 import { MilestonesComponent } from './project/milestones/milestones.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
 import { OrganizationsComponent } from './organizations/organizations.component';
@@ -114,15 +113,10 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
   },
 
-  // Map & Metrics & Search
+  // Map & Search
   {
     path: 'map',
     component: MapComponent,
-    canActivate: [AuthGuard]
-  },
-  {
-    path: 'metrics',
-    component: MetricsComponent,
     canActivate: [AuthGuard]
   },
   {

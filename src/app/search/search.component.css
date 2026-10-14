@@ -124,14 +124,6 @@ form label {
   margin-left: 172px;
 }
 
-.advanced-search .pcp-filters {
-  margin-left: 335px;
-}
-
-.advanced-search .pcp-filters .filter-border {
-  min-width: 230px;
-}
-
 .advanced-search .more-filters {
   margin-left: 8px;
 }
@@ -183,10 +175,6 @@ form label {
 
 .advanced-search .decision-btn {
   width: 155px;
-}
-
-.advanced-search .pcp-btn {
-  width: 230px;
 }
 
 .advanced-search .milestone-btn {

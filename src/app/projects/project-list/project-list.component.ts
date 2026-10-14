@@ -10,7 +10,7 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { DateTime } from 'luxon';
 import { DEMI_MAX_PAGE_SIZE, DemiList } from 'src/app/models/demi/demi-list';
 import { Proponent } from 'src/app/models/demi/organization';
-import { DemiProject } from 'src/app/models/demi/project';
+import { DemiProject, PROJECT_FILTERS, ProjectFilter } from 'src/app/models/demi/project';
 import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
 import { SearchTerms } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
@@ -221,22 +221,34 @@ export class ProjectListComponent implements OnInit {
     this.router.navigate(['/projects', 'add', 'form-2018']);
   }
 
-  /** Reads `name` from the URL; sends each picked record's `apiKey` to DEMI as `apiName`. */
-  paramsToCollectionFilters(params, name: string, collection: any[], identifyBy: string, apiName: string, apiKey: string) {
+  /** Reads `name` from the URL; sends each picked record's `apiKey` to DEMI as `api`. */
+  paramsToCollectionFilters(params, name: string, collection: any[], { by, api, apiKey }: ProjectFilter) {
     this.filterForUI[name] = [];
     delete this.filterForURL[name];
-    delete this.filterForAPI[apiName];
+    delete this.filterForAPI[api];
 
     if (params[name] && collection) {
       const records = params[name].split(',')
-        .map(value => collection.find(item => item[identifyBy] === value))
+        .map(value => collection.find(item => item[by] === value))
         .filter(Boolean);
       if (records.length) {
         this.filterForUI[name] = records;
-        this.filterForURL[name] = records.map(r => r[identifyBy]).join(',');
-        this.filterForAPI[apiName] = records.map(r => r[apiKey]);
+        this.filterForURL[name] = records.map(r => r[by]).join(',');
+        this.filterForAPI[api] = records.map(r => r[apiKey]);
       }
     }
+  }
+
+  /** Picker options for each of {@link PROJECT_FILTERS}. */
+  private filterItems(): Record<keyof typeof PROJECT_FILTERS, any[]> {
+    return {
+      region: this.regions,
+      CEAAInvolvement: this.ceaaInvolvements,
+      proponent: this.proponents,
+      eacDecision: this.eacDecisions,
+      type: this.projectTypes,
+      projectPhase: this.projectPhases
+    };
   }
 
   paramsToDateFilters(params, name) {
@@ -258,13 +270,10 @@ export class ProjectListComponent implements OnInit {
   }
 
   setFiltersFromParams(params) {
-    // DEMI region List rows have no code, and DEMI filters proponents by name.
-    this.paramsToCollectionFilters(params, 'region', this.regions, 'name', 'region', 'name');
-    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'id', 'CEAAInvolvement', 'id');
-    this.paramsToCollectionFilters(params, 'proponent', this.proponents, 'id', 'proponentName', 'name');
-    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'id', 'eacDecision', 'id');
-    this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name', 'projectType', 'name');
-    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id', 'currentPhaseName', 'id');
+    const items = this.filterItems();
+    for (const [name, filter] of Object.entries(PROJECT_FILTERS)) {
+      this.paramsToCollectionFilters(params, name, items[name], filter);
+    }
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -295,12 +304,9 @@ export class ProjectListComponent implements OnInit {
   }
 
   setParamsFromFilters(params) {
-    this.collectionFilterToParams(params, 'region', 'name');
-    this.collectionFilterToParams(params, 'CEAAInvolvement', 'id');
-    this.collectionFilterToParams(params, 'proponent', 'id');
-    this.collectionFilterToParams(params, 'eacDecision', 'id');
-    this.collectionFilterToParams(params, 'type', 'name');
-    this.collectionFilterToParams(params, 'projectPhase', 'id');
+    for (const [name, filter] of Object.entries(PROJECT_FILTERS)) {
+      this.collectionFilterToParams(params, name, filter.by);
+    }
 
     this.dateFilterToParams(params, 'decisionDateStart');
     this.dateFilterToParams(params, 'decisionDateEnd');

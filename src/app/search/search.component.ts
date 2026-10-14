@@ -6,48 +6,88 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { of } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 
-import { switchMap, finalize, timeout } from 'rxjs/operators';
+import { catchError, finalize, map, switchMap, timeout } from 'rxjs/operators';
 
 import { DateTime } from 'luxon';
-import { Org } from '../models/org';
+import { DEMI_MAX_PAGE_SIZE, DemiList } from '../models/demi/demi-list';
+import { DemiDocument } from '../models/demi/document';
+import { Proponent } from '../models/demi/organization';
+import { DemiProject, PROJECT_FILTERS } from '../models/demi/project';
+import { toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
 import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
 import { ConfigService } from '../services/config.service';
+import { DemiApiService } from '../services/demi-api.service';
 import { OrgService } from '../services/org.service';
-import { SearchService } from '../services/search.service';
 import { LoadingStateService } from '../services/loading-state.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
+import { withLoading } from '../shared/utils/rxjs-operators';
 import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { filterCompareWith } from '../shared/utils/utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 import { LoggingService } from '../services/logging.service';
 
+type Dataset = 'Project' | 'Document';
+
+/** DEMI list each tab reads, and the fields DEMI lets it sort on. */
+const KINDS: Record<Dataset, { kind: string; sortKeys: string[] }> = {
+  Project: { kind: 'projects', sortKeys: ['name'] },
+  Document: { kind: 'documents', sortKeys: ['datePosted', 'displayName'] }
+};
+
+const PAGE_SIZE = 25;
+/** DEMI refuses a signed-in read where page * pageSize goes past this. */
+const MAX_PAGE_DEPTH = 20000;
+
+const DATE_FILTERS: Record<Dataset, string[]> = {
+  Project: ['decisionDateStart', 'decisionDateEnd'],
+  Document: ['datePostedStart', 'datePostedEnd']
+};
+
+/** A multi-select: URL param `url` holds each picked item's `by`; DEMI filter `api` gets each item's `apiKey`. */
+interface PickFilter {
+  ui: string;
+  url: string;
+  items: any[];
+  by: string;
+  api: string;
+  apiKey: string;
+}
+
+/** DEMI sort for a table `sortBy` (`+field` / `-field`); undefined when DEMI cannot sort on that field. */
+export function demiSort(sortBy: string | null | undefined, sortKeys: string[]): string | undefined {
+  const key = sortBy?.split(',')[0] ?? '';
+  const field = key.replace(/^[-+]/, '');
+  if (!sortKeys.includes(field)) {
+    return undefined;
+  }
+  return key.startsWith('-') ? `-${field}` : field;
+}
+
 // TODO: Project and Document filters should be made into components
 class SearchFilterObject {
   constructor(
     // Project
-    public projectType: object = {},
-    public eacDecision: object = {},
+    public projectType: Array<any> = [],
+    public eacDecision: Array<any> = [],
     public decisionDateStart: object = {},
     public decisionDateEnd: object = {},
-    public pcp: object = {},
-    public proponent: Array<Org> = [],
-    public region: Array<string> = [],
-    public CEAAInvolvement: Array<string> = [],
-    public vc: Array<object> = [],
+    public proponent: Array<Proponent> = [],
+    public region: Array<any> = [],
+    public CEAAInvolvement: Array<any> = [],
     // Document
-    public milestone: Array<string> = [],
+    public milestone: Array<any> = [],
     public datePostedStart: object = {},
     public datePostedEnd: object = {},
-    public docType: Array<string> = [],
-    public documentAuthorType: Array<string> = [],
+    public docType: Array<any> = [],
+    public documentAuthorType: Array<any> = [],
     // both
-    public projectPhase: Array<string> = []
+    public projectPhase: Array<any> = []
   ) { }
 }
 
@@ -70,9 +110,9 @@ export class SearchComponent implements OnInit {
   private toastService = inject(ToastService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private orgService = inject(OrgService);
+  private demiApi = inject(DemiApiService);
   public loadingState = inject(LoadingStateService);
   public loading = this.loadingState.getOperationState('search-results');
-  searchService = inject(SearchService);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -81,11 +121,10 @@ export class SearchComponent implements OnInit {
 
   public readonly constants = Constants;
   public results: Array<any> = [];
-  public proponents: Array<Org> = [];
+  public proponents: Array<Proponent> = [];
   public regions: Array<object> = [];
   public ceaaInvolvements: Array<object> = [];
   public eacDecisions: Array<object> = [];
-  public commentPeriods: Array<object> = [];
   public projectTypes: Array<object> = [];
 
   public milestones: any[] = [];
@@ -93,8 +132,8 @@ export class SearchComponent implements OnInit {
   public docTypes: any[] = [];
   public projectPhases: any[] = [];
 
-  public filterForURL: object = {}; // Not used on this page yet
-  public filterForAPI: object = {};
+  public filterForURL: Record<string, string> = {};
+  public filterForAPI: Record<string, string | string[]> = {};
   public filterForUI: SearchFilterObject = new SearchFilterObject();
 
   public showAdvancedSearch = true;
@@ -102,7 +141,6 @@ export class SearchComponent implements OnInit {
   public showFilters: Record<string, boolean> = {
     projectType: false,
     eacDecision: false,
-    pcp: false,
     milestone: false,
     date: false,
     documentAuthorType: false,
@@ -114,7 +152,9 @@ export class SearchComponent implements OnInit {
   public numFilters: Record<string, number> = {
     projectType: 0,
     eacDecision: 0,
-    pcp: 0,
+    region: 0,
+    CEAAInvolvement: 0,
+    proponent: 0,
     milestone: 0,
     date: 0,
     documentAuthorType: 0,
@@ -122,6 +162,7 @@ export class SearchComponent implements OnInit {
     projectPhase: 0
   };
 
+  // Only fields in KINDS sortKeys are sortable.
   public projectTableData: TableObject;
   public projectTableColumns: TableColumn[] = [
     {
@@ -132,26 +173,31 @@ export class SearchComponent implements OnInit {
     {
       name: 'Proponent',
       value: 'proponent.name',
+      nosort: true,
       width: '20%'
     },
     {
       name: 'Type',
       value: 'type',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Phase',
       value: 'currentPhaseName',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Decision',
       value: 'eacDecision',
+      nosort: true,
       width: '15%'
     }
   ];
@@ -166,6 +212,7 @@ export class SearchComponent implements OnInit {
     {
       name: 'Status',
       value: 'status',
+      nosort: true,
       width: '8%'
     },
     {
@@ -176,16 +223,19 @@ export class SearchComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
+      nosort: true,
       width: '10%'
     }
   ];
@@ -202,7 +252,10 @@ export class SearchComponent implements OnInit {
 
   public count: number = 0; // for template
   public currentPage = 1;
-  public pageSize = 10;
+  public pageSize = PAGE_SIZE;
+  // One stream for searches and page reads, so switchMap drops any read a later one replaced.
+  private requests = new Subject<'search' | 'page' | 'none'>();
+  private shown: { currentPage: number; sortBy: string | null } = { currentPage: 1, sortBy: null };
 
   private togglingOpen = signal('');
 
@@ -218,10 +271,6 @@ export class SearchComponent implements OnInit {
       }
     });
   }
-
-  public pageSizeArray: number[];
-
-  // TODO: when clicking on radio buttons, url must change to reflect dataset.
 
   ngOnInit() {
     // Fetch the Lists
@@ -285,173 +334,155 @@ export class SearchComponent implements OnInit {
       }
       return (a["listOrder"] || 0) - (b["listOrder"] || 0);
     });
+    this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
 
-    // Fetch proponents and other collections
-    // TODO: Put all of these into Lists
-    this.orgService.getByCompanyType('Proponent/Certificate Holder')
+    this.requests
+      .pipe(
+        switchMap(kind => kind === 'none'
+          ? of({ kind, page: null })
+          : this.fetchPage().pipe(
+            map(page => ({ kind, page })),
+            finalize(() => {
+              this.searching = false;
+              this._changeDetectionRef.markForCheck();
+            })
+          )),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(({ kind, page }) => {
+        if (kind === 'search' && page) {
+          this.showPage(page);
+          this.ranSearch = true;
+        } else if (kind === 'page') {
+          if (page) {
+            this.showPagedResults(page);
+          } else {
+            this.restoreShownPage();
+          }
+        }
+        this._changeDetectionRef.markForCheck();
+      });
+
+    this.orgService.listOrganizations({
+      sort: 'name',
+      pageSize: DEMI_MAX_PAGE_SIZE,
+      count: true,
+      filters: { companyType: 'Proponent/Certificate Holder' }
+    })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        switchMap((res: any) => {
-          this.proponents = res || [];
-
-          this.commentPeriods = Constants.PCP_COLLECTION;
-          this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
-
-          return this.route.params;
-        }),
-        switchMap((res: any) => {
-            const params = { ...res };
-
-            this.terms.keywords = params.keywords || null;
-            this.terms.dataset = params.dataset || 'Document';
-            this.terms.sortBy = params.sortBy || null;
-
-            this.setFiltersFromParams(params);
-
-            this.updateCounts();
-
-            this.keywords = this.terms.keywords;
-            this.hadFilter = this.hasFilter();
-
-            // additional check to see if we have any filter elements applied to the
-            // query string. Previously these were ignored on a refresh
-            const filterKeys = Object.keys(this.filterForAPI);
-            const hasFilterFromQueryString = (filterKeys && filterKeys.length > 0);
-            // A sort alone is not a search; keep the landing view.
-            const searchKeys = Object.keys(this.terms.getParams()).filter(key => key !== 'sortBy');
-            if (searchKeys.length === 0
-              && !this.hasFilter()
-              && !hasFilterFromQueryString) {
-              return of(null);
-            }
-
-            this.results = [];
-
-            this.searching = true;
-            this.count = 0;
-            this.currentPage = params.currentPage ? params.currentPage : 1;
-            this.pageSize = params.pageSize ? parseInt(params.pageSize, 10) : 25;
-            this.tableParams.currentPage = this.currentPage;
-            this.tableParams.pageSize = this.pageSize;
-
-            // remove doc and project types
-            // The UI filters are remapping document and project type to the single 'Type' value
-            // this means that whenever we map back to the filters, we need to revert them
-            // from 'type', to the appropriate type. Additionally, the API will fail if we
-            // send "docType" ir "projectType" as a filter, so we need to ensure these are
-            // stripped from the filterForAPI
-            delete this.filterForAPI['docType'];
-            delete this.filterForAPI['projectType'];
-
-            // if we're searching for projects, replace projectPhase with currentPhaseName
-            // The code is called projectPhase, but the db column on projects is currentPhaseName
-            // so the rename is required to pass in the correct query
-            if (this.filterForAPI.hasOwnProperty('projectPhase') && this.terms.dataset === 'Project') {
-              this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
-              delete this.filterForAPI['projectPhase'];
-            }
-
-            return this.searchService.getSearchResults(
-              this.terms.keywords,
-              this.terms.dataset,
-              null,
-              this.currentPage,
-              this.pageSize,
-              this.terms.sortBy,
-              {},
-              true,
-              this.filterForAPI,
-              ''
-            ).pipe(
-              timeout(45000),
-              finalize(() => {
-                this.searching = false;
-                this._changeDetectionRef.markForCheck();
-              })
-            );
-          })
-        )
-        .subscribe({
-          next: (res: any) => {
-            // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
-            // the change so the UI can function as normal
-            if (this.filterForAPI.hasOwnProperty('currentPhaseName') && this.terms.dataset === 'Project') {
-              this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
-              delete this.filterForAPI['currentPhaseName'];
-            }
-
-            if (res && res[0].data.meta.length > 0) {
-              this.count = res[0].data.meta[0].searchResultsTotal;
-              this.results = res[0].data.searchResults;
-            } else {
-              this.count = 0;
-              this.results = [];
-            }
-            this.setRowData();
-            this.ranSearch = true;
-            this._changeDetectionRef.markForCheck();
-            const pageSizeTemp = [10, 25, 50, 100, this.count];
-            this.pageSizeArray = pageSizeTemp.filter(function (el: number) { return el >= 10; });
-            this.pageSizeArray.sort(function (a: number, b: number) { return a - b; });
-          },
-          error: (error) => {
-            this.logger.error('search failed', 'SearchComponent', error);
-            this.ranSearch = true;
-            this.toastService.error('Error searching projects ...');
+        switchMap(page => {
+          this.proponents = page.rows;
+          if ((page.total ?? 0) > page.rows.length) {
+            this.logger.warn(`Proponent picker shows ${page.rows.length} of ${page.total}`, 'SearchComponent');
           }
-        });
+          return this.route.params;
+        })
+      )
+      .subscribe(params => this.searchFromParams(params));
+  }
+
+  private searchFromParams(params: any) {
+    this.terms.keywords = params.keywords || null;
+    this.terms.dataset = params.dataset === 'Project' ? 'Project' : 'Document';
+    this.terms.sortBy = params.sortBy || null;
+
+    this.setFiltersFromParams(params);
+    this.updateCounts();
+
+    this.keywords = this.terms.keywords;
+    this.hadFilter = this.hasFilter();
+
+    this.results = [];
+    this.count = 0;
+    this.ranSearch = false;
+
+    // A sort alone is not a search; keep the landing view.
+    if (!this.keywords && Object.keys(this.filterForAPI).length === 0) {
+      this.requests.next('none');
+      return;
+    }
+
+    this.searching = true;
+    this.pageSize = Math.min(Math.max(1, parseInt(params.pageSize, 10) || PAGE_SIZE), DEMI_MAX_PAGE_SIZE);
+    this.currentPage = Math.min(Math.max(1, parseInt(params.currentPage, 10) || 1), this.maxRows() / this.pageSize);
+    this.requests.next('search');
+  }
+
+  /** Rows DEMI serves for the current page size: it refuses a read where page * pageSize passes MAX_PAGE_DEPTH. */
+  private maxRows(): number {
+    return Math.floor(MAX_PAGE_DEPTH / this.pageSize) * this.pageSize;
+  }
+
+  /** One page of the current tab's DEMI list, for the submitted keywords. A failed read shows an error and yields null. */
+  private fetchPage(): Observable<DemiList<DemiProject | DemiDocument> | null> {
+    const { kind, sortKeys } = KINDS[this.terms.dataset];
+    return this.demiApi.list<DemiProject | DemiDocument>(kind, {
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      count: true,
+      sort: demiSort(this.terms.sortBy, sortKeys),
+      q: this.keywords || undefined,
+      filters: this.filterForAPI
+    }).pipe(
+      withLoading(this.loadingState, 'search-results'),
+      timeout(45000),
+      catchError(error => {
+        this.logger.error('Search failed', 'SearchComponent', error);
+        this.toastService.error('Search failed. Please try again.');
+        return of(null);
+      })
+    );
+  }
+
+  private showPage(page: DemiList<DemiProject | DemiDocument>) {
+    this.count = page.total ?? 0;
+    this.results = page.rows;
+    this.shown = { currentPage: this.currentPage, sortBy: this.terms.sortBy };
+    this.setRowData();
+  }
+
+  /** After a failed page or sort read, puts the pager and sort arrow back on the rows still shown. */
+  private restoreShownPage() {
+    this.currentPage = this.shown.currentPage;
+    this.terms.sortBy = this.shown.sortBy;
+    this.setRowData();
   }
 
   setRowData() {
-    const itemList = [];
     this.tableParams.pageSize = this.pageSize;
     this.tableParams.currentPage = this.currentPage;
-    this.tableParams.totalListItems = this.count;
+    // The pager stops where DEMI does.
+    this.tableParams.totalListItems = Math.min(this.count, this.maxRows());
     this.tableParams.sortBy = this.terms.sortBy ? this.terms.sortBy : '';
 
-    if (this.results && this.results.length > 0) {
-      if (this.terms.dataset === 'Document') {
-        this.results.forEach(document => {
-          itemList.push({
-            displayName: document.displayName,
-            documentFileName: document.documentFileName,
-            datePosted: document.datePosted,
-            status: document.read.includes('public')
-              ? 'Published'
-              : 'Not Published',
-            type: document.type,
-            milestone: document.milestone,
-            legislation: document.legislation,
-            _id: document._id,
-            project: document.project,
-            sortOrder: document.sortOrder,
-          });
-        });
-
-        this.documentTableData = new TableObject(
-          SearchDocumentTableRowsComponent,
-          itemList,
-          this.tableParams
-        );
-      } else {
-        this.results.forEach(project => {
-          itemList.push({
-            _id: project._id,
-            name: project.name,
-            proponent: project.proponent,
-            type: project.type,
-            region: project.region,
-            currentPhaseName: project.currentPhaseName,
-            eacDecision: project.eacDecision
-          });
-        });
-
-        this.projectTableData = new TableObject(
-          ProjectListTableRowsComponent,
-          itemList,
-          this.tableParams
-        );
-      }
+    if (!this.results.length) {
+      return;
+    }
+    if (this.terms.dataset === 'Document') {
+      const rows = (this.results as DemiDocument[]).map(document => ({
+        id: document.id,
+        projectId: document.projectEagleId ?? document.projectId,
+        displayName: document.displayName,
+        datePosted: document.datePosted,
+        status: document.isPublished ? 'Published' : 'Not Published',
+        type: document.type,
+        milestone: document.milestone,
+        legislation: document.legislation
+      }));
+      this.documentTableData = new TableObject(SearchDocumentTableRowsComponent, rows, this.tableParams);
+    } else {
+      const rows = (this.results as DemiProject[]).map(toLegacyProject).map(project => ({
+        // Track-only rows have no Eagle id; the project route also takes the DEMI id.
+        _id: project._id ?? project.demiId,
+        name: project.name,
+        proponent: project.proponent,
+        type: project.type,
+        region: project.region,
+        currentPhaseName: project.currentPhaseName,
+        eacDecision: project.eacDecision
+      }));
+      this.projectTableData = new TableObject(ProjectListTableRowsComponent, rows, this.tableParams);
     }
   }
 
@@ -460,7 +491,7 @@ export class SearchComponent implements OnInit {
     this.getPaginatedResults(1);
   }
 
-  handleRadioChange(value) {
+  handleRadioChange(value: Dataset) {
     this.terms.dataset = value;
     // Sort keys differ between datasets.
     this.terms.sortBy = null;
@@ -471,136 +502,54 @@ export class SearchComponent implements OnInit {
     this.onSubmit();
   }
 
-  updatePageNumber(pageNumber) {
-    // Go to top of page after clicking to a different page.
-    window.scrollTo(0, 0);
-    this.currentPage = pageNumber;
-    this.onSubmit();
-  }
-
-  updatePageSize(pageSize) {
-    window.scrollTo(0, 0);
-    this.currentPage = 1;
-    this.pageSize = parseInt(pageSize, 10);
-    this.onSubmit();
-  }
-
-  paramsToCheckboxFilters(params, name, map) {
-    const paramname = name === 'projectType' ? 'type' : name;
-
-    this.filterForUI[name] = {};
-    delete this.filterForURL[paramname];
-    delete this.filterForAPI[paramname];
-
-    if (params[paramname]) {
-      this.filterForURL[paramname] = params[paramname];
-
-      const values = params[paramname].split(',');
-      const apiValues = [];
-      values.forEach(value => {
-        this.filterForUI[name][value] = true;
-        apiValues.push(map && map[value] ? map[value] : value);
-      });
-      if (apiValues.length) {
-        this.filterForAPI[paramname] = apiValues.join(',');
-      }
+  /** The current tab's multi-select filters. */
+  private pickFilters(): PickFilter[] {
+    if (this.terms.dataset === 'Project') {
+      const items: Record<keyof typeof PROJECT_FILTERS, any[]> = {
+        region: this.regions,
+        CEAAInvolvement: this.ceaaInvolvements,
+        proponent: this.proponents,
+        eacDecision: this.eacDecisions,
+        type: this.projectTypes,
+        projectPhase: this.projectPhases
+      };
+      // The type picker binds to filterForUI.projectType.
+      return Object.entries(PROJECT_FILTERS)
+        .map(([url, filter]) => ({ ...filter, url, ui: url === 'type' ? 'projectType' : url, items: items[url] }));
     }
-  }
-
-  paramsToCollectionFilters(params, name, collection, identifyBy) {
-    delete this.filterForURL[name];
-    delete this.filterForAPI[name];
-
-    // The UI filters are remapping document and project type to the single 'Type' value
-    // this means that whenever we map back to the filters, we need to revert them
-    // from 'type', to the appropriate type.
-    const optionName = this.terms.dataset === 'Document' && name === 'type' ? 'docType' :
-      this.terms.dataset === 'Project' && name === 'type' ? 'projectType' : name;
-
-    if (optionName !== name) {
-      delete this.filterForURL[optionName];
-      delete this.filterForAPI[optionName];
-    }
-
-    if (params[name] && collection) {
-      const confirmedValues = [];
-      // look up each value in collection
-      const values = params[name].split(',');
-      values.forEach(value => {
-        const record = collection.find(item => item[identifyBy] === value);
-        if (record) {
-          confirmedValues.push(value);
-        }
-      });
-      if (confirmedValues.length) {
-        if (optionName !== name) {
-          this.filterForURL[optionName] = encodeURI(confirmedValues.join(','));
-          this.filterForAPI[optionName] = confirmedValues.join(',');
-        }
-
-        this.filterForURL[name] = encodeURI(confirmedValues.join(','));
-        this.filterForAPI[name] = confirmedValues.join(',');
-      }
-    }
-  }
-
-
-  paramsToDateFilters(params, name) {
-    this.filterForUI[name] = null;
-    delete this.filterForURL[name];
-    delete this.filterForAPI[name];
-
-    if (params[name]) {
-      this.filterForURL[name] = params[name];
-      this.filterForAPI[name] = params[name];
-      // NGB Date
-      const date = DateTime.fromISO(params[name]).toJSDate();
-      this.filterForUI[name] = { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
-    }
+    return [
+      { ui: 'milestone', url: 'milestone', items: this.milestones, by: 'id', api: 'milestoneId', apiKey: 'id' },
+      { ui: 'documentAuthorType', url: 'documentAuthorType', items: this.authors, by: 'id', api: 'documentAuthorTypeId', apiKey: 'id' },
+      { ui: 'docType', url: 'type', items: this.docTypes, by: 'id', api: 'typeId', apiKey: 'id' },
+      { ui: 'projectPhase', url: 'projectPhase', items: this.projectPhases, by: 'id', api: 'projectPhaseId', apiKey: 'id' }
+    ];
   }
 
   setFiltersFromParams(params) {
-    if (this.terms.dataset === 'Project') {
-      this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'id');
-      this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
-      this.paramsToCollectionFilters(params, 'vc', null, '_id');
-      this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'id');
-      this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
-      this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
-      this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
-      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
+    // Start clean: the other tab's picks must not count as filters here.
+    this.filterForUI = new SearchFilterObject();
+    this.filterForURL = {};
+    this.filterForAPI = {};
 
-      this.paramsToDateFilters(params, 'decisionDateStart');
-      this.paramsToDateFilters(params, 'decisionDateEnd');
-    } else if (this.terms.dataset === 'Document') {
-      this.paramsToCollectionFilters(params, 'milestone', this.milestones, 'id');
-      this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, 'id');
-      this.paramsToCollectionFilters(params, 'docType', this.docTypes, 'id');
-      this.paramsToCollectionFilters(params, 'type', this.docTypes, 'id');
-      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
-
-      this.paramsToDateFilters(params, 'datePostedStart');
-      this.paramsToDateFilters(params, 'datePostedEnd');
-    }
-  }
-
-  checkboxFilterToParams(params, name) {
-    const keys = [];
-    Object.keys(this.filterForUI[name]).forEach(key => {
-      if (this.filterForUI[name][key]) {
-        keys.push(key);
+    for (const f of this.pickFilters()) {
+      const picked = (params[f.url] ? params[f.url].split(',') : [])
+        .map(value => f.items.find(item => item[f.by] === value))
+        .filter(Boolean);
+      this.filterForUI[f.ui] = picked;
+      if (picked.length) {
+        this.filterForURL[f.url] = picked.map(item => item[f.by]).join(',');
+        this.filterForAPI[f.api] = picked.map(item => item[f.apiKey]);
       }
-    });
-    if (keys.length) {
-      params[name === 'projectType' ? 'type' : name] = keys.join(',');
     }
-  }
 
-  collectionFilterToParams(params, name, identifyBy) {
-    if (this.filterForUI[name].length) {
-      const values = this.filterForUI[name].map(record => { return record[identifyBy]; });
-      params[(name === 'docType' || name === 'projectType') ? 'type' : name] = values.join(',');
+    for (const name of DATE_FILTERS[this.terms.dataset]) {
+      this.filterForUI[name] = null;
+      const date = params[name] ? DateTime.fromISO(params[name]) : null;
+      if (date?.isValid) {
+        this.filterForURL[name] = params[name];
+        this.filterForAPI[name] = params[name];
+        this.filterForUI[name] = { year: date.year, month: date.month, day: date.day };
+      }
     }
   }
 
@@ -608,34 +557,17 @@ export class SearchComponent implements OnInit {
     return date && date.year && date.month && date.day;
   }
 
-  dateFilterToParams(params, name) {
-    if (this.isNGBDate(this.filterForUI[name])) {
-      const date = new Date(this.filterForUI[name].year, this.filterForUI[name].month - 1, this.filterForUI[name].day);
-      params[name] = DateTime.fromJSDate(date).toISODate();
-    }
-  }
-
   setParamsFromFilters(params) {
-    if (this.terms.dataset === 'Project') {
-      this.collectionFilterToParams(params, 'region', 'code');
-      this.collectionFilterToParams(params, 'CEAAInvolvement', 'id');
-      this.collectionFilterToParams(params, 'eacDecision', 'id');
-      this.collectionFilterToParams(params, 'pcp', 'code');
-      this.collectionFilterToParams(params, 'proponent', '_id');
-      this.collectionFilterToParams(params, 'vc', '_id');
-      this.collectionFilterToParams(params, 'projectType', 'name');
-      this.collectionFilterToParams(params, 'projectPhase', 'id');
-
-      this.dateFilterToParams(params, 'decisionDateStart');
-      this.dateFilterToParams(params, 'decisionDateEnd');
-    } else if (this.terms.dataset === 'Document') {
-      this.collectionFilterToParams(params, 'milestone', 'id');
-      this.collectionFilterToParams(params, 'documentAuthorType', 'id');
-      this.collectionFilterToParams(params, 'docType', 'id');
-      this.collectionFilterToParams(params, 'projectPhase', 'id');
-
-      this.dateFilterToParams(params, 'datePostedStart');
-      this.dateFilterToParams(params, 'datePostedEnd');
+    for (const f of this.pickFilters()) {
+      if (this.filterForUI[f.ui]?.length) {
+        params[f.url] = this.filterForUI[f.ui].map(item => item[f.by]).join(',');
+      }
+    }
+    for (const name of DATE_FILTERS[this.terms.dataset]) {
+      const ui = this.filterForUI[name];
+      if (this.isNGBDate(ui)) {
+        params[name] = DateTime.fromObject({ year: ui.year, month: ui.month, day: ui.day }).toISODate();
+      }
     }
   }
 
@@ -687,7 +619,7 @@ export class SearchComponent implements OnInit {
   }
 
   updateCount(name) {
-    const getCount = (n) => { return Object.keys(this.filterForUI[n]).filter(k => this.filterForUI[n][k]).length; };
+    const getCount = (n) => { return Object.keys(this.filterForUI[n] ?? {}).filter(k => this.filterForUI[n][k]).length; };
 
     let num = 0;
     if (name === 'date') {
@@ -707,7 +639,9 @@ export class SearchComponent implements OnInit {
     // Projects
     this.updateCount('projectType');
     this.updateCount('eacDecision');
-    this.updateCount('pcp');
+    this.updateCount('region');
+    this.updateCount('CEAAInvolvement');
+    this.updateCount('proponent');
 
     // Documents
     this.updateCount('milestone');
@@ -728,84 +662,36 @@ export class SearchComponent implements OnInit {
     );
     this.pageSize = this.tableParams.pageSize;
     this.currentPage = this.tableParams.currentPage;
-
-    // if we're searching for projects, replace projectPhase with currentPhaseName
-    // The code is called projectPhase, but the db column on projects is currentPhaseName
-    // so the rename is required to pass in the correct query
-    if (this.filterForAPI.hasOwnProperty('projectPhase')) {
-      this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
-      delete this.filterForAPI['projectPhase'];
-    }
-
-    this.searchService
-      .getSearchResults(
-        this.terms.keywords,
-        this.terms.dataset,
-        null,
-        pageNumber,
-        this.tableParams.pageSize,
-        this.tableParams.sortBy,
-        {},
-        true,
-        this.filterForAPI,
-        ''
-      )
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-          next: (res: any) => {
-            // if we renamed the projectPhase to currentPhaseName when querying for projects, revert
-            // the change so the UI can function as normal
-            if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
-              this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
-              delete this.filterForAPI['currentPhaseName'];
-            }
-
-            if (res[0].data) {
-              this.count = res[0].data.meta[0].searchResultsTotal;
-              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-              this.results = res[0].data.searchResults;
-              this.tableTemplateUtils.updateUrl(
-                this.tableParams.sortBy,
-                this.tableParams.currentPage,
-                this.tableParams.pageSize,
-                this.filterForURL,
-                this.terms.keywords
-              );
-              this.setRowData();
-              this._changeDetectionRef.markForCheck();
-            } else {
-              alert('Uh-oh, couldn\'t load topics');
-              // project not found --> navigate back to search
-              this.router.navigate(['/']);
-            }
-          }
-          // No need for error or complete handler here
-        });
+    this.requests.next('page');
   }
 
-  // reload page with current search terms
+  private showPagedResults(page: DemiList<DemiProject | DemiDocument>) {
+    this.tableTemplateUtils.updateUrl(
+      this.tableParams.sortBy,
+      this.tableParams.currentPage,
+      this.tableParams.pageSize,
+      { dataset: this.terms.dataset, ...this.filterForURL },
+      this.keywords ?? ''
+    );
+    this.showPage(page);
+    this._changeDetectionRef.markForCheck();
+  }
+
+  // Starts a new search from the form or the tab buttons.
   public onSubmit() {
     // NOTE: Angular Router doesn't reload page on same URL
     // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
     // WORKAROUND: add timestamp to force URL to be different than last time
+    this.currentPage = 1;
     const params = this.terms.getParams();
-    params['ms'] = new Date().getMilliseconds();
+    params['ms'] = Date.now();
     params['dataset'] = this.terms.dataset;
-    params['currentPage'] = this.currentPage ? this.currentPage : 1;
-    params['pageSize'] = this.pageSize ? this.pageSize : 10;
+    params['currentPage'] = this.currentPage;
+    params['pageSize'] = this.pageSize;
 
     this.setParamsFromFilters(params);
 
     this.router.navigate(['search', params]);
-  }
-
-  // Compares selected options when a dropdown is grouped by legislation.
-  compareDropdownOptions(optionA: any, optionB: any) {
-    if ((optionA.name === optionB.name) && (optionA.legislation === optionB.legislation)) {
-      return true;
-    }
-
-    return false;
   }
 
   clearSelectedItem(filter: string, item: any) {

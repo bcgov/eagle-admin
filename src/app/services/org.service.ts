@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 import { Org } from '../models/org';
 import { Organization } from '../models/demi/organization';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
-import { map, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { LoadingStateService } from './loading-state.service';
 import { ToastService } from './toast.service';
 import { LoggingService } from './logging.service';
@@ -49,23 +49,6 @@ export class OrgService {
       catchError(error => {
         this.logger.error('Failed to add org', 'OrgService', error);
         this.toast.error('Failed to add organization.');
-        return this.api.handleError(error);
-      })
-    );
-  }
-
-  getByCompanyType(type: string): Observable<Org[]> {
-    const qs = `organization?companyType=${type}&sortBy=+name&fields=${this.api.buildValues(['name'])}`;
-    return this.api.get<Org[]>(qs).pipe(
-      withLoading(this.loadingState, `orgs-by-type-${type}`),
-      map((res: any) => {
-        if (res) {
-          return res.map((org: any) => new Org(org));
-        }
-      }),
-      catchError(error => {
-        this.logger.error('Failed to load organizations', 'OrgService', error);
-        this.toast.error('Failed to load organizations.');
         return this.api.handleError(error);
       })
     );
