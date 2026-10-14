@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { DocumentDetailComponent } from './detail.component';
 import { DemiDocument } from 'src/app/models/demi/document';
@@ -32,17 +32,19 @@ const nativeDoc: DemiDocument = {
 describe('DocumentDetailComponent', () => {
   let fixture: ComponentFixture<DocumentDetailComponent>;
   let documentService: jasmine.SpyObj<DocumentService>;
+  let storage: any;
 
   function render(doc: DemiDocument) {
     documentService = jasmine.createSpyObj('DocumentService', ['publish', 'unPublish', 'downloadNative']);
     documentService.publish.and.returnValue(of({} as any));
+    storage = { currentProjectData: { _id: 'p1', demiId: '7', name: 'Ashcroft' }, state: {} };
     TestBed.configureTestingModule({
       imports: [DocumentDetailComponent],
       providers: [
         provideRouter([]),
         { provide: DocumentService, useValue: documentService },
         { provide: ConfigService, useValue: { getDemiApiPath: () => '/demi/api' } },
-        { provide: StorageService, useValue: { currentProjectData: { _id: 'p1', demiId: '7', name: 'Ashcroft' }, state: {} } },
+        { provide: StorageService, useValue: storage },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error']) }
       ]
@@ -112,5 +114,16 @@ describe('DocumentDetailComponent', () => {
     const menu = await openActions();
 
     expect(menuItem(menu, 'Publish')).toBeUndefined();
+  });
+
+  // The edit screen maps native rows itself (legacyDocumentRow), so the row goes over unchanged.
+  it('hands the native row to the edit screen under the Eagle project id', () => {
+    render(nativeDoc);
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+
+    fixture.componentInstance.onEdit();
+
+    expect(storage.state.selectedDocs).toEqual([nativeDoc]);
+    expect(navigate).toHaveBeenCalledOnceWith(['p', 'p1', 'project-documents', 'edit']);
   });
 });
