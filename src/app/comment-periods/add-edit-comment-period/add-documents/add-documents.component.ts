@@ -1,16 +1,19 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { PlatformLocation } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AddDocumentTableRowsComponent } from './add-document-table-rows/add-document-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { DocumentService } from 'src/app/services/document.service';
-import { SearchService } from 'src/app/services/search.service';
+import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
+import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
+import { ToastService } from 'src/app/services/toast.service';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -36,10 +39,11 @@ export class AddDocumentComponent implements OnInit {
   private location = inject(PlatformLocation);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private searchService = inject(SearchService);
+  private projectService = inject(ProjectService);
   storageService = inject(StorageService);
   tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
+  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   public terms = new SearchTerms();
@@ -69,12 +73,14 @@ export class AddDocumentComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: '15%'
+      width: '15%',
+      nosort: true
     }
   ];
 
@@ -129,40 +135,13 @@ export class AddDocumentComponent implements OnInit {
 
       this.originalSelectedDocs = Object.assign([], this.storageService.state.selectedDocumentsForCP.data);
 
-      const currentProject = this.storageService.state.currentProject;
-      const projectId = currentProject ? currentProject.data._id : this.route.parent.parent.snapshot.params.projId;
       const queryParams = this.route.snapshot.queryParams;
-      const pageNum = Number(queryParams['pageNum'] || 1);
-      const pageSize = Number(queryParams['pageSize'] || 10);
-      const sortBy = queryParams['sortBy'] || null;
-      const keywords = this.route.snapshot.params.keywords;
-      let queryModifier: any = {};
-      if (currentProject?.type === 'currentProjectNotification') {
-        queryModifier = { documentSource: 'PROJECT-NOTIFICATION' };
-      } else if (currentProject?.type === 'currentProject') {
-        queryModifier = { documentSource: 'PROJECT' };
-      }
-      this.searchService.getSearchResults(
-          keywords, 'Document',
-          [{ 'name': 'project', 'value': projectId }],
-          pageNum, pageSize, sortBy, queryModifier, false, {}, ''
-        ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
-          if (res) {
-            if (res[0].data.meta && res[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-              this.documents = res[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.documents = [];
-            }
-            this.setDocumentRowData();
-            this.loading = false;
-            this._changeDetectionRef.markForCheck();
-          } else {
-            alert('Uh-oh, couldn\'t load valued components');
-            this.router.navigate(['/search']);
-          }
-        });
+      this.loadDocuments(
+        Number(queryParams['pageNum'] || 1),
+        Number(queryParams['pageSize'] || 10),
+        queryParams['sortBy'] || null,
+        this.route.snapshot.params.keywords
+      );
     }
   }
 
@@ -194,7 +173,8 @@ export class AddDocumentComponent implements OnInit {
           }
         });
 
-        this.documentTableData.data.map((item) => {
+        const selectable = this.documentTableData.data.filter(item => item.selectable);
+        selectable.forEach((item) => {
           item.checkbox = !someSelected;
           if (item.checkbox) {
             this.storageService.state.selectedDocumentsForCP.data.push(item);
@@ -203,7 +183,7 @@ export class AddDocumentComponent implements OnInit {
           }
         });
 
-        this.selectedCount = someSelected ? 0 : this.documentTableData.data.length;
+        this.selectedCount = someSelected ? 0 : selectable.length;
         this._changeDetectionRef.markForCheck();
         break;
       case 'download':
@@ -267,12 +247,55 @@ export class AddDocumentComponent implements OnInit {
     }
   }
 
+  private get documentSource(): string {
+    return this.storageService.state.currentProject?.type === 'currentProjectNotification' ? 'PROJECT-NOTIFICATION' : 'PROJECT';
+  }
+
+  private loadDocuments(page: number, pageSize: number, sortBy: string, keywords: string, onLoaded?: () => void) {
+    this.documentsProjectId().pipe(
+      switchMap(project => {
+        if (!project) {
+          this.toast.error('Could not load documents for this project.');
+          return of({ rows: [], total: 0 });
+        }
+        return this.api.listNative({
+          page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined,
+          filters: sourceFilters(project, this.documentSource)
+        });
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(res => {
+      this.tableParams.totalListItems = res.total ?? 0;
+      this.documents = res.rows.map(legacyDocumentRow);
+      onLoaded?.();
+      this.setDocumentRowData();
+      this.loading = false;
+      this._changeDetectionRef.markForCheck();
+    });
+  }
+
+  /** Documents store the DEMI project id, or the notification id for a notification's documents. */
+  private documentsProjectId(): Observable<string | null> {
+    const current = this.storageService.state.currentProject;
+    if (current?.type === 'currentProjectNotification') { return of(current.data._id); }
+    if (current?.data?.demiId) { return of(current.data.demiId); }
+    const eagleId = current ? current.data._id : this.route.parent.parent.snapshot.params.projId;
+    return this.projectService.getNative(eagleId).pipe(
+      map(row => row?.id ?? null),
+      catchError(error => {
+        this.logger.error('DEMI project lookup failed', 'AddDocumentComponent', error);
+        return of(null);
+      })
+    );
+  }
+
   setDocumentRowData() {
     const documentList = [];
     if (this.documents && this.documents.length > 0) {
       this.documents.forEach(document => {
         documentList.push(
           {
+            selectable: isSelectableDocument(document, this.documentSource),
             displayName: document.displayName,
             datePosted: document.datePosted,
             type: document.type,
@@ -316,22 +339,9 @@ export class AddDocumentComponent implements OnInit {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.searchService.getSearchResults(
-      this.tableParams.keywords || '',
-      'Document',
-      [{ 'name': 'project', 'value': this.currentProject.data._id }],
-      pageNumber,
-      this.tableParams.pageSize,
-      this.tableParams.sortBy,
-      { documentSource: 'PROJECT' }, false, {}, ''
-    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.documents = res[0].data.searchResults;
-        this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords || '');
-        this.setDocumentRowData();
-        this.loading = false;
-        this._changeDetectionRef.markForCheck();
-      });
+    this.loadDocuments(pageNumber, this.tableParams.pageSize, this.tableParams.sortBy, this.tableParams.keywords, () =>
+      this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords || '')
+    );
   }
 
   removeSelectedDoc(doc) {

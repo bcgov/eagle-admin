@@ -2,7 +2,8 @@
   <tr
     class="clickable-row" [className]="'active'">
     <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
-      <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox'>
+      <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox' [disabled]="!document.selectable"
+        [title]="document.selectable ? '' : 'This document cannot be changed here'">
     </td>
     <td data-label="Name" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
     <td data-label="Date" (click)="goToItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">
@@ -14,7 +15,7 @@
     <td data-label="Status" scope="row" [style.width]="!useSmallTable && columns[4].width">
       <p class="card-text publish-state">
         <i class="material-icons">
-          {{document.status === 'unpublished' ? 'cloud_off' : 'cloud_done'}}
+          {{document.isPublished ? 'cloud_done' : 'cloud_off'}}
         </i>
       </p>
     </td>

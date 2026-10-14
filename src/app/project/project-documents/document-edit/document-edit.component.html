@@ -193,8 +193,12 @@
       }
     </form>
   </div>
+  @if (readOnlyReason) {
+  <div class="alert alert-warning" role="alert">{{readOnlyReason}}</div>
+  }
   <div class="text-end">
     <button class="btn btn-cancel" type="button" (click)="goBack()">Cancel</button>
+    @if (!readOnlyReason) {
     &nbsp;
     <button class="btn btn-primary me-1" [disabled]="!myForm.valid || docNameInvalid || dateInvalid" type="submit"
       (click)="save()">Save</button>
@@ -206,6 +210,7 @@
     @if (this.isPublished && !this.multiEdit) {
     <button class="btn btn-unpublish" [disabled]="!myForm.valid || docNameInvalid || dateInvalid" type="publish"
       (click)="togglePublish()">Save & Unpublish</button>
+    }
     }
   </div>
 </main>

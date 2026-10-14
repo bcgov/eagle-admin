@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
-import { RouterModule } from '@angular/router';
+import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { Router } from '@angular/router';
@@ -42,6 +41,7 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
   }
 
   selectItem(item) {
+    if (!item.selectable) { return; }
     item.checkbox = !item.checkbox;
     let count = 0;
     this.documents.forEach(doc => {

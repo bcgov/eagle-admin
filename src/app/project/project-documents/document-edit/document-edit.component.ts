@@ -12,6 +12,8 @@ import { StorageService } from 'src/app/services/storage.service';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { List } from 'src/app/models/demi/list';
+import { eagleWriteId, eagleWriteProjectId } from 'src/app/models/demi/document-write';
+import { legacyDocumentRow } from './legacy-document-row';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,15 +79,20 @@ export class DocumentEditComponent implements OnInit {
   public docNameInvalid = false;
   public dateInvalid = false;
   public legislationYear = '1996';
+  /** Set when a selected row has no Eagle record: eagle-api cannot write it, so saving is hidden. */
+  public readOnlyReason: string = null;
 
   ngOnInit() {
-    this.documents = this.storageService.state.selectedDocs;
+    this.documents = (this.storageService.state.selectedDocs ?? []).map(legacyDocumentRow);
     this.currentProject = this.storageService.currentProjectData;
     this.logger.debug('documents loaded', 'DocumentEditComponent', this.documents);
     // Check if documents are null (nav straight to this page)
     if (!this.documents || this.documents.length === 0) {
       this.router.navigate(['p', this.currentProject._id, 'project-documents']);
     } else {
+      if (this.documents.some(doc => !eagleWriteId(doc))) {
+        this.readOnlyReason = 'A selected document exists only in DEMI and has no Eagle record, so it cannot be edited here.';
+      }
       this.legislationYear = this.documents[0].legislation ? this.documents[0].legislation.toString() : this.legislationYear;
       this.buildForm();
       this.configService.ensureListsLoaded();
@@ -109,7 +116,9 @@ export class DocumentEditComponent implements OnInit {
   populateForm() {
     if (this.documents.length === 1) {
       // todo: figure out publish see barakas code
-      this.isPublished = this.documents[0].read.includes('public');
+      const doc = this.documents[0];
+      // Native rows hide `read` and carry `isPublished` instead.
+      this.isPublished = doc.read ? doc.read.includes('public') : !!doc.isPublished;
 
       // Set the old data in there if it exists.
       if (this.documents[0].type) { this.myForm.controls.doctypesel.setValue(this.documents[0].type); }
@@ -186,6 +195,7 @@ export class DocumentEditComponent implements OnInit {
   }
 
   save() {
+    if (this.readOnlyReason) { return; }
     this.loading = true;
 
     // Save all the elements to all the documents.
@@ -199,7 +209,7 @@ export class DocumentEditComponent implements OnInit {
 
     this.documents.map(doc => {
       const formData = new FormData();
-      formData.append('project', this.currentProject._id);
+      formData.append('project', eagleWriteProjectId(doc) || this.currentProject._id);
       formData.append('documentSource', 'PROJECT');
 
       if (!this.multiEdit) {
@@ -226,7 +236,7 @@ export class DocumentEditComponent implements OnInit {
       // TODO
       formData.append('labels', JSON.stringify(theLabels));
       formData.append('legislation', this.legislationYear);
-      observables.push(this.documentService.update(formData, doc._id));
+      observables.push(this.documentService.update(formData, eagleWriteId(doc)));
     });
 
     // multi edit should not be set to false
@@ -264,32 +274,28 @@ export class DocumentEditComponent implements OnInit {
   }
 
   public togglePublish() {
+    if (this.readOnlyReason) { return; }
     this.isPublished = !this.isPublished;
-    const observables = [];
-    this.documents.map(doc => {
-      if (this.isPublished) {
-        observables.push(this.documentService.publish(doc._id));
-      } else {
-        observables.push(this.documentService.unPublish(doc._id));
-      }
-      forkJoin(observables)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(
-          () => {},
-          error => {
-            this.logger.error('update document publish status failed', 'DocumentEditComponent', error);
-            alert('Uh-oh, couldn\'t update document\'s publish status');
-          },
-          () => {
-            this.save();
-            if (this.isPublished) {
-              this.toastService.success('This document has been published.');
-            } else {
-              this.toastService.success('This document has been unpublished.');
-            }
+    const observables = this.documents.map(doc => this.isPublished
+      ? this.documentService.publish(eagleWriteId(doc))
+      : this.documentService.unPublish(eagleWriteId(doc)));
+    forkJoin(observables)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        () => {},
+        error => {
+          this.logger.error('update document publish status failed', 'DocumentEditComponent', error);
+          alert('Uh-oh, couldn\'t update document\'s publish status');
+        },
+        () => {
+          this.save();
+          if (this.isPublished) {
+            this.toastService.success('This document has been published.');
+          } else {
+            this.toastService.success('This document has been unpublished.');
           }
-        );
-    });
+        }
+      );
   }
 
   register(myForm: UntypedFormGroup) {
