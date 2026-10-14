@@ -157,8 +157,14 @@ export class DocumentApplicationSortComponent implements OnInit {
 
   onSave() {
     const formData = new FormData();
+    const edited: any[] = this.storageService.state.editedDocs;
     // A document with no Eagle id cannot be written through eagle-api.
-    this.storageService.state.editedDocs.filter((document: any) => document._id).forEach((document: any) => {
+    const skipped = edited.filter(document => !document._id);
+    if (skipped.length) {
+      const names = skipped.map(document => document.displayName || document.id).join(', ');
+      this.toastService.warning(`Sort order not saved for ${skipped.length} document(s) not in Eagle yet: ${names}`);
+    }
+    edited.filter(document => document._id).forEach((document: any) => {
       // document service put id and sort order
       formData.set('sortOrder', document.sortOrder);
       this.documentService.update(formData, document._id)

@@ -43,3 +43,23 @@ export interface DemiProject {
   pins?: DemiPin[];
   [field: string]: unknown;
 }
+
+/** A project list multi-select: the URL holds each picked item's `by`; DEMI filter `api` gets each item's `apiKey`. */
+export interface ProjectFilter {
+  by: string;
+  api: string;
+  apiKey: string;
+}
+
+/**
+ * Project list filters by URL param name, for the project list and search pages.
+ * DEMI region List rows have no code, and DEMI filters proponents by name.
+ */
+export const PROJECT_FILTERS: Record<'region' | 'CEAAInvolvement' | 'proponent' | 'eacDecision' | 'type' | 'projectPhase', ProjectFilter> = {
+  region: { by: 'name', api: 'region', apiKey: 'name' },
+  CEAAInvolvement: { by: 'id', api: 'CEAAInvolvement', apiKey: 'id' },
+  proponent: { by: 'id', api: 'proponentName', apiKey: 'name' },
+  eacDecision: { by: 'id', api: 'eacDecision', apiKey: 'id' },
+  type: { by: 'name', api: 'projectType', apiKey: 'name' },
+  projectPhase: { by: 'id', api: 'currentPhaseName', apiKey: 'id' }
+};

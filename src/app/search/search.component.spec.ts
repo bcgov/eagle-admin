@@ -246,7 +246,7 @@ describe('SearchComponent', () => {
     expect(navigate.calls.mostRecent().args[0][1]).toEqual(jasmine.objectContaining({ dataset: 'Document', ...DOCUMENT_FILTERS }));
   });
 
-  it('pages with the tab and escaped keywords and filters in the URL', () => {
+  it('pages with the tab, keywords and filters in the URL', () => {
     load({ dataset: 'Project', keywords: 'a;b', type: 'Energy-Petroleum & Natural Gas' });
     expectList('projects').flush([], { headers: { 'x-total-count': '60' } });
     const updateUrl = spyOn(TestBed.inject(TableTemplateUtils), 'updateUrl');
@@ -258,8 +258,8 @@ describe('SearchComponent', () => {
 
     const [, page, , filters, keywords] = updateUrl.calls.mostRecent().args;
     expect(page).toBe(2);
-    expect(filters).toEqual({ dataset: 'Project', type: 'Energy-Petroleum%20%26%20Natural%20Gas' });
-    expect(keywords).toBe('a%3Bb');
+    expect(filters).toEqual({ dataset: 'Project', type: 'Energy-Petroleum & Natural Gas' });
+    expect(keywords).toBe('a;b');
   });
 
   it('keeps the shown page and URL when a page read fails', () => {

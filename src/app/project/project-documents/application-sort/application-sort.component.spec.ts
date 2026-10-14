@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { DocumentApplicationSortComponent } from './application-sort.component';
@@ -9,6 +9,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 
 const LISTS = [
@@ -110,5 +111,36 @@ describe('DocumentApplicationSortComponent', () => {
     req.flush([ROW]);
 
     expect(component.documents[0].sortOrder).toBe(1);
+  });
+
+  describe('save', () => {
+    let warning: jasmine.Spy;
+
+    function save(editedDocs: any[]) {
+      const component = init({});
+      documentsRequest().flush([]);
+      storage.state.editedDocs = editedDocs;
+      warning = spyOn(TestBed.inject(ToastService), 'warning');
+      spyOn(TestBed.inject(Router), 'navigate');
+      component.onSave();
+    }
+
+    it('names the documents it skips because they have no Eagle id', () => {
+      save([
+        { _id: 'doc-eagle-1', sortOrder: 1, displayName: 'Application.pdf' },
+        { _id: null, id: 'uuid-1', sortOrder: 2, displayName: 'New.pdf' },
+        { _id: null, id: 'uuid-2', sortOrder: 3, displayName: '' }
+      ]);
+
+      expect(http.expectOne('/api/document/doc-eagle-1').request.method).toBe('PUT');
+      expect(warning).toHaveBeenCalledOnceWith('Sort order not saved for 2 document(s) not in Eagle yet: New.pdf, uuid-2');
+    });
+
+    it('warns about nothing when every document has an Eagle id', () => {
+      save([{ _id: 'doc-eagle-1', sortOrder: 1, displayName: 'Application.pdf' }]);
+
+      http.expectOne('/api/document/doc-eagle-1');
+      expect(warning).not.toHaveBeenCalled();
+    });
   });
 });

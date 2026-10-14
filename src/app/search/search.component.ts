@@ -14,7 +14,7 @@ import { DateTime } from 'luxon';
 import { DEMI_MAX_PAGE_SIZE, DemiList } from '../models/demi/demi-list';
 import { DemiDocument } from '../models/demi/document';
 import { Proponent } from '../models/demi/organization';
-import { DemiProject } from '../models/demi/project';
+import { DemiProject, PROJECT_FILTERS } from '../models/demi/project';
 import { toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
 import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
@@ -502,17 +502,20 @@ export class SearchComponent implements OnInit {
     this.onSubmit();
   }
 
-  /** The current tab's multi-select filters. DEMI region List rows have no code, and DEMI filters proponents by name. */
+  /** The current tab's multi-select filters. */
   private pickFilters(): PickFilter[] {
     if (this.terms.dataset === 'Project') {
-      return [
-        { ui: 'region', url: 'region', items: this.regions, by: 'name', api: 'region', apiKey: 'name' },
-        { ui: 'CEAAInvolvement', url: 'CEAAInvolvement', items: this.ceaaInvolvements, by: 'id', api: 'CEAAInvolvement', apiKey: 'id' },
-        { ui: 'proponent', url: 'proponent', items: this.proponents, by: 'id', api: 'proponentName', apiKey: 'name' },
-        { ui: 'eacDecision', url: 'eacDecision', items: this.eacDecisions, by: 'id', api: 'eacDecision', apiKey: 'id' },
-        { ui: 'projectType', url: 'type', items: this.projectTypes, by: 'name', api: 'projectType', apiKey: 'name' },
-        { ui: 'projectPhase', url: 'projectPhase', items: this.projectPhases, by: 'id', api: 'currentPhaseName', apiKey: 'id' }
-      ];
+      const items: Record<keyof typeof PROJECT_FILTERS, any[]> = {
+        region: this.regions,
+        CEAAInvolvement: this.ceaaInvolvements,
+        proponent: this.proponents,
+        eacDecision: this.eacDecisions,
+        type: this.projectTypes,
+        projectPhase: this.projectPhases
+      };
+      // The type picker binds to filterForUI.projectType.
+      return Object.entries(PROJECT_FILTERS)
+        .map(([url, filter]) => ({ ...filter, url, ui: url === 'type' ? 'projectType' : url, items: items[url] }));
     }
     return [
       { ui: 'milestone', url: 'milestone', items: this.milestones, by: 'id', api: 'milestoneId', apiKey: 'id' },
@@ -663,17 +666,12 @@ export class SearchComponent implements OnInit {
   }
 
   private showPagedResults(page: DemiList<DemiProject | DemiDocument>) {
-    // updateUrl writes matrix params unescaped, so escape each value here.
-    const escape = (value: string) => value.split(',').map(encodeURIComponent).join(',');
-    const filters = Object.fromEntries(
-      Object.entries({ dataset: this.terms.dataset, ...this.filterForURL }).map(([key, value]) => [key, escape(value)])
-    );
     this.tableTemplateUtils.updateUrl(
-      this.tableParams.sortBy ? encodeURIComponent(this.tableParams.sortBy) : '',
+      this.tableParams.sortBy,
       this.tableParams.currentPage,
       this.tableParams.pageSize,
-      filters,
-      this.keywords ? encodeURIComponent(this.keywords) : ''
+      { dataset: this.terms.dataset, ...this.filterForURL },
+      this.keywords ?? ''
     );
     this.showPage(page);
     this._changeDetectionRef.markForCheck();

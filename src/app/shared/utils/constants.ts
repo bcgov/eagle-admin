@@ -114,12 +114,6 @@ export class Constants {
     },
   ];
 
-  public static readonly PCP_COLLECTION: object[] = [
-    { code: 'pending', name: 'Upcoming' },
-    { code: 'open', name: 'Open' },
-    { code: 'closed', name: 'Closed' }
-  ];
-
   public static readonly PROJECT_TYPE_COLLECTION: object[] = [
     { code: 'energyElectricity', name: 'Energy-Electricity' },
     { code: 'energyPetroleum', name: 'Energy-Petroleum & Natural Gas' },
