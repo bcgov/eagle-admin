@@ -3,46 +3,59 @@ import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
+import { DemiApiService } from './demi-api.service';
 import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 import { ProjectNotification } from '../models/projectNotification';
+import { DemiList, DemiListParams } from '../models/demi/demi-list';
+import { DemiNotification, LegacyNotification, legacyNotification, notificationSort } from '../models/demi/notification';
+
+/** Loading-state key for the notifications table. */
+export const NOTIFICATION_LIST_LOADING = 'project-notifications';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationProjectService {
   private api = inject(ApiService);
+  private demiApi = inject(DemiApiService);
   private loadingState = inject(LoadingStateService);
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
-  private projectNotificationList: ProjectNotification[] = [];
-
-  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<object> {
-    const fields = ['name', 'location', 'decisionDate'];
-    let qs = `projectNotification?`;
-    if (pageNum !== null) { qs += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { qs += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { qs += `sortBy=${sortBy}&`; }
-    qs += `populate=true&fields=${this.api.buildValues(fields)}`;
-    return this.api.get<any>(qs).pipe(
-      withLoading(this.loadingState, 'project-notifications'),
-      map((res: any) => {
-        if (res) {
-          this.projectNotificationList = res.map((pn: any) => new ProjectNotification(pn));
-          return { totalCount: this.projectNotificationList.length, data: this.projectNotificationList };
-        }
-        return {};
-      }),
+  /** One page of notifications from DEMI. Filters: `type`, `region`, `pcp`, `decision`; sort: `name`, `notificationReceivedDate`. */
+  listNative(params: DemiListParams = {}): Observable<DemiList<DemiNotification>> {
+    return this.demiApi.list<DemiNotification>('notifications', params).pipe(
+      withLoading(this.loadingState, NOTIFICATION_LIST_LOADING),
       catchError(error => {
         this.logger.error('Failed to get project notifications', 'NotificationProjectService', error);
         this.toast.error('Failed to load project notifications.');
-        return of({ totalCount: 0, data: [] });
+        return of({ rows: [] as DemiNotification[] });
       })
     );
   }
 
-  save(pn: ProjectNotification, publish: boolean = null): Observable<ProjectNotification> {
+  /** One notification by its id (the Eagle id); null when it cannot be read. */
+  getNative(id: string): Observable<DemiNotification | null> {
+    return this.demiApi.get<DemiNotification>('notifications', id).pipe(
+      withLoading(this.loadingState, `project-notification-${id}`),
+      catchError(error => {
+        this.logger.error('Failed to get project notification', 'NotificationProjectService', error);
+        return of(null);
+      })
+    );
+  }
+
+  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<{ totalCount: number; data: ProjectNotification[] }> {
+    return this.listNative({ page: pageNum ?? undefined, pageSize: pageSize ?? undefined, sort: notificationSort(sortBy) }).pipe(
+      map(res => {
+        const data = res.rows.map(row => new ProjectNotification(legacyNotification(row)));
+        return { totalCount: data.length, data };
+      })
+    );
+  }
+
+  save(pn: ProjectNotification | LegacyNotification, publish: boolean = null): Observable<ProjectNotification> {
     let qs = `projectNotification/${pn._id}`;
     if (publish !== null) { qs += `?publish=${publish}`; }
     return this.api.put<ProjectNotification>(qs, pn).pipe(

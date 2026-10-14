@@ -3,11 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 import { ProjectNotificationTableRowsComponent } from './project-notifications-table-rows/project-notifications-table-rows.component';
-import { ProjectNotification } from '../models/projectNotification';
+import { LegacyNotification, legacyNotification, notificationSort } from '../models/demi/notification';
 import { SearchTerms } from '../models/search';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
-import { SearchService } from '../services/search.service';
+import { NOTIFICATION_LIST_LOADING, NotificationProjectService } from '../services/notification-project.service';
 import { LoadingStateService } from '../services/loading-state.service';
 import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
 import { FormsModule } from '@angular/forms';
@@ -32,12 +32,12 @@ export class ProjectNotificationsComponent implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
-  private searchService = inject(SearchService);
+  private notificationService = inject(NotificationProjectService);
   public loadingState = inject(LoadingStateService);
-  public loading = this.loadingState.getOperationState('search-results');
+  public loading = this.loadingState.getOperationState(NOTIFICATION_LIST_LOADING);
 
   public terms = new SearchTerms();
-  public notificationProjects: ProjectNotification[] = null;
+  public notificationProjects: LegacyNotification[] = null;
 
   public documentTableData: TableObject;
   public documentTableColumns: TableColumn[] = [
@@ -49,22 +49,26 @@ export class ProjectNotificationsComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Sub Type',
       value: 'subType',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Region',
       value: 'region',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Decision',
       value: 'decision',
-      width: '15%'
+      width: '15%',
+      nosort: true
     }
   ];
 
@@ -77,28 +81,18 @@ export class ProjectNotificationsComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
         switchMap(params => {
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-          if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = '-_id';
-          }
-
-          const pageNum = this.tableParams.currentPage || 1;
-          const pageSize = this.tableParams.pageSize || 10;
-          const sortBy = this.tableParams.sortBy || '-_id';
-          const keywords = this.tableParams.keywords || '';
-
-          return this.searchService.getSearchResults(
-            keywords, 'ProjectNotification', null,
-            pageNum, pageSize, sortBy, {}
-          );
+          // Unset sort = DEMI default: newest notification first, or keyword rank.
+          return this.notificationService.listNative({
+            page: this.tableParams.currentPage || 1,
+            pageSize: this.tableParams.pageSize || 10,
+            count: true,
+            sort: notificationSort(this.tableParams.sortBy),
+            q: this.tableParams.keywords || undefined
+          });
         })
-      ).subscribe((res: any) => {
-        if (res && res[0].data.meta && res[0].data.meta.length > 0) {
-          this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-          this.notificationProjects = res[0].data.searchResults;
-        } else {
-          this.tableParams.totalListItems = 0;
-          this.notificationProjects = [];
-        }
+      ).subscribe(res => {
+        this.tableParams.totalListItems = res.total ?? 0;
+        this.notificationProjects = res.rows.map(legacyNotification);
         this.setRowData();
       });
   }

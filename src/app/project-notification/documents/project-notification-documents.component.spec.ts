@@ -1,12 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { ProjectNotificationDocumentsComponent } from './project-notification-documents.component';
 import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { SearchService } from 'src/app/services/search.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -22,7 +21,7 @@ describe('ProjectNotificationDocumentsComponent', () => {
         provideHttpClientTesting(),
         { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
         { provide: KeycloakService, useValue: { keycloakEnabled: true } },
-        { provide: SearchService, useValue: {} },
+        { provide: ActivatedRoute, useValue: { parent: { snapshot: { paramMap: convertToParamMap({ notificationProjectId: 'notification-9' }) } } } },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['error', 'success', 'info']) },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'error', 'warn', 'info']) }
       ]
@@ -68,5 +67,19 @@ describe('ProjectNotificationDocumentsComponent', () => {
     const rows = fixture.componentInstance.documentTableData().data;
     expect(rows.filter(d => d.checkbox).map(d => d._id)).toEqual(['n1']);
     expect(fixture.componentInstance.selectedCount().total).toBe(1);
+  });
+
+  it('loads the notification from DEMI by route id when none is stored, then lists its documents', () => {
+    const storage = TestBed.inject(StorageService);
+    storage.state = { type: 'currentProject', data: null };
+    const fixture = TestBed.createComponent(ProjectNotificationDocumentsComponent);
+    fixture.detectChanges();
+
+    http.expectOne('/demi/api/notifications/notification-9').flush({ id: 'notification-9', eagleId: 'notification-9', name: 'Notice', isPublished: false });
+
+    expect(storage.currentProjectData._id).toBe('notification-9');
+    const req = http.expectOne(r => r.url === '/demi/api/documents');
+    expect(req.request.params.get('project')).toBe('notification-9');
+    req.flush([]);
   });
 });
