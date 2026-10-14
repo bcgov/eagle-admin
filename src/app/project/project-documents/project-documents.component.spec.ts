@@ -188,13 +188,20 @@ describe('ProjectDocumentsComponent paging and sort', () => {
 
     expect(navigatedParams().currentPageCategorized).toBe(1);
   }));
+
+  // Typed loosely: `documentSource` is not in DemiDocumentFilters yet.
+  function listQuery(): object {
+    return documentService.listNative.calls.mostRecent().args[0];
+  }
+
   it('lists documents by the DEMI project id with page, size, count and sort', fakeAsync(() => {
     load([doc('d21', false)], 21);
 
-    expect(documentService.listNative).toHaveBeenCalledOnceWith({
+    expect(documentService.listNative).toHaveBeenCalledTimes(1);
+    expect(listQuery()).toEqual({
       page: 3, pageSize: 10, count: true, sort: 'displayName', q: undefined,
       filters: {
-        project: '7', milestoneId: undefined, typeId: undefined, documentAuthorTypeId: undefined,
+        project: '7', documentSource: 'PROJECT', milestoneId: undefined, typeId: undefined, documentAuthorTypeId: undefined,
         projectPhaseId: undefined, datePostedStart: undefined, datePostedEnd: undefined
       }
     });
@@ -206,10 +213,10 @@ describe('ProjectDocumentsComponent paging and sort', () => {
       projectPhase: 'ph1', datePostedStart: '2020-01-01', datePostedEnd: '2020-12-31'
     });
 
-    expect(documentService.listNative.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
+    expect(listQuery()).toEqual(jasmine.objectContaining({
       q: 'tailings dam',
       filters: {
-        project: '7', milestoneId: ['m1', 'm2'], typeId: ['t1'], documentAuthorTypeId: ['a1'],
+        project: '7', documentSource: 'PROJECT', milestoneId: ['m1', 'm2'], typeId: ['t1'], documentAuthorTypeId: ['a1'],
         projectPhaseId: ['ph1'], datePostedStart: '2020-01-01', datePostedEnd: '2020-12-31'
       }
     }));
@@ -255,5 +262,23 @@ describe('ProjectDocumentsComponent paging and sort', () => {
     component.selectAction('download');
 
     expect(documentService.downloadNative).toHaveBeenCalledOnceWith('uuid-1');
+  }));
+  it('leaves comment attachments out with documentSource=PROJECT', fakeAsync(() => {
+    load([], 0);
+    expect(listQuery()).toEqual(jasmine.objectContaining({ filters: jasmine.objectContaining({ documentSource: 'PROJECT' }) }));
+  }));
+
+  it('links a row to the route project when DEMI leaves out projectEagleId', fakeAsync(() => {
+    load([doc('uuid-1', false, 'e1')], 21);
+    expect(component.categorizedDocumentTableData.data[0].projectEagleId).toBe('p1');
+  }));
+
+  it('keeps Publish disabled when the only checked row has no Eagle id', fakeAsync(() => {
+    load([doc('uuid-2', false, null)], 21);
+    checkRow('uuid-2');
+
+    component.updateSelectedRow(Constants.documentTypes.CATEGORIZED, { count: 1, activeLegislationYear: null });
+
+    expect(component.isEnabled('publish')).toBeFalse();
   }));
 });
