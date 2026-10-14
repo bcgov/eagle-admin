@@ -2,14 +2,16 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, inject, DestroyR
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
-import { DateTime } from 'luxon';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
-import { Project } from '../models/project';
-import { RecentActivity } from '../models/recentActivity';
+import { DemiUpdate, nativeUpdateSort } from '../models/demi/update';
+import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
 import { ProjectService } from '../services/project.service';
-import { SearchService } from '../services/search.service';
+import { LoggingService } from '../services/logging.service';
+import { ToastService } from '../services/toast.service';
+import { UPDATE_LIST_ERROR_MESSAGE } from './update-rules';
+import { RecentActivityService } from '../services/recent-activity';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
@@ -18,15 +20,13 @@ import { TableTemplateComponent } from '../shared/components/table-template/tabl
 
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+
+type ActivityType = (typeof Constants.activityTypes)[number];
 
 class ActivityFilterObject {
   constructor(
-    public type: Array<any> = [],
-    public dateAddedStart: object = {},
-    public dateAddedEnd: object = {},
-    public project: Array<Project> = [],
-    public complianceAndEnforcement: boolean = false,
+    public type: ActivityType[] = [],
+    public project: LegacyProject[] = [],
   ) { }
 }
 
@@ -35,57 +35,60 @@ class ActivityFilterObject {
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgSelectModule, TableTemplateComponent, NgbDatepickerModule, RouterModule]
+  imports: [FormsModule, NgSelectModule, TableTemplateComponent, RouterModule]
 
 })
 export class ActivityComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private projectService = inject(ProjectService);
-  private searchService = inject(SearchService);
+  private recentActivityService = inject(RecentActivityService);
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private destroyRef = inject(DestroyRef);
-  public readonly constants = Constants;
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
   public loading = true;
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
-  public entries: RecentActivity[] = null;
+  public entries: DemiUpdate[] = null;
   public terms = new SearchTerms();
   public searchForm = null;
-  public projects: Array<Project> = [];
-  public activityTypes: Array<object> = [];
-  public placeholderDateRangeModel: Array<object>;
-  public dateRangeItems: Array<object> = [{}];
-
-  public dateRangeSet = false;
+  /** Projects an update can point at: those with an Eagle id. */
+  public projects: LegacyProject[] = [];
+  public activityTypes: ActivityType[] = [];
 
   public filterForURL: object = {};
-  public filterForAPI: object = {};
+  public filterForAPI: { project?: string; type?: string[] } = {};
 
   public filterForUI: ActivityFilterObject = new ActivityFilterObject();
 
+  // DEMI sorts updates by date only.
   public tableColumns: TableColumn[] = [
     {
       name: 'Pin',
       value: 'pinned',
-      width: '5%'
+      width: '5%',
+      nosort: true
     },
     {
       name: 'Headline',
       value: 'headline',
-      width: '30%'
+      width: '30%',
+      nosort: true
     },
     {
       name: 'Project',
-      value: 'project.name',
-      width: '20%'
+      value: 'projectName',
+      width: '20%',
+      nosort: true
     },
     {
       name: 'Type',
       value: 'type',
-      width: '20%'
+      width: '20%',
+      nosort: true
     },
     {
       name: 'Date',
@@ -106,10 +109,10 @@ export class ActivityComponent {
   ];
 
   constructor() {
-    this.projectService.getAll(1, 1000, '+name')
+    this.projectService.list({ pageSize: 1000 })
         .pipe(
-          switchMap((res: any) => {
-            this.projects = res.data || [];
+          switchMap(page => {
+            this.projects = page.rows.map(toLegacyProject).filter(project => project._id);
             this.activityTypes = Constants.activityTypes;
 
             return this.route.params;
@@ -123,38 +126,29 @@ export class ActivityComponent {
               params,
               this.filterForURL
             );
-            if (this.tableParams.sortBy === '') {
-              this.tableParams.sortBy = '-dateAdded';
-            }
-            return this.searchService.getSearchResults(
-              this.tableParams.keywords || '',
-              'RecentActivity',
-              null,
-              this.tableParams.currentPage,
-              this.tableParams.pageSize,
-              this.tableParams.sortBy,
-              {},
-              true,
-              this.filterForAPI,
-              ''
-            );
-          })
-        ).pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe((res: any) => {
-          if (res) {
-            if (res[0].data.meta && res[0].data.meta.length > 0) {
-              this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-              this.entries = res[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.entries = [];
-            }
+            const sort = nativeUpdateSort(this.tableParams.sortBy) ?? '-dateAdded';
+            this.tableParams.sortBy = sort.startsWith('-') ? sort : `+${sort}`;
+            return this.recentActivityService.list({
+              page: this.tableParams.currentPage,
+              pageSize: this.tableParams.pageSize,
+              sort,
+              q: this.tableParams.keywords || undefined,
+              filters: this.filterForAPI
+            });
+          }),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe({
+          next: page => {
+            this.tableParams.totalListItems = page.total ?? 0;
+            this.entries = page.rows;
             this.setRowData();
             this.loading = false;
             this._changeDetectionRef.markForCheck();
-          } else {
-            alert('Uh-oh, couldn\'t load valued components');
-            // project not found --> navigate back to search
+          },
+          error: error => {
+            this.logger.error('Update list failed', 'ActivityComponent', error);
+            this.toastService.error(UPDATE_LIST_ERROR_MESSAGE);
             this.router.navigate(['/search']);
           }
         });
@@ -171,23 +165,8 @@ export class ActivityComponent {
   }
 
   setRowData() {
-    if (this.entries && this.entries.length > 0) {
-      this.tableData = new TableObject(
-        ActivityTableRowsComponent,
-        this.entries.map(item => ({
-          _id: item._id,
-          project: item.project,
-          headline: item.headline,
-          type: item.type,
-          dateAdded: item.dateAdded,
-          active: item.active,
-          status: item.status,
-          publishDate: item.publishDate,
-          dateUpdated: item.dateUpdated,
-          pinned: item.pinned
-        })),
-        this.tableParams
-      );
+    if (this.entries?.length) {
+      this.tableData = new TableObject(ActivityTableRowsComponent, this.entries, this.tableParams);
     }
   }
 
@@ -218,181 +197,46 @@ export class ActivityComponent {
   setParamsFromFilters(params) {
     this.collectionFilterToParams(params, 'project', '_id');
     this.collectionFilterToParams(params, 'type', 'code');
-    this.toggleFilterToParams(params, 'complianceAndEnforcement');
-    this.dateFilterToParams(params, 'dateAddedStart');
-    this.dateFilterToParams(params, 'dateAddedEnd');
   }
 
   collectionFilterToParams(params, name, identifyBy) {
     if (this.filterForUI[name].length) {
-      const values = this.filterForUI[name].map(record => {
-        return record[identifyBy];
-      });
-      params[name] = values.join(',');
+      params[name] = this.filterForUI[name].map(record => record[identifyBy]).join(',');
     }
   }
 
-  toggleFilterToParams(params, name) {
-    if (this.filterForUI[name]) {
-      params[name] = this.filterForUI[name];
-    }
-  }
-
-  isNGBDate(date) {
-    return date && date.year && date.month && date.day;
-  }
-
-  dateFilterToParams(params, name) {
-    if (this.isNGBDate(this.filterForUI[name])) {
-      const date = new Date(
-        this.filterForUI[name].year,
-        this.filterForUI[name].month - 1,
-        this.filterForUI[name].day
-      );
-      params[name] = DateTime.fromJSDate(date).toISODate();
-    }
-  }
-
-  paramsToDateFilters(params, name) {
-    this.filterForUI[name] = null;
+  /** Keeps the URL values found in `collection`; returns the matching records. */
+  paramsToCollectionFilters<T>(params, name: string, collection: T[], identifyBy: string): T[] {
     delete this.filterForURL[name];
-    delete this.filterForAPI[name];
-
-    if (params[name]) {
-      this.filterForURL[name] = params[name];
-      this.filterForAPI[name] = params[name];
-      // NGB Date
-      const date = DateTime.fromISO(params[name]).toJSDate();
-      this.filterForUI[name] = {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate()
-      };
+    const records = (params[name]?.split(',') ?? [])
+      .map(value => collection.find(item => item[identifyBy] === value))
+      .filter(Boolean);
+    if (records.length) {
+      this.filterForURL[name] = records.map(record => record[identifyBy]).join(',');
     }
-  }
-
-  paramsToToggleFilters(params, name) {
-    delete this.filterForURL[name];
-    delete this.filterForAPI[name];
-
-    if (params[name]) {
-      this.filterForUI[name] = params[name];
-      this.filterForAPI[name] = params[name];
-    }
-  }
-
-  paramsToCollectionFilters(params, name, collection, identifyBy) {
-    this.filterForUI[name] = [];
-    delete this.filterForURL[name];
-    delete this.filterForAPI[name];
-
-    if (params[name] && collection) {
-      const confirmedValues = [];
-      // look up each value in collection
-      const values = params[name].split(',');
-      values.forEach(value => {
-        const record = collection.find(item => item[identifyBy] === value);
-        if (record) {
-          confirmedValues.push(value);
-          this.filterForUI[name].push(record);
-        }
-      });
-      if (confirmedValues.length) {
-        this.filterForURL[name] = confirmedValues.join(',');
-        this.filterForAPI[name] = confirmedValues.join(',');
-      }
-    }
+    return records;
   }
 
   setFiltersFromParams(params) {
-    this.paramsToCollectionFilters(params, 'project', this.projects, '_id');
-    this.paramsToCollectionFilters(params, 'type', this.activityTypes, 'code');
-    this.paramsToToggleFilters(params, 'complianceAndEnforcement');
-    this.paramsToDateFilters(params, 'dateAddedStart');
-    this.paramsToDateFilters(params, 'dateAddedEnd');
+    // DEMI filters updates by one project, by its Eagle id, and by type name.
+    this.filterForUI.project = this.paramsToCollectionFilters(params, 'project', this.projects, '_id').slice(0, 1);
+    this.filterForUI.type = this.paramsToCollectionFilters(params, 'type', this.activityTypes, 'code');
+    this.filterForAPI = {
+      project: this.filterForUI.project[0]?._id ?? undefined,
+      type: this.filterForUI.type.length ? this.filterForUI.type.map(type => type.name) : undefined
+    };
   }
 
   clearSelectedItem(filter: string, item: any) {
-    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option !== item);
   }
 
   isUiFiltered() {
-    if (this.filterForUI.complianceAndEnforcement) {
-      return true;
-    }
-    if (this.isDateRangeSet()) {
-      return true;
-    } else {
-      let count = 0;
-      Object.keys(this.filterForUI).forEach(key => {
-        if (this.filterForUI[key]) {
-          if (Array.isArray(this.filterForUI[key])) {
-            count += this.filterForUI[key].length;
-          }
-        }
-      });
-      return (count > 0);
-    }
-  }
-
-  isDateSet(date) {
-    return date ? Object.keys(date).length !== 0 : false;
-  }
-
-  isDateRangeSet() {
-    const startSet = (this.filterForUI.dateAddedStart != null && this.isNGBDate(this.filterForUI.dateAddedStart));
-    const endSet = (this.filterForUI.dateAddedEnd != null && this.isNGBDate(this.filterForUI.dateAddedEnd));
-    return (startSet || endSet);
-  }
-
-  // If date is cleared and other date in range is not set clear placeholder model
-  changeDate(event: any, date: string) {
-    if (date === 'start') {
-      this.filterForUI.dateAddedStart = event;
-      if (event === null && (this.filterForUI.dateAddedEnd === null || Object.keys(this.filterForUI.dateAddedEnd).length === 0)) {
-        this.clearDateRange();
-        this.placeholderDateRangeModel = [];
-      }
-    } else if (date === 'end') {
-      this.filterForUI.dateAddedEnd = event;
-      if (event === null && (this.filterForUI.dateAddedStart === null || Object.keys(this.filterForUI.dateAddedStart).length === 0)) {
-        this.clearDateRange();
-        this.placeholderDateRangeModel = [];
-      }
-    }
-  }
-
-  changeDateRange() {
-    // if date range is not set with valid values, clear placeholder model.
-    if (this.isDateRangeSet()) {
-      this.placeholderDateRangeModel = [{}];
-    } else {
-      this.placeholderDateRangeModel = [];
-    }
-  }
-
-  clearDateRange() {
-    this.filterForUI.dateAddedEnd = {};
-    this.filterForUI.dateAddedStart = {};
-    this.placeholderDateRangeModel = [];
-  }
-
-  clearCAndE() {
-    this.filterForUI.complianceAndEnforcement = false;
+    return this.filterForUI.project.length > 0 || this.filterForUI.type.length > 0;
   }
 
   clearAll() {
-    Object.keys(this.filterForUI).forEach(key => {
-      if (this.filterForUI[key]) {
-        if (Array.isArray(this.filterForUI[key])) {
-          this.filterForUI[key] = [];
-        } else if (typeof this.filterForUI[key] === 'object') {
-          this.filterForUI[key] = {};
-        } else if (typeof this.filterForUI[key] === 'boolean') {
-          this.filterForUI[key] = false;
-        }
-      }
-    });
+    this.filterForUI = new ActivityFilterObject();
   }
 
   public filterCompareWith(filter: any, filterToCompare: any) {

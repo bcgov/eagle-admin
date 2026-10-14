@@ -225,6 +225,7 @@
         }
       </div>
     </div>
+    @if (!isEditing) {
       <div class="label-pair align-items-center">
         <div class="form-check form-switch d-inline-block p-0 m-0">
           <input class="form-check-input ms-0" type="checkbox" role="switch" id="complianceAndEnforcement" formControlName="complianceAndEnforcement">
@@ -232,6 +233,7 @@
         &nbsp;
         <label for="complianceAndEnforcement" class="ms-1">This is a C&E Announcement</label>
       </div>
+    }
     @if (choosesPublishTime) {
     <section>
       <h2 id="publishingHeading">Publishing</h2>

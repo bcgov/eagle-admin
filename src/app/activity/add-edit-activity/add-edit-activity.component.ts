@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, DestroyRef, TemplateRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, catchError, distinctUntilChanged, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, Subject, catchError, distinctUntilChanged, forkJoin, map, of, shareReplay, switchMap } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -11,13 +11,18 @@ import { AbstractControl, UntypedFormArray, UntypedFormGroup, UntypedFormControl
 import { ToastService } from 'src/app/services/toast.service';
 import { RecentActivity, UpdateImage } from 'src/app/models/recentActivity';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
+import { DemiApiService } from 'src/app/services/demi-api.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
-import { SearchService } from 'src/app/services/search.service';
+import { DemiDocument } from 'src/app/models/demi/document';
+import { DemiCommentPeriod } from 'src/app/models/demi/comment-period';
+import { isEagleId } from 'src/app/models/demi/demi-ids';
+import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
+import { DemiUpdate, updateEagleId, updateParentId } from 'src/app/models/demi/update';
+import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -66,9 +71,8 @@ export class AddEditActivityComponent implements OnInit {
   private toastService = inject(ToastService);
   private recentActivityService = inject(RecentActivityService);
   private projectService = inject(ProjectService);
-  private notificationProjectService = inject(NotificationProjectService);
   private commentPeriodService = inject(CommentPeriodService);
-  private searchService = inject(SearchService);
+  private demiApi = inject(DemiApiService);
   private documentService = inject(DocumentService);
   private configService = inject(ConfigService);
   private logger = inject(LoggingService);
@@ -80,7 +84,8 @@ export class AddEditActivityComponent implements OnInit {
   public isEditing = false;
   // private subscriptions: Subscription[] = [];
   public loading = true;
-  public projects = [];
+  /** Projects an update can point at: those with an Eagle id. */
+  public projects: LegacyProject[] = [];
   public projectNotifications = [];
   public types = [];
   public activityTypes = Constants.activityTypes.map(type => type.name);
@@ -168,13 +173,13 @@ export class AddEditActivityComponent implements OnInit {
     this.configService.ensureListsLoaded();
     const activityId = this.route.snapshot.paramMap.get('activityId');
     if (activityId) {
-      this.searchService.getItem(activityId, 'RecentActivity').pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res: any) => {
+      this.recentActivityService.getNative(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((row: DemiUpdate) => {
         this.isEditing = true;
-        this.buildForm(res.data);
-        this.rememberDocs([res.data.featuredImage?.document, ...(res.data.images || []).map((image: UpdateImage) => image.document)]
-          .filter(doc => doc?._id));
-        this.activity = res.data;
-        this.statusText = statusLabel(res.data);
+        // Eagle ids, as the form and eagle-api writes use them.
+        const data = { ...row, _id: updateEagleId(row), project: updateParentId(row) };
+        this.buildForm(data);
+        this.activity = data;
+        this.statusText = statusLabel(data);
         // Type first: it decides which document source updateProject() loads from.
         this.updateType();
         this.updateProject();
@@ -198,28 +203,22 @@ export class AddEditActivityComponent implements OnInit {
       });
     }
 
-    this.projectService.getAll(1, 1000, '+name').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (res2: any) => {
-        if (res2) {
-          this.projects = res2.data;
-          // TODO: Later
-          // Types
-          // this.types = this.configService.lists.filter(item => {
-          //   return item.type === 'headlineType';
-          // });
-        }
-
+    this.projectService.list({ pageSize: 1000 }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: page => {
+        this.projects = page.rows.map(toLegacyProject).filter(project => project._id);
         this.loading = false;
         this._cdr.markForCheck();
       },
       error: () => { this.loading = false; this._cdr.markForCheck(); }
     });
 
-    this.notificationProjectService.getAll(1, 1000, '+name').pipe(takeUntilDestroyed(this.destroyRef)).subscribe((res3: any) => {
-      if (res3) {
-        this.projectNotifications = res3.data;
-      }
-    });
+    // A project notification's DEMI id is its Eagle id.
+    this.demiApi.list<{ id: string; name: string }>('notifications', { pageSize: 1000, sort: 'name' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: page => { this.projectNotifications = page.rows.map(row => ({ _id: row.id, name: row.name })); },
+        error: error => this.logger.warn('Project notification list failed', 'AddEditActivityComponent', error)
+      });
   }
 
   onCancel() {
@@ -323,6 +322,10 @@ export class AddEditActivityComponent implements OnInit {
       subject: form.category.value === CORPORATE_CATEGORY ? form.subject.value : null,
       ...statusFields
     });
+    // DEMI rows do not carry the flag, so the edit form hides it; leave Eagle's value alone.
+    if (this.isEditing) {
+      delete (activity as Partial<RecentActivity>).complianceAndEnforcement;
+    }
 
     this.saving = true;
     const request = this.isEditing ? this.recentActivityService.save(activity) : this.recentActivityService.add(activity);
@@ -594,16 +597,17 @@ export class AddEditActivityComponent implements OnInit {
 
   /** Loads documents for the latest project only; a newer pick cancels the older search. */
   private watchProjectDocuments() {
-    // Same project document search the comment period picker uses; first 1000, newest first. Null marks a failed search.
-    const search = (projectId: string, source: string) => this.searchService
-      .getSearchResults('', 'Document', [{ name: 'project', value: projectId }], 1, 1000, '-datePosted', { documentSource: source })
-      .pipe(
-        map((res: any): any[] | null => res?.[0]?.data?.searchResults || []),
-        catchError(error => {
-          this.logger.warn(`Project ${source} document search failed`, 'AddEditActivityComponent', error);
-          return of(null);
-        })
-      );
+    // First 1000 of the parent's documents of one source, newest first. Null marks a failed search.
+    const search = (parentId: string | null, source: string): Observable<any[] | null> => parentId
+      ? this.demiApi.list<DemiDocument>('documents', { pageSize: 1000, sort: '-datePosted', filters: sourceFilters(parentId, source) })
+        .pipe(
+          map(page => page.rows.map(legacyDocumentRow)),
+          catchError(error => {
+            this.logger.warn(`Project ${source} document search failed`, 'AddEditActivityComponent', error);
+            return of(null);
+          })
+        )
+      : of(null);
     this.documentsFor.pipe(
       // A type change keeps the project; search again only when the project or document source changes.
       distinctUntilChanged((a, b) => a?.projectId === b?.projectId && a?.source === b?.source),
@@ -613,7 +617,8 @@ export class AddEditActivityComponent implements OnInit {
         this._cdr.markForCheck();
         // Images uploaded from Update forms live apart from the project's Documents list.
         return request
-          ? forkJoin([search(request.projectId, request.source), search(request.projectId, UPDATE_IMAGE_SOURCE)])
+          ? this.documentParent(request.projectId, request.source).pipe(
+            switchMap(parentId => forkJoin([search(parentId, request.source), search(parentId, UPDATE_IMAGE_SOURCE)])))
           : of([[], []]);
       }),
       takeUntilDestroyed(this.destroyRef)
@@ -635,35 +640,62 @@ export class AddEditActivityComponent implements OnInit {
       d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }
 
+  /** DEMI parent id for a document search: a project notification's id is the same in both; a project has its own. */
+  private documentParent(eagleId: string, source: string): Observable<string | null> {
+    return source === 'PROJECT-NOTIFICATION' ? of(eagleId) : this.demiProject(eagleId).pipe(map(project => project?.demiId ?? null));
+  }
+
+  private readonly demiProjects = new Map<string, Observable<LegacyProject | null>>();
+
+  /** The DEMI project for an Eagle project id: from the loaded list, else `GET /projects/<eagleId>`; null when there is none. */
+  private demiProject(eagleId: string): Observable<LegacyProject | null> {
+    const listed = this.projects.find(project => project._id === eagleId);
+    if (listed) {
+      return of(listed);
+    }
+    if (!this.demiProjects.has(eagleId)) {
+      this.demiProjects.set(eagleId, this.projectService.getNative(eagleId).pipe(
+        map(toLegacyProject),
+        catchError(() => of(null)),
+        shareReplay(1)
+      ));
+    }
+    return this.demiProjects.get(eagleId)!;
+  }
+
   public loadProjectLocation(projectId: string) {
-    this.projectService.getById(projectId)
+    this.demiProject(projectId)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        if (res) {
-          this.myForm.controls['projectLocation'].setValue(res.location);
+      .subscribe(project => {
+        if (project) {
+          this.myForm.controls['projectLocation'].setValue(project.location);
           this._cdr.markForCheck();
         }
       });
   }
 
   public loadPcpsForProject(projectId: string) {
-    this.commentPeriodService.getAllByProjectId(projectId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res: any) => {
-        if (res) {
-          this.periods = res.data;
-          // Preserve the current PCP selection if it exists in the loaded periods.
-          // Only reset when the current value is no longer valid (e.g. user switched projects).
-          const currentPcp = this.myForm.controls['pcp'].value || (this.isEditing ? this.activity?.pcp : '');
-          this.myForm.controls['pcp'].setValue(this.periods.some((p: any) => p._id === currentPcp) ? currentPcp : '');
-          // Enable pcp select only when periods exist — prevents black bar on empty select
-          if (this.typeIsPCP && this.periods.length > 0) {
-            this.myForm.get('pcp')!.enable();
-          } else {
-            this.myForm.controls['pcp'].reset({ value: '', disabled: true });
-          }
-          this._cdr.markForCheck();
+    this.demiProject(projectId)
+      .pipe(
+        switchMap(project => project ? this.commentPeriodService.listByProject(project.demiId, { pageSize: 1000 }) : of({ rows: [] })),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(page => {
+        // An update's pcp is the period's Eagle id; a period eagle-api does not hold cannot be picked.
+        this.periods = page.rows
+          .map((period: DemiCommentPeriod) => ({ ...period, _id: period.eagleId ?? (isEagleId(period.id) ? period.id : null) }))
+          .filter(period => period._id);
+        // Preserve the current PCP selection if it exists in the loaded periods.
+        // Only reset when the current value is no longer valid (e.g. user switched projects).
+        const currentPcp = this.myForm.controls['pcp'].value || (this.isEditing ? this.activity?.pcp : '');
+        this.myForm.controls['pcp'].setValue(this.periods.some((p: any) => p._id === currentPcp) ? currentPcp : '');
+        // Enable pcp select only when periods exist — prevents black bar on empty select
+        if (this.typeIsPCP && this.periods.length > 0) {
+          this.myForm.get('pcp')!.enable();
+        } else {
+          this.myForm.controls['pcp'].reset({ value: '', disabled: true });
         }
+        this._cdr.markForCheck();
       });
   }
 

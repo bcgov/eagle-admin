@@ -1,17 +1,23 @@
 import { Component, OnInit, ChangeDetectorRef, inject, ChangeDetectionStrategy, DestroyRef} from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivityDetailTableRowsComponent } from 'src/app/activity/activity-detail-table-rows/activity-detail-table-rows.component';
 import { SearchTerms } from 'src/app/models/search';
 import { StorageService } from 'src/app/services/storage.service';
-import { SearchService } from 'src/app/services/search.service';
+import { RecentActivityService } from 'src/app/services/recent-activity';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { UPDATE_LIST_ERROR_MESSAGE } from 'src/app/activity/update-rules';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
-import { encodeParams } from 'src/app/shared/utils/utils';
+import { withLoading } from 'src/app/shared/utils/rxjs-operators';
+import { DemiList } from 'src/app/models/demi/demi-list';
+import { DemiUpdate, nativeUpdateSort } from 'src/app/models/demi/update';
 
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
@@ -32,9 +38,11 @@ export class ProjectUpdatesComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private _changeDetectionRef = inject(ChangeDetectorRef);
-  private searchService = inject(SearchService);
+  private recentActivityService = inject(RecentActivityService);
   private loadingState = inject(LoadingStateService);
   private destroyRef = inject(DestroyRef);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
 
   public terms = new SearchTerms();
   public currentProject;
@@ -42,12 +50,13 @@ export class ProjectUpdatesComponent implements OnInit {
   public keywords;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
-  public recentActivities;
+  public recentActivities: DemiUpdate[] = [];
   public tableColumns: TableColumn[] = [
     {
       name: 'Headline',
       value: 'headline',
-      width: '80%'
+      width: '80%',
+      nosort: true
     },
     {
       name: 'Date',
@@ -65,47 +74,38 @@ export class ProjectUpdatesComponent implements OnInit {
           this.tableParams.sortBy = '-dateAdded';
         }
 
-        const projectId = this.route.parent.snapshot.paramMap.get('projId');
-        const keywords = params.keywords || '';
-
-        return this.searchService.getSearchResults(
-          keywords, 'RecentActivity',
-          [{ 'name': 'project', 'value': projectId }],
-          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, {}, true, {}, ''
-        );
+        // Updates store the Eagle project id; a project with none has no updates.
+        const eagleProjectId = this.route.parent.snapshot.data['project']?._id;
+        if (!eagleProjectId) {
+          return of({ rows: [], total: 0 } as DemiList<DemiUpdate>);
+        }
+        return this.recentActivityService.list({
+          page: this.tableParams.currentPage,
+          pageSize: this.tableParams.pageSize,
+          sort: nativeUpdateSort(this.tableParams.sortBy) ?? '-dateAdded',
+          q: this.tableParams.keywords || undefined,
+          filters: { project: eagleProjectId }
+        }).pipe(withLoading(this.loadingState, 'search-results'));
       }),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((data: any) => {
-      if (data) {
-        if (data[0].data.meta && data[0].data.meta.length > 0) {
-          this.tableParams.totalListItems = data[0].data.meta[0].searchResultsTotal;
-          this.recentActivities = data[0].data.searchResults;
-        } else {
-          this.tableParams.totalListItems = 0;
-          this.recentActivities = [];
-        }
+    ).subscribe({
+      next: page => {
+        this.tableParams.totalListItems = page.total ?? 0;
+        this.recentActivities = page.rows;
         this.setRowData();
         this._changeDetectionRef.markForCheck();
-      } else {
-        alert('Uh-oh, couldn\'t load valued components');
+      },
+      error: error => {
+        this.logger.error('Project update list failed', 'ProjectUpdatesComponent', error);
+        this.toastService.error(UPDATE_LIST_ERROR_MESSAGE);
         this.router.navigate(['/search']);
       }
     });
   }
 
   setRowData() {
-    const list = [];
-    if (this.recentActivities && this.recentActivities.length > 0) {
-      this.recentActivities.forEach(document => {
-        list.push(
-          document
-        );
-      });
-      this.tableData = new TableObject(
-        ActivityDetailTableRowsComponent,
-        list,
-        this.tableParams
-      );
+    if (this.recentActivities?.length) {
+      this.tableData = new TableObject(ActivityDetailTableRowsComponent, this.recentActivities, this.tableParams);
     }
   }
 
@@ -121,7 +121,7 @@ export class ProjectUpdatesComponent implements OnInit {
     params['dataset'] = this.terms.dataset;
     params['currentPage'] = this.tableParams.currentPage = pageNumber;
     params['sortBy'] = this.tableParams.sortBy;
-    params['keywords'] = encodeParams(this.tableParams.keywords = this.keywords || '');
+    params['keywords'] = this.tableParams.keywords = this.keywords || '';
     params['pageSize'] = this.tableParams.pageSize;
     this.router.navigate(['p', this.currentProject._id, 'project-updates', params]);
   }
