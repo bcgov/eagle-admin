@@ -1,9 +1,13 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { ReplaySubject, firstValueFrom } from 'rxjs';
+import { Injectable, Injector, inject, signal, computed } from '@angular/core';
+import { ReplaySubject, firstValueFrom, forkJoin } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LoggingService } from './logging.service';
 import { LoadingStateService } from './loading-state.service';
+import { DemiApiService } from './demi-api.service';
+import { List } from '../models/demi/list';
+
+// Lists load before sign-in finishes, and DEMI caps anonymous pages at 100 rows.
+const LISTS_PAGE_SIZE = 100;
 
 interface EnvConfig {
   logLevel?: number;
@@ -45,7 +49,7 @@ declare global {
  */
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
-  private httpClient = inject(HttpClient);
+  private injector = inject(Injector);
   private logger = inject(LoggingService);
   private loadingState = inject(LoadingStateService);
 
@@ -64,11 +68,11 @@ export class ConfigService {
 
   // UI state
   private _baseLayerName = 'World Topographic';
-  private _lists: any[] = [];
+  private _lists: List[] = [];
   // ReplaySubject(1) replays the latest lists to any new subscriber immediately.
   // toSignal() bridges it to Angular's signal graph — zone-safe, no manual detectChanges needed.
-  private readonly _lists$ = new ReplaySubject<any[]>(1);
-  public readonly listsSignal = toSignal(this._lists$, { initialValue: [] as any[] });
+  private readonly _lists$ = new ReplaySubject<List[]>(1);
+  public readonly listsSignal = toSignal(this._lists$, { initialValue: [] as List[] });
   private _listsPromise: Promise<void> | null = null;
   private _regions: any[] = [];
 
@@ -122,25 +126,10 @@ export class ConfigService {
       this.loadingState.startLoading('lists', 'Loading document metadata');
       this._listsPromise = (async () => {
         try {
-          const url = `${this.getApiPath()}/search?pageSize=1000&dataset=List`;
-          const response = await firstValueFrom(this.httpClient.get<any>(url));
-          this.logger.debug('Lists API raw response:', 'ConfigService', response);
-          
-          // API usually returns [{ searchResults: [...], meta: [...] }] 
-          // but sometimes (Document schema or local mocks) it might return a direct array.
-          if (Array.isArray(response) && response[0]?.searchResults) {
-            this._lists = response[0].searchResults;
-          } else if (Array.isArray(response)) {
-            this._lists = response;
-          } else if (response?.searchResults) {
-            this._lists = response.searchResults;
-          } else {
-            this._lists = [];
-          }
-
+          this._lists = await this.fetchAllLists();
           this.logger.debug(`Resolved ${this._lists.length} list items`, 'ConfigService');
           if (this._lists.length === 0) {
-            throw new Error('Lists response was empty or unrecognized format');
+            throw new Error('DEMI returned no List rows');
           }
           this._lists$.next(this._lists);
           this.populateRegionsList();
@@ -154,6 +143,23 @@ export class ConfigService {
       })();
     }
     return this._listsPromise ?? Promise.resolve();
+  }
+
+  /** Every DEMI `List` row: page 1 asks for the total, the remaining pages load in parallel. */
+  private async fetchAllLists(): Promise<List[]> {
+    // Resolved on first call: DemiApiService injects ConfigService, so a field inject would be circular.
+    const demi = this.injector.get(DemiApiService);
+    const first = await firstValueFrom(demi.list<List>('lists', { page: 1, pageSize: LISTS_PAGE_SIZE, count: true }));
+    if (first.total == null) {
+      throw new Error('DEMI /lists answered without x-total-count');
+    }
+    const pageCount = Math.ceil(first.total / LISTS_PAGE_SIZE);
+    if (pageCount <= 1) {
+      return first.rows;
+    }
+    const rest = Array.from({ length: pageCount - 1 }, (_, i) => demi.list<List>('lists', { page: i + 2, pageSize: LISTS_PAGE_SIZE }));
+    const pages = await firstValueFrom(forkJoin(rest));
+    return [first.rows, ...pages.map(page => page.rows)].flat();
   }
 
   /**
@@ -173,7 +179,7 @@ export class ConfigService {
     return this.configLoaded;
   }
 
-  get lists(): any[] {
+  get lists(): List[] {
     return this._lists;
   }
 

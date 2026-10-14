@@ -22,6 +22,7 @@ import { TableObject, TableColumn } from '../shared/components/table-template/ta
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
+import { filterCompareWith } from '../shared/utils/utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 import { LoggingService } from '../services/logging.service';
@@ -561,23 +562,23 @@ export class SearchComponent implements OnInit {
   setFiltersFromParams(params) {
     if (this.terms.dataset === 'Project') {
       this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, '_id');
+      this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'id');
       this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
       this.paramsToCollectionFilters(params, 'vc', null, '_id');
-      this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
+      this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'id');
       this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
       this.paramsToCollectionFilters(params, 'projectType', this.projectTypes, 'name');
       this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
-      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
 
       this.paramsToDateFilters(params, 'decisionDateStart');
       this.paramsToDateFilters(params, 'decisionDateEnd');
     } else if (this.terms.dataset === 'Document') {
-      this.paramsToCollectionFilters(params, 'milestone', this.milestones, '_id');
-      this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, '_id');
-      this.paramsToCollectionFilters(params, 'docType', this.docTypes, '_id');
-      this.paramsToCollectionFilters(params, 'type', this.docTypes, '_id');
-      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
+      this.paramsToCollectionFilters(params, 'milestone', this.milestones, 'id');
+      this.paramsToCollectionFilters(params, 'documentAuthorType', this.authors, 'id');
+      this.paramsToCollectionFilters(params, 'docType', this.docTypes, 'id');
+      this.paramsToCollectionFilters(params, 'type', this.docTypes, 'id');
+      this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
 
       this.paramsToDateFilters(params, 'datePostedStart');
       this.paramsToDateFilters(params, 'datePostedEnd');
@@ -617,21 +618,21 @@ export class SearchComponent implements OnInit {
   setParamsFromFilters(params) {
     if (this.terms.dataset === 'Project') {
       this.collectionFilterToParams(params, 'region', 'code');
-      this.collectionFilterToParams(params, 'CEAAInvolvement', '_id');
-      this.collectionFilterToParams(params, 'eacDecision', '_id');
+      this.collectionFilterToParams(params, 'CEAAInvolvement', 'id');
+      this.collectionFilterToParams(params, 'eacDecision', 'id');
       this.collectionFilterToParams(params, 'pcp', 'code');
       this.collectionFilterToParams(params, 'proponent', '_id');
       this.collectionFilterToParams(params, 'vc', '_id');
       this.collectionFilterToParams(params, 'projectType', 'name');
-      this.collectionFilterToParams(params, 'projectPhase', '_id');
+      this.collectionFilterToParams(params, 'projectPhase', 'id');
 
       this.dateFilterToParams(params, 'decisionDateStart');
       this.dateFilterToParams(params, 'decisionDateEnd');
     } else if (this.terms.dataset === 'Document') {
-      this.collectionFilterToParams(params, 'milestone', '_id');
-      this.collectionFilterToParams(params, 'documentAuthorType', '_id');
-      this.collectionFilterToParams(params, 'docType', '_id');
-      this.collectionFilterToParams(params, 'projectPhase', '_id');
+      this.collectionFilterToParams(params, 'milestone', 'id');
+      this.collectionFilterToParams(params, 'documentAuthorType', 'id');
+      this.collectionFilterToParams(params, 'docType', 'id');
+      this.collectionFilterToParams(params, 'projectPhase', 'id');
 
       this.dateFilterToParams(params, 'datePostedStart');
       this.dateFilterToParams(params, 'datePostedEnd');
@@ -808,18 +809,8 @@ export class SearchComponent implements OnInit {
   }
 
   clearSelectedItem(filter: string, item: any) {
-    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option._id !== item._id);
+    this.filterForUI[filter] = this.filterForUI[filter].filter(option => option.id !== item.id);
   }
 
-  public filterCompareWith(filter: any, filterToCompare: any) {
-    if (filter.hasOwnProperty('code')) {
-      return filter && filterToCompare
-        ? filter.code === filterToCompare.code
-        : filter === filterToCompare;
-    } else if (filter.hasOwnProperty('_id')) {
-      return filter && filterToCompare
-        ? filter._id === filterToCompare._id
-        : filter === filterToCompare;
-    }
-  }
+  public readonly filterCompareWith = filterCompareWith;
 }

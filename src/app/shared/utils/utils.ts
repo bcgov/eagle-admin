@@ -93,7 +93,7 @@ export function natureBuildMapper(key: string): string {
 function getIdsByName(terms: Array<any>, list: Array<any>) {
   return terms.map(term => {
     const listItem = list.find(item => item.name === term.name && item.legislation === term.legislation);
-    return { name: term.name, id: listItem?._id ?? null };
+    return { name: term.name, id: listItem?.id ?? null };
   });
 }
 
@@ -115,8 +115,8 @@ export function createProjectTabModifiers(list: Array<any>) {
 
   const amendmentPhaseIds = getIdsByName(applications, list).map(t => t.id);
   const phases = list
-    .filter(item => item.type === 'projectPhase' && !amendmentPhaseIds.includes(item._id))
-    .map(item => item._id)
+    .filter(item => item.type === 'projectPhase' && !amendmentPhaseIds.includes(item.id))
+    .map(item => item.id)
     .join(',');
 
   const typeIds = getIdsByName(types, list).map(t => t.id).join(',');
@@ -125,5 +125,11 @@ export function createProjectTabModifiers(list: Array<any>) {
   const queryModifier: any = { documentSource: 'PROJECT', type: typeIds, milestone: milestoneIds };
   if (phases) { queryModifier['projectPhase'] = phases; }
   return queryModifier;
+}
+
+/** ng-select `compareWith` for filter options: regions by `code`, organizations by `_id`, List rows by `id`. */
+export function filterCompareWith(filter: any, filterToCompare: any): boolean {
+  const key = ['code', '_id', 'id'].find(k => filter.hasOwnProperty(k));
+  return !!key && !!filterToCompare && filter[key] === filterToCompare[key];
 }
 

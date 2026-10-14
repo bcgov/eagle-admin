@@ -19,6 +19,7 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
+import { filterCompareWith } from 'src/app/shared/utils/utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -282,13 +283,13 @@ export class ProjectListComponent implements OnInit {
 
   setFiltersFromParams(params) {
     this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, '_id');
+    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'id');
     this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
     this.paramsToCollectionFilters(params, 'vc', null, '_id');
-    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, '_id');
+    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'id');
     this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
     this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
-    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, '_id');
+    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -334,13 +335,13 @@ export class ProjectListComponent implements OnInit {
     this.checkboxFilterToParams(params, 'pcp');
 
     this.collectionFilterToParams(params, 'region', 'code');
-    this.collectionFilterToParams(params, 'CEAAInvolvement', '_id');
+    this.collectionFilterToParams(params, 'CEAAInvolvement', 'id');
     this.collectionFilterToParams(params, 'proponent', '_id');
     this.collectionFilterToParams(params, 'vc', '_id');
-    this.collectionFilterToParams(params, 'eacDecision', '_id');
+    this.collectionFilterToParams(params, 'eacDecision', 'id');
     this.collectionFilterToParams(params, 'pcp', 'code');
     this.collectionFilterToParams(params, 'type', 'name');
-    this.collectionFilterToParams(params, 'projectPhase', '_id');
+    this.collectionFilterToParams(params, 'projectPhase', 'id');
 
     this.dateFilterToParams(params, 'decisionDateStart');
     this.dateFilterToParams(params, 'decisionDateEnd');
@@ -638,22 +639,12 @@ export class ProjectListComponent implements OnInit {
   clearSelectedItem(filterType: string, item: any) {
     this.logger.debug('clear selected items', 'ProjectListComponent', { filterType, item });
     if (filterType === 'eacDecision' || filterType === 'projectPhase' || filterType === 'CEAAInvolvement') {
-      this.filterForUI[filterType] = this.filterForUI[filterType].filter(option => option._id !== item._id);
+      this.filterForUI[filterType] = this.filterForUI[filterType].filter(option => option.id !== item.id);
     } else {
       this.filterForUI[filterType] = this.filterForUI[filterType].filter(option => option.name !== item.name);
     }
   }
 
-  public filterCompareWith(filter: any, filterToCompare: any) {
-    if (filter.hasOwnProperty('code')) {
-      return filter && filterToCompare
-        ? filter.code === filterToCompare.code
-        : filter === filterToCompare;
-    } else if (filter.hasOwnProperty('_id')) {
-      return filter && filterToCompare
-        ? filter._id === filterToCompare._id
-        : filter === filterToCompare;
-    }
-  }
+  public readonly filterCompareWith = filterCompareWith;
 
 }
