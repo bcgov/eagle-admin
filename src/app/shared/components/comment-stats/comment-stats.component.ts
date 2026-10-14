@@ -7,7 +7,6 @@ import { CommentPeriodService } from 'src/app/services/commentperiod.service';
     selector: 'app-comment-stats',
     templateUrl: './comment-stats.component.html',
     styleUrl: './comment-stats.component.css',
-    
 })
 
 export class CommentStatsComponent implements OnInit {
@@ -19,10 +18,12 @@ export class CommentStatsComponent implements OnInit {
   public summary: any;
 
   ngOnInit() {
-    if (!this.period()?._id) {
+    // DEMI keys a period's comments on its DEMI id, which differs from `_id` on a period ENGAGE created.
+    const id = this.period()?.demiId ?? this.period()?._id;
+    if (!id) {
       return;
     }
-    this.api.getSummaryById(this.period()._id)
+    this.api.getSummaryById(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(summary => {
         this.summary = summary;

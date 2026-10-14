@@ -10,6 +10,7 @@ import { EditorModule } from '@tinymce/tinymce-angular';
 import { SafeHtmlPipe } from 'src/app/shared/pipes/safe-html-converter.pipe';
 
 import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { LegacyCommentPeriod, toEagleSaveBody } from '../comment-period-legacy';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
@@ -50,7 +51,7 @@ export class AddEditCommentPeriodComponent implements OnInit {
   private logger = inject(LoggingService);
 
   project = input.required<any>();
-  commentPeriod = input<CommentPeriod>(undefined);
+  commentPeriod = input<LegacyCommentPeriod>(undefined);
   public componentBaseUrl: string;
   public currentCommentPeriod = new CommentPeriod;
   public milestones: any[] = [];
@@ -102,7 +103,10 @@ export class AddEditCommentPeriodComponent implements OnInit {
         if (segment.path === 'edit') {
           this.isEditing = true;
           const cp = this.commentPeriod();
-          if (cp) {
+          if (cp?.readOnly) {
+            this.toastService.error('This comment period cannot be edited here.');
+            this.router.navigate([this.componentBaseUrl, this.project()._id, 'cp', cp._id]);
+          } else if (cp) {
             this.currentCommentPeriod = cp;
             this.initSelectedDocs();
             this.initForm();
@@ -281,7 +285,7 @@ export class AddEditCommentPeriodComponent implements OnInit {
 
     // Submit
     if (this.isEditing) {
-      this.commentPeriodService.save(this.currentCommentPeriod)
+      this.commentPeriodService.save(toEagleSaveBody(this.currentCommentPeriod))
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           error: () => {

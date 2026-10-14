@@ -12,7 +12,7 @@ import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
-import { encodeString, formatDate } from '../shared/utils/utils';
+import { encodeString } from '../shared/utils/utils';
 
 /** Admin URL that streams a document inline. */
 export function documentFetchUrl(document: Pick<Document, '_id' | 'documentSource' | 'internalOriginalName' | 'documentFileName'>): string {
@@ -216,33 +216,5 @@ export class DocumentService {
 
   public async openDocument(document: Document): Promise<void> {
     window.open(documentFetchUrl(document), '_blank');
-  }
-
-  public async exportComments(period: string, projectName: string, format: string): Promise<void> {
-    const blob = await this.api.get<Blob>(`comment/export/${period}?format=${format}`, { responseType: 'blob' }).toPromise();
-    projectName = projectName.split(' ').join('_');
-    const currentDate = formatDate(new Date());
-    let filename = '';
-    if (format === 'staff') {
-      filename = `${projectName}-eao-${currentDate}.csv`;
-    } else if (format === 'proponent') {
-      filename = `${projectName}-proponent-${currentDate}.csv`;
-    } else {
-      filename = 'export.csv';
-    }
-    filename = encodeString(filename, true);
-    if (this.isMS) {
-      (window.navigator as any).msSaveBlob(blob, filename);
-    } else {
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement('a');
-      window.document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    }
   }
 }
