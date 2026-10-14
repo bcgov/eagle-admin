@@ -20,6 +20,11 @@ export function legacyDocumentRow(row: any): any {
   };
 }
 
+/** A mapped row can be linked, published or deleted only when it has an Eagle id: those writes go to eagle-api. */
+export function isSelectableDocument(row: { _id?: string | null }): boolean {
+  return !!row._id;
+}
+
 /** Table sort (`-datePosted`, `+displayName`) as a native documents `sort`; keys DEMI cannot sort by are dropped. */
 export function nativeDocumentSort(sortBy: string | null | undefined): string | undefined {
   const key = sortBy?.replace(/^\+/, '');

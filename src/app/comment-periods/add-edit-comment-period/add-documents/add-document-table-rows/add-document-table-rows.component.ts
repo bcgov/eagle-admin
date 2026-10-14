@@ -5,6 +5,7 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { FormsModule } from '@angular/forms';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
+import { isSelectableDocument } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,7 +45,10 @@ export class AddDocumentTableRowsComponent implements OnInit, TableComponent {
     }
   }
 
+  readonly isSelectable = isSelectableDocument;
+
   selectItem(item) {
+    if (!isSelectableDocument(item)) { return; }
     item.checkbox = !item.checkbox;
     if (item.checkbox) {
       this.storageService.state.selectedDocumentsForCP.data.push(item);

@@ -2,7 +2,8 @@
   <tr
     class="clickable-row">
     <td data-label="Select" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[0].width">
-      <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox'>
+      <input type="checkbox" aria-label="Checkbox for row item" [(ngModel)]='document.checkbox' [disabled]="!isSelectable(document)"
+        [title]="isSelectable(document) ? '' : 'No Eagle record, so it cannot be linked'">
     </td>
     <td data-label="Name" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[1].width">{{document.displayName}}</td>
     <td data-label="Date" (click)="selectItem(document)" scope="row" [style.width]="!useSmallTable && columns[2].width">{{document.datePosted | date:'longDate'}}

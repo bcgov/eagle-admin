@@ -14,7 +14,8 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { Constants } from 'src/app/shared/utils/constants';
 import { encodeString } from 'src/app/shared/utils/utils';
 import { PnDocumentTableRowsComponent } from './project-notification-document-table-rows/project-notification-document-table-rows.component';
-import { legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
+import { DemiDocumentFilters } from 'src/app/models/demi/document';
+import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
@@ -136,12 +137,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
           tableData.data.forEach(item => {
             if (item.checkbox === true) { someSelected = true; }
           });
-          tableData.data.forEach(item => {
+          tableData.data.filter(isSelectableDocument).forEach(item => {
             item.checkbox = !someSelected;
           });
         }
 
-        this.selectedCount.set({ ...this.selectedCount(), total: someSelected ? 0 : (tableData?.data.length ?? 0) });
+        this.selectedCount.set({ ...this.selectedCount(), total: someSelected ? 0 : (tableData?.data.filter(isSelectableDocument).length ?? 0) });
         this.setPublishUnpublish();
         break;
       case 'delete':
@@ -338,12 +339,12 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
       pageSize: this.tableParams.pageSize,
       count: true,
       sort: nativeDocumentSort(this.tableParams.sortBy) ?? '-datePosted',
-      filters: { project: notificationId }
+      // DEMI PR #592 adds `documentSource`; the shared filter type does not list it yet.
+      filters: { project: notificationId, documentSource: 'PROJECT-NOTIFICATION' } as DemiDocumentFilters
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => {
-        // Publish, unpublish and delete go to eagle-api by Eagle id, so DEMI-only rows are left out.
-        this.docs = res.rows.map(legacyDocumentRow).filter(doc => doc._id);
+        this.docs = res.rows.map(legacyDocumentRow);
         this.tableParams.totalListItems = res.total ?? 0;
         this.setRowData();
         onLoaded?.();

@@ -12,7 +12,9 @@ import { TableObject, TableColumn } from 'src/app/shared/components/table-templa
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { Document } from 'src/app/models/document';
-import { legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
+import { DemiDocumentFilters } from 'src/app/models/demi/document';
+import { isSelectableDocument, legacyDocumentRow, nativeDocumentSort } from 'src/app/project/project-documents/document-edit/legacy-document-row';
+import { ToastService } from 'src/app/services/toast.service';
 import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -42,6 +44,7 @@ export class AddDocumentComponent implements OnInit {
   storageService = inject(StorageService);
   tableTemplateUtils = inject(TableTemplateUtils);
   private logger = inject(LoggingService);
+  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   public terms = new SearchTerms();
@@ -171,7 +174,8 @@ export class AddDocumentComponent implements OnInit {
           }
         });
 
-        this.documentTableData.data.map((item) => {
+        const selectable = this.documentTableData.data.filter(isSelectableDocument);
+        selectable.forEach((item) => {
           item.checkbox = !someSelected;
           if (item.checkbox) {
             this.storageService.state.selectedDocumentsForCP.data.push(item);
@@ -180,7 +184,7 @@ export class AddDocumentComponent implements OnInit {
           }
         });
 
-        this.selectedCount = someSelected ? 0 : this.documentTableData.data.length;
+        this.selectedCount = someSelected ? 0 : selectable.length;
         this._changeDetectionRef.markForCheck();
         break;
       case 'download':
@@ -245,15 +249,22 @@ export class AddDocumentComponent implements OnInit {
   }
 
   private loadDocuments(page: number, pageSize: number, sortBy: string, keywords: string, onLoaded?: () => void) {
+    const notification = this.storageService.state.currentProject?.type === 'currentProjectNotification';
+    // DEMI PR #592 adds this filter; the shared filter type does not list it yet.
+    const documentSource = notification ? 'PROJECT-NOTIFICATION' : 'PROJECT';
     this.documentsProjectId().pipe(
-      switchMap(project => project
-        ? this.api.listNative({ page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined, filters: { project } })
-        : of({ rows: [], total: 0 })),
+      switchMap(project => {
+        if (!project) {
+          this.toast.error('Could not load documents for this project.');
+          return of({ rows: [], total: 0 });
+        }
+        const filters = { project, documentSource } as DemiDocumentFilters;
+        return this.api.listNative({ page, pageSize, count: true, sort: nativeDocumentSort(sortBy), q: keywords || undefined, filters });
+      }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(res => {
       this.tableParams.totalListItems = res.total ?? 0;
-      // A comment period links documents by Eagle id, so DEMI-only rows cannot be attached.
-      this.documents = res.rows.map(legacyDocumentRow).filter(doc => doc._id);
+      this.documents = res.rows.map(legacyDocumentRow);
       onLoaded?.();
       this.setDocumentRowData();
       this.loading = false;
@@ -269,7 +280,10 @@ export class AddDocumentComponent implements OnInit {
     const eagleId = current ? current.data._id : this.route.parent.parent.snapshot.params.projId;
     return this.projectService.getNative(eagleId).pipe(
       map(row => row?.id ?? null),
-      catchError(() => of(null))
+      catchError(error => {
+        this.logger.error('DEMI project lookup failed', 'AddDocumentComponent', error);
+        return of(null);
+      })
     );
   }
 

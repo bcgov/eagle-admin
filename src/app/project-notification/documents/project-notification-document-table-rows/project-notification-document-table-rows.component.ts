@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ListConverterPipe } from 'src/app/shared/pipes/list-converter.pipe';
+import { isSelectableDocument } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -41,7 +42,10 @@ export class PnDocumentTableRowsComponent implements OnInit, TableComponent {
     this.useSmallTable = this.smallTable();
   }
 
+  readonly isSelectable = isSelectableDocument;
+
   selectItem(item) {
+    if (!isSelectableDocument(item)) { return; }
     item.checkbox = !item.checkbox;
     let count = 0;
     this.documents.forEach(doc => {

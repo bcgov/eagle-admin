@@ -9,8 +9,10 @@ import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { DemiDocument } from 'src/app/models/demi/document';
 
-const nativeRow = {
+// The row shape the document list and detail put in `selectedDocs`.
+const nativeRow: DemiDocument = {
   id: '3f2a9c1e-uuid',
   projectId: 'demi-project-1',
   eagleId: 'eagle-doc-1',
