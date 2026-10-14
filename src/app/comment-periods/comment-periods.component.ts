@@ -132,7 +132,6 @@ export class CommentPeriodsComponent implements OnInit {
           daysRemaining: commentPeriod.daysRemaining,
           isMet: commentPeriod.isMet,
           metURLAdmin: commentPeriod.metURLAdmin,
-          // Same field the Published column sorts on in the API.
           read: commentPeriod.isPublished ? 'Published' : 'Not Published',
           _id: commentPeriod._id,
           demiId: commentPeriod.demiId,
