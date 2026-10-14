@@ -38,20 +38,14 @@ export class ApplicationSortTableRowsComponent implements OnInit, TableComponent
 
   updateSelectedCount(editedDoc: any): void {
     this.selectedCount.emit(editedDoc);
-    if (Array.isArray(this.storageService.state.editedDocs)) {
-      // check if it exists already
-      let docWasEditedPreviously = false;
-      this.storageService.state.editedDocs.forEach((previouslyEditedDoc: any) => {
-        if (previouslyEditedDoc._id === editedDoc._id) {
-          // update entry
-          previouslyEditedDoc = editedDoc;
-          docWasEditedPreviously = true;
-          return;
-        }
-      });
-
-      if (!docWasEditedPreviously) {
-        this.storageService.state.editedDocs.push(editedDoc);
+    const edited = this.storageService.state.editedDocs;
+    if (Array.isArray(edited)) {
+      // By `id`: rows not in Eagle yet all have no `_id`.
+      const index = edited.findIndex((doc: any) => doc.id === editedDoc.id);
+      if (index === -1) {
+        edited.push(editedDoc);
+      } else {
+        edited[index] = editedDoc;
       }
     }
   }
