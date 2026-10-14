@@ -35,6 +35,6 @@ export class UserTableRowsComponent implements OnInit, TableComponent {
 
   editItem(contact) {
     this.navigationStackUtils.clearNavigationStack();
-    this.router.navigate(['c/', contact._id, 'edit']);
+    this.router.navigate(['c/', contact.id, 'edit']);
   }
 }

@@ -4,17 +4,30 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TableParamsObject } from '../table-template/table-params-object';
 import { TableObject, TableColumn } from '../table-template/table-object';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Org } from 'src/app/models/org';
 import { SearchTerms } from 'src/app/models/search';
 import { User } from 'src/app/models/user';
+import { User as DemiUser, nativeSort, tableSort } from 'src/app/models/demi/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy } from '../../utils/table-template-utils';
-import { SearchService } from 'src/app/services/search.service';
+import { UserService, emptyPageOnError } from 'src/app/services/user.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../table-template/table-template.component';
+
+/** Legacy row for the project form tabs, which store the picked contact's `_id` and `displayName`. */
+export function toPickedContact(row: DemiUser): User {
+  return new User({
+    _id: row.id,
+    displayName: row.displayName,
+    orgName: row.orgName,
+    email: row.email,
+    phoneNumber: row.phoneNumber
+  });
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,12 +47,14 @@ export class ContactSelectComponent implements OnInit {
   private _changeDetectionRef = inject(ChangeDetectorRef);
   private tableTemplateUtils = inject(TableTemplateUtils);
   storageService = inject(StorageService);
-  private searchService = inject(SearchService);
+  private userService = inject(UserService);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private loadingState = inject(LoadingStateService);
 
   public loading = this.loadingState.getOperationState('search-results');
-  public entries: User[] = null;
+  public entries: DemiUser[] = null;
   public terms = new SearchTerms();
   public typeFilters = [];
   public selectedCount = 0;
@@ -50,23 +65,26 @@ export class ContactSelectComponent implements OnInit {
   public tableColumns: TableColumn[] = [
     {
       name: 'Name',
-      value: 'lastName,+firstName',
+      value: 'displayName',
       width: '25%'
     },
     {
       name: 'Organization',
       value: 'orgName',
-      width: '25%'
+      width: '25%',
+      nosort: true
     },
     {
       name: 'Email',
       value: 'email',
-      width: '25%'
+      width: '25%',
+      nosort: true
     },
     {
       name: 'Phone Number',
       value: 'phoneNumber',
-      width: '25%'
+      width: '25%',
+      nosort: true
     }
   ];
 
@@ -81,46 +99,36 @@ export class ContactSelectComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-        if (this.tableParams.sortBy === '' && this.storageService.state.sortBy) {
-          this.tableParams.sortBy = this.storageService.state.sortBy;
+        const sort = nativeSort(this.tableParams.sortBy || this.storageService.state.sortBy, 'displayName');
+        if (this.tableParams.sortBy !== tableSort(sort)) {
+          this.tableParams.sortBy = tableSort(sort);
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
         }
-        return this.searchService.getSearchResults(
-          this.tableParams.keywords || '', 'User', null,
-          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
-          {}, false, {}, ''
-        );
+        return this.userService.listUsers({
+          q: this.tableParams.keywords,
+          page: this.tableParams.currentPage,
+          pageSize: this.tableParams.pageSize,
+          sort
+        }).pipe(emptyPageOnError<DemiUser>(err => {
+          this.logger.error('contact list failed', 'ContactSelectComponent', err);
+          this.toastService.error('Contacts could not be loaded.');
+        }));
       }),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((res: any) => {
-      if (res && res.length > 0 && res[0].data.meta && res[0].data.meta.length > 0) {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.entries = res[0].data.searchResults;
-      } else {
-        this.tableParams.totalListItems = 0;
-        this.entries = [];
-      }
+    ).subscribe(({ rows, total }) => {
+      this.tableParams.totalListItems = total ?? 0;
+      this.entries = rows;
       this.setRowData();
       this._changeDetectionRef.markForCheck();
     });
   }
 
   setRowData() {
-    const list = [];
-    if (this.entries && this.entries.length > 0) {
-      this.entries.forEach((item: any) => {
-        if (this.storageService.state.componentModel === 'User') {
-          list.push(new User(item));
-        } else {
-          list.push(new Org(item));
-        }
-      });
-      this.tableData = new TableObject(
-        this.storageService.state.rowComponent,
-        list,
-        this.tableParams
-      );
-    }
+    this.tableData = new TableObject(
+      this.storageService.state.rowComponent,
+      (this.entries ?? []).map(toPickedContact),
+      this.tableParams
+    );
   }
 
   goBack() {

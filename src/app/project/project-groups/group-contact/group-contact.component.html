@@ -9,7 +9,7 @@
     <li class="breadcrumb-item">
       <a [routerLink]="['/p', currentProject._id, 'project-groups']">Groups</a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page">{{group.name}}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{group?.name}}</li>
   </ol>
 </nav>
 <div class="search-container">

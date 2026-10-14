@@ -6,7 +6,7 @@ import { Topic } from 'src/app/models/topic';
 import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
-import { SearchService } from 'src/app/services/search.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { EditorModule } from '@tinymce/tinymce-angular';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -35,7 +35,7 @@ export class AddEditContactComponent implements OnInit {
   protected navigationStackUtils = inject(NavigationStackUtils);
   private storageService = inject(StorageService);
   private userService = inject(UserService);
-  private searchService = inject(SearchService);
+  private toastService = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private cdr = inject(ChangeDetectorRef);
 
@@ -118,18 +118,23 @@ export class AddEditContactComponent implements OnInit {
         this.loading = false;
       } else {
         this.loading = true;
-        this.searchService.getItem(contactId, 'User').pipe(
+        this.userService.getUser(contactId).pipe(
           takeUntilDestroyed(this.destroyRef),
           finalize(() => { this.loading = false; this.cdr.markForCheck(); })
-        ).subscribe(res => {
-          if (!res?.data) { return; }
-          if (org !== '') {
-            res.data.org = org;
-            res.data.orgName = this.contactOrganizationName;
-          } else {
-            this.contactOrganizationName = res.data.orgName;
+        ).subscribe({
+          next: contact => {
+            if (org !== '') {
+              this.buildForm({ ...contact, org, orgName: this.contactOrganizationName });
+            } else {
+              this.contactOrganizationName = contact.orgName;
+              this.buildForm(contact);
+            }
+          },
+          error: err => {
+            this.logger.error('contact load failed', 'AddEditContactComponent', err);
+            this.toastService.error('This contact could not be loaded.');
+            this.router.navigate(this.navigationStackUtils.getLastBackUrl() ?? ['/contacts']);
           }
-          this.buildForm(res.data);
         });
       }
     } else {
@@ -190,7 +195,8 @@ export class AddEditContactComponent implements OnInit {
   private buildForm(data) {
     this.contactForm = new FormGroup({
       'firstName': new FormControl<string | null>(data.firstName, Validators.required),
-      'middleName': new FormControl<string | null>(data.middleName),
+      // DEMI sends a missing middle name as null.
+      'middleName': new FormControl<string | null>(data.middleName ?? ''),
       'lastName': new FormControl<string | null>(data.lastName, Validators.required),
       'email': new FormControl<string | null>(data.email),
       'org': new FormControl<string | null>(data.org, Validators.required),
@@ -233,7 +239,8 @@ export class AddEditContactComponent implements OnInit {
       firstName: this.contactForm.controls.firstName.value,
       middleName: this.contactForm.controls.middleName.value,
       lastName: this.contactForm.controls.lastName.value,
-      displayName: `${this.contactForm.controls.firstName.value} ${this.contactForm.controls.middleName.value} ${this.contactForm.controls.lastName.value}`,
+      displayName: [this.contactForm.controls.firstName.value, this.contactForm.controls.middleName.value, this.contactForm.controls.lastName.value]
+        .filter(Boolean).join(' '),
       email: this.contactForm.controls.email.value,
       org: this.contactForm.controls.org.value,
       orgName: this.contactOrganizationName,
