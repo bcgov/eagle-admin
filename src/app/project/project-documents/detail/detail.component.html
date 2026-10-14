@@ -24,9 +24,15 @@
             <button class="btn btn-primary" id="actionDropdown" ngbDropdownToggle>Actions</button>
             <div class="dropdown-menu" aria-labelledby="actionDropdown" ngbDropdownMenu>
               <button ngbDropdownItem (click)="onEdit()">Edit</button>
-              <button ngbDropdownItem (click)="openDocument()">Open</button>
+              @if (published()) {
+                <button ngbDropdownItem (click)="openDocument()">Open</button>
+              } @else {
+                <span class="dropdown-item-text small text-muted" id="open-unavailable">Open in a tab needs a published file. Use Download.</span>
+              }
               <button ngbDropdownItem (click)="downloadDocument()">Download</button>
-              <button ngbDropdownItem (click)="togglePublish()">{{publishText()}}</button>
+              @if (writeId()) {
+                <button ngbDropdownItem (click)="togglePublish()">{{published() ? 'Unpublish' : 'Publish'}}</button>
+              }
             </div>
           </div>
         </div>
@@ -37,19 +43,11 @@
           <p id="displayName">{{resolvedDocument().displayName || '-'}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="publicHitCount">Public Views: </h3>
-          <p id="publicHitCount">{{resolvedDocument().publicHitCount || '-'}}</p>
-        </div>
-        <div class="label-pair">
-          <h3 for="secureHitCount">Secure Views: </h3>
-          <p id="secureHitCount">{{resolvedDocument().secureHitCount || '-'}}</p>
-        </div>
-        <div class="label-pair">
           <p id="status publish-state">
             <i class="material-icons">
-              {{publishText() === 'Publish' ? 'cloud_off' : 'cloud_done'}}
+              {{published() ? 'cloud_done' : 'cloud_off'}}
             </i>
-            {{publishText() === 'Publish' ? 'Not Published' : 'Published'}}
+            {{published() ? 'Published' : 'Not Published'}}
           </p>
         </div>
         <div class="label-pair">
@@ -60,21 +58,11 @@
           <h3 for="description">Description: </h3>
           <p id="description">{{resolvedDocument().description || '-'}}</p>
         </div>
-        @if (resolvedDocument().labels) {
-          <div class="label-pair">
-            <h3 for="tags">Labels: </h3>
-            @for (label of resolvedDocument().labels; track label) {
-              <div>
-                <div class="me-2 badge badge-pill badge-info">{{label}}</div>
-              </div>
-            }
-          </div>
-        }
       </section>
       <section>
         <div class="label-pair">
           <h3 for="type">Type: </h3>
-          <p id="type">{{resolvedType()}}</p>
+          <p id="type">{{resolvedDocument().type || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="dateUploaded">Upload Date: </h3>
@@ -82,7 +70,7 @@
         </div>
         <div class="label-pair">
           <h3 for="datePosted">Document Date: </h3>
-          @if ($any(resolvedDocument().datePosted) !== '1900-01-01T08:00:00.000Z') {
+          @if (resolvedDocument().datePosted !== '1900-01-01T08:00:00.000Z') {
             <p id="datePosted">{{resolvedDocument().datePosted | date}}</p>
           }
         </div>
@@ -92,19 +80,19 @@
         </div>
         <div class="label-pair">
           <h3 for="documentAuthor">Author: </h3>
-          <p id="documentAuthor">{{resolvedAuthor()}}</p>
+          <p id="documentAuthor">{{resolvedDocument().documentAuthorType || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="milestone">Milestone: </h3>
-          <p id="milestone">{{resolvedMilestone()}}</p>
+          <p id="milestone">{{resolvedDocument().milestone || '-'}}</p>
         </div>
         <div class="label-pair">
           <h3 for="projectPhase">Project Phase: </h3>
-          <p id="projectPhase">{{resolvedProjectPhase()}}</p>
+          <p id="projectPhase">{{resolvedDocument().projectPhase || '-'}}</p>
         </div>
         <div class="label-pair">
-          <h3 for="internalSize">Filesize: </h3>
-          <p id="internalSize">{{formatBytes(resolvedDocument().internalSize)}}</p>
+          <h3 for="fileSize">Filesize: </h3>
+          <p id="fileSize">{{fileSize()}}</p>
         </div>
       </section>
     </main>
