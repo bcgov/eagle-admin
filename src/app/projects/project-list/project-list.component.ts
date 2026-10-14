@@ -1,18 +1,20 @@
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { DateTime } from 'luxon';
-import { Org } from 'src/app/models/org';
-import { Project } from 'src/app/models/project';
+import { DemiList } from 'src/app/models/demi/demi-list';
+import { DemiProject } from 'src/app/models/demi/project';
+import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
 import { SearchTerms } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
-import { OrgService } from 'src/app/services/org.service';
-import { SearchService } from 'src/app/services/search.service';
+import { DemiApiService } from 'src/app/services/demi-api.service';
+import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
@@ -24,6 +26,15 @@ import { ProjectListTableRowsComponent } from './project-list-table-rows/project
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
+import { withLoading } from 'src/app/shared/utils/rxjs-operators';
+
+interface Proponent {
+  id: string;
+  name: string;
+}
+
+/** DEMI's page cap for signed-in reads; test holds about 300 proponents. */
+const PROPONENT_PAGE_SIZE = 1000;
 
 class ProjectFilterObject {
   constructor(
@@ -31,11 +42,9 @@ class ProjectFilterObject {
     public eacDecision: Array<any> = [],
     public decisionDateStart: object = {},
     public decisionDateEnd: object = {},
-    public pcp: Array<any> = [],
     public proponent: Array<any> = [],
     public region: Array<any> = [],
     public CEAAInvolvement: Array<any> = [],
-    public vc: Array<any> = [],
     public projectPhase: Array<any> = [],
   ) { }
 }
@@ -57,22 +66,21 @@ export class ProjectListComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private navigationStackUtils = inject(NavigationStackUtils);
-  private orgService = inject(OrgService);
-  private searchService = inject(SearchService);
+  private demiApi = inject(DemiApiService);
+  private projectService = inject(ProjectService);
   private storageService = inject(StorageService);
   private configService = inject(ConfigService);
   private destroyRef = inject(DestroyRef);
   private logger = inject(LoggingService);
   public loadingState = inject(LoadingStateService);
-  public loading = this.loadingState.getOperationState('search-results');
+  public loading = this.loadingState.getOperationState('project-list');
 
   public readonly constants = Constants;
-  public projects: Array<Project> = [];
-  public proponents: Array<Org> = [];
+  public projects: LegacyProject[] = [];
+  public proponents: Proponent[] = [];
   public regions: Array<any> = [];
   public ceaaInvolvements: Array<object> = [];
   public eacDecisions: Array<object> = [];
-  public commentPeriods: Array<object> = [];
   public projectTypes: Array<object> = [];
   public projectPhases: Array<object> = [];
   public placeholderDateRangeModel: Array<object>;
@@ -82,7 +90,8 @@ export class ProjectListComponent implements OnInit {
   public terms = new SearchTerms();
 
   public filterForURL: object = {};
-  public filterForAPI: object = {};
+  /** Filters as DEMI `/projects` names them, from the last submitted URL. */
+  public filterForAPI: Record<string, string | string[]> = {};
 
   public filterForUI: ProjectFilterObject = new ProjectFilterObject();
 
@@ -90,14 +99,12 @@ export class ProjectListComponent implements OnInit {
 
   public showFilters: object = {
     type: false,
-    eacDecision: false,
-    pcp: false
+    eacDecision: false
   };
 
   public numFilters: object = {
     type: 0,
-    eacDecision: 0,
-    pcp: 0
+    eacDecision: 0
   };
 
   public projectTableData: TableObject;
@@ -110,39 +117,43 @@ export class ProjectListComponent implements OnInit {
     {
       name: 'Proponent',
       value: 'proponent.name',
+      nosort: true,
       width: '20%'
     },
     {
       name: 'Type',
       value: 'type',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Phase',
       value: 'currentPhaseName',
+      nosort: true,
       width: '15%'
     },
     {
       name: 'Decision',
       value: 'eacDecision',
+      nosort: true,
       width: '15%'
     }
   ];
 
   ngOnInit() {
-    this.orgService.getByCompanyType('Proponent/Certificate Holder')
+    this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
+    this.getLists();
+    this.loadProponents()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        switchMap((res: any) => {
-          this.proponents = res || [];
-          this.commentPeriods = Constants.PCP_COLLECTION;
-          this.projectTypes = Constants.PROJECT_TYPE_COLLECTION;
-          this.getLists();
+        switchMap(proponents => {
+          this.proponents = proponents;
           return this.route.params;
         }),
         switchMap((res: any) => {
@@ -163,49 +174,47 @@ export class ProjectListComponent implements OnInit {
               this.tableParams.keywords
             );
           }
-
-          // projectPhase in URL maps to currentPhaseName in DB
-          const apiFilter = { ...this.filterForAPI };
-          if (params.hasOwnProperty('projectPhase')) {
-            apiFilter['currentPhaseName'] = params['projectPhase'];
-            delete apiFilter['projectPhase'];
-          }
-
-          return this.searchService.getSearchResults(
-            this.tableParams.keywords,
-            'Project',
-            null,
-            this.tableParams.currentPage,
-            this.tableParams.pageSize,
-            this.tableParams.sortBy,
-            {},
-            true,
-            apiFilter,
-            ''
-          );
+          return this.fetchProjects();
         }),
       )
       .subscribe({
-        next: (res: any) => {
-          if (res[0].data) {
-            if (res[0].data.searchResults.length > 0) {
-              this.tableParams.totalListItems =
-                res[0].data.meta[0].searchResultsTotal;
-              this.projects = res[0].data.searchResults;
-            } else {
-              this.tableParams.totalListItems = 0;
-              this.projects = [];
-            }
-            this.setRowData();
-          } else {
-            alert('Uh-oh, couldn\'t load topics');
-            this.router.navigate(['/']);
-          }
-        },
+        next: page => this.showPage(page),
         error: (error: any) => {
           this.logger.error('Failed to load projects', 'ProjectListComponent', error);
         }
       });
+  }
+
+  /** Proponent picker options. A failure leaves the picker empty rather than blocking the list. */
+  private loadProponents(): Observable<Proponent[]> {
+    return this.demiApi.list<Proponent>('organizations', {
+      sort: 'name',
+      pageSize: PROPONENT_PAGE_SIZE,
+      filters: { companyType: 'Proponent/Certificate Holder' }
+    }).pipe(
+      map(page => page.rows),
+      catchError(error => {
+        this.logger.error('Failed to load proponents', 'ProjectListComponent', error);
+        return of([]);
+      })
+    );
+  }
+
+  private fetchProjects(): Observable<DemiList<DemiProject>> {
+    return this.projectService.list({
+      page: this.tableParams.currentPage,
+      pageSize: this.tableParams.pageSize,
+      // DEMI sorts projects by name only.
+      sort: this.tableParams.sortBy === '-name' ? '-name' : 'name',
+      q: this.tableParams.keywords || undefined,
+      filters: this.filterForAPI
+    }).pipe(withLoading(this.loadingState, 'project-list'));
+  }
+
+  private showPage(page: DemiList<DemiProject>) {
+    this.tableParams.totalListItems = page.total ?? 0;
+    this.projects = page.rows.map(toLegacyProject);
+    this.setRowData();
   }
 
   addProject() {
@@ -220,45 +229,20 @@ export class ProjectListComponent implements OnInit {
     this.router.navigate(['/projects', 'add', 'form-2018']);
   }
 
-  paramsToCheckboxFilters(params, name, map) {
-    this.filterForUI[name] = {};
-    delete this.filterForURL[name];
-    delete this.filterForAPI[name];
-
-    if (params[name]) {
-      this.filterForURL[name] = params[name];
-
-      const values = params[name].split(',');
-      const apiValues = [];
-      values.forEach(value => {
-        this.filterForUI[name][value] = true;
-        apiValues.push(map && map[value] ? map[value] : value);
-      });
-      if (apiValues.length) {
-        this.filterForAPI[name] = apiValues.join(',');
-      }
-    }
-  }
-
-  paramsToCollectionFilters(params, name, collection, identifyBy) {
+  /** Reads `name` from the URL; sends each picked record's `apiKey` to DEMI as `apiName`. */
+  paramsToCollectionFilters(params, name: string, collection: any[], identifyBy: string, apiName: string, apiKey: string) {
     this.filterForUI[name] = [];
     delete this.filterForURL[name];
-    delete this.filterForAPI[name];
+    delete this.filterForAPI[apiName];
 
     if (params[name] && collection) {
-      const confirmedValues = [];
-      // look up each value in collection
-      const values = params[name].split(',');
-      values.forEach(value => {
-        const record = collection.find(item => item[identifyBy] === value);
-        if (record) {
-          confirmedValues.push(value);
-          this.filterForUI[name].push(record);
-        }
-      });
-      if (confirmedValues.length) {
-        this.filterForURL[name] = confirmedValues.join(',');
-        this.filterForAPI[name] = confirmedValues.join(',');
+      const records = params[name].split(',')
+        .map(value => collection.find(item => item[identifyBy] === value))
+        .filter(Boolean);
+      if (records.length) {
+        this.filterForUI[name] = records;
+        this.filterForURL[name] = records.map(r => r[identifyBy]).join(',');
+        this.filterForAPI[apiName] = records.map(r => r[apiKey]);
       }
     }
   }
@@ -282,29 +266,16 @@ export class ProjectListComponent implements OnInit {
   }
 
   setFiltersFromParams(params) {
-    this.paramsToCollectionFilters(params, 'region', this.regions, 'code');
-    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'id');
-    this.paramsToCollectionFilters(params, 'proponent', this.proponents, '_id');
-    this.paramsToCollectionFilters(params, 'vc', null, '_id');
-    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'id');
-    this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, 'code');
-    this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name');
-    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id');
+    // DEMI region List rows have no code, and DEMI filters proponents by name.
+    this.paramsToCollectionFilters(params, 'region', this.regions, 'name', 'region', 'name');
+    this.paramsToCollectionFilters(params, 'CEAAInvolvement', this.ceaaInvolvements, 'id', 'CEAAInvolvement', 'id');
+    this.paramsToCollectionFilters(params, 'proponent', this.proponents, 'id', 'proponentName', 'name');
+    this.paramsToCollectionFilters(params, 'eacDecision', this.eacDecisions, 'id', 'eacDecision', 'id');
+    this.paramsToCollectionFilters(params, 'type', this.projectTypes, 'name', 'projectType', 'name');
+    this.paramsToCollectionFilters(params, 'projectPhase', this.projectPhases, 'id', 'currentPhaseName', 'id');
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
-  }
-
-  checkboxFilterToParams(params, name) {
-    const keys = [];
-    Object.keys(this.filterForUI[name]).forEach(key => {
-      if (this.filterForUI[name][key]) {
-        keys.push(key);
-      }
-    });
-    if (keys.length) {
-      params[name] = keys.join(',');
-    }
   }
 
   collectionFilterToParams(params, name, identifyBy) {
@@ -332,14 +303,10 @@ export class ProjectListComponent implements OnInit {
   }
 
   setParamsFromFilters(params) {
-    this.checkboxFilterToParams(params, 'pcp');
-
-    this.collectionFilterToParams(params, 'region', 'code');
+    this.collectionFilterToParams(params, 'region', 'name');
     this.collectionFilterToParams(params, 'CEAAInvolvement', 'id');
-    this.collectionFilterToParams(params, 'proponent', '_id');
-    this.collectionFilterToParams(params, 'vc', '_id');
+    this.collectionFilterToParams(params, 'proponent', 'id');
     this.collectionFilterToParams(params, 'eacDecision', 'id');
-    this.collectionFilterToParams(params, 'pcp', 'code');
     this.collectionFilterToParams(params, 'type', 'name');
     this.collectionFilterToParams(params, 'projectPhase', 'id');
 
@@ -421,7 +388,6 @@ export class ProjectListComponent implements OnInit {
   updateCounts() {
     this.updateCount('type');
     this.updateCount('eacDecision');
-    this.updateCount('pcp');
     this.updateCount('projectPhase');
   }
 
@@ -430,7 +396,8 @@ export class ProjectListComponent implements OnInit {
     if (this.projects && this.projects.length > 0) {
       this.projects.forEach(project => {
         projectList.push({
-          _id: project._id,
+          // Track-only rows have no Eagle id; the project route also takes the DEMI id.
+          _id: project._id ?? project.demiId,
           name: project.name,
           proponent: project.proponent,
           type: project.type,
@@ -462,50 +429,18 @@ export class ProjectListComponent implements OnInit {
       this.tableParams.sortBy
     );
 
-    // if we're searching for projects, replace projectPhase with currentPhaseName
-    // The code is called projectPhase, but the db column on projects is currentPhaseName
-    // so the rename is required to pass in the correct query
-    if (this.filterForAPI.hasOwnProperty('projectPhase')) {
-      this.filterForAPI['currentPhaseName'] = this.filterForAPI['projectPhase'];
-      delete this.filterForAPI['projectPhase'];
-    }
-
-    this.searchService
-      .getSearchResults(
-        this.tableParams.keywords || '',
-        'Project',
-        null,
-        pageNumber,
-        this.tableParams.pageSize,
-        this.tableParams.sortBy,
-        {},
-        true,
-        this.filterForAPI,
-        ''
-      )
+    this.fetchProjects()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res: any) => {
-          if (this.filterForAPI.hasOwnProperty('currentPhaseName')) {
-            this.filterForAPI['projectPhase'] = this.filterForAPI['currentPhaseName'];
-            delete this.filterForAPI['currentPhaseName'];
-          }
-          if (res[0].data) {
-            this.tableParams.totalListItems =
-              res[0].data.meta[0].searchResultsTotal;
-            this.projects = res[0].data.searchResults;
-            this.tableTemplateUtils.updateUrl(
-              this.tableParams.sortBy,
-              this.tableParams.currentPage,
-              this.tableParams.pageSize,
-              this.filterForURL,
-              this.tableParams.keywords
-            );
-            this.setRowData();
-          } else {
-            alert('Uh-oh, couldn\'t load topics');
-            this.router.navigate(['/']);
-          }
+        next: page => {
+          this.tableTemplateUtils.updateUrl(
+            this.tableParams.sortBy,
+            this.tableParams.currentPage,
+            this.tableParams.pageSize,
+            this.filterForURL,
+            this.tableParams.keywords
+          );
+          this.showPage(page);
         },
         error: (error: any) => {
           this.logger.error('Failed to load projects', 'ProjectListComponent', error);

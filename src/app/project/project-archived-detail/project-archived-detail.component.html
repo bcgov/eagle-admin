@@ -9,6 +9,7 @@
     <li class="breadcrumb-item active" aria-current="page">Archived Project Details</li>
   </ol>
 </nav>
+@if (project) {
 <main class="container-fluid-padding">
   <h1 id="name">{{project.name}}</h1>
   <section>
@@ -29,7 +30,7 @@
     </div>
     <div class="label-pair mt-3">
       <h3 for="proponent">Proponent: </h3>
-      <p id="proponent">{{project.proponent.name ?? '-'}}</p>
+      <p id="proponent">{{project.proponent?.name ?? '-'}}</p>
     </div>
     <div class="label-pair">
       <h3 for="nature">Project Nature: </h3>
@@ -172,3 +173,4 @@
     </div>
   </section>
 </main>
+}

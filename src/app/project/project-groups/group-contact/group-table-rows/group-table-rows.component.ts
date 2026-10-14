@@ -46,7 +46,7 @@ export class GroupTableRowsComponent implements OnInit {
         this.storageService.state.selectedUsers.push(item);
       } else {
         this.storageService.state.selectedUsers = this.storageService.state.selectedUsers.filter(function (value) {
-          return value._id !== item._id;
+          return value.id !== item.id;
         });
       }
     }

@@ -3,6 +3,8 @@ import { Observable, of, forkJoin } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
+import { DemiApiService } from './demi-api.service';
+import { deferWrite } from './commentperiod.service';
 import { DocumentService } from './document.service';
 import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
@@ -10,10 +12,28 @@ import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 
 import { Comment } from '../models/comment';
+import { Document } from '../models/document';
+import { DemiComment, DemiCommentQuery, NextPendingComment } from '../models/demi/comment';
+import { eagleWriteId, toEagleWriteBody } from '../models/demi/comment-period';
+import { DemiList } from '../models/demi/demi-list';
+import { isEagleId } from '../models/demi/demi-ids';
+
+/** eagle-api POST/PUT body; see {@link toEagleWriteBody}. eagle-api reads the Eagle `period` id, never a project. */
+function toEagleCommentBody(comment: Comment | DemiComment, isNew = false): any {
+  // Mirrored periods keep their Eagle id as DEMI id; an ENGAGE period without one is not in Eagle.
+  const period = '_id' in comment ? null : isEagleId(comment.periodId) ? comment.periodId : null;
+  const body = toEagleWriteBody(comment, 'comment', { period }, isNew);
+  if (body !== comment) {
+    // Own array, so appending uploaded document ids leaves the caller's row alone.
+    body.documents = [...(body.documents ?? [])];
+  }
+  return body;
+}
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
   private api = inject(ApiService);
+  private demi = inject(DemiApiService);
   private documentService = inject(DocumentService);
   private loadingState = inject(LoadingStateService);
   private toast = inject(ToastService);
@@ -72,70 +92,99 @@ export class CommentService {
     );
   }
 
-  add(comment: Comment, documentForms: Array<FormData> = []): Observable<Comment> {
-    if (documentForms.length > 0) {
-      const observables = documentForms.map(form => this.documentService.add(form));
-      return forkJoin(observables).pipe(
+  add(comment: Comment | DemiComment, documentForms: Array<FormData> = []): Observable<Comment> {
+    return deferWrite(this.api, () => {
+      // Mapped before any upload, so a comment eagle-api cannot take leaves no documents behind.
+      const body = toEagleCommentBody(comment, true);
+      if (!documentForms.length) {
+        return this.api.post<Comment>('comment/', body);
+      }
+      return forkJoin(documentForms.map(form => this.documentService.add(form))).pipe(
         mergeMap((payload: any[]) => {
-          payload.map((document: any) => comment.documents.push(document._id));
-          return this.api.post<Comment>('comment/', comment);
-        }),
-        catchError(error => this.api.handleError(error))
+          payload.forEach((document: any) => body.documents.push(document._id));
+          return this.api.post<Comment>('comment/', body);
+        })
       );
-    } else {
-      return this.api.post<Comment>('comment/', comment).pipe(
-        catchError(error => this.api.handleError(error))
-      );
-    }
+    });
   }
 
-  save(comment: Comment): Observable<Comment> {
-    if (comment.documentsList && comment.documentsList.length > 0) {
-      const observables = [];
-      comment.documentsList.map(document => {
+  save(comment: Comment | DemiComment): Observable<Comment> {
+    return deferWrite(this.api, () => {
+      const documents: Document[] = ('documentsList' in comment && comment.documentsList) || [];
+      if ('documentsList' in comment) {
+        comment.documentsList = null;
+      }
+      const observables: Observable<any>[] = [];
+      documents.forEach(document => {
         if (document.eaoStatus === 'Published') {
           observables.push(this.documentService.publish(document._id));
         } else if (document.eaoStatus === 'Rejected') {
           observables.push(this.documentService.unPublish(document._id));
         }
       });
-      comment.documentsList = null;
-      const newComment = JSON.parse(JSON.stringify(comment));
-      observables.push(this.api.put<Comment>(`comment/${newComment._id}`, newComment));
-      return forkJoin(observables).pipe(
-        mergeMap((payloads: any) => of(payloads.pop())),
-        catchError(error => this.api.handleError(error))
-      );
-    } else {
-      comment.documentsList = null;
-      const newComment = JSON.parse(JSON.stringify(comment));
-      return this.api.put<Comment>(`comment/${newComment._id}`, newComment).pipe(
-        catchError(error => this.api.handleError(error))
-      );
-    }
+      const newComment = toEagleCommentBody(JSON.parse(JSON.stringify(comment)));
+      const put = this.api.put<Comment>(`comment/${newComment._id}`, newComment);
+      return observables.length ? forkJoin([...observables, put]).pipe(map(payloads => payloads.pop())) : put;
+    });
   }
 
-  publish(comment: Comment): Observable<Comment> {
-    return this.api.put<Comment>(`comment/${comment._id}/status`, { status: 'Published' }).pipe(
-      catchError(error => this.api.handleError(error))
+  publish(comment: Comment | DemiComment): Observable<Comment> {
+    return this.setStatus(comment, 'Published');
+  }
+
+  defer(comment: Comment | DemiComment): Observable<Comment> {
+    return this.setStatus(comment, 'Deferred');
+  }
+
+  reject(comment: Comment | DemiComment): Observable<Comment> {
+    return this.setStatus(comment, 'Rejected');
+  }
+
+  removeStatus(comment: Comment | DemiComment): Observable<Comment> {
+    return this.setStatus(comment, 'Reset');
+  }
+
+  /** One page of a period's comments, with `total` from `count=true`. `periodId` is the period's DEMI `id`. */
+  listByPeriod(periodId: string, query: DemiCommentQuery = {}): Observable<DemiList<DemiComment>> {
+    const { eaoStatus, ...paging } = query;
+    return this.demi.list<DemiComment>('comments', { ...paging, count: true, filters: { period: periodId, eaoStatus } }).pipe(
+      withLoading(this.loadingState, `comments-by-period-native-${periodId}`),
+      catchError(error => {
+        this.logger.error(`Failed to get comments for period ${periodId}`, 'CommentService', error);
+        this.toast.error('Failed to load comments.');
+        return of({ rows: [], total: 0 });
+      })
     );
   }
 
-  defer(comment: Comment): Observable<Comment> {
-    return this.api.put<Comment>(`comment/${comment._id}/status`, { status: 'Deferred' }).pipe(
-      catchError(error => this.api.handleError(error))
+  /** One comment by DEMI or Eagle id, or null when it cannot be read. */
+  getNative(commentId: string): Observable<DemiComment | null> {
+    return this.demi.get<DemiComment>('comments', commentId).pipe(
+      withLoading(this.loadingState, `comment-native-${commentId}`),
+      catchError(error => {
+        this.logger.error(`Failed to get comment ${commentId}`, 'CommentService', error);
+        this.toast.error('Failed to load comment.');
+        return of(null);
+      })
     );
   }
 
-  reject(comment: Comment): Observable<Comment> {
-    return this.api.put<Comment>(`comment/${comment._id}/status`, { status: 'Rejected' }).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  removeStatus(comment: Comment): Observable<Comment> {
-    return this.api.put<Comment>(`comment/${comment._id}/status`, { status: 'Reset' }).pipe(
-      catchError(error => this.api.handleError(error))
+  /**
+   * The lowest-numbered pending comment of the period other than `current`, and how many pending comments there are
+   * besides it, as eagle-api's `populateNextComment` gave them. `periodId` is the DEMI id; `current.eaoStatus` must be
+   * the saved status. DEMI's default order is `commentId` ascending, so two rows always hold the answer.
+   */
+  getNextPending(periodId: string, current: Pick<DemiComment, 'id' | 'eaoStatus'>): Observable<NextPendingComment> {
+    return this.demi.list<DemiComment>('comments', { pageSize: 2, count: true, filters: { period: periodId, eaoStatus: ['Pending'] } }).pipe(
+      withLoading(this.loadingState, `comment-next-pending-${periodId}`),
+      map(({ rows, total }) => ({
+        nextId: rows.find(row => row.id !== current.id)?.id ?? null,
+        pendingCount: Math.max(0, (total ?? 0) - (current.eaoStatus === 'Pending' ? 1 : 0))
+      })),
+      catchError(error => {
+        this.logger.error(`Failed to get the next pending comment for period ${periodId}`, 'CommentService', error);
+        return of({ nextId: null, pendingCount: 0 });
+      })
     );
   }
 
@@ -156,6 +205,10 @@ export class CommentService {
       }),
       catchError(error => this.api.handleError(error))
     );
+  }
+
+  private setStatus(comment: Comment | DemiComment, status: string): Observable<Comment> {
+    return deferWrite(this.api, () => this.api.put<Comment>(`comment/${eagleWriteId(comment, 'comment')}/status`, { status }));
   }
 
   private _getExtraAppData(comment: Comment): Observable<Comment> {

@@ -4,13 +4,15 @@ import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserTableRowsComponent } from './user-table-rows/user-table-rows.component';
 import { SearchTerms } from '../models/search';
-import { User } from '../models/user';
+import { User, nativeSort, tableSort } from '../models/demi/user';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { NavigationStackUtils } from '../shared/utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
-import { SearchService } from '../services/search.service';
+import { UserService, emptyPageOnError } from '../services/user.service';
+import { LoggingService } from '../services/logging.service';
+import { ToastService } from '../services/toast.service';
 import { LoadingStateService } from '../services/loading-state.service';
 
 import { FormsModule } from '@angular/forms';
@@ -35,7 +37,9 @@ export class ContactsComponent implements OnInit {
   private navigationStackUtils = inject(NavigationStackUtils);
   private tableTemplateUtils = inject(TableTemplateUtils);
   private storageService = inject(StorageService);
-  private searchService = inject(SearchService);
+  private userService = inject(UserService);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
 
   private destroyRef = inject(DestroyRef);
 
@@ -48,23 +52,26 @@ export class ContactsComponent implements OnInit {
   public documentTableColumns: TableColumn[] = [
     {
       name: 'Name',
-      value: 'lastName,+firstName',
+      value: 'displayName',
       width: '25%'
     },
     {
       name: 'Organization',
-      value: 'org.name',
-      width: '25%'
+      value: 'orgName',
+      width: '25%',
+      nosort: true
     },
     {
       name: 'Phone',
       value: 'phoneNumber',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Email',
       value: 'email',
-      width: '25%'
+      width: '25%',
+      nosort: true
     },
     {
       name: 'Action',
@@ -81,8 +88,9 @@ export class ContactsComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        if (this.tableParams.sortBy === '') {
-          this.tableParams.sortBy = '+lastName,+firstName';
+        const sort = nativeSort(this.tableParams.sortBy, 'displayName');
+        if (this.tableParams.sortBy !== tableSort(sort)) {
+          this.tableParams.sortBy = tableSort(sort);
           this.tableTemplateUtils.updateUrl(
             this.tableParams.sortBy,
             this.tableParams.currentPage,
@@ -91,21 +99,20 @@ export class ContactsComponent implements OnInit {
             this.tableParams.keywords
           );
         }
-        return this.searchService.getSearchResults(
-          this.tableParams.keywords || '', 'User', null,
-          this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy,
-          {}, false, {}, ''
-        );
+        return this.userService.listUsers({
+          q: this.tableParams.keywords,
+          page: this.tableParams.currentPage,
+          pageSize: this.tableParams.pageSize,
+          sort
+        }).pipe(emptyPageOnError<User>(err => {
+          this.logger.error('contact list failed', 'ContactsComponent', err);
+          this.toastService.error('Contacts could not be loaded.');
+        }));
       }),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe((res: any) => {
-      if (res && res[0].data.meta && res[0].data.meta.length > 0) {
-        this.tableParams.totalListItems = res[0].data.meta[0].searchResultsTotal;
-        this.users = res[0].data.searchResults;
-      } else {
-        this.tableParams.totalListItems = 0;
-        this.users = [];
-      }
+    ).subscribe(({ rows, total }) => {
+      this.tableParams.totalListItems = total ?? 0;
+      this.users = rows;
       this.setDocumentRowData();
       this._changeDetectionRef.markForCheck();
     });
@@ -132,14 +139,11 @@ export class ContactsComponent implements OnInit {
   }
 
   setDocumentRowData() {
-    if (this.users && this.users.length > 0) {
-      const list = [...this.users];
-      this.documentTableData = new TableObject(
-        UserTableRowsComponent,
-        list,
-        this.tableParams
-      );
-    }
+    this.documentTableData = new TableObject(
+      UserTableRowsComponent,
+      [...(this.users ?? [])],
+      this.tableParams
+    );
   }
 
   setColumnSort(column) {

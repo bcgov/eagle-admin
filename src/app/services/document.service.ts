@@ -1,16 +1,18 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpEvent } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, firstValueFrom, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import JSZip from 'jszip';
 
 import { ApiService } from './api';
 import { Document } from '../models/document';
+import { DemiList } from '../models/demi/demi-list';
+import { DemiDocument, DemiDocumentDownload, DemiDocumentListParams } from '../models/demi/document';
+import { DemiApiService } from './demi-api.service';
 import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
-import { encodeString, formatDate, getFormattedTime } from '../shared/utils/utils';
+import { encodeString, formatDate } from '../shared/utils/utils';
 
 /** Admin URL that streams a document inline. */
 export function documentFetchUrl(document: Pick<Document, '_id' | 'documentSource' | 'internalOriginalName' | 'documentFileName'>): string {
@@ -21,6 +23,7 @@ export function documentFetchUrl(document: Pick<Document, '_id' | 'documentSourc
 @Injectable({ providedIn: 'root' })
 export class DocumentService {
   private api = inject(ApiService);
+  private demiApi = inject(DemiApiService);
   private loadingState = inject(LoadingStateService);
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
@@ -46,30 +49,65 @@ export class DocumentService {
     'sortOrder', 'secureHitCount', 'publicHitCount'
   ];
 
-  getByMultiId(ids: Array<string>): Observable<Array<Document>> {
-    const qs = `document?docIds=${this.api.buildValues(ids)}&fields=${this.api.buildValues(this.multiDocumentFields)}`;
-    return this.api.get<Document[]>(qs).pipe(
-      withLoading(this.loadingState, `documents-multi`, 'Loading documents'),
-      map((res: any) => res?.length ? res.map((doc: any) => new Document(doc)) : []),
-      catchError(error => {
-        this.logger.error('Failed to get documents by ids', 'DocumentService', error);
-        this.toast.error('Failed to load documents.');
-        return of([] as Document[]);
-      })
+  /** One page of DEMI documents. `filters.project` takes the DEMI project id. */
+  listNative(params: DemiDocumentListParams = {}): Observable<DemiList<DemiDocument>> {
+    return this.demiApi.list<DemiDocument>('documents', params).pipe(
+      withLoading(this.loadingState, `demi-documents-${JSON.stringify(params)}`, 'Loading documents'),
+      catchError(() => this.readFailed('Failed to load documents.', { rows: [] }))
     );
   }
 
-  getByAppId(projId: string): Observable<Document[]> {
-    const fields = [
-      '_project', 'documentFileName', 'displayName', 'internalURL', 'internalMime',
-      'isFeatured', 'sortOrder', 'secureHitCount', 'publicHitCount'
-    ];
-    const qs = `document?isDeleted=false&_project=${projId}&fields=${this.api.buildValues(fields)}`;
+  /** A DEMI document by DEMI id or Eagle id; null when it cannot be read. */
+  getNative(id: string): Observable<DemiDocument | null> {
+    return this.demiApi.get<DemiDocument>('documents', id).pipe(
+      withLoading(this.loadingState, `demi-document-${id}`, 'Loading document'),
+      catchError(() => this.readFailed('Failed to load document.', null))
+    );
+  }
+
+  /** DEMI documents for the given ids, in chunks DEMI accepts. Ids DEMI does not return are left out. */
+  byIdsNative(ids: string[]): Observable<DemiDocument[]> {
+    return this.demiApi.byIds<DemiDocument>('documents', ids).pipe(
+      withLoading(this.loadingState, `demi-documents-ids-${ids.join(',')}`, 'Loading documents'),
+      catchError(() => this.readFailed('Failed to load documents.', [] as DemiDocument[]))
+    );
+  }
+
+  /** Saves the document's file by navigating to its presigned URL; the bytes never pass through HttpClient. */
+  async downloadNative(id: string): Promise<void> {
+    let url: unknown;
+    try {
+      // Asked with the bearer, so staff-only rows resolve. DemiApiService.get builds `<kind>/<id>`: this reads `documents/<id>/download`.
+      const body = await firstValueFrom(this.demiApi.get<DemiDocumentDownload>(`documents/${encodeURIComponent(id)}`, 'download').pipe(
+        withLoading(this.loadingState, `demi-document-download-${id}`, 'Preparing download')
+      ));
+      url = body?.url;
+    } catch {
+      this.toast.error('Failed to download document.');
+      return;
+    }
+    if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
+      this.logger.error(`Download URL for document ${id} is missing or not https`, 'DocumentService');
+      this.toast.error('Failed to download document.');
+      return;
+    }
+    // The presign says `attachment`, so the browser saves the file and this page stays put.
+    window.open(url, '_self');
+  }
+
+  // DemiApiService errors are already logged by ApiService.handleError.
+  private readFailed<T>(toastMessage: string, fallback: T): Observable<T> {
+    this.toast.error(toastMessage);
+    return of(fallback);
+  }
+
+  getByMultiId(ids: Array<string>): Observable<Array<Document>> {
+    const qs = `document?docIds=${this.api.buildValues(ids)}&fields=${this.api.buildValues(this.multiDocumentFields)}`;
     return this.api.get<Document[]>(qs).pipe(
-      withLoading(this.loadingState, `documents-app-${projId}`, 'Loading documents'),
+      withLoading(this.loadingState, `documents-multi-${ids.join(',')}`, 'Loading documents'),
       map((res: any) => res?.length ? res.map((doc: any) => new Document(doc)) : []),
       catchError(error => {
-        this.logger.error(`Failed to get documents for project ${projId}`, 'DocumentService', error);
+        this.logger.error('Failed to get documents by ids', 'DocumentService', error);
         this.toast.error('Failed to load documents.');
         return of([] as Document[]);
       })
@@ -202,119 +240,6 @@ export class DocumentService {
       a.setAttribute('style', 'display: none');
       a.href = url;
       a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    }
-  }
-
-  public downloadElementThumbnail(inspectionId: string, elementId: string, itemId: string): Promise<Blob> {
-    return this.api.get<Blob>(`inspection/${inspectionId}/${elementId}/${itemId}?thumbnail=true`, { responseType: 'blob' }).toPromise();
-  }
-
-  public async openElementResource(element: any): Promise<void> {
-    const filename = element.internalURL.substring(element.internalURL.lastIndexOf('/') + 1);
-    window.open(`/api/inspection/element/${element._id}/${filename}`, '_blank');
-  }
-
-  public async downloadInspectionItem(inspection: any, elementId: string, item: any): Promise<void> {
-    const tempDate = new Date(item.timestamp);
-    let filename = `${inspection.name}_${getFormattedTime(tempDate)}`;
-    filename = filename.replace('.', '-');
-    const qs = `inspection/${inspection._id}/${elementId}/${item._id}?filename=${filename}`;
-    let blob: Blob = null;
-    try {
-      blob = await this.api.get<Blob>(qs, { responseType: 'blob' }).toPromise();
-    } catch {
-      alert('An error has occured.');
-      throw Error('Unable to download item');
-    }
-    if (this.isMS) {
-      (window.navigator as any).msSaveBlob(blob, filename);
-    } else {
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement('a');
-      window.document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.href = url;
-      a.download = filename;
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-    }
-  }
-
-  public async downloadInspection(inspection: any): Promise<void> {
-    const zip = new JSZip();
-    zip.file(
-      `inspection.txt`,
-      `
-      Name: ${inspection.name}\n
-      Inspection Number: ${inspection.case}\n
-      Inspector email: ${inspection.email}\n
-      Start Date: ${inspection.startDate}\n
-      End Date: ${inspection.endDate}\n
-      Project: ${inspection.project.name}\n
-      `
-    );
-
-    for (let i = 0; i < inspection.elements.length; i++) {
-      const element = inspection.elements[i];
-      const elementFolder = zip.folder(element.title);
-      elementFolder.file(
-        `element-${element.title}.txt`,
-        `
-        Title: ${element.title}\n
-        Description: ${element.description}\n
-        Requirement: ${element.requirement}\n
-        Timestamp: ${element.timestamp}\n
-        `
-      );
-
-      for (let j = 0; j < element.items.length; j++) {
-        const itemQs = `search?dataset=Item&_id=${element.items[j]}&_schemaName=${'InspectionItem'}`;
-        let itemSearchResults: any[] = null;
-        try {
-          itemSearchResults = await this.api.get<any[]>(itemQs).toPromise();
-        } catch {
-          alert('An error has occured.');
-          throw Error('Unable to find inspection item.');
-        }
-
-        const item = itemSearchResults[0];
-        const tempDate = new Date(item.timestamp);
-        const filename = `${inspection.name}_${getFormattedTime(tempDate)}.${item.internalExt}`;
-        const itemDownloadQs = `inspection/${inspection._id}/${element._id}/${item._id}?filename=${filename}`;
-        let blob: Blob = null;
-        try {
-          blob = await this.api.get<Blob>(itemDownloadQs, { responseType: 'blob' }).toPromise();
-        } catch {
-          alert('An error has occured.');
-          throw Error('Unable to get asset.');
-        }
-
-        elementFolder.file(`${filename}_caption.txt`, `\n          ${item.caption}\n          `);
-        elementFolder.file(filename, blob, { base64: true });
-      }
-    }
-
-    let content: Blob = null;
-    try {
-      content = await zip.generateAsync({ type: 'blob' });
-    } catch {
-      alert('An error has occured.');
-      throw Error('Unable to generate zip file.');
-    }
-
-    if (this.isMS) {
-      (window.navigator as any).msSaveBlob(content, 'inspection.zip');
-    } else {
-      const url = window.URL.createObjectURL(content);
-      const a = window.document.createElement('a');
-      window.document.body.appendChild(a);
-      a.setAttribute('style', 'display: none');
-      a.href = url;
-      a.download = 'inspection.zip';
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();

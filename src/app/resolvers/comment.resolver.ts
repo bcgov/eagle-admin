@@ -1,22 +1,31 @@
 import { inject } from '@angular/core';
 import { RedirectCommand, Router } from '@angular/router';
-import { catchError, map, of } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 import type { ActivatedRouteSnapshot, ResolveFn } from '@angular/router';
 import { CommentService } from '../services/comment.service';
-import type { Comment } from '../models/comment';
+import { DocumentService } from '../services/document.service';
+import type { DemiComment } from '../models/demi/comment';
+import type { DemiDocument } from '../models/demi/document';
 
-export const commentResolver: ResolveFn<Comment | RedirectCommand> = (route: ActivatedRouteSnapshot) => {
+/** A native comment with its attachments read from DEMI, as the comment review screen shows it. */
+export type ReviewComment = DemiComment & { documentsList: DemiDocument[] };
+
+export const commentResolver: ResolveFn<ReviewComment | RedirectCommand> = (route: ActivatedRouteSnapshot) => {
   const commentService = inject(CommentService);
+  const documentService = inject(DocumentService);
   const router = inject(Router);
   const id = route.paramMap.get('commentId')!;
+  const notFound = () => new RedirectCommand(router.parseUrl('/search'));
 
-  return commentService.getById(id, true).pipe(
-    map((comment: Comment) => {
+  return commentService.getNative(id).pipe(
+    switchMap(comment => {
       if (!comment) {
-        return new RedirectCommand(router.parseUrl('/search'));
+        return of(notFound());
       }
-      return comment;
+      const ids = comment.documents ?? [];
+      const documents$ = ids.length ? documentService.byIdsNative(ids) : of([] as DemiDocument[]);
+      return documents$.pipe(map(documentsList => ({ ...comment, documentsList })));
     }),
-    catchError(() => of(new RedirectCommand(router.parseUrl('/search'))))
+    catchError(() => of(notFound()))
   );
 };
