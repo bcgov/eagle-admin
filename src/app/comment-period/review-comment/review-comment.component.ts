@@ -1,19 +1,23 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Component, OnInit, DestroyRef, input, inject, ChangeDetectionStrategy, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
+import { Component, OnChanges, SimpleChanges, DestroyRef, input, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { concat, finalize, of, switchMap } from 'rxjs';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { DemiComment, NextPendingComment } from 'src/app/models/demi/comment';
+import { DemiDocument } from 'src/app/models/demi/document';
+import { eagleWriteId as documentEagleId } from 'src/app/models/demi/document-write';
+import { ReviewComment } from 'src/app/resolvers/comment.resolver';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
-import { Comment } from 'src/app/models/comment';
-import { Document } from 'src/app/models/document';
+import { convertJSDateToNGBDate } from 'src/app/shared/utils/utils';
 import { DatePipe } from '@angular/common';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggingService } from 'src/app/services/logging.service';
+
+const NO_NEXT_PENDING: NextPendingComment = { nextId: null, pendingCount: 0 };
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,7 +27,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     imports: [DatePipe, ReactiveFormsModule, RouterLink, NgbDatepickerModule]
 })
 
-export class ReviewCommentComponent implements OnInit {
+export class ReviewCommentComponent implements OnChanges {
   private api = inject(DocumentService);
   private commentService = inject(CommentService);
   private destroyRef = inject(DestroyRef);
@@ -35,10 +39,12 @@ export class ReviewCommentComponent implements OnInit {
 
   project = input.required<any>();
   commentPeriod = input.required<CommentPeriod>();
-  comment = input.required<Comment>();
+  /** Route param; the period resolver's row shape is not relied on for ids. */
+  commentPeriodId = input.required<string>();
+  comment = input.required<ReviewComment>();
 
   public baseRouteUrl: string;
-  public commentData: Comment;
+  public commentData: ReviewComment;
   loading = signal(false);
   public isRejectedRequired = false;
   public commentReviewForm: FormGroup<{
@@ -53,15 +59,19 @@ export class ReviewCommentComponent implements OnInit {
     publishedNotesText: FormControl<string | null>;
     rejectionNotesText: FormControl<string | null>;
   }>;
-  public pendingCommentCount = 0;
-  public nextCommentId;
+  nextPending = toSignal(toObservable(this.comment).pipe(
+    switchMap(comment => concat(of(NO_NEXT_PENDING), this.commentService.getNextPending(comment.periodId, comment)))
+  ), { initialValue: NO_NEXT_PENDING });
 
-  ngOnInit() {
+  // Save/Next keeps this component and swaps the resolved comment, so set up on every new comment, not once.
+  ngOnChanges(changes: SimpleChanges) {
+    if (!changes['comment']) {
+      return;
+    }
     this.baseRouteUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
     this.storageService.state.selectedTab = 1;
-    this.commentData = this.comment();
-    this.pendingCommentCount = this.commentService.pendingCommentCount;
-    this.nextCommentId = this.commentService.nextCommentId;
+    const comment = this.comment();
+    this.commentData = { ...comment, documentsList: comment.documentsList.map(document => ({ ...document })) };
     this.initForm();
   }
 
@@ -90,64 +100,47 @@ export class ReviewCommentComponent implements OnInit {
     this.commentReviewForm.controls.rejectionNotesText.setValue(this.commentData.rejectedNotes);
   }
 
-  public onSubmit(action) {
+  public onSubmit(action: 'exit' | 'next') {
     this.loading.set(true);
-
-    this.commentData.isAnonymous = !this.commentReviewForm.get('isNamePublic').value;
-
-    this.commentData.dateAdded = convertFormGroupNGBDateToJSDate(this.commentReviewForm.get('dateAdded').value);
-
-    // TODO: Validation
-    if (this.commentReviewForm.get('isPublished').value) {
-      this.commentData.publishedNotes = this.commentReviewForm.get('publishedNotesText').value;
-      this.commentData.eaoStatus = 'Published';
-      this.commentData.datePosted = new Date();
-    } else if (this.commentReviewForm.get('isDeferred').value) {
-      this.commentData.eaoNotes = this.commentReviewForm.get('deferralNotesText').value;
-      this.commentData.eaoStatus = 'Deferred';
-    } else if (this.commentReviewForm.get('isRejected').value) {
-      this.commentData.eaoNotes = this.commentReviewForm.get('rejectionNotesText').value;
-      this.commentData.eaoStatus = 'Rejected';
+    const form = this.commentReviewForm.getRawValue();
+    const edits: Partial<DemiComment> = { isAnonymous: !form.isNamePublic, proponentNotes: form.proponentResponseText };
+    if (form.isPublished) {
+      Object.assign(edits, { eaoStatus: 'Published', publishedNotes: form.publishedNotesText, datePosted: new Date().toISOString() });
+    } else if (form.isDeferred) {
+      Object.assign(edits, { eaoStatus: 'Deferred', eaoNotes: form.deferralNotesText });
+    } else if (form.isRejected) {
+      Object.assign(edits, { eaoStatus: 'Rejected', eaoNotes: form.rejectionNotesText });
     } else {
-      this.commentData.eaoStatus = 'Reset';
+      edits.eaoStatus = 'Pending';
     }
-    this.commentData.proponentNotes = this.commentReviewForm.get('proponentResponseText').value;
+    // eagle-api publishes attachments by Eagle id; a DEMI-only document is left as it is.
+    const documentsList = this.commentData.documentsList
+      .filter(document => documentEagleId(document))
+      .map(document => ({ _id: documentEagleId(document), eaoStatus: document.eaoStatus }));
+    const { nextId } = this.nextPending();
 
-    const previousCommentId = this.commentData.commentId;
-    this.commentService.save(this.commentData)
+    // save() reads `documentsList` off the comment; a non-literal argument keeps it out of the excess-property check.
+    const body: DemiComment = Object.assign({ ...this.commentData, ...edits }, { documentsList });
+    this.commentService.save(body)
         .pipe(
           takeUntilDestroyed(this.destroyRef),
           finalize(() => this.loading.set(false))
         )
         .subscribe({
-          next: newComment => {
-            this.commentData = newComment;
+          next: () => {
+            this.toastService.success(`Comment #${this.commentData.commentId} updated.`);
+            const periodUrl = [this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()];
+            this.router.navigate(action === 'next' && nextId ? [...periodUrl, 'c', nextId, 'comment-details'] : periodUrl);
           },
           error: () => {
             this.toastService.error('Uh-oh, couldn\'t edit comment');
-          },
-          complete: () => {
-            this.toastService.success(`Comment #${previousCommentId} updated.`);
-            switch (action) {
-              case 'exit': {
-                this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id]);
-                break;
-              }
-              case 'next': {
-                this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id, 'c', this.nextCommentId, 'comment-details']);
-                break;
-              }
-              default: {
-                break;
-              }
-            }
           }
         });
   }
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id]);
+      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
     }
   }
 
@@ -197,13 +190,11 @@ export class ReviewCommentComponent implements OnInit {
     }
   }
 
-  public downloadDocument(document: Document) {
-    return this.api.downloadDocument(document).then(() => {
-      this.logger.debug('Download initiated for file(s)', 'ReviewCommentComponent');
-    });
+  public downloadDocument(document: DemiDocument) {
+    return this.api.downloadNative(document.id);
   }
 
-  public toggleDocumentPublish(document: any, action: string) {
+  public toggleDocumentPublish(document: DemiDocument, action: string) {
     if (action === 'Published' && !this.commentReviewForm.get('isRejected').value) {
       document.eaoStatus = 'Published';
     } else if (action === 'Rejected' && !this.commentReviewForm.get('isRejected').value) {

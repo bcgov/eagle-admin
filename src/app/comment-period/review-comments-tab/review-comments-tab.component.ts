@@ -1,14 +1,20 @@
 import { Component, DestroyRef, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
 import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
 import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-template-utils';
-import { Comment } from 'src/app/models/comment';
+import { DemiComment } from 'src/app/models/demi/comment';
+import { DemiEaoStatus } from 'src/app/models/demi/comment-period';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+
+const DEFAULT_SORT = '-dateAdded';
+const STATUS_FILTERS: Record<string, DemiEaoStatus> = {
+  pending: 'Pending', published: 'Published', deferred: 'Deferred', rejected: 'Rejected'
+};
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -25,13 +31,12 @@ export class ReviewCommentsTabComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private commentService = inject(CommentService);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
 
   project = input.required<any>();
 
-  public comments: Array<Comment>;
+  public comments: Array<DemiComment>;
   public loading = true;
 
   public filter = {
@@ -46,12 +51,14 @@ export class ReviewCommentsTabComponent implements OnInit {
     {
       name: 'ID',
       value: 'commentId',
-      width: '10%'
+      width: '10%',
+      nosort: true
     },
     {
       name: 'Name',
       value: 'author',
-      width: '20%'
+      width: '20%',
+      nosort: true
     },
     {
       name: 'Date',
@@ -67,17 +74,20 @@ export class ReviewCommentsTabComponent implements OnInit {
     {
       name: 'Location',
       value: 'location',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'Status',
       value: 'eaoStatus',
-      width: '15%'
+      width: '15%',
+      nosort: true
     },
     {
       name: 'CAC',
       value: 'submittedCAC',
-      width: '10%'
+      width: '10%',
+      nosort: true
     }
   ];
 
@@ -96,9 +106,6 @@ export class ReviewCommentsTabComponent implements OnInit {
           this.filter.deferred = params.deferred == null || params.deferred === 'false' ? false : true;
           this.filter.rejected = params.rejected == null || params.rejected === 'false' ? false : true;
           this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, this.filter);
-          if (this.tableParams.sortBy === '') {
-            this.tableParams.sortBy = '-commentId';
-          }
         });
     } else {
       this.commentPeriodId = this.storageService.state.commentReviewTabParams.commentPeriodId;
@@ -106,48 +113,24 @@ export class ReviewCommentsTabComponent implements OnInit {
       this.tableParams = this.storageService.state.commentReviewTabParams.tableParams;
       this.storageService.state.commentReviewTabParams = null;
     }
+    this.tableParams.sortBy = sortOrDefault(this.tableParams.sortBy);
 
     this.baseRouteUrl = (this.storageService.state.currentProject?.type ?? 'currentProject') === 'currentProject' ? '/p' : '/pn';
     this.storageService.state.selectedTab = 0;
 
-    this.commentService.getByPeriodId(
-        this.commentPeriodId,
-        this.tableParams.currentPage,
-        this.tableParams.pageSize,
-        this.tableParams.sortBy,
-        true,
-        this.filter)
+    this.loadComments()
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (res: any) => {
-            if (res) {
-              this.tableParams.totalListItems = res.totalCount;
-              if (this.tableParams.totalListItems > 0) {
-                this.comments = res.data;
-                this.setCommentRowData();
-
-                // If there is a published comment, we are not allowed to delete the comment period.
-                let canDelete = true;
-                for (const comment of this.comments) {
-                  if (comment.eaoStatus === 'Published') {
-                    canDelete = false;
-                    break;
-                  }
-                }
-                this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: canDelete };
-              } else {
-                this.storageService.state.canDeleteCommentPeriod = { type: 'canDeleteCommentPeriod', data: true };
-              }
-              this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-              this.loading = false;
-              this.cdr.markForCheck();
-            } else {
-              alert('Uh-oh, couldn\'t load comments');
-              // project not found --> navigate back to search
-              this.router.navigate(['/search']);
-            }
-          },
-          error: () => { this.loading = false; this.cdr.markForCheck(); }
+        .subscribe(({ rows, total }) => {
+          this.tableParams.totalListItems = total ?? 0;
+          this.comments = rows;
+          this.setCommentRowData();
+          // A period with a published comment cannot be deleted.
+          this.storageService.state.canDeleteCommentPeriod = {
+            type: 'canDeleteCommentPeriod', data: !rows.some(comment => comment.eaoStatus === 'Published')
+          };
+          this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+          this.loading = false;
+          this.cdr.markForCheck();
         });
   }
 
@@ -173,7 +156,7 @@ export class ReviewCommentsTabComponent implements OnInit {
     this.comments.map(comment => {
       commentList.push(
         {
-          _id: comment._id,
+          _id: comment.id,
           // Safety check if documents are null or are present with an emtpy array
           attachments: comment.documents !== null ? comment.documents.length : 0,
           commentId: comment.commentId,
@@ -182,7 +165,7 @@ export class ReviewCommentsTabComponent implements OnInit {
           dateAdded: comment.dateAdded,
           eaoStatus: comment.eaoStatus,
           location: comment.location,
-          period: comment.period,
+          period: comment.periodId,
           submittedCAC: comment.submittedCAC
         }
       );
@@ -207,21 +190,32 @@ export class ReviewCommentsTabComponent implements OnInit {
 
     this.tableParams = this.tableTemplateUtils.updateTableParams(this.tableParams, pageNumber, this.tableParams.sortBy);
 
-    this.commentService.getByPeriodId(this.commentPeriodId, this.tableParams.currentPage, this.tableParams.pageSize, this.tableParams.sortBy, true, this.filter)
+    this.loadComments()
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (res: any) => {
-            this.tableParams.totalListItems = res.totalCount;
-            this.comments = res.data;
-            this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
-            this.setCommentRowData();
+        .subscribe(({ rows, total }) => {
+          this.tableParams.totalListItems = total ?? 0;
+          this.comments = rows;
+          this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, this.filter);
+          this.setCommentRowData();
 
-            this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => { this.loading = false; this.cdr.markForCheck(); }
+          this.storageService.state.commentReviewTabParams = { tableParams: this.tableParams, filter: this.filter, commentPeriodId: this.commentPeriodId };
+          this.loading = false;
+          this.cdr.markForCheck();
         });
   }
 
+  /** The current page, filtered to the toggled statuses; none toggled shows every status. */
+  private loadComments() {
+    return this.commentService.listByPeriod(this.commentPeriodId, {
+      page: this.tableParams.currentPage,
+      pageSize: this.tableParams.pageSize,
+      sort: this.tableParams.sortBy.replace(/^\+/, ''),
+      eaoStatus: Object.keys(STATUS_FILTERS).filter(key => this.filter[key]).map(key => STATUS_FILTERS[key])
+    });
+  }
+}
+
+/** DEMI sorts comments by `dateAdded` only; any other saved sort falls back to newest first. */
+function sortOrDefault(sortBy: string): string {
+  return /^[+-]?dateAdded$/.test(sortBy) ? sortBy : DEFAULT_SORT;
 }

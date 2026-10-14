@@ -16,7 +16,7 @@
       <a [routerLink]="[baseRouteUrl, project()._id, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, project()._id, 'cp', commentPeriod()._id]">
+      <a [routerLink]="[baseRouteUrl, project()._id, 'cp', commentPeriodId()]">
         {{commentPeriod().dateStarted | date: 'MMMM d'}} - {{commentPeriod().dateCompleted | date}}
       </a>
     </li>
@@ -30,10 +30,10 @@
     <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit('exit')">
       Save/Exit
     </button>
-    @if (pendingCommentCount > 0) {
+    @if (nextPending().pendingCount > 0) {
       <button [disabled]="!commentReviewForm.valid" class="btn btn-primary" type="submit"
         (click)="onSubmit('next')">
-        Save/Next ({{pendingCommentCount}})
+        Save/Next ({{nextPending().pendingCount}})
       </button>
     }
   </div>
@@ -118,9 +118,9 @@
                                 <span class="cell icon">
                                   <i class="material-icons">insert_drive_file</i>
                                 </span>
-                                <span class="cell name clickable-row" [title]="document.internalOriginalName || ''"
+                                <span class="cell name clickable-row" [title]="document.documentFileName || document.displayName || ''"
                                   (click)='downloadDocument(document)'>
-                                <span class="cell__txt-content">{{document.internalOriginalName}}</span>
+                                <span class="cell__txt-content">{{document.documentFileName || document.displayName}}</span>
                               </span>
                               <span class="cell actions">
                                 <a class="btn btn-light" [class.active]="document.eaoStatus === 'Published'" role="button"

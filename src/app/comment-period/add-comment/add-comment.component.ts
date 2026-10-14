@@ -43,6 +43,8 @@ export class AddCommentComponent implements OnInit {
 
   project = input.required<any>();
   commentPeriod = input.required<CommentPeriod>();
+  /** Route param; the period resolver's row shape is not relied on for ids. */
+  commentPeriodId = input.required<string>();
 
   public baseRouteUrl: string;
   public comment = new Comment();
@@ -131,7 +133,7 @@ export class AddCommentComponent implements OnInit {
     }
     this.comment.proponentNotes = this.addCommentForm.get('proponentResponseText').value;
 
-    this.comment.period = this.commentPeriod()._id;
+    this.comment.period = this.commentPeriodId();
 
     // go through and upload one at a time.
     const documentsForm = this.setDocumentForm();
@@ -149,7 +151,7 @@ export class AddCommentComponent implements OnInit {
           this.toastService.error('Uh-oh, couldn\'t add comment');
         },
         complete: () => {
-          this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id]);
+          this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
           this.toastService.success('This comment was updated successfuly.');
         }
       });
@@ -157,7 +159,7 @@ export class AddCommentComponent implements OnInit {
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriod()._id]);
+      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
     }
   }
 
