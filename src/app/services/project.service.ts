@@ -10,7 +10,6 @@ import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 import { CommentPeriod } from '../models/commentPeriod';
 import { FullProject } from '../models/fullProject';
-import { Org } from '../models/org';
 import { Project } from '../models/project';
 import { DemiProject } from '../models/demi/project';
 import { toLegacyProject } from '../models/demi/project-legacy';
@@ -55,8 +54,6 @@ export class ProjectService {
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
-  private projectList: Project[] = [];
-
   /** One page of DEMI projects, sorted by name unless `params.sort` says otherwise. */
   list(params: DemiListParams = {}): Observable<DemiList<DemiProject>> {
     return this.demiApi.list<DemiProject>('projects', { count: true, sort: 'name', ...params });
@@ -84,47 +81,9 @@ export class ProjectService {
     });
   }
 
-  getAll(pageNum = 1, pageSize = 20, sortBy: string = null): Observable<object> {
-    const fields = [
-      'eacDecision', 'name', 'proponent', 'region', 'type',
-      'code', 'currentPhaseName', 'epicProjectID', 'decisionDate'
-    ];
-    let qs = `project?`;
-    if (pageNum !== null) { qs += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { qs += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { qs += `sortBy=${sortBy}&`; }
-    qs += `populate=true&fields=${this.api.buildValues(fields)}`;
-    return this.api.get<any>(qs).pipe(
-      withLoading(this.loadingState, 'projects-all'),
-      map((res: any) => {
-        if (res) {
-          this.projectList = res[0].results.map((p: any) => new Project(p));
-          return { totalCount: res[0].total_items, data: this.projectList };
-        }
-        return {};
-      }),
-      catchError(error => {
-        this.logger.error('Failed to get projects', 'ProjectService', error);
-        this.toast.error('Failed to load projects.');
-        return of({});
-      })
-    );
-  }
-
-  getById(projId: string, cpStart: string = null, cpEnd: string = null): Observable<Project> {
-    return this.loadFromEagle(projId, cpStart, cpEnd);
-  }
-
   /** The project as eagle-api stores it, for the edit form. Reads `project/<eagleId>` until the form saves through DEMI. */
-  getForEdit(eagleId: string): Observable<Project> {
-    return this.loadFromEagle(eagleId, null, null);
-  }
-
-  private loadFromEagle(projId: string, cpStart: string, cpEnd: string): Observable<Project> {
-    let qs = `project/${projId}?populate=true`;
-    if (cpStart !== null) { qs += `&cpStart[since]=${cpStart}`; }
-    if (cpEnd !== null) { qs += `&cpEnd[until]=${cpEnd}`; }
-    qs += `&fields=${this.api.buildValues(PROJECT_FIELDS)}`;
+  getForEdit(projId: string): Observable<Project> {
+    const qs = `project/${projId}?populate=true&fields=${this.api.buildValues(PROJECT_FIELDS)}`;
     return this.api.get<Project[]>(qs).pipe(
       withLoading(this.loadingState, `project-${projId}`),
       map(projects => {
@@ -290,16 +249,6 @@ export class ProjectService {
     );
   }
 
-  getPins(proj: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
-    let qs = `project/${proj}/pin`;
-    if (pageNum !== null) { qs += `?pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { qs += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { qs += `&sortBy=${sortBy}`; }
-    return this.api.get<any>(qs).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
   addGroup(proj: Project | DemiProject, group: any): Observable<Project> {
     return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/group`, { group }));
   }
@@ -312,16 +261,6 @@ export class ProjectService {
 
   deleteGroup(proj: Project | DemiProject, group: string): Observable<Project> {
     return this.eagleWrite(proj, p => this.api.delete<Project>(`project/${p._id}/group/${group}`));
-  }
-
-  getGroupMembers(proj: string, groupId: string, pageNum: number, pageSize: number, sortBy: any): Observable<Org> {
-    let qs = `project/${proj}/group/${groupId}/members`;
-    if (pageNum !== null) { qs += `?pageNum=${pageNum - 1}`; }
-    if (pageSize !== null) { qs += `&pageSize=${pageSize}`; }
-    if (sortBy !== '' && sortBy !== null) { qs += `&sortBy=${sortBy}`; }
-    return this.api.get<any>(qs).pipe(
-      catchError(error => this.api.handleError(error))
-    );
   }
 
   addGroupMembers(proj: Project | DemiProject, groupId: string, members: any): Observable<Project> {

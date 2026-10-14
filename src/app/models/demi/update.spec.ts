@@ -1,4 +1,4 @@
-import { nativeUpdateSort, updateEagleId, updateParentId } from './update';
+import { nativeUpdateSort, updateParentId } from './update';
 
 describe('DEMI update helpers', () => {
   it('turns a table sort into a native sort, dropping keys DEMI cannot sort by', () => {
@@ -9,12 +9,6 @@ describe('DEMI update helpers', () => {
     expect(nativeUpdateSort('-project.name')).toBeUndefined();
     expect(nativeUpdateSort('')).toBeUndefined();
     expect(nativeUpdateSort(null)).toBeUndefined();
-  });
-
-  it('reads the Eagle id from eagleId, or from an Eagle-shaped id', () => {
-    expect(updateEagleId({ id: 'x', eagleId: '5885109faaecd9001b81314c' })).toBe('5885109faaecd9001b81314c');
-    expect(updateEagleId({ id: '5885109faaecd9001b81314c' })).toBe('5885109faaecd9001b81314c');
-    expect(updateEagleId({ id: 'demi-only', eagleId: null })).toBeNull();
   });
 
   it('prefers the joined project Eagle id, then the stored parent id', () => {

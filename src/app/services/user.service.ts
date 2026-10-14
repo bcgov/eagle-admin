@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
 import { DemiApiService } from './demi-api.service';
@@ -46,14 +46,9 @@ export class UserService {
     return this.demi.get<Group>('groups', id);
   }
 
-  /** `projectId` is the DEMI project id; see {@link getDemiProjectId}. */
+  /** `projectId` is the DEMI project id (`LegacyProject.demiId`), not the Eagle id. */
   listProjectGroups(projectId: string, page: number, pageSize: number, sort: string): Observable<DemiList<Group>> {
     return this.demi.list<Group>('groups', { filters: { project: projectId }, page, pageSize, sort, count: true });
-  }
-
-  /** Groups are keyed by the DEMI project id; admin routes carry the Eagle one, which DEMI's by-id route accepts. */
-  getDemiProjectId(eagleProjectId: string): Observable<string> {
-    return this.demi.get<{ id: string }>('projects', eagleProjectId).pipe(map(project => project.id));
   }
 
   save(user: LegacyUser | User): Observable<LegacyUser> {

@@ -153,11 +153,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
         if (this.documentTableData()) {
           this.documentTableData().data.map(item => {
             if (item.checkbox === true) {
-              promises.push(
-                this.documentService.downloadDocument(
-                  this.docs.filter(d => d._id === item._id)[0]
-                )
-              );
+              promises.push(this.documentService.downloadNative(item.id));
             }
           });
         }
@@ -365,6 +361,7 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
           type: '',
           milestone: '',
           legislation: 2018,
+          id: document.id,
           _id: document._id,
           project: document.project,
           isFeatured: false,

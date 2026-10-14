@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { switchMap } from 'rxjs/operators';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
+import { DEMI_MAX_PAGE_SIZE } from '../models/demi/demi-list';
 import { DemiUpdate, nativeUpdateSort } from '../models/demi/update';
 import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
@@ -109,7 +110,7 @@ export class ActivityComponent {
   ];
 
   constructor() {
-    this.projectService.list({ pageSize: 1000 })
+    this.projectService.list({ pageSize: DEMI_MAX_PAGE_SIZE })
         .pipe(
           switchMap(page => {
             this.projects = page.rows.map(toLegacyProject).filter(project => project._id);

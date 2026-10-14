@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { AddCommentComponent } from './add-comment.component';
 import { CommentService } from 'src/app/services/comment.service';
-import { DocumentService } from 'src/app/services/document.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -13,7 +12,6 @@ describe('AddCommentComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CommentService, useValue: {} },
-        { provide: DocumentService, useValue: {} },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['error', 'success']) },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'error']) }
       ]

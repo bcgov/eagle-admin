@@ -69,6 +69,22 @@ describe('ProjectNotificationDocumentsComponent', () => {
     expect(fixture.componentInstance.selectedCount().total).toBe(1);
   });
 
+  it('downloads a picked document from DEMI by its DEMI id', async () => {
+    const open = spyOn(window, 'open');
+    const fixture = TestBed.createComponent(ProjectNotificationDocumentsComponent);
+    fixture.detectChanges();
+    http.expectOne(r => r.url === '/demi/api/documents').flush([
+      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'notification-1', documentSource: 'PROJECT-NOTIFICATION', displayName: 'Notice letter' }
+    ]);
+    fixture.componentInstance.selectAction('selectAll');
+
+    const done = fixture.componentInstance.selectAction('download');
+    http.expectOne('/demi/api/documents/uuid-1/download').flush({ url: 'https://files.example/notice.pdf' });
+    await done;
+
+    expect(open).toHaveBeenCalledWith('https://files.example/notice.pdf', '_self');
+  });
+
   it('loads the notification from DEMI by route id when none is stored, then lists its documents', () => {
     const storage = TestBed.inject(StorageService);
     storage.state = { type: 'currentProject', data: null };

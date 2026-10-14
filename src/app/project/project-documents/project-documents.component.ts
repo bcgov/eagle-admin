@@ -20,7 +20,7 @@ import { encodeParams, encodeString, filterCompareWith } from 'src/app/shared/ut
 import { DocumentTableRowsComponent } from './project-document-table-rows/project-document-table-rows.component';
 import { Document } from 'src/app/models/document';
 import { DemiDocument, DemiDocumentFilters, DemiDocumentListParams } from 'src/app/models/demi/document';
-import { eagleWriteId } from 'src/app/models/demi/document-write';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';

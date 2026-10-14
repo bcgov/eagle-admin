@@ -11,21 +11,10 @@ import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 import { CommentPeriod } from '../models/commentPeriod';
 import { CommentPeriodSummary } from '../models/commentPeriodSummary';
 import {
-  DemiCommentPeriod, DemiCommentPeriodQuery, DemiCommentPeriodSummary, eagleWriteId, toEagleWriteBody
+  DemiCommentPeriod, DemiCommentPeriodQuery, DemiCommentPeriodSummary, requireEagleWriteId, toEagleWriteBody
 } from '../models/demi/comment-period';
 import { DemiList } from '../models/demi/demi-list';
 import { isEagleId } from '../models/demi/demi-ids';
-
-const PERIOD_FIELDS = [
-  '_id', '__v', '_schemaName', 'addedBy', 'additionalText', 'ceaaAdditionalText',
-  'ceaaInformationLabel', 'ceaaRelatedDocuments', 'classificationRoles', 'classifiedPercent',
-  'commenterRoles', 'commentTip', 'dateAdded', 'dateCompleted', 'dateCompletedEst',
-  'dateStarted', 'dateStartedEst', 'dateUpdated', 'downloadRoles', 'informationLabel',
-  'instructions', 'isClassified', 'isPublished', 'isResolved', 'isVetted', 'milestone',
-  'openCommentPeriod', 'openHouses', 'periodType', 'phase', 'phaseName', 'project',
-  'publishedPercent', 'rangeOption', 'rangeType', 'relatedDocuments', 'resolvedPercent',
-  'updatedBy', 'userCan', 'vettedPercent', 'vettingRoles'
-];
 
 /** eagle-api POST/PUT body; see {@link toEagleWriteBody}. `project` is the Eagle project id. */
 function toEaglePeriodBody(period: CommentPeriod | DemiCommentPeriod, isNew = false): any {
@@ -60,40 +49,6 @@ export class CommentPeriodService {
     'Closed': 'Commenting Closed',
     'Open': 'Commenting Open',
   };
-
-  getAllByProjectId(projId: string, pageNum = 1, pageSize = 10, sortBy: string = null): Observable<object> {
-    const fields = ['project', 'dateStarted', 'dateCompleted', 'isMet', 'metURLAdmin', 'isPublished'];
-    let qs = `commentperiod?&project=${projId}&`;
-    if (pageNum !== null) { qs += `pageNum=${pageNum - 1}&`; }
-    if (pageSize !== null) { qs += `pageSize=${pageSize}&`; }
-    if (sortBy !== '' && sortBy !== null) { qs += `sortBy=${sortBy}&`; }
-    qs += `count=true&fields=${this.api.buildValues(fields)}`;
-    return this.api.get<any>(qs).pipe(
-      withLoading(this.loadingState, `comment-periods-${projId}`),
-      map((res: any) => {
-        if (!res || res.length === 0) { return { totalCount: 0, data: [] }; }
-        const periods = res[0].results.map((cp: any) => new CommentPeriod(cp));
-        return { totalCount: res[0].total_items, data: periods };
-      }),
-      catchError(error => {
-        this.logger.error(`Failed to get comment periods for project ${projId}`, 'CommentPeriodService', error);
-        this.toast.error('Failed to load comment periods.');
-        return of({ totalCount: 0, data: [] });
-      })
-    );
-  }
-
-  getById(periodId: string): Observable<CommentPeriod> {
-    return this.api.get<CommentPeriod[]>(`commentperiod/${periodId}?fields=${this.api.buildValues(PERIOD_FIELDS)}`).pipe(
-      withLoading(this.loadingState, `comment-period-${periodId}`),
-      map((res: any) => res?.length ? new CommentPeriod(res[0]) : null),
-      catchError(error => {
-        this.logger.error(`Failed to get comment period ${periodId}`, 'CommentPeriodService', error);
-        this.toast.error('Failed to load comment period.');
-        return of(null as CommentPeriod);
-      })
-    );
-  }
 
   getSummaryById(periodId: string): Observable<CommentPeriodSummary> {
     return this.getNativeSummary(periodId).pipe(
@@ -151,18 +106,18 @@ export class CommentPeriodService {
   }
 
   delete(period: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
-    return deferWrite(this.api, () => this.api.delete<CommentPeriod>(`commentperiod/${eagleWriteId(period, 'comment period')}`));
+    return deferWrite(this.api, () => this.api.delete<CommentPeriod>(`commentperiod/${requireEagleWriteId(period, 'comment period')}`));
   }
 
   // eagle-api's publish routes read only the id, so a native row sends no body.
   publish(period: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
     return deferWrite(this.api, () =>
-      this.api.put<CommentPeriod>(`commentperiod/${eagleWriteId(period, 'comment period')}/publish`, '_id' in period ? period : {}));
+      this.api.put<CommentPeriod>(`commentperiod/${requireEagleWriteId(period, 'comment period')}/publish`, '_id' in period ? period : {}));
   }
 
   unPublish(period: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
     return deferWrite(this.api, () =>
-      this.api.put<CommentPeriod>(`commentperiod/${eagleWriteId(period, 'comment period')}/unpublish`, '_id' in period ? period : {}));
+      this.api.put<CommentPeriod>(`commentperiod/${requireEagleWriteId(period, 'comment period')}/unpublish`, '_id' in period ? period : {}));
   }
 
   getCurrent(periods: CommentPeriod[]): CommentPeriod {

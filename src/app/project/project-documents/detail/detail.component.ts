@@ -6,7 +6,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { formatBytes } from 'src/app/shared/utils/utils';
 import { DemiDocument } from 'src/app/models/demi/document';
-import { eagleWriteId } from 'src/app/models/demi/document-write';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ConfigService } from 'src/app/services/config.service';

@@ -59,14 +59,14 @@ export function encodeString(filename: string, isUrl: boolean): string {
   return filename.replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\\/g, '_').replace(/\//g, '_');
 }
 
-export function getFormattedTime(date: Date): string {
-  const y = date.getFullYear();
-  const m = date.getMonth() + 1;
-  const d = date.getDate();
-  const h = date.getHours();
-  const mi = date.getMinutes();
-  const s = date.getSeconds();
-  return `${y}-${m}-${d}-${h}-${mi}-${s}`;
+/** Saves a blob the page already holds as a file named `filename`. */
+export function saveBlob(blob: Blob, filename: string): void {
+  const url = window.URL.createObjectURL(blob);
+  const a = window.document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
 }
 
 export function extractFromSearchResults<T>(results: ISearchResults<T>[]): T[] | null {

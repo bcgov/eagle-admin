@@ -24,7 +24,7 @@ describe('AddEditActivityComponent', () => {
 
   // Test rows use Eagle field names; DEMI answers with `id`, `eagleId` and the parent's Eagle id in `projectId`.
   const nativeOf = ({ _id, project, ...rest }: any) => ({ ...rest, id: _id, eagleId: _id, projectId: project ?? null });
-  const demiProject = (eagleId: string) => ({ id: `track-${eagleId}`, eagleId, name: eagleId, location: 'Kamloops' });
+  const demiProject = (eagleId: string) => ({ id: `track-${eagleId}`, eagleId, name: eagleId, address: 'Kamloops' });
   const docs = (rows: any[]) => of({ rows } as any);
   const documentSearches = () => demiApi.list.calls.allArgs().filter(args => args[0] === 'documents').map(args => args[1]!.filters as any);
   const searchedSources = () => documentSearches().map(filters => filters.documentSource);
@@ -43,8 +43,8 @@ describe('AddEditActivityComponent', () => {
     projectService.getNative.and.callFake((id: string) => of(demiProject(id)));
     commentPeriodService = jasmine.createSpyObj('CommentPeriodService', ['listByProject']);
     commentPeriodService.listByProject.and.returnValue(of({ rows: periods }));
-    documentService = jasmine.createSpyObj('DocumentService', ['addWithProgress', 'downloadResource']);
-    documentService.downloadResource.and.resolveTo(new Blob());
+    documentService = jasmine.createSpyObj('DocumentService', ['addWithProgress', 'downloadUrlNative']);
+    documentService.downloadUrlNative.and.returnValue(of('https://files.example/plan.jpg'));
 
     TestBed.configureTestingModule({
       imports: [AddEditActivityComponent],
@@ -621,6 +621,16 @@ describe('AddEditActivityComponent', () => {
         component.images.at(0).patchValue({ alt: 'Plan' });
         expect(footerButton('Save draft').disabled).toBeFalse();
       });
+    });
+
+    it('shows a photo the public cannot see from its presigned DEMI URL', () => {
+      const component = create(null);
+      demiApi.list.and.returnValue(docs([privateDoc('i3', 'plan.jpg')]));
+      component.addPhotos([{ doc: privateDoc('i3', 'plan.jpg') }]);
+      fillNews(component);
+
+      expect(documentService.downloadUrlNative).toHaveBeenCalledOnceWith('i3');
+      expect(component.imageSrcs().get('i3')).toBe('https://files.example/plan.jpg');
     });
 
     it('previews public photos from the fetch URL and new uploads from their local copy, caption and credit on one line', () => {

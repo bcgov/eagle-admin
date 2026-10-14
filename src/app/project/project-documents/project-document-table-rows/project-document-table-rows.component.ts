@@ -7,7 +7,7 @@ import { TableComponent } from 'src/app/shared/components/table-template/table.c
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoggingService } from 'src/app/services/logging.service';
-import { eagleWriteId } from 'src/app/models/demi/document-write';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -6,11 +6,6 @@ export interface DocumentWriteIds {
   projectEagleId?: string | null;
 }
 
-/** Eagle document id for an eagle-api write. Null means a DEMI-only row, which is read-only here. */
-export function eagleWriteId(row: DocumentWriteIds): string | null {
-  return row._id || row.eagleId || null;
-}
-
 /** Eagle project id for an eagle-api document write. Null also when the caller cannot read the parent project: refuse the write then. */
 export function eagleWriteProjectId(row: DocumentWriteIds): string | null {
   return row.project || row.projectEagleId || null;

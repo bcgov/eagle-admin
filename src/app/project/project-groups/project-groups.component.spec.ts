@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, defer, of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { ProjectGroupsComponent } from './project-groups.component';
 import { ExcelService } from 'src/app/services/excel.service';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -17,15 +17,12 @@ describe('ProjectGroupsComponent', () => {
   let component: ProjectGroupsComponent;
   let params: BehaviorSubject<Record<string, string>>;
   let userService: jasmine.SpyObj<UserService>;
-  let resolves: number;
   let toast: jasmine.SpyObj<ToastService>;
 
   beforeEach(() => {
     params = new BehaviorSubject<Record<string, string>>({ currentPage: '2', pageSize: '25', sortBy: '-name' });
-    userService = jasmine.createSpyObj('UserService', ['getDemiProjectId', 'listProjectGroups', 'getUsersByIds']);
-    resolves = 0;
+    userService = jasmine.createSpyObj('UserService', ['listProjectGroups', 'getUsersByIds']);
     toast = jasmine.createSpyObj('ToastService', ['success', 'warning', 'error']);
-    userService.getDemiProjectId.and.returnValue(defer(() => { resolves++; return of('track-42'); }));
     userService.listProjectGroups.and.returnValue(of({ rows: [{ id: 'g1', projectId: 'track-42', name: 'Agencies', members: [] }], total: 26 }));
 
     TestBed.configureTestingModule({
@@ -41,8 +38,9 @@ describe('ProjectGroupsComponent', () => {
           }
         },
         { provide: UserService, useValue: userService },
+        // No project methods: the groups read must not look the project up again.
         { provide: ProjectService, useValue: {} },
-        { provide: StorageService, useValue: { currentProjectData: { _id: '5885109faaecd9001b81314c' }, state: {} } },
+        { provide: StorageService, useValue: { currentProjectData: { _id: '5885109faaecd9001b81314c', demiId: 'track-42' }, state: {} } },
         { provide: NgbModal, useValue: {} },
         { provide: ExcelService, useValue: jasmine.createSpyObj('ExcelService', ['exportAsExcelFile']) },
         { provide: NavigationStackUtils, useValue: {} },
@@ -55,11 +53,7 @@ describe('ProjectGroupsComponent', () => {
     component.ngOnInit();
   });
 
-  it('resolves the route\'s Eagle project id to the DEMI one', () => {
-    expect(userService.getDemiProjectId).toHaveBeenCalledWith('5885109faaecd9001b81314c');
-  });
-
-  it('lists groups under the DEMI project id with the URL page and name sort', () => {
+  it('lists groups under the resolved project\'s DEMI id with the URL page and name sort', () => {
     expect(userService.listProjectGroups).toHaveBeenCalledWith('track-42', 2, 25, '-name');
   });
 
@@ -67,10 +61,9 @@ describe('ProjectGroupsComponent', () => {
     expect(component.tableParams.totalListItems).toBe(26);
   });
 
-  it('resolves the project once across page changes', () => {
+  it('keeps the DEMI project id across page changes', () => {
     params.next({ currentPage: '3', pageSize: '25', sortBy: '+name' });
 
-    expect(resolves).toBe(1);
     expect(userService.listProjectGroups).toHaveBeenCalledWith('track-42', 3, 25, 'name');
   });
 

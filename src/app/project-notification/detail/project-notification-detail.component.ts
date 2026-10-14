@@ -9,7 +9,6 @@ import { NotificationProjectService } from 'src/app/services/notification-projec
 import { StorageService } from 'src/app/services/storage.service';
 import { DatePipe } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,7 +25,6 @@ export class ProjectNotificationDetailComponent implements OnInit {
   documentService = inject(DocumentService);
   private storageService = inject(StorageService);
   private destroyRef = inject(DestroyRef);
-  private logger = inject(LoggingService);
   private _cdr = inject(ChangeDetectorRef);
 
   public projectNotification: LegacyNotification = null;
@@ -115,10 +113,8 @@ export class ProjectNotificationDetailComponent implements OnInit {
       });
   }
 
-  public downloadDocument(document) {
-    return this.documentService.downloadDocument(document).then(() => {
-      this.logger.debug('Download initiated for file', 'ProjectNotificationDetailComponent');
-    });
+  public downloadDocument(document: { id: string }) {
+    return this.documentService.downloadNative(document.id);
   }
 
 }

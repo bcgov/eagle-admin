@@ -1,5 +1,6 @@
 import { DemiDocument, DemiDocumentFilters } from 'src/app/models/demi/document';
-import { eagleWriteId, eagleWriteProjectId } from 'src/app/models/demi/document-write';
+import { eagleWriteId } from 'src/app/models/demi/demi-ids';
+import { eagleWriteProjectId } from 'src/app/models/demi/document-write';
 
 /**
  * Document row in the Eagle field names the edit form and document pickers read.

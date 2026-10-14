@@ -6,7 +6,8 @@ import { ToastService } from 'src/app/services/toast.service';
 import { Router, RouterModule } from '@angular/router';
 import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
 import { ConfigService } from 'src/app/services/config.service';
-import { encodeString, formatDate } from 'src/app/shared/utils/utils';
+import { encodeString, formatDate, saveBlob } from 'src/app/shared/utils/utils';
+import { DemiDocument } from 'src/app/models/demi/document';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -53,7 +54,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
   public projectType: string;
   public baseRouteUrl: string;
   public loading = true;
-  public commentPeriodDocs = [];
+  public commentPeriodDocs: DemiDocument[] = [];
   public canDeleteCommentPeriod = false;
 
   ngOnInit() {
@@ -67,7 +68,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
     this.baseRouteUrl = this.projectType === 'currentProject' ? '/p' : '/pn';
 
     if (this.commentPeriod().relatedDocuments && this.commentPeriod().relatedDocuments.length > 0) {
-      this.documentService.getByMultiId(this.commentPeriod().relatedDocuments)
+      this.documentService.byIdsNative(this.commentPeriod().relatedDocuments)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(
           data => {
@@ -172,10 +173,8 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
       });
   }
 
-  public downloadDocument(document) {
-    return this.documentService.downloadDocument(document).then(() => {
-      this.logger.debug('Download initiated for file', 'CommentPeriodDetailsTabComponent');
-    });
+  public downloadDocument(document: DemiDocument) {
+    return this.documentService.downloadNative(document.id);
   }
 
   public checkIfCanDelete() {
@@ -186,13 +185,4 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
     void event;
     void document;
   }
-}
-
-function saveBlob(blob: Blob, filename: string) {
-  const url = window.URL.createObjectURL(blob);
-  const a = window.document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  window.URL.revokeObjectURL(url);
 }

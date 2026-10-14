@@ -6,6 +6,8 @@ describe('toLegacyProject', () => {
     eagleId: '5885109faaecd9001b81314c',
     name: 'Ashcroft Ranch Landfill',
     projectType: 'Waste Disposal',
+    projectState: 'Closed',
+    address: 'Ashcroft Ranch, Ashcroft, BC',
     proponentId: 'org1',
     proponentName: 'Greater Vancouver Sewerage and Drainage District',
     centroid: { type: 'Point', coordinates: [-121.3333, 50.7167] },
@@ -28,6 +30,8 @@ describe('toLegacyProject', () => {
     expect(project.type).toBe('Waste Disposal');
     expect(project.proponent).toEqual({ _id: 'org1', name: 'Greater Vancouver Sewerage and Drainage District' });
     expect(project.centroid).toEqual([-121.3333, 50.7167]);
+    expect(project.status).toBe('Closed');
+    expect(project.location).toBe('Ashcroft Ranch, Ashcroft, BC');
   });
 
   it('passes fields that share the Eagle name through', () => {

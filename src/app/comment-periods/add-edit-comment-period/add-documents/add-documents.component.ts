@@ -47,7 +47,7 @@ export class AddDocumentComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   public terms = new SearchTerms();
-  public documents: Document[] = null;
+  public documents: Array<Document & { id?: string }> = null;
   public loading = true;
 
   public isEditing = false;
@@ -190,7 +190,7 @@ export class AddDocumentComponent implements OnInit {
         const promises = [];
         this.documentTableData.data.map((item) => {
           if (item.checkbox === true) {
-            promises.push(this.api.downloadDocument(this.documents.filter(d => d._id === item._id)[0]));
+            promises.push(this.api.downloadNative(item.id));
           }
         });
         return Promise.all(promises).then(() => {
@@ -300,6 +300,7 @@ export class AddDocumentComponent implements OnInit {
             datePosted: document.datePosted,
             type: document.type,
             milestone: document.milestone,
+            id: document.id,
             _id: document._id,
             project: document.project,
             documentFileName: document.documentFileName

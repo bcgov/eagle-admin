@@ -1,7 +1,7 @@
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, shareReplay } from 'rxjs/operators';
-import { Observable, firstValueFrom } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { GroupsTableRowsComponent } from './project-groups-table-rows/project-groups-table-rows.component';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -82,16 +82,6 @@ export class ProjectGroupsComponent implements OnInit {
     }
   ];
 
-  private demiProject: { eagleId: string; id$: Observable<string> } | null = null;
-
-  /** DEMI project id for the route's Eagle id, read once per project. */
-  private demiProjectId(eagleId: string): Observable<string> {
-    if (this.demiProject?.eagleId !== eagleId) {
-      this.demiProject = { eagleId, id$: this.userService.getDemiProjectId(eagleId).pipe(shareReplay(1)) };
-    }
-    return this.demiProject.id$;
-  }
-
   ngOnInit() {
     this.currentProject.set(this.storageService.currentProjectData);
 
@@ -107,12 +97,11 @@ export class ProjectGroupsComponent implements OnInit {
             this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);
           }
 
-          const eagleProjectId = this.route.parent?.snapshot.paramMap.get('projId') ?? this.route.snapshot.params['projId'];
           const pageNum = this.tableParams.currentPage || 1;
           const pageSize = this.tableParams.pageSize || 25;
 
-          return this.demiProjectId(eagleProjectId).pipe(
-            switchMap(projectId => this.userService.listProjectGroups(projectId, pageNum, pageSize, sort)),
+          // Groups are keyed by the DEMI project id, which the project resolver keeps beside the Eagle `_id`.
+          return this.userService.listProjectGroups(this.currentProject().demiId, pageNum, pageSize, sort).pipe(
             emptyPageOnError<Group>(err => {
               this.logger.error('Failed to load groups', 'ProjectGroupsComponent', err);
               this.toastService.error('Groups could not be loaded.');

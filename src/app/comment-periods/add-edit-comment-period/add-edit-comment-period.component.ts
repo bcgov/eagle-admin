@@ -1,5 +1,6 @@
 import { Component, OnInit, DestroyRef, input, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs/operators';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UntypedFormGroup, UntypedFormControl, UntypedFormBuilder, UntypedFormArray, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
@@ -14,6 +15,7 @@ import { LegacyCommentPeriod, toEagleSaveBody } from '../comment-period-legacy';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
+import { legacyDocumentRow } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { StorageService } from 'src/app/services/storage.service';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -202,8 +204,8 @@ export class AddEditCommentPeriodComponent implements OnInit {
   private initSelectedDocs() {
     if (this.storageService.state.selectedDocumentsForCP == null) {
       if (this.currentCommentPeriod.relatedDocuments && this.currentCommentPeriod.relatedDocuments.length > 0) {
-        this.documentService.getByMultiId(this.currentCommentPeriod.relatedDocuments)
-          .pipe(takeUntilDestroyed(this.destroyRef))
+        this.documentService.byIdsNative(this.currentCommentPeriod.relatedDocuments)
+          .pipe(map(rows => rows.map(legacyDocumentRow)), takeUntilDestroyed(this.destroyRef))
           .subscribe(
             data => {
               this.storageService.state.selectedDocumentsForCP = { type: 'selectedDocumentsForCP', data: data };

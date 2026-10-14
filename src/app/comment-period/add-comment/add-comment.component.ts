@@ -9,7 +9,6 @@ import { RouterModule } from '@angular/router';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from '../../file-upload/file-upload.component';
 import { CommentPeriod } from 'src/app/models/commentPeriod';
-import { DocumentService } from 'src/app/services/document.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { Comment } from 'src/app/models/comment';
@@ -33,7 +32,6 @@ import { LoggingService } from 'src/app/services/logging.service';
 })
 
 export class AddCommentComponent implements OnInit {
-  private api = inject(DocumentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private commentService = inject(CommentService);
@@ -210,12 +208,6 @@ export class AddCommentComponent implements OnInit {
         break;
       }
     }
-  }
-
-  public downloadFile(document: Document) {
-    return this.api.downloadDocument(document).then(() => {
-      this.logger.debug('Download initiated for file(s)', 'AddCommentComponent');
-    });
   }
 
   public toggleDocumentPublish(document: any, action: string) {

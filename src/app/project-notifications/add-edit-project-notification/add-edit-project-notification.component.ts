@@ -11,8 +11,11 @@ import { DateTime } from 'luxon';
 import { ProjectNotification } from 'src/app/models/projectNotification';
 import { ConfigService } from 'src/app/services/config.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
+import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
+import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 
@@ -33,6 +36,8 @@ export class AddEditProjectNotificationComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private projectService = inject(ProjectService);
+  private logger = inject(LoggingService);
+  private toastService = inject(ToastService);
 
   public isAdd = false;
   public isPublished = false;
@@ -136,13 +141,17 @@ export class AddEditProjectNotificationComponent implements OnInit {
     });
   }
 
-  // loads all the projects for the projects list
+  /** Projects the notification may point at. eagle-api stores the Eagle project id, so Track-only projects are left out. */
   public getAllProjectsList() {
-    this.projectService.getAll(1, 1000, '+name')
+    this.projectService.list({ pageSize: DEMI_MAX_PAGE_SIZE })
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((res2: any) => {
-        if (res2) {
-          this.projects = res2.data;
+      .subscribe({
+        next: ({ rows }) => {
+          this.projects = rows.filter(row => row.eagleId).map(row => ({ _id: row.eagleId, name: row.name }));
+        },
+        error: error => {
+          this.logger.error('Failed to load projects', 'AddEditProjectNotificationComponent', error);
+          this.toastService.error('Failed to load projects.');
         }
       });
   }
