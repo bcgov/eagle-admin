@@ -92,6 +92,7 @@ function doc(id: string, isPublished: boolean, eagleId: string | null = id) {
 
 describe('ProjectDocumentsComponent paging and sort', () => {
   let component: ProjectDocumentsComponent;
+  let pageFixture: ComponentFixture<ProjectDocumentsComponent>;
   let navigate: jasmine.Spy;
   let documentService: jasmine.SpyObj<DocumentService>;
 
@@ -119,7 +120,8 @@ describe('ProjectDocumentsComponent paging and sort', () => {
     });
     navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     // No detectChanges: the handlers under test need no rendered template.
-    component = TestBed.createComponent(ProjectDocumentsComponent).componentInstance;
+    pageFixture = TestBed.createComponent(ProjectDocumentsComponent);
+    component = pageFixture.componentInstance;
     component.ngOnInit();
     flushMicrotasks();
   }
@@ -220,9 +222,32 @@ describe('ProjectDocumentsComponent paging and sort', () => {
   }));
 
   it('sorts newest first when the URL sort is one DEMI cannot sort on', fakeAsync(() => {
-    load([], 0, { ...urlParams, sortByCategorized: '+type' });
+    load([], 0, { ...urlParams, sortByCategorized: '+projectPhase' });
     expect(documentService.listNative.calls.mostRecent().args[0].sort).toBe('-datePosted');
+    expect(component.tableParams.sortByCategorized).toBe('-datePosted');
   }));
+
+  it('offers a sort on each header DEMI can sort by', fakeAsync(() => {
+    load([doc('d21', false)], 21);
+    pageFixture.detectChanges();
+
+    const sortable = Array.from<Element>(pageFixture.nativeElement.querySelectorAll('th .sort-button'))
+      .map(button => button.textContent.trim());
+    expect(sortable).toEqual(['Name', 'Status', 'Date', 'Type', 'Milestone', 'Legislation', 'Feature']);
+    pageFixture.destroy();
+  }));
+
+  // Header column value, as the URL holds it, and the `sort` DEMI gets for it.
+  const headerSorts = [
+    ['+status', 'isPublished'], ['-status', '-isPublished'], ['+type', 'type'], ['+milestone', 'milestone'],
+    ['+legislation', 'legislation'], ['-isFeatured', '-isFeatured']
+  ];
+  headerSorts.forEach(([sortByCategorized, sort]) => {
+    it(`sends sort=${sort} for the URL sort ${sortByCategorized}`, fakeAsync(() => {
+      load([], 0, { ...urlParams, sortByCategorized });
+      expect(listQuery().sort).toBe(sort);
+    }));
+  });
 
   it('keeps only the first key of an old two-key URL sort', fakeAsync(() => {
     load([], 0, { ...urlParams, sortByCategorized: '-datePosted,+displayName' });

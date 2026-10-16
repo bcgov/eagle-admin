@@ -28,19 +28,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { nextSortBy } from 'src/app/shared/utils/table-template-utils';
+import { nativeDocumentSort } from './document-edit/legacy-document-row';
 
-
-const NATIVE_SORT_KEYS = ['datePosted', 'displayName'];
-
-/** First sort key of a URL `sortBy`, when DEMI can sort on it; else newest first. Keeps the `+`/`-` the table shows. */
-function toNativeSort(sortBy: string | null | undefined): string {
-  const first = (sortBy || '').split(',')[0];
-  const field = first.replace(/^[+-]/, '');
-  if (!NATIVE_SORT_KEYS.includes(field)) {
-    return '-datePosted';
-  }
-  return first.startsWith('-') ? first : `+${field}`;
-}
 
 class DocumentFilterObject {
   constructor(
@@ -145,7 +134,6 @@ export class ProjectDocumentsComponent implements OnInit {
     {
       name: 'Status',
       value: 'status',
-      nosort: true,
       width: '7%'
     },
     {
@@ -156,25 +144,21 @@ export class ProjectDocumentsComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      nosort: true,
       width: '14%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      nosort: true,
       width: '14%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      nosort: true,
       width: '10%'
     },
     {
       name: 'Feature',
       value: 'isFeatured',
-      nosort: true,
       width: '6%'
     }
   ];
@@ -238,7 +222,10 @@ export class ProjectDocumentsComponent implements OnInit {
               this.filterForURL
             );
 
-            this.tableParams.sortByCategorized = toNativeSort(this.tableParams.sortByCategorized);
+            // A URL sort DEMI cannot run becomes newest first, so the header arrow matches the list.
+            if (!nativeDocumentSort(this.tableParams.sortByCategorized)) {
+              this.tableParams.sortByCategorized = '-datePosted';
+            }
 
             this.tableParams.keywords = params.keywords
               ? decodeURIComponent(params.keywords)
@@ -278,7 +265,7 @@ export class ProjectDocumentsComponent implements OnInit {
       page: this.tableParams.currentPageCategorized || 1,
       pageSize: this.tableParams.pageSizeCategorized || 10,
       count: true,
-      sort: this.tableParams.sortByCategorized.replace(/^\+/, ''),
+      sort: nativeDocumentSort(this.tableParams.sortByCategorized),
       q: this.tableParams.keywords || undefined,
       filters
     };

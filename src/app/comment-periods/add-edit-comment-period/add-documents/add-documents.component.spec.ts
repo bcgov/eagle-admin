@@ -68,6 +68,34 @@ describe('AddDocumentComponent', () => {
     req.flush([]);
   });
 
+  // One page of one document, rendered, with its sortable header buttons.
+  function sortButtons(): HTMLButtonElement[] {
+    setProject({ _id: 'eagle-project-1', demiId: 'demi-project-1', name: 'Project' });
+    const fixture = render();
+    http.expectOne(r => r.url === '/demi/api/documents').flush([
+      { id: 'uuid-1', eagleId: 'eagle-doc-1', projectId: 'demi-project-1', documentSource: 'PROJECT', displayName: 'Report' }
+    ], { headers: { 'x-total-count': '1' } });
+    fixture.detectChanges();
+    return Array.from(fixture.nativeElement.querySelectorAll('th .sort-button'));
+  }
+
+  function clickHeader(name: string) {
+    sortButtons().find(b => b.textContent.trim() === name).click();
+    return http.expectOne(r => r.url === '/demi/api/documents');
+  }
+
+  it('offers a sort on each header DEMI can sort by', () => {
+    expect(sortButtons().map(b => b.textContent.trim())).toEqual(['Name', 'Date', 'Type', 'Milestone']);
+  });
+
+  it('sends sort=type when the Type header is clicked', () => {
+    expect(clickHeader('Type').request.params.get('sort')).toBe('type');
+  });
+
+  it('sends sort=milestone when the Milestone header is clicked', () => {
+    expect(clickHeader('Milestone').request.params.get('sort')).toBe('milestone');
+  });
+
   it('lets select-all link only project documents with an Eagle id', () => {
     setProject({ _id: 'eagle-project-1', demiId: 'demi-project-1', name: 'Project' });
     const fixture = render();

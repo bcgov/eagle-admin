@@ -73,14 +73,12 @@ export class AddDocumentComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      width: '15%',
-      nosort: true
+      width: '15%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      width: '15%',
-      nosort: true
+      width: '15%'
     }
   ];
 
