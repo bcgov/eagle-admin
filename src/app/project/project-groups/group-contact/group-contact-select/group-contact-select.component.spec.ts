@@ -14,8 +14,8 @@ describe('GroupContactSelectComponent', () => {
   let component: GroupContactSelectComponent;
   let listUsers: jasmine.Spy;
 
-  beforeEach(() => {
-    listUsers = jasmine.createSpy('listUsers').and.returnValue(of({ rows: [{ id: 'b' } as User, { id: 'c' } as User], total: 2 }));
+  // `handedOver` is the sort the members screen leaves in storage for this screen.
+  function create(handedOver: string) {
     TestBed.configureTestingModule({
       imports: [GroupContactSelectComponent],
       providers: [
@@ -27,9 +27,14 @@ describe('GroupContactSelectComponent', () => {
           useValue: {
             currentProjectData: { _id: 'p1' },
             state: {
-              // Handed over by the members screen, sorted there by email.
-              sortBy: '+email',
-              tableColumns: [{ name: 'Name', value: 'displayName' }, { name: 'Email', value: 'email' }],
+              sortBy: handedOver,
+              tableColumns: [
+                { name: '', value: 'check', nosort: true },
+                { name: 'Name', value: 'displayName' },
+                { name: 'Organization', value: 'orgName' },
+                { name: 'Email', value: 'email' },
+                { name: 'Phone Number', value: 'phoneNumber' }
+              ],
               selectedUsers: [{ id: 'b' }],
               rowComponent: class {}
             }
@@ -46,21 +51,46 @@ describe('GroupContactSelectComponent', () => {
     spyOn(TestBed.inject(TableTemplateUtils), 'updateUrl');
     component = TestBed.createComponent(GroupContactSelectComponent).componentInstance;
     component.ngOnInit();
+  }
+
+  beforeEach(() => {
+    listUsers = jasmine.createSpy('listUsers').and.returnValue(of({ rows: [{ id: 'b' } as User, { id: 'c' } as User], total: 2 }));
   });
 
-  it('asks DEMI for the name sort instead of the handed-over email sort', () => {
+  [
+    ['+orgName', 'orgName'],
+    ['-orgName', '-orgName'],
+    ['+email', 'email'],
+    ['-email', '-email'],
+    ['+phoneNumber', 'phoneNumber'],
+    ['-phoneNumber', '-phoneNumber']
+  ].forEach(([sortBy, sort]) => {
+    it(`asks DEMI for sort=${sort} when the header sort is ${sortBy}`, () => {
+      create(sortBy);
+
+      expect(listUsers.calls.mostRecent().args[0].sort).toBe(sort);
+      expect(component.tableParams.sortBy).toBe(sortBy);
+    });
+  });
+
+  ['orgName', 'email', 'phoneNumber'].forEach(value => {
+    it(`lets the ${value} header sort`, () => {
+      create('+displayName');
+
+      expect(component.tableColumns.find(c => c.value === value).nosort).toBeFalsy();
+    });
+  });
+
+  it('sorts by name when the handed-over sort is not one DEMI can sort', () => {
+    create('+lastName,+firstName');
+
     expect(listUsers.calls.mostRecent().args[0].sort).toBe('displayName');
-  });
-
-  it('shows the name sort in the table header', () => {
     expect(component.tableParams.sortBy).toBe('+displayName');
   });
 
-  it('turns off sorting on columns DEMI cannot sort', () => {
-    expect(component.tableColumns.find(c => c.value === 'email').nosort).toBeTrue();
-  });
-
   it('ticks the rows already in the group', () => {
+    create('+displayName');
+
     expect(component.tableData.data.map(row => row.checkbox)).toEqual([true, false]);
   });
 });

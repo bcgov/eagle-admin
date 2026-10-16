@@ -26,6 +26,9 @@ export interface User {
   checkbox?: boolean;
 }
 
+/** Fields DEMI sorts `/users` by; the contact list column values use the same names. `email` and `phoneNumber` need a staff bearer, which admin always sends. */
+export const USER_SORT_KEYS = ['displayName', 'orgName', 'email', 'phoneNumber'];
+
 /** Fields eagle-api's `PUT user/:id` and `POST user/` read. */
 const EAGLE_USER_FIELDS = [
   'firstName', 'middleName', 'lastName', 'displayName', 'email', 'org', 'orgName', 'title',

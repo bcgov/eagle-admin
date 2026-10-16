@@ -3,7 +3,7 @@ import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchTerms } from 'src/app/models/search';
-import { User } from 'src/app/models/demi/user';
+import { User, USER_SORT_KEYS } from 'src/app/models/demi/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
@@ -55,9 +55,7 @@ export class GroupContactSelectComponent implements OnInit {
 
   ngOnInit() {
     this.currentProject = this.storageService.currentProjectData;
-    // DEMI sorts contacts by name only.
-    this.tableColumns = this.storageService.state.tableColumns?.map((column: TableColumn) =>
-      column.value === 'displayName' ? column : { ...column, nosort: true });
+    this.tableColumns = this.storageService.state.tableColumns;
 
     if (this.navigationStackUtils.getNavigationStack()) {
       this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
@@ -69,8 +67,8 @@ export class GroupContactSelectComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-        // The members screen may hand over a client-side sort (email, organization); DEMI sorts by name only.
-        const sort = nativeSort(this.tableParams.sortBy || this.storageService.state.sortBy, 'displayName');
+        // The members screen hands over its own sort; keep it when DEMI can sort by it.
+        const sort = nativeSort(this.tableParams.sortBy || this.storageService.state.sortBy, 'displayName', USER_SORT_KEYS);
         if (this.tableParams.sortBy !== tableSort(sort)) {
           this.tableParams.sortBy = tableSort(sort);
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);

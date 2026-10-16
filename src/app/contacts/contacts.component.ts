@@ -4,7 +4,7 @@ import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserTableRowsComponent } from './user-table-rows/user-table-rows.component';
 import { SearchTerms } from '../models/search';
-import { User } from '../models/demi/user';
+import { User, USER_SORT_KEYS } from '../models/demi/user';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
@@ -58,20 +58,17 @@ export class ContactsComponent implements OnInit {
     {
       name: 'Organization',
       value: 'orgName',
-      width: '25%',
-      nosort: true
+      width: '25%'
     },
     {
       name: 'Phone',
       value: 'phoneNumber',
-      width: '15%',
-      nosort: true
+      width: '15%'
     },
     {
       name: 'Email',
       value: 'email',
-      width: '25%',
-      nosort: true
+      width: '25%'
     },
     {
       name: 'Action',
@@ -88,7 +85,7 @@ export class ContactsComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        const sort = nativeSort(this.tableParams.sortBy, 'displayName');
+        const sort = nativeSort(this.tableParams.sortBy, 'displayName', USER_SORT_KEYS);
         if (this.tableParams.sortBy !== tableSort(sort)) {
           this.tableParams.sortBy = tableSort(sort);
           this.tableTemplateUtils.updateUrl(
