@@ -19,6 +19,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
+import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
 
 
 @Component({
@@ -26,7 +27,7 @@ import { LoggingService } from 'src/app/services/logging.service';
   selector: 'form-tab-2018',
   templateUrl: './form-tab-2018.component.html',
   styleUrl: '../add-edit-project.component.css',
-  imports: [NgbDatepickerModule, ReactiveFormsModule],
+  imports: [NgbDatepickerModule, ReactiveFormsModule, TrackOwnedFieldsNoteComponent],
 })
 export class FormTab2018Component implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);

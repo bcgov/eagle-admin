@@ -20,6 +20,7 @@ import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
+import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
 
 
 @Component({
@@ -27,7 +28,7 @@ import { LoggingService } from 'src/app/services/logging.service';
   selector: 'form-tab-2002',
   templateUrl: './form-tab-2002.component.html',
   styleUrl: '../add-edit-project.component.css',
-  imports: [ReactiveFormsModule, NgbDatepickerModule],
+  imports: [ReactiveFormsModule, NgbDatepickerModule, TrackOwnedFieldsNoteComponent],
 })
 export class FormTab2002Component implements OnInit, OnDestroy {
   private destroyRef = inject(DestroyRef);

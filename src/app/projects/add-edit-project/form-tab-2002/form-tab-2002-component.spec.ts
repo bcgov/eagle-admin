@@ -92,6 +92,12 @@ describe('FormTab2002', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+  it('shows one note that the EPIC.track fields are managed there', () => {
+    const notes: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('[role="note"]'));
+    expect(notes.length).toBe(1);
+    expect(notes[0].textContent).toContain('Managed in EPIC.track.');
+    expect(notes[0].textContent).toContain('Changes made here are saved but not shown publicly.');
+  });
   it('form invalid when empty', () => {
     component.buildForm();
     expect(component.validateForm()).toBeFalsy();
