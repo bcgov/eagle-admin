@@ -77,8 +77,16 @@ describe('CommentPeriodsComponent list query', () => {
     expect(params.get('pageSize')).toBe('25');
   });
 
+  for (const [sortBy, sort] of [['+isPublished', 'isPublished'], ['-isPublished', '-isPublished']]) {
+    it(`sorts the Published column as ${sort}`, () => {
+      createFixture({ sortBy });
+      expect(listRequest().request.urlWithParams)
+        .toBe(`/demi/api/comment-periods?page=1&pageSize=10&count=true&sort=${sort}&project=${DEMI_PROJECT}`);
+    });
+  }
+
   it('falls back to the default sort for a column DEMI cannot sort on', () => {
-    createFixture({ sortBy: '-isPublished' });
+    createFixture({ sortBy: '-daysRemaining' });
     expect(listRequest().request.params.get('sort')).toBe('-dateStarted');
   });
 });
@@ -110,8 +118,13 @@ describe('CommentPeriodsComponent table', () => {
     expect(header('Days Remaining').querySelector('button')).toBeNull();
   });
 
-  it('renders Published as plain text, since DEMI cannot sort on it', () => {
-    expect(header('Published').querySelector('button')).toBeNull();
+  it('renders Status and Comment Data as plain text with no sort button', () => {
+    expect(header('Status').querySelector('button')).toBeNull();
+    expect(header('Comment Data').querySelector('button')).toBeNull();
+  });
+
+  it('renders Published as a sort button', () => {
+    expect(header('Published').querySelector('button')).not.toBeNull();
   });
 
   it('still renders End Date as a sort button', () => {

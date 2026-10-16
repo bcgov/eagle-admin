@@ -17,6 +17,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
+const SORT_KEYS = ['name', 'companyType', 'companyLegal'];
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-organizations',
@@ -53,14 +55,12 @@ export class OrganizationsComponent implements OnInit {
     {
       name: 'Organization Type',
       value: 'companyType',
-      width: '20%',
-      nosort: true
+      width: '20%'
     },
     {
       name: 'Company Legal',
       value: 'companyLegal',
-      width: '35%',
-      nosort: true
+      width: '35%'
     },
     {
       name: 'Action',
@@ -117,7 +117,7 @@ export class OrganizationsComponent implements OnInit {
             page: this.tableParams.currentPage,
             pageSize: this.tableParams.pageSize,
             count: true,
-            sort: nativeSort(this.tableParams.sortBy, 'name'),
+            sort: nativeSort(this.tableParams.sortBy, 'name', SORT_KEYS),
             q: this.tableParams.keywords || undefined,
             filters: { companyType: companyType.length ? companyType : undefined }
           });
