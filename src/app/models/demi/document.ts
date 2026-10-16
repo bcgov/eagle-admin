@@ -58,7 +58,7 @@ export type DemiDocumentFilters = {
   datePostedEnd?: string;
 };
 
-/** List query for documents. Sortable fields: `datePosted`, `displayName`, `sortOrder`. */
+/** List query for documents. Sortable keys: `DOCUMENT_SORT_KEYS` in `legacy-document-row.ts`. */
 export type DemiDocumentListParams = Omit<DemiListParams, 'filters' | 'ids'> & { filters?: DemiDocumentFilters };
 
 /** `GET /documents/:id/download` answer. `url` is presigned and short-lived. */
