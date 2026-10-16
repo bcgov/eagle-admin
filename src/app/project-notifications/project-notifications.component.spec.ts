@@ -70,7 +70,7 @@ describe('ProjectNotificationsComponent', () => {
       .toEqual(['name', 'type', 'subType', 'region', 'decision']);
   });
 
-  it('leaves the sort to DEMI when the table asks for a field DEMI cannot sort', () => {
+  it('leaves the sort to DEMI when the column key is not in NOTIFICATION_SORTS', () => {
     create({ sortBy: '+proponent' });
 
     const req = http.expectOne(r => r.url === '/demi/api/notifications');

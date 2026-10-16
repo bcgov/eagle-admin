@@ -73,7 +73,7 @@ describe('notificationSort', () => {
     }
   });
 
-  it('drops fields DEMI cannot sort so its default order applies', () => {
+  it('drops keys no notification column sorts on so its default order applies', () => {
     expect(notificationSort('-_id')).toBeUndefined();
     expect(notificationSort('+proponent')).toBeUndefined();
     expect(notificationSort('')).toBeUndefined();
