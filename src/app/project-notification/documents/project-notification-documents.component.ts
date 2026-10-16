@@ -62,8 +62,8 @@ export class ProjectNotificationDocumentsComponent implements OnInit {
     { name: 'select_all_box', value: 'select_all_box', width: '5%', nosort: true },
     { name: 'Name', value: 'displayName', width: '30%' },
     { name: 'Date', value: 'datePosted', width: '26%' },
-    { name: 'Document Author', value: 'documentAuthor', width: '29%', nosort: true },
-    { name: 'status', value: 'status', width: '10%', nosort: true },
+    { name: 'Document Author', value: 'documentAuthor', width: '29%' },
+    { name: 'status', value: 'status', width: '10%' },
   ];
 
   ngOnInit(): void {

@@ -54,6 +54,30 @@ describe('ProjectNotificationDocumentsComponent', () => {
     expect(rows[0].isPublished).toBeTrue();
   });
 
+  for (const [column, field] of [['documentAuthor', 'documentAuthor'], ['status', 'isPublished']]) {
+    it(`sorts the ${column} column on DEMI by ${field}, ascending then descending`, () => {
+      const fixture = TestBed.createComponent(ProjectNotificationDocumentsComponent);
+      fixture.detectChanges();
+      http.expectOne(r => r.url === '/demi/api/documents').flush([]);
+
+      fixture.componentInstance.setColumnSort(column);
+      const asc = http.expectOne(r => r.url === '/demi/api/documents');
+      expect(asc.request.params.get('sort')).toBe(field);
+      asc.flush([]);
+
+      fixture.componentInstance.setColumnSort(column);
+      const desc = http.expectOne(r => r.url === '/demi/api/documents');
+      expect(desc.request.params.get('sort')).toBe(`-${field}`);
+      desc.flush([]);
+    });
+  }
+
+  it('lets every column but the select box sort', () => {
+    const columns = TestBed.createComponent(ProjectNotificationDocumentsComponent).componentInstance.documentTableColumns;
+
+    expect(columns.filter(c => !c.nosort).map(c => c.value)).toEqual(['displayName', 'datePosted', 'documentAuthor', 'status']);
+  });
+
   it('lets select-all pick only notification documents, so comment attachments cannot be published', () => {
     const fixture = TestBed.createComponent(ProjectNotificationDocumentsComponent);
     fixture.detectChanges();

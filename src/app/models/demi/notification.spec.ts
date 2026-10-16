@@ -66,9 +66,16 @@ describe('notificationSort', () => {
     expect(notificationSort('-notificationReceivedDate')).toBe('-notificationReceivedDate');
   });
 
+  it('passes the type, sub type, region and decision columns through with their direction', () => {
+    for (const field of ['type', 'subType', 'region', 'decision']) {
+      expect(notificationSort(`+${field}`)).toBe(field);
+      expect(notificationSort(`-${field}`)).toBe(`-${field}`);
+    }
+  });
+
   it('drops fields DEMI cannot sort so its default order applies', () => {
     expect(notificationSort('-_id')).toBeUndefined();
-    expect(notificationSort('+region')).toBeUndefined();
+    expect(notificationSort('+proponent')).toBeUndefined();
     expect(notificationSort('')).toBeUndefined();
     expect(notificationSort(null)).toBeUndefined();
   });
