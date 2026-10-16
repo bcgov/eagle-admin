@@ -3,7 +3,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { BehaviorSubject, throwError } from 'rxjs';
-import { SearchComponent, demiSort } from './search.component';
+import { SearchComponent } from './search.component';
 import { ApiService } from '../services/api';
 import { ConfigService } from '../services/config.service';
 import { LoggingService } from '../services/logging.service';
@@ -167,10 +167,47 @@ describe('SearchComponent', () => {
   });
 
   it('leaves the sort out when DEMI cannot sort on the column', () => {
-    load({ keywords: 'water', sortBy: '+type' });
+    load({ keywords: 'water', sortBy: '+region' });
 
     expect(expectList('documents').request.params.has('sort')).toBeFalse();
   });
+
+  it('leaves the sort out for a project column name DEMI does not know', () => {
+    load({ dataset: 'Project', keywords: 'coal', sortBy: '-proponent.name' });
+
+    expect(expectList('projects').request.params.has('sort')).toBeFalse();
+  });
+
+  // Header -> DEMI sort key; every header here was sortable before the DEMI move.
+  const HEADER_SORTS: { dataset: 'Project' | 'Document'; kind: string; header: string; sort: string }[] = [
+    { dataset: 'Project', kind: 'projects', header: 'Project Name', sort: 'name' },
+    { dataset: 'Project', kind: 'projects', header: 'Proponent', sort: 'proponentName' },
+    { dataset: 'Project', kind: 'projects', header: 'Type', sort: 'projectType' },
+    { dataset: 'Project', kind: 'projects', header: 'Region', sort: 'region' },
+    { dataset: 'Project', kind: 'projects', header: 'Phase', sort: 'currentPhaseName.name' },
+    { dataset: 'Project', kind: 'projects', header: 'Decision', sort: 'eacDecisionSort' },
+    { dataset: 'Document', kind: 'documents', header: 'Document Name', sort: 'displayName' },
+    { dataset: 'Document', kind: 'documents', header: 'Status', sort: 'isPublished' },
+    { dataset: 'Document', kind: 'documents', header: 'Date', sort: 'datePosted' },
+    { dataset: 'Document', kind: 'documents', header: 'Type', sort: 'type' },
+    { dataset: 'Document', kind: 'documents', header: 'Milestone', sort: 'milestone' },
+    { dataset: 'Document', kind: 'documents', header: 'Legislation', sort: 'legislation' }
+  ];
+
+  for (const { dataset, kind, header, sort } of HEADER_SORTS) {
+    for (const dir of ['+', '-']) {
+      it(`${dataset.toLowerCase()}s tab ${header} header ${dir === '+' ? 'ascending' : 'descending'} sends sort ${dir === '-' ? '-' : ''}${sort}`, () => {
+        load({ dataset });
+        const columns = dataset === 'Project' ? component.projectTableColumns : component.documentTableColumns;
+        const column = columns.find(c => c.name === header);
+        expect(column.nosort).withContext(`${header} nosort`).toBeFalsy();
+
+        routeParams$.next({ dataset, keywords: 'x', sortBy: `${dir}${column.value}` });
+
+        expect(expectList(kind).request.params.get('sort')).toBe(dir === '-' ? `-${sort}` : sort);
+      });
+    }
+  }
 
   it('leaves out a date that is not ISO', () => {
     load({ keywords: 'water', datePostedStart: 'yesterday' });
@@ -297,13 +334,3 @@ describe('SearchComponent', () => {
   });
 });
 
-describe('demiSort', () => {
-  it('maps a table sort to a DEMI sort key', () => {
-    expect(demiSort('+displayName', ['displayName'])).toBe('displayName');
-    expect(demiSort('-displayName', ['displayName'])).toBe('-displayName');
-  });
-
-  it('drops a field outside the allow-list', () => {
-    expect(demiSort('+type', ['displayName'])).toBeUndefined();
-  });
-});

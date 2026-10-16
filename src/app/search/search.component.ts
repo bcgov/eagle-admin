@@ -14,9 +14,10 @@ import { DateTime } from 'luxon';
 import { DEMI_MAX_PAGE_SIZE, DemiList } from '../models/demi/demi-list';
 import { DemiDocument } from '../models/demi/document';
 import { Proponent } from '../models/demi/organization';
-import { DemiProject, PROJECT_FILTERS } from '../models/demi/project';
+import { DemiProject, PROJECT_FILTERS, PROJECT_SORT_KEYS } from '../models/demi/project';
 import { toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
+import { nativeDocumentSort } from '../project/project-documents/document-edit/legacy-document-row';
 import { ProjectListTableRowsComponent } from '../projects/project-list/project-list-table-rows/project-list-table-rows.component';
 import { ConfigService } from '../services/config.service';
 import { DemiApiService } from '../services/demi-api.service';
@@ -26,7 +27,7 @@ import { TableObject, TableColumn } from '../shared/components/table-template/ta
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
 import { withLoading } from '../shared/utils/rxjs-operators';
-import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nativeSort, nextSortBy } from '../shared/utils/table-template-utils';
 import { filterCompareWith } from '../shared/utils/utils';
 import { SearchDocumentTableRowsComponent } from './search-document-table-rows/search-document-table-rows.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
@@ -34,10 +35,10 @@ import { LoggingService } from '../services/logging.service';
 
 type Dataset = 'Project' | 'Document';
 
-/** DEMI list each tab reads, and the fields DEMI lets it sort on. */
-const KINDS: Record<Dataset, { kind: string; sortKeys: string[] }> = {
-  Project: { kind: 'projects', sortKeys: ['name'] },
-  Document: { kind: 'documents', sortKeys: ['datePosted', 'displayName'] }
+/** DEMI list each tab reads, and its `sort` for a table `sortBy`; undefined keeps DEMI's default order. */
+const KINDS: Record<Dataset, { kind: string; sort: (sortBy: string | null | undefined) => string | undefined }> = {
+  Project: { kind: 'projects', sort: sortBy => nativeSort(sortBy, '', PROJECT_SORT_KEYS) || undefined },
+  Document: { kind: 'documents', sort: nativeDocumentSort }
 };
 
 const PAGE_SIZE = 25;
@@ -57,16 +58,6 @@ interface PickFilter {
   by: string;
   api: string;
   apiKey: string;
-}
-
-/** DEMI sort for a table `sortBy` (`+field` / `-field`); undefined when DEMI cannot sort on that field. */
-export function demiSort(sortBy: string | null | undefined, sortKeys: string[]): string | undefined {
-  const key = sortBy?.split(',')[0] ?? '';
-  const field = key.replace(/^[-+]/, '');
-  if (!sortKeys.includes(field)) {
-    return undefined;
-  }
-  return key.startsWith('-') ? `-${field}` : field;
 }
 
 // TODO: Project and Document filters should be made into components
@@ -162,7 +153,7 @@ export class SearchComponent implements OnInit {
     projectPhase: 0
   };
 
-  // Only fields in KINDS sortKeys are sortable.
+  // Project column values are DEMI sort keys, as on the project list.
   public projectTableData: TableObject;
   public projectTableColumns: TableColumn[] = [
     {
@@ -172,32 +163,27 @@ export class SearchComponent implements OnInit {
     },
     {
       name: 'Proponent',
-      value: 'proponent.name',
-      nosort: true,
+      value: 'proponentName',
       width: '20%'
     },
     {
       name: 'Type',
-      value: 'type',
-      nosort: true,
+      value: 'projectType',
       width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
-      nosort: true,
       width: '15%'
     },
     {
       name: 'Phase',
-      value: 'currentPhaseName',
-      nosort: true,
+      value: 'currentPhaseName.name',
       width: '15%'
     },
     {
       name: 'Decision',
-      value: 'eacDecision',
-      nosort: true,
+      value: 'eacDecisionSort',
       width: '15%'
     }
   ];
@@ -212,7 +198,6 @@ export class SearchComponent implements OnInit {
     {
       name: 'Status',
       value: 'status',
-      nosort: true,
       width: '8%'
     },
     {
@@ -223,19 +208,16 @@ export class SearchComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      nosort: true,
       width: '15%'
     },
     {
       name: 'Milestone',
       value: 'milestone',
-      nosort: true,
       width: '15%'
     },
     {
       name: 'Legislation',
       value: 'legislation',
-      nosort: true,
       width: '10%'
     }
   ];
@@ -416,12 +398,12 @@ export class SearchComponent implements OnInit {
 
   /** One page of the current tab's DEMI list, for the submitted keywords. A failed read shows an error and yields null. */
   private fetchPage(): Observable<DemiList<DemiProject | DemiDocument> | null> {
-    const { kind, sortKeys } = KINDS[this.terms.dataset];
+    const { kind, sort } = KINDS[this.terms.dataset];
     return this.demiApi.list<DemiProject | DemiDocument>(kind, {
       page: this.currentPage,
       pageSize: this.pageSize,
       count: true,
-      sort: demiSort(this.terms.sortBy, sortKeys),
+      sort: sort(this.terms.sortBy),
       q: this.keywords || undefined,
       filters: this.filterForAPI
     }).pipe(
