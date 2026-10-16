@@ -135,33 +135,6 @@ form {
   margin-right: 0px;
 }
 
-.advanced-filter .date-range {
-  width: 100%;
-  margin-left: 0px;
-}
-
-.advanced-filter .date-range .form-control {
-  z-index: 0 !important;
-  height: 2rem;
-}
-
-.advanced-filter .date-range .calendar {
-  padding-top: 0px;
-  margin: 0px;
-}
-
-.advanced-filter #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
-  overflow: visible;
-}
-
-.advanced-filter ::ng-deep .ng-select.ng-select-single .ng-select-container {
-  height: 46px;
-}
-
-.advanced-filter .date-input {
-  display: flex;
-}
-
 .advanced-filter .filter-label {
   display: flex;
 }
@@ -236,13 +209,6 @@ form {
   font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e943";
-}
-
-.advanced-filter .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 24px;
-  font-variation-settings: 'OPSZ' 32, 'wght' 300;
-  content: "\e916";
 }
 
 .advanced-filter .ng-select ::ng-deep .ng-placeholder.custom::before {

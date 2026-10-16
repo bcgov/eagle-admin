@@ -56,11 +56,11 @@
                           </i></span>
                         </button>
                       }
-                      @if (isDateRangeSet()) {
+                      @if (dateRange.isSet()) {
                         <button class="btn filter-badge dateAddedRange">
                           <span class="ng-value-label">Date Range </span>
-                          <span class="ng-value-icon left" (click)="clearDateRange()"
-                            (keydown)="clearDateRange()" aria-hidden="true">&nbsp;<i
+                          <span class="ng-value-icon left" (click)="dateRange.clear()"
+                            (keydown)="dateRange.clear()" aria-hidden="true">&nbsp;<i
                             class="material-icons size-20">
                             clear
                           </i></span>
@@ -133,44 +133,7 @@
                     </ng-select>
                   </div>
                   <div class="datePosted filter">
-                    <ng-select #dateRange id="dateRange" name="dateRange" [multiple]="false"
-                      bindLabel="name" placeholder="&nbsp;Date Range" [items]="dateRangeItems"
-                      [closeOnSelect]="false" [searchable]="false" [clearOnBackspace]="false"
-                      [compareWith]="filterCompareWith" (clear)="clearDateRange()"
-                      [ngModel]="placeholderDateRangeModel"
-                      (ngModelChange)="changeDateRange()">
-                      <ng-template ng-multi-label-tmp>
-                        <span style="display:inline" class="ng-placeholder custom"><i
-                          class="material-icons size-32 center-icon">
-                          date_range
-                        </i>&nbsp;Date Range</span>
-                      </ng-template>
-                      <ng-template ng-option-tmp>
-                        <div class="date-input date-range">
-                          <input id="dateAddedStart" type="text" class="form-control"
-                            placeholder="yyyy-mm-dd"
-                            (ngModelChange)="changeDate($event, 'start')"
-                            name="dateAddedStart" [ngModel]="filterForUI.dateAddedStart"
-                            ngbDatepicker #dateAddedStartPicker="ngbDatepicker"
-                            [minDate]="constants.minPickerDate"
-                            [maxDate]="constants.maxPickerDate">
-                          <button class="btn btn-outline-secondary calendar"
-                            (click)="dateAddedStartPicker.toggle()" type="button">
-                          </button>
-                          &nbsp;to&nbsp;
-                          <input id="dateAddedEnd" type="text" class="form-control"
-                            placeholder="yyyy-mm-dd"
-                            (ngModelChange)="changeDate($event, 'end')"
-                            name="dateAddedEnd" [ngModel]="filterForUI.dateAddedEnd"
-                            ngbDatepicker #dateAddedEndPicker="ngbDatepicker"
-                            [minDate]="constants.minPickerDate"
-                            [maxDate]="constants.maxPickerDate" />
-                          <button class="btn btn-outline-secondary calendar"
-                            (click)="dateAddedEndPicker.toggle()" type="button">
-                          </button>
-                        </div>
-                      </ng-template>
-                    </ng-select>
+                    <app-date-range-filter [range]="dateRange" label="Date Range" />
                   </div>
                   <div class="form-group filter align-items-center d-flex">
                     <div class="form-check form-switch d-inline-block p-0 m-0">

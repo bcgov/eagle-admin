@@ -17,12 +17,13 @@ import { TableObject, TableColumn } from '../shared/components/table-template/ta
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
 import { TableTemplateUtils, nativeSort, nextSortBy, tableSort } from '../shared/utils/table-template-utils';
-import { isNgbDate, isoToNgbDate, ngbDateToIso } from '../shared/utils/utils';
+import { filterCompareWith, isoToNgbDate, ngbDateToIso } from '../shared/utils/utils';
+import { DateRange, DateRangeFilterComponent } from '../shared/components/date-range-filter/date-range-filter.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbDateStruct, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 type ActivityType = (typeof Constants.activityTypes)[number];
 
@@ -53,7 +54,7 @@ type UpdateFilters = {
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgSelectModule, NgbDatepickerModule, TableTemplateComponent, RouterModule]
+  imports: [FormsModule, NgSelectModule, DateRangeFilterComponent, TableTemplateComponent, RouterModule]
 
 })
 export class ActivityComponent {
@@ -66,7 +67,6 @@ export class ActivityComponent {
   private destroyRef = inject(DestroyRef);
   private logger = inject(LoggingService);
   private toastService = inject(ToastService);
-  public readonly constants = Constants;
   public readonly maxProjectFilters = MAX_PROJECT_FILTERS;
   public loading = true;
 
@@ -81,10 +81,9 @@ export class ActivityComponent {
 
   public filterForURL: object = {};
   public filterForAPI: UpdateFilters = {};
-  public placeholderDateRangeModel: object[] = [];
-  public dateRangeItems: object[] = [{}];
 
   public filterForUI: ActivityFilterObject = new ActivityFilterObject();
+  public readonly dateRange = new DateRange(() => this.filterForUI, 'dateAddedStart', 'dateAddedEnd');
 
   public tableColumns: TableColumn[] = [
     {
@@ -281,46 +280,13 @@ export class ActivityComponent {
 
   isUiFiltered() {
     return this.filterForUI.project.length > 0 || this.filterForUI.type.length > 0
-      || this.isDateRangeSet() || this.filterForUI.complianceAndEnforcement;
+      || this.dateRange.isSet() || this.filterForUI.complianceAndEnforcement;
   }
 
   clearAll() {
     this.filterForUI = new ActivityFilterObject();
-    this.placeholderDateRangeModel = [];
+    this.dateRange.clear();
   }
 
-  isDateRangeSet() {
-    return isNgbDate(this.filterForUI.dateAddedStart) || isNgbDate(this.filterForUI.dateAddedEnd);
-  }
-
-  // A cleared date with no other date set empties the range.
-  changeDate(event: NgbDateStruct | null, which: 'start' | 'end') {
-    const [name, other] = which === 'start' ? ['dateAddedStart', 'dateAddedEnd'] : ['dateAddedEnd', 'dateAddedStart'];
-    this.filterForUI[name] = event;
-    if (event === null && !isNgbDate(this.filterForUI[other])) {
-      this.clearDateRange();
-    }
-  }
-
-  changeDateRange() {
-    this.placeholderDateRangeModel = this.isDateRangeSet() ? [{}] : [];
-  }
-
-  clearDateRange() {
-    this.filterForUI.dateAddedStart = null;
-    this.filterForUI.dateAddedEnd = null;
-    this.placeholderDateRangeModel = [];
-  }
-
-  public filterCompareWith(filter: any, filterToCompare: any) {
-    if (filter.hasOwnProperty('code')) {
-      return filter && filterToCompare
-        ? filter.code === filterToCompare.code
-        : filter === filterToCompare;
-    } else if (filter.hasOwnProperty('_id')) {
-      return filter && filterToCompare
-        ? filter._id === filterToCompare._id
-        : filter === filterToCompare;
-    }
-  }
+  public readonly filterCompareWith = filterCompareWith;
 }

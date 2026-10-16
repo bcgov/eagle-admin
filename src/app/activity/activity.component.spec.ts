@@ -101,6 +101,65 @@ describe('ActivityComponent', () => {
     expect(component.isUiFiltered()).toBeFalse();
   });
 
+  it('counts a picked date alone as a filter', () => {
+    create({});
+
+    component.dateRange.changeDate({ year: 2024, month: 3, day: 9 }, 'end');
+
+    expect(component.isUiFiltered()).toBeTrue();
+  });
+
+  it('counts the C&E toggle alone as a filter', () => {
+    create({});
+
+    component.filterForUI.complianceAndEnforcement = true;
+
+    expect(component.isUiFiltered()).toBeTrue();
+  });
+
+  it('keeps the other date when one date of the range is cleared', () => {
+    create({ dateAddedStart: '2024-01-01', dateAddedEnd: '2024-12-31' });
+
+    component.dateRange.changeDate(null, 'start');
+    component.onSubmit();
+
+    expect(navigatedParams().dateAddedStart).toBeUndefined();
+    expect(navigatedParams().dateAddedEnd).toBe('2024-12-31');
+  });
+
+  it('empties the date range select when its last date is cleared', () => {
+    create({ dateAddedStart: '2024-01-01' });
+    component.dateRange.changeRange();
+
+    component.dateRange.changeDate(null, 'start');
+
+    expect(component.dateRange.model).toEqual([]);
+    expect(component.isUiFiltered()).toBeFalse();
+  });
+
+  it('shows the date range select as picked only while a date is set', () => {
+    create({});
+    component.dateRange.changeRange();
+    expect(component.dateRange.model).toEqual([]);
+
+    component.dateRange.changeDate({ year: 2024, month: 3, day: 9 }, 'start');
+    component.dateRange.changeRange();
+
+    expect(component.dateRange.model).toEqual([{}]);
+  });
+
+  it('clears both dates from the Date Range badge', () => {
+    create({ dateAddedStart: '2024-01-01', dateAddedEnd: '2024-12-31' });
+    component.dateRange.changeRange();
+
+    component.dateRange.clear();
+    component.onSubmit();
+
+    expect(component.dateRange.model).toEqual([]);
+    expect(navigatedParams().dateAddedStart).toBeUndefined();
+    expect(navigatedParams().dateAddedEnd).toBeUndefined();
+  });
+
   it('logs a failed list, tells the user, and goes to search', () => {
     const failure = new Error('DEMI 503');
     create({}, throwError(() => failure));

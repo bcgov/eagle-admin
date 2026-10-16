@@ -5,7 +5,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
+import { DateRange, DateRangeFilterComponent } from 'src/app/shared/components/date-range-filter/date-range-filter.component';
 
 import { DEMI_MAX_PAGE_SIZE, DemiList } from 'src/app/models/demi/demi-list';
 import { Proponent } from 'src/app/models/demi/organization';
@@ -51,7 +51,7 @@ class ProjectFilterObject {
     FormsModule,
     NgSelectModule,
     TableTemplateComponent,
-    NgbDatepickerModule
+    DateRangeFilterComponent
   ],
 })
 export class ProjectListComponent implements OnInit {
@@ -68,7 +68,6 @@ export class ProjectListComponent implements OnInit {
   public loadingState = inject(LoadingStateService);
   public loading = this.loadingState.getOperationState('project-list');
 
-  public readonly constants = Constants;
   public projects: LegacyProject[] = [];
   public proponents: Proponent[] = [];
   public regions: Array<any> = [];
@@ -77,8 +76,6 @@ export class ProjectListComponent implements OnInit {
   public projectTypes: Array<object> = [];
   public projectPhases: Array<object> = [];
   public readonly commentPeriods = Constants.PCP_COLLECTION;
-  public placeholderDateRangeModel: Array<object>;
-  public dateRangeItems: Array<object> = [{}];
 
   public tableParams: TableParamsObject = new TableParamsObject();
   public terms = new SearchTerms();
@@ -88,6 +85,7 @@ export class ProjectListComponent implements OnInit {
   public filterForAPI: Record<string, string | string[]> = {};
 
   public filterForUI: ProjectFilterObject = new ProjectFilterObject();
+  public readonly dateRange = new DateRange(() => this.filterForUI, 'decisionDateStart', 'decisionDateEnd', () => ({}));
 
   showAdvancedSearch = signal(false);
 
@@ -331,12 +329,12 @@ export class ProjectListComponent implements OnInit {
         }
       }
     });
-    this.clearDateRange();
+    this.dateRange.clear();
     this.updateCounts();
   }
 
   isUiFiltered() {
-    if (this.isDateRangeSet()) {
+    if (this.dateRange.isSet()) {
       return true;
     } else {
       let count = 0;
@@ -516,42 +514,6 @@ export class ProjectListComponent implements OnInit {
     }
 
     return false;
-  }
-
-  // If date is cleared and other date in range is not set clear placeholder model
-  changeDate(event: any, date: string) {
-    if (date === 'start') {
-      this.filterForUI.decisionDateStart = event;
-      if (event === null && (this.filterForUI.decisionDateEnd === null || Object.keys(this.filterForUI.decisionDateEnd).length === 0)) {
-        this.clearDateRange();
-        this.placeholderDateRangeModel = [];
-      }
-    } else if (date === 'end') {
-      this.filterForUI.decisionDateEnd = event;
-      if (event === null && (this.filterForUI.decisionDateStart === null || Object.keys(this.filterForUI.decisionDateStart).length === 0)) {
-        this.clearDateRange();
-        this.placeholderDateRangeModel = [];
-      }
-    }
-  }
-
-  changeDateRange() {
-    // if date range is not set with valid values, clear placeholder model.
-    if (this.isDateRangeSet()) {
-      this.placeholderDateRangeModel = [{}];
-    } else {
-      this.placeholderDateRangeModel = [];
-    }
-  }
-
-  clearDateRange() {
-    this.filterForUI.decisionDateEnd = {};
-    this.filterForUI.decisionDateStart = {};
-    this.placeholderDateRangeModel = [];
-  }
-
-  isDateRangeSet() {
-    return isNgbDate(this.filterForUI.decisionDateStart) || isNgbDate(this.filterForUI.decisionDateEnd);
   }
 
   clearSelectedItem(filterType: string, item: any) {

@@ -1,0 +1,59 @@
+:host {
+  display: block;
+}
+
+ng-select {
+  width: 100%;
+}
+
+.ng-select.ng-select-single ::ng-deep .ng-select-container {
+  height: 46px;
+}
+
+/* The date pickers pop out past the dropdown panel. */
+.ng-select ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
+  overflow: visible;
+}
+
+.ng-select ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-size: 24px;
+  font-variation-settings: 'OPSZ' 32, 'wght' 300;
+  content: "\e916";
+}
+
+.ng-select ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder {
+  display: flex;
+  align-items: center;
+}
+
+.ng-select ::ng-deep .ng-placeholder {
+  color: #585858;
+}
+
+.ng-placeholder {
+  font-weight: 600;
+}
+
+.center-icon {
+  vertical-align: middle;
+}
+
+.date-input {
+  display: flex;
+}
+
+.date-range {
+  width: 100%;
+  margin-left: 0px;
+}
+
+.date-range .form-control {
+  z-index: 0 !important;
+  height: 2rem;
+}
+
+.date-range .calendar {
+  padding-top: 0px;
+  margin: 0px;
+}
