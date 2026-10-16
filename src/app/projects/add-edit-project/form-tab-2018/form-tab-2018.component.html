@@ -1,9 +1,8 @@
 @if (myForm && !loading) {
   <form [formGroup]="myForm" novalidate>
     <section>
-      <h2>Basic Information
-        &nbsp;
-      </h2>
+      <h2>Basic Information</h2>
+      <app-track-owned-fields-note />
       <div class="flex-container">
         <div class="label-pair">
           <label for="name">Project Name* </label>
