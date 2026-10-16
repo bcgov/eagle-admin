@@ -14,10 +14,10 @@ import { ToastService } from 'src/app/services/toast.service';
 import { UPDATE_LIST_ERROR_MESSAGE } from 'src/app/activity/update-rules';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableParamsObject } from 'src/app/shared/components/table-template/table-params-object';
-import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
+import { TableTemplateUtils, nativeSort, nextSortBy } from 'src/app/shared/utils/table-template-utils';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 import { DemiList } from 'src/app/models/demi/demi-list';
-import { DemiUpdate, nativeUpdateSort } from 'src/app/models/demi/update';
+import { DemiUpdate, UPDATE_SORT_KEYS } from 'src/app/models/demi/update';
 
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 
@@ -55,8 +55,7 @@ export class ProjectUpdatesComponent implements OnInit {
     {
       name: 'Headline',
       value: 'headline',
-      width: '80%',
-      nosort: true
+      width: '80%'
     },
     {
       name: 'Date',
@@ -82,7 +81,7 @@ export class ProjectUpdatesComponent implements OnInit {
         return this.recentActivityService.list({
           page: this.tableParams.currentPage,
           pageSize: this.tableParams.pageSize,
-          sort: nativeUpdateSort(this.tableParams.sortBy) ?? '-dateAdded',
+          sort: nativeSort(this.tableParams.sortBy, '-dateAdded', UPDATE_SORT_KEYS),
           q: this.tableParams.keywords || undefined,
           filters: { project: eagleProjectId }
         }).pipe(withLoading(this.loadingState, 'search-results'));
@@ -110,7 +109,7 @@ export class ProjectUpdatesComponent implements OnInit {
   }
 
   setColumnSort(column: string) {
-    this.tableParams.sortBy = (this.tableParams.sortBy === '+' + column ? '-' : '+') + column;
+    this.tableParams.sortBy = nextSortBy(this.tableParams.sortBy, column);
     this.onSubmit();
   }
 

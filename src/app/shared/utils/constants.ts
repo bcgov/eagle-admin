@@ -114,6 +114,14 @@ export class Constants {
     },
   ];
 
+  // DEMI `pcp` values; `pending` starts within 7 days.
+  public static readonly PCP_COLLECTION: object[] = [
+    { code: 'open', name: 'Open' },
+    { code: 'upcoming', name: 'Upcoming' },
+    { code: 'pending', name: 'Starting within 7 days' },
+    { code: 'closed', name: 'Closed' }
+  ];
+
   public static readonly PROJECT_TYPE_COLLECTION: object[] = [
     { code: 'energyElectricity', name: 'Energy-Electricity' },
     { code: 'energyPetroleum', name: 'Energy-Petroleum & Natural Gas' },

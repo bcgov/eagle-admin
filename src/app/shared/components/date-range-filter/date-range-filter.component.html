@@ -1,0 +1,39 @@
+<ng-select id="dateRange" name="dateRange" [multiple]="false"
+  bindLabel="name" placeholder="&nbsp;{{ label }}" [items]="range.items"
+  [closeOnSelect]="false" [searchable]="false" [clearOnBackspace]="false"
+  [compareWith]="filterCompareWith" (clear)="range.clear()"
+  [ngModel]="range.model" (ngModelChange)="range.changeRange()">
+  <ng-template ng-multi-label-tmp>
+    <span style="display:inline" class="ng-placeholder"><i
+      class="material-icons size-32 center-icon">
+      date_range
+    </i>&nbsp;{{ label }}</span>
+  </ng-template>
+  <ng-template ng-option-tmp>
+    <div class="date-input date-range">
+      <input [id]="range.startKey" type="text" class="form-control"
+        placeholder="yyyy-mm-dd" attr.aria-label="{{ label }} from, yyyy-mm-dd"
+        (ngModelChange)="range.changeDate($event, 'start')"
+        [name]="range.startKey" [ngModel]="range.start"
+        ngbDatepicker #startPicker="ngbDatepicker"
+        [minDate]="constants.minPickerDate"
+        [maxDate]="constants.maxPickerDate">
+      <button class="btn btn-outline-secondary calendar" type="button"
+        attr.aria-label="Choose {{ label }} from date" (click)="startPicker.toggle()">
+        <i class="material-icons" aria-hidden="true">date_range</i>
+      </button>
+      &nbsp;to&nbsp;
+      <input [id]="range.endKey" type="text" class="form-control"
+        placeholder="yyyy-mm-dd" attr.aria-label="{{ label }} to, yyyy-mm-dd"
+        (ngModelChange)="range.changeDate($event, 'end')"
+        [name]="range.endKey" [ngModel]="range.end"
+        ngbDatepicker #endPicker="ngbDatepicker"
+        [minDate]="constants.minPickerDate"
+        [maxDate]="constants.maxPickerDate" />
+      <button class="btn btn-outline-secondary calendar" type="button"
+        attr.aria-label="Choose {{ label }} to date" (click)="endPicker.toggle()">
+        <i class="material-icons" aria-hidden="true">date_range</i>
+      </button>
+    </div>
+  </ng-template>
+</ng-select>

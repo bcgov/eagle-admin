@@ -74,15 +74,19 @@ describe('ProjectUpdatesComponent', () => {
   });
 
   it('falls back to newest first for a sort DEMI cannot apply', () => {
-    open({ sortBy: '+headline' });
+    open({ sortBy: '+projectName' });
     expect(listed().sort).toBe('-dateAdded');
   });
 
-  it('does not offer a headline sort, which DEMI cannot apply', () => {
+  it('sorts by headline when the Headline column is clicked', () => {
     open();
-    const header = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('th'))
-      .find(th => th.textContent!.trim() === 'Headline')!;
-    expect(header.querySelector('button')).toBeNull();
+    clickHeader('Headline');
+    expect(navigatedParams().sortBy).toBe('+headline');
+  });
+
+  it('sends a headline sort from the URL', () => {
+    open({ sortBy: '-headline' });
+    expect(listed().sort).toBe('-headline');
   });
 
   it('sorts oldest first when Date is clicked from the newest-first default', () => {

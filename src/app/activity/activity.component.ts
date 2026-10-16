@@ -5,7 +5,7 @@ import { switchMap } from 'rxjs/operators';
 
 import { ActivityTableRowsComponent } from './activity-table-rows/activity-table-rows.component';
 import { DEMI_MAX_PAGE_SIZE } from '../models/demi/demi-list';
-import { DemiUpdate, nativeUpdateSort } from '../models/demi/update';
+import { DemiUpdate, UPDATE_SORT_KEYS } from '../models/demi/update';
 import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
 import { SearchTerms } from '../models/search';
 import { ProjectService } from '../services/project.service';
@@ -16,27 +16,45 @@ import { RecentActivityService } from '../services/recent-activity';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
 import { Constants } from '../shared/utils/constants';
-import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nativeSort, nextSortBy, tableSort } from '../shared/utils/table-template-utils';
+import { filterCompareWith, isoToNgbDate, ngbDateToIso } from '../shared/utils/utils';
+import { DateRange, DateRangeFilterComponent } from '../shared/components/date-range-filter/date-range-filter.component';
 import { TableTemplateComponent } from '../shared/components/table-template/table-template.component';
 
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 type ActivityType = (typeof Constants.activityTypes)[number];
+
+/** DEMI matches at most this many `project` values. */
+const MAX_PROJECT_FILTERS = 100;
 
 class ActivityFilterObject {
   constructor(
     public type: ActivityType[] = [],
     public project: LegacyProject[] = [],
+    public dateAddedStart: NgbDateStruct | null = null,
+    public dateAddedEnd: NgbDateStruct | null = null,
+    public complianceAndEnforcement = false,
   ) { }
 }
+
+/** `/updates` filters by DEMI name. */
+type UpdateFilters = {
+  project?: string[];
+  type?: string[];
+  dateAddedStart?: string;
+  dateAddedEnd?: string;
+  complianceAndEnforcement?: 'true';
+};
 
 @Component({
   selector: 'app-activity',
   templateUrl: './activity.component.html',
   styleUrl: './activity.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgSelectModule, TableTemplateComponent, RouterModule]
+  imports: [FormsModule, NgSelectModule, DateRangeFilterComponent, TableTemplateComponent, RouterModule]
 
 })
 export class ActivityComponent {
@@ -49,6 +67,7 @@ export class ActivityComponent {
   private destroyRef = inject(DestroyRef);
   private logger = inject(LoggingService);
   private toastService = inject(ToastService);
+  public readonly maxProjectFilters = MAX_PROJECT_FILTERS;
   public loading = true;
 
   public tableParams: TableParamsObject = new TableParamsObject();
@@ -61,23 +80,21 @@ export class ActivityComponent {
   public activityTypes: ActivityType[] = [];
 
   public filterForURL: object = {};
-  public filterForAPI: { project?: string; type?: string[] } = {};
+  public filterForAPI: UpdateFilters = {};
 
   public filterForUI: ActivityFilterObject = new ActivityFilterObject();
+  public readonly dateRange = new DateRange(() => this.filterForUI, 'dateAddedStart', 'dateAddedEnd');
 
-  // DEMI sorts updates by date only.
   public tableColumns: TableColumn[] = [
     {
       name: 'Pin',
       value: 'pinned',
-      width: '5%',
-      nosort: true
+      width: '5%'
     },
     {
       name: 'Headline',
       value: 'headline',
-      width: '30%',
-      nosort: true
+      width: '30%'
     },
     {
       name: 'Project',
@@ -88,8 +105,7 @@ export class ActivityComponent {
     {
       name: 'Type',
       value: 'type',
-      width: '20%',
-      nosort: true
+      width: '20%'
     },
     {
       name: 'Date',
@@ -99,8 +115,7 @@ export class ActivityComponent {
     {
       name: 'Status',
       value: 'status',
-      width: '8%',
-      nosort: true
+      width: '8%'
     },
     {
       name: 'Archive',
@@ -127,8 +142,8 @@ export class ActivityComponent {
               params,
               this.filterForURL
             );
-            const sort = nativeUpdateSort(this.tableParams.sortBy) ?? '-dateAdded';
-            this.tableParams.sortBy = sort.startsWith('-') ? sort : `+${sort}`;
+            const sort = nativeSort(this.tableParams.sortBy, '-dateAdded', UPDATE_SORT_KEYS);
+            this.tableParams.sortBy = tableSort(sort);
             return this.recentActivityService.list({
               page: this.tableParams.currentPage,
               pageSize: this.tableParams.pageSize,
@@ -198,6 +213,15 @@ export class ActivityComponent {
   setParamsFromFilters(params) {
     this.collectionFilterToParams(params, 'project', '_id');
     this.collectionFilterToParams(params, 'type', 'code');
+    for (const name of ['dateAddedStart', 'dateAddedEnd']) {
+      const iso = ngbDateToIso(this.filterForUI[name]);
+      if (iso) {
+        params[name] = iso;
+      }
+    }
+    if (this.filterForUI.complianceAndEnforcement) {
+      params['complianceAndEnforcement'] = 'true';
+    }
   }
 
   collectionFilterToParams(params, name, identifyBy) {
@@ -218,13 +242,35 @@ export class ActivityComponent {
     return records;
   }
 
+  /** Keeps a valid `YYYY-MM-DD` URL date; returns it for the picker. */
+  private paramsToDateFilter(params, name: 'dateAddedStart' | 'dateAddedEnd'): NgbDateStruct | null {
+    const date = isoToNgbDate(params[name]);
+    if (date) {
+      this.filterForURL[name] = ngbDateToIso(date);
+    } else {
+      delete this.filterForURL[name];
+    }
+    return date;
+  }
+
   setFiltersFromParams(params) {
-    // DEMI filters updates by one project, by its Eagle id, and by type name.
-    this.filterForUI.project = this.paramsToCollectionFilters(params, 'project', this.projects, '_id').slice(0, 1);
+    // DEMI filters updates by the parent's Eagle id and by type name.
+    this.filterForUI.project = this.paramsToCollectionFilters(params, 'project', this.projects, '_id').slice(0, MAX_PROJECT_FILTERS);
     this.filterForUI.type = this.paramsToCollectionFilters(params, 'type', this.activityTypes, 'code');
+    this.filterForUI.dateAddedStart = this.paramsToDateFilter(params, 'dateAddedStart');
+    this.filterForUI.dateAddedEnd = this.paramsToDateFilter(params, 'dateAddedEnd');
+    this.filterForUI.complianceAndEnforcement = params.complianceAndEnforcement === 'true';
+    if (this.filterForUI.complianceAndEnforcement) {
+      this.filterForURL['complianceAndEnforcement'] = 'true';
+    } else {
+      delete this.filterForURL['complianceAndEnforcement'];
+    }
     this.filterForAPI = {
-      project: this.filterForUI.project[0]?._id ?? undefined,
-      type: this.filterForUI.type.length ? this.filterForUI.type.map(type => type.name) : undefined
+      project: this.filterForUI.project.length ? this.filterForUI.project.map(project => project._id) : undefined,
+      type: this.filterForUI.type.length ? this.filterForUI.type.map(type => type.name) : undefined,
+      dateAddedStart: this.filterForURL['dateAddedStart'],
+      dateAddedEnd: this.filterForURL['dateAddedEnd'],
+      complianceAndEnforcement: this.filterForUI.complianceAndEnforcement ? 'true' : undefined
     };
   }
 
@@ -233,22 +279,14 @@ export class ActivityComponent {
   }
 
   isUiFiltered() {
-    return this.filterForUI.project.length > 0 || this.filterForUI.type.length > 0;
+    return this.filterForUI.project.length > 0 || this.filterForUI.type.length > 0
+      || this.dateRange.isSet() || this.filterForUI.complianceAndEnforcement;
   }
 
   clearAll() {
     this.filterForUI = new ActivityFilterObject();
+    this.dateRange.clear();
   }
 
-  public filterCompareWith(filter: any, filterToCompare: any) {
-    if (filter.hasOwnProperty('code')) {
-      return filter && filterToCompare
-        ? filter.code === filterToCompare.code
-        : filter === filterToCompare;
-    } else if (filter.hasOwnProperty('_id')) {
-      return filter && filterToCompare
-        ? filter._id === filterToCompare._id
-        : filter === filterToCompare;
-    }
-  }
+  public readonly filterCompareWith = filterCompareWith;
 }

@@ -79,6 +79,16 @@ describe('nativeSort', () => {
   it('falls back to the allowed field when there is no sort', () => {
     expect(nativeSort(undefined, 'name')).toBe('name');
   });
+
+  it('sends any listed key, keeping its direction', () => {
+    const keys = ['name', 'currentPhaseName.name', 'eacDecisionSort'];
+    expect(nativeSort('-currentPhaseName.name', 'name', keys)).toBe('-currentPhaseName.name');
+    expect(nativeSort('+eacDecisionSort', 'name', keys)).toBe('eacDecisionSort');
+  });
+
+  it('returns the fallback as given for a column outside the keys', () => {
+    expect(nativeSort('+proponent.name', '-dateAdded', ['dateAdded', 'pinned'])).toBe('-dateAdded');
+  });
 });
 
 describe('tableSort', () => {

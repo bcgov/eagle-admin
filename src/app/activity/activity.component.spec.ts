@@ -21,7 +21,9 @@ describe('ActivityComponent', () => {
     updates.list.and.returnValue(page);
     logger = jasmine.createSpyObj('LoggingService', ['error']);
     toast = jasmine.createSpyObj('ToastService', ['error']);
-    const projects = [{ id: 'track-1', eagleId: 'e1', name: 'One' }, { id: 'track-2', name: 'Track only' }];
+    const projects = [
+      { id: 'track-1', eagleId: 'e1', name: 'One' }, { id: 'track-2', name: 'Track only' }, { id: 'track-3', eagleId: 'e3', name: 'Three' }
+    ];
     TestBed.configureTestingModule({
       imports: [ActivityComponent],
       providers: [
@@ -44,10 +46,118 @@ describe('ActivityComponent', () => {
   it('lists updates newest first, filtered by the project Eagle id and the type names', () => {
     create({ project: 'e1', type: 'news,pcp', keywords: 'dam', currentPage: '3', pageSize: '25' });
 
-    expect(listed()).toEqual({
-      page: 3, pageSize: 25, sort: '-dateAdded', q: 'dam',
-      filters: { project: 'e1', type: ['News', 'Public Comment Period'] }
-    });
+    expect(listed()).toEqual(jasmine.objectContaining({ page: 3, pageSize: 25, sort: '-dateAdded', q: 'dam' }));
+    expect(listed().filters!.project).toEqual(['e1']);
+    expect(listed().filters!.type).toEqual(['News', 'Public Comment Period']);
+  });
+
+  it('filters by several projects at once', () => {
+    create({ project: 'e1,e3' });
+
+    expect(listed().filters!.project).toEqual(['e1', 'e3']);
+  });
+
+  it('sends the date range as inclusive YYYY-MM-DD bounds', () => {
+    create({ dateAddedStart: '2024-01-01', dateAddedEnd: '2024-12-31' });
+
+    expect(listed().filters!.dateAddedStart).toBe('2024-01-01');
+    expect(listed().filters!.dateAddedEnd).toBe('2024-12-31');
+  });
+
+  it('drops a URL date that is not a date, rather than sending DEMI a bad value', () => {
+    create({ dateAddedStart: 'soon' });
+
+    expect(listed().filters!.dateAddedStart).toBeUndefined();
+  });
+
+  it('sends the C&E filter only when the toggle is on', () => {
+    create({ complianceAndEnforcement: 'true' });
+
+    expect(listed().filters!.complianceAndEnforcement).toBe('true');
+  });
+
+  it('leaves the C&E filter out when the toggle is off', () => {
+    create({});
+
+    expect(listed().filters!.complianceAndEnforcement).toBeUndefined();
+  });
+
+  it('puts the date range and the C&E toggle in the URL on submit', () => {
+    create({});
+    component.filterForUI.dateAddedStart = { year: 2024, month: 3, day: 9 };
+    component.filterForUI.complianceAndEnforcement = true;
+
+    component.onSubmit();
+
+    expect(navigatedParams().dateAddedStart).toBe('2024-03-09');
+    expect(navigatedParams().complianceAndEnforcement).toBe('true');
+  });
+
+  it('clears the date range and the C&E toggle with Clear Filters', () => {
+    create({ dateAddedEnd: '2024-12-31', complianceAndEnforcement: 'true' });
+
+    component.clearAll();
+
+    expect(component.isUiFiltered()).toBeFalse();
+  });
+
+  it('counts a picked date alone as a filter', () => {
+    create({});
+
+    component.dateRange.changeDate({ year: 2024, month: 3, day: 9 }, 'end');
+
+    expect(component.isUiFiltered()).toBeTrue();
+  });
+
+  it('counts the C&E toggle alone as a filter', () => {
+    create({});
+
+    component.filterForUI.complianceAndEnforcement = true;
+
+    expect(component.isUiFiltered()).toBeTrue();
+  });
+
+  it('keeps the other date when one date of the range is cleared', () => {
+    create({ dateAddedStart: '2024-01-01', dateAddedEnd: '2024-12-31' });
+
+    component.dateRange.changeDate(null, 'start');
+    component.onSubmit();
+
+    expect(navigatedParams().dateAddedStart).toBeUndefined();
+    expect(navigatedParams().dateAddedEnd).toBe('2024-12-31');
+  });
+
+  it('empties the date range select when its last date is cleared', () => {
+    create({ dateAddedStart: '2024-01-01' });
+    component.dateRange.changeRange();
+
+    component.dateRange.changeDate(null, 'start');
+
+    expect(component.dateRange.model).toEqual([]);
+    expect(component.isUiFiltered()).toBeFalse();
+  });
+
+  it('shows the date range select as picked only while a date is set', () => {
+    create({});
+    component.dateRange.changeRange();
+    expect(component.dateRange.model).toEqual([]);
+
+    component.dateRange.changeDate({ year: 2024, month: 3, day: 9 }, 'start');
+    component.dateRange.changeRange();
+
+    expect(component.dateRange.model).toEqual([{}]);
+  });
+
+  it('clears both dates from the Date Range badge', () => {
+    create({ dateAddedStart: '2024-01-01', dateAddedEnd: '2024-12-31' });
+    component.dateRange.changeRange();
+
+    component.dateRange.clear();
+    component.onSubmit();
+
+    expect(component.dateRange.model).toEqual([]);
+    expect(navigatedParams().dateAddedStart).toBeUndefined();
+    expect(navigatedParams().dateAddedEnd).toBeUndefined();
   });
 
   it('logs a failed list, tells the user, and goes to search', () => {
@@ -62,11 +172,11 @@ describe('ActivityComponent', () => {
   it('offers only projects with an Eagle id, which updates can point at', () => {
     create({});
 
-    expect(component.projects.map(project => project._id)).toEqual(['e1']);
+    expect(component.projects.map(project => project._id)).toEqual(['e1', 'e3']);
   });
 
   it('falls back to newest first for a sort DEMI cannot apply', () => {
-    create({ sortBy: '+headline' });
+    create({ sortBy: '+projectName' });
 
     expect(listed().sort).toBe('-dateAdded');
     expect(component.tableParams.sortBy).toBe('-dateAdded');
@@ -91,9 +201,22 @@ describe('ActivityComponent', () => {
     expect(navigatedParams().currentPage).toBe(1);
   });
 
-  it('sorts only by date', () => {
+  it('sends a pinned sort from the URL', () => {
+    create({ sortBy: '-pinned' });
+
+    expect(listed().sort).toBe('-pinned');
+  });
+
+  it('sends a status sort from the URL', () => {
+    create({ sortBy: '+status' });
+
+    expect(listed().sort).toBe('status');
+  });
+
+  it('sorts every column but Project and Archive', () => {
     create({});
 
-    expect(component.tableColumns.filter(column => !column.nosort).map(column => column.value)).toEqual(['dateAdded']);
+    expect(component.tableColumns.filter(column => !column.nosort).map(column => column.value))
+      .toEqual(['pinned', 'headline', 'type', 'dateAdded', 'status']);
   });
 });

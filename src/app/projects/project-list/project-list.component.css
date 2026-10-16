@@ -227,40 +227,6 @@
   margin: 8px 0px 8px 8px;
 }
 
-.advanced-filter .calendar {
-  margin: 0px;
-}
-
-.advanced-filter .date-range {
-  width: 100%;
-  margin-left: 0px;
-}
-
-.advanced-filter .date-range .date-from {
-  padding-right: 10px;
-  max-width: 300px;
-  flex: 1 0 calc(50% - 20px);
-}
-
-.advanced-filter .date-range .date-to {
-  padding-left: 10px;
-  max-width: 300px;
-  flex: 1 0 calc(50% - 20px);
-}
-
-.advanced-filter .date-range .form-control {
-  z-index: 0 !important;
-  height: 2rem;
-}
-
-.advanced-filter .date-range .input-group-append {
-  height: 2rem;
-}
-
-.advanced-filter .date-range .calendar {
-  padding-top: 0px;
-}
-
 .advanced-filter .form-check label {
   padding-left: 0.25rem;
   font-size: 1rem;
@@ -274,18 +240,6 @@
 
 .advanced-filter ng-select {
   width: 100%;
-}
-
-.advanced-filter #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
-  overflow: visible;
-}
-
-.advanced-filter ::ng-deep .ng-select.ng-select-single .ng-select-container {
-  height: 46px;
-}
-
-.advanced-filter .date-input {
-  display: flex;
 }
 
 .advanced-filter .ng-select ::ng-deep .ng-select-container:not(.ng-has-value) :not(.custom) .ng-placeholder {
@@ -309,18 +263,18 @@
   content: "\e943";
 }
 
+.advanced-filter .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-size: 24px;
+  font-variation-settings: 'OPSZ' 32, 'wght' 300;
+  content: "\e24c";
+}
+
 .advanced-filter .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
   font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e9bc";
-}
-
-.advanced-filter .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 24px;
-  font-variation-settings: 'OPSZ' 32, 'wght' 300;
-  content: "\e916";
 }
 
 .advanced-filter .ng-select#proponent ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
@@ -382,6 +336,7 @@
   color: #553402;
 }
 
+.advanced-filter .filter-badges .pcp,
 .advanced-filter .filter-badges .projectPhase {
   background: #E3EBFF;
   color: #022170;

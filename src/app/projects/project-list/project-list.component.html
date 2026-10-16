@@ -50,6 +50,15 @@
                           </i></span>
                         </button>
                       }
+                      @for (filter of filterForUI.pcp; track filter) {
+                        <button class="btn filter-badge pcp">
+                          <span class="ng-value-label">{{filter.name}} </span>
+                          <span class="ng-value-icon left" (click)="clearSelectedItem('pcp', filter)"
+                            aria-hidden="true">&nbsp;<i class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
                       @for (filter of filterForUI.eacDecision; track filter) {
                         <button
                           class="btn filter-badge eacDecision">
@@ -62,10 +71,10 @@
                           </i></span>
                         </button>
                       }
-                      @if (isDateRangeSet()) {
+                      @if (dateRange.isSet()) {
                         <button class="btn filter-badge eacDecisionDate">
                           <span class="ng-value-label">EA Date Range </span>
-                          <span class="ng-value-icon left" (click)="clearDateRange()"
+                          <span class="ng-value-icon left" (click)="dateRange.clear()"
                             aria-hidden="true">&nbsp;<i class="material-icons size-20">
                             clear
                           </i></span>
@@ -162,6 +171,26 @@
                           </ng-template>
                         </ng-select>
                       </div>
+                      <div class="pcp-filters filter">
+                        <ng-select id="pcp" name="pcp" multiple="true" bindLabel="name"
+                          placeholder="&nbsp;Comment Period" [items]="commentPeriods"
+                          [closeOnSelect]="false" [searchable]="false"
+                          [(ngModel)]="filterForUI.pcp" [compareWith]="filterCompareWith">
+                          <ng-template ng-multi-label-tmp>
+                            <span style="display:inline" class="ng-placeholder"><i
+                              class="material-icons size-32 center-icon">
+                              comment
+                            </i>&nbsp;Comment Period
+                          ({{filterForUI.pcp.length}})</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-item$="item$"
+                          let-index="index">
+                          <input id="item-{{index}}" type="checkbox"
+                            [ngModel]="item$.selected" name="item-{{index}}" />
+                          &nbsp;{{item.name}}
+                        </ng-template>
+                      </ng-select>
+                    </div>
                     <div class="form-group decision-filters filter">
                       <ng-select id="eacDecision" name="eacDecision" multiple="true"
                         groupBy="legislation" bindLabel="name" placeholder="&nbsp;EA Decision"
@@ -187,48 +216,7 @@
                     </ng-select>
                   </div>
                   <div class="eaDate filter">
-                    <ng-select #dateRange id="dateRange" name="dateRange" [multiple]="false"
-                      bindLabel="name" placeholder="&nbsp;EA Decision Date"
-                      [items]="dateRangeItems" [closeOnSelect]="false" [searchable]="false"
-                      [clearOnBackspace]="false" [compareWith]="filterCompareWith"
-                      (clear)="clearDateRange()" [ngModel]="placeholderDateRangeModel"
-                      (ngModelChange)="changeDateRange()">
-                      <ng-template ng-multi-label-tmp>
-                        <span style="display:inline" class="ng-placeholder"><i
-                          class="material-icons size-32 center-icon">
-                          date_range
-                        </i>&nbsp;EA Decision Date</span>
-                      </ng-template>
-                      <ng-template ng-option-tmp>
-                        <div class="date-input date-range">
-                          <input id="decisionDateStart" type="text" class="form-control"
-                            placeholder="yyyy-mm-dd"
-                            (ngModelChange)="changeDate($event, 'start')"
-                            name="decisionDateStart"
-                            [ngModel]="filterForUI.decisionDateStart" ngbDatepicker
-                            #decisionDateStartPicker="ngbDatepicker"
-                            [minDate]="constants.minPickerDate"
-                            [maxDate]="constants.maxPickerDate">
-                          <button class="btn btn-outline-secondary btn-append calendar"
-                            (click)="decisionDateStartPicker.toggle()" type="button">
-                            <i class="material-icons">date_range</i>
-                          </button>
-                          &nbsp;to&nbsp;
-                          <input id="decisionDateEnd" type="text" class="form-control"
-                            placeholder="yyyy-mm-dd"
-                            (ngModelChange)="changeDate($event, 'end')"
-                            name="decisionDateEnd"
-                            [ngModel]="filterForUI.decisionDateEnd" ngbDatepicker
-                            #decisionDateEndPicker="ngbDatepicker"
-                            [minDate]="constants.minPickerDate"
-                            [maxDate]="constants.maxPickerDate" />
-                          <button class="btn btn-outline-secondary btn-append calendar"
-                            (click)="decisionDateEndPicker.toggle()" type="button">
-                            <i class="material-icons">date_range</i>
-                          </button>
-                        </div>
-                      </ng-template>
-                    </ng-select>
+                    <app-date-range-filter [range]="dateRange" label="EA Decision Date" />
                   </div>
                   <div class="more-filters filter">
                       <ng-select id="proponent" name="proponent" multiple="true" bindLabel="name"

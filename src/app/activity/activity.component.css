@@ -125,6 +125,11 @@ form {
   margin-bottom: 0px;
 }
 
+.advanced-filter .activity-filter .datePosted {
+  flex: 1 0 30%;
+  max-width: 550px;
+}
+
 .advanced-filter .more-filters {
   margin-left: 0px;
   margin-right: 0px;
@@ -162,6 +167,16 @@ form {
   color: #022170;
 }
 
+.advanced-filter .filter-badges .dateAddedRange {
+  background: #FFF8E8;
+  color: #593F00;
+}
+
+.advanced-filter .filter-badges .cAndE {
+  background: #F1F8FF;
+  color: #323130;
+}
+
 .advanced-filter .filter-badges .filter-badge {
   border-radius: 4px;
   margin-top: 2px;
@@ -194,13 +209,6 @@ form {
   font-size: 24px;
   font-variation-settings: 'OPSZ' 32, 'wght' 300;
   content: "\e943";
-}
-
-.advanced-filter .ng-select#dateRange ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
-  font-family: 'Material Symbols Outlined', sans-serif;
-  font-size: 24px;
-  font-variation-settings: 'OPSZ' 32, 'wght' 300;
-  content: "\e916";
 }
 
 .advanced-filter .ng-select ::ng-deep .ng-placeholder.custom::before {
