@@ -49,26 +49,22 @@ export class ProjectNotificationsComponent implements OnInit {
     {
       name: 'Type',
       value: 'type',
-      width: '15%',
-      nosort: true
+      width: '15%'
     },
     {
       name: 'Sub Type',
       value: 'subType',
-      width: '15%',
-      nosort: true
+      width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
-      width: '15%',
-      nosort: true
+      width: '15%'
     },
     {
       name: 'Decision',
       value: 'decision',
-      width: '15%',
-      nosort: true
+      width: '15%'
     }
   ];
 

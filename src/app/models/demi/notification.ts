@@ -1,3 +1,5 @@
+import { nativeSort } from '../../shared/utils/table-template-utils';
+
 /** A native DEMI notification row. `id` is the Eagle `_id`; no project axis, `associatedProjectId` is a loose Eagle project id. */
 export interface DemiNotification {
   id: string;
@@ -36,16 +38,12 @@ export type LegacyNotification = Omit<DemiNotification, 'id' | 'eagleId' | 'sour
   read: string[];
 };
 
-/** Sort fields DEMI accepts on `/notifications`. */
-export const NOTIFICATION_SORTS: readonly string[] = ['name', 'notificationReceivedDate'];
+/** Sort fields DEMI accepts on `/notifications` that the notification list columns use. */
+export const NOTIFICATION_SORTS: readonly string[] = ['name', 'notificationReceivedDate', 'type', 'subType', 'region', 'decision'];
 
 /** DEMI sort for a table `sortBy` (`+name`, `-name`, ...); undefined for a field DEMI cannot sort, so DEMI's default applies. */
 export function notificationSort(sortBy: string | null | undefined): string | undefined {
-  const field = (sortBy ?? '').replace(/^[+-]/, '');
-  if (!NOTIFICATION_SORTS.includes(field)) {
-    return undefined;
-  }
-  return sortBy!.startsWith('-') ? `-${field}` : field;
+  return nativeSort(sortBy, '', NOTIFICATION_SORTS) || undefined;
 }
 
 /** Eagle shape for screens and writes. Keeps pcp, isMet, metURL and period dates: eagle-api's PUT blanks any it is not sent. */

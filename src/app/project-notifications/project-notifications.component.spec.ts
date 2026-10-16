@@ -50,8 +50,28 @@ describe('ProjectNotificationsComponent', () => {
     expect(fixture.componentInstance.notificationProjects.map(n => n._id)).toEqual(['n1']);
   });
 
-  it('leaves the sort to DEMI when the table asks for a column DEMI cannot sort', () => {
-    create({ sortBy: '+region' });
+  for (const field of ['type', 'subType', 'region', 'decision']) {
+    for (const [sortBy, sort] of [[`+${field}`, field], [`-${field}`, `-${field}`]]) {
+      it(`sorts the ${field} column on DEMI: ${sortBy} sends sort=${sort}`, () => {
+        create({ sortBy });
+
+        const req = http.expectOne(r => r.url === '/demi/api/notifications');
+        expect(req.request.params.get('sort')).toBe(sort);
+        req.flush([]);
+      });
+    }
+  }
+
+  it('lets every column sort', () => {
+    const fixture = create({});
+    http.expectOne(r => r.url === '/demi/api/notifications').flush([]);
+
+    expect(fixture.componentInstance.documentTableColumns.filter(c => !c.nosort).map(c => c.value))
+      .toEqual(['name', 'type', 'subType', 'region', 'decision']);
+  });
+
+  it('leaves the sort to DEMI when the column key is not in NOTIFICATION_SORTS', () => {
+    create({ sortBy: '+proponent' });
 
     const req = http.expectOne(r => r.url === '/demi/api/notifications');
     expect(req.request.params.has('sort')).toBeFalse();
