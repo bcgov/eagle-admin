@@ -89,6 +89,13 @@ describe('CommentPeriodsComponent list query', () => {
     createFixture({ sortBy: '-daysRemaining' });
     expect(listRequest().request.params.get('sort')).toBe('-dateStarted');
   });
+
+  for (const [sortBy, expected] of [['-daysRemaining', '-dateStarted'], ['isPublished', '+isPublished'], ['-isPublished', '-isPublished']]) {
+    it(`keeps the table sort from URL ${sortBy} as ${expected}`, () => {
+      const fixture = createFixture({ sortBy });
+      expect(fixture.componentInstance.tableParams.sortBy).toBe(expected);
+    });
+  }
 });
 
 describe('CommentPeriodsComponent table', () => {
