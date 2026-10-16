@@ -45,10 +45,25 @@ describe('nativeDocumentSort', () => {
     expect(nativeDocumentSort('-datePosted')).toBe('-datePosted');
     expect(nativeDocumentSort('+displayName')).toBe('displayName');
     expect(nativeDocumentSort('-sortOrder')).toBe('-sortOrder');
+    expect(nativeDocumentSort('+type')).toBe('type');
+    expect(nativeDocumentSort('-milestone')).toBe('-milestone');
+    expect(nativeDocumentSort('+legislation')).toBe('legislation');
+    expect(nativeDocumentSort('-isFeatured')).toBe('-isFeatured');
+    expect(nativeDocumentSort('+documentAuthor')).toBe('documentAuthor');
+  });
+
+  it('sorts the status column by the published flag', () => {
+    expect(nativeDocumentSort('+status')).toBe('isPublished');
+    expect(nativeDocumentSort('-status')).toBe('-isPublished');
+  });
+
+  it('uses the first key of an old multi-key sort', () => {
+    expect(nativeDocumentSort('+sortOrder,-datePosted')).toBe('sortOrder');
   });
 
   it('drops keys DEMI cannot sort by', () => {
-    expect(nativeDocumentSort('+type')).toBeUndefined();
+    expect(nativeDocumentSort('+projectPhase')).toBeUndefined();
+    expect(nativeDocumentSort('+statusText')).toBeUndefined();
     expect(nativeDocumentSort(null)).toBeUndefined();
   });
 });

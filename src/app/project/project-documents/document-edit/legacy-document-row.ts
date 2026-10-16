@@ -1,6 +1,7 @@
 import { DemiDocument, DemiDocumentFilters } from 'src/app/models/demi/document';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { eagleWriteProjectId } from 'src/app/models/demi/document-write';
+import { nativeSort } from 'src/app/shared/utils/table-template-utils';
 
 /**
  * Document row in the Eagle field names the edit form and document pickers read.
@@ -34,8 +35,12 @@ export function sourceFilters(project: string, documentSource: string): DemiDocu
   return { project, documentSource };
 }
 
-/** Table sort (`-datePosted`, `+sortOrder`) as a native documents `sort`; keys DEMI cannot sort by are dropped. */
+/** Keys DEMI sorts `GET /documents` by that document tables use; `sortOrder` is the application sort. */
+export const DOCUMENT_SORT_KEYS = [
+  'datePosted', 'displayName', 'sortOrder', 'isPublished', 'type', 'milestone', 'legislation', 'isFeatured', 'documentAuthor'
+];
+
+/** Table sort (`-datePosted`, `+status`) as a native documents `sort`; the status column sorts by `isPublished`, other keys DEMI cannot sort by are dropped. */
 export function nativeDocumentSort(sortBy: string | null | undefined): string | undefined {
-  const key = sortBy?.replace(/^\+/, '');
-  return key && /^-?(datePosted|displayName|sortOrder)$/.test(key) ? key : undefined;
+  return nativeSort(sortBy?.replace(/^([+-]?)status(?=,|$)/, '$1isPublished'), '', DOCUMENT_SORT_KEYS) || undefined;
 }
