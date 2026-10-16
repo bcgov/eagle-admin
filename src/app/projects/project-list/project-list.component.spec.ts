@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { ProjectListComponent } from './project-list.component';
@@ -102,12 +102,36 @@ describe('ProjectListComponent', () => {
     expect(params.getAll('proponentName')).toEqual(['North Coast Mining Ltd.', 'Peace Power Corp.']);
   });
 
-  it('drops the comment period and valued component filters', () => {
-    start({ pcp: 'open', vc: 'vc-1' });
+  it('repeats pcp once per picked comment period state', () => {
+    start({ pcp: 'open,pending' });
+
+    expect(projectsRequest().request.params.getAll('pcp')).toEqual(['open', 'pending']);
+  });
+
+  it('drops a pcp value DEMI does not know, and the valued component filter', () => {
+    start({ pcp: 'soon', vc: 'vc-1' });
 
     const params = projectsRequest().request.params;
     expect(params.has('pcp')).toBeFalse();
     expect(params.has('vc')).toBeFalse();
+  });
+
+  it('puts picked comment period states in the URL on submit', () => {
+    const component = start({});
+    projectsRequest().flush([]);
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    component.filterForUI.pcp = [{ code: 'open', name: 'Open' }, { code: 'closed', name: 'Closed' }];
+
+    component.onSubmit();
+
+    expect(navigate.calls.mostRecent().args[0][1].pcp).toBe('open,closed');
+  });
+
+  it('sends the sort and each pcp value as DEMI query parameters', () => {
+    start({ sortBy: '-eacDecisionSort', pcp: 'open,upcoming', pageSize: '25' });
+
+    expect(projectsRequest().request.urlWithParams)
+      .toBe('/demi/api/projects?page=1&pageSize=25&count=true&sort=-eacDecisionSort&pcp=open&pcp=upcoming');
   });
 
   it('asks for the total and pages from 1', () => {
@@ -125,17 +149,30 @@ describe('ProjectListComponent', () => {
     expect(projectsRequest().request.params.get('sort')).toBe('-name');
   });
 
+  it('sorts by phase name', () => {
+    start({ sortBy: '+currentPhaseName.name' });
+
+    expect(projectsRequest().request.params.get('sort')).toBe('currentPhaseName.name');
+  });
+
+  it('sorts by EA decision through its sort field', () => {
+    start({ sortBy: '-eacDecisionSort' });
+
+    expect(projectsRequest().request.params.get('sort')).toBe('-eacDecisionSort');
+  });
+
   it('falls back to name for a sort DEMI does not offer', () => {
-    start({ sortBy: '+region' });
+    start({ sortBy: '+proponent.name' });
 
     expect(projectsRequest().request.params.get('sort')).toBe('name');
   });
 
-  it('lets only the name column sort', () => {
+  it('lets every column sort, each by its DEMI sort key', () => {
     const component = start({});
     projectsRequest().flush([]);
 
-    expect(component.projectTableColumns.filter(c => !c.nosort).map(c => c.value)).toEqual(['name']);
+    expect(component.projectTableColumns.filter(c => !c.nosort).map(c => c.value))
+      .toEqual(['name', 'proponentName', 'projectType', 'region', 'currentPhaseName.name', 'eacDecisionSort']);
   });
 
   it('shows rows with the legacy fields the table reads and the total from DEMI', () => {

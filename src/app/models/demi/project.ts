@@ -63,3 +63,9 @@ export const PROJECT_FILTERS: Record<'region' | 'CEAAInvolvement' | 'proponent' 
   type: { by: 'name', api: 'projectType', apiKey: 'name' },
   projectPhase: { by: 'id', api: 'currentPhaseName', apiKey: 'id' }
 };
+
+/** Fields DEMI sorts `/projects` by; the project list column values use the same names. */
+export const PROJECT_SORT_KEYS = ['name', 'proponentName', 'projectType', 'region', 'currentPhaseName.name', 'eacDecisionSort'];
+
+/** Project list comment period filter: the URL holds each picked `code`, sent to DEMI as repeated `pcp`. */
+export const PCP_FILTER: ProjectFilter = { by: 'code', api: 'pcp', apiKey: 'code' };

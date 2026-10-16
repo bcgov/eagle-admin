@@ -309,6 +309,13 @@
   content: "\e943";
 }
 
+.advanced-filter .ng-select#pcp ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-size: 24px;
+  font-variation-settings: 'OPSZ' 32, 'wght' 300;
+  content: "\e24c";
+}
+
 .advanced-filter .ng-select#eacDecision ::ng-deep .ng-select-container:not(.ng-has-value) .ng-placeholder::before {
   font-family: 'Material Symbols Outlined', sans-serif;
   font-size: 24px;
@@ -382,6 +389,7 @@
   color: #553402;
 }
 
+.advanced-filter .filter-badges .pcp,
 .advanced-filter .filter-badges .projectPhase {
   background: #E3EBFF;
   color: #022170;

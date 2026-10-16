@@ -10,11 +10,16 @@ export function nextSortBy(current: string, column: string): string {
 }
 
 /**
- * DEMI `sort` for a kind that sorts by one `field` only: a table `sortBy` of `-<field>` sorts descending,
- * anything else (another column, an old URL) falls back to ascending `field`.
+ * DEMI `sort` for a table `sortBy` whose first column is one of `keys`, descending when it starts with `-`.
+ * Any other column (an old URL, a multi-key sort) falls back to `fallback` as given.
  */
-export function nativeSort(sortBy: string | null | undefined, field: string): string {
-  return sortBy?.split(',')[0] === `-${field}` ? `-${field}` : field;
+export function nativeSort(sortBy: string | null | undefined, fallback: string, keys: readonly string[] = [fallback]): string {
+  const first = sortBy?.split(',')[0] ?? '';
+  const key = first.replace(/^[+-]/, '');
+  if (!keys.includes(key)) {
+    return fallback;
+  }
+  return first.startsWith('-') ? `-${key}` : key;
 }
 
 /** Table `sortBy` for a DEMI sort, so the header arrow matches what the list was sorted by. */

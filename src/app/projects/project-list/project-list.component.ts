@@ -7,10 +7,9 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { DateTime } from 'luxon';
 import { DEMI_MAX_PAGE_SIZE, DemiList } from 'src/app/models/demi/demi-list';
 import { Proponent } from 'src/app/models/demi/organization';
-import { DemiProject, PROJECT_FILTERS, ProjectFilter } from 'src/app/models/demi/project';
+import { DemiProject, PCP_FILTER, PROJECT_FILTERS, PROJECT_SORT_KEYS, ProjectFilter } from 'src/app/models/demi/project';
 import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
 import { SearchTerms } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
@@ -22,7 +21,7 @@ import { TableParamsObject } from 'src/app/shared/components/table-template/tabl
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy, nativeSort } from 'src/app/shared/utils/table-template-utils';
-import { filterCompareWith } from 'src/app/shared/utils/utils';
+import { filterCompareWith, isNgbDate, isoToNgbDate, ngbDateToIso } from 'src/app/shared/utils/utils';
 import { ProjectListTableRowsComponent } from './project-list-table-rows/project-list-table-rows.component';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -39,6 +38,7 @@ class ProjectFilterObject {
     public region: Array<any> = [],
     public CEAAInvolvement: Array<any> = [],
     public projectPhase: Array<any> = [],
+    public pcp: Array<any> = [],
   ) { }
 }
 
@@ -76,6 +76,7 @@ export class ProjectListComponent implements OnInit {
   public eacDecisions: Array<object> = [];
   public projectTypes: Array<object> = [];
   public projectPhases: Array<object> = [];
+  public readonly commentPeriods = Constants.PCP_COLLECTION;
   public placeholderDateRangeModel: Array<object>;
   public dateRangeItems: Array<object> = [{}];
 
@@ -92,12 +93,14 @@ export class ProjectListComponent implements OnInit {
 
   public showFilters: object = {
     type: false,
-    eacDecision: false
+    eacDecision: false,
+    pcp: false
   };
 
   public numFilters: object = {
     type: 0,
-    eacDecision: 0
+    eacDecision: 0,
+    pcp: 0
   };
 
   public projectTableData: TableObject;
@@ -109,32 +112,27 @@ export class ProjectListComponent implements OnInit {
     },
     {
       name: 'Proponent',
-      value: 'proponent.name',
-      nosort: true,
+      value: 'proponentName',
       width: '20%'
     },
     {
       name: 'Type',
-      value: 'type',
-      nosort: true,
+      value: 'projectType',
       width: '15%'
     },
     {
       name: 'Region',
       value: 'region',
-      nosort: true,
       width: '15%'
     },
     {
       name: 'Phase',
-      value: 'currentPhaseName',
-      nosort: true,
+      value: 'currentPhaseName.name',
       width: '15%'
     },
     {
       name: 'Decision',
-      value: 'eacDecision',
-      nosort: true,
+      value: 'eacDecisionSort',
       width: '15%'
     }
   ];
@@ -197,7 +195,7 @@ export class ProjectListComponent implements OnInit {
     return this.projectService.list({
       page: this.tableParams.currentPage,
       pageSize: this.tableParams.pageSize,
-      sort: nativeSort(this.tableParams.sortBy, 'name'),
+      sort: nativeSort(this.tableParams.sortBy, 'name', PROJECT_SORT_KEYS),
       q: this.tableParams.keywords || undefined,
       filters: this.filterForAPI
     }).pipe(withLoading(this.loadingState, 'project-list'));
@@ -256,16 +254,10 @@ export class ProjectListComponent implements OnInit {
     delete this.filterForURL[name];
     delete this.filterForAPI[name];
 
-    if (params[name]) {
-      this.filterForURL[name] = params[name];
-      this.filterForAPI[name] = params[name];
-      // NGB Date
-      const date = DateTime.fromISO(params[name]).toJSDate();
-      this.filterForUI[name] = {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate()
-      };
+    const date = isoToNgbDate(params[name]);
+    if (date) {
+      this.filterForURL[name] = this.filterForAPI[name] = ngbDateToIso(date);
+      this.filterForUI[name] = date;
     }
   }
 
@@ -274,6 +266,7 @@ export class ProjectListComponent implements OnInit {
     for (const [name, filter] of Object.entries(PROJECT_FILTERS)) {
       this.paramsToCollectionFilters(params, name, items[name], filter);
     }
+    this.paramsToCollectionFilters(params, 'pcp', this.commentPeriods, PCP_FILTER);
 
     this.paramsToDateFilters(params, 'decisionDateStart');
     this.paramsToDateFilters(params, 'decisionDateEnd');
@@ -288,18 +281,10 @@ export class ProjectListComponent implements OnInit {
     }
   }
 
-  isNGBDate(date) {
-    return date && date.year && date.month && date.day;
-  }
-
   dateFilterToParams(params, name) {
-    if (this.isNGBDate(this.filterForUI[name])) {
-      const date = new Date(
-        this.filterForUI[name].year,
-        this.filterForUI[name].month - 1,
-        this.filterForUI[name].day
-      );
-      params[name] = DateTime.fromJSDate(date).toISODate();
+    const iso = ngbDateToIso(this.filterForUI[name]);
+    if (iso) {
+      params[name] = iso;
     }
   }
 
@@ -307,6 +292,7 @@ export class ProjectListComponent implements OnInit {
     for (const [name, filter] of Object.entries(PROJECT_FILTERS)) {
       this.collectionFilterToParams(params, name, filter.by);
     }
+    this.collectionFilterToParams(params, 'pcp', PCP_FILTER.by);
 
     this.dateFilterToParams(params, 'decisionDateStart');
     this.dateFilterToParams(params, 'decisionDateEnd');
@@ -375,8 +361,8 @@ export class ProjectListComponent implements OnInit {
     let num = 0;
     if (name === 'eacDecision') {
       num = getCount(name);
-      num += this.isNGBDate(this.filterForUI.decisionDateStart) ? 1 : 0;
-      num += this.isNGBDate(this.filterForUI.decisionDateEnd) ? 1 : 0;
+      num += isNgbDate(this.filterForUI.decisionDateStart) ? 1 : 0;
+      num += isNgbDate(this.filterForUI.decisionDateEnd) ? 1 : 0;
     } else {
       num = getCount(name);
     }
@@ -387,6 +373,7 @@ export class ProjectListComponent implements OnInit {
     this.updateCount('type');
     this.updateCount('eacDecision');
     this.updateCount('projectPhase');
+    this.updateCount('pcp');
   }
 
   setRowData() {
@@ -564,9 +551,7 @@ export class ProjectListComponent implements OnInit {
   }
 
   isDateRangeSet() {
-    const startSet = (this.filterForUI.decisionDateStart != null && this.isNGBDate(this.filterForUI.decisionDateStart));
-    const endSet = (this.filterForUI.decisionDateEnd != null && this.isNGBDate(this.filterForUI.decisionDateEnd));
-    return (startSet || endSet);
+    return isNgbDate(this.filterForUI.decisionDateStart) || isNgbDate(this.filterForUI.decisionDateEnd);
   }
 
   clearSelectedItem(filterType: string, item: any) {

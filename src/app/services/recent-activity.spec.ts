@@ -81,6 +81,19 @@ describe('RecentActivityService', () => {
     expect((await result).total).toBe(7);
   });
 
+  it('sends repeated projects, the date range and the C&E flag under their DEMI names', async () => {
+    const page = firstValueFrom(service.list({
+      sort: '-pinned',
+      filters: { project: ['p1', 'p2'], dateAddedStart: '2024-01-01', dateAddedEnd: '2024-12-31', complianceAndEnforcement: 'true' }
+    }));
+
+    const req = http.expectOne(r => r.url === '/demi/api/updates');
+    expect(req.request.urlWithParams).toBe('/demi/api/updates?count=true&sort=-pinned&project=p1&project=p2'
+      + '&dateAddedStart=2024-01-01&dateAddedEnd=2024-12-31&complianceAndEnforcement=true');
+    req.flush([]);
+    await page;
+  });
+
   it('reads one native update by id', async () => {
     const result = firstValueFrom(service.getNative('6ab70323ba6fdbe023b0569f'));
 

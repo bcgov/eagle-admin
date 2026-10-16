@@ -1,3 +1,5 @@
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { DateTime } from 'luxon';
 import { Constants } from './constants';
 import { ISearchResults } from 'src/app/models/search';
 import { DemiDocumentFilters } from 'src/app/models/demi/document';
@@ -35,6 +37,22 @@ export function convertFormGroupNGBDateToJSDate(nGBDate: any, nGBTime: any = nul
     return new Date(nGBDate.year, nGBDate.month - 1, nGBDate.day);
   }
   return new Date(nGBDate.year, nGBDate.month - 1, nGBDate.day, nGBTime.hour, nGBTime.minute);
+}
+
+/** True for a complete NGB date struct. */
+export function isNgbDate(date: any): date is NgbDateStruct {
+  return !!(date?.year && date.month && date.day);
+}
+
+/** `YYYY-MM-DD` of an NGB date struct, or null when it is incomplete. */
+export function ngbDateToIso(date: any): string | null {
+  return isNgbDate(date) ? DateTime.fromObject({ year: date.year, month: date.month, day: date.day }).toISODate() : null;
+}
+
+/** NGB date struct of a `YYYY-MM-DD` string, or null when it is not a valid date. */
+export function isoToNgbDate(iso: string | null | undefined): NgbDateStruct | null {
+  const date = DateTime.fromISO(iso ?? '');
+  return date.isValid ? { year: date.year, month: date.month, day: date.day } : null;
 }
 
 export function formatBytes(bytes: any, decimals = 2): string {

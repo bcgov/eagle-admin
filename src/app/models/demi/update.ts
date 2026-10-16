@@ -40,13 +40,7 @@ export interface DemiUpdate {
 }
 
 /** Fields DEMI sorts `/updates` by. */
-const UPDATE_SORT_KEYS = ['dateAdded', 'dateUpdated', 'publishDate'];
-
-/** Table sort (`-dateAdded`, `+publishDate`) as a native updates `sort`; keys DEMI cannot sort by are dropped. */
-export function nativeUpdateSort(sortBy: string | null | undefined): string | undefined {
-  const match = /^([+-]?)(\w+)$/.exec(sortBy ?? '');
-  return match && UPDATE_SORT_KEYS.includes(match[2]) ? `${match[1] === '-' ? '-' : ''}${match[2]}` : undefined;
-}
+export const UPDATE_SORT_KEYS = ['dateAdded', 'dateUpdated', 'publishDate', 'headline', 'type', 'pinned', 'status'];
 
 /** The Eagle id of the parent project or project notification, or null for an update with none. */
 export function updateParentId(row: Pick<DemiUpdate, 'projectId' | 'projectEagleId'>): string | null {

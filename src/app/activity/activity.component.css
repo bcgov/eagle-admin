@@ -125,9 +125,41 @@ form {
   margin-bottom: 0px;
 }
 
+.advanced-filter .activity-filter .datePosted {
+  flex: 1 0 30%;
+  max-width: 550px;
+}
+
 .advanced-filter .more-filters {
   margin-left: 0px;
   margin-right: 0px;
+}
+
+.advanced-filter .date-range {
+  width: 100%;
+  margin-left: 0px;
+}
+
+.advanced-filter .date-range .form-control {
+  z-index: 0 !important;
+  height: 2rem;
+}
+
+.advanced-filter .date-range .calendar {
+  padding-top: 0px;
+  margin: 0px;
+}
+
+.advanced-filter #dateRange ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items.scroll-host {
+  overflow: visible;
+}
+
+.advanced-filter ::ng-deep .ng-select.ng-select-single .ng-select-container {
+  height: 46px;
+}
+
+.advanced-filter .date-input {
+  display: flex;
 }
 
 .advanced-filter .filter-label {
@@ -160,6 +192,16 @@ form {
 .advanced-filter .filter-badges .type {
   background: #E3EBFF;
   color: #022170;
+}
+
+.advanced-filter .filter-badges .dateAddedRange {
+  background: #FFF8E8;
+  color: #593F00;
+}
+
+.advanced-filter .filter-badges .cAndE {
+  background: #F1F8FF;
+  color: #323130;
 }
 
 .advanced-filter .filter-badges .filter-badge {

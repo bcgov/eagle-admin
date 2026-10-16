@@ -56,6 +56,28 @@
                           </i></span>
                         </button>
                       }
+                      @if (isDateRangeSet()) {
+                        <button class="btn filter-badge dateAddedRange">
+                          <span class="ng-value-label">Date Range </span>
+                          <span class="ng-value-icon left" (click)="clearDateRange()"
+                            (keydown)="clearDateRange()" aria-hidden="true">&nbsp;<i
+                            class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
+                      @if (filterForUI.complianceAndEnforcement) {
+                        <button
+                          class="btn filter-badge cAndE">
+                          <span class="ng-value-label">C&E Announcement
+                          </span>
+                          <span class="ng-value-icon left" (click)="filterForUI.complianceAndEnforcement = false"
+                            (keydown)="filterForUI.complianceAndEnforcement = false" aria-hidden="true">&nbsp;<i
+                            class="material-icons size-20">
+                            clear
+                          </i></span>
+                        </button>
+                      }
                       @if (isUiFiltered()) {
                         <button class="btn filter-badge btn-outline-dark"
                           type="button" (click)="clearAll();">
@@ -71,7 +93,8 @@
                     <div class="activity-filter first col-md-11">
                       <div class="project-filters filter">
                         <ng-select id="projects" name="projects" multiple="true" bindLabel="name"
-                          placeholder="&nbsp;Project" [items]="projects" [maxSelectedItems]="1"
+                          placeholder="&nbsp;Project" [items]="projects" [closeOnSelect]="false"
+                          [maxSelectedItems]="maxProjectFilters"
                           [searchable]="false" [(ngModel)]="filterForUI.project"
                           [compareWith]="filterCompareWith">
                           <ng-template ng-multi-label-tmp>
@@ -108,6 +131,54 @@
                         &nbsp;{{item.name}}
                       </ng-template>
                     </ng-select>
+                  </div>
+                  <div class="datePosted filter">
+                    <ng-select #dateRange id="dateRange" name="dateRange" [multiple]="false"
+                      bindLabel="name" placeholder="&nbsp;Date Range" [items]="dateRangeItems"
+                      [closeOnSelect]="false" [searchable]="false" [clearOnBackspace]="false"
+                      [compareWith]="filterCompareWith" (clear)="clearDateRange()"
+                      [ngModel]="placeholderDateRangeModel"
+                      (ngModelChange)="changeDateRange()">
+                      <ng-template ng-multi-label-tmp>
+                        <span style="display:inline" class="ng-placeholder custom"><i
+                          class="material-icons size-32 center-icon">
+                          date_range
+                        </i>&nbsp;Date Range</span>
+                      </ng-template>
+                      <ng-template ng-option-tmp>
+                        <div class="date-input date-range">
+                          <input id="dateAddedStart" type="text" class="form-control"
+                            placeholder="yyyy-mm-dd"
+                            (ngModelChange)="changeDate($event, 'start')"
+                            name="dateAddedStart" [ngModel]="filterForUI.dateAddedStart"
+                            ngbDatepicker #dateAddedStartPicker="ngbDatepicker"
+                            [minDate]="constants.minPickerDate"
+                            [maxDate]="constants.maxPickerDate">
+                          <button class="btn btn-outline-secondary calendar"
+                            (click)="dateAddedStartPicker.toggle()" type="button">
+                          </button>
+                          &nbsp;to&nbsp;
+                          <input id="dateAddedEnd" type="text" class="form-control"
+                            placeholder="yyyy-mm-dd"
+                            (ngModelChange)="changeDate($event, 'end')"
+                            name="dateAddedEnd" [ngModel]="filterForUI.dateAddedEnd"
+                            ngbDatepicker #dateAddedEndPicker="ngbDatepicker"
+                            [minDate]="constants.minPickerDate"
+                            [maxDate]="constants.maxPickerDate" />
+                          <button class="btn btn-outline-secondary calendar"
+                            (click)="dateAddedEndPicker.toggle()" type="button">
+                          </button>
+                        </div>
+                      </ng-template>
+                    </ng-select>
+                  </div>
+                  <div class="form-group filter align-items-center d-flex">
+                    <div class="form-check form-switch d-inline-block p-0 m-0">
+                      <input class="form-check-input ms-0" type="checkbox" role="switch" id="isCAndE" name="isCAndE"
+                        [(ngModel)]="filterForUI.complianceAndEnforcement">
+                    </div>
+                    &nbsp;
+                    <label for="isCAndE" class="ms-1">C&E Announcement</label>
                   </div>
                 </div>
               </div>
