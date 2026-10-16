@@ -19,6 +19,7 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
 import { OrgService, ORG_LIST_LOADING } from 'src/app/services/org.service';
 
+const SORT_KEYS = ['name', 'companyType'];
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -65,8 +66,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
     {
       name: 'Company Type',
       value: 'companyType',
-      width: '45%',
-      nosort: true
+      width: '45%'
     }
   ];
 
@@ -107,7 +107,7 @@ export class LinkOrganizationComponent implements OnInit, OnDestroy {
           page: this.tableParams.currentPage,
           pageSize: this.tableParams.pageSize,
           count: true,
-          sort: nativeSort(this.tableParams.sortBy, 'name'),
+          sort: nativeSort(this.tableParams.sortBy, 'name', SORT_KEYS),
           q: this.tableParams.keywords || undefined,
           filters: { companyType }
         });

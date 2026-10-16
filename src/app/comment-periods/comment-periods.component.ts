@@ -8,7 +8,7 @@ import { CommentPeriodService } from '../services/commentperiod.service';
 import { StorageService } from '../services/storage.service';
 import { TableObject, TableColumn } from '../shared/components/table-template/table-object';
 import { TableParamsObject } from '../shared/components/table-template/table-params-object';
-import { TableTemplateUtils, nextSortBy } from '../shared/utils/table-template-utils';
+import { TableTemplateUtils, nativeSort, nextSortBy, tableSort } from '../shared/utils/table-template-utils';
 import { CommentPeriodsTableRowsComponent } from './comment-periods-table-rows/comment-periods-table-rows.component';
 
 import { RouterModule } from '@angular/router';
@@ -17,7 +17,7 @@ import { LoadingStateService } from '../services/loading-state.service';
 import { DemiCommentPeriod } from '../models/demi/comment-period';
 import { DemiList } from '../models/demi/demi-list';
 
-const SORT_FIELDS = ['dateStarted', 'dateCompleted'];
+const SORT_KEYS = ['dateStarted', 'dateCompleted', 'isPublished'];
 const DEFAULT_SORT = '-dateStarted';
 
 @Component({
@@ -67,9 +67,7 @@ export class CommentPeriodsComponent implements OnInit {
     {
       name: 'Published',
       value: 'isPublished',
-      width: '15%',
-      // DEMI sorts comment periods on dateStarted and dateCompleted only.
-      nosort: true
+      width: '15%'
     },
     {
       name: 'Comment Data',
@@ -105,9 +103,7 @@ export class CommentPeriodsComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params);
-        if (!SORT_FIELDS.includes(this.tableParams.sortBy?.replace(/^[-+]/, ''))) {
-          this.tableParams.sortBy = DEFAULT_SORT;
-        }
+        this.tableParams.sortBy = tableSort(nativeSort(this.tableParams.sortBy, DEFAULT_SORT, SORT_KEYS));
         this.currentProjId.set(this.parentId());
         return this.listPeriods();
       }),
@@ -175,8 +171,7 @@ export class CommentPeriodsComponent implements OnInit {
     return this.commentPeriodService.listByProject(projectId, {
       page: this.tableParams.currentPage || 1,
       pageSize: this.tableParams.pageSize || 10,
-      // A leading `+` would reach DEMI as a space.
-      sort: this.tableParams.sortBy.replace(/^\+/, '')
+      sort: nativeSort(this.tableParams.sortBy, DEFAULT_SORT, SORT_KEYS)
     });
   }
 
