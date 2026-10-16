@@ -6,7 +6,7 @@ import { TableObject, TableColumn } from '../table-template/table-object';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchTerms } from 'src/app/models/search';
 import { User } from 'src/app/models/user';
-import { User as DemiUser } from 'src/app/models/demi/user';
+import { User as DemiUser, USER_SORT_KEYS } from 'src/app/models/demi/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { TableTemplateUtils, nextSortBy, nativeSort, tableSort } from '../../utils/table-template-utils';
@@ -71,20 +71,17 @@ export class ContactSelectComponent implements OnInit {
     {
       name: 'Organization',
       value: 'orgName',
-      width: '25%',
-      nosort: true
+      width: '25%'
     },
     {
       name: 'Email',
       value: 'email',
-      width: '25%',
-      nosort: true
+      width: '25%'
     },
     {
       name: 'Phone Number',
       value: 'phoneNumber',
-      width: '25%',
-      nosort: true
+      width: '25%'
     }
   ];
 
@@ -99,7 +96,7 @@ export class ContactSelectComponent implements OnInit {
     this.route.params.pipe(
       switchMap(params => {
         this.tableParams = this.tableTemplateUtils.getParamsFromUrl(params, null, 25);
-        const sort = nativeSort(this.tableParams.sortBy || this.storageService.state.sortBy, 'displayName');
+        const sort = nativeSort(this.tableParams.sortBy || this.storageService.state.sortBy, 'displayName', USER_SORT_KEYS);
         if (this.tableParams.sortBy !== tableSort(sort)) {
           this.tableParams.sortBy = tableSort(sort);
           this.tableTemplateUtils.updateUrl(this.tableParams.sortBy, this.tableParams.currentPage, this.tableParams.pageSize, null, this.tableParams.keywords);

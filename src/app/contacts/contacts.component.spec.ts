@@ -45,6 +45,30 @@ describe('ContactsComponent', () => {
     expect(listUsers).toHaveBeenCalledWith({ q: 'ada', page: 2, pageSize: 10, sort: '-displayName' });
   });
 
+  [
+    ['+orgName', 'orgName'],
+    ['-orgName', '-orgName'],
+    ['+phoneNumber', 'phoneNumber'],
+    ['-phoneNumber', '-phoneNumber'],
+    ['+email', 'email'],
+    ['-email', '-email']
+  ].forEach(([sortBy, sort]) => {
+    it(`asks DEMI for sort=${sort} when the header sort is ${sortBy}`, () => {
+      create({ sortBy });
+
+      expect(listUsers.calls.mostRecent().args[0].sort).toBe(sort);
+      expect(component.tableParams.sortBy).toBe(sortBy);
+    });
+  });
+
+  ['orgName', 'phoneNumber', 'email'].forEach(value => {
+    it(`lets the ${value} header sort`, () => {
+      create({});
+
+      expect(component.documentTableColumns.find(c => c.value === value).nosort).toBeFalsy();
+    });
+  });
+
   it('replaces an old multi-column sort with the name sort', () => {
     create({ sortBy: '+lastName,+firstName' });
 
