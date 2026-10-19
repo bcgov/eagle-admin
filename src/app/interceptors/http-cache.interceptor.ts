@@ -104,8 +104,9 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
           }
           // Mutations may affect search/aggregation results
           cacheService.clearByResource('search');
-          // eagle-api pushes each write to DEMI, whose kind names differ, so drop every cached DEMI read.
-          if (isUnderPath(req.url, config.getApiPath())) {
+          // eagle-api pushes each write to DEMI, whose kind names differ, and a DEMI write can cascade
+          // into other kinds (an organization rename onto users), so drop every cached DEMI read.
+          if ([config.getApiPath(), config.getDemiApiPath()].some(base => isUnderPath(req.url, base))) {
             const demi = cacheService.clearUnderPath(config.getDemiApiPath());
             logger.debug(`Cache invalidated ${demi} DEMI entries after ${req.method} ${req.url}`, 'HttpCache');
           }

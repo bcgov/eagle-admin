@@ -60,6 +60,26 @@ describe('httpCacheInterceptor', () => {
     expect(refetches('/demi/api/organizations/o1')).toBeTrue();
   });
 
+  it('drops every cached DEMI read after a DEMI write, whatever the kind', () => {
+    prime('/demi/api/users?ids=u1');
+    prime('/demi/api/projects?page=1');
+
+    client.put('/demi/api/organizations/o1', {}).subscribe();
+    http.expectOne('/demi/api/organizations/o1').flush({});
+
+    expect(refetches('/demi/api/users?ids=u1')).toBeTrue();
+    expect(refetches('/demi/api/projects?page=1')).toBeTrue();
+  });
+
+  it('keeps cached DEMI reads when the DEMI write fails', () => {
+    prime('/demi/api/users');
+
+    client.delete('/demi/api/groups/g1').subscribe({ error: () => undefined });
+    http.expectOne('/demi/api/groups/g1').flush({ error: 'Forbidden.' }, { status: 403, statusText: 'Forbidden' });
+
+    expect(refetches('/demi/api/users')).toBeFalse();
+  });
+
   it('keeps cached DEMI reads when the eagle-api write fails', () => {
     prime('/demi/api/projects');
 
