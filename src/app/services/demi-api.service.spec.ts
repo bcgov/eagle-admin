@@ -125,6 +125,70 @@ describe('DemiApiService', () => {
     });
   });
 
+  describe('writes', () => {
+    it('create posts the body to the kind and answers the saved row', async () => {
+      const result = firstValueFrom(service.create<{ id: string }>('organizations', { name: 'Acme' }));
+      const req = http.expectOne('/demi/api/organizations');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ name: 'Acme' });
+      req.flush({ id: 'o1' }, { status: 201, statusText: 'Created' });
+
+      expect((await result).id).toBe('o1');
+    });
+
+    it('update puts the body to the encoded id', () => {
+      service.update('comment-periods', 'a/b', { instructions: 'x' }).subscribe();
+
+      const req = http.expectOne('/demi/api/comment-periods/a%2Fb');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({ instructions: 'x' });
+      req.flush({});
+    });
+
+    it('remove sends DELETE to the id', () => {
+      service.remove('updates', 'u1').subscribe();
+
+      expect(http.expectOne('/demi/api/updates/u1').request.method).toBe('DELETE');
+    });
+
+    it('action puts to the action under the id, with an empty body by default', () => {
+      service.action('notifications', 'n1', 'publish').subscribe();
+
+      const req = http.expectOne('/demi/api/notifications/n1/publish');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({});
+      req.flush({});
+    });
+
+    it('action passes the caller body through', () => {
+      service.action('comments', 'c1', 'status', { status: 'Published' }).subscribe();
+
+      expect(http.expectOne('/demi/api/comments/c1/status').request.body).toEqual({ status: 'Published' });
+    });
+
+    it('addGroupMembers posts the user ids as members', () => {
+      service.addGroupMembers('g1', ['u1', 'u2']).subscribe();
+
+      const req = http.expectOne('/demi/api/groups/g1/members');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ members: ['u1', 'u2'] });
+    });
+
+    it('removeGroupMember deletes the member under the group, both ids encoded', () => {
+      service.removeGroupMember('g/1', 'u 1').subscribe();
+
+      expect(http.expectOne('/demi/api/groups/g%2F1/members/u%201').request.method).toBe('DELETE');
+    });
+
+    it('turns a DEMI {error} body on a write into an Error carrying that text', async () => {
+      const result = firstValueFrom(service.update('groups', 'g1', { name: '' }));
+      http.expectOne('/demi/api/groups/g1')
+        .flush({ error: 'Invalid request body.' }, { status: 400, statusText: 'Bad Request' });
+
+      await expectAsync(result).toBeRejectedWithError('Invalid request body.');
+    });
+  });
+
   describe('byIds', () => {
     const idsFrom = (n: number) => Array.from({ length: n }, (_, i) => `id${i}`);
 

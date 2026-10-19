@@ -11,7 +11,7 @@ import { DemiList, DemiListParams } from '../models/demi/demi-list';
 export const DEMI_MAX_IDS = 100;
 
 /**
- * Reads from DEMI's native routes (`<DEMI_API_PATH>/<kind>`). Bearer comes from TokenInterceptor.
+ * Reads and writes DEMI's native routes (`<DEMI_API_PATH>/<kind>`). Bearer comes from TokenInterceptor.
  * Errors arrive already mapped by `ApiService.handleError`, so callers get the same `Error` as eagle-api reads.
  */
 @Injectable({ providedIn: 'root' })
@@ -28,7 +28,7 @@ export class DemiApiService {
   }
 
   get<T>(kind: string, id: string): Observable<T> {
-    return this.http.get<T>(`${this.url(kind)}/${encodeURIComponent(id)}`).pipe(
+    return this.http.get<T>(this.url(kind, id)).pipe(
       catchError(err => this.fail(err))
     );
   }
@@ -48,8 +48,34 @@ export class DemiApiService {
     );
   }
 
-  private url(kind: string): string {
-    return `${this.configService.getDemiApiPath()}/${kind}`;
+  create<T>(kind: string, body: object): Observable<T> {
+    return this.http.post<T>(this.url(kind), body).pipe(catchError(err => this.fail(err)));
+  }
+
+  update<T>(kind: string, id: string, body: object): Observable<T> {
+    return this.http.put<T>(this.url(kind, id), body).pipe(catchError(err => this.fail(err)));
+  }
+
+  /** DEMI answers the removed or archived row. */
+  remove<T>(kind: string, id: string): Observable<T> {
+    return this.http.delete<T>(this.url(kind, id)).pipe(catchError(err => this.fail(err)));
+  }
+
+  /** `PUT <kind>/:id/<action>`, such as `publish`, `unpublish` or a comment's `status`. */
+  action<T>(kind: string, id: string, action: string, body: object = {}): Observable<T> {
+    return this.http.put<T>(this.url(kind, id, action), body).pipe(catchError(err => this.fail(err)));
+  }
+
+  addGroupMembers<T>(groupId: string, members: string[]): Observable<T> {
+    return this.http.post<T>(this.url('groups', groupId, 'members'), { members }).pipe(catchError(err => this.fail(err)));
+  }
+
+  removeGroupMember<T>(groupId: string, userId: string): Observable<T> {
+    return this.http.delete<T>(this.url('groups', groupId, 'members', userId)).pipe(catchError(err => this.fail(err)));
+  }
+
+  private url(kind: string, ...segments: string[]): string {
+    return [`${this.configService.getDemiApiPath()}/${kind}`, ...segments.map(encodeURIComponent)].join('/');
   }
 
   // DEMI answers `{error}`; handleError reads `error.message`.

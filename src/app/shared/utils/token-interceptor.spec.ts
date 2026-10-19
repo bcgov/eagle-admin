@@ -62,6 +62,17 @@ describe('TokenInterceptor', () => {
       expect(authOf('/demi/api/projects?page=1')).toBe('Bearer old');
     });
 
+    it('adds it to DEMI writes', () => {
+      client.post('/demi/api/groups', {}).subscribe(ignoreErrors);
+      client.put('/demi/api/groups/g1', {}).subscribe(ignoreErrors);
+      client.delete('/demi/api/groups/g1').subscribe(ignoreErrors);
+
+      const reqs = http.match(r => r.url.startsWith('/demi/api/groups'));
+      expect(reqs.map(r => `${r.request.method} ${r.request.headers.get('Authorization')}`))
+        .toEqual(['POST Bearer old', 'PUT Bearer old', 'DELETE Bearer old']);
+      reqs.forEach(r => r.flush({}));
+    });
+
     it('adds it to an absolute URL on this origin', () => {
       expect(authOf(`${window.location.origin}/demi/api/projects`)).toBe('Bearer old');
     });
