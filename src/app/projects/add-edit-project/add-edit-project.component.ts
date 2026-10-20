@@ -1,6 +1,6 @@
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FullProject } from 'src/app/models/fullProject';
 import { Project } from 'src/app/models/project';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
@@ -25,6 +25,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 })
 export class AddEditProjectComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private config = inject(ConfigService);
   private storageService = inject(StorageService);
 
@@ -75,6 +76,7 @@ export class AddEditProjectComponent implements OnInit {
     // hide tabs corresponding to old legislations on new project creation
     if (!this.pageIsEditing) {
       this.tabLinks = [this.tabLinks[this.tabLinks.length - 1]];
+      this.showVisibleTab(this.tabLinks[0]);
     }
     this.loading = false;
     this.back = this.storageService.state.back;
@@ -101,6 +103,15 @@ export class AddEditProjectComponent implements OnInit {
     });
   }
 
+  // The bare edit/add URL redirects to form-2002 before the project loads; move off a tab this project hides.
+  private showVisibleTab(target: IAddEditTab | undefined) {
+    const active = this.route.firstChild?.snapshot.url[0]?.path;
+    if (!target || !active || this.tabLinks.some(tab => tab.link === active)) {
+      return;
+    }
+    this.router.navigate([target.link], { relativeTo: this.route, replaceUrl: true });
+  }
+
   initProject() {
     // Not getForEdit: it returns only the current legislation's fields, and the tabs read every legislation_* block.
     this.route.data
@@ -119,6 +130,7 @@ export class AddEditProjectComponent implements OnInit {
               this.storageService.state.projectDetailName = this.project.name;
 
               this.initTabs();
+              this.showVisibleTab(this.tabLinks.find(tab => tab.years.includes(this.fullProject.currentLegislationYear)));
             }
           }
           this.loading = false;
