@@ -144,7 +144,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.pageIsEditing = this.storageService.state.pageIsEditing;
       this.projectId = this.fullProject._id;
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
-      this.published = this.fullProject.read.includes('public') && ['legislation_1996', 'legislation_2002'].includes(this.fullProject.currentLegislationYear);
+      this.published = this.fullProject.isPublished && ['legislation_1996', 'legislation_2002'].includes(this.fullProject.currentLegislationYear);
     } else {
       this.published = false;
       this.pageIsEditing = false;

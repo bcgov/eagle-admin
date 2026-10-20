@@ -45,7 +45,7 @@
               <li class="nav-item" role="presentation">
                 <a class="nav-link" role="tab" [routerLink]="tabLink.link" [replaceUrl]="true"
                   routerLinkActive="active">{{tabLink.label}}
-                  @if (fullProject && fullProject.read.includes('public') && tabLink.years.includes(fullProject.currentLegislationYear)) {
+                  @if (fullProject && fullProject.isPublished && tabLink.years.includes(fullProject.currentLegislationYear)) {
                     <span class="badge bg-success badge-published"
                       >
                     Published</span>

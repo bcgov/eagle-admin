@@ -29,10 +29,11 @@ describe('ProjectArchivedDetailComponent', () => {
 
   const searchRow = (row: object) => [{ data: { searchResults: [row] } }];
 
-  it('shows the 2002 block from the resolved eagle-api search', () => {
+  it('shows the 2002 block from the resolved project', () => {
     open(searchRow({
+      isPublished: true,
       legislationYearList: [2002, 2018],
-      legislation_2002: { name: 'Copper Mine', legislationYear: 2002, centroid: [-127, 54], read: ['public'] },
+      legislation_2002: { name: 'Copper Mine', legislationYear: 2002, centroid: [-127, 54] },
       legislation_1996: { name: 'Old Name', legislationYear: 1996, centroid: [-127, 54] }
     }));
     expect(fixture.componentInstance.project.name).toBe('Copper Mine');
@@ -43,6 +44,7 @@ describe('ProjectArchivedDetailComponent', () => {
   it('falls back to the 1996 block when there is no 2002 one', () => {
     open(searchRow({ legislationYearList: [1996, 2018], legislation_1996: { name: 'Old Name', legislationYear: 1996, centroid: [-127, 54] } }));
     expect(fixture.componentInstance.project.name).toBe('Old Name');
+    expect(fixture.componentInstance.isPublished).toBeFalse();
   });
 
   it('goes back to search when the resolver found nothing', () => {

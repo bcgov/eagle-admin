@@ -98,6 +98,15 @@ describe('FormTab2002', () => {
     expect(notes[0].textContent).toContain('Managed in EPIC.track.');
     expect(notes[0].textContent).toContain('Changes made here are saved but not shown publicly.');
   });
+  it('takes the published state from isPublished, as DEMI withholds read', () => {
+    const row = { ...AjaxData[0].data.searchResults[0], read: undefined };
+    const resolved = (isPublished: boolean) => ({ fullProject: [{ data: { meta: [], searchResults: [{ ...row, isPublished }] } }] }) as any;
+
+    component.initProject(resolved(true));
+    expect(component.published).toBeTrue();
+    component.initProject(resolved(false));
+    expect(component.published).toBeFalse();
+  });
   it('form invalid when empty', () => {
     component.buildForm();
     expect(component.validateForm()).toBeFalsy();

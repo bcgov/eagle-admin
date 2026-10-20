@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
@@ -15,12 +15,13 @@ const FULL_PROJECT = {
   currentLegislationYear: 'legislation_2018',
   legislationYearList: [2018],
   legislation_2018: { name: 'Red Chris' },
-  read: ['staff']
+  isPublished: false
 };
 
 describe('AddEditProjectComponent', () => {
   let http: HttpTestingController;
   let storage: StorageService;
+  let fixture: ComponentFixture<AddEditProjectComponent>;
 
   function create(path: string, data: object) {
     TestBed.configureTestingModule({
@@ -37,7 +38,7 @@ describe('AddEditProjectComponent', () => {
     });
     http = TestBed.inject(HttpTestingController);
     storage = TestBed.inject(StorageService);
-    const fixture = TestBed.createComponent(AddEditProjectComponent);
+    fixture = TestBed.createComponent(AddEditProjectComponent);
     fixture.componentInstance.ngOnInit();
     return fixture.componentInstance;
   }
@@ -49,6 +50,19 @@ describe('AddEditProjectComponent', () => {
     expect(component.project.name).toBe('Red Chris');
     expect(storage.state.projectDetailId).toBe('eagle-1');
     expect(component.tabLinks.map(t => t.link)).toEqual(['form-2018']);
+  });
+
+  it('marks the published legislation tab from isPublished', () => {
+    const published = (isPublished: boolean) => {
+      create('edit', { fullProject: [{ data: { searchResults: [{ ...FULL_PROJECT, isPublished }] } }] });
+      fixture.detectChanges();
+      const badge = fixture.nativeElement.querySelector('.badge-published');
+      TestBed.resetTestingModule();
+      return badge !== null;
+    };
+
+    expect(published(true)).toBeTrue();
+    expect(published(false)).toBeFalse();
   });
 
   it('starts empty when adding a project', () => {
