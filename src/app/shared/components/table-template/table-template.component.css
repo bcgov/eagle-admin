@@ -28,10 +28,6 @@
   }
 }
 
-/* .table thead th:hover {
-  border-bottom: 2px solid #007bff;
-} */
-
 /* Sort and select-all controls are real buttons for keyboard use, styled as plain header content. */
 .sort-button,
 .select-all-button {

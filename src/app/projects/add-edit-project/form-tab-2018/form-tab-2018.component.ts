@@ -443,7 +443,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'intake': { investment: form.controls.capital.value, notes: form.controls.notes.value },
       'eaStatus': form.controls.eaStatus.value,
       'eaStatusDate': form.get('eaStatusDate').value ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(form.get('eaStatusDate').value)).toUTC().toISO() : null,
-      // 'projectStatusDate': form.get('projectStatusDate').value ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(form.get('projectStatusDate').value)).toUTC().toISO() : null,
       'eacDecision': form.controls.eacDecision.value,
       'applicableRegulation': form.controls.applicableRegulation.value,
       'decisionDate': form.get('decisionDate').value ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(form.get('decisionDate').value)).toUTC().toISO() : null,
@@ -452,7 +451,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'dispute': form.controls.dispute.value === 'yes' ? true : false,
       'disputeDate': form.get('disputeDate').value ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(form.get('disputeDate').value)).toUTC().toISO() : null,
       'activeStatus': form.controls.activeStatus.value,
-      // 'activeDate': form.get('activeDate').value ? moment(convertFormGroupNGBDateToJSDate(form.get('activeDate').value)).toDate().toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
       'projectLeadId': form.controls.projectLeadId.value,
     };
@@ -790,9 +788,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   getLists() {
-    // List values only have 2002 and 2018 values.
-    // If a project is set to 1996 legislation, make sure
-    // to load the 2002 codes.
+    // Lists hold only 2002 and 2018 values; a 1996 project uses the 2002 codes.
 
     this.configService.lists.forEach(item => {
       const tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;

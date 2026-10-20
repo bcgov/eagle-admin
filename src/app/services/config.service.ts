@@ -32,20 +32,8 @@ declare global {
 }
 
 /**
- * Configuration Service
- *
- * LOCAL DEV (configEndpoint = false):
- *   - Uses env.js values directly (src/env.js)
- *   - proxy.conf.js reads API_LOCATION from env.js to generate dev server proxy rules
- *   - App uses relative paths (/api) — never API_LOCATION directly
- *
- * DEPLOYED (configEndpoint = true):
- *   - `scripts/azure-static.sh stamp` sets configEndpoint to true
- *   - App fetches /api/config on startup; behind Front Door the /api/* route sends it
- *     to eagle-api, which answers from its environment
- *   - API values override env.js (except KEYCLOAK_CLIENT_ID — preserved)
- *
- * Lists are lazy-loaded on first access via getLists(), not during init.
+ * Local dev uses env.js as is; deployed builds (configEndpoint true) merge eagle-api's /api/config
+ * over it, keeping env.js KEYCLOAK_CLIENT_ID. The app calls relative /api, never API_LOCATION.
  */
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
@@ -76,14 +64,7 @@ export class ConfigService {
   private _listsPromise: Promise<void> | null = null;
   private _regions: any[] = [];
 
-  /**
-   * Initialize the Config Service.
-   *
-   * 1. Reads env.js values from window.__env
-   * 2. If deployed (configEndpoint=true), fetches /api/config and merges before returning
-   *
-   * Must be awaited so Keycloak initializes with the correct config values.
-   */
+  /** Must be awaited: Keycloak init reads the merged config. */
   public async init(): Promise<void> {
     this._config.set({ ...(window.__env || {}) });
 
@@ -102,11 +83,7 @@ export class ConfigService {
   }
 
   /**
-   * Fetch remote config from /api/config (deployed only, blocking).
-   * On success merges over env.js values.
-   * KEYCLOAK_CLIENT_ID is always preserved from env.js.
-   *
-   * Throws on transport failure or on a payload with no Keycloak URL/realm —
+   * Throws on transport failure or a payload with no Keycloak URL/realm:
    * booting on stale env.js defaults would point staff at the wrong identity provider.
    */
   private async fetchRemoteConfig(): Promise<void> {

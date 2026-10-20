@@ -1,13 +1,8 @@
 import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, effect, inject, input, computed, signal } from '@angular/core';
 
 /**
- * Extraction phase states:
- *  idle       — not started or complete; component is hidden
- *  uploading  — file bytes transferring to server (deterministic %)
- *  queued     — file received; waiting in docling-serve queue (indeterminate)
- *  processing — docling actively extracting (indeterminate)
- *  streaming  — future: server streams per-page/per-chunk progress (deterministic %)
- *  done       — extraction complete; component is hidden
+ * The component hides on idle and done. Uploading and streaming show a percentage;
+ * queued (docling-serve queue) and processing show an indeterminate bar.
  */
 export type ExtractionPhase = 'idle' | 'initializing' | 'uploading' | 'queued' | 'processing' | 'streaming' | 'done';
 
@@ -146,9 +141,8 @@ export class ExtractionProgressComponent implements OnInit {
           return `Processing batch ${jp.batch} of ${jp.totalBatches} (${pct}%)`;
         }
 
-        // docling TaskProcessingMeta: num_docs, num_processed, num_succeeded, num_failed
-        // NOTE: In RQ mode with a single document, num_docs stays 0 until the entire
-        // document finishes. It is NOT a page counter. Use elapsed to infer pipeline stage.
+        // docling num_docs counts documents, not pages, and in RQ mode stays 0 until
+        // a single document finishes, so elapsed time stands in for the stage.
         const numFailed    = meta?.['num_failed']    as number | undefined;
         const numProcessed = meta?.['num_processed'] as number | undefined;
         const numDocs      = meta?.['num_docs']      as number | undefined;

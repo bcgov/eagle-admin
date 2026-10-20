@@ -405,14 +405,9 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'applicableRegulation': form.controls.applicableRegulation.value,
       'decisionDate': this.getDecisionDate(form.get('decisionDate').value),
       'substantially': form.controls.substantially.value === 'yes' ? true : false,
-      // 'substantiallyDate': form.get('substantiallyDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('substantiallyDate').value))).toISOString() : null,
       'activeStatus': form.controls.activeStatus.value,
-      // 'activeDate': form.get('activeDate').value ? new Date(moment(convertFormGroupNGBDateToJSDate(form.get('activeDate').value))).toISOString() : null,
       'responsibleEPDId': form.controls.responsibleEPDId.value,
       'projectLeadId': form.controls.projectLeadId.value,
-      // extension stuff
-      // 'review180Start': this.getDate(form.get('review180Start').value),
-      // 'review45Start': this.getDate(form.get('review45Start').value)
     };
   }
 
@@ -735,9 +730,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   }
 
   getLists() {
-    // List values only have 2002 and 2018 values.
-    // If a project is set to 1996 legislation, make sure
-    // to load the 2002 codes.
+    // Lists hold only 2002 and 2018 values; a 1996 project uses the 2002 codes.
     const tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
 
     this.configService.lists.forEach(item => {

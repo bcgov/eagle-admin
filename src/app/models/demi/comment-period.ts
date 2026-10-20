@@ -1,9 +1,8 @@
 import { WriteIds, eagleWriteId } from './demi-ids';
 
 /**
- * A native DEMI comment period row (`GET <DEMI_API_PATH>/comment-periods`). Fields hidden from the caller are left out.
- * `id` is the Eagle id for periods mirrored from Eagle; a period ENGAGE created has its own id and carries `eagleId`
- * once it reaches Eagle.
+ * Native DEMI comment period row (`GET <DEMI_API_PATH>/comment-periods`), minus fields hidden from the caller. `id` is
+ * the Eagle id for periods mirrored from Eagle; an ENGAGE period has its own id and gets `eagleId` once in Eagle.
  */
 export interface DemiCommentPeriod {
   id: string;
@@ -94,9 +93,8 @@ export function requireEagleWriteId(row: WriteIds & { sourceSystem?: string }, k
 }
 
 /**
- * eagle-api write body for a comment or comment period. A body with `_id` is legacy and goes out unchanged; a native
- * row gets its Eagle id and Eagle parent reference, minus DEMI-only fields. eagle-api reads the parent only on
- * create, so only a create without one throws; so does an update of a row with no Eagle id.
+ * eagle-api write body for a comment or period. A `_id` body is legacy and goes out unchanged; a native row gets its Eagle
+ * id and parent ref, minus DEMI-only fields. Throws on a create with no parent or an update of a row with no Eagle id.
  */
 export function toEagleWriteBody(row: object, kind: string, parent: Record<string, string | null>, isNew: boolean): any {
   if ('_id' in row) {

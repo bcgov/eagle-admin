@@ -60,9 +60,4 @@ export class AddDocumentTableRowsComponent implements OnInit, TableComponent {
     });
     this.selectedCount.emit(count);
   }
-
-  // TODO: Re-enable this with correct routing.
-  // goToItem(item) {
-  //   this.router.navigate(['p', item.project, 'project-documents', 'detail', item._id]);
-  // }
 }

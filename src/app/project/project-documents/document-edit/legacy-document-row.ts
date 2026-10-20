@@ -4,9 +4,8 @@ import { eagleWriteProjectId } from 'src/app/models/demi/document-write';
 import { nativeSort } from 'src/app/shared/utils/table-template-utils';
 
 /**
- * Document row in the Eagle field names the edit form and document pickers read.
- * A row with `_id` is legacy and comes back unchanged; a native row maps its list ids and Eagle ids,
- * with `_id` null when it has no Eagle record.
+ * Document row in the Eagle field names the edit form and pickers read. A `_id` row is legacy and comes back
+ * unchanged; a native row maps its list ids and Eagle ids, with `_id` null when it has no Eagle record.
  */
 export function legacyDocumentRow(row: any): any {
   if (row._id || !row.id) { return row; }

@@ -41,11 +41,7 @@ class HttpCacheService {
     this.cache.clear();
   }
 
-  /**
-   * Extract resource type from URL path.
-   * /api/commentperiod/123/publish → commentperiod
-   * /api/project/abc → project
-   */
+  /** `/api/commentperiod/123/publish` → `commentperiod`. */
   getResourceType(url: string): string | null {
     const path = url.split('?')[0].replace(/\/+$/, '');
     const segments = path.split('/').filter(Boolean);

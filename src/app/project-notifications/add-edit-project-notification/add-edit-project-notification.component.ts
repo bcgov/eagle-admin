@@ -248,10 +248,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
   }
 
   private buildForm(data) {
-    // data will be csv in trigger attribute, so split into names
-    // then add the constant values into 'triggers' that match
-    // also, trigger the natureDisabled flag as needed
-
+    // data.trigger is a CSV of trigger names.
     this.triggers = [];
     const dataTriggers = data.trigger.split(',');
 

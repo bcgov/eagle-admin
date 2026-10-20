@@ -150,7 +150,7 @@ export class GroupContactComponent implements OnInit {
     const lastPage = Math.max(1, Math.ceil(this.members.length / this.tableParams.pageSize));
     this.tableParams.currentPage = Math.min(this.tableParams.currentPage, lastPage);
     const { currentPage, pageSize, sortBy } = this.tableParams;
-    // Rows are reused across pages; a tick on a page no longer shown must not count.
+    // Rows are reused across pages; a tick on a hidden page must not count.
     this.members.forEach(member => member.checkbox = false);
     this.selectedCount = 0;
     const start = (currentPage - 1) * pageSize;

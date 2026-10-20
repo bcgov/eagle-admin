@@ -7,9 +7,8 @@ import { KeycloakService } from 'src/app/services/keycloak.service';
 import { isUnderPath } from './api-path';
 
 /**
- * Adds the bearer token to same-origin requests under the eagle-api or DEMI path, and nowhere else
- * (presigned object-store URLs and other hosts must never see it).
- * On a 401 or 403 from those paths it refreshes the token once and retries the request.
+ * Adds the bearer token only to same-origin eagle-api or DEMI path requests (presigned object-store URLs and other
+ * hosts must never see it). On a 401 or 403 from those paths it refreshes the token once and retries.
  */
 @Injectable({ providedIn: 'root' })
 export class TokenInterceptor implements HttpInterceptor {

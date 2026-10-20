@@ -217,9 +217,8 @@ export class AddDocumentComponent implements OnInit {
     // dismiss any open snackbar
     // if (this.snackBarRef) { this.snackBarRef.dismiss(); }
 
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
+    // Angular Router ignores navigation to the current URL;
+    // the `ms` param changes the URL so the list reloads.
 
     // Reset page.
     const params = this.terms.getParams();

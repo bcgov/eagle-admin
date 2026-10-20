@@ -284,9 +284,6 @@ export class SearchComponent implements OnInit {
       }
     });
 
-    // This code reorders the document type list defined by EAO (See Jira Ticket EAGLE-88)
-    // todo how are we handling these lists with legislation year in advanced search? EE-406
-    // this.docTypes = this.docTypes.filter(item => item.legislation === 2002);
     this.docTypes = this.docTypes.sort((a, b) => {
       if (a.legislation !== b.legislation) {
         return (a.legislation || 0) - (b.legislation || 0);
@@ -661,9 +658,8 @@ export class SearchComponent implements OnInit {
 
   // Starts a new search from the form or the tab buttons.
   public onSubmit() {
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
+    // Angular Router ignores navigation to the current URL;
+    // the `ms` param changes the URL so the list reloads.
     this.currentPage = 1;
     const params = this.terms.getParams();
     params['ms'] = Date.now();

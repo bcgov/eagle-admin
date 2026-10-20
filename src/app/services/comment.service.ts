@@ -117,9 +117,8 @@ export class CommentService {
   }
 
   /**
-   * The lowest-numbered pending comment of the period other than `current`, and how many pending comments there are
-   * besides it, as eagle-api's `populateNextComment` gave them. `periodId` is the DEMI id; `current.eaoStatus` must be
-   * the saved status. DEMI's default order is `commentId` ascending, so two rows always hold the answer.
+   * Lowest-numbered pending comment of the period (DEMI `periodId`) other than `current`, and the pending count besides
+   * it, as eagle-api's `populateNextComment` gave them. `current.eaoStatus` must be saved; DEMI sorts by `commentId`.
    */
   getNextPending(periodId: string, current: Pick<DemiComment, 'id' | 'eaoStatus'>): Observable<NextPendingComment> {
     return this.demi.list<DemiComment>('comments', { pageSize: 2, count: true, filters: { period: periodId, eaoStatus: ['Pending'] } }).pipe(

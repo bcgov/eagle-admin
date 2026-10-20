@@ -9,10 +9,6 @@ const _origEncode = encodeURIComponent;
 (window as any)['encodeURIComponent'] = (component: string) =>
   _origEncode(component).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16));
 
-// ---------------------------------------------------------------------------
-// Plain exported functions — no DI required, import directly
-// ---------------------------------------------------------------------------
-
 export function formatDate(date: any): string | null {
   if (!date) { return null; }
   const d = new Date(date);

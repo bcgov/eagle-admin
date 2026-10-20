@@ -32,27 +32,10 @@ export class NavigationStackUtils {
         }
     }
 
-    /*
-    Example of a back Url array:
-    ['/p', this.project._id, 'edit']
-
-    Example of a breadcrumbs array:
-    Note that the objects in the array contain a route and a label.
-    [
-        {
-            route: ['/projects'],
-            label: 'All Projects'
-        },
-        {
-            route: ['/p', this.project._id],
-            label: this.project.name
-        },
-        {
-            route: ['/p', this.project._id, 'edit'],
-            label: 'Edit'
-        }
-    ]
-    */
+    /**
+     * backUrl is a route array, e.g. ['/p', id, 'edit'];
+     * breadcrumbs is an array of { route: route array, label: string }, root first.
+     */
     public pushNavigationStack(backUrl: Array<string>, breadcrumbs: Array<object>, componentId: string = null) {
         const navigationObject = {
             backUrl: backUrl,

@@ -133,8 +133,6 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
               this._cdr.markForCheck();
             },
             complete: () => {
-              // delete succeeded --> navigate back to search
-              // Clear out the document state that was stored previously.
               this.loading = false;
               this._cdr.markForCheck();
               this.toastService.success('This comment period has been deleted');

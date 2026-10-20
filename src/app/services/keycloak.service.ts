@@ -214,14 +214,8 @@ export class KeycloakService {
   }
 
   /**
-   * Infers the identity provider from the JWT token
-   *
-   * @remarks
-   * If IDIR and BCEID users are being redirected to the BCSC login
-   * page to re-authenticate, it means the client mappers in Keycloak
-   * (idir_userid and bceid_userid) haven't been properly setup.
-   *
-   * @memberof KeycloakService
+   * IDIR or BCeID users sent to the BCSC login to re-authenticate means the Keycloak
+   * client mappers idir_userid and bceid_userid are not set up.
    */
   getIdpFromToken(): string {
     const token = this.getToken();

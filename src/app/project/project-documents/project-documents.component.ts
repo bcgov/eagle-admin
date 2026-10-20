@@ -179,9 +179,7 @@ export class ProjectDocumentsComponent implements OnInit {
   async initLists() {
     await this.configService.ensureListsLoaded();
 
-    // Constrain filter options to the current project's legislation year so that
-    // only relevant milestones/types/authors/phases appear in the dropdowns.
-    // The resolver populates storageService before ngOnInit, so this is safe.
+    // Filter options cover only the project's legislation year; the resolver fills storageService before ngOnInit.
     const projectLegislation: number = this.storageService.currentProjectData?.legislationYear;
 
     if (this.milestones.length === 0) {
@@ -481,9 +479,8 @@ export class ProjectDocumentsComponent implements OnInit {
   }
 
   public onSubmit(pageNumber = 1) {
-    // NOTE: Angular Router doesn't reload page on same URL
-    // REF: https://stackoverflow.com/questions/40983055/how-to-reload-the-current-route-with-the-angular-2-router
-    // WORKAROUND: add timestamp to force URL to be different than last time
+    // Angular Router ignores navigation to the current URL;
+    // the `ms` param changes the URL so the list reloads.
 
     const params = this.terms.getParams();
     params['ms'] = new Date().getMilliseconds();

@@ -4,28 +4,8 @@ import { ConfigService } from '../config.service';
 import { LoggingService } from '../logging.service';
 
 /**
- * Analytics service backed by the eagle-analytics client.
- *
- * ## Auto-tracked events (no code needed):
- * - Page views (on route changes)
- * - Link clicks
- * - Button clicks
- * - Session and heartbeat events
- *
- * ## Manual tracking:
- * Use "Object + Past Verb" naming: "Form Submitted", "Document Downloaded"
- *
- * @example
- * ```typescript
- * // Page view (auto-tracked, but can override)
- * analytics.page('Project Details', { project_id: '123' });
- *
- * // Custom event
- * analytics.track('Report Generated', { format: 'pdf' });
- *
- * // Identify user after login
- * analytics.identify(userId, { username: 'john', roles: ['admin'] });
- * ```
+ * Page views, link and button clicks, sessions and heartbeats are tracked automatically.
+ * Name manual events "Object + Past Verb", e.g. "Form Submitted".
  */
 @Injectable({
   providedIn: 'root'
