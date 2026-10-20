@@ -60,11 +60,3 @@
   -ms-flex-align: end;
   align-items: flex-end;
 }
-
-/* Placeholder styling utility (for reference, not directly usable in CSS) */
-/*
-.placeholder::placeholder {
-  color: #aaa;
-  opacity: 1;
-}
-*/

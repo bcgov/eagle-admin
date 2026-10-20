@@ -140,9 +140,8 @@ export class AddEditActivityComponent implements OnInit {
       ' bold italic backcolor | alignleft aligncenter ' +
       ' alignright alignjustify | bullist numlist outdent indent |' +
       ' removeformat | help'],
-    // Strip all inline styles and Word/Office junk on paste.
-    // Keeps semantic structure (paragraphs, links, bold/italic, lists)
-    // but discards font-family, font-size, color, mso-* and SCXW/BCX class noise.
+    // Pasted Word/Office markup keeps paragraphs, links, emphasis and lists,
+    // but loses inline styles, mso-* and SCXW/BCX class noise.
     valid_styles: {},
     extended_valid_elements: 'span',
     invalid_elements: 'style,script',
@@ -685,8 +684,7 @@ export class AddEditActivityComponent implements OnInit {
         this.periods = page.rows
           .map((period: DemiCommentPeriod) => ({ ...period, _id: eagleWriteId(period) }))
           .filter(period => period._id);
-        // Preserve the current PCP selection if it exists in the loaded periods.
-        // Only reset when the current value is no longer valid (e.g. user switched projects).
+        // Keep the PCP selection when the loaded periods still hold it (a project switch clears it).
         const currentPcp = this.myForm.controls['pcp'].value || (this.isEditing ? this.activity?.pcp : '');
         this.myForm.controls['pcp'].setValue(this.periods.some((p: any) => p._id === currentPcp) ? currentPcp : '');
         // Enable pcp select only when periods exist — prevents black bar on empty select

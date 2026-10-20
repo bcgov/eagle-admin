@@ -240,9 +240,7 @@ export class DocumentEditComponent implements OnInit {
       observables.push(this.documentService.update(formData, eagleWriteId(doc)));
     });
 
-    // multi edit should not be set to false
-    // it caused a bug where extra fields show up after saving, and could null out document names
-    // this.multiEdit = false;
+    // multiEdit stays set: clearing it here shows extra fields after saving and can null document names.
 
     this.storageService.state = { type: 'form', data: null };
     this.storageService.state = { type: 'documents', data: null };

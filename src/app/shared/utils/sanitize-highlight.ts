@@ -1,15 +1,5 @@
-/**
- * sanitize-highlight.ts
- *
- * Utilities for rendering Typesense search highlights safely in Angular [innerHTML].
- *
- * Angular's built-in HTML sanitizer allows <mark> tags natively, so output from
- * sanitizeHighlight() can be bound directly via [innerHTML] without bypassSecurityTrustHtml.
- *
- * Pipeline:
- *   Typesense _highlightResult.field.value  →  sanitizeHighlight()  →  [innerHTML]
- *   Raw plain text + query                  →  highlightText()       →  [innerHTML]
- */
+// Angular's sanitizer keeps <mark>, so sanitizeHighlight() and highlightText() output
+// binds to [innerHTML] without bypassSecurityTrustHtml.
 
 /**
  * Strips all HTML tags from a Typesense highlight snippet EXCEPT <mark>…</mark>,

@@ -1,10 +1,8 @@
 import { UpdateImage } from '../recentActivity';
 
 /**
- * A native DEMI update row (`GET <DEMI_API_PATH>/updates`). `id` is the Eagle id.
- * `projectId` is the EAGLE id of the parent project or project notification, as Eagle stores it;
- * `projectName` and `projectEagleId` are joined from the parent project when the caller may read it.
- * Image and attachment fields hold Eagle document ids.
+ * Native DEMI update row (`GET <DEMI_API_PATH>/updates`); `id`, `projectId` (parent project or notification) and image and
+ * attachment ids are Eagle ids. `projectName`, `projectEagleId` join from the parent project when the caller may read it.
  */
 export interface DemiUpdate {
   id: string;

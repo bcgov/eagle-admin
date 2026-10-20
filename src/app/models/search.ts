@@ -21,36 +21,6 @@ export interface ISearchResult<T> {
   meta: any;
   searchResults: Array<T>;
 }
-// export class SearchArray {
-//   items: Array<SearchResults> = [];
-
-//   constructor(obj?: any) {
-//     // copy items
-//     if (obj && obj.items) {
-//       for (const item of obj.items) {
-//         this.items.push(item);
-//       }
-//     }
-//   }
-
-//   sort() {
-//     this.items.sort(function (a: SearchResults, b: SearchResults) {
-//       const aDate = a && a.date ? new Date(a.date).getTime() : 0;
-//       const bDate = b && b.date ? new Date(b.date).getTime() : 0;
-//       return bDate - aDate;
-//     });
-//   }
-
-//   get length(): number {
-//     return this.items.length;
-//   }
-
-//   add(search?: SearchResults) {
-//     if (search) {
-//       this.items.push(search);
-//     }
-//   }
-// }
 
 export class SearchTerms {
   keywords: string; // comma- or space-delimited list

@@ -9,7 +9,7 @@ export const CORPORATE_CATEGORY = 'Corporate';
 export const UPDATE_CONFLICT_MESSAGE = 'This update was changed by someone else. Reload to see the latest.';
 export const UPDATE_LIST_ERROR_MESSAGE = 'Could not load updates.';
 
-/** The API answers 409 when the sent dateUpdated no longer matches the stored row. */
+/** The API answers 409 on a stale dateUpdated. */
 export const isConflict = (error: any): boolean => error?.status === 409;
 
 export type UpdateStatus = 'draft' | 'published' | 'archived';

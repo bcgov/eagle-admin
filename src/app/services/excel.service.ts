@@ -1,17 +1,10 @@
 import { Injectable } from '@angular/core';
 import * as XLSX from 'xlsx';
 
-// Refs:
-// https://github.com/luwojtaszek/ngx-excel-export
-// https://www.npmjs.com/package/xlsx
-// https://github.com/SheetJS/js-xlsx
-
 @Injectable({ providedIn: 'root' })
 export class ExcelService {
 
-  // data: array of objects (flattened)
-  // excelFileName: filename without extension
-  // columnOrder: array of keys
+  // data rows must be flat objects; excelFileName has no extension.
   public exportAsExcelFile(data: any[], excelFileName: string, columnOrder: Array<string> = []): void {
     const json_opts: XLSX.JSON2SheetOpts = { header: columnOrder };
     const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data, json_opts);

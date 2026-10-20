@@ -33,9 +33,8 @@ export class ProjectNotificationDetailComponent implements OnInit {
   public documents = [];
 
   ngOnInit() {
-    // Parent component (ProjectNotificationComponent) fetches the notification and sets
-    // storageService.state.currentProject before rendering the child outlet.
-    // Read from there directly rather than depending on a resolver.
+    // ProjectNotificationComponent sets storageService.state.currentProject before
+    // rendering this outlet, so no resolver is needed.
     const stored = this.storageService.state.currentProject;
     if (!stored?.data) {
       this.router.navigate(['/project-notifications']);

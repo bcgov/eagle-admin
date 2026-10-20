@@ -191,25 +191,12 @@ export class Project {
     this.legislation         = obj && obj.legislation         || undefined;
     this.legislationYear     = obj && obj.legislationYear     || undefined;
 
-    // if (obj && obj.publishDate) {
-    //   this.publishDate = new Date(obj.publishDate);
-    // }
-
-    // // replace \\n (JSON format) with newlines
-    // if (obj && obj.description) {
-    //   this.description = obj.description.replace(/\\n/g, '\n');
-    // }
-    // if (obj && obj.legalDescription) {
-    //   this.legalDescription = obj.legalDescription.replace(/\\n/g, '\n');
-    // }
-    // copy pins
     if (obj && obj.pins) {
       obj.pins.forEach(pin => {
         this.pins.push(pin);
       });
     }
 
-    // copy centroid
     if (obj && obj.centroid) {
       obj.centroid.forEach(num => {
         this.centroid.push(num);
@@ -228,24 +215,6 @@ export class Project {
         }
       });
     }
-
-    // if (obj && obj.decision) {
-    //   this.decision = new Decision(obj.decision);
-    // }
-
-    // // copy documents
-    // if (obj && obj.documents) {
-    //   for (const doc of obj.documents) {
-    //     this.documents.push(doc);
-    //   }
-    // }
-
-    // // copy features
-    // if (obj && obj.features) {
-    //   for (const feature of obj.features) {
-    //     this.features.push(feature);
-    //   }
-    // }
   }
 }
 
