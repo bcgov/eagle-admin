@@ -23,7 +23,7 @@ const blockKeys = (row: DemiProject) =>
   Object.keys(row).filter(key => LEGISLATION_KEY.test(key) && row[key] && typeof row[key] === 'object');
 
 /** The Organization ids a row names: its `proponentId` and each legislation block's `proponent`. */
-export function proponentIds(row: DemiProject): string[] {
+function proponentIds(row: DemiProject): string[] {
   const blockIds = blockKeys(row).map(key => (row[key] as { proponent?: unknown }).proponent);
   return [...new Set([row.proponentId, ...blockIds].filter((id): id is string => typeof id === 'string' && id !== ''))];
 }
@@ -32,7 +32,7 @@ export function proponentIds(row: DemiProject): string[] {
  * The eagle-api `projectLegislation=all&populate=true` shape, built from a DEMI row. `_id` is the Eagle id.
  * Each `proponent` id becomes its Organization; one DEMI does not have is left off, as eagle-api's lookup did.
  */
-export function toFullProject(row: DemiProject, orgs: Map<string, Org>): FullProject {
+function toFullProject(row: DemiProject, orgs: Map<string, Org>): FullProject {
   const project: Record<string, unknown> = { ...row, _id: row.eagleId ?? null };
   const proponent = row.proponentId ? orgs.get(row.proponentId) : undefined;
   if (proponent) {
