@@ -31,6 +31,16 @@ describe('FormTab2018', () => {
     fixture.detectChanges();
   });
 
+  it('takes the published state from isPublished, as DEMI withholds read', () => {
+    const row = { ...AjaxData[0].data.searchResults[0], read: undefined, currentLegislationYear: 'legislation_2018' };
+    const resolved = (isPublished: boolean) => ({ fullProject: [{ data: { meta: [], searchResults: [{ ...row, isPublished }] } }] }) as any;
+
+    fixture.componentInstance.initProject(resolved(true));
+    expect(fixture.componentInstance.published).toBeTrue();
+    fixture.componentInstance.initProject(resolved(false));
+    expect(fixture.componentInstance.published).toBeFalse();
+  });
+
   it('shows one note that the EPIC.track fields are managed there', () => {
     const notes: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('[role="note"]'));
     expect(notes.length).toBe(1);

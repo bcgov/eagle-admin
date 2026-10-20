@@ -30,7 +30,6 @@ export class ProjectArchivedDetailComponent implements OnInit {
     this.currentProject = this.storageService.currentProjectData;
     const projId = this.route.parent.snapshot.paramMap.get('projId');
 
-    // DEMI keeps only the current legislation block, so the archived one comes from the eagle-api search the route resolves.
     const data = this.route.snapshot.data['fullProject'] as ISearchResults<FullProject>[];
     const row = data?.[0]?.data?.searchResults?.[0] as any;
     if (!row) {
@@ -40,7 +39,7 @@ export class ProjectArchivedDetailComponent implements OnInit {
     }
     this.project = row.legislationYearList.includes(2002) ? row.legislation_2002 : row.legislation_1996;
     this.project._id = projId;
-    this.isPublished = this.project.read?.includes('public');
+    this.isPublished = row.isPublished === true;
     this.substantiallyStarted = (this.project.substantially === true) ? 'Yes' : 'No';
     this.storageService.state.currentProject = { type: 'currentProject', data: this.project };
   }

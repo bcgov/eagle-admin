@@ -41,7 +41,7 @@ describe('ProjectDetailComponent', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            // fullProjectResolver (eagle-api search) still supplies the legislation years.
+            // fullProjectResolver supplies the legislation years in the eagle-api search shape.
             snapshot: { data: { fullProject: [{ data: { searchResults: [{ legislationYearList }] } }] } },
             parent: { snapshot: { paramMap: convertToParamMap({ projId: 'eagle-1' }) } }
           }
