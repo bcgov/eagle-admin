@@ -104,6 +104,15 @@ describe('AppComponent sign-in', () => {
     expect(centreAccess.recordAccess).toHaveBeenCalledTimes(1);
   });
 
+  it('records access for a signed-in user whose token has no GUID', () => {
+    keycloak.isAuthenticated.and.returnValue(true);
+    keycloak.getUserGuid.and.returnValue(undefined);
+
+    component.ngOnInit();
+
+    expect(centreAccess.recordAccess).toHaveBeenCalledTimes(1);
+  });
+
   it('does not record access when nobody is signed in', () => {
     keycloak.isAuthenticated.and.returnValue(false);
 

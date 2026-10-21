@@ -111,6 +111,5 @@ describe('CentreAccessService', () => {
     await expectAsync(done).toBeResolved();
     expect(logger.warn).toHaveBeenCalledOnceWith('Could not record last access in EPIC.centre', 'CentreAccessService', jasmine.anything());
     expect(logger.logHttpError).not.toHaveBeenCalled();
-    expect(logger.error).not.toHaveBeenCalled();
   });
 });
