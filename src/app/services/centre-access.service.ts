@@ -1,10 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
+import { SKIP_ERROR_LOG } from '../interceptors/logging.interceptor';
 
 /** EPIC.centre's name for this app; centre-api answers 400 for a name it does not know. */
 const CENTRE_APP_NAME = 'epic_public';
@@ -40,7 +41,7 @@ export class CentreAccessService {
       await firstValueFrom(this.http.post(
         `${baseUrl}/api/eao-analytics`,
         { user_auth_guid: userAuthGuid, app_name: CENTRE_APP_NAME },
-        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+        { headers: { Authorization: `Bearer ${token}` }, context: new HttpContext().set(SKIP_ERROR_LOG, true) }
       ));
     } catch (e) {
       this.logger.warn('Could not record last access in EPIC.centre', 'CentreAccessService', e);

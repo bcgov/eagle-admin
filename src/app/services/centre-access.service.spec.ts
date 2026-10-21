@@ -1,12 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { CentreAccessService } from './centre-access.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { JwtUtil } from '../shared/utils/jwt-utils';
+import { loggingInterceptor } from '../interceptors/logging.interceptor';
 
 describe('CentreAccessService', () => {
   const CENTRE_URL = 'https://centre-api.example.gov.bc.ca';
@@ -15,7 +16,7 @@ describe('CentreAccessService', () => {
   let service: CentreAccessService;
   let http: HttpTestingController;
   let configSignal: ReturnType<typeof signal<Record<string, unknown>>>;
-  let token: string;
+  let token: string | undefined;
   let logger: jasmine.SpyObj<LoggingService>;
 
   function jwt(claims: Record<string, unknown>): string {
@@ -26,11 +27,11 @@ describe('CentreAccessService', () => {
   beforeEach(() => {
     configSignal = signal<Record<string, unknown>>({ CENTRE_API_URL: CENTRE_URL });
     token = jwt({ idir_user_guid: 'GUID1', preferred_username: 'abc123@idir', sub: 'sub-1' });
-    logger = jasmine.createSpyObj('LoggingService', ['debug', 'info', 'warn', 'error']);
+    logger = jasmine.createSpyObj('LoggingService', ['debug', 'info', 'warn', 'error', 'logHttpRequest', 'logHttpResponse', 'logHttpError']);
 
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
+        provideHttpClient(withInterceptors([loggingInterceptor])),
         provideHttpClientTesting(),
         CentreAccessService,
         { provide: ConfigService, useValue: { config: configSignal } },
@@ -59,7 +60,6 @@ describe('CentreAccessService', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ user_auth_guid: 'abc123@idir', app_name: 'epic_public' });
     expect(req.request.headers.get('Authorization')).toBe(`Bearer ${token}`);
-    expect(req.request.headers.get('Content-Type')).toBe('application/json');
     req.flush({ id: 1 });
     await done;
   });
@@ -89,6 +89,14 @@ describe('CentreAccessService', () => {
     http.expectNone(() => true);
   });
 
+  it('sends nothing and logs nothing when there is no token', async () => {
+    token = undefined;
+
+    await service.recordAccess();
+    http.expectNone(() => true);
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+
   it('sends nothing for a user who did not sign in with IDIR', async () => {
     token = jwt({ bceid_user_guid: 'GUID2', preferred_username: 'someone@bceidbasic' });
 
@@ -96,11 +104,13 @@ describe('CentreAccessService', () => {
     http.expectNone(() => true);
   });
 
-  it('resolves and logs a warning when centre-api rejects the request', async () => {
+  it('resolves and logs only its own warning when centre-api rejects the request', async () => {
     const done = service.recordAccess();
 
     http.expectOne(ENDPOINT).flush({ message: 'unknown app' }, { status: 400, statusText: 'Bad Request' });
     await expectAsync(done).toBeResolved();
-    expect(logger.warn).toHaveBeenCalledWith('Could not record last access in EPIC.centre', 'CentreAccessService', jasmine.anything());
+    expect(logger.warn).toHaveBeenCalledOnceWith('Could not record last access in EPIC.centre', 'CentreAccessService', jasmine.anything());
+    expect(logger.logHttpError).not.toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
   });
 });
