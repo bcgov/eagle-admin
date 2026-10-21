@@ -4,9 +4,7 @@
   // Log level: 0 = All, 1 = Debug, 2 = Info, 3 = Warn, 4 = Error
   window.__env.logLevel = 0;
 
-  // Get config from remote host?
-  // false = use env.js values only (local dev)
-  // true = fetch config from API endpoint (deployed environments)
+  // false = env.js values only (local dev); true = fetch /api/config (deployed environments)
   window.__env.configEndpoint = false;
 
   // Environment name
@@ -33,4 +31,7 @@
 
   // eagle-analytics ingest base — relative on deployed envs; empty keeps the client off
   window.__env.EAGLE_ANALYTICS_URL = '';
+
+  // EPIC.centre API base for the "last accessed" record; empty sends nothing
+  window.__env.CENTRE_API_URL = '';
 }(this));

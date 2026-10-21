@@ -12,6 +12,7 @@ import { FooterComponent } from './footer/footer.component';
 import { SideBarService } from './services/sidebar.service';
 import { AnalyticsService } from './services/analytics/analytics.service';
 import { KeycloakService } from './services/keycloak.service';
+import { CentreAccessService } from './services/centre-access.service';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
 
 @Component({
@@ -34,6 +35,7 @@ export class AppComponent implements OnInit {
   private sideBarService = inject(SideBarService);
   private analyticsService = inject(AnalyticsService);
   private keycloakService = inject(KeycloakService);
+  private centreAccessService = inject(CentreAccessService);
   private router = inject(Router);
 
   isOpen = false;
@@ -74,6 +76,7 @@ export class AppComponent implements OnInit {
           auth_provider: this.keycloakService.getIdpFromToken() || 'unknown'
         });
       }
+      void this.centreAccessService.recordAccess();
     }
 
     // Track page views on navigation

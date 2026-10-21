@@ -22,6 +22,7 @@ interface EnvConfig {
   KEYCLOAK_REALM?: string;
   KEYCLOAK_ENABLED?: boolean;
   EAGLE_ANALYTICS_URL?: string | null;
+  CENTRE_API_URL?: string;
   REDIRECT_KEY?: string;
   APPINSIGHTS_CONNECTION_STRING?: string;
 }
