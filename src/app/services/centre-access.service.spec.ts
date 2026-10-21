@@ -6,6 +6,7 @@ import { CentreAccessService } from './centre-access.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
+import { JwtUtil } from '../shared/utils/jwt-utils';
 
 describe('CentreAccessService', () => {
   const CENTRE_URL = 'https://centre-api.example.gov.bc.ca';
@@ -24,7 +25,7 @@ describe('CentreAccessService', () => {
 
   beforeEach(() => {
     configSignal = signal<Record<string, unknown>>({ CENTRE_API_URL: CENTRE_URL });
-    token = jwt({ identity_provider: 'idir', preferred_username: 'abc123@idir', sub: 'sub-1' });
+    token = jwt({ idir_user_guid: 'GUID1', preferred_username: 'abc123@idir', sub: 'sub-1' });
     logger = jasmine.createSpyObj('LoggingService', ['debug', 'info', 'warn', 'error']);
 
     TestBed.configureTestingModule({
@@ -33,7 +34,14 @@ describe('CentreAccessService', () => {
         provideHttpClientTesting(),
         CentreAccessService,
         { provide: ConfigService, useValue: { config: configSignal } },
-        { provide: KeycloakService, useValue: { getToken: () => token, idpHintEnum: { IDIR: 'idir' } } },
+        {
+          provide: KeycloakService,
+          useValue: {
+            getToken: () => token,
+            getIdpFromToken: () => (JwtUtil.decodeToken(token).idir_user_guid !== undefined ? 'idir' : undefined),
+            idpHintEnum: { IDIR: 'idir' }
+          }
+        },
         { provide: LoggingService, useValue: logger }
       ]
     });
@@ -57,7 +65,7 @@ describe('CentreAccessService', () => {
   });
 
   it('falls back to sub when the token has no preferred_username', async () => {
-    token = jwt({ identity_provider: 'idir', sub: 'sub-1' });
+    token = jwt({ idir_user_guid: 'GUID1', sub: 'sub-1' });
     const done = service.recordAccess();
 
     const req = http.expectOne(ENDPOINT);
@@ -82,7 +90,7 @@ describe('CentreAccessService', () => {
   });
 
   it('sends nothing for a user who did not sign in with IDIR', async () => {
-    token = jwt({ identity_provider: 'bceidbasic', preferred_username: 'someone@bceidbasic' });
+    token = jwt({ bceid_user_guid: 'GUID2', preferred_username: 'someone@bceidbasic' });
 
     await service.recordAccess();
     http.expectNone(() => true);

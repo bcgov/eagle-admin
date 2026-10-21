@@ -28,11 +28,11 @@ export class CentreAccessService {
       return;
     }
     try {
-      const jwt = JwtUtil.decodeToken(token);
-      if (jwt?.identity_provider !== this.keycloakService.idpHintEnum.IDIR) {
+      if (this.keycloakService.getIdpFromToken() !== this.keycloakService.idpHintEnum.IDIR) {
         return;
       }
-      const userAuthGuid = jwt.preferred_username || jwt.sub;
+      const jwt = JwtUtil.decodeToken(token);
+      const userAuthGuid = jwt?.preferred_username || jwt?.sub;
       if (!userAuthGuid) {
         return;
       }
