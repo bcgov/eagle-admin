@@ -5,6 +5,7 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './app.component';
 import { AnalyticsService } from './services/analytics/analytics.service';
 import { KeycloakService } from './services/keycloak.service';
+import { CentreAccessService } from './services/centre-access.service';
 import { SideBarService } from './services/sidebar.service';
 
 // A body-container dropdown whose toggle sits inside a small scroll area, like the Actions menus inside .app-body.
@@ -30,7 +31,8 @@ describe('AppComponent dropdown config', () => {
         provideRouter([]),
         { provide: SideBarService, useValue: {} },
         { provide: AnalyticsService, useValue: {} },
-        { provide: KeycloakService, useValue: {} }
+        { provide: KeycloakService, useValue: {} },
+        { provide: CentreAccessService, useValue: {} }
       ]
     });
     // Only the constructor matters here: it configures NgbDropdownConfig for every dropdown created after it.

@@ -33,4 +33,7 @@
 
   // eagle-analytics ingest base — relative on deployed envs; empty keeps the client off
   window.__env.EAGLE_ANALYTICS_URL = '';
+
+  // EPIC.centre API base for the "last accessed" record; empty sends nothing
+  window.__env.CENTRE_API_URL = '';
 }(this));
