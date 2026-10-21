@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { Subject } from 'rxjs';
 import { AppComponent } from './app.component';
 import { AnalyticsService } from './services/analytics/analytics.service';
 import { KeycloakService } from './services/keycloak.service';
@@ -68,5 +69,46 @@ describe('AppComponent dropdown config', () => {
     const menu = document.getElementById('menu');
     expect(getComputedStyle(menu).visibility).toBe('visible');
     fixture.destroy();
+  });
+});
+
+describe('AppComponent sign-in', () => {
+  let keycloak: jasmine.SpyObj<KeycloakService>;
+  let centreAccess: jasmine.SpyObj<CentreAccessService>;
+  let component: AppComponent;
+
+  beforeEach(() => {
+    keycloak = jasmine.createSpyObj<KeycloakService>('KeycloakService',
+      ['isAuthenticated', 'getUserGuid', 'getPreferredUsername', 'getUserRoles', 'getIdpFromToken']);
+    keycloak.getUserGuid.and.returnValue('GUID1');
+    centreAccess = jasmine.createSpyObj<CentreAccessService>('CentreAccessService', ['recordAccess']);
+    centreAccess.recordAccess.and.resolveTo();
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: SideBarService, useValue: { toggleChange: new Subject<boolean>() } },
+        { provide: AnalyticsService, useValue: jasmine.createSpyObj('AnalyticsService', ['initialize', 'identify', 'page']) },
+        { provide: KeycloakService, useValue: keycloak },
+        { provide: CentreAccessService, useValue: centreAccess }
+      ]
+    });
+    component = TestBed.runInInjectionContext(() => new AppComponent());
+  });
+
+  it('records the last access in EPIC.centre once for a signed-in user', () => {
+    keycloak.isAuthenticated.and.returnValue(true);
+
+    component.ngOnInit();
+
+    expect(centreAccess.recordAccess).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not record access when nobody is signed in', () => {
+    keycloak.isAuthenticated.and.returnValue(false);
+
+    component.ngOnInit();
+
+    expect(centreAccess.recordAccess).not.toHaveBeenCalled();
   });
 });
