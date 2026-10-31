@@ -1,104 +1,71 @@
-import { waitForAsync, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormTab2002Component } from './form-tab-2002.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { provideRouter, ActivatedRoute } from '@angular/router';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { of } from 'rxjs';
 import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
-import { extractFromSearchResults } from 'src/app/shared/utils/utils';
-import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
 import { ConfigService } from 'src/app/services/config.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'src/app/services/project.service';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { of } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { extractFromSearchResults } from 'src/app/shared/utils/utils';
+import { AjaxData, regionsData } from 'src/app/shared/utils/mock-data';
+
+const LIST_ROWS = [
+  { type: 'eaDecisions', id: 'ea-issued', name: 'Certificate Issued', legislation: 2002, listOrder: 2 },
+  { type: 'eaDecisions', id: 'ea-refused', name: 'Certificate Refused', legislation: 2002, listOrder: 1 },
+  { type: 'eaDecisions', id: 'ea-progress', name: 'In Progress', legislation: 2018, listOrder: 0 },
+  { type: 'ceaaInvolvements', id: 'ceaa-screening', name: 'Screening', legislation: 2002, listOrder: 1 },
+  { type: 'ceaaInvolvements', id: 'ceaa-panel', name: 'Panel Review', legislation: 2018, listOrder: 0 },
+];
+
+function projectResults(row: object) {
+  return [{ ...AjaxData[0], data: { ...AjaxData[0].data, searchResults: [row] } }];
+}
 
 describe('FormTab2002', () => {
-  let component: FormTab2002Component;
-  let fixture: ComponentFixture<FormTab2002Component>;
-  const mockApiService = jasmine.createSpyObj('ApiService', [
-    'downloadDocument'
-  ]);
-  const projectAjaxData = extractFromSearchResults(AjaxData)[0]['legislation_2002'];
-  const mockConfigService = {
-    regions: regionsData,
-    getLists: () => {
-      return eaDecisions;
-    },
-    lists: []
-  };
+  async function render(fullProject: unknown = AjaxData): Promise<ComponentFixture<FormTab2002Component>> {
+    const projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'Publish', 'add', 'save']);
+    projectService.add.and.returnValue(of({}));
+    projectService.save.and.returnValue(of({}));
 
-  const mockProjectService = jasmine.createSpyObj('ProjectService', [
-    'unPublish',
-    'Publish',
-    'add',
-    'save'
-  ]);
-  mockProjectService.unPublish.and.returnValue(of({}));
-  mockProjectService.Publish.and.returnValue(of({}));
-  mockProjectService.add.and.returnValue(of({}));
-  mockProjectService.save.and.returnValue(of({}));
-
-  const mockStorageService = jasmine.createSpyObj('StorageService', [
-    'state'
-  ]);
-
-  const mockActivatedRoute = {
-    parent: {
-      data: of({ fullProject: AjaxData })
-    }
-  };
-
-  const mockNavigationStackUtils = jasmine.createSpyObj('NavigationStackUtils', [
-    'state'
-  ]);
-
-  mockStorageService.state.currentProject = {
-    data: AjaxData
-  };
-
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        FormTab2002Component,
-        FormsModule,
-        ReactiveFormsModule,
-        NgbModule,
-      ],
+    await TestBed.configureTestingModule({
+      imports: [FormTab2002Component],
       providers: [
         provideRouter([]),
-        { provide: ApiService, useValue: mockApiService },
-        { provide: ConfigService, useValue: mockConfigService },
-        { provide: StorageService, useValue: mockStorageService },
-        { provide: ProjectService, useValue: mockProjectService },
+        { provide: ApiService, useValue: jasmine.createSpyObj('ApiService', ['downloadDocument']) },
+        { provide: ConfigService, useValue: { regions: regionsData, lists: LIST_ROWS } },
+        { provide: StorageService, useValue: { state: { currentProject: { data: AjaxData } } } },
+        { provide: ProjectService, useValue: projectService },
         { provide: NgbActiveModal, useValue: {} },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
-        { provide: NavigationStackUtils, useValue: mockNavigationStackUtils }
+        { provide: ActivatedRoute, useValue: { parent: { data: of({ fullProject }) } } },
+        { provide: NavigationStackUtils, useValue: jasmine.createSpyObj('NavigationStackUtils', ['getNavigationStack']) },
       ],
-      schemas: [NO_ERRORS_SCHEMA]
-    })
-      .compileComponents();
-  }));
-  beforeEach(() => {
-    // This calls ngoninit but has no data so proponent is not pre populated
-    fixture = TestBed.createComponent(FormTab2002Component);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    component.ngOnInit();
-  });
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-  it('shows one note that the EPIC.track fields are managed there', () => {
+    const fixture = TestBed.createComponent(FormTab2002Component);
+    fixture.detectChanges();
+    return fixture;
+  }
+
+  function optionNames(fixture: ComponentFixture<FormTab2002Component>, selectId: string): string[] {
+    const options = fixture.nativeElement.querySelectorAll(`#${selectId} option:not([value=""])`);
+    return Array.from<HTMLElement>(options).map(o => o.textContent.trim());
+  }
+
+  it('shows one note that the EPIC.track fields are managed there', async () => {
+    const fixture = await render();
+
     const notes: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('[role="note"]'));
     expect(notes.length).toBe(1);
     expect(notes[0].textContent).toContain('Managed in EPIC.track.');
     expect(notes[0].textContent).toContain('Changes made here are saved but not shown publicly.');
   });
-  it('takes the published state from isPublished, as DEMI withholds read', () => {
+
+  it('takes the published state from isPublished, as DEMI withholds read', async () => {
+    const component = (await render()).componentInstance;
     const row = { ...AjaxData[0].data.searchResults[0], read: undefined };
     const resolved = (isPublished: boolean) => ({ fullProject: [{ data: { meta: [], searchResults: [{ ...row, isPublished }] } }] }) as any;
 
@@ -107,43 +74,52 @@ describe('FormTab2002', () => {
     component.initProject(resolved(false));
     expect(component.published).toBeFalse();
   });
-  it('form invalid when empty', () => {
+
+  it('form invalid when empty', async () => {
+    const component = (await render()).componentInstance;
+    spyOn(window, 'alert');
+
     component.buildForm();
+
     expect(component.validateForm()).toBeFalsy();
   });
-  it('should display alert on empty EA Decision', () => {
-    // This test will not work because the EPD and lead are not being pre-populated. Need to add those in manually
-    projectAjaxData.responsibleEPDObj = {
-      _id: '5c33a481c99e4d002498eeee',
-      displayName: 'Baraka Lwakila'
+
+  it('should display alert on empty EA Decision', async () => {
+    const component = (await render()).componentInstance;
+    // validateForm checks EPD and lead before the EA Decision.
+    const contact = { _id: '5c33a481c99e4d002498eeee', displayName: 'Baraka Lwakila' };
+    const project = {
+      ...extractFromSearchResults(AjaxData)[0]['legislation_2002'],
+      responsibleEPDObj: contact,
+      projectLeadObj: contact,
     };
-    projectAjaxData.projectLeadObj = {
-      _id: '5c33a481c99e4d002498eeee',
-      displayName: 'Baraka Lwakila'
-    };
-    component.myForm = component.buildFormFromData(projectAjaxData);
+    component.myForm = component.buildFormFromData(project);
     component.myForm.controls.eacDecision.setValue(null);
-    // Check to see that the alert box popped up
     spyOn(window, 'alert');
+
     component.onSubmit();
+
     expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
   });
-  it('EA Decision dropdown should contain only 2002 legislative items', () => {
-    expect(component.eacDecisions).not.toEqual(
-      jasmine.arrayContaining([
-        jasmine.objectContaining({
-          legislation: 2018
-        })
-      ])
-    );
+
+  it('offers only 2002 EA Decisions, in list order', async () => {
+    const fixture = await render();
+
+    expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
   });
-  it('IAAC Involvement dropdown should contain only 2002 legislative items', async () => {
-    expect(component.ceaaInvolvements).not.toEqual(
-      jasmine.arrayContaining([
-        jasmine.objectContaining({
-          legislation: 2018
-        })
-      ])
-    );
+
+  it('offers only 2002 IAAC Involvements', async () => {
+    const fixture = await render();
+
+    expect(optionNames(fixture, 'CEAAInvolvement')).toEqual(['Screening']);
+  });
+
+  it('offers the 2002 EA Decisions on a 1996 project', async () => {
+    const row = { ...AjaxData[0].data.searchResults[0], legislation_2002: {} };
+
+    const fixture = await render(projectResults(row));
+
+    expect(fixture.componentInstance.legislationYear).toBe(1996);
+    expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
   });
 });
