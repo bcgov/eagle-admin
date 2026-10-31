@@ -25,7 +25,8 @@ export class JwtUtil {
                 return null;
             }
         }
-        return decodeURIComponent(encodeURI(window.atob(output)));
+        const bytes = Uint8Array.from(window.atob(output), c => c.charCodeAt(0));
+        return new TextDecoder().decode(bytes);
     }
 
     /**
