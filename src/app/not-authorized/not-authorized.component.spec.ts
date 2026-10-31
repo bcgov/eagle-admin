@@ -17,4 +17,11 @@ describe('NotAuthorizedComponent', () => {
 
     expect(harness.routeNativeElement.querySelector('h1').textContent).toBe('Logged Out');
   });
+
+  it('asks the user to email for access when the URL has no loggedout param', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/not-authorized');
+
+    expect(harness.routeNativeElement.querySelector('h1').textContent).toBe('Email for access');
+  });
 });

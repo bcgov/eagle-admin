@@ -35,8 +35,8 @@ describe('FormTab2002', () => {
       providers: [
         provideRouter([]),
         { provide: ApiService, useValue: jasmine.createSpyObj('ApiService', ['downloadDocument']) },
-        { provide: ConfigService, useValue: { regions: regionsData, lists: LIST_ROWS } },
-        { provide: StorageService, useValue: { state: { currentProject: { data: AjaxData } } } },
+        { provide: ConfigService, useValue: jasmine.createSpyObj('ConfigService', [], { regions: regionsData, lists: LIST_ROWS }) },
+        { provide: StorageService, useValue: jasmine.createSpyObj('StorageService', [], { state: { currentProject: { data: AjaxData } } }) },
         { provide: ProjectService, useValue: projectService },
         { provide: NgbActiveModal, useValue: {} },
         { provide: ActivatedRoute, useValue: { parent: { data: of({ fullProject }) } } },
@@ -87,7 +87,7 @@ describe('FormTab2002', () => {
   it('should display alert on empty EA Decision', async () => {
     const component = (await render()).componentInstance;
     // validateForm checks EPD and lead before the EA Decision.
-    const contact = { _id: '5c33a481c99e4d002498eeee', displayName: 'Baraka Lwakila' };
+    const contact = { _id: '5c33a481c99e4d002498eeee', displayName: 'Test Contact' };
     const project = {
       ...extractFromSearchResults(AjaxData)[0]['legislation_2002'],
       responsibleEPDObj: contact,

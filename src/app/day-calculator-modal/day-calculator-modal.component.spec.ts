@@ -13,7 +13,6 @@ describe('DayCalculatorModalComponent', () => {
     component = TestBed.createComponent(DayCalculatorModalComponent).componentInstance;
   });
 
-  // Argument order: regular, suspended, numDays, startDate, endDate, suspendDate, resumeDate.
   it('counts both ends of the range on the calendar type', () => {
     const result = component.calculateStartDate(true, false, 0,
       { year: 2019, month: 6, day: 1 }, { year: 2019, month: 6, day: 10 }, null, null);

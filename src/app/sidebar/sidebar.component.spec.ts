@@ -75,16 +75,10 @@ describe('SidebarComponent', () => {
     expect(fixture.nativeElement.querySelector('a.dropdown-btn').getAttribute('href')).toBe('/p/5c1a');
   });
 
-  it('highlights the notification menu item named by the third URL segment on a /pn page', async () => {
+  it('highlights Project Notifications and the item named by the third URL segment on a /pn page', async () => {
     await visit('/pn/7b2c/project-notification-documents');
 
-    expect(activeLinkIds()).toContain('pn-documents');
-  });
-
-  it('highlights the parent Project Notifications item on a /pn page', async () => {
-    await visit('/pn/7b2c/details');
-
-    expect(activeLinkIds()).toContain('notificationProjects');
+    expect(activeLinkIds()).toEqual(['notificationProjects', 'pn-documents']);
   });
 
   it('points the notification menu links at the /pn project id', async () => {

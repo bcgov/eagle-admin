@@ -16,7 +16,7 @@ describe('LoginComponent', () => {
       providers: [
         ApiService,
         ConfigService,
-        { provide: KeycloakService, useValue: { keycloakEnabled } },
+        { provide: KeycloakService, useValue: jasmine.createSpyObj('KeycloakService', [], { keycloakEnabled }) },
         { provide: Router, useValue: router },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
