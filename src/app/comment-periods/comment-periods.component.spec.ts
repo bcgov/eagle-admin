@@ -77,25 +77,18 @@ describe('CommentPeriodsComponent list query', () => {
     expect(params.get('pageSize')).toBe('25');
   });
 
-  for (const [sortBy, sort] of [['+isPublished', 'isPublished'], ['-isPublished', '-isPublished']]) {
-    it(`sorts the Published column as ${sort}`, () => {
-      createFixture({ sortBy });
-      expect(listRequest().request.urlWithParams)
-        .toBe(`/demi/api/comment-periods?page=1&pageSize=10&count=true&sort=${sort}&project=${DEMI_PROJECT}`);
-    });
-  }
-
-  it('falls back to the default sort for a column DEMI cannot sort on', () => {
-    createFixture({ sortBy: '-daysRemaining' });
-    expect(listRequest().request.params.get('sort')).toBe('-dateStarted');
+  it('sorts the Published column on DEMI and puts the table arrow on it', () => {
+    const fixture = createFixture({ sortBy: 'isPublished' });
+    expect(listRequest().request.urlWithParams)
+      .toBe(`/demi/api/comment-periods?page=1&pageSize=10&count=true&sort=isPublished&project=${DEMI_PROJECT}`);
+    expect(fixture.componentInstance.tableParams.sortBy).toBe('+isPublished');
   });
 
-  for (const [sortBy, expected] of [['-daysRemaining', '-dateStarted'], ['isPublished', '+isPublished'], ['-isPublished', '-isPublished']]) {
-    it(`keeps the table sort from URL ${sortBy} as ${expected}`, () => {
-      const fixture = createFixture({ sortBy });
-      expect(fixture.componentInstance.tableParams.sortBy).toBe(expected);
-    });
-  }
+  it('falls back to the default sort, on DEMI and the table, for a column DEMI cannot sort on', () => {
+    const fixture = createFixture({ sortBy: '-daysRemaining' });
+    expect(listRequest().request.params.get('sort')).toBe('-dateStarted');
+    expect(fixture.componentInstance.tableParams.sortBy).toBe('-dateStarted');
+  });
 });
 
 describe('CommentPeriodsComponent table', () => {

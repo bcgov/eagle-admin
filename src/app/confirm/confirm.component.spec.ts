@@ -25,10 +25,6 @@ describe('ConfirmComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should be created', () => {
-    expect(component).toBeTruthy();
-  });
-
   function buttonLabels(): string[] {
     return Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.modal-footer button'))
       .map(b => b.textContent.trim());
