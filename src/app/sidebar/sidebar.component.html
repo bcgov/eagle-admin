@@ -29,7 +29,7 @@
             }
           </section>
         }
-        <a [class.active]="mainRouteId === 'project-notifications' || mainRouteId === 'pn'" id="notificationProjects"
+        <a [class.active]="mainRouteId === 'project-notifications' || showProjectNotificationDetails" id="notificationProjects"
           [routerLink]="['/project-notifications']"><i class="material-icons me-3">view_module</i>Project Notifications</a>
           @if (showProjectNotificationDetails === true) {
             <section class="project-nav">

@@ -81,6 +81,12 @@ describe('SidebarComponent', () => {
     expect(activeLinkIds()).toContain('pn-documents');
   });
 
+  it('highlights the parent Project Notifications item on a /pn page', async () => {
+    await visit('/pn/7b2c/details');
+
+    expect(activeLinkIds()).toContain('notificationProjects');
+  });
+
   it('points the notification menu links at the /pn project id', async () => {
     await visit('/pn/7b2c/project-notification-documents');
 
