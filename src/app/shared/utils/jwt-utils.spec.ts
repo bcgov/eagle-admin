@@ -17,6 +17,11 @@ describe('JwtUtil.decodeToken', () => {
     expect(JwtUtil.decodeToken(token).name).toBe('Zoë');
   });
 
+  it('decodes a payload that needs two padding characters', () => {
+    // Payload {"a":1}; 10 characters, so length % 4 == 2.
+    expect(JwtUtil.decodeToken(`${HEADER}.eyJhIjoxfQ.sig`)).toEqual({ a: 1 });
+  });
+
   it('returns null for a token without three parts', () => {
     expect(JwtUtil.decodeToken(`${HEADER}.eyJzdWIiOiJ4In0`)).toBeNull();
   });
