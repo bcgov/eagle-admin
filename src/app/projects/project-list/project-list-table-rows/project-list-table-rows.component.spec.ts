@@ -88,10 +88,6 @@ describe('ProjectListTableRowsComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   it('table displays project text values', () => {
     const name = fixture.nativeElement.querySelector('[data-label=Name]');
     const proponent = fixture.nativeElement.querySelector('[data-label=Proponent]');

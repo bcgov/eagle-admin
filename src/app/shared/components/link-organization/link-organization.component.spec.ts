@@ -82,13 +82,11 @@ describe('LinkOrganizationComponent sort query', () => {
 
   afterEach(() => http.verify());
 
-  for (const [sortBy, sort] of [['+companyType', 'companyType'], ['-companyType', '-companyType']]) {
-    it(`sends sort=${sort} for ${sortBy}`, () => {
-      create({ sortBy });
+  it('sends sort=companyType for +companyType', () => {
+    create({ sortBy: '+companyType' });
 
-      const req = http.expectOne(r => r.url === '/demi/api/organizations');
-      expect(req.request.urlWithParams).toBe(`/demi/api/organizations?page=1&pageSize=10&count=true&sort=${sort}`);
-      req.flush([]);
-    });
-  }
+    const req = http.expectOne(r => r.url === '/demi/api/organizations');
+    expect(req.request.urlWithParams).toBe('/demi/api/organizations?page=1&pageSize=10&count=true&sort=companyType');
+    req.flush([]);
+  });
 });

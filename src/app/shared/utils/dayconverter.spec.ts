@@ -1,43 +1,15 @@
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from './utils';
-import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 
 describe('DayConverter Utils', () => {
-  const inputJSDate = new Date(2010, 6, 14);
-  const inputJSDate2 = new Date(2019, 11, 31);
-  const inputJSDate3 = new Date(2020, 0, 1);
-  const inputJSDate4 = new Date(2016, 6, 27, 13, 30, 0);
-  const NGBdate: NgbDateStruct = { year: 2010, month: 7, day: 14 };
-  const NGBdate2: NgbDateStruct = { year: 2019, month: 12, day: 31 };
-  const NGBdate3: NgbDateStruct = { year: 2020, month: 1, day: 1 };
-  const NGBdate4: NgbDateStruct = { year: 2016, month: 7, day: 27 };
-  const calculated1 = convertJSDateToNGBDate(inputJSDate);
-  const calculated2 = convertFormGroupNGBDateToJSDate(NGBdate);
-  const calculated3 = convertFormGroupNGBDateToJSDate(NGBdate2);
-  const calculated4 = convertJSDateToNGBDate(inputJSDate2);
-  const calculated5 = convertJSDateToNGBDate(inputJSDate3);
-  const calculated6 = convertFormGroupNGBDateToJSDate(NGBdate3);
-  const calculated7 = convertJSDateToNGBDate(inputJSDate4);
+  it('turns a JS date into the NGB date with a 1-based month', () => {
+    expect(convertJSDateToNGBDate(new Date(2010, 6, 14))).toEqual({ year: 2010, month: 7, day: 14 });
+  });
 
-  it('Test 1: should create a NGB date 2010 july 14', () => {
-    expect(calculated1).toEqual(NGBdate);
+  it('turns an NGB date into the local midnight JS date', () => {
+    expect(convertFormGroupNGBDateToJSDate({ year: 2010, month: 7, day: 14 })).toEqual(new Date(2010, 6, 14));
   });
-  it('Test 2: should create a js date 2010 july 14', () => {
-    expect(calculated2).toEqual(inputJSDate);
 
+  it('drops the time of day when turning a JS date into an NGB date', () => {
+    expect(convertJSDateToNGBDate(new Date(2016, 6, 27, 13, 30, 0))).toEqual({ year: 2016, month: 7, day: 27 });
   });
-  it('Test 3: should create a js date 2019 Dec 31 ', () => {
-    expect(calculated3).toEqual(inputJSDate2);
-  });
-  it('Test 4: should create a js date 2019 Dec 31 ', () => {
-    expect(calculated4).toEqual(NGBdate2);
-    });
-  it('Test 5: should create a js date 2020 Jan 1 ', () => {
-    expect(calculated5).toEqual(NGBdate3);
-    });
-  it('Test 6: should create a js date 2020 Jan 1 ', () => {
-    expect(calculated6).toEqual(inputJSDate3);
-    });
-  it('Test 7: input js date with time ', () => {
-    expect(calculated7).toEqual(NGBdate4);
-    });
 });

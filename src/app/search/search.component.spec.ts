@@ -178,35 +178,38 @@ describe('SearchComponent', () => {
     expect(expectList('projects').request.params.has('sort')).toBeFalse();
   });
 
-  // Header -> DEMI sort key; every header here was sortable before the DEMI move.
-  const HEADER_SORTS: { dataset: 'Project' | 'Document'; kind: string; header: string; sort: string }[] = [
-    { dataset: 'Project', kind: 'projects', header: 'Project Name', sort: 'name' },
-    { dataset: 'Project', kind: 'projects', header: 'Proponent', sort: 'proponentName' },
-    { dataset: 'Project', kind: 'projects', header: 'Type', sort: 'projectType' },
-    { dataset: 'Project', kind: 'projects', header: 'Region', sort: 'region' },
-    { dataset: 'Project', kind: 'projects', header: 'Phase', sort: 'currentPhaseName.name' },
-    { dataset: 'Project', kind: 'projects', header: 'Decision', sort: 'eacDecisionSort' },
-    { dataset: 'Document', kind: 'documents', header: 'Document Name', sort: 'displayName' },
-    { dataset: 'Document', kind: 'documents', header: 'Status', sort: 'isPublished' },
-    { dataset: 'Document', kind: 'documents', header: 'Date', sort: 'datePosted' },
-    { dataset: 'Document', kind: 'documents', header: 'Type', sort: 'type' },
-    { dataset: 'Document', kind: 'documents', header: 'Milestone', sort: 'milestone' },
-    { dataset: 'Document', kind: 'documents', header: 'Legislation', sort: 'legislation' }
+  // Header -> DEMI sort key for every sortable header.
+  // Direction handling is covered by the nativeSort and nativeDocumentSort specs.
+  const TABLES = {
+    Project: { columns: 'projectTableColumns', kind: 'projects' },
+    Document: { columns: 'documentTableColumns', kind: 'documents' },
+  } as const;
+  const HEADER_SORTS: { dataset: keyof typeof TABLES; header: string; sort: string }[] = [
+    { dataset: 'Project', header: 'Project Name', sort: 'name' },
+    { dataset: 'Project', header: 'Proponent', sort: 'proponentName' },
+    { dataset: 'Project', header: 'Type', sort: 'projectType' },
+    { dataset: 'Project', header: 'Region', sort: 'region' },
+    { dataset: 'Project', header: 'Phase', sort: 'currentPhaseName.name' },
+    { dataset: 'Project', header: 'Decision', sort: 'eacDecisionSort' },
+    { dataset: 'Document', header: 'Document Name', sort: 'displayName' },
+    { dataset: 'Document', header: 'Status', sort: 'isPublished' },
+    { dataset: 'Document', header: 'Date', sort: 'datePosted' },
+    { dataset: 'Document', header: 'Type', sort: 'type' },
+    { dataset: 'Document', header: 'Milestone', sort: 'milestone' },
+    { dataset: 'Document', header: 'Legislation', sort: 'legislation' }
   ];
 
-  for (const { dataset, kind, header, sort } of HEADER_SORTS) {
-    for (const dir of ['+', '-']) {
-      it(`${dataset.toLowerCase()}s tab ${header} header ${dir === '+' ? 'ascending' : 'descending'} sends sort ${dir === '-' ? '-' : ''}${sort}`, () => {
-        load({ dataset });
-        const columns = dataset === 'Project' ? component.projectTableColumns : component.documentTableColumns;
-        const column = columns.find(c => c.name === header);
-        expect(column.nosort).withContext(`${header} nosort`).toBeFalsy();
+  for (const { dataset, header, sort } of HEADER_SORTS) {
+    it(`${dataset.toLowerCase()}s tab ${header} header sends sort ${sort}`, () => {
+      const { columns, kind } = TABLES[dataset];
+      load({ dataset });
+      const column = component[columns].find(c => c.name === header);
+      expect(column.nosort).withContext(`${header} nosort`).toBeFalsy();
 
-        routeParams$.next({ dataset, keywords: 'x', sortBy: `${dir}${column.value}` });
+      routeParams$.next({ dataset, keywords: 'x', sortBy: `+${column.value}` });
 
-        expect(expectList(kind).request.params.get('sort')).toBe(dir === '-' ? `-${sort}` : sort);
-      });
-    }
+      expect(expectList(kind).request.params.get('sort')).toBe(sort);
+    });
   }
 
   it('leaves out a date that is not ISO', () => {

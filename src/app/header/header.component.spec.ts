@@ -10,7 +10,6 @@ import { signal } from '@angular/core';
 import { By } from '@angular/platform-browser';
 
 describe('HeaderComponent', () => {
-  let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
   let apiSpy: jasmine.SpyObj<ApiService>;
   let analyticsSpy: jasmine.SpyObj<AnalyticsService>;
@@ -47,12 +46,6 @@ describe('HeaderComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HeaderComponent);
-    component = fixture.componentInstance;
-  });
-
-  it('should create', () => {
-    fixture.detectChanges();
-    expect(component).toBeTruthy();
   });
 
   it('should render banner based on environment configuration', () => {

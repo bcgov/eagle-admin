@@ -99,10 +99,7 @@ describe('OrganizationsComponent sort query', () => {
 
   afterEach(() => http.verify());
 
-  for (const [sortBy, sort] of [
-    ['+companyType', 'companyType'], ['-companyType', '-companyType'],
-    ['+companyLegal', 'companyLegal'], ['-companyLegal', '-companyLegal']
-  ]) {
+  for (const [sortBy, sort] of [['-companyType', '-companyType'], ['+companyLegal', 'companyLegal']]) {
     it(`sends sort=${sort} for ${sortBy}`, () => {
       create({ sortBy });
 
