@@ -244,7 +244,7 @@ publish() {
 }
 
 smoke() {
-  local env_name site attempts delay failures=0 code ctype i line
+  local env_name site attempts delay failures=0 code ctype i line kc_url
   env_name=$(target_env "${1:-}")
   : "${SITE_URL:?SITE_URL is not set}" "${MAIN_BUNDLE:?MAIN_BUNDLE is not set}" "${ASSET_PROBE:?ASSET_PROBE is not set}"
   command -v jq >/dev/null || die "smoke needs jq to read the DEMI config answers"
@@ -316,8 +316,10 @@ smoke() {
   fetch /demi/api/config
   { [ "$code" = 200 ] && [[ "$ctype" == application/json* ]] && json_has '. != null and . != ""' KEYCLOAK_URL KEYCLOAK_REALM; } \
     || fail "/demi/api/config returned $code '$ctype' without KEYCLOAK_URL and KEYCLOAK_REALM: the app cannot boot without it"
-  if [[ "$ctype" == application/json* ]] && [ "$(jq -r '.KEYCLOAK_URL' "$tmp/body")" != "$(keycloak_url "$env_name")" ]; then
-    fail "/demi/api/config KEYCLOAK_URL is '$(jq -r '.KEYCLOAK_URL' "$tmp/body")', expected $(keycloak_url "$env_name"): staff would sign in to the wrong Keycloak"
+  if [ "$code" = 200 ] && [[ "$ctype" == application/json* ]]; then
+    kc_url=$(jq -r '.KEYCLOAK_URL' "$tmp/body")
+    [ "$kc_url" = "$(keycloak_url "$env_name")" ] \
+      || fail "/demi/api/config KEYCLOAK_URL is '$kc_url', expected $(keycloak_url "$env_name"): staff would sign in to the wrong Keycloak"
   fi
 
   fetch /demi/api/config/public

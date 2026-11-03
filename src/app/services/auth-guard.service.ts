@@ -11,14 +11,11 @@ export class AuthGuard {
   private readonly router = inject(Router);
   private readonly configService = inject(ConfigService);
 
-
   canActivate(
   ): boolean | UrlTree {
     const redirectKey = this.configService.config().REDIRECT_KEY || 'REDIRECT';
-    
-    // Not authenticated
+
     if (!this.keycloakService.isAuthenticated()) {
-      localStorage.removeItem(this.keycloakService.LAST_IDP_AUTHENTICATED);
       localStorage.setItem(redirectKey, window.location.href);
       this.keycloakService.login(this.keycloakService.idpHintEnum.IDIR);
       return false;

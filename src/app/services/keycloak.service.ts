@@ -10,7 +10,6 @@ export class KeycloakService {
   private configService = inject(ConfigService);
   private logger = inject(LoggingService);
 
-  public LAST_IDP_AUTHENTICATED = 'kc-last-idp-authenticated';
   private keycloakAuth: any;
   public keycloakEnabled: boolean;
   private keycloakUrl: string;
@@ -39,16 +38,6 @@ export class KeycloakService {
         };
 
         this.keycloakAuth = new Keycloak(config);
-
-        this.keycloakAuth.onAuthSuccess = () => {
-          const idp = this.getIdpFromToken();
-          if (idp !== '') {
-            localStorage.setItem(
-              this.LAST_IDP_AUTHENTICATED,
-              idp
-            );
-          }
-        };
 
         this.keycloakAuth.onAuthError = () => {
           this.logger.warn('onAuthError', 'Keycloak');
@@ -208,7 +197,7 @@ export class KeycloakService {
     );
   }
 
-  /** 'idir' when the token carries idir_user_guid, else ''. */
+  /** The IDIR hint when the token carries idir_user_guid, else ''. */
   getIdpFromToken(): string {
     const token = this.getToken();
 
