@@ -15,8 +15,7 @@
     "test": "ng test --watch=true",
     "test-ci": "ng test --watch=false",
     "tests": "echo 'Test suite should be run with \"`npm run test` or npm `run test-ci`\"'",
-    "lint": "ng lint --format=stylish",
-    "e2e": "ng e2e"
+    "lint": "ng lint --format=stylish"
   },
   "private": true,
   "dependencies": {
