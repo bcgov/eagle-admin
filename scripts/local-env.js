@@ -6,32 +6,33 @@ const util = require('util');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const ENV_JS = path.join(ROOT, 'src', 'env.js');
-const OUT_DIR = path.join(ROOT, 'tmp', 'local-env');
 // process.env holds the whole shell; only these keys may reach the browser.
 const BROWSER_KEYS = ['KEYCLOAK_URL', 'KEYCLOAK_REALM'];
 
-function readLocalEnv() {
-  const file = path.join(ROOT, '.env.local');
+const envJsPath = root => path.join(root, 'src', 'env.js');
+
+function readLocalEnv(root = ROOT) {
+  const file = path.join(root, '.env.local');
   const fromFile = fs.existsSync(file) ? util.parseEnv(fs.readFileSync(file, 'utf-8')) : {};
   return { ...fromFile, ...process.env };
 }
 
-function readEnvJs() {
+function readEnvJs(root = ROOT) {
   const sandbox = { __env: {} };
-  vm.runInNewContext(fs.readFileSync(ENV_JS, 'utf-8'), sandbox);
+  vm.runInNewContext(fs.readFileSync(envJsPath(root), 'utf-8'), sandbox);
   return sandbox.__env;
 }
 
-function writeServeEnvJs() {
-  const env = readLocalEnv();
+function writeServeEnvJs(root = ROOT) {
+  const env = readLocalEnv(root);
   const lines = BROWSER_KEYS
     .filter(key => env[key])
     .map(key => `\nwindow.__env.${key} = ${JSON.stringify(env[key])};`);
-  fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(OUT_DIR, 'env.js'), fs.readFileSync(ENV_JS, 'utf-8') + lines.join(''));
+  const outDir = path.join(root, 'tmp', 'local-env');
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, 'env.js'), fs.readFileSync(envJsPath(root), 'utf-8') + lines.join(''));
 }
 
 if (require.main === module) writeServeEnvJs();
 
-module.exports = { readLocalEnv, readEnvJs };
+module.exports = { readLocalEnv, readEnvJs, writeServeEnvJs };

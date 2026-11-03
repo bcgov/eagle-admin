@@ -13,7 +13,7 @@
     "start": "node scripts/local-env.js && ng serve",
     "build": "ng build --configuration=production",
     "test": "ng test --watch=true",
-    "test-ci": "ng test --watch=false",
+    "test-ci": "ng test --watch=false && node --test 'scripts/*.test.js'",
     "tests": "echo 'Test suite should be run with \"`npm run test` or npm `run test-ci`\"'",
     "lint": "ng lint --format=stylish"
   },
