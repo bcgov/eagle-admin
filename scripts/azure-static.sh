@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
-# Publishes the eagle-admin build to an Azure storage static website under `$web/admin/`
-# and checks the result through the public host. Shared by the deploy-azure-* workflows.
-#
-#   azure-static.sh stamp <test|prod>   before `yarn build`: rewrite src/env.js for a deployed build
-#   azure-static.sh verify <test|prod>  after `yarn build`: guard dist/env.js and dist/index.html
-#   azure-static.sh manifest            after `verify`: record dist/ file hashes in dist.sha256
-#   azure-static.sh check-manifest      after the artifact download: fail unless dist/ matches dist.sha256
-#   azure-static.sh publish             needs STORAGE_ACCOUNT; enables the static website, uploads dist/
-#   azure-static.sh smoke <test|prod>   needs SITE_URL, MAIN_BUNDLE, ASSET_PROBE; checks the live site
-#
-# Run from the repository root. `publish` and `smoke` write MAIN_BUNDLE, ASSET_PROBE and
-# ENV_ETAG to $GITHUB_ENV when it is set.
 set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Publishes the eagle-admin build to an Azure storage static website under `$web/admin/`
+and checks the result through the public host. Shared by the deploy-azure-* workflows.
+
+  azure-static.sh stamp <test|prod>   before `yarn build`: rewrite src/env.js for a deployed build
+  azure-static.sh verify <test|prod>  after `yarn build`: guard dist/env.js and dist/index.html
+  azure-static.sh manifest            after `verify`: record dist/ file hashes in dist.sha256
+  azure-static.sh check-manifest      after the artifact download: fail unless dist/ matches dist.sha256
+  azure-static.sh publish             needs STORAGE_ACCOUNT; enables the static website, uploads dist/
+  azure-static.sh smoke <test|prod>   needs SITE_URL, MAIN_BUNDLE, ASSET_PROBE; checks the live site
+
+Run from the repository root. `publish` and `smoke` write MAIN_BUNDLE, ASSET_PROBE and
+ENV_ETAG to $GITHUB_ENV when it is set.
+EOF
+}
 
 DIST='dist'
 # Outside dist/ so publish never uploads it.
@@ -310,5 +315,6 @@ case "$cmd" in
   check-manifest) check_manifest ;;
   publish) publish ;;
   smoke) smoke "$@" ;;
-  *) die "usage: $0 stamp|verify|smoke <test|prod>, or $0 manifest|check-manifest|publish" ;;
+  -h|--help) usage ;;
+  *) usage >&2; die "usage: $0 stamp|verify|smoke <test|prod>, or $0 manifest|check-manifest|publish" ;;
 esac
