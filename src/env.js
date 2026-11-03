@@ -4,7 +4,7 @@
   // Log level: 0 = All, 1 = Debug, 2 = Info, 3 = Warn, 4 = Error
   window.__env.logLevel = 0;
 
-  // false = env.js values only (local dev); true = fetch /api/config (deployed environments)
+  // false = env.js values only (local dev); true = fetch DEMI config (deployed environments)
   window.__env.configEndpoint = false;
 
   // Environment name
@@ -16,7 +16,7 @@
   window.__env.API_LOCATION = 'https://eagle-dev.apps.silver.devops.gov.bc.ca';
   window.__env.API_PATH = '/api';
 
-  // DEMI native reads — same-origin path the edge forwards to DEMI; /api/config can override it
+  // DEMI native reads — same-origin path the edge forwards to DEMI
   window.__env.DEMI_API_PATH = '/demi/api';
 
   // Keycloak configuration
@@ -26,7 +26,7 @@
   window.__env.KEYCLOAK_ENABLED = true;
   window.__env.REDIRECT_KEY = 'REDIRECT';
 
-  // Application Insights — empty disables browser telemetry (deployed value comes from /api/config)
+  // Application Insights — empty disables browser telemetry (deployed value comes from DEMI /config/public)
   window.__env.APPINSIGHTS_CONNECTION_STRING = '';
 
   // eagle-analytics ingest base — relative on deployed envs; empty keeps the client off

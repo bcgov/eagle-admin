@@ -16,6 +16,7 @@ describe('AuthGuard', () => {
     localStorage.removeItem(REDIRECT_KEY);
     keycloak = jasmine.createSpyObj('KeycloakService', ['isAuthenticated', 'isAuthorized', 'login'], {
       LAST_IDP_AUTHENTICATED: LAST_IDP,
+      idpHintEnum: { IDIR: 'idir' },
     });
     const config = jasmine.createSpyObj('ConfigService', ['config']);
     config.config.and.returnValue({ REDIRECT_KEY });
@@ -39,19 +40,19 @@ describe('AuthGuard', () => {
   describe('when not signed in', () => {
     beforeEach(() => keycloak.isAuthenticated.and.returnValue(false));
 
-    it('sends a first-time visitor to /login', () => {
-      expect(guard.canActivate()).toEqual(router.parseUrl('/login'));
-      expect(keycloak.login).not.toHaveBeenCalled();
-    });
-
-    it('starts a keycloak login with the identity provider used last time', () => {
-      localStorage.setItem(LAST_IDP, 'idir');
-
+    it('starts a keycloak IDIR login for a first-time visitor', () => {
       expect(guard.canActivate()).toBeFalse();
       expect(keycloak.login).toHaveBeenCalledOnceWith('idir');
     });
 
-    it('forgets the last identity provider so a failed attempt shows /login next time', () => {
+    it('starts a keycloak login with the identity provider used last time', () => {
+      localStorage.setItem(LAST_IDP, 'bceidbasic');
+
+      expect(guard.canActivate()).toBeFalse();
+      expect(keycloak.login).toHaveBeenCalledOnceWith('bceidbasic');
+    });
+
+    it('forgets the last identity provider so a failed attempt falls back to IDIR next time', () => {
       localStorage.setItem(LAST_IDP, 'idir');
 
       guard.canActivate();

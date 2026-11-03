@@ -22,18 +22,10 @@ export class AuthGuard {
     
     // Not authenticated
     if (!this.keycloakService.isAuthenticated()) {
-      // remove the localStorage value first, so if this authentication attempt
-      // fails then the user will get the login page next time.
+      // Cleared first, so a failed attempt with a stale provider falls back to IDIR next time.
       localStorage.removeItem(this.keycloakService.LAST_IDP_AUTHENTICATED);
       localStorage.setItem(redirectKey, window.location.href);
-
-      if (lastIdp === null) {
-        // If an identity provider hasn't been selected then show the login page.
-        return this.router.parseUrl('/login');
-      }
-      // If an identity provider was already selected and successfully authenticated
-      // then do a keycloak login with that identity provider.
-      this.keycloakService.login(lastIdp);
+      this.keycloakService.login(lastIdp ?? this.keycloakService.idpHintEnum.IDIR);
       return false;
     } else {
       localStorage.removeItem(redirectKey);

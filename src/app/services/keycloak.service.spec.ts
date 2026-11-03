@@ -10,17 +10,21 @@ const STAFF_TOKEN = `${HEADER}.eyJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsic3RhZmYiLCJpb
 // Payload {"preferred_username":"jdoe@idir"}
 const NO_ROLES_TOKEN = `${HEADER}.eyJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqZG9lQGlkaXIifQ.sig`;
 
+function createService(): KeycloakService {
+  TestBed.configureTestingModule({
+    providers: [
+      { provide: ConfigService, useValue: jasmine.createSpyObj('ConfigService', ['config']) },
+      { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'warn', 'error']) },
+    ],
+  });
+  return TestBed.inject(KeycloakService);
+}
+
 describe('KeycloakService.isAuthorized', () => {
   let service: KeycloakService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: ConfigService, useValue: jasmine.createSpyObj('ConfigService', ['config']) },
-        { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'warn', 'error']) },
-      ],
-    });
-    service = TestBed.inject(KeycloakService);
+    service = createService();
   });
 
   it('allows a token carrying the sysadmin realm role', () => {
@@ -51,5 +55,14 @@ describe('KeycloakService.isAuthorized', () => {
     spyOn(service, 'getToken').and.returnValue(undefined);
 
     expect(service.isAuthorized()).toBeFalse();
+  });
+});
+
+describe('KeycloakService.getIdpFromToken', () => {
+  it('answers empty, not undefined, for a token with no IDIR guid', () => {
+    const service = createService();
+    spyOn(service, 'getToken').and.returnValue(NO_ROLES_TOKEN);
+
+    expect(service.getIdpFromToken()).toBe('');
   });
 });

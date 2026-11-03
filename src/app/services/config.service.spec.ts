@@ -4,7 +4,6 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LoggingService } from './logging.service';
 import { LoadingStateService } from './loading-state.service';
-import { KeycloakService } from './keycloak.service';
 import { List } from '../models/demi/list';
 
 describe('ConfigService', () => {
@@ -20,8 +19,16 @@ describe('ConfigService', () => {
     KEYCLOAK_REALM: 'eao-epic'
   };
 
+  const keycloakConfig = { KEYCLOAK_URL: 'https://test.loginproxy.gov.bc.ca/auth', KEYCLOAK_REALM: 'eao-epic' };
+
   function fakeResponse(ok: boolean, body: any) {
     return Promise.resolve({ ok, status: ok ? 200 : 503, json: () => Promise.resolve(body) } as any);
+  }
+
+  /** Answers DEMI /config and /config/public; any other URL fails the boot. */
+  function stubFetch(config: Promise<any>, site: Promise<any> = fakeResponse(true, {})) {
+    const routes: Record<string, Promise<any>> = { '/demi/api/config': config, '/demi/api/config/public': site };
+    return spyOn(window, 'fetch').and.callFake(((url: string) => routes[url] ?? Promise.reject(new Error(`unexpected ${url}`))) as any);
   }
 
   beforeEach(() => {
@@ -32,7 +39,6 @@ describe('ConfigService', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         ConfigService,
-        { provide: KeycloakService, useValue: { keycloakEnabled: true } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) },
         { provide: LoadingStateService, useValue: jasmine.createSpyObj('LoadingStateService', ['startLoading', 'stopLoading']) }
       ]
@@ -45,34 +51,27 @@ describe('ConfigService', () => {
     window.__env = savedEnv;
   });
 
-  it('rejects when /api/config returns a non-2xx response', async () => {
+  it('rejects when DEMI /config returns a non-2xx response', async () => {
     window.__env = { ...deployedEnv };
-    spyOn(window, 'fetch').and.returnValue(fakeResponse(false, {}));
+    stubFetch(fakeResponse(false, {}));
 
     await expectAsync(service.init()).toBeRejected();
   });
 
   it('rejects when the fetch itself fails', async () => {
     window.__env = { ...deployedEnv };
-    spyOn(window, 'fetch').and.returnValue(Promise.reject(new TypeError('Failed to fetch')));
+    stubFetch(Promise.reject(new TypeError('Failed to fetch')));
 
     await expectAsync(service.init()).toBeRejected();
   });
 
   it('rejects a 200 with no KEYCLOAK_URL and merges nothing from it', async () => {
     window.__env = { ...deployedEnv };
-    spyOn(window, 'fetch').and.returnValue(fakeResponse(true, { ENVIRONMENT: 'prod', KEYCLOAK_REALM: 'eao-epic' }));
+    stubFetch(fakeResponse(true, { KEYCLOAK_REALM: 'eao-epic' }), fakeResponse(true, { BANNER_COLOUR: 'orange' }));
 
     await expectAsync(service.init()).toBeRejected();
     expect(service.config().KEYCLOAK_URL).toBe('https://dev.loginproxy.gov.bc.ca/auth');
-    expect(service.config().ENVIRONMENT).toBe('dev');
-  });
-
-  it('rejects a partially seeded document whose KEYCLOAK_URL is null', async () => {
-    window.__env = { ...deployedEnv };
-    spyOn(window, 'fetch').and.returnValue(fakeResponse(true, { KEYCLOAK_URL: null, KEYCLOAK_REALM: null }));
-
-    await expectAsync(service.init()).toBeRejected();
+    expect(service.config().BANNER_COLOUR).toBeUndefined();
   });
 
   it('skips the fetch entirely when configEndpoint is false (local dev)', async () => {
@@ -83,16 +82,37 @@ describe('ConfigService', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('preserves KEYCLOAK_CLIENT_ID from env.js over the API value', async () => {
-    window.__env = { ...deployedEnv };
-    spyOn(window, 'fetch').and.returnValue(fakeResponse(true, {
-      KEYCLOAK_CLIENT_ID: 'eagle-api-console',
-      KEYCLOAK_URL: 'https://loginproxy.gov.bc.ca/auth',
-      KEYCLOAK_REALM: 'eao-epic'
-    }));
+  it('takes Keycloak from DEMI /config and site values from /config/public, nothing from eagle-api', async () => {
+    window.__env = { ...deployedEnv, BANNER_COLOUR: 'blue', KEYCLOAK_ENABLED: true, API_PATH: '/api' };
+    const fetchSpy = stubFetch(
+      fakeResponse(true, { ...keycloakConfig, KEYCLOAK_CLIENT_ID: 'demi-admin', KEYCLOAK_ENABLED: false, BANNER_COLOUR: 'blue' }),
+      fakeResponse(true, {
+        ENVIRONMENT: 'test', BANNER_COLOUR: 'orange', EAGLE_ANALYTICS_URL: '/api/usage',
+        APPINSIGHTS_CONNECTION_STRING: 'InstrumentationKey=test', API_PATH: '/public-api'
+      })
+    );
 
     await service.init();
-    expect(service.config().KEYCLOAK_CLIENT_ID).toBe('eagle-admin-console');
+    expect(service.config()).toEqual(jasmine.objectContaining({
+      ...keycloakConfig,
+      KEYCLOAK_CLIENT_ID: 'eagle-admin-console',
+      KEYCLOAK_ENABLED: true,
+      ENVIRONMENT: 'dev',
+      API_PATH: '/api',
+      BANNER_COLOUR: 'orange',
+      EAGLE_ANALYTICS_URL: '/api/usage',
+      APPINSIGHTS_CONNECTION_STRING: 'InstrumentationKey=test'
+    }));
+    expect(fetchSpy.calls.allArgs().map(args => args[0]).sort()).toEqual(['/demi/api/config', '/demi/api/config/public']);
+  });
+
+  it('boots on env.js site values when DEMI /config/public is unavailable', async () => {
+    window.__env = { ...deployedEnv, BANNER_COLOUR: 'blue' };
+    stubFetch(fakeResponse(true, keycloakConfig), fakeResponse(false, { error: 'Public configuration is unavailable.' }));
+
+    await service.init();
+    expect(service.config().KEYCLOAK_URL).toBe(keycloakConfig.KEYCLOAK_URL);
+    expect(service.config().BANNER_COLOUR).toBe('blue');
   });
 
   it('defaults the DEMI path to /demi/api when no source sets DEMI_API_PATH', async () => {
@@ -100,18 +120,6 @@ describe('ConfigService', () => {
 
     await service.init();
     expect(service.getDemiApiPath()).toBe('/demi/api');
-  });
-
-  it('takes DEMI_API_PATH from /api/config over env.js', async () => {
-    window.__env = { ...deployedEnv, DEMI_API_PATH: '/demi/api' };
-    spyOn(window, 'fetch').and.returnValue(fakeResponse(true, {
-      KEYCLOAK_URL: 'https://dev.loginproxy.gov.bc.ca/auth',
-      KEYCLOAK_REALM: 'eao-epic',
-      DEMI_API_PATH: '/demi-next/api'
-    }));
-
-    await service.init();
-    expect(service.getDemiApiPath()).toBe('/demi-next/api');
   });
 
   describe('lists', () => {

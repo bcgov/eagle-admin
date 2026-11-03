@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HeaderComponent } from './header.component';
-import { ApiService } from '../services/api';
 import { AnalyticsService } from '../services/analytics/analytics.service';
 import { ConfigService } from '../services/config.service';
 import { KeycloakService } from '../services/keycloak.service';
@@ -11,7 +10,6 @@ import { By } from '@angular/platform-browser';
 
 describe('HeaderComponent', () => {
   let fixture: ComponentFixture<HeaderComponent>;
-  let apiSpy: jasmine.SpyObj<ApiService>;
   let analyticsSpy: jasmine.SpyObj<AnalyticsService>;
   let configServiceSpy: any;
   let keycloakServiceSpy: jasmine.SpyObj<KeycloakService>;
@@ -23,7 +21,6 @@ describe('HeaderComponent', () => {
     configServiceSpy = {};
     Object.defineProperty(configServiceSpy, 'config', { value: mockConfigSignal });
 
-    apiSpy = jasmine.createSpyObj('ApiService', ['logout']);
     analyticsSpy = jasmine.createSpyObj('AnalyticsService', ['reset']);
     keycloakServiceSpy = jasmine.createSpyObj('KeycloakService', ['getToken', 'isAuthenticated', 'getLogoutURL']);
     modalSpy = jasmine.createSpyObj('NgbModal', ['open']);
@@ -35,7 +32,6 @@ describe('HeaderComponent', () => {
       imports: [HeaderComponent],
       providers: [
         provideRouter([]),
-        { provide: ApiService, useValue: apiSpy },
         { provide: AnalyticsService, useValue: analyticsSpy },
         { provide: ConfigService, useValue: configServiceSpy },
         { provide: KeycloakService, useValue: keycloakServiceSpy },
