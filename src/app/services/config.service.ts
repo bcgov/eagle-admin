@@ -48,7 +48,7 @@ function pick(source: EnvConfig, keys: readonly (keyof EnvConfig)[]): EnvConfig 
 }
 
 /**
- * Local dev uses env.js as is; deployed builds (configEndpoint true) merge DEMI config over it.
+ * env.js holds test values with configEndpoint true; DEMI /config/public and /config merge over them.
  * The app calls relative /api, never API_LOCATION.
  */
 @Injectable({ providedIn: 'root' })
@@ -110,7 +110,7 @@ export class ConfigService {
 
   /**
    * Throws on transport failure or an answer with no Keycloak URL/realm, so a misrouted request
-   * cannot boot the admin on env.js's dev Keycloak.
+   * cannot boot a prod admin on env.js's test Keycloak.
    */
   private async fetchKeycloakConfig(url: string): Promise<EnvConfig> {
     const body: EnvConfig = await fetchJson(url);
