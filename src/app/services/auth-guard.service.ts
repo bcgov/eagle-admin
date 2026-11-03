@@ -11,29 +11,13 @@ export class AuthGuard {
   private readonly router = inject(Router);
   private readonly configService = inject(ConfigService);
 
-
   canActivate(
   ): boolean | UrlTree {
-    // When a successful login occurs, we store the identity provider used in localStorage.
-    const lastIdp = localStorage.getItem(
-      this.keycloakService.LAST_IDP_AUTHENTICATED
-    );
     const redirectKey = this.configService.config().REDIRECT_KEY || 'REDIRECT';
-    
-    // Not authenticated
-    if (!this.keycloakService.isAuthenticated()) {
-      // remove the localStorage value first, so if this authentication attempt
-      // fails then the user will get the login page next time.
-      localStorage.removeItem(this.keycloakService.LAST_IDP_AUTHENTICATED);
-      localStorage.setItem(redirectKey, window.location.href);
 
-      if (lastIdp === null) {
-        // If an identity provider hasn't been selected then show the login page.
-        return this.router.parseUrl('/login');
-      }
-      // If an identity provider was already selected and successfully authenticated
-      // then do a keycloak login with that identity provider.
-      this.keycloakService.login(lastIdp);
+    if (!this.keycloakService.isAuthenticated()) {
+      localStorage.setItem(redirectKey, window.location.href);
+      this.keycloakService.login(this.keycloakService.idpHintEnum.IDIR);
       return false;
     } else {
       localStorage.removeItem(redirectKey);

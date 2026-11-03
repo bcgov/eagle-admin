@@ -4,7 +4,6 @@ import { Router, RouterModule } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from '../confirm/confirm.component';
 import { DayCalculatorModalComponent, DayCalculatorModalResult } from '../day-calculator-modal/day-calculator-modal.component';
-import { ApiService } from '../services/api';
 import { AnalyticsService } from '../services/analytics/analytics.service';
 import { ConfigService } from '../services/config.service';
 import { KeycloakService } from '../services/keycloak.service';
@@ -19,7 +18,6 @@ import { JwtUtil } from '../shared/utils/jwt-utils';
 })
 
 export class HeaderComponent implements OnInit {
-  private api = inject(ApiService);
   private analyticsService = inject(AnalyticsService);
   private configService = inject(ConfigService);
   private keycloakService = inject(KeycloakService);
@@ -119,8 +117,6 @@ export class HeaderComponent implements OnInit {
   navigateToLogout() {
     // Track session end and reset analytics state
     this.analyticsService.reset();
-    // reset login status
-    this.api.logout();
     window.location.href = this.keycloakService.getLogoutURL();
   }
 

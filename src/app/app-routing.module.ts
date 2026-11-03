@@ -34,7 +34,6 @@ import { FormTab2018Component } from './projects/add-edit-project/form-tab-2018/
 import { GroupContactComponent } from './project/project-groups/group-contact/group-contact.component';
 import { GroupContactSelectComponent } from './project/project-groups/group-contact/group-contact-select/group-contact-select.component';
 import { LinkOrganizationComponent } from './shared/components/link-organization/link-organization.component';
-import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { MilestonesComponent } from './project/milestones/milestones.component';
 import { NotAuthorizedComponent } from './not-authorized/not-authorized.component';
@@ -66,7 +65,6 @@ import { AuthGuard } from './services/auth-guard.service';
 
 export const routes: Routes = [
   // Authentication & Authorization
-  { path: 'login', component: LoginComponent },
   { path: 'not-authorized', component: NotAuthorizedComponent },
 
   // Activity

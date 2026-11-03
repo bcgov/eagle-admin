@@ -10,7 +10,6 @@ export class KeycloakService {
   private configService = inject(ConfigService);
   private logger = inject(LoggingService);
 
-  public LAST_IDP_AUTHENTICATED = 'kc-last-idp-authenticated';
   private keycloakAuth: any;
   public keycloakEnabled: boolean;
   private keycloakUrl: string;
@@ -39,16 +38,6 @@ export class KeycloakService {
         };
 
         this.keycloakAuth = new Keycloak(config);
-
-        this.keycloakAuth.onAuthSuccess = () => {
-          const idp = this.getIdpFromToken();
-          if (idp !== '') {
-            localStorage.setItem(
-              this.LAST_IDP_AUTHENTICATED,
-              idp
-            );
-          }
-        };
 
         this.keycloakAuth.onAuthError = () => {
           this.logger.warn('onAuthError', 'Keycloak');
@@ -201,22 +190,14 @@ export class KeycloakService {
    */
   login(idpHint: string) {
     const redirectKey = this.configService.config().REDIRECT_KEY || 'REDIRECT';
-    let redirectUri = localStorage.getItem(redirectKey) || window.location.href;
-    // by default keycloak login will want to redirect back to the login page
-    // redirect to '/dayuse' instead
-    if (redirectUri.endsWith('/login')) {
-      redirectUri = redirectUri.slice(0, redirectUri.lastIndexOf('/'));
-    }
+    const redirectUri = localStorage.getItem(redirectKey) || window.location.href;
     return (
       this.keycloakAuth &&
       this.keycloakAuth.login({ idpHint: idpHint, redirectUri: redirectUri })
     );
   }
 
-  /**
-   * IDIR or BCeID users sent to the BCSC login to re-authenticate means the Keycloak
-   * client mappers idir_userid and bceid_userid are not set up.
-   */
+  /** The IDIR hint when the token carries idir_user_guid, else ''. */
   getIdpFromToken(): string {
     const token = this.getToken();
 
@@ -226,10 +207,10 @@ export class KeycloakService {
 
     const jwt = JwtUtil.decodeToken(token);
 
-    // idir users have an idir_userid property
-    if (jwt.idir_user_guid !== undefined) {
+    if (jwt?.idir_user_guid !== undefined) {
       return this.idpHintEnum.IDIR;
     }
+    return '';
   }
 
   /**
@@ -258,13 +239,9 @@ export class KeycloakService {
   }
 
   getLogoutURL(): string {
-    // https://logon.gov.bc.ca/clp-cgi/logoff.cgi?returl=http://localhost:4200/admin/
-    // https://logontest.gov.bc.ca/clp-cgi/logoff.cgi?returl=http://localhost:4200/admin/
     if (this.keycloakEnabled) {
       return this.keycloakAuth.authServerUrl + '/realms/' + this.keycloakRealm + '/protocol/openid-connect/logout?redirect_uri=' + window.location.origin + '/admin/not-authorized?loggedout=true';
-    } else {
-      // go to the /login page
-      return window.location.origin + '/admin/login';
     }
+    return window.location.origin + '/admin/';
   }
 }

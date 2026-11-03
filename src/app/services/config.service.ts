@@ -8,6 +8,11 @@ import { List } from '../models/demi/list';
 
 // Lists load before sign-in finishes, and DEMI caps anonymous pages at 100 rows.
 const LISTS_PAGE_SIZE = 100;
+// DEMI /config is DEMI's own console config; only these keys are taken from it.
+const KEYCLOAK_KEYS = ['KEYCLOAK_URL', 'KEYCLOAK_REALM'] as const;
+// /config/public is the public site's document; the admin shares only these values with it.
+const SITE_KEYS = ['BANNER_COLOUR', 'EAGLE_ANALYTICS_URL', 'APPINSIGHTS_CONNECTION_STRING'] as const;
+const CONFIG_TIMEOUT_MS = 5000;
 
 interface EnvConfig {
   logLevel?: number;
@@ -32,9 +37,19 @@ declare global {
   interface Window { __env: EnvConfig; }
 }
 
+async function fetchJson(url: string): Promise<any> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(CONFIG_TIMEOUT_MS) });
+  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+  return response.json();
+}
+
+function pick(source: EnvConfig, keys: readonly (keyof EnvConfig)[]): EnvConfig {
+  return Object.fromEntries(keys.filter(key => source[key] != null).map(key => [key, source[key]]));
+}
+
 /**
- * Local dev uses env.js as is; deployed builds (configEndpoint true) merge eagle-api's /api/config
- * over it, keeping env.js KEYCLOAK_CLIENT_ID. The app calls relative /api, never API_LOCATION.
+ * Local dev uses env.js as is; deployed builds (configEndpoint true) merge DEMI config over it.
+ * The app calls relative /api, never API_LOCATION.
  */
 @Injectable({ providedIn: 'root' })
 export class ConfigService {
@@ -73,7 +88,7 @@ export class ConfigService {
     this.logger.debug('env.js values:', 'ConfigService', this._config());
 
     if (this._config().configEndpoint === true) {
-      this.logger.info('Fetching remote configuration from /api/config', 'ConfigService');
+      this.logger.info('Fetching remote configuration from DEMI', 'ConfigService');
       await this.fetchRemoteConfig();
     }
 
@@ -83,20 +98,36 @@ export class ConfigService {
     this.ensureListsLoaded();
   }
 
-  /**
-   * Throws on transport failure or a payload with no Keycloak URL/realm:
-   * booting on stale env.js defaults would point staff at the wrong identity provider.
-   */
   private async fetchRemoteConfig(): Promise<void> {
-    const response = await fetch('/api/config', { signal: AbortSignal.timeout(5000) });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const apiConfig: EnvConfig = await response.json();
-    if (!apiConfig.KEYCLOAK_URL || !apiConfig.KEYCLOAK_REALM) {
-      throw new Error('ConfigService: /api/config returned no KEYCLOAK_URL/REALM');
+    const base = this.getDemiApiPath();
+    const [site, keycloak] = await Promise.all([
+      this.fetchSiteConfig(`${base}/config/public`),
+      this.fetchKeycloakConfig(`${base}/config`)
+    ]);
+    this._config.set({ ...this._config(), ...site, ...keycloak });
+    this.logger.debug('merged with DEMI config:', 'ConfigService', this._config());
+  }
+
+  /**
+   * Throws on transport failure or an answer with no Keycloak URL/realm, so a misrouted request
+   * cannot boot the admin on env.js's dev Keycloak.
+   */
+  private async fetchKeycloakConfig(url: string): Promise<EnvConfig> {
+    const body: EnvConfig = await fetchJson(url);
+    if (!body.KEYCLOAK_URL || !body.KEYCLOAK_REALM) {
+      throw new Error(`ConfigService: ${url} returned no KEYCLOAK_URL/REALM`);
     }
-    const preservedClientId = this._config().KEYCLOAK_CLIENT_ID;
-    this._config.set({ ...this._config(), ...apiConfig, KEYCLOAK_CLIENT_ID: preservedClientId });
-    this.logger.debug('merged with API config:', 'ConfigService', this._config());
+    return pick(body, KEYCLOAK_KEYS);
+  }
+
+  /** Not fatal: on failure the admin boots on env.js values for the site keys. */
+  private async fetchSiteConfig(url: string): Promise<EnvConfig> {
+    try {
+      return pick(await fetchJson(url), SITE_KEYS);
+    } catch (e) {
+      this.logger.warn(`${url} unavailable, using env.js values`, 'ConfigService', e);
+      return {};
+    }
   }
 
   public ensureListsLoaded(): Promise<void> {

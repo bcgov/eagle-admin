@@ -1,29 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 import { ConfigService } from './config.service';
 import { LoggingService } from './logging.service';
-import { KeycloakService } from './keycloak.service';
-
-interface LocalLoginResponse {
-  _id: string;
-  title: string;
-  created_at: string;
-  startTime: string;
-  endTime: string;
-  state: boolean;
-  accessToken: string;
-}
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
-  private keycloakService = inject(KeycloakService);
   private configService = inject(ConfigService);
   private logger = inject(LoggingService);
-  private token: string;
 
   // Config getters
   get env(): string {
@@ -53,9 +39,6 @@ export class ApiService {
       } else {
         message = `${error.status} - ${error.statusText || 'Server error'}`;
       }
-      if (error.status === 403 && !this.keycloakService.keycloakEnabled) {
-        window.location.href = '/admin/login';
-      }
     } else {
       message = (error as Error).message || 'Unknown error';
     }
@@ -79,25 +62,4 @@ export class ApiService {
   delete<T>(path: string, options?: any): Observable<T> {
     return this.http.delete<T>(`${this.pathAPI}/${path}`, options || {}) as Observable<T>;
   }
-
-  login(username: string, password: string): Observable<boolean> {
-    return this.http.post<LocalLoginResponse>(`${this.pathAPI}/login/token`, { username, password })
-      .pipe(
-        map(res => {
-          if (res && res.accessToken) {
-            this.token = res.accessToken;
-            window.localStorage.clear();
-            window.localStorage.setItem('currentUser', JSON.stringify({ username, token: this.token }));
-            return true;
-          }
-          return false;
-        })
-      );
-  }
-
-  logout() {
-    this.token = null;
-    window.localStorage.removeItem('currentUser');
-  }
-
 }

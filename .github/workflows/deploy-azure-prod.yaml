@@ -234,7 +234,7 @@ jobs:
             echo "### Azure production deploy of $VERSION failed"
             echo "If the publish step passed, \`\$web/admin/\` on $STORAGE_ACCOUNT already holds the new build and may be live."
             echo "Check $SITE_URL/admin/, then re-run this workflow with the previous good tag to roll back."
-            echo "Smoke failures on the deep link, \`/admin/nope.js\` or \`/api/config\` point at the Front Door rules, not the upload."
+            echo "Smoke failures on the deep link, \`/admin/nope.js\`, \`/demi/api/config\` or \`/demi/api/config/public\` point at the Front Door rules, not the upload."
           } >> "$GITHUB_STEP_SUMMARY"
 
   # Kept apart so contents: write never shares a job with the deploy credentials.

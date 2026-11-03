@@ -4,7 +4,6 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ConfigService } from './config.service';
-import { KeycloakService } from './keycloak.service';
 
 describe('api', () => {
   let mockConfigService: any;
@@ -27,8 +26,7 @@ describe('api', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         ApiService,
-        { provide: ConfigService, useValue: mockConfigService },
-        KeycloakService
+        { provide: ConfigService, useValue: mockConfigService }
       ]
     }).compileComponents();
   });
