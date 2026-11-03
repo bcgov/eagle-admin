@@ -8,7 +8,6 @@ import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
-import { Org } from '../models/org';
 import { Organization } from '../models/demi/organization';
 
 const NATIVE_ORG: Organization = {
@@ -100,46 +99,36 @@ describe('OrgService', () => {
   });
 
   describe('writes', () => {
-    it('sends an Eagle-shaped body unchanged on save', () => {
-      const legacy = new Org({ _id: 'abc123', name: 'Acme', companyType: 'Ministry' });
-
-      service.save(legacy).subscribe();
-
-      const req = http.expectOne('/api/organization/abc123');
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toBe(legacy);
-      req.flush({});
-    });
-
-    it('converts a native row to Eagle field names on save', () => {
+    it('saves to the DEMI row with only the fields DEMI lets a PUT set', () => {
       service.save(NATIVE_ORG).subscribe();
 
-      const req = http.expectOne('/api/organization/58850f68aaecd9001b808530');
-      expect(req.request.body._id).toBe(NATIVE_ORG.id);
+      const req = http.expectOne('/demi/api/organizations/58850f68aaecd9001b808530');
+      expect(req.request.method).toBe('PUT');
       expect(req.request.body.companyLegal).toBe(NATIVE_ORG.companyLegal);
       expect(req.request.body.parentCompany).toBe(NATIVE_ORG.parentCompany);
-      expect('eagleId' in req.request.body).toBeFalse();
-      req.flush({});
+      expect(Object.keys(req.request.body)).not.toContain('id');
+      expect(Object.keys(req.request.body)).not.toContain('isPublished');
+      expect(Object.keys(req.request.body)).not.toContain('website');
+      req.flush(NATIVE_ORG);
     });
 
-    it('converts new native input to an Eagle body with no _id on add', () => {
+    it('creates a published organization, as eagle-api did', () => {
       service.add({ name: 'New Org', companyType: 'Ministry' }).subscribe();
 
-      const req = http.expectOne('/api/organization/');
-      expect(req.request.body._id).toBeNull();
-      expect(req.request.body.companyType).toBe('Ministry');
-      req.flush({});
+      const req = http.expectOne('/demi/api/organizations');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ name: 'New Org', companyType: 'Ministry', isPublished: true });
+      req.flush({ ...NATIVE_ORG, name: 'New Org' });
     });
 
-    it('posts a new Eagle-shaped org unchanged on add', () => {
-      const created = new Org({ name: 'New Org' });
+    it('shows an error and passes DEMI\'s message on when a save is refused', async () => {
+      const saved = firstValueFrom(service.save(NATIVE_ORG));
 
-      service.add(created).subscribe();
+      http.expectOne('/demi/api/organizations/58850f68aaecd9001b808530')
+        .flush({ error: 'Invalid request body.' }, { status: 400, statusText: 'Bad Request' });
 
-      const req = http.expectOne('/api/organization/');
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toBe(created);
-      req.flush({});
+      await expectAsync(saved).toBeRejectedWithError('Invalid request body.');
+      expect(toast.error).toHaveBeenCalledWith('Failed to save organization.');
     });
   });
 });
