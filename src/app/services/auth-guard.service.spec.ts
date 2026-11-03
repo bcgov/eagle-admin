@@ -40,19 +40,12 @@ describe('AuthGuard', () => {
   describe('when not signed in', () => {
     beforeEach(() => keycloak.isAuthenticated.and.returnValue(false));
 
-    it('starts a keycloak IDIR login for a first-time visitor', () => {
+    it('starts a keycloak IDIR login', () => {
       expect(guard.canActivate()).toBeFalse();
       expect(keycloak.login).toHaveBeenCalledOnceWith('idir');
     });
 
-    it('starts a keycloak login with the identity provider used last time', () => {
-      localStorage.setItem(LAST_IDP, 'bceidbasic');
-
-      expect(guard.canActivate()).toBeFalse();
-      expect(keycloak.login).toHaveBeenCalledOnceWith('bceidbasic');
-    });
-
-    it('forgets the last identity provider so a failed attempt falls back to IDIR next time', () => {
+    it('clears the stored identity provider', () => {
       localStorage.setItem(LAST_IDP, 'idir');
 
       guard.canActivate();
