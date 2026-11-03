@@ -135,20 +135,67 @@ describe('ProjectService', () => {
     });
   });
 
+  describe('pin writes', () => {
+    const pinned = () => nativeRow({ pins: [{ _id: 'o1', name: 'Tsawout' }, { _id: 'o2', name: 'Musqueam' }] });
+
+    function answerRead() {
+      http.expectOne(`/demi/api/projects/${EAGLE_ID}`).flush(pinned());
+    }
+
+    it('adds pins by sending the current list plus the new ids to the DEMI id', () => {
+      service.addPins(EAGLE_ID, ['o3']).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({ pins: ['o1', 'o2', 'o3'] });
+      req.flush(pinned());
+    });
+
+    it('removes a pin by sending the current list without it', () => {
+      service.deletePin(EAGLE_ID, 'o1').subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.body).toEqual({ pins: ['o2'] });
+      req.flush(pinned());
+    });
+
+    it('publishes the pin list', () => {
+      service.publishPins(EAGLE_ID).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.body).toEqual({ pinsPublished: true });
+      req.flush(pinned());
+    });
+
+    it('unpublishes the pin list', () => {
+      service.unpublishPins(EAGLE_ID).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.body).toEqual({ pinsPublished: false });
+      req.flush(pinned());
+    });
+
+    it('fails with the message DEMI gives when it refuses the change', async () => {
+      const result = firstValueFrom(service.publishPins(EAGLE_ID));
+      answerRead();
+
+      http.expectOne('/demi/api/projects/7')
+        .flush({ error: 'Organizations not published: o2' }, { status: 409, statusText: 'Conflict' });
+
+      await expectAsync(result).toBeRejectedWithError('Organizations not published: o2');
+    });
+  });
+
   describe('writes', () => {
     it('publishes a legacy project built from a DEMI row under its Eagle id', () => {
       service.publish(toLegacyProject(nativeRow())).subscribe();
 
       const req = http.expectOne(`/api/project/${EAGLE_ID}/publish`);
       expect(req.request.method).toBe('PUT');
-      req.flush({});
-    });
-
-    it('maps a native row to its Eagle id before adding pins', () => {
-      service.addPins(nativeRow(), ['org1']).subscribe();
-
-      const req = http.expectOne(`/api/project/${EAGLE_ID}/pin`);
-      expect(req.request.body).toEqual(['org1']);
       req.flush({});
     });
 

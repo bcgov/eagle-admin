@@ -1,10 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Params, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DemiProject } from 'src/app/models/demi/project';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { PinsListComponent } from './pins-list.component';
 
@@ -92,11 +93,23 @@ describe('PinsListComponent', () => {
     expect(fixture.componentInstance.tableData.extraData.projectId).toBe('eagle-1');
   });
 
-  it('publishes the pins on the Eagle project id', () => {
-    open(row());
-    projectService.publishPins.and.returnValue(of({} as any));
+  it('publishes the pins on the Eagle project id and shows the row DEMI returns', () => {
+    open(row({ pinsPublished: false }));
+    projectService.publishPins.and.returnValue(of(row({ pinsPublished: true })));
     publishButton().click();
+    fixture.detectChanges();
     expect(projectService.publishPins).toHaveBeenCalledWith('eagle-1');
+    expect(publishButton().textContent!.trim()).toBe('Unpublish');
+  });
+
+  it('shows DEMI\'s message when it refuses to publish', () => {
+    open(row({ pinsPublished: false }));
+    const toastError = spyOn(TestBed.inject(ToastService), 'error');
+    projectService.publishPins.and.returnValue(throwError(() => new Error('Organizations not published: o2')));
+    publishButton().click();
+    fixture.detectChanges();
+    expect(toastError).toHaveBeenCalledWith('Organizations not published: o2');
+    expect(publishButton().textContent!.trim()).toBe('Publish');
   });
 
   it('reads the row again after an add or remove changes the URL', () => {

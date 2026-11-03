@@ -227,26 +227,21 @@ export class ProjectService {
     );
   }
 
-  addPins(proj: Project | DemiProject, pins: any): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/pin`, pins));
+  /** Adds organizations to the project's pin list in DEMI. `projId` is the DEMI or Eagle id. */
+  addPins(projId: string, orgIds: string[]): Observable<DemiProject> {
+    return this.writePins(projId, row => ({ pins: [...pinIds(row), ...orgIds] }));
   }
 
-  deletePin(projId: string, pin: string): Observable<Project> {
-    return this.api.delete<Project>(`project/${projId}/pin/${pin}`).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  deletePin(projId: string, orgId: string): Observable<DemiProject> {
+    return this.writePins(projId, row => ({ pins: pinIds(row).filter(id => id !== orgId) }));
   }
 
-  publishPins(projId: string): Observable<Project> {
-    return this.api.put<Project>(`project/${projId}/pin/publish`, {}).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  publishPins(projId: string): Observable<DemiProject> {
+    return this.writePins(projId, () => ({ pinsPublished: true }));
   }
 
-  unpublishPins(projId: string): Observable<Project> {
-    return this.api.put<Project>(`project/${projId}/pin/unpublish`, {}).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  unpublishPins(projId: string): Observable<DemiProject> {
+    return this.writePins(projId, () => ({ pinsPublished: false }));
   }
 
   addGroup(proj: Project | DemiProject, group: any): Observable<Project> {
@@ -273,10 +268,22 @@ export class ProjectService {
     );
   }
 
+  // DEMI's PUT takes the full pin list and only the DEMI id, so the row is read first.
+  // Pins this caller cannot read are missing from the read, and DEMI keeps them.
+  private writePins(projId: string, body: (row: DemiProject) => object): Observable<DemiProject> {
+    return this.getNative(projId).pipe(
+      mergeMap(row => this.demiApi.update<DemiProject>('projects', row.id, body(row)))
+    );
+  }
+
   /** Eagle writes key on the Eagle id: a DEMI row maps to the legacy project first, and one without an Eagle id is read-only. */
   private eagleWrite<T>(proj: Project | DemiProject, send: (legacy: Project) => Observable<T>): Observable<T> {
     const legacy = '_id' in proj ? proj as Project : toLegacyProject(proj as DemiProject);
     const request = legacy._id ? send(legacy) : throwError(() => new Error(READ_ONLY_PROJECT));
     return request.pipe(catchError(error => this.api.handleError(error)));
   }
+}
+
+function pinIds(row: DemiProject): string[] {
+  return (row.pins ?? []).map(pin => pin._id);
 }

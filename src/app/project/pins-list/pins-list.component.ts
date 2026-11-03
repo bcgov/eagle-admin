@@ -127,16 +127,17 @@ export class PinsListComponent implements OnInit {
     if (this.currentProject && this.currentProject._id) {
       this.loading = true;
       const action = publish ? this.projectService.publishPins(this.currentProject._id) : this.projectService.unpublishPins(this.currentProject._id);
-      action.subscribe(res => {
-        this.loading = false;
-        this.cdr.markForCheck();
-        if (res) {
-          this.pinsPublished = publish;
+      action.subscribe({
+        next: (row: DemiProject) => {
+          this.showPins(row);
           const msg = publish ? 'Participating Indigenous Nations Published Successfully!' : 'Participating Indigenous Nations Unpublished Successfully!';
           this.toastService.success(msg);
-        } else {
-          const msg = publish ? 'Error on publishing Participating Indigenous Nations, please try again later' : 'Error on unpublishing Participating Indigenous Nations, please try again later';
-          this.toastService.error(msg);
+        },
+        error: (error: Error) => {
+          this.logger.error('setPinsPublished failed', 'PinsListComponent', error);
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.toastService.error(error.message);
         }
       });
     } else {
@@ -177,14 +178,14 @@ export class PinsListComponent implements OnInit {
       return;
     }
 
-    component.projectService.addPins(component.currentProject, filteredPins)
+    component.projectService.addPins(component.currentProject._id, filteredPins)
     .subscribe({
       next: () => {
         component.router.navigate(['/p', component.currentProject._id, 'project-pins', { ms: Date.now() }]);
       },
-      error: (error) => {
+      error: (error: Error) => {
         component.logger.error('addPins failed', 'PinsListComponent', error);
-        alert('Uh-oh, couldn\'t edit project');
+        component.toastService.error(error.message);
       }
     });
   }
