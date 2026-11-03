@@ -208,10 +208,7 @@ export class KeycloakService {
     );
   }
 
-  /**
-   * IDIR or BCeID users sent to the BCSC login to re-authenticate means the Keycloak
-   * client mappers idir_userid and bceid_userid are not set up.
-   */
+  /** 'idir' when the token carries idir_user_guid, else ''. */
   getIdpFromToken(): string {
     const token = this.getToken();
 
@@ -221,7 +218,6 @@ export class KeycloakService {
 
     const jwt = JwtUtil.decodeToken(token);
 
-    // idir users have an idir_userid property
     if (jwt?.idir_user_guid !== undefined) {
       return this.idpHintEnum.IDIR;
     }
