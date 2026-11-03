@@ -85,7 +85,7 @@ export class DemiApiService {
     if (err instanceof HttpErrorResponse && typeof err.error?.error === 'string') {
       const fields = Object.entries(err.error.fields ?? {}).map(([key, why]) => `${key}: ${why}`);
       err = new HttpErrorResponse({
-        error: { message: [err.error.error, ...fields].join(' ') },
+        error: { message: [err.error.error, fields.join('; ')].filter(Boolean).join(' ') },
         headers: err.headers,
         status: err.status,
         statusText: err.statusText,

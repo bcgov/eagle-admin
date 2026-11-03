@@ -191,11 +191,11 @@ describe('DemiApiService', () => {
     it('names the refused fields from a DEMI 400 in the Error text', async () => {
       const result = firstValueFrom(service.update('projects', '7', { pins: ['o9'] }));
       http.expectOne('/demi/api/projects/7').flush(
-        { error: 'Invalid request body.', fields: { pins: 'unknown organization ids: o9' } },
+        { error: 'Invalid request body.', fields: { pins: 'unknown organization ids: o9', pinsPublished: 'must be a boolean' } },
         { status: 400, statusText: 'Bad Request' }
       );
 
-      await expectAsync(result).toBeRejectedWithError('Invalid request body. pins: unknown organization ids: o9');
+      await expectAsync(result).toBeRejectedWithError('Invalid request body. pins: unknown organization ids: o9; pinsPublished: must be a boolean');
     });
   });
 

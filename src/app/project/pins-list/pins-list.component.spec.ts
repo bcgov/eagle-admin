@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, Params, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, Params, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DemiProject } from 'src/app/models/demi/project';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -26,7 +26,9 @@ describe('PinsListComponent', () => {
     ...overrides
   });
 
-  function open(resolved: DemiProject, urlParams: Params = {}) {
+  const LINKED = { _id: 'eagle-1', demiId: 'demi-7', name: 'Mine' };
+
+  function open(resolved: DemiProject, urlParams: Params = {}, stored: object = LINKED, projId = 'eagle-1') {
     params = new BehaviorSubject(urlParams);
     projectService = jasmine.createSpyObj('ProjectService', ['getNative', 'addPins', 'publishPins', 'unpublishPins', 'deletePin']);
     TestBed.configureTestingModule({
@@ -39,12 +41,12 @@ describe('PinsListComponent', () => {
             params,
             data: of({ contacts: resolved }),
             snapshot: {},
-            parent: { snapshot: { paramMap: convertToParamMap({ projId: 'eagle-1' }) } }
+            parent: { snapshot: { paramMap: convertToParamMap({ projId }) } }
           }
         },
         { provide: ProjectService, useValue: projectService },
         // The project resolver stores the legacy project: `_id` is the Eagle id, `demiId` the DEMI id.
-        { provide: StorageService, useValue: { state: {}, currentProjectData: { _id: 'eagle-1', demiId: 'demi-7', name: 'Mine' } } },
+        { provide: StorageService, useValue: { state: {}, currentProjectData: stored } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'warn', 'error', 'info']) }
       ]
     });
@@ -119,6 +121,15 @@ describe('PinsListComponent', () => {
     component.add([{ _id: 'o9' }], component);
     expect(projectService.addPins).toHaveBeenCalledWith('demi-7', ['o9']);
     expect(toastError).toHaveBeenCalledWith('Organizations not published: o9');
+  });
+
+  it('returns to the route id after adding pins to a project with no Eagle id', () => {
+    open(row({ eagleId: undefined }), {}, { _id: null, demiId: 'demi-7', name: 'Mine' }, 'demi-7');
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    projectService.addPins.and.returnValue(of(row()));
+    const component = fixture.componentInstance;
+    component.add([{ _id: 'o9' }], component);
+    expect(navigate.calls.mostRecent().args[0].slice(0, 3)).toEqual(['/p', 'demi-7', 'project-pins']);
   });
 
   it('reads the row again after an add or remove changes the URL', () => {

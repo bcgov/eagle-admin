@@ -12,13 +12,14 @@ describe('PinsTableRowsComponent', () => {
   let fixture: ComponentFixture<PinsTableRowsComponent>;
   let projectService: jasmine.SpyObj<ProjectService>;
   let toast: jasmine.SpyObj<ToastService>;
+  let modal: jasmine.SpyObj<NgbModal>;
 
   beforeEach(() => {
     projectService = jasmine.createSpyObj('ProjectService', ['deletePin']);
     projectService.deletePin.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error']);
-    const modal = jasmine.createSpyObj('NgbModal', ['open']);
-    modal.open.and.returnValue({ componentInstance: {}, result: Promise.resolve(true) });
+    modal = jasmine.createSpyObj('NgbModal', ['open']);
+    modal.open.and.returnValue({ componentInstance: {}, result: Promise.resolve(true) } as any);
     TestBed.configureTestingModule({
       imports: [PinsTableRowsComponent],
       providers: [
@@ -44,6 +45,14 @@ describe('PinsTableRowsComponent', () => {
     clickRemove();
     await fixture.whenStable();
     expect(projectService.deletePin).toHaveBeenCalledWith('demi-7', 'org-1');
+  });
+
+  it('does nothing when the confirm dialog is dismissed', async () => {
+    modal.open.and.returnValue({ componentInstance: {}, result: Promise.reject(1) } as any);
+    clickRemove();
+    await fixture.whenStable();
+    expect(projectService.deletePin).not.toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
   it('shows DEMI\'s message when the removal is refused', async () => {
