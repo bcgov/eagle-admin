@@ -114,8 +114,6 @@ keycloak_url() {
 stamp() {
   local env_name line key
   env_name=$(target_env "${1:-}")
-  # Turn on the DEMI config fetch; Keycloak and site values come from it at boot.
-  sed -i 's/window.__env.configEndpoint = false/window.__env.configEndpoint = true/' src/env.js
   while IFS= read -r line; do
     key=${line#window.__env.}
     key=${key%% = *}
