@@ -80,13 +80,22 @@ export_env() {
   if [ -n "${GITHUB_ENV:-}" ]; then echo "$1=$2" >> "$GITHUB_ENV"; fi
 }
 
+# EPIC.centre API base for the "last accessed" record; DEMI config does not carry it. Empty sends nothing.
+centre_api_url() {
+  case "$1" in
+    test) echo 'https://centre-api-c8b80a-test.apps.gold.devops.gov.bc.ca' ;;
+    prod) echo '' ;;
+  esac
+}
+
 stamp() {
   local env_name
   env_name=$(target_env "${1:-}")
-  # Turn on /api/config; other values come from it at boot, except ENVIRONMENT below.
+  # Turn on the DEMI config fetch; Keycloak and site values come from it at boot.
   sed -i 's/window.__env.configEndpoint = false/window.__env.configEndpoint = true/' src/env.js
-  # Read before /api/config answers, so the baked value must not say 'dev'.
+  # Read before DEMI config answers, so the baked value must not say 'dev'.
   sed -i "s/window.__env.ENVIRONMENT = '[a-z]*';/window.__env.ENVIRONMENT = '$env_name';/" src/env.js
+  sed -i "s|window.__env.CENTRE_API_URL = '[^']*';|window.__env.CENTRE_API_URL = '$(centre_api_url "$env_name")';|" src/env.js
   grep -n 'window.__env' src/env.js
 }
 
@@ -98,6 +107,7 @@ verify() {
   for expected in \
     "window.__env.configEndpoint = true;" \
     "window.__env.ENVIRONMENT = '$env_name';" \
+    "window.__env.CENTRE_API_URL = '$(centre_api_url "$env_name")';" \
     "window.__env.KEYCLOAK_CLIENT_ID = 'eagle-admin-console';"; do
     grep -qF "$expected" "$DIST/env.js" || die "$DIST/env.js does not hold: $expected"
   done
@@ -230,6 +240,8 @@ smoke() {
     echo "$1 -> $code ${ctype:-no content-type}, cache-control: $(header cache-control)"
   }
   body_has() { grep -qF "$1" "$tmp/body"; }
+  # Null counts as missing: the app skips null values.
+  json_has() { local key; for key in "$@"; do jq -e --arg k "$key" '.[$k] != null' "$tmp/body" >/dev/null 2>&1 || return 1; done; }
   # Weak and strong forms of the same tag compare equal; the edge may add W/ when it compresses.
   bare_etag() { echo "$1" | sed -e 's|^W/||' -e 's|"||g'; }
 
@@ -253,6 +265,7 @@ smoke() {
   header cache-control | grep -qi 'no-store' || fail "/admin/env.js is cacheable"
   body_has 'window.__env.configEndpoint = true;' || fail "/admin/env.js does not set configEndpoint = true"
   body_has "window.__env.ENVIRONMENT = '$env_name';" || fail "/admin/env.js is not the $env_name build"
+  body_has "window.__env.CENTRE_API_URL = '$(centre_api_url "$env_name")';" || fail "/admin/env.js lost the $env_name CENTRE_API_URL"
   body_has "window.__env.KEYCLOAK_CLIENT_ID = 'eagle-admin-console';" || fail "/admin/env.js lost KEYCLOAK_CLIENT_ID eagle-admin-console"
   if [ -n "${ENV_ETAG:-}" ] && [ "$(bare_etag "$(header etag)")" != "$(bare_etag "$ENV_ETAG")" ]; then
     fail "/admin/env.js ETag '$(header etag)' is not the blob just uploaded ('$ENV_ETAG'): $site is not serving this storage account"
@@ -276,9 +289,13 @@ smoke() {
     fail "/admin/api/config returned index.html with 200"
   fi
 
-  fetch /api/config
-  { [ "$code" = 200 ] && [[ "$ctype" == application/json* ]]; } \
-    || fail "/api/config returned $code '$ctype', expected 200 JSON: the app cannot boot without it"
+  fetch /demi/api/config
+  { [ "$code" = 200 ] && [[ "$ctype" == application/json* ]] && json_has KEYCLOAK_URL KEYCLOAK_REALM; } \
+    || fail "/demi/api/config returned $code '$ctype' without KEYCLOAK_URL and KEYCLOAK_REALM: the app cannot boot without it"
+
+  fetch /demi/api/config/public
+  { [ "$code" = 200 ] && [[ "$ctype" == application/json* ]] && json_has BANNER_COLOUR EAGLE_ANALYTICS_URL APPINSIGHTS_CONNECTION_STRING; } \
+    || fail "/demi/api/config/public returned $code '$ctype' without BANNER_COLOUR, EAGLE_ANALYTICS_URL and APPINSIGHTS_CONNECTION_STRING: banner, analytics and telemetry fall back to env.js"
 
   [ "$failures" -eq 0 ] || die "$failures smoke check(s) failed against $site"
   echo "smoke ok: $site/admin/ serves $MAIN_BUNDLE"

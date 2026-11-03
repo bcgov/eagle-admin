@@ -185,6 +185,6 @@ jobs:
           {
             echo "### Azure test deploy of $VERSION failed"
             echo "If the publish step passed, \`\$web/admin/\` on $STORAGE_ACCOUNT already holds the new build."
-            echo "Smoke failures on the deep link, \`/admin/nope.js\` or \`/api/config\` point at the Front Door rules, not the upload."
+            echo "Smoke failures on the deep link, \`/admin/nope.js\`, \`/demi/api/config\` or \`/demi/api/config/public\` point at the Front Door rules, not the upload."
             echo "To roll back, re-run this workflow with the previous good tag."
           } >> "$GITHUB_STEP_SUMMARY"
