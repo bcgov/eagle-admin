@@ -62,9 +62,24 @@ yarn start
 
 The dev server runs on port 4200. Open <http://localhost:4200/admin/>.
 
-The local app runs against the test environment. The dev server proxies `/api` to eagle-api test and `/demi/api` to DEMI test.
+The local app runs against the test environment by default. The dev server proxies `/api` to eagle-api test and `/demi/api` to DEMI test.
 
 You sign in with the test Keycloak (`eao-epic` realm). Your account needs the `sysadmin` realm role, or the app sends you to `/admin/not-authorized`.
+
+### Point the Dev Server Elsewhere
+
+Copy `.env.example` to `.env.local`, edit it, and restart `yarn start`. Use `yarn start`, not bare `ng serve`: it writes the `env.js` the dev server serves.
+
+| Variable | What it sets | Default |
+|---|---|---|
+| `KEYCLOAK_URL` | Keycloak base URL, `/auth` included | `https://test.loginproxy.gov.bc.ca/auth` |
+| `KEYCLOAK_REALM` | Keycloak realm | `eao-epic` |
+| `EAGLE_API_TARGET` | Where `/api` and `/analytics` go | `API_LOCATION` in `src/env.js` (eagle-api test) |
+| `DEMI_API_TARGET` | Where `/demi/api` goes | `https://demi-apim-test.azure-api.net` |
+
+A variable set in your shell wins over `.env.local`. Change the Keycloak and API lines together, so they name the same environment.
+
+Sign-in needs a `http://localhost:4200/*` redirect on the `eagle-admin-console` client in the realm you choose. Under `yarn start` the app keeps these Keycloak values and does not read them from DEMI `/config`.
 
 ### Build the Project
 

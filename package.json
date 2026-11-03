@@ -10,7 +10,7 @@
   },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node scripts/local-env.js && ng serve",
     "build": "ng build --configuration=production",
     "test": "ng test --watch=true",
     "test-ci": "ng test --watch=false",

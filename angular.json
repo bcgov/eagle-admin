@@ -95,7 +95,11 @@
               "assets": [
                 "src/favicon.ico",
                 "src/assets",
-                "src/env.js",
+                {
+                  "glob": "env.js",
+                  "input": "tmp/local-env",
+                  "output": "/"
+                },
                 {
                   "glob": "**/*",
                   "input": "./node_modules/tinymce/plugins/",
