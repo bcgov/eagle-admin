@@ -83,6 +83,7 @@ describe('ConfigService', () => {
   });
 
   it('takes Keycloak from DEMI /config and site values from /config/public, nothing from eagle-api', async () => {
+    spyOn<any>(service, 'devMode').and.returnValue(false);
     window.__env = { ...deployedEnv, BANNER_COLOUR: 'blue', KEYCLOAK_ENABLED: true, API_PATH: '/api' };
     const fetchSpy = stubFetch(
       fakeResponse(true, { ...keycloakConfig, KEYCLOAK_CLIENT_ID: 'demi-admin', KEYCLOAK_ENABLED: false, BANNER_COLOUR: 'blue' }),
@@ -104,6 +105,19 @@ describe('ConfigService', () => {
       APPINSIGHTS_CONNECTION_STRING: 'InstrumentationKey=test'
     }));
     expect(fetchSpy.calls.allArgs().map(args => args[0]).sort()).toEqual(['/demi/api/config', '/demi/api/config/public']);
+  });
+
+  it('keeps env.js telemetry values under ng serve, so local sessions send nothing to test', async () => {
+    window.__env = { ...deployedEnv, BANNER_COLOUR: 'blue', EAGLE_ANALYTICS_URL: '', APPINSIGHTS_CONNECTION_STRING: '' };
+    stubFetch(
+      fakeResponse(true, keycloakConfig),
+      fakeResponse(true, { BANNER_COLOUR: 'orange', EAGLE_ANALYTICS_URL: '/api/usage', APPINSIGHTS_CONNECTION_STRING: 'InstrumentationKey=test' })
+    );
+
+    await service.init();
+    expect(service.config().BANNER_COLOUR).toBe('orange');
+    expect(service.config().EAGLE_ANALYTICS_URL).toBe('');
+    expect(service.config().APPINSIGHTS_CONNECTION_STRING).toBe('');
   });
 
   it('boots on env.js site values when DEMI /config/public is unavailable', async () => {

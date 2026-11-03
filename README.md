@@ -29,43 +29,42 @@ These projects comprise EAO EPIC:
 
 ## Pre-requisites
 
-Before setting up the project, ensure you have **Node.js 24** installed. We recommend using [nvm](https://github.com/nvm-sh/nvm) (Node Version Manager) for easy Node.js version management.
-
-To install nvm and Node.js 24 on Debian-based systems:
+You need Node.js 24.15 or later in the 24 line. The Angular CLI does not start on older 24.x releases. `.nvmrc` pins the version, so you can install it with [nvm](https://github.com/nvm-sh/nvm):
 
 ```bash
 # Install nvm if you don't have it
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
-# Load nvm (you may need to restart your terminal or run these commands)
+# Load nvm (or open a new terminal)
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
-# Install and use Node.js 24
-nvm install 24
-nvm use 24
-
-# Verify Node.js version
-node -v  # Should output v24.x.x
+# Install and use the pinned Node.js version
+nvm install
+nvm use
+node -v  # v24.15.0
 ```
 
-Once Node.js 24 is active, install project dependencies using Yarn:
+The project uses Yarn 4, which ships with Node through corepack. Turn corepack on once, then install dependencies:
 
 ```bash
+corepack enable
 yarn install
 ```
 
 ## Build, Lint, Test, and Run
-
-After installing Node.js 24 and project dependencies, you can use the following commands to work with the project:
 
 ### Start the Development Server
 
 ```bash
 yarn start
 ```
-This will start the Angular development server on port 4200. Visit [http://localhost:4200](http://localhost:4200) to view the application.
+
+The dev server runs on port 4200. Open <http://localhost:4200/admin/>.
+
+The local app runs against the test environment. The dev server proxies `/api` to eagle-api test and `/demi/api` to DEMI test.
+
+You sign in with the test Keycloak (`eao-epic` realm). Your account needs the `sysadmin` realm role, or the app sends you to `/admin/not-authorized`.
 
 ### Build the Project
 
@@ -88,10 +87,16 @@ yarn test
 ```
 This will run the unit tests in watch mode using Karma and Jasmine.
 
-To run tests once in a CI environment (headless):
+To run tests once in headless Chrome:
 
 ```bash
 yarn test-ci
+```
+
+Karma needs `CHROME_BIN` to find a Chrome or Chromium binary. Set it first if Karma cannot find a browser:
+
+```bash
+export CHROME_BIN=$(command -v chromium || command -v google-chrome)
 ```
 
 ## CI/CD Pipeline
