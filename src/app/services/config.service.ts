@@ -1,4 +1,4 @@
-import { Injectable, Injector, inject, signal, computed } from '@angular/core';
+import { Injectable, Injector, inject, signal, computed, isDevMode } from '@angular/core';
 import { ReplaySubject, firstValueFrom, forkJoin } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LoggingService } from './logging.service';
@@ -11,7 +11,8 @@ const LISTS_PAGE_SIZE = 100;
 // DEMI /config is DEMI's own console config; only these keys are taken from it.
 const KEYCLOAK_KEYS = ['KEYCLOAK_URL', 'KEYCLOAK_REALM'] as const;
 // /config/public is the public site's document; the admin shares only these values with it.
-const SITE_KEYS = ['BANNER_COLOUR', 'EAGLE_ANALYTICS_URL', 'APPINSIGHTS_CONNECTION_STRING'] as const;
+const TELEMETRY_KEYS = ['EAGLE_ANALYTICS_URL', 'APPINSIGHTS_CONNECTION_STRING'] as const;
+const SITE_KEYS = ['BANNER_COLOUR', ...TELEMETRY_KEYS] as const;
 const CONFIG_TIMEOUT_MS = 5000;
 
 interface EnvConfig {
@@ -123,11 +124,20 @@ export class ConfigService {
   /** Not fatal: on failure the admin boots on env.js values for the site keys. */
   private async fetchSiteConfig(url: string): Promise<EnvConfig> {
     try {
-      return pick(await fetchJson(url), SITE_KEYS);
+      const site = pick(await fetchJson(url), SITE_KEYS);
+      // ng serve proxies to test: its analytics URL 404s through the proxy and
+      // App Insights would count local sessions as test traffic.
+      if (this.devMode()) TELEMETRY_KEYS.forEach(key => delete site[key]);
+      return site;
     } catch (e) {
       this.logger.warn(`${url} unavailable, using env.js values`, 'ConfigService', e);
       return {};
     }
+  }
+
+  /** Seam for specs, which always run in dev mode. */
+  private devMode(): boolean {
+    return isDevMode();
   }
 
   public ensureListsLoaded(): Promise<void> {

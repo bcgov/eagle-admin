@@ -27,10 +27,12 @@
   window.__env.KEYCLOAK_ENABLED = true;
   window.__env.REDIRECT_KEY = 'REDIRECT';
 
-  // Application Insights — empty disables browser telemetry (deployed value comes from DEMI /config/public)
+  // Application Insights; empty disables browser telemetry. Deployed builds take
+  // DEMI /config/public's value; ng serve keeps this one.
   window.__env.APPINSIGHTS_CONNECTION_STRING = '';
 
-  // eagle-analytics ingest base — relative on deployed envs; empty keeps the client off
+  // eagle-analytics ingest base; empty keeps the client off. Deployed builds take
+  // DEMI /config/public's value; ng serve keeps this one.
   window.__env.EAGLE_ANALYTICS_URL = '';
 
   // EPIC.centre API base for the "last accessed" record; empty sends nothing
