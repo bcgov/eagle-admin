@@ -104,11 +104,17 @@ describe('OrgService', () => {
 
       const req = http.expectOne('/demi/api/organizations/58850f68aaecd9001b808530');
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body.companyLegal).toBe(NATIVE_ORG.companyLegal);
-      expect(req.request.body.parentCompany).toBe(NATIVE_ORG.parentCompany);
-      expect(Object.keys(req.request.body)).not.toContain('id');
-      expect(Object.keys(req.request.body)).not.toContain('isPublished');
-      expect(Object.keys(req.request.body)).not.toContain('website');
+      expect(req.request.body).toEqual({
+        name: NATIVE_ORG.name,
+        companyType: NATIVE_ORG.companyType,
+        province: NATIVE_ORG.province,
+        country: NATIVE_ORG.country,
+        address1: NATIVE_ORG.address1,
+        city: NATIVE_ORG.city,
+        postal: NATIVE_ORG.postal,
+        companyLegal: NATIVE_ORG.companyLegal,
+        parentCompany: NATIVE_ORG.parentCompany
+      });
       req.flush(NATIVE_ORG);
     });
 
@@ -121,14 +127,16 @@ describe('OrgService', () => {
       req.flush({ ...NATIVE_ORG, name: 'New Org' });
     });
 
-    it('shows an error and passes DEMI\'s message on when a save is refused', async () => {
-      const saved = firstValueFrom(service.save(NATIVE_ORG));
+    it('shows DEMI\'s message and yields nothing when a save is refused', async () => {
+      const saved = firstValueFrom(service.save(NATIVE_ORG), { defaultValue: null });
 
       http.expectOne('/demi/api/organizations/58850f68aaecd9001b808530')
-        .flush({ error: 'Invalid request body.' }, { status: 400, statusText: 'Bad Request' });
+        .flush({ error: 'Invalid request body.', fields: { website: 'is not a writable field' } },
+          { status: 400, statusText: 'Bad Request' });
 
-      await expectAsync(saved).toBeRejectedWithError('Invalid request body.');
-      expect(toast.error).toHaveBeenCalledWith('Failed to save organization.');
+      expect(await saved).toBeNull();
+      expect(toast.error).toHaveBeenCalledWith(
+        'Failed to save organization. Invalid request body. website: is not a writable field');
     });
   });
 });

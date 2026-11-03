@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { ConfigService } from './config.service';
+import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ProjectService, READ_ONLY_PROJECT } from './project.service';
@@ -179,14 +180,35 @@ describe('ProjectService', () => {
       req.flush(pinned());
     });
 
-    it('fails with the message DEMI gives when it refuses the change', async () => {
-      const result = firstValueFrom(service.publishPins(EAGLE_ID));
-      answerRead();
+    describe('with the HTTP cache', () => {
+      beforeEach(() => {
+        HttpCacheService.clear();
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideHttpClient(withInterceptors([httpCacheInterceptor])),
+            provideHttpClientTesting(),
+            { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
+            { provide: KeycloakService, useValue: { keycloakEnabled: true } },
+            { provide: ToastService, useValue: toast },
+            { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) }
+          ]
+        });
+        service = TestBed.inject(ProjectService);
+        http = TestBed.inject(HttpTestingController);
+      });
 
-      http.expectOne('/demi/api/projects/7')
-        .flush({ error: 'Organizations not published: o2' }, { status: 409, statusText: 'Conflict' });
+      afterEach(() => HttpCacheService.clear());
 
-      await expectAsync(result).toBeRejectedWithError('Organizations not published: o2');
+      it('builds the write on a fresh read, not the cached one', () => {
+        service.getNative(EAGLE_ID).subscribe();
+        http.expectOne(`/demi/api/projects/${EAGLE_ID}`).flush(nativeRow({ pins: [{ _id: 'o1', name: 'Tsawout' }] }));
+
+        service.addPins(EAGLE_ID, ['o3']).subscribe();
+        answerRead();
+
+        expect(http.expectOne('/demi/api/projects/7').request.body).toEqual({ pins: ['o1', 'o2', 'o3'] });
+      });
     });
   });
 

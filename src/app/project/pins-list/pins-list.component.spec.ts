@@ -28,7 +28,7 @@ describe('PinsListComponent', () => {
 
   function open(resolved: DemiProject, urlParams: Params = {}) {
     params = new BehaviorSubject(urlParams);
-    projectService = jasmine.createSpyObj('ProjectService', ['getNative', 'publishPins', 'unpublishPins', 'deletePin']);
+    projectService = jasmine.createSpyObj('ProjectService', ['getNative', 'addPins', 'publishPins', 'unpublishPins', 'deletePin']);
     TestBed.configureTestingModule({
       imports: [PinsListComponent],
       providers: [
@@ -88,17 +88,17 @@ describe('PinsListComponent', () => {
     expect(publishButton().textContent!.trim()).toBe('Publish');
   });
 
-  it('hands the Eagle project id to the rows, which unpin with it', () => {
+  it('hands the rows the Eagle id for links and the DEMI id for unpinning', () => {
     open(row());
-    expect(fixture.componentInstance.tableData.extraData.projectId).toBe('eagle-1');
+    expect(fixture.componentInstance.tableData.extraData).toEqual({ projectId: 'eagle-1', pinsProjectId: 'demi-7' });
   });
 
-  it('publishes the pins on the Eagle project id and shows the row DEMI returns', () => {
+  it('publishes the pins on the DEMI project id and shows the row DEMI returns', () => {
     open(row({ pinsPublished: false }));
     projectService.publishPins.and.returnValue(of(row({ pinsPublished: true })));
     publishButton().click();
     fixture.detectChanges();
-    expect(projectService.publishPins).toHaveBeenCalledWith('eagle-1');
+    expect(projectService.publishPins).toHaveBeenCalledWith('demi-7');
     expect(publishButton().textContent!.trim()).toBe('Unpublish');
   });
 
@@ -109,7 +109,16 @@ describe('PinsListComponent', () => {
     publishButton().click();
     fixture.detectChanges();
     expect(toastError).toHaveBeenCalledWith('Organizations not published: o2');
-    expect(publishButton().textContent!.trim()).toBe('Publish');
+  });
+
+  it('shows DEMI\'s message when it refuses to add pins', () => {
+    open(row());
+    const toastError = spyOn(TestBed.inject(ToastService), 'error');
+    projectService.addPins.and.returnValue(throwError(() => new Error('Organizations not published: o9')));
+    const component = fixture.componentInstance;
+    component.add([{ _id: 'o9' }], component);
+    expect(projectService.addPins).toHaveBeenCalledWith('demi-7', ['o9']);
+    expect(toastError).toHaveBeenCalledWith('Organizations not published: o9');
   });
 
   it('reads the row again after an add or remove changes the URL', () => {

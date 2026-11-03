@@ -233,7 +233,6 @@ export class AddEditOrganizationComponent implements OnInit {
       return;
     }
 
-    // Form controls carry the native field names; OrgService maps the body to the eagle-api shape.
     const org: Partial<Organization> = {
       ...this.orgForm.getRawValue(),
       parentCompany: this.orgForm.controls.parentCompany.value || null

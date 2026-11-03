@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { DemiApiService } from './demi-api.service';
-import { Observable, of, throwError } from 'rxjs';
+import { EMPTY, Observable, of } from 'rxjs';
 import { Org } from '../models/org';
 import { Organization } from '../models/demi/organization';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
@@ -13,7 +13,8 @@ import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 /** Loading-state key for {@link OrgService.listOrganizations}. */
 export const ORG_LIST_LOADING = 'orgs-list';
 
-/** Fields DEMI's organization POST and PUT accept; anything else in the body is a 400. */
+// DEMI's organization POST and PUT take only these; any other key is a 400 except
+// `read` and `isPublished`, which PUT drops.
 const WRITABLE_FIELDS = [
   'name', 'description', 'country', 'postal', 'province', 'city', 'address1', 'address2',
   'companyType', 'companyLegal', 'company', 'parentCompany'
@@ -23,12 +24,9 @@ function writeBody(org: Partial<Organization>): Partial<Organization> {
   return Object.fromEntries(WRITABLE_FIELDS.filter(key => key in org).map(key => [key, org[key]]));
 }
 
-/** Eagle-shaped organization. A body with `_id` goes unchanged; native input (`id`, or no id) is converted. */
-export function toEagleOrg(body: Org | Partial<Organization>): Org {
-  if ('_id' in body) {
-    return body as Org;
-  }
-  return new Org({ ...body, _id: body.id ?? null });
+/** The legacy `Org` a DEMI organization row maps to. */
+export function toEagleOrg(row: Partial<Organization>): Org {
+  return new Org({ ...row, _id: row.id ?? null });
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,26 +36,27 @@ export class OrgService {
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
-  /** Writes `org` to the DEMI row `org.id`. Visibility is not set here: DEMI moves it only by publish. */
+  /**
+   * Writes `org` to the DEMI row `org.id`; publish state is not set here.
+   * A refused save shows DEMI's message and completes with no value, so the form stays open.
+   */
   save(org: Partial<Organization>): Observable<Organization> {
     return this.demiApi.update<Organization>('organizations', org.id, writeBody(org)).pipe(
-      catchError(error => {
-        this.logger.error('Failed to save org', 'OrgService', error);
-        this.toast.error('Failed to save organization.');
-        return throwError(() => error);
-      })
+      catchError(error => this.writeFailed('save', error))
     );
   }
 
-  /** eagle-api published every new organization; DEMI defaults to unpublished, so this asks for published. */
+  /** Creates a published organization; DEMI's default is unpublished. Fails as `save` does. */
   add(org: Partial<Organization>): Observable<Organization> {
     return this.demiApi.create<Organization>('organizations', { ...writeBody(org), isPublished: true }).pipe(
-      catchError(error => {
-        this.logger.error('Failed to add org', 'OrgService', error);
-        this.toast.error('Failed to add organization.');
-        return throwError(() => error);
-      })
+      catchError(error => this.writeFailed('add', error))
     );
+  }
+
+  private writeFailed(action: 'save' | 'add', error: Error): Observable<never> {
+    this.logger.error(`Failed to ${action} org`, 'OrgService', error);
+    this.toast.error(`Failed to ${action} organization. ${error.message}`);
+    return EMPTY;
   }
 
   /**

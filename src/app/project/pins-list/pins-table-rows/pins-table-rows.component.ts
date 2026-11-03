@@ -9,6 +9,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
 import { TableComponent } from 'src/app/shared/components/table-template/table.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 
 @Component({
@@ -23,6 +24,7 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
   private modalService = inject(NgbModal);
   private projectService = inject(ProjectService);
   private logger = inject(LoggingService);
+  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
   data = input.required<TableObject>();
@@ -36,11 +38,13 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
   public columns: TableColumn[];
   public useSmallTable: boolean;
   public projectId: string;
+  private pinsProjectId: string;
 
   async ngOnInit() {
     this.contacts = this.data().data;
     this.paginationData = this.data().paginationData;
     this.projectId = this.data().extraData.projectId;
+    this.pinsProjectId = this.data().extraData.pinsProjectId;
     this.columns = this.columnData();
     this.useSmallTable = this.smallTable();
   }
@@ -56,21 +60,20 @@ export class PinsTableRowsComponent implements OnInit, TableComponent {
     modalRef.componentInstance.message = 'Click <strong>OK</strong> to delete this Participating Indigenous Nation or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
-    from(modalRef.result).pipe(
+    // A dismissed modal rejects its result: that is a cancel, not a failure.
+    from(modalRef.result.catch(() => false)).pipe(
       switchMap((isConfirmed: boolean) => {
         if (!isConfirmed) { return EMPTY; }
-        return this.projectService.deletePin(this.projectId, pin._id);
+        return this.projectService.deletePin(this.pinsProjectId, pin._id);
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
         this.router.navigate(['/p', this.projectId, 'project-pins', { ms: Date.now() }]);
       },
-      error: (error) => {
-        // Modal dismissed (undefined) vs actual delete failure
-        if (error !== undefined) {
-          this.logger.error('delete pin failed', 'PinsTableRowsComponent', error);
-        }
+      error: (error: Error) => {
+        this.logger.error('delete pin failed', 'PinsTableRowsComponent', error);
+        this.toast.error(error.message);
       }
     });
   }

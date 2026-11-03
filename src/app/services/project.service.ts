@@ -268,10 +268,10 @@ export class ProjectService {
     );
   }
 
-  // DEMI's PUT takes the full pin list and only the DEMI id, so the row is read first.
+  // DEMI's PUT takes the full pin list and only the DEMI id, so the row is read first, uncached.
   // Pins this caller cannot read are missing from the read, and DEMI keeps them.
   private writePins(projId: string, body: (row: DemiProject) => object): Observable<DemiProject> {
-    return this.getNative(projId).pipe(
+    return this.demiApi.get<DemiProject>('projects', projId, { fresh: true }).pipe(
       mergeMap(row => this.demiApi.update<DemiProject>('projects', row.id, body(row)))
     );
   }

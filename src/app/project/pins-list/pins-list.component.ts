@@ -110,6 +110,11 @@ export class PinsListComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res: any) => this.showPins(res?.contacts));
   }
+  /** Pin writes take the DEMI id, so a project with no Eagle id can be pinned too. */
+  get pinsProjectId(): string | null {
+    return this.currentProject?.demiId ?? this.currentProject?._id ?? null;
+  }
+
   isEnabled() {
     return this.selectedCount > 0;
   }
@@ -124,9 +129,9 @@ export class PinsListComponent implements OnInit {
     this.cdr.markForCheck();
   }
   setPinsPublished(publish: boolean) {
-    if (this.currentProject && this.currentProject._id) {
+    if (this.pinsProjectId) {
       this.loading = true;
-      const action = publish ? this.projectService.publishPins(this.currentProject._id) : this.projectService.unpublishPins(this.currentProject._id);
+      const action = publish ? this.projectService.publishPins(this.pinsProjectId) : this.projectService.unpublishPins(this.pinsProjectId);
       action.subscribe({
         next: (row: DemiProject) => {
           this.showPins(row);
@@ -152,8 +157,8 @@ export class PinsListComponent implements OnInit {
         this.tableParams
       );
 
-      if (this.currentProject && this.currentProject._id) {
-        this.tableData.extraData = { projectId: this.currentProject._id };
+      if (this.currentProject) {
+        this.tableData.extraData = { projectId: this.currentProject._id, pinsProjectId: this.pinsProjectId };
       }
     }
   }
@@ -178,7 +183,7 @@ export class PinsListComponent implements OnInit {
       return;
     }
 
-    component.projectService.addPins(component.currentProject._id, filteredPins)
+    component.projectService.addPins(component.pinsProjectId, filteredPins)
     .subscribe({
       next: () => {
         component.router.navigate(['/p', component.currentProject._id, 'project-pins', { ms: Date.now() }]);
