@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
 import { ConfigService } from './config.service';
+import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ProjectService, READ_ONLY_PROJECT } from './project.service';
@@ -135,20 +136,88 @@ describe('ProjectService', () => {
     });
   });
 
+  describe('pin writes', () => {
+    const pinned = () => nativeRow({ pins: [{ _id: 'o1', name: 'Tsawout' }, { _id: 'o2', name: 'Musqueam' }] });
+
+    function answerRead() {
+      http.expectOne(`/demi/api/projects/${EAGLE_ID}`).flush(pinned());
+    }
+
+    it('adds pins by sending the current list plus the new ids to the DEMI id', () => {
+      service.addPins(EAGLE_ID, ['o3']).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({ pins: ['o1', 'o2', 'o3'] });
+      req.flush(pinned());
+    });
+
+    it('removes a pin by sending the current list without it', () => {
+      service.deletePin(EAGLE_ID, 'o1').subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.body).toEqual({ pins: ['o2'] });
+      req.flush(pinned());
+    });
+
+    it('publishes the pin list', () => {
+      service.publishPins(EAGLE_ID).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.body).toEqual({ pinsPublished: true });
+      req.flush(pinned());
+    });
+
+    it('unpublishes the pin list', () => {
+      service.unpublishPins(EAGLE_ID).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.body).toEqual({ pinsPublished: false });
+      req.flush(pinned());
+    });
+
+    describe('with the HTTP cache', () => {
+      beforeEach(() => {
+        HttpCacheService.clear();
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          providers: [
+            provideHttpClient(withInterceptors([httpCacheInterceptor])),
+            provideHttpClientTesting(),
+            { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
+            { provide: KeycloakService, useValue: { keycloakEnabled: true } },
+            { provide: ToastService, useValue: toast },
+            { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) }
+          ]
+        });
+        service = TestBed.inject(ProjectService);
+        http = TestBed.inject(HttpTestingController);
+      });
+
+      afterEach(() => HttpCacheService.clear());
+
+      it('builds the write on a fresh read, not the cached one', () => {
+        service.getNative(EAGLE_ID).subscribe();
+        http.expectOne(`/demi/api/projects/${EAGLE_ID}`).flush(nativeRow({ pins: [{ _id: 'o1', name: 'Tsawout' }] }));
+
+        service.addPins(EAGLE_ID, ['o3']).subscribe();
+        answerRead();
+
+        expect(http.expectOne('/demi/api/projects/7').request.body).toEqual({ pins: ['o1', 'o2', 'o3'] });
+      });
+    });
+  });
+
   describe('writes', () => {
     it('publishes a legacy project built from a DEMI row under its Eagle id', () => {
       service.publish(toLegacyProject(nativeRow())).subscribe();
 
       const req = http.expectOne(`/api/project/${EAGLE_ID}/publish`);
       expect(req.request.method).toBe('PUT');
-      req.flush({});
-    });
-
-    it('maps a native row to its Eagle id before adding pins', () => {
-      service.addPins(nativeRow(), ['org1']).subscribe();
-
-      const req = http.expectOne(`/api/project/${EAGLE_ID}/pin`);
-      expect(req.request.body).toEqual(['org1']);
       req.flush({});
     });
 

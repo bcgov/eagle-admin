@@ -41,6 +41,8 @@ export class PinsListComponent implements OnInit {
   private tableTemplateUtils = inject(TableTemplateUtils);
   public logger = inject(LoggingService);
   public currentProject;
+  /** The URL's `:projId`, Eagle or DEMI id; `currentProject._id` is null for a project with no Eagle id. */
+  public projectId: string;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;
   public entries: Org[] = null;
@@ -78,6 +80,7 @@ export class PinsListComponent implements OnInit {
   ngOnInit() {
     this.loading = true;
     this.currentProject = this.storageService.currentProjectData ?? null;
+    this.projectId = this.route.parent.snapshot.paramMap.get('projId');
     this.storageService.state.selectedUsers = null;
 
     // skip(1): the resolver covers the first load; the router does not re-run it on matrix-param changes.
@@ -93,7 +96,7 @@ export class PinsListComponent implements OnInit {
         switchMap(() => {
           this.loading = true;
           this.cdr.markForCheck();
-          return this.projectService.getNative(this.route.parent.snapshot.paramMap.get('projId'));
+          return this.projectService.getNative(this.projectId);
         }),
         takeUntilDestroyed(this.destroyRef)
       )
@@ -110,6 +113,11 @@ export class PinsListComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res: any) => this.showPins(res?.contacts));
   }
+  /** Pin writes take the DEMI id, so a project with no Eagle id can be pinned too. */
+  get pinsProjectId(): string | null {
+    return this.currentProject?.demiId ?? this.currentProject?._id ?? null;
+  }
+
   isEnabled() {
     return this.selectedCount > 0;
   }
@@ -124,19 +132,20 @@ export class PinsListComponent implements OnInit {
     this.cdr.markForCheck();
   }
   setPinsPublished(publish: boolean) {
-    if (this.currentProject && this.currentProject._id) {
+    if (this.pinsProjectId) {
       this.loading = true;
-      const action = publish ? this.projectService.publishPins(this.currentProject._id) : this.projectService.unpublishPins(this.currentProject._id);
-      action.subscribe(res => {
-        this.loading = false;
-        this.cdr.markForCheck();
-        if (res) {
-          this.pinsPublished = publish;
+      const action = publish ? this.projectService.publishPins(this.pinsProjectId) : this.projectService.unpublishPins(this.pinsProjectId);
+      action.subscribe({
+        next: (row: DemiProject) => {
+          this.showPins(row);
           const msg = publish ? 'Participating Indigenous Nations Published Successfully!' : 'Participating Indigenous Nations Unpublished Successfully!';
           this.toastService.success(msg);
-        } else {
-          const msg = publish ? 'Error on publishing Participating Indigenous Nations, please try again later' : 'Error on unpublishing Participating Indigenous Nations, please try again later';
-          this.toastService.error(msg);
+        },
+        error: (error: Error) => {
+          this.logger.error('setPinsPublished failed', 'PinsListComponent', error);
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.toastService.error(error.message);
         }
       });
     } else {
@@ -151,8 +160,8 @@ export class PinsListComponent implements OnInit {
         this.tableParams
       );
 
-      if (this.currentProject && this.currentProject._id) {
-        this.tableData.extraData = { projectId: this.currentProject._id };
+      if (this.currentProject) {
+        this.tableData.extraData = { projectId: this.projectId, pinsProjectId: this.pinsProjectId };
       }
     }
   }
@@ -173,18 +182,18 @@ export class PinsListComponent implements OnInit {
       .map((thing) => thing._id);
 
     if (filteredPins.length === 0) {
-      component.router.navigate(['/p', component.currentProject._id, 'project-pins', { ms: Date.now() }]);
+      component.router.navigate(['/p', component.projectId, 'project-pins', { ms: Date.now() }]);
       return;
     }
 
-    component.projectService.addPins(component.currentProject, filteredPins)
+    component.projectService.addPins(component.pinsProjectId, filteredPins)
     .subscribe({
       next: () => {
-        component.router.navigate(['/p', component.currentProject._id, 'project-pins', { ms: Date.now() }]);
+        component.router.navigate(['/p', component.projectId, 'project-pins', { ms: Date.now() }]);
       },
-      error: (error) => {
+      error: (error: Error) => {
         component.logger.error('addPins failed', 'PinsListComponent', error);
-        alert('Uh-oh, couldn\'t edit project');
+        component.toastService.error(error.message);
       }
     });
   }
@@ -203,23 +212,23 @@ export class PinsListComponent implements OnInit {
     this.storageService.state.showOrgTableCheckboxes = true;
 
     this.navigationStackUtils.pushNavigationStack(
-      ['/p', this.currentProject._id, 'project-pins'],
+      ['/p', this.projectId, 'project-pins'],
       [
         {
           route: ['/projects'],
           label: 'All Projects'
         },
         {
-          route: ['/p', this.currentProject._id],
+          route: ['/p', this.projectId],
           label: this.currentProject.name
         },
         {
-          route: ['/p', this.currentProject._id, 'project-pins'],
+          route: ['/p', this.projectId, 'project-pins'],
           label: 'Participating Indigenous Nations'
         }
       ]
     );
-    this.router.navigate(['/p', this.currentProject._id, 'project-pins', 'select', { pageSize: 10 }]);
+    this.router.navigate(['/p', this.projectId, 'project-pins', 'select', { pageSize: 10 }]);
   }
 
   public onSubmit(pageNumber = 1, reset = false) {
@@ -244,7 +253,7 @@ export class PinsListComponent implements OnInit {
     params['keywords'] = this.tableParams.keywords;
     if (this.typeFilters.length > 0) { params['type'] = this.typeFilters.toString(); }
 
-    this.router.navigate(['p', this.currentProject._id, 'project-pins', params]);
+    this.router.navigate(['p', this.projectId, 'project-pins', params]);
   }
 
   public toggleFilter(filterItem) {

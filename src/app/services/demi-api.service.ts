@@ -27,8 +27,10 @@ export class DemiApiService {
     );
   }
 
-  get<T>(kind: string, id: string): Observable<T> {
-    return this.http.get<T>(this.url(kind, id)).pipe(
+  /** `fresh` skips the 15-minute HTTP cache, for a read that a write is built on. */
+  get<T>(kind: string, id: string, { fresh = false } = {}): Observable<T> {
+    const headers = fresh ? { 'cache-control': 'no-cache' } : undefined;
+    return this.http.get<T>(this.url(kind, id), { headers }).pipe(
       catchError(err => this.fail(err))
     );
   }
@@ -78,11 +80,12 @@ export class DemiApiService {
     return [`${this.configService.getDemiApiPath()}/${kind}`, ...segments.map(encodeURIComponent)].join('/');
   }
 
-  // DEMI answers `{error}`; handleError reads `error.message`.
+  // DEMI answers `{error, fields?}`; handleError reads `error.message`.
   private fail(err: unknown): Observable<never> {
     if (err instanceof HttpErrorResponse && typeof err.error?.error === 'string') {
+      const fields = Object.entries(err.error.fields ?? {}).map(([key, why]) => `${key}: ${why}`);
       err = new HttpErrorResponse({
-        error: { message: err.error.error },
+        error: { message: [err.error.error, fields.join('; ')].filter(Boolean).join(' ') },
         headers: err.headers,
         status: err.status,
         statusText: err.statusText,

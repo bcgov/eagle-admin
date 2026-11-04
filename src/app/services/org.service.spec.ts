@@ -8,7 +8,6 @@ import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
-import { Org } from '../models/org';
 import { Organization } from '../models/demi/organization';
 
 const NATIVE_ORG: Organization = {
@@ -100,46 +99,44 @@ describe('OrgService', () => {
   });
 
   describe('writes', () => {
-    it('sends an Eagle-shaped body unchanged on save', () => {
-      const legacy = new Org({ _id: 'abc123', name: 'Acme', companyType: 'Ministry' });
-
-      service.save(legacy).subscribe();
-
-      const req = http.expectOne('/api/organization/abc123');
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toBe(legacy);
-      req.flush({});
-    });
-
-    it('converts a native row to Eagle field names on save', () => {
+    it('saves to the DEMI row with only the fields DEMI lets a PUT set', () => {
       service.save(NATIVE_ORG).subscribe();
 
-      const req = http.expectOne('/api/organization/58850f68aaecd9001b808530');
-      expect(req.request.body._id).toBe(NATIVE_ORG.id);
-      expect(req.request.body.companyLegal).toBe(NATIVE_ORG.companyLegal);
-      expect(req.request.body.parentCompany).toBe(NATIVE_ORG.parentCompany);
-      expect('eagleId' in req.request.body).toBeFalse();
-      req.flush({});
+      const req = http.expectOne('/demi/api/organizations/58850f68aaecd9001b808530');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({
+        name: NATIVE_ORG.name,
+        companyType: NATIVE_ORG.companyType,
+        province: NATIVE_ORG.province,
+        country: NATIVE_ORG.country,
+        address1: NATIVE_ORG.address1,
+        city: NATIVE_ORG.city,
+        postal: NATIVE_ORG.postal,
+        companyLegal: NATIVE_ORG.companyLegal,
+        parentCompany: NATIVE_ORG.parentCompany
+      });
+      req.flush(NATIVE_ORG);
     });
 
-    it('converts new native input to an Eagle body with no _id on add', () => {
+    it('creates a published organization, as eagle-api did', () => {
       service.add({ name: 'New Org', companyType: 'Ministry' }).subscribe();
 
-      const req = http.expectOne('/api/organization/');
-      expect(req.request.body._id).toBeNull();
-      expect(req.request.body.companyType).toBe('Ministry');
-      req.flush({});
+      const req = http.expectOne('/demi/api/organizations');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ name: 'New Org', companyType: 'Ministry', isPublished: true });
+      req.flush({ ...NATIVE_ORG, name: 'New Org' });
     });
 
-    it('posts a new Eagle-shaped org unchanged on add', () => {
-      const created = new Org({ name: 'New Org' });
+    it('shows DEMI\'s message and yields nothing when a save is refused', async () => {
+      const saved = firstValueFrom(service.save(NATIVE_ORG), { defaultValue: null });
 
-      service.add(created).subscribe();
+      http.expectOne('/demi/api/organizations/58850f68aaecd9001b808530')
+        .flush({ error: 'Invalid request body.', fields: { website: 'is not a writable field' } },
+          { status: 400, statusText: 'Bad Request' });
 
-      const req = http.expectOne('/api/organization/');
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toBe(created);
-      req.flush({});
+      expect(await saved).toBeNull();
+      expect(toast.error).toHaveBeenCalledWith(
+        'Failed to save organization. Invalid request body. website: is not a writable field');
     });
   });
 });
