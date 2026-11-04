@@ -4,7 +4,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { concat, finalize, of, switchMap } from 'rxjs';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
-import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
 import { DemiComment, NextPendingComment } from 'src/app/models/demi/comment';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
@@ -12,7 +12,7 @@ import { ReviewComment } from 'src/app/resolvers/comment.resolver';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { convertJSDateToNGBDate } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, routeParentId } from 'src/app/shared/utils/utils';
 import { DatePipe } from '@angular/common';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -38,12 +38,13 @@ export class ReviewCommentComponent implements OnChanges {
   private logger = inject(LoggingService);
 
   project = input.required<any>();
-  commentPeriod = input.required<CommentPeriod>();
+  commentPeriod = input.required<LegacyCommentPeriod>();
   /** Route param; the period resolver's row shape is not relied on for ids. */
   commentPeriodId = input.required<string>();
   comment = input.required<ReviewComment>();
 
   public baseRouteUrl: string;
+  public parentId: string;
   public commentData: ReviewComment;
   loading = signal(false);
   public isRejectedRequired = false;
@@ -68,7 +69,9 @@ export class ReviewCommentComponent implements OnChanges {
     if (!changes['comment']) {
       return;
     }
-    this.baseRouteUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
+    const params = this.route.snapshot.paramMap;
+    this.baseRouteUrl = params.has('projId') ? '/p' : '/pn';
+    this.parentId = routeParentId(params);
     this.storageService.state.selectedTab = 1;
     const comment = this.comment();
     this.commentData = { ...comment, documentsList: comment.documentsList.map(document => ({ ...document })) };
@@ -101,6 +104,10 @@ export class ReviewCommentComponent implements OnChanges {
   }
 
   public onSubmit(action: 'exit' | 'next') {
+    if (this.commentPeriod().readOnly) {
+      this.toastService.error('Failed to save comment. This comment period is read-only.');
+      return;
+    }
     this.loading.set(true);
     const form = this.commentReviewForm.getRawValue();
     const edits: Partial<DemiComment> = { isAnonymous: !form.isNamePublic, proponentNotes: form.proponentResponseText };
@@ -109,38 +116,31 @@ export class ReviewCommentComponent implements OnChanges {
     } else if (form.isDeferred) {
       Object.assign(edits, { eaoStatus: 'Deferred', eaoNotes: form.deferralNotesText });
     } else if (form.isRejected) {
-      Object.assign(edits, { eaoStatus: 'Rejected', eaoNotes: form.rejectionNotesText });
+      Object.assign(edits, { eaoStatus: 'Rejected', rejectedNotes: form.rejectionNotesText });
     } else {
       edits.eaoStatus = 'Pending';
     }
     // eagle-api publishes attachments by Eagle id; a DEMI-only document is left as it is.
-    const documentsList = this.commentData.documentsList
+    const documents = this.commentData.documentsList
       .filter(document => eagleWriteId(document))
       .map(document => ({ _id: eagleWriteId(document), eaoStatus: document.eaoStatus }));
     const { nextId } = this.nextPending();
 
-    // save() reads `documentsList` off the comment; a non-literal argument keeps it out of the excess-property check.
-    const body: DemiComment = Object.assign({ ...this.commentData, ...edits }, { documentsList });
-    this.commentService.save(body)
+    this.commentService.save({ id: this.commentData.id, ...edits }, documents)
         .pipe(
           takeUntilDestroyed(this.destroyRef),
           finalize(() => this.loading.set(false))
         )
-        .subscribe({
-          next: () => {
-            this.toastService.success(`Comment #${this.commentData.commentId} updated.`);
-            const periodUrl = [this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()];
-            this.router.navigate(action === 'next' && nextId ? [...periodUrl, 'c', nextId, 'comment-details'] : periodUrl);
-          },
-          error: () => {
-            this.toastService.error('Uh-oh, couldn\'t edit comment');
-          }
+        .subscribe(() => {
+          this.toastService.success(`Comment #${this.commentData.commentId} updated.`);
+          const periodUrl = [this.baseRouteUrl, this.parentId, 'cp', this.commentPeriodId()];
+          this.router.navigate(action === 'next' && nextId ? [...periodUrl, 'c', nextId, 'comment-details'] : periodUrl);
         });
   }
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
+      this.router.navigate([this.baseRouteUrl, this.parentId, 'cp', this.commentPeriodId()]);
     }
   }
 

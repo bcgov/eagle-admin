@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 
 import { CommentService } from './comment.service';
 import { ConfigService } from './config.service';
@@ -9,7 +9,6 @@ import { DocumentService } from './document.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
-import { Comment } from '../models/comment';
 import { Document } from '../models/document';
 import { DemiComment } from '../models/demi/comment';
 
@@ -30,6 +29,7 @@ describe('CommentService', () => {
   let service: CommentService;
   let http: HttpTestingController;
   let documents: jasmine.SpyObj<DocumentService>;
+  let toast: jasmine.SpyObj<ToastService>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -46,6 +46,7 @@ describe('CommentService', () => {
     service = TestBed.inject(CommentService);
     http = TestBed.inject(HttpTestingController);
     documents = TestBed.inject(DocumentService) as jasmine.SpyObj<DocumentService>;
+    toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
   });
 
   afterEach(() => http.verify());
@@ -136,92 +137,89 @@ describe('CommentService', () => {
     });
   });
 
-  describe('write body', () => {
-    it('sends a legacy comment to eagle-api unchanged', () => {
-      const legacy = new Comment({ _id: EAGLE_COMMENT, period: EAGLE_PERIOD, eaoStatus: 'Pending' });
+  describe('writes', () => {
+    it('add uploads the attachments, then POSTs the comment to DEMI with their ids in documents', () => {
+      documents.add.and.returnValue(of({ _id: 'doc1' } as Document));
 
-      service.save(legacy).subscribe();
+      service.add({ periodId: 'demi-period', comment: 'Too loud', eaoStatus: 'Pending' }, [new FormData()]).subscribe();
 
-      const req = http.expectOne(`/api/comment/${EAGLE_COMMENT}`);
-      expect(req.request.body).toEqual(JSON.parse(JSON.stringify(legacy)));
-      req.flush({});
+      const req = http.expectOne('/demi/api/comments');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ periodId: 'demi-period', comment: 'Too loud', eaoStatus: 'Pending', documents: ['doc1'] });
+      req.flush(nativeComment());
     });
 
-    it('saves a native comment under its Eagle id with the Eagle period id', () => {
-      service.save(nativeComment({ eaoNotes: 'checked' })).subscribe();
+    it('a refused add toasts DEMI\'s field message and emits nothing', async () => {
+      const result = firstValueFrom(service.add({ periodId: 'gone' }), { defaultValue: 'none' });
 
-      const req = http.expectOne(`/api/comment/${EAGLE_COMMENT}`);
-      expect(req.request.body._id).toBe(EAGLE_COMMENT);
-      expect(req.request.body.period).toBe(EAGLE_PERIOD);
+      http.expectOne('/demi/api/comments').flush(
+        { error: 'Invalid request body.', fields: { periodId: 'must name a comment period' } },
+        { status: 400, statusText: 'Bad Request' }
+      );
+
+      expect(await result).toBe('none');
+      expect(toast.error).toHaveBeenCalledWith('Failed to add comment. Invalid request body. periodId: must name a comment period');
+    });
+
+    it('save PUTs comments/<id> without documents', () => {
+      service.save(nativeComment({ documents: ['doc1'], eaoNotes: 'checked' })).subscribe();
+
+      const req = http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}`);
+      expect(req.request.method).toBe('PUT');
       expect(req.request.body.eaoNotes).toBe('checked');
-      expect(req.request.body.periodId).toBeUndefined();
-      req.flush({});
+      expect(Object.keys(req.request.body)).not.toContain('documents');
+      expect(Object.keys(req.request.body)).not.toContain('id');
+      req.flush(nativeComment());
     });
 
-    it('adds a native comment with the Eagle period id', () => {
-      service.add(nativeComment({ id: undefined, eagleId: undefined })).subscribe();
-
-      const req = http.expectOne('/api/comment/');
-      expect(req.request.body.period).toBe(EAGLE_PERIOD);
-      req.flush({});
-    });
-
-    it('refuses to add a comment to an ENGAGE period that is not in Eagle, uploading and sending nothing', async () => {
-      const result = firstValueFrom(service.add(nativeComment({ periodId: 'engage-42' }), [new FormData()]));
-
-      await expectAsync(result).toBeRejectedWithError(/not in Eagle/);
-      expect(documents.add).not.toHaveBeenCalled();
-      http.expectNone(() => true);
-    });
-
-    it('adds the uploaded document ids to a native comment without changing the caller\'s row', () => {
-      documents.add.and.returnValue(of({ _id: 'doc1' } as any));
-      const row = nativeComment({ id: undefined, eagleId: undefined });
-
-      service.add(row, [new FormData()]).subscribe();
-
-      const req = http.expectOne('/api/comment/');
-      expect(req.request.body.documents).toEqual(['doc1']);
-      expect(row.documents).toEqual([]);
-      req.flush({});
-    });
-
-    it('adds the uploaded document ids to a legacy comment', () => {
-      documents.add.and.returnValue(of({ _id: 'doc1' } as any));
-      const legacy = new Comment({ _id: null, period: EAGLE_PERIOD, documents: [] });
-
-      service.add(legacy, [new FormData()]).subscribe();
-
-      const req = http.expectOne('/api/comment/');
-      expect(req.request.body.documents).toEqual(['doc1']);
-      expect(req.request.body.period).toBe(EAGLE_PERIOD);
-      req.flush({});
-    });
-
-    it('publishes and unpublishes the reviewed documents, then returns the saved comment', async () => {
+    it('publishes and unpublishes the reviewed attachments, then emits the saved comment', async () => {
       documents.publish.and.returnValue(of(new Document()));
       documents.unPublish.and.returnValue(of(new Document()));
-      const legacy = new Comment({ _id: EAGLE_COMMENT, period: EAGLE_PERIOD });
-      legacy.documentsList = [
-        new Document({ _id: 'shown', eaoStatus: 'Published' }), new Document({ _id: 'hidden', eaoStatus: 'Rejected' })
-      ];
 
-      const result = firstValueFrom(service.save(legacy));
+      const result = firstValueFrom(service.save(nativeComment(), [
+        { _id: 'shown', eaoStatus: 'Published' }, { _id: 'hidden', eaoStatus: 'Rejected' }
+      ]));
 
-      const req = http.expectOne(`/api/comment/${EAGLE_COMMENT}`);
-      expect(req.request.body.documentsList).toBeNull();
-      req.flush({ acknowledged: true });
+      http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}`).flush(nativeComment({ comment: 'saved' }));
       expect(documents.publish).toHaveBeenCalledWith('shown');
       expect(documents.unPublish).toHaveBeenCalledWith('hidden');
-      expect(await result).toEqual({ acknowledged: true } as any);
+      expect((await result).comment).toBe('saved');
     });
 
-    it('sets a native comment\'s status under its Eagle id', () => {
-      service.publish(nativeComment()).subscribe();
+    it('an over-limit comment is refused before any upload', () => {
+      service.add({ periodId: 'demi-period', comment: 'x'.repeat(50001) }, [new FormData()]).subscribe();
 
-      const req = http.expectOne(`/api/comment/${EAGLE_COMMENT}/status`);
-      expect(req.request.body).toEqual({ status: 'Published' });
-      req.flush({});
+      expect(documents.add).not.toHaveBeenCalled();
+      http.expectNone(() => true);
+      expect(toast.error).toHaveBeenCalledWith('Failed to add comment. comment: must be at most 50000 characters');
+    });
+
+    it('more than 100 attachments are refused before any upload', () => {
+      service.add({ periodId: 'demi-period' }, Array.from({ length: 101 }, () => new FormData())).subscribe();
+
+      expect(documents.add).not.toHaveBeenCalled();
+      http.expectNone(() => true);
+      expect(toast.error).toHaveBeenCalledWith('Failed to add comment. documents: at most 100 attachments');
+    });
+
+    it('a saved comment whose attachment publish fails says the comment saved', () => {
+      documents.publish.and.returnValue(throwError(() => new Error('eagle-api down')));
+
+      service.save(nativeComment(), [{ _id: 'shown', eaoStatus: 'Published' }]).subscribe();
+      http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}`).flush(nativeComment());
+
+      expect(toast.error).toHaveBeenCalledOnceWith('Comment saved, but its attachments were not updated. eagle-api down');
+    });
+
+    it('a refused save publishes no attachments', () => {
+      service.save(nativeComment(), [{ _id: 'shown', eaoStatus: 'Published' }]).subscribe();
+
+      http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}`).flush(
+        { error: 'Invalid request body.', fields: { body: 'must name at least one field' } },
+        { status: 400, statusText: 'Bad Request' }
+      );
+
+      expect(documents.publish).not.toHaveBeenCalled();
     });
   });
 });

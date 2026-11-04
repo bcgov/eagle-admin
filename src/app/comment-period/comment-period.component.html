@@ -9,10 +9,10 @@
       }
     </li>
     <li class="breadcrumb-item">
-      <a [routerLink]="[baseRouteUrl, project()._id]">{{project().name}}</a>
+      <a [routerLink]="[baseRouteUrl, parentId]">{{project().name}}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, project()._id, 'comment-periods']">Comment Periods</a>
+      <a [routerLink]="[baseRouteUrl, parentId, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item active" aria-current="page">
       {{commentPeriod().dateStarted | date: 'MMMM d'}} - {{commentPeriod().dateCompleted | date}}
@@ -35,7 +35,7 @@
         <button ngbNavLink class="nav-link fw-bold">REVIEW COMMENTS</button>
         <ng-template ngbNavContent>
           <br>
-          <app-review-comments-tab [project]="project()"></app-review-comments-tab>
+          <app-review-comments-tab></app-review-comments-tab>
         </ng-template>
       </li>
     </ul>

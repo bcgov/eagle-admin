@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef, input } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { ReviewCommentsTabTableRowsComponent } from './review-comments-tab-table-rows/review-comments-tab-table-rows.component';
@@ -11,6 +11,7 @@ import { TableTemplateUtils, nextSortBy } from 'src/app/shared/utils/table-templ
 import { DemiComment } from 'src/app/models/demi/comment';
 import { DemiEaoStatus } from 'src/app/models/demi/comment-period';
 import { TableTemplateComponent } from 'src/app/shared/components/table-template/table-template.component';
+import { routeParentId } from 'src/app/shared/utils/utils';
 
 const DEFAULT_SORT = '-dateAdded';
 const STATUS_FILTERS: Record<string, DemiEaoStatus> = {
@@ -36,7 +37,6 @@ export class ReviewCommentsTabComponent implements OnInit {
   private storageService = inject(StorageService);
   private tableTemplateUtils = inject(TableTemplateUtils);
 
-  project = input.required<any>();
 
   public comments: Array<DemiComment>;
   public loading = true;
@@ -173,7 +173,7 @@ export class ReviewCommentsTabComponent implements OnInit {
       ReviewCommentsTabTableRowsComponent,
       commentList,
       this.tableParams,
-      { baseRouteUrl: this.baseRouteUrl, projectId: this.project()._id ?? this.project().data?._id }
+      { baseRouteUrl: this.baseRouteUrl, projectId: routeParentId(this.route.snapshot.paramMap) }
     );
   }
 

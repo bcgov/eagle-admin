@@ -1,94 +1,106 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, forkJoin } from 'rxjs';
+import { EMPTY, Observable, of, forkJoin } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
-import { ApiService } from './api';
 import { DemiApiService } from './demi-api.service';
-import { deferWrite } from './commentperiod.service';
 import { DocumentService } from './document.service';
 import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 
-import { Comment } from '../models/comment';
 import { Document } from '../models/document';
 import { DemiComment, DemiCommentQuery, NextPendingComment } from '../models/demi/comment';
-import { requireEagleWriteId, toEagleWriteBody } from '../models/demi/comment-period';
 import { DemiList } from '../models/demi/demi-list';
-import { isEagleId } from '../models/demi/demi-ids';
 
-/** eagle-api POST/PUT body; see {@link toEagleWriteBody}. eagle-api reads the Eagle `period` id, never a project. */
-function toEagleCommentBody(comment: Comment | DemiComment, isNew = false): any {
-  // Mirrored periods keep their Eagle id as DEMI id; an ENGAGE period without one is not in Eagle.
-  const period = '_id' in comment ? null : isEagleId(comment.periodId) ? comment.periodId : null;
-  const body = toEagleWriteBody(comment, 'comment', { period }, isNew);
-  if (body !== comment) {
-    // Own array, so appending uploaded document ids leaves the caller's row alone.
-    body.documents = [...(body.documents ?? [])];
-  }
-  return body;
+// DEMI's comment POST and PUT take only these (domain/comments.js CREATE_SCHEMA, UPDATE_SCHEMA); any other key is a 400.
+const CREATE_FIELDS = [
+  'periodId', 'author', 'comment', 'dateAdded', 'datePosted', 'documents', 'eaoNotes', 'eaoStatus', 'isAnonymous',
+  'location', 'proponentNotes', 'proponentStatus', 'publishedNotes', 'rejectedNotes', 'rejectedReason', 'valuedComponents'
+] as const;
+const UPDATE_FIELDS = [
+  'isAnonymous', 'datePosted', 'eaoNotes', 'eaoStatus', 'submittedCAC', 'proponentNotes', 'proponentStatus',
+  'publishedNotes', 'rejectedNotes', 'rejectedReason'
+] as const;
+
+// DEMI's string caps (domain/comments.js); checked here so a too-long comment uploads no attachments.
+const MAX_LENGTHS: Record<string, number> = {
+  comment: 50000, location: 1000, author: 500, proponentStatus: 500,
+  eaoNotes: 10000, proponentNotes: 10000, publishedNotes: 10000, rejectedNotes: 10000, rejectedReason: 10000
+};
+const MAX_DOCUMENTS = 100;
+
+/** A new comment as DEMI's POST takes it; `periodId` is the period's DEMI id. */
+export type CommentCreate = Partial<Pick<DemiComment, Exclude<typeof CREATE_FIELDS[number], 'periodId'>>> & { periodId: string };
+
+/** An attachment whose publish state the review sets, by Eagle document id. */
+export type ReviewedDocument = Pick<Document, '_id' | 'eaoStatus'>;
+
+function pick(row: object, keys: readonly string[]): Record<string, unknown> {
+  return Object.fromEntries(keys.filter(key => key in row).map(key => [key, (row as Record<string, unknown>)[key]]));
+}
+
+function tooLong(body: Record<string, unknown>): string | null {
+  const field = Object.keys(MAX_LENGTHS).find(key => typeof body[key] === 'string' && (body[key] as string).length > MAX_LENGTHS[key]);
+  return field ? `${field}: must be at most ${MAX_LENGTHS[field]} characters` : null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
-  private api = inject(ApiService);
   private demi = inject(DemiApiService);
   private documentService = inject(DocumentService);
   private loadingState = inject(LoadingStateService);
   private toast = inject(ToastService);
   private logger = inject(LoggingService);
 
-  add(comment: Comment | DemiComment, documentForms: Array<FormData> = []): Observable<Comment> {
-    return deferWrite(this.api, () => {
-      // Mapped before any upload, so a comment eagle-api cannot take leaves no documents behind.
-      const body = toEagleCommentBody(comment, true);
-      if (!documentForms.length) {
-        return this.api.post<Comment>('comment/', body);
-      }
-      return forkJoin(documentForms.map(form => this.documentService.add(form))).pipe(
-        mergeMap((payload: any[]) => {
-          payload.forEach((document: any) => body.documents.push(document._id));
-          return this.api.post<Comment>('comment/', body);
-        })
-      );
-    });
+  /**
+   * Uploads the attachments to eagle-api, then creates the comment in DEMI with their ids in `documents`.
+   * A refused add shows the reason and completes with no value, so the form stays open.
+   */
+  add(comment: CommentCreate, documentForms: Array<FormData> = []): Observable<DemiComment> {
+    const body = pick(comment, CREATE_FIELDS);
+    const refused = documentForms.length > MAX_DOCUMENTS ? `documents: at most ${MAX_DOCUMENTS} attachments` : tooLong(body);
+    if (refused) {
+      return this.writeFailed('add', new Error(refused));
+    }
+    const uploads$ = documentForms.length
+      ? forkJoin(documentForms.map(form => this.documentService.add(form)))
+      : of([] as Document[]);
+    return uploads$.pipe(
+      mergeMap(uploaded => this.demi.create<DemiComment>('comments', {
+        ...body,
+        ...(uploaded.length > 0 && { documents: uploaded.map(document => document._id) })
+      })),
+      catchError(error => this.writeFailed('add', error))
+    );
   }
 
-  save(comment: Comment | DemiComment): Observable<Comment> {
-    return deferWrite(this.api, () => {
-      const documents: Document[] = ('documentsList' in comment && comment.documentsList) || [];
-      if ('documentsList' in comment) {
-        comment.documentsList = null;
-      }
-      const observables: Observable<any>[] = [];
-      documents.forEach(document => {
-        if (document.eaoStatus === 'Published') {
-          observables.push(this.documentService.publish(document._id));
-        } else if (document.eaoStatus === 'Rejected') {
-          observables.push(this.documentService.unPublish(document._id));
+  /**
+   * Writes the DEMI-writable fields to the row `comment.id`, then each attachment's publish state through eagle-api.
+   * Emits the saved row; fails as `add` does, but names a failed attachment update after a saved PUT.
+   */
+  save(comment: Partial<DemiComment> & Pick<DemiComment, 'id'>, documents: ReviewedDocument[] = []): Observable<DemiComment> {
+    return this.demi.update<DemiComment>('comments', comment.id, pick(comment, UPDATE_FIELDS)).pipe(
+      mergeMap(saved => {
+        const publishes = documents.flatMap(document => {
+          if (document.eaoStatus === 'Published') {
+            return [this.documentService.publish(document._id)];
+          }
+          return document.eaoStatus === 'Rejected' ? [this.documentService.unPublish(document._id)] : [];
+        });
+        if (!publishes.length) {
+          return of(saved);
         }
-      });
-      const newComment = toEagleCommentBody(JSON.parse(JSON.stringify(comment)));
-      const put = this.api.put<Comment>(`comment/${newComment._id}`, newComment);
-      return observables.length ? forkJoin([...observables, put]).pipe(map(payloads => payloads.pop())) : put;
-    });
-  }
-
-  publish(comment: Comment | DemiComment): Observable<Comment> {
-    return this.setStatus(comment, 'Published');
-  }
-
-  defer(comment: Comment | DemiComment): Observable<Comment> {
-    return this.setStatus(comment, 'Deferred');
-  }
-
-  reject(comment: Comment | DemiComment): Observable<Comment> {
-    return this.setStatus(comment, 'Rejected');
-  }
-
-  removeStatus(comment: Comment | DemiComment): Observable<Comment> {
-    return this.setStatus(comment, 'Reset');
+        return forkJoin(publishes).pipe(
+          map(() => saved),
+          catchError(error => {
+            this.toast.error(`Comment saved, but its attachments were not updated. ${error.message}`);
+            return EMPTY;
+          })
+        );
+      }),
+      catchError(error => this.writeFailed('save', error))
+    );
   }
 
   /** One page of a period's comments, with `total` from `count=true`. `periodId` is the period's DEMI `id`. */
@@ -134,8 +146,9 @@ export class CommentService {
     );
   }
 
-  private setStatus(comment: Comment | DemiComment, status: string): Observable<Comment> {
-    return deferWrite(this.api, () => this.api.put<Comment>(`comment/${requireEagleWriteId(comment, 'comment')}/status`, { status }));
+  // Request errors are already logged by ApiService.handleError.
+  private writeFailed(action: 'add' | 'save', error: Error): Observable<never> {
+    this.toast.error(`Failed to ${action} comment. ${error.message}`);
+    return EMPTY;
   }
 }
-

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
-import { Router, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { ReviewCommentComponent } from './review-comment.component';
@@ -13,14 +13,15 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { DemiDocument } from 'src/app/models/demi/document';
 
-const COMMENT_ID = '59a0593a6356080019383e16';
+const COMMENT_ID = '3f6c2b1e-8d4a-4e7b-9c2f-5a1d0e9b7c63';
+const COMMENT_EAGLE_ID = '59a0593a6356080019383e16';
 const NEXT_ID = '59a0593a6356080019383e17';
 const PERIOD_ID = '598b6eb61ecbc9001dfeba55';
-const PROJECT_ID = '588511d0aaecd9001b826192';
+const PARENT_ID = 'demi-notification-1';
 
 function reviewComment(overrides: Partial<ReviewComment> = {}): ReviewComment {
   return {
-    id: COMMENT_ID, eagleId: COMMENT_ID, periodId: PERIOD_ID, projectId: '207', projectEagleId: PROJECT_ID,
+    id: COMMENT_ID, eagleId: COMMENT_EAGLE_ID, periodId: PERIOD_ID, projectId: '207', projectEagleId: '588511d0aaecd9001b826192',
     sourceSystem: 'eagle', author: 'Pat', comment: 'Too loud', commentId: 12, dateAdded: '2017-08-25T00:00:00.000Z',
     dateUpdated: null, location: 'Victoria', isAnonymous: false, submittedCAC: false, documents: [],
     eaoStatus: 'Pending', isPublished: false, documentsList: [],
@@ -32,12 +33,14 @@ describe('ReviewCommentComponent', () => {
   let fixture: ComponentFixture<ReviewCommentComponent>;
   let http: HttpTestingController;
   let documents: jasmine.SpyObj<DocumentService>;
+  let toast: jasmine.SpyObj<ToastService>;
 
   function create(comment: ReviewComment) {
     TestBed.configureTestingModule({
       imports: [ReviewCommentComponent],
       providers: [
         provideRouter([]),
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ notificationProjectId: PARENT_ID }) } } },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
@@ -49,8 +52,9 @@ describe('ReviewCommentComponent', () => {
     });
     http = TestBed.inject(HttpTestingController);
     documents = TestBed.inject(DocumentService) as jasmine.SpyObj<DocumentService>;
+    toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
     fixture = TestBed.createComponent(ReviewCommentComponent);
-    fixture.componentRef.setInput('project', { _id: PROJECT_ID, name: 'Test' });
+    fixture.componentRef.setInput('project', { _id: null, name: 'Test' });
     fixture.componentRef.setInput('commentPeriod', { _id: PERIOD_ID });
     fixture.componentRef.setInput('commentPeriodId', PERIOD_ID);
     fixture.componentRef.setInput('comment', comment);
@@ -99,7 +103,7 @@ describe('ReviewCommentComponent', () => {
     expect(saveNextButton()).toBeUndefined();
   });
 
-  it('saves the review to eagle-api under the Eagle id, then opens the next pending comment', () => {
+  it('saves the review to DEMI under the row id, then opens the next pending comment', () => {
     create(reviewComment());
     answerNextPending(3);
     const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
@@ -107,13 +111,12 @@ describe('ReviewCommentComponent', () => {
     fixture.componentInstance.commentReviewForm.controls.publishedNotesText.setValue('Fine');
 
     saveNextButton().click();
-    const put = http.expectOne(`/api/comment/${COMMENT_ID}`);
-    put.flush({ acknowledged: true });
+    const put = http.expectOne(`/demi/api/comments/${COMMENT_ID}`);
+    put.flush(reviewComment({ eaoStatus: 'Published' }));
 
     expect(put.request.method).toBe('PUT');
-    expect(put.request.body).toEqual(jasmine.objectContaining({ _id: COMMENT_ID, eaoStatus: 'Published', publishedNotes: 'Fine' }));
-    expect(put.request.body.periodId).toBeUndefined();
-    expect(navigate).toHaveBeenCalledWith(['/pn', PROJECT_ID, 'cp', PERIOD_ID, 'c', NEXT_ID, 'comment-details']);
+    expect(put.request.body).toEqual(jasmine.objectContaining({ eaoStatus: 'Published', publishedNotes: 'Fine' }));
+    expect(navigate).toHaveBeenCalledWith(['/pn', PARENT_ID, 'cp', PERIOD_ID, 'c', NEXT_ID, 'comment-details']);
   });
 
   it('sends a cleared status as Pending', () => {
@@ -124,7 +127,7 @@ describe('ReviewCommentComponent', () => {
 
     fixture.componentInstance.onSubmit('exit');
 
-    expect(http.expectOne(`/api/comment/${COMMENT_ID}`).request.body.eaoStatus).toBe('Pending');
+    expect(http.expectOne(`/demi/api/comments/${COMMENT_ID}`).request.body.eaoStatus).toBe('Pending');
   });
 
   it('publishes attachments by their Eagle id', () => {
@@ -135,7 +138,7 @@ describe('ReviewCommentComponent', () => {
     documents.publish.and.returnValue(of(null));
 
     fixture.componentInstance.onSubmit('exit');
-    http.expectOne(`/api/comment/${COMMENT_ID}`).flush({});
+    http.expectOne(`/demi/api/comments/${COMMENT_ID}`).flush(reviewComment());
 
     expect(documents.publish).toHaveBeenCalledWith('5a0000000000000000000001');
   });
@@ -151,6 +154,55 @@ describe('ReviewCommentComponent', () => {
 
     expect(fixture.componentInstance.commentReviewForm.controls.isPublished.value).toBeFalse();
     fixture.componentInstance.onSubmit('exit');
-    expect(http.expectOne(`/api/comment/${NEXT_ID}`).request.body.eaoStatus).toBe('Pending');
+    expect(http.expectOne(`/demi/api/comments/${NEXT_ID}`).request.body.eaoStatus).toBe('Pending');
+  });
+  it('links the breadcrumbs to the route parent id, not project._id', () => {
+    create(reviewComment());
+    answerNextPending(1);
+
+    const hrefs = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a')).map(a => a.getAttribute('href'));
+    expect(hrefs).toContain(`/pn/${PARENT_ID}`);
+    expect(hrefs).toContain(`/pn/${PARENT_ID}/comment-periods`);
+    expect(hrefs).toContain(`/pn/${PARENT_ID}/cp/${PERIOD_ID}`);
+  });
+
+  it('a read-only period\'s comment sends no PUT', () => {
+    create(reviewComment());
+    answerNextPending(1);
+    fixture.componentRef.setInput('commentPeriod', { _id: PERIOD_ID, readOnly: true });
+
+    fixture.componentInstance.onSubmit('exit');
+
+    http.expectNone(`/demi/api/comments/${COMMENT_ID}`);
+    expect(toast.error).toHaveBeenCalledWith('Failed to save comment. This comment period is read-only.');
+  });
+
+  it('sends rejection notes as rejectedNotes, which the form reads back', () => {
+    create(reviewComment());
+    answerNextPending(1);
+    spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    fixture.componentInstance.setEaoStatus('Rejected');
+    fixture.componentInstance.commentReviewForm.controls.rejectionNotesText.setValue('Off topic');
+
+    fixture.componentInstance.onSubmit('exit');
+
+    const { body } = http.expectOne(`/demi/api/comments/${COMMENT_ID}`).request;
+    expect(body.rejectedNotes).toBe('Off topic');
+    expect(body.eaoNotes).toBeUndefined();
+  });
+
+  it('a refused save stays on the page', () => {
+    create(reviewComment());
+    answerNextPending(1);
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+
+    fixture.componentInstance.onSubmit('exit');
+    http.expectOne(`/demi/api/comments/${COMMENT_ID}`).flush(
+      { error: 'Invalid request body.', fields: { body: 'must name at least one field' } },
+      { status: 400, statusText: 'Bad Request' }
+    );
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });
