@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { firstValueFrom, forkJoin } from 'rxjs';
+import { Observable, concat, firstValueFrom } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from 'src/app/services/toast.service';
@@ -9,7 +9,6 @@ import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { Group } from 'src/app/models/demi/group';
 import { User, contactExportRow } from 'src/app/models/demi/user';
 import { ExcelService } from 'src/app/services/excel.service';
-import { ProjectService } from 'src/app/services/project.service';
 import { UserService } from 'src/app/services/user.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
@@ -48,7 +47,6 @@ export class GroupContactComponent implements OnInit {
   private modalService = inject(NgbModal);
   private excelService = inject(ExcelService);
   private navigationStackUtils = inject(NavigationStackUtils);
-  private projectService = inject(ProjectService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private userService = inject(UserService);
@@ -271,32 +269,26 @@ export class GroupContactComponent implements OnInit {
     const membersToAdd = [...chosen].filter(id => !current.has(id));
     const membersToRemove = [...current].filter(id => !chosen.has(id));
 
-    const observables = [];
+    // One at a time here and in deleteItems: DEMI retries a clashing group write 3 times, then answers 503.
+    const writes: Observable<unknown>[] = membersToRemove.map(id => component.userService.removeGroupMember(component.groupId, id));
     if (membersToAdd.length > 0) {
-      observables.push(component.projectService.addGroupMembers(component.currentProject, component.groupId, membersToAdd));
+      writes.unshift(component.userService.addGroupMembers(component.groupId, membersToAdd));
     }
-    membersToRemove.forEach(id => {
-      observables.push(component.projectService.deleteGroupMembers(component.currentProject._id, component.groupId, id));
-    });
 
     const membersRoute = ['/p', component.currentProject._id, 'project-groups', 'g', component.groupId, 'members'];
-    if (observables.length > 0) {
-      forkJoin(observables)
-        .subscribe({
-          next: () => component.router.navigate(membersRoute),
-          error: error => {
-            component.logger.error('update group members failed', 'GroupContactComponent', error);
-            component.toastService.error('Some member changes could not be saved.');
-            // Reload so the list shows what was written.
-            component.router.navigate(membersRoute);
-          }
-        });
-    } else {
-      component.router.navigate(membersRoute);
-    }
+    concat(...writes).subscribe({
+      complete: () => component.router.navigate(membersRoute),
+      error: error => {
+        component.logger.error('update group members failed', 'GroupContactComponent', error);
+        component.toastService.error(`Some member changes could not be saved. ${error.message}`);
+        // Reload so the list shows what was written.
+        component.router.navigate(membersRoute);
+      }
+    });
   }
 
-  public deleteItems() {
+  public async deleteItems() {
+    if (this.loading) { return; }
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static', // Prevent closing when clicking outside
       centered: true, // Center the modal
@@ -306,27 +298,30 @@ export class GroupContactComponent implements OnInit {
       'Click <strong>OK</strong> to remove or <strong>Cancel</strong> to return to the list.';
     modalRef.componentInstance.okOnly = false;
 
-    return modalRef.result.then((isConfirmed) => {
-      if (!isConfirmed) {
-        return;
+    const isConfirmed = await modalRef.result.catch(() => false);
+    if (!isConfirmed) { return; }
+
+    const ids = [...new Set(this.selectedRows().map(item => item.id))];
+    const removed = new Set<string>();
+    const errors: Error[] = [];
+    this.loading = true;
+    this._changeDetectionRef.markForCheck();
+    for (const id of ids) {
+      try {
+        await firstValueFrom(this.userService.removeGroupMember(this.groupId, id));
+        removed.add(id);
+      } catch (err) {
+        errors.push(err as Error);
       }
-      const ids = [...new Set(this.selectedRows().map(item => item.id))];
-      return Promise.allSettled(ids.map(id =>
-        firstValueFrom(this.projectService.deleteGroupMembers(this.currentProject._id, this.groupId, id))
-      )).then(results => {
-        const removed = new Set(ids.filter((_, i) => results[i].status === 'fulfilled'));
-        const failed = ids.length - removed.size;
-        if (failed > 0) {
-          this.logger.error('remove group members failed', 'GroupContactComponent', results);
-          this.toastService.error(`${failed} of ${ids.length} contacts could not be removed.`);
-        }
-        this.members = this.members.filter(member => !removed.has(member.id));
-        this.showPage();
-        this._changeDetectionRef.markForCheck();
-      });
-    }).catch(() => {
-      // Modal dismissed.
-    });
+    }
+    if (errors.length > 0) {
+      this.logger.error('remove group members failed', 'GroupContactComponent', errors);
+      this.toastService.error(`${errors.length} of ${ids.length} contacts could not be removed. ${errors[0].message}`);
+    }
+    this.members = this.members.filter(member => !removed.has(member.id));
+    this.loading = false;
+    this.showPage();
+    this._changeDetectionRef.markForCheck();
   }
 
   getPaginatedContacts(pageNumber) {
@@ -341,13 +336,13 @@ export class GroupContactComponent implements OnInit {
 
   async saveName() {
     try {
-      await firstValueFrom(this.projectService.saveGroup(this.currentProject._id, this.group.id, { name: this.tempGroupName }));
+      await firstValueFrom(this.userService.renameGroup(this.group.id, this.tempGroupName));
       this.group.name = this.tempGroupName;
       this._changeDetectionRef.markForCheck();
       this.toastService.success('Group name has been updated');
     } catch (err) {
       this.logger.error('group rename failed', 'GroupContactComponent', err);
-      this.toastService.error('The group name could not be saved.');
+      this.toastService.error(`The group name could not be saved. ${(err as Error).message}`);
     }
   }
 

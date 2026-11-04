@@ -12,7 +12,6 @@ import { SearchTerms } from 'src/app/models/search';
 import { Group } from 'src/app/models/demi/group';
 import { User, contactExportRow } from 'src/app/models/demi/user';
 import { ExcelService } from 'src/app/services/excel.service';
-import { ProjectService } from 'src/app/services/project.service';
 import { UserService, emptyPageOnError } from 'src/app/services/user.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { LoadingStateService } from 'src/app/services/loading-state.service';
@@ -37,7 +36,6 @@ export class ProjectGroupsComponent implements OnInit {
   private excelService = inject(ExcelService);
   private modalService = inject(NgbModal);
   private navigationStackUtils = inject(NavigationStackUtils);
-  private projectService = inject(ProjectService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private userService = inject(UserService);
@@ -220,10 +218,10 @@ export class ProjectGroupsComponent implements OnInit {
     const result = await this.inputModal.result.catch(() => null);
     if (!result) { return; }
     try {
-      await firstValueFrom(this.projectService.addGroup(this.currentProject(), result));
+      await firstValueFrom(this.userService.addGroup(this.currentProject().demiId, result));
     } catch (err) {
       this.logger.error('add group failed', 'ProjectGroupsComponent', err);
-      this.toastService.error('The group could not be added.');
+      this.toastService.error(`The group could not be added. ${(err as Error).message}`);
     }
     this.onSubmit();
   }
@@ -244,12 +242,12 @@ export class ProjectGroupsComponent implements OnInit {
     this.loadingState.startLoading('project-groups');
     const ids = (this.tableData()?.data ?? []).filter(item => item.checkbox === true).map(item => item.id);
     const results = await Promise.allSettled(
-      ids.map(id => firstValueFrom(this.projectService.deleteGroup(this.currentProject(), id)))
+      ids.map(id => firstValueFrom(this.userService.deleteGroup(id)))
     );
-    const failed = results.filter(result => result.status === 'rejected').length;
-    if (failed > 0) {
+    const failed = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+    if (failed.length > 0) {
       this.logger.error('delete groups failed', 'ProjectGroupsComponent', results);
-      this.toastService.error(`${failed} of ${ids.length} groups could not be deleted.`);
+      this.toastService.error(`${failed.length} of ${ids.length} groups could not be deleted. ${(failed[0].reason as Error).message}`);
     }
     this.loadingState.stopLoading('project-groups');
     this.onSubmit();

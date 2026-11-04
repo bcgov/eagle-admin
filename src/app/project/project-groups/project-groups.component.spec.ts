@@ -1,27 +1,28 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 import { ProjectGroupsComponent } from './project-groups.component';
 import { ExcelService } from 'src/app/services/excel.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { ProjectService } from 'src/app/services/project.service';
 import { UserService } from 'src/app/services/user.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { User } from 'src/app/models/demi/user';
+import { Group } from 'src/app/models/demi/group';
 
 describe('ProjectGroupsComponent', () => {
   let component: ProjectGroupsComponent;
   let params: BehaviorSubject<Record<string, string>>;
   let userService: jasmine.SpyObj<UserService>;
   let toast: jasmine.SpyObj<ToastService>;
+  let modalResult: Promise<unknown>;
 
   beforeEach(() => {
     params = new BehaviorSubject<Record<string, string>>({ currentPage: '2', pageSize: '25', sortBy: '-name' });
-    userService = jasmine.createSpyObj('UserService', ['listProjectGroups', 'getUsersByIds']);
+    userService = jasmine.createSpyObj('UserService', ['listProjectGroups', 'getUsersByIds', 'addGroup', 'deleteGroup']);
     toast = jasmine.createSpyObj('ToastService', ['success', 'warning', 'error']);
     userService.listProjectGroups.and.returnValue(of({ rows: [{ id: 'g1', projectId: 'track-42', name: 'Agencies', members: [] }], total: 26 }));
 
@@ -38,10 +39,8 @@ describe('ProjectGroupsComponent', () => {
           }
         },
         { provide: UserService, useValue: userService },
-        // No project methods: the groups read must not look the project up again.
-        { provide: ProjectService, useValue: {} },
         { provide: StorageService, useValue: { currentProjectData: { _id: '5885109faaecd9001b81314c', demiId: 'track-42' }, state: {} } },
-        { provide: NgbModal, useValue: {} },
+        { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: modalResult }) } },
         { provide: ExcelService, useValue: jasmine.createSpyObj('ExcelService', ['exportAsExcelFile']) },
         { provide: NavigationStackUtils, useValue: {} },
         { provide: ToastService, useValue: toast },
@@ -49,6 +48,7 @@ describe('ProjectGroupsComponent', () => {
       ]
     });
     spyOn(TestBed.inject(TableTemplateUtils), 'updateUrl');
+    spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     component = TestBed.createComponent(ProjectGroupsComponent).componentInstance;
     component.ngOnInit();
   });
@@ -85,5 +85,43 @@ describe('ProjectGroupsComponent', () => {
     await component.exportItems();
 
     expect(toast.warning).toHaveBeenCalledWith('1 of 2 contacts could not be read and are left out.');
+  });
+
+  it('adds a group under the project\'s DEMI id', async () => {
+    modalResult = Promise.resolve('Agencies');
+    userService.addGroup.and.returnValue(of({} as Group));
+
+    await component.addNewGroup();
+
+    expect(userService.addGroup).toHaveBeenCalledOnceWith('track-42', 'Agencies');
+  });
+
+  it('shows DEMI\'s reason when it refuses a new group', async () => {
+    modalResult = Promise.resolve('Agencies');
+    userService.addGroup.and.returnValue(throwError(() => new Error('Invalid request body. projectId: must name a project')));
+
+    await component.addNewGroup();
+
+    expect(toast.error).toHaveBeenCalledWith('The group could not be added. Invalid request body. projectId: must name a project');
+  });
+
+  it('deletes each ticked group by its DEMI id', async () => {
+    modalResult = Promise.resolve(true);
+    userService.deleteGroup.and.returnValue(of({} as Group));
+    component.entries()[0].checkbox = true;
+
+    await component.deleteItems();
+
+    expect(userService.deleteGroup).toHaveBeenCalledOnceWith('g1');
+  });
+
+  it('counts a refused group delete and shows DEMI\'s reason', async () => {
+    modalResult = Promise.resolve(true);
+    userService.deleteGroup.and.returnValue(throwError(() => new Error('Not found.')));
+    component.entries()[0].checkbox = true;
+
+    await component.deleteItems();
+
+    expect(toast.error).toHaveBeenCalledWith('1 of 1 groups could not be deleted. Not found.');
   });
 });

@@ -1,11 +1,10 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, Subject, defer, of, throwError } from 'rxjs';
 import { GroupContactComponent } from './group-contact.component';
 import { ExcelService } from 'src/app/services/excel.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { ProjectService } from 'src/app/services/project.service';
 import { UserService } from 'src/app/services/user.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -13,7 +12,6 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { User } from 'src/app/models/demi/user';
 import { Group } from 'src/app/models/demi/group';
-import { Project } from 'src/app/models/project';
 
 /** `count` fresh members u00.., emails m00..; names run the other way so name and email order differ. */
 function members(count: number): User[] {
@@ -36,7 +34,7 @@ interface Setup {
 describe('GroupContactComponent', () => {
   let component: GroupContactComponent;
   let getUsersByIds: jasmine.Spy;
-  let projectService: jasmine.SpyObj<ProjectService>;
+  let groupWrites: jasmine.SpyObj<UserService>;
   let toast: jasmine.SpyObj<ToastService>;
   let navigate: jasmine.Spy;
   let confirm: Promise<boolean>;
@@ -54,9 +52,8 @@ describe('GroupContactComponent', () => {
             parent: { snapshot: { paramMap: convertToParamMap({ projId: 'p1' }) } }
           }
         },
-        { provide: UserService, useValue: { getGroup: () => group, getUsersByIds } },
-        { provide: ProjectService, useValue: projectService },
-        { provide: StorageService, useValue: { currentProjectData: { _id: 'p1' }, state: {} } },
+        { provide: UserService, useValue: { ...groupWrites, getGroup: () => group, getUsersByIds } },
+        { provide: StorageService, useValue: { currentProjectData: { _id: 'p1', demiId: 't1' }, state: {} } },
         { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: confirm }) } },
         { provide: ExcelService, useValue: {} },
         { provide: NavigationStackUtils, useValue: {} },
@@ -72,9 +69,10 @@ describe('GroupContactComponent', () => {
   }
 
   beforeEach(() => {
-    projectService = jasmine.createSpyObj('ProjectService', ['addGroupMembers', 'deleteGroupMembers', 'saveGroup']);
-    projectService.addGroupMembers.and.returnValue(of({} as Project));
-    projectService.deleteGroupMembers.and.returnValue(of({} as Project));
+    groupWrites = jasmine.createSpyObj('UserService', ['addGroupMembers', 'removeGroupMember', 'renameGroup']);
+    groupWrites.addGroupMembers.and.returnValue(of({} as Group));
+    groupWrites.removeGroupMember.and.returnValue(of({} as Group));
+    groupWrites.renameGroup.and.returnValue(of({} as Group));
     toast = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning']);
     confirm = Promise.resolve(true);
   });
@@ -146,28 +144,68 @@ describe('GroupContactComponent', () => {
   describe('member changes from the contact picker', () => {
     beforeEach(() => create({ users: [{ id: 'a' } as User, { id: 'b' } as User] }));
 
-    it('adds only the newly chosen contacts', () => {
+    it('adds only the newly chosen contacts to the DEMI group', () => {
       component.update([{ id: 'b' } as User, { id: 'c' } as User], component);
 
-      expect(projectService.addGroupMembers).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: 'p1' }), 'g1', ['c']);
+      expect(groupWrites.addGroupMembers).toHaveBeenCalledOnceWith('g1', ['c']);
     });
 
-    it('removes only the members no longer chosen', () => {
+    it('removes from the DEMI group only the members no longer chosen', () => {
       component.update([{ id: 'b' } as User, { id: 'c' } as User], component);
 
-      expect(projectService.deleteGroupMembers).toHaveBeenCalledOnceWith('p1', 'g1', 'a');
+      expect(groupWrites.removeGroupMember).toHaveBeenCalledOnceWith('g1', 'a');
+    });
+
+    it('returns to the members page under the Eagle project id, not the DEMI one', () => {
+      component.update([{ id: 'b' } as User], component);
+
+      expect(navigate).toHaveBeenCalledWith(['/p', 'p1', 'project-groups', 'g', 'g1', 'members']);
+    });
+
+    it('sends a removal only after the add before it has finished', () => {
+      const add = new Subject<Group>();
+      groupWrites.addGroupMembers.and.returnValue(add);
+      let removalSent = false;
+      groupWrites.removeGroupMember.and.returnValue(defer(() => {
+        removalSent = true;
+        return of({} as Group);
+      }));
+      component.update([{ id: 'b' } as User, { id: 'c' } as User], component);
+      expect(removalSent).toBeFalse();
+
+      add.next({} as Group);
+      add.complete();
+
+      expect(removalSent).toBeTrue();
+    });
+
+    it('says why and reloads the members when a member change fails', () => {
+      groupWrites.removeGroupMember.and.returnValue(throwError(() => new Error('The record is being written by another request. Try again.')));
+
+      component.update([{ id: 'b' } as User], component);
+
+      expect(toast.error).toHaveBeenCalledWith('Some member changes could not be saved. The record is being written by another request. Try again.');
+      expect(navigate).toHaveBeenCalledWith(['/p', 'p1', 'project-groups', 'g', 'g1', 'members']);
     });
 
     it('writes nothing when the choice is unchanged', () => {
       component.update([{ id: 'a' } as User, { id: 'b' } as User], component);
 
-      expect(projectService.addGroupMembers).not.toHaveBeenCalled();
-      expect(projectService.deleteGroupMembers).not.toHaveBeenCalled();
+      expect(groupWrites.addGroupMembers).not.toHaveBeenCalled();
+      expect(groupWrites.removeGroupMember).not.toHaveBeenCalled();
     });
   });
 
   describe('removing ticked members', () => {
     beforeEach(() => create({ url: { groupId: 'g1', currentPage: '2', pageSize: '2' }, users: members(3) }));
+
+    it('removes each ticked member from the DEMI group', async () => {
+      component.users.forEach(user => user.checkbox = true);
+
+      await component.deleteItems();
+
+      expect(groupWrites.removeGroupMember).toHaveBeenCalledOnceWith('g1', 'u00');
+    });
 
     it('drops removed members from the list and moves back to the last page', async () => {
       component.users.forEach(user => user.checkbox = true);
@@ -179,22 +217,59 @@ describe('GroupContactComponent', () => {
     });
 
     it('keeps a member whose removal failed', async () => {
-      projectService.deleteGroupMembers.and.returnValue(throwError(() => new Error('403')));
+      groupWrites.removeGroupMember.and.returnValue(throwError(() => new Error('Forbidden')));
       component.users.forEach(user => user.checkbox = true);
 
       await component.deleteItems();
 
       expect(component.tableParams.totalListItems).toBe(3);
-      expect(toast.error).toHaveBeenCalledWith('1 of 1 contacts could not be removed.');
+      expect(toast.error).toHaveBeenCalledWith('1 of 1 contacts could not be removed. Forbidden');
     });
   });
 
-  it('says so when the new group name cannot be saved', async () => {
-    projectService.saveGroup.and.returnValue(throwError(() => new Error('500')));
+  it('removes ticked members one after another', fakeAsync(() => {
+    create({ users: members(2) });
+    const first = new Subject<Group>();
+    groupWrites.removeGroupMember.and.returnValues(first, of({} as Group));
+    component.users.forEach(user => user.checkbox = true);
+    component.deleteItems();
+    flushMicrotasks();
+    expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(1);
+
+    first.next({} as Group);
+    flushMicrotasks();
+
+    expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(2);
+  }));
+
+  it('ignores a second remove while the first is still writing', fakeAsync(() => {
+    create({ users: members(2) });
+    groupWrites.removeGroupMember.and.returnValue(new Subject<Group>());
+    component.users.forEach(user => user.checkbox = true);
+    component.deleteItems();
+    flushMicrotasks();
+
+    component.deleteItems();
+    flushMicrotasks();
+
+    expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(1);
+  }));
+
+  it('renames the DEMI group by its id', async () => {
+    create();
+    component.tempGroupName = 'First Nations';
+
+    await component.saveName();
+
+    expect(groupWrites.renameGroup).toHaveBeenCalledOnceWith('g1', 'First Nations');
+  });
+
+  it('shows DEMI\'s reason when it refuses the new group name', async () => {
+    groupWrites.renameGroup.and.returnValue(throwError(() => new Error('Invalid request body. name: must be at most 500 characters')));
     create();
 
     await component.saveName();
 
-    expect(toast.error).toHaveBeenCalledWith('The group name could not be saved.');
+    expect(toast.error).toHaveBeenCalledWith('The group name could not be saved. Invalid request body. name: must be at most 500 characters');
   });
 });
