@@ -3,7 +3,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Topic } from 'src/app/models/topic';
-import { User } from 'src/app/models/user';
 import { StorageService } from 'src/app/services/storage.service';
 import { UserService } from 'src/app/services/user.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -235,50 +234,41 @@ export class AddEditContactComponent implements OnInit {
       return;
     }
 
-    const user = new User({
-      firstName: this.contactForm.controls.firstName.value,
-      middleName: this.contactForm.controls.middleName.value,
-      lastName: this.contactForm.controls.lastName.value,
-      displayName: [this.contactForm.controls.firstName.value, this.contactForm.controls.middleName.value, this.contactForm.controls.lastName.value]
-        .filter(Boolean).join(' '),
-      email: this.contactForm.controls.email.value,
-      org: this.contactForm.controls.org.value,
-      orgName: this.contactOrganizationName,
-      title: this.contactForm.controls.title.value,
-      phoneNumber: this.contactForm.controls.phoneNumber.value,
-      salutation: this.contactForm.controls.salutation.value,
-      department: this.contactForm.controls.department.value,
-      faxNumber: this.contactForm.controls.faxNumber.value,
-      cellPhoneNumber: this.contactForm.controls.cellPhoneNumber.value,
-      address1: this.contactForm.controls.address1.value,
-      address2: this.contactForm.controls.address2.value,
-      city: this.contactForm.controls.city.value,
-      province: this.contactForm.controls.province.value,
-      country: this.contactForm.controls.country.value,
-      postalCode: this.contactForm.controls.postalCode.value,
-      notes: this.contactForm.controls.notes.value
-    });
+    const form = this.contactForm.getRawValue();
+    const user = {
+      ...form,
+      displayName: [form.firstName, form.middleName, form.lastName].filter(Boolean).join(' '),
+      orgName: this.contactOrganizationName
+    };
 
     this.clearStorageService();
 
     if (!this.isEditing) {
-      this.userService.add(user)
-        .subscribe(item => {
+      this.userService.add(user).subscribe({
+        next: item => {
           this.logger.debug('contact added', 'AddEditContactComponent', item);
           if (this.navigationStackUtils.getLastBackUrl()) {
             this.router.navigate(this.navigationStackUtils.popNavigationStack().backUrl);
           } else {
             this.router.navigate(['/contacts']);
           }
-        });
+        },
+        error: error => this.writeFailed('add', error)
+      });
     } else {
-      user._id = this.contactId;
-      this.userService.save(user)
-        .subscribe(item => {
+      this.userService.save(this.contactId, user).subscribe({
+        next: item => {
           this.logger.debug('contact saved', 'AddEditContactComponent', item);
           this.router.navigate(['/contacts']);
-        });
+        },
+        error: error => this.writeFailed('save', error)
+      });
     }
+  }
+
+  /** ApiService.handleError already logged it. The form stays open, so the user can fix the field DEMI names. */
+  private writeFailed(action: 'add' | 'save', error: Error) {
+    this.toastService.error(`Failed to ${action} contact. ${error.message}`);
   }
 
   public linkOrganization() {

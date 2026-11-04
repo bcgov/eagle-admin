@@ -75,7 +75,7 @@ describe('AddEditContactComponent editing a DEMI contact', () => {
 
     component.onSubmit();
 
-    const body = userService.save.calls.mostRecent().args[0];
+    const body = userService.save.calls.mostRecent().args[1];
     expect(body.displayName).toBe('Ada Lee');
     expect(body.middleName).not.toBe('null');
   });
@@ -85,7 +85,18 @@ describe('AddEditContactComponent editing a DEMI contact', () => {
 
     component.onSubmit();
 
-    expect((userService.save.calls.mostRecent().args[0] as { _id: string })._id).toBe('u1');
+    expect(userService.save.calls.mostRecent().args[0]).toBe('u1');
+  });
+
+  it('a refused contact save toasts DEMI\'s field text', () => {
+    const refusal = 'Invalid request body. isPublished: only a user whose orgName is \'Environmental Assessment Office\' can be public';
+    userService.save.and.returnValue(throwError(() => new Error(refusal)));
+    create();
+
+    component.onSubmit();
+
+    expect(toast.error).toHaveBeenCalledWith(`Failed to save contact. ${refusal}`);
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('tells the user and goes back to contacts when the read fails', () => {

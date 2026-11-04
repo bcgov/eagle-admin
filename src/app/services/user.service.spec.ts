@@ -7,8 +7,7 @@ import { UserService } from './user.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
-import { User as LegacyUser } from '../models/user';
-import { User } from '../models/demi/user';
+import { PUBLIC_ORG_NAME, User } from '../models/demi/user';
 
 function nativeUser(overrides: Partial<User> = {}): User {
   return {
@@ -94,44 +93,85 @@ describe('UserService', () => {
     });
   });
 
-  describe('save', () => {
-    it('sends a legacy contact unchanged to user/<_id>', () => {
-      const legacy = new LegacyUser({ _id: 'e1', firstName: 'Ada', lastName: 'Lee' });
-      service.save(legacy).subscribe();
+  describe('contact writes', () => {
+    it('save PUTs users/<id> without _id and with isPublished true for an EAO contact', () => {
+      service.save('u1', nativeUser({ orgName: PUBLIC_ORG_NAME })).subscribe();
 
-      const req = http.expectOne('/api/user/e1');
+      const req = http.expectOne('/demi/api/users/u1');
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toBe(legacy);
-      req.flush({});
-    });
-
-    it('sends a native contact to user/<id> with the id as _id', () => {
-      service.save(nativeUser({ id: 'e2' })).subscribe();
-
-      const req = http.expectOne('/api/user/e2');
-      expect(req.request.body._id).toBe('e2');
-      expect(req.request.body.orgName).toBe('EAO');
-      req.flush({});
-    });
-
-    it('drops the native id from the eagle-api body', () => {
-      service.save(nativeUser({ id: 'e2' })).subscribe();
-
-      const req = http.expectOne('/api/user/e2');
+      expect('_id' in req.request.body).toBeFalse();
       expect('id' in req.request.body).toBeFalse();
-      req.flush({});
+      expect(req.request.body.isPublished).toBeTrue();
+      req.flush(nativeUser());
+    });
+
+    it('add POSTs users with isPublished false for a contact outside EAO', () => {
+      service.add(nativeUser({ orgName: 'Ministry of Forests' })).subscribe();
+
+      const req = http.expectOne('/demi/api/users');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body.isPublished).toBeFalse();
+      req.flush(nativeUser());
     });
   });
 
-  describe('add', () => {
-    it('posts a new contact without an id unchanged', () => {
-      const fresh = new LegacyUser({ firstName: 'Ada', lastName: 'Lee' });
-      service.add(fresh).subscribe();
+  describe('group writes', () => {
+    it('addGroup POSTs groups with the DEMI project id and the name', () => {
+      service.addGroup('track-42', 'Agencies').subscribe();
 
-      const req = http.expectOne('/api/user/');
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toBe(fresh);
+      const req = http.expectOne(r => r.method === 'POST' && r.url === '/demi/api/groups');
+      expect(req.request.body).toEqual({ projectId: 'track-42', name: 'Agencies' });
       req.flush({});
+    });
+
+    it('renameGroup PUTs groups/<id> with only the name', () => {
+      service.renameGroup('g1', 'First Nations').subscribe();
+
+      const req = http.expectOne(r => r.method === 'PUT' && r.url === '/demi/api/groups/g1');
+      expect(req.request.body).toEqual({ name: 'First Nations' });
+      req.flush({});
+    });
+
+    it('deleteGroup DELETEs groups/<id>', () => {
+      service.deleteGroup('g1').subscribe();
+
+      http.expectOne(r => r.method === 'DELETE' && r.url === '/demi/api/groups/g1').flush({});
+    });
+
+    it('removeGroupMember DELETEs groups/<id>/members/<userId>', () => {
+      service.removeGroupMember('g1', 'u1').subscribe();
+
+      http.expectOne(r => r.method === 'DELETE' && r.url === '/demi/api/groups/g1/members/u1').flush({});
+    });
+
+    it('addGroupMembers sends 150 ids as two bodies and emits the group once, after the second', () => {
+      const ids = Array.from({ length: 150 }, (_, i) => `u${i}`);
+      const emitted: unknown[] = [];
+      service.addGroupMembers('g1', ids).subscribe(group => emitted.push(group));
+
+      const first = http.expectOne('/demi/api/groups/g1/members');
+      expect(first.request.body.members.length).toBe(100);
+      first.flush({ id: 'g1', members: ids.slice(0, 100) });
+      const second = http.expectOne('/demi/api/groups/g1/members');
+      expect(second.request.body.members).toEqual(ids.slice(100));
+      second.flush({ id: 'g1', members: ids });
+
+      expect(emitted).toEqual([{ id: 'g1', members: ids }]);
+    });
+
+    it('addGroupMembers sends no second body when the first is refused', async () => {
+      const ids = Array.from({ length: 150 }, (_, i) => `u${i}`);
+      const result = firstValueFrom(service.addGroupMembers('g1', ids));
+
+      http.expectOne('/demi/api/groups/g1/members')
+        .flush({ error: 'Not found.' }, { status: 404, statusText: 'Not Found' });
+
+      await expectAsync(result).toBeRejectedWithError('Not found.');
+      http.expectNone('/demi/api/groups/g1/members');
+    });
+
+    it('addGroupMembers with no ids sends no request', async () => {
+      expect(await firstValueFrom(service.addGroupMembers('g1', []))).toBeNull();
     });
   });
 });
