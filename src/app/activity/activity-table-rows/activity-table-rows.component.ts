@@ -11,7 +11,7 @@ import { DatePipe } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
 import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/services/toast.service';
-import { StatusLabel, UPDATE_CONFLICT_MESSAGE, isConflict, statusLabel } from '../update-rules';
+import { StatusLabel, statusLabel } from '../update-rules';
 
 /** What archiving changes for the public, by current status; drafts were never public. */
 const ARCHIVE_MESSAGE: Partial<Record<StatusLabel, string>> = {
@@ -84,8 +84,8 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
                 this._changeDetectionRef.markForCheck();
               },
               error: error => {
-                this.toastService.error('Update not archived. Try again.');
-                this.logger.error('archive activity failed', 'ActivityTableRowsComponent', error);
+                this.logger.error('archive update failed', 'ActivityTableRowsComponent', error);
+                this.toastService.error(`Failed to archive update. ${error.message}`);
               }
             });
         }
@@ -101,10 +101,9 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
       .subscribe({
         next: () => { this._changeDetectionRef.markForCheck(); },
         error: error => {
-          if (isConflict(error)) {
-            this.toastService.error(UPDATE_CONFLICT_MESSAGE);
-          }
-          this.logger.error('save activity failed', 'ActivityTableRowsComponent', error);
+          this.logger.error('pin update failed', 'ActivityTableRowsComponent', error);
+          // togglePin has flipped the row back by now.
+          this.toastService.error(`Failed to ${activity.pinned ? 'unpin' : 'pin'} update. ${error.message}`);
           this._changeDetectionRef.markForCheck();
         }
       });

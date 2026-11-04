@@ -9,20 +9,20 @@ import { NgbDatepickerModule, NgbModal, NgbTimepickerModule } from '@ng-bootstra
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AbstractControl, UntypedFormArray, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
-import { RecentActivity, UpdateImage } from 'src/app/models/recentActivity';
+import { UpdateImage } from 'src/app/models/recentActivity';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { DemiApiService } from 'src/app/services/demi-api.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
-import { RecentActivityService } from 'src/app/services/recent-activity';
+import { RecentActivityService, UpdateWrite } from 'src/app/services/recent-activity';
 import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { DemiCommentPeriod } from 'src/app/models/demi/comment-period';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
-import { DemiUpdate, updateParentId } from 'src/app/models/demi/update';
+import { updateParentId } from 'src/app/models/demi/update';
 import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
@@ -173,10 +173,9 @@ export class AddEditActivityComponent implements OnInit {
     this.configService.ensureListsLoaded();
     const activityId = this.route.snapshot.paramMap.get('activityId');
     if (activityId) {
-      this.recentActivityService.getNative(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((row: DemiUpdate) => {
+      this.recentActivityService.getNative(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(row => {
         this.isEditing = true;
-        // Eagle ids, as the form and eagle-api writes use them.
-        const data = { ...row, _id: eagleWriteId(row), project: updateParentId(row) };
+        const data = { ...row, project: updateParentId(row) };
         this.buildForm(data);
         this.activity = data;
         this.statusText = statusLabel(data);
@@ -294,19 +293,17 @@ export class AddEditActivityComponent implements OnInit {
       this.toastService.error((e as Error).message);
       return;
     }
-    const activity = new RecentActivity({
-      _id: this.isEditing ? this.activity._id : undefined,
+    const activity: UpdateWrite = {
+      id: this.isEditing ? this.activity.id : undefined,
+      _etag: this.isEditing ? this.activity._etag : undefined,
       headline: form.headline.value,
       content: form.content.value,
-      dateAdded: this.isEditing ? convertFormGroupNGBDateToJSDate(form.dateAdded.value) : new Date(),
-      project: form.project.value || null,
+      projectId: form.project.value || null,
       type,
       pcp: form.pcp.value || null,
       notificationName: type === 'Project Notification Public Comment Period' ? form.notificationName.value : null,
       contentUrl: form.contentUrl.value,
       documentUrl: form.documentUrl.value,
-      pinned: this.isEditing ? this.activity.pinned === true : false,
-      dateUpdated: this.isEditing ? this.activity.dateUpdated : null,
       complianceAndEnforcement: form.complianceAndEnforcement.value,
       category: form.category.value,
       shortHeadline: form.shortHeadline.value,
@@ -321,10 +318,10 @@ export class AddEditActivityComponent implements OnInit {
       engagementUrl: form.engagementUrl.value?.trim() || null,
       subject: form.category.value === CORPORATE_CATEGORY ? form.subject.value : null,
       ...statusFields
-    });
-    // DEMI rows do not carry the flag, so the edit form hides it; leave Eagle's value alone.
+    };
+    // DEMI rows do not carry the flag, so the edit form hides it; leave the stored value alone.
     if (this.isEditing) {
-      delete (activity as Partial<RecentActivity>).complianceAndEnforcement;
+      delete activity.complianceAndEnforcement;
     }
 
     this.saving = true;
@@ -336,6 +333,7 @@ export class AddEditActivityComponent implements OnInit {
       },
       error: (error: Error) => {
         this.saving = false;
+        this.logger.error('save update failed', 'AddEditActivityComponent', error);
         this.toastService.error(isConflict(error) ? UPDATE_CONFLICT_MESSAGE : `Update not saved: ${error.message}`);
         this._cdr.markForCheck();
       }

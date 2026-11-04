@@ -25,7 +25,7 @@ describe('ActivityTableRowsComponent', () => {
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
         KeycloakService,
-        { provide: ConfigService, useValue: { getApiPath: () => '/api' } },
+        { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'debug']) },
         { provide: ToastService, useValue: toastService },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
@@ -55,26 +55,26 @@ describe('ActivityTableRowsComponent', () => {
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/activity', 'a1', 'edit']);
   });
 
-  it('sends the dateUpdated from the first save with the second toggle', () => {
-    const row = { id: 'a1', eagleId: 'a1', pinned: false, dateUpdated: 'd1' };
+  it('togglePin PUTs {pinned} only', () => {
+    const row = { id: 'a1', eagleId: 'e1', pinned: false, headline: 'H', _etag: '"etag-1"', dateUpdated: 'd1' };
 
     component.togglePin(row);
-    http.expectOne('/api/recentActivity/a1').flush({ _id: 'a1', pinned: true, dateUpdated: 'd2' });
-    component.togglePin(row);
 
-    const second = http.expectOne('/api/recentActivity/a1');
-    expect(second.request.body.dateUpdated).toBe('d2');
-    second.flush({ _id: 'a1', pinned: false, dateUpdated: 'd3' });
+    const req = http.expectOne('/demi/api/updates/a1');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual({ pinned: true });
+    req.flush({ ...row, pinned: true });
+    expect(row.pinned).toBeTrue();
   });
 
-  it('flips the pin back and shows the changed-by-someone-else toast on 409', () => {
-    const row = { id: 'a1', eagleId: 'a1', pinned: false, dateUpdated: 'stale' };
+  it('flips the pin back and toasts DEMI\'s reason when the PUT is refused', () => {
+    const row = { id: 'a1', eagleId: 'e1', pinned: false };
 
     component.togglePin(row);
-    http.expectOne('/api/recentActivity/a1').flush(null, { status: 409, statusText: 'Conflict' });
+    http.expectOne('/demi/api/updates/a1').flush({ error: 'Forbidden.' }, { status: 403, statusText: 'Forbidden' });
 
     expect(row.pinned).toBeFalse();
-    expect(toastService.error).toHaveBeenCalledWith('This update was changed by someone else. Reload to see the latest.');
+    expect(toastService.error).toHaveBeenCalledWith('Failed to pin update. Forbidden.');
   });
 
   describe('archiveActivity', () => {
@@ -85,13 +85,13 @@ describe('ActivityTableRowsComponent', () => {
       await result;
     }
 
-    it('marks the row archived when the API accepts it', async () => {
-      const row = { id: 'a1', eagleId: 'a1', status: 'published', active: true };
+    it('archive DELETEs updates/<id>', async () => {
+      const row = { id: 'a1', eagleId: 'e1', status: 'published', active: true };
 
       await confirmArchive(row);
-      const req = http.expectOne('/api/recentActivity/a1');
+      const req = http.expectOne('/demi/api/updates/a1');
       expect(req.request.method).toBe('DELETE');
-      req.flush({ _id: 'a1', status: 'archived' });
+      req.flush({ id: 'a1', status: 'archived', active: false });
 
       expect(row.status).toBe('archived');
       expect(row.active).toBeFalse();
@@ -134,18 +134,18 @@ describe('ActivityTableRowsComponent', () => {
       component.archiveActivity(row);
       await result.catch(() => undefined);
 
-      http.expectNone('/api/recentActivity/a1');
+      http.expectNone('/demi/api/updates/a1');
       expect(row.status).toBe('published');
     });
 
-    it('keeps the row and shows an error toast when the archive fails', async () => {
-      const row = { id: 'a1', eagleId: 'a1', status: 'published', active: true };
+    it('keeps the row and toasts DEMI\'s reason when the archive fails', async () => {
+      const row = { id: 'a1', eagleId: 'e1', status: 'published', active: true };
 
       await confirmArchive(row);
-      http.expectOne('/api/recentActivity/a1').flush(null, { status: 500, statusText: 'Server Error' });
+      http.expectOne('/demi/api/updates/a1').flush({ error: 'Not found.' }, { status: 404, statusText: 'Not Found' });
 
       expect(row.status).toBe('published');
-      expect(toastService.error).toHaveBeenCalledWith('Update not archived. Try again.');
+      expect(toastService.error).toHaveBeenCalledWith('Failed to archive update. Not found.');
     });
   });
 

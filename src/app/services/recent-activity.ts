@@ -1,32 +1,34 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, defer, throwError } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-import { ApiService } from './api';
 import { DemiApiService } from './demi-api.service';
-import { RecentActivity } from '../models/recentActivity';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
-import { toEagleWriteBody } from '../models/demi/comment-period';
-import { DemiUpdate, updateParentId } from '../models/demi/update';
-import { isConflict } from '../activity/update-rules';
+import { DemiUpdate } from '../models/demi/update';
 
-/**
- * eagle-api write body for an update. A body with `_id` is legacy and goes out unchanged; a native row gets its
- * Eagle id and `project` = the parent's Eagle id, minus DEMI-only fields. A row with no Eagle id throws.
- */
-export function toEagleUpdateBody(activity: RecentActivity | DemiUpdate, isNew = false): any {
-  if ('_id' in activity) {
-    return activity;
-  }
-  const project = updateParentId(activity);
-  const body = toEagleWriteBody(activity, 'update', project ? { project } : {}, isNew);
-  delete body.isPublished;
-  return body;
+/** A DEMI update row as its writers read it: `_etag` is the version a PUT names. Mirrored rows lack the C&E flag. */
+export type LoadedUpdate = DemiUpdate & { _etag?: string; complianceAndEnforcement?: boolean };
+
+/** What a form or table hands to a write. `projectId` is the parent's Eagle id. */
+export type UpdateWrite = Partial<Omit<LoadedUpdate, 'publishDate'>> & { publishDate?: string | Date | null };
+
+// DEMI's POST /updates takes only these; any other key is a 400 except `_id`, `dateAdded`, `dateUpdated`,
+// `read` and `notifiedAt`, which it drops.
+const CREATE_FIELDS = [
+  'projectId', 'headline', 'content', 'type', 'active', 'complianceAndEnforcement', 'notificationName', 'contentUrl',
+  'documentUrl', 'pcp', 'projectNotification', 'category', 'subject', 'shortHeadline', 'summary', 'attachments',
+  'location', 'engagementUrl', 'status', 'publishDate', 'featuredImage', 'images', 'regions'
+] as const;
+// PUT also takes these. A row changed since its `_etag` was read is a 409.
+const UPDATE_FIELDS = [...CREATE_FIELDS, 'pinned', '_etag'] as const;
+
+function writeBody(update: UpdateWrite, fields: readonly (keyof UpdateWrite)[]): UpdateWrite {
+  return Object.fromEntries(fields.filter(key => update[key] !== undefined).map(key => [key, update[key]]));
 }
 
+/** DEMI `/updates` reads and writes. Writes go to the row's DEMI `id`; errors pass through for the caller to toast. */
 @Injectable({ providedIn: 'root' })
 export class RecentActivityService {
-  private api = inject(ApiService);
   private demi = inject(DemiApiService);
 
   /** One page of updates, with `total`. `filters.project` takes the parent's EAGLE id. */
@@ -34,45 +36,32 @@ export class RecentActivityService {
     return this.demi.list<DemiUpdate>('updates', { count: true, ...params });
   }
 
-  getNative(id: string): Observable<DemiUpdate> {
-    return this.demi.get<DemiUpdate>('updates', id);
+  /** Read fresh: the edit form sends this `_etag` back with its PUT. */
+  getNative(id: string): Observable<LoadedUpdate> {
+    return this.demi.get<LoadedUpdate>('updates', id, { fresh: true });
   }
 
-  add(activity: RecentActivity | DemiUpdate): Observable<any> {
-    return defer(() => this.api.post<RecentActivity>('recentActivity/', toEagleUpdateBody(activity, true))).pipe(
-      map(res => res ? new RecentActivity(res) : []),
-      catchError(error => this.api.handleError(error))
-    );
+  add(update: UpdateWrite): Observable<LoadedUpdate> {
+    return this.demi.create<LoadedUpdate>('updates', writeBody(update, CREATE_FIELDS));
   }
 
-  // A 409 (stale dateUpdated) passes through as-is so callers can tell it apart.
-  save(activity: RecentActivity | DemiUpdate): Observable<any> {
-    return defer(() => {
-      const body = toEagleUpdateBody(activity);
-      return this.api.put<RecentActivity>(`recentActivity/${body._id}`, body);
-    }).pipe(
-      map(res => res ? new RecentActivity(res) : []),
-      catchError(error => isConflict(error) ? throwError(() => error) : this.api.handleError(error))
-    );
+  save(update: UpdateWrite): Observable<LoadedUpdate> {
+    return this.demi.update<LoadedUpdate>('updates', update.id, writeBody(update, UPDATE_FIELDS));
   }
 
-  // Keeps the row's dateUpdated current so the next PUT is not a 409; flips back on error.
-  togglePin(activity: RecentActivity | DemiUpdate): Observable<any> {
-    activity.pinned = !activity.pinned;
-    return this.save(activity).pipe(
-      tap(saved => { activity.dateUpdated = saved.dateUpdated; }),
+  /** Flips `row.pinned` at once and back on error. Sends no `_etag`, so a pin never clashes with an edit. */
+  togglePin(row: UpdateWrite): Observable<LoadedUpdate> {
+    row.pinned = !row.pinned;
+    return this.demi.update<LoadedUpdate>('updates', row.id, { pinned: row.pinned }).pipe(
       catchError(error => {
-        activity.pinned = !activity.pinned;
+        row.pinned = !row.pinned;
         return throwError(() => error);
       })
     );
   }
 
-  // The API's DELETE route archives the Update (status 'archived'); nothing is removed.
-  archive(activity: RecentActivity | DemiUpdate): Observable<any> {
-    return defer(() => this.api.delete<RecentActivity>(`recentActivity/${toEagleUpdateBody(activity)._id}`)).pipe(
-      map(res => res ? new RecentActivity(res) : []),
-      catchError(error => this.api.handleError(error))
-    );
+  /** DEMI's DELETE sets status `archived`; nothing is removed. */
+  archive(row: UpdateWrite): Observable<LoadedUpdate> {
+    return this.demi.remove<LoadedUpdate>('updates', row.id);
   }
 }

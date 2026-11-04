@@ -23,7 +23,7 @@ describe('AddEditActivityComponent', () => {
   let fixture: ComponentFixture<AddEditActivityComponent>;
 
   // Test rows use Eagle field names; DEMI answers with `id`, `eagleId` and the parent's Eagle id in `projectId`.
-  const nativeOf = ({ _id, project, ...rest }: any) => ({ ...rest, id: _id, eagleId: _id, projectId: project ?? null });
+  const nativeOf = ({ _id, project, ...rest }: any) => ({ id: _id, eagleId: _id, ...rest, projectId: project ?? null });
   const demiProject = (eagleId: string) => ({ id: `track-${eagleId}`, eagleId, name: eagleId, address: 'Kamloops' });
   const docs = (rows: any[]) => of({ rows } as any);
   const documentSearches = () => demiApi.list.calls.allArgs().filter(args => args[0] === 'documents').map(args => args[1]!.filters as any);
@@ -35,8 +35,8 @@ describe('AddEditActivityComponent', () => {
     demiApi.list.and.returnValue(docs([]));
     recentActivityService = jasmine.createSpyObj('RecentActivityService', ['getNative', 'add', 'save']);
     recentActivityService.getNative.and.returnValue(of(row && nativeOf(row)));
-    recentActivityService.add.and.returnValue(of({}));
-    recentActivityService.save.and.returnValue(of({}));
+    recentActivityService.add.and.returnValue(of({} as any));
+    recentActivityService.save.and.returnValue(of({} as any));
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error']);
     const projectService = jasmine.createSpyObj('ProjectService', ['list', 'getNative']);
     projectService.list.and.returnValue(of({ rows: [demiProject('p1'), demiProject('p2')] }));
@@ -337,15 +337,15 @@ describe('AddEditActivityComponent', () => {
   });
 
   describe('edit conflicts', () => {
-    const row = { _id: 'a1', type: 'News', project: 'p1', dateAdded: '2026-09-01T00:00:00Z', status: 'draft', dateUpdated: '2026-09-20T10:00:00.000Z' };
+    const row = { _id: 'a1', type: 'News', project: 'p1', dateAdded: '2026-09-01T00:00:00Z', status: 'draft', _etag: '"etag-1"' };
 
-    it('sends the loaded dateUpdated in the PUT body', () => {
+    it('saves with the loaded row\'s _etag', () => {
       const component = create('a1', row);
       component.save('keep');
-      expect(sentBody(recentActivityService.save).dateUpdated).toBe('2026-09-20T10:00:00.000Z');
+      expect(sentBody(recentActivityService.save)._etag).toBe('"etag-1"');
     });
 
-    it('shows the changed-by-someone-else toast on 409 and stays on the form', () => {
+    it('a 409 toasts UPDATE_CONFLICT_MESSAGE', () => {
       const component = create('a1', row);
       recentActivityService.save.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
       component.save('keep');
@@ -486,7 +486,7 @@ describe('AddEditActivityComponent', () => {
       component.updateType();
       expect(component.myForm.valid).toBeTrue();
       component.save('publish');
-      expect(sentBody(recentActivityService.add).project).toBeNull();
+      expect(sentBody(recentActivityService.add).projectId).toBeNull();
     });
   });
 
@@ -743,12 +743,12 @@ describe('AddEditActivityComponent', () => {
   describe('DEMI reads', () => {
     const pcpRow = { _id: 'a1', type: 'Public Comment Period', project: 'p9', pcp: 'c1', dateAdded: '2026-09-01T00:00:00Z' };
 
-    it('edits the update under its Eagle id and keeps the Eagle project id', () => {
-      const component = create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
+    it('saves to the loaded row\'s DEMI id, not the route id, and keeps the Eagle project id', () => {
+      const component = create('a1', { ...pcpRow, id: 'demi-a1' }, [{ id: 'c1', eagleId: 'c1' }]);
       expect(recentActivityService.getNative).toHaveBeenCalledWith('a1');
       component.save('draft');
-      expect(sentBody(recentActivityService.save)._id).toBe('a1');
-      expect(sentBody(recentActivityService.save).project).toBe('p9');
+      expect(sentBody(recentActivityService.save).id).toBe('demi-a1');
+      expect(sentBody(recentActivityService.save).projectId).toBe('p9');
     });
 
     it('lists comment periods by the DEMI project id, resolving a project missing from the list by its Eagle id', () => {
