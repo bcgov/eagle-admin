@@ -1,4 +1,4 @@
-/** A DEMI project contact group (`GET <DEMI_API_PATH>/groups`). `id` is the DEMI group id, not the Eagle `_id`. */
+/** A DEMI project contact group (`GET <DEMI_API_PATH>/groups`). `id` is the Eagle Group `_id` for a mirrored group, or a UUID for one made in DEMI. */
 export interface Group {
   id: string;
   /** DEMI (Track) project id, not the Eagle one; `projectEagleId` carries that. */

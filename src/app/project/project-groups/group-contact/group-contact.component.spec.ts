@@ -1,7 +1,7 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, flushMicrotasks } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, Subject, defer, of, throwError } from 'rxjs';
 import { GroupContactComponent } from './group-contact.component';
 import { ExcelService } from 'src/app/services/excel.service';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -53,7 +53,7 @@ describe('GroupContactComponent', () => {
           }
         },
         { provide: UserService, useValue: { ...groupWrites, getGroup: () => group, getUsersByIds } },
-        { provide: StorageService, useValue: { currentProjectData: { _id: 'p1' }, state: {} } },
+        { provide: StorageService, useValue: { currentProjectData: { _id: 'p1', demiId: 't1' }, state: {} } },
         { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: confirm }) } },
         { provide: ExcelService, useValue: {} },
         { provide: NavigationStackUtils, useValue: {} },
@@ -156,9 +156,35 @@ describe('GroupContactComponent', () => {
       expect(groupWrites.removeGroupMember).toHaveBeenCalledOnceWith('g1', 'a');
     });
 
-    it('returns to the members page under the route project id', () => {
+    it('returns to the members page under the Eagle project id, not the DEMI one', () => {
       component.update([{ id: 'b' } as User], component);
 
+      expect(navigate).toHaveBeenCalledWith(['/p', 'p1', 'project-groups', 'g', 'g1', 'members']);
+    });
+
+    it('sends a removal only after the add before it has finished', () => {
+      const add = new Subject<Group>();
+      groupWrites.addGroupMembers.and.returnValue(add);
+      let removalSent = false;
+      groupWrites.removeGroupMember.and.returnValue(defer(() => {
+        removalSent = true;
+        return of({} as Group);
+      }));
+      component.update([{ id: 'b' } as User, { id: 'c' } as User], component);
+      expect(removalSent).toBeFalse();
+
+      add.next({} as Group);
+      add.complete();
+
+      expect(removalSent).toBeTrue();
+    });
+
+    it('says why and reloads the members when a member change fails', () => {
+      groupWrites.removeGroupMember.and.returnValue(throwError(() => new Error('The record is being written by another request. Try again.')));
+
+      component.update([{ id: 'b' } as User], component);
+
+      expect(toast.error).toHaveBeenCalledWith('Some member changes could not be saved. The record is being written by another request. Try again.');
       expect(navigate).toHaveBeenCalledWith(['/p', 'p1', 'project-groups', 'g', 'g1', 'members']);
     });
 
@@ -201,6 +227,21 @@ describe('GroupContactComponent', () => {
     });
   });
 
+  it('removes ticked members one after another', fakeAsync(() => {
+    create({ users: members(2) });
+    const first = new Subject<Group>();
+    groupWrites.removeGroupMember.and.returnValues(first, of({} as Group));
+    component.users.forEach(user => user.checkbox = true);
+    component.deleteItems();
+    flushMicrotasks();
+    expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(1);
+
+    first.next({} as Group);
+    flushMicrotasks();
+
+    expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(2);
+  }));
+
   it('renames the DEMI group by its id', async () => {
     create();
     component.tempGroupName = 'First Nations';
@@ -211,11 +252,11 @@ describe('GroupContactComponent', () => {
   });
 
   it('shows DEMI\'s reason when it refuses the new group name', async () => {
-    groupWrites.renameGroup.and.returnValue(throwError(() => Object.assign(new Error('name: must not be empty'), { status: 400 })));
+    groupWrites.renameGroup.and.returnValue(throwError(() => new Error('name: must be at most 500 characters')));
     create();
 
     await component.saveName();
 
-    expect(toast.error).toHaveBeenCalledWith('The group name could not be saved. name: must not be empty');
+    expect(toast.error).toHaveBeenCalledWith('The group name could not be saved. name: must be at most 500 characters');
   });
 });

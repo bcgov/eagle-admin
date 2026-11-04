@@ -98,11 +98,11 @@ describe('ProjectGroupsComponent', () => {
 
   it('shows DEMI\'s reason when it refuses a new group', async () => {
     modalResult = Promise.resolve('Agencies');
-    userService.addGroup.and.returnValue(throwError(() => Object.assign(new Error('name: already used in this project'), { status: 400 })));
+    userService.addGroup.and.returnValue(throwError(() => new Error('projectId: must name a project')));
 
     await component.addNewGroup();
 
-    expect(toast.error).toHaveBeenCalledWith('The group could not be added. name: already used in this project');
+    expect(toast.error).toHaveBeenCalledWith('The group could not be added. projectId: must name a project');
   });
 
   it('deletes each ticked group by its DEMI id', async () => {
@@ -113,5 +113,15 @@ describe('ProjectGroupsComponent', () => {
     await component.deleteItems();
 
     expect(userService.deleteGroup).toHaveBeenCalledOnceWith('g1');
+  });
+
+  it('counts a refused group delete and shows DEMI\'s reason', async () => {
+    modalResult = Promise.resolve(true);
+    userService.deleteGroup.and.returnValue(throwError(() => new Error('Group not found')));
+    component.entries()[0].checkbox = true;
+
+    await component.deleteItems();
+
+    expect(toast.error).toHaveBeenCalledWith('1 of 1 groups could not be deleted. Group not found');
   });
 });
