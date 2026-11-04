@@ -1,13 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
-import { Observable, forkJoin } from 'rxjs';
-import { finalize } from 'rxjs/operators';
+import { Observable, forkJoin, of } from 'rxjs';
+import { finalize, map, switchMap } from 'rxjs/operators';
 import { DemiNotification, LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
 import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { DocumentService } from 'src/app/services/document.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { DatePipe } from '@angular/common';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -25,6 +26,7 @@ export class ProjectNotificationDetailComponent implements OnInit {
   notificationProjectService = inject(NotificationProjectService);
   documentService = inject(DocumentService);
   private storageService = inject(StorageService);
+  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private _cdr = inject(ChangeDetectorRef);
 
@@ -73,31 +75,42 @@ export class ProjectNotificationDetailComponent implements OnInit {
 
   publish() {
     // Documents stay on eagle-api; one with no Eagle record cannot be written.
-    const documents = this.documents.filter(item => item._id).map(item => this.documentService.publish(item._id));
-    this.setPublished(this.notificationProjectService.publish(this.projectNotification.demiId), documents);
+    this.setPublished('publish', this.notificationProjectService.publish(this.projectNotification.demiId),
+      () => this.documents.filter(item => item._id).map(item => this.documentService.publish(item._id)));
   }
 
   unPublish() {
-    const documents = this.documents.filter(item => item._id).map(item => this.documentService.unPublish(item._id));
-    this.setPublished(this.notificationProjectService.unpublish(this.projectNotification.demiId), documents);
+    this.setPublished('unpublish', this.notificationProjectService.unpublish(this.projectNotification.demiId),
+      () => this.documents.filter(item => item._id).map(item => this.documentService.unPublish(item._id)));
   }
 
-  /** A refused notification write completes empty, so forkJoin emits nothing and the badge stays as it was. */
-  private setPublished(notification: Observable<DemiNotification>, documents: Observable<unknown>[]) {
+  /**
+   * The notification first, its documents only once DEMI accepts it. A refused notification
+   * completes empty and a failed document toasts; either way the badge stays as it was.
+   */
+  private setPublished(action: 'publish' | 'unpublish', notification: Observable<DemiNotification>,
+    documents: () => Observable<unknown>[]) {
     this.loading = true;
-    forkJoin([notification, ...documents])
+    notification
       .pipe(
+        switchMap((row): Observable<DemiNotification> => {
+          const writes = documents();
+          return writes.length ? forkJoin(writes).pipe(map(() => row)) : of(row);
+        }),
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.loading = false;
           this._cdr.markForCheck();
         })
       )
-      .subscribe(([row]) => {
-        this.projectNotification = legacyNotification(row);
-        this.isPublished = row.isPublished;
-        // The edit screen reads the publish state from here.
-        this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
+      .subscribe({
+        next: row => {
+          this.projectNotification = legacyNotification(row);
+          this.isPublished = row.isPublished;
+          // The edit screen reads the publish state from here.
+          this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
+        },
+        error: (error: Error) => this.toast.error(`Failed to ${action} documents. ${error.message}`)
       });
   }
 

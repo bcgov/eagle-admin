@@ -132,7 +132,24 @@ describe('NotificationProjectService', () => {
       http.expectOne(`/demi/api/notifications/${DEMI_ID}`).flush({ ...NATIVE, id: DEMI_ID, isPublished: false });
 
       expect((await saved).id).toBe(DEMI_ID);
-      http.expectNone(`/demi/api/notifications/${DEMI_ID}/unpublish`);
+    });
+
+    it('save sends only the fields it is given, so DEMI keeps the comment period fields', () => {
+      service.save(DEMI_ID, { name: 'x' }).subscribe();
+
+      const put = http.expectOne(`/demi/api/notifications/${DEMI_ID}`);
+      expect(Object.keys(put.request.body)).toEqual(['name']);
+      put.flush(NATIVE);
+    });
+
+    it('save reports a refused publish as a publish failure', async () => {
+      const saved = firstValueFrom(service.save(DEMI_ID, FIELDS, true), { defaultValue: 'none' });
+
+      http.expectOne(`/demi/api/notifications/${DEMI_ID}`).flush({ ...NATIVE, id: DEMI_ID, isPublished: false });
+      http.expectOne(`/demi/api/notifications/${DEMI_ID}/publish`).flush({ error: 'Forbidden.' }, { status: 403, statusText: 'Forbidden' });
+
+      expect(await saved).toBe('none');
+      expect(toast.error).toHaveBeenCalledOnceWith('Failed to publish project notification. Forbidden.');
     });
 
     it('save sends a cleared field as null, since DEMI keeps any field left out', () => {

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { EMPTY, of } from 'rxjs';
+import { EMPTY, of, throwError } from 'rxjs';
 
 import { ProjectNotificationDetailComponent } from './project-notification-detail.component';
 import { DemiNotification, LegacyNotification } from 'src/app/models/demi/notification';
@@ -8,6 +8,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 const NOTIFICATION = { _id: 'pn-eagle-1', demiId: 'pn-demi-1', name: 'Lynn Valley Coal Mine PN', centroid: [], read: ['staff'] } as LegacyNotification;
 const ROW = { id: 'pn-demi-1', eagleId: 'pn-eagle-1', name: 'Lynn Valley Coal Mine PN', centroid: [] } as DemiNotification;
@@ -22,6 +23,7 @@ describe('ProjectNotificationDetailComponent', () => {
   let documents: jasmine.SpyObj<DocumentService>;
   let notifications: jasmine.SpyObj<NotificationProjectService>;
   let storage: { state: any };
+  let toast: jasmine.SpyObj<ToastService>;
 
   function create(notification: LegacyNotification | null = NOTIFICATION) {
     storage.state = { currentProject: notification ? { type: 'currentProjectNotification', data: notification } : null };
@@ -39,6 +41,7 @@ describe('ProjectNotificationDetailComponent', () => {
     notifications.publish.and.returnValue(of({ ...ROW, isPublished: true, read: ['staff', 'public'] }));
     notifications.unpublish.and.returnValue(of({ ...ROW, isPublished: false, read: ['staff'] }));
     storage = { state: {} };
+    toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
 
     TestBed.configureTestingModule({
       imports: [ProjectNotificationDetailComponent],
@@ -47,6 +50,7 @@ describe('ProjectNotificationDetailComponent', () => {
         { provide: DocumentService, useValue: documents },
         { provide: NotificationProjectService, useValue: notifications },
         { provide: StorageService, useValue: storage },
+        { provide: ToastService, useValue: toast },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['debug', 'error']) }
       ]
     });
@@ -75,12 +79,33 @@ describe('ProjectNotificationDetailComponent', () => {
     expect(storage.state.currentProject.data.read).toContain('public');
   });
 
-  it('keeps the badge when DEMI refuses the publish', () => {
+  it('keeps the badge and publishes no document when DEMI refuses the publish', () => {
     notifications.publish.and.returnValue(EMPTY);
     create();
 
     component.publish();
 
+    expect(documents.publish).not.toHaveBeenCalled();
+    expect(component.isPublished).toBeFalse();
+    expect(component.loading).toBeFalse();
+  });
+
+  it('publishes a notification that has no documents', () => {
+    documents.listNative.and.returnValue(of({ rows: [], total: 0 }));
+    create();
+
+    component.publish();
+
+    expect(component.isPublished).toBeTrue();
+  });
+
+  it('toasts a failed document publish and keeps the badge', () => {
+    documents.publish.and.returnValue(throwError(() => new Error('Document is locked')));
+    create();
+
+    component.publish();
+
+    expect(toast.error).toHaveBeenCalledOnceWith('Failed to publish documents. Document is locked');
     expect(component.isPublished).toBeFalse();
     expect(component.loading).toBeFalse();
   });

@@ -1,13 +1,14 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 import { KeyValuePipe } from '@angular/common';
 import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
-import { LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
+import { DemiNotification, LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
 import { ConfigService } from 'src/app/services/config.service';
 import { NotificationProjectService, NotificationWrite } from 'src/app/services/notification-project.service';
 import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
@@ -18,7 +19,16 @@ import { ToastService } from 'src/app/services/toast.service';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, isNgbDate } from 'src/app/shared/utils/utils';
 
-const toDate = (date: unknown): Date | null => isNgbDate(date) ? convertFormGroupNGBDateToJSDate(date) : null;
+// eagle-api stored `new Date(null)` read in Pacific time for a missing date; it means no date.
+const NO_DATE = '1969-12-31T08:00:00.000Z';
+
+function toDate(date: unknown): Date | null {
+  const value = isNgbDate(date) ? convertFormGroupNGBDateToJSDate(date) : null;
+  return value?.toISOString() === NO_DATE ? null : value;
+}
+
+/** True for an empty date control or a date the datepicker parsed; false for text it could not parse. */
+const isDateOrEmpty = (date: unknown): boolean => date == null || date === '' || isNgbDate(date);
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +53,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
   public isAdd = false;
   public isPublished = false;
   public loading = false;
+  private saving = false;
   public myForm: FormGroup<{
     name: FormControl<string | null>;
     type: FormControl<string | null>;
@@ -159,7 +170,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
 
   /** `publish` null keeps the current visibility; true or false also publishes or unpublishes. */
   public onSubmit(publish: boolean | null) {
-    if (!this.validateForm()) {
+    if (this.saving || !this.validateForm()) {
       return;
     }
 
@@ -185,13 +196,15 @@ export class AddEditProjectNotificationComponent implements OnInit {
       centroid: [String(form.latitude), String(form.longitude)]
     };
 
+    this.saving = true;
+    const done = finalize<DemiNotification>(() => { this.saving = false; });
     if (this.isAdd) {
       this.notificationProjectService.add(fields, publish === true)
-        .pipe(takeUntilDestroyed(this.destroyRef))
+        .pipe(done, takeUntilDestroyed(this.destroyRef))
         .subscribe(() => this.router.navigate(['/project-notifications']));
     } else {
       this.notificationProjectService.save(this.projectNotification.demiId, fields, publish)
-        .pipe(takeUntilDestroyed(this.destroyRef))
+        .pipe(done, takeUntilDestroyed(this.destroyRef))
         .subscribe(updated => {
           this.storageService.state.currentProject = {
             type: 'currentProjectNotification',
@@ -307,6 +320,16 @@ export class AddEditProjectNotificationComponent implements OnInit {
 
     if (!this.myForm.value.notificationReceivedDate) {
       alert('Notification Received Date cannot be empty.');
+      return false;
+    }
+
+    if (!isDateOrEmpty(this.myForm.value.notificationReceivedDate)) {
+      this.toastService.error('Notification Received Date is not a valid date.');
+      return false;
+    }
+
+    if (this.myForm.value.decision !== 'In Progress' && !isDateOrEmpty(this.myForm.value.decisionDate)) {
+      this.toastService.error('Decision Date is not a valid date.');
       return false;
     }
 

@@ -53,7 +53,7 @@ export class NotificationProjectService {
     );
   }
 
-  /** One notification by its id (the Eagle id); null when it cannot be read. */
+  /** One notification by the route id, Eagle or DEMI; null when it cannot be read. */
   getNative(id: string): Observable<DemiNotification | null> {
     return this.demiApi.get<DemiNotification>('notifications', id).pipe(
       withLoading(this.loadingState, `project-notification-${id}`),
@@ -79,8 +79,9 @@ export class NotificationProjectService {
    */
   save(demiId: string, fields: NotificationWrite, publish: boolean | null = null): Observable<DemiNotification> {
     return this.demiApi.update<DemiNotification>('notifications', demiId, writeBody(fields)).pipe(
-      switchMap(row => publish === null || row.isPublished === publish ? of(row) : this.setPublished(demiId, publish)),
-      catchError(error => this.writeFailed('save', error))
+      catchError(error => this.writeFailed('save', error)),
+      switchMap(row => publish === null || row.isPublished === publish ? of(row)
+        : publish ? this.publish(demiId) : this.unpublish(demiId))
     );
   }
 
@@ -106,7 +107,6 @@ export class NotificationProjectService {
   }
 
   private writeFailed(action: 'save' | 'add' | 'publish' | 'unpublish', error: Error): Observable<never> {
-    this.logger.error(`Failed to ${action} project notification`, 'NotificationProjectService', error);
     this.toast.error(`Failed to ${action} project notification. ${error.message}`);
     return EMPTY;
   }

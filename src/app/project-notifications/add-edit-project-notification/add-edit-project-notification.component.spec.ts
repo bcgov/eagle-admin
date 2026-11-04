@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
-import { EMPTY, Observable, of, throwError } from 'rxjs';
+import { EMPTY, NEVER, Observable, of, throwError } from 'rxjs';
 import { AddEditProjectNotificationComponent } from './add-edit-project-notification.component';
 import { DemiList } from 'src/app/models/demi/demi-list';
 import { DemiProject } from 'src/app/models/demi/project';
@@ -10,6 +10,7 @@ import { NotificationProjectService } from 'src/app/services/notification-projec
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { Constants } from 'src/app/shared/utils/constants';
 
 describe('AddEditProjectNotificationComponent', () => {
   let projectService: jasmine.SpyObj<ProjectService>;
@@ -129,5 +130,39 @@ describe('AddEditProjectNotificationComponent', () => {
 
     expect(notifications.add).toHaveBeenCalledOnceWith(jasmine.objectContaining({ name: 'Notice' }), true);
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('saves a missing decision date as null and the received date as a Date', () => {
+    create(of({ rows }));
+    notifications.save.and.returnValue(NEVER);
+    fillForm();
+    fixture.componentInstance.myForm.patchValue({ decision: Constants.NOTIFICATION_DECISIONS.REFERRED });
+
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).toHaveBeenCalledOnceWith('demi-pn1',
+      jasmine.objectContaining({ decisionDate: null, notificationReceivedDate: jasmine.any(Date) }), null);
+  });
+
+  it('refuses a received date the datepicker could not parse', () => {
+    create(of({ rows }));
+    fillForm();
+    fixture.componentInstance.myForm.patchValue({ notificationReceivedDate: '2026-13-45' });
+
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).not.toHaveBeenCalled();
+    expect(toastService.error).toHaveBeenCalledOnceWith('Notification Received Date is not a valid date.');
+  });
+
+  it('sends one save while the first is in flight', () => {
+    create(of({ rows }));
+    notifications.save.and.returnValue(NEVER);
+    fillForm();
+
+    fixture.componentInstance.onSubmit(null);
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).toHaveBeenCalledTimes(1);
   });
 });
