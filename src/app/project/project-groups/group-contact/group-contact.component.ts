@@ -9,7 +9,6 @@ import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { Group } from 'src/app/models/demi/group';
 import { User, contactExportRow } from 'src/app/models/demi/user';
 import { ExcelService } from 'src/app/services/excel.service';
-import { ProjectService } from 'src/app/services/project.service';
 import { UserService } from 'src/app/services/user.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { TableObject, TableColumn } from 'src/app/shared/components/table-template/table-object';
@@ -48,7 +47,6 @@ export class GroupContactComponent implements OnInit {
   private modalService = inject(NgbModal);
   private excelService = inject(ExcelService);
   private navigationStackUtils = inject(NavigationStackUtils);
-  private projectService = inject(ProjectService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private userService = inject(UserService);
@@ -273,10 +271,10 @@ export class GroupContactComponent implements OnInit {
 
     const observables = [];
     if (membersToAdd.length > 0) {
-      observables.push(component.projectService.addGroupMembers(component.currentProject, component.groupId, membersToAdd));
+      observables.push(component.userService.addGroupMembers(component.groupId, membersToAdd));
     }
     membersToRemove.forEach(id => {
-      observables.push(component.projectService.deleteGroupMembers(component.currentProject._id, component.groupId, id));
+      observables.push(component.userService.removeGroupMember(component.groupId, id));
     });
 
     const membersRoute = ['/p', component.currentProject._id, 'project-groups', 'g', component.groupId, 'members'];
@@ -286,7 +284,7 @@ export class GroupContactComponent implements OnInit {
           next: () => component.router.navigate(membersRoute),
           error: error => {
             component.logger.error('update group members failed', 'GroupContactComponent', error);
-            component.toastService.error('Some member changes could not be saved.');
+            component.toastService.error(`Some member changes could not be saved. ${error.message}`);
             // Reload so the list shows what was written.
             component.router.navigate(membersRoute);
           }
@@ -312,13 +310,13 @@ export class GroupContactComponent implements OnInit {
       }
       const ids = [...new Set(this.selectedRows().map(item => item.id))];
       return Promise.allSettled(ids.map(id =>
-        firstValueFrom(this.projectService.deleteGroupMembers(this.currentProject._id, this.groupId, id))
+        firstValueFrom(this.userService.removeGroupMember(this.groupId, id))
       )).then(results => {
         const removed = new Set(ids.filter((_, i) => results[i].status === 'fulfilled'));
-        const failed = ids.length - removed.size;
-        if (failed > 0) {
+        const failed = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+        if (failed.length > 0) {
           this.logger.error('remove group members failed', 'GroupContactComponent', results);
-          this.toastService.error(`${failed} of ${ids.length} contacts could not be removed.`);
+          this.toastService.error(`${failed.length} of ${ids.length} contacts could not be removed. ${(failed[0].reason as Error).message}`);
         }
         this.members = this.members.filter(member => !removed.has(member.id));
         this.showPage();
@@ -341,13 +339,13 @@ export class GroupContactComponent implements OnInit {
 
   async saveName() {
     try {
-      await firstValueFrom(this.projectService.saveGroup(this.currentProject._id, this.group.id, { name: this.tempGroupName }));
+      await firstValueFrom(this.userService.renameGroup(this.group.id, this.tempGroupName));
       this.group.name = this.tempGroupName;
       this._changeDetectionRef.markForCheck();
       this.toastService.success('Group name has been updated');
     } catch (err) {
       this.logger.error('group rename failed', 'GroupContactComponent', err);
-      this.toastService.error('The group name could not be saved.');
+      this.toastService.error(`The group name could not be saved. ${(err as Error).message}`);
     }
   }
 
