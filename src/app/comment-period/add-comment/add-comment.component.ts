@@ -44,6 +44,8 @@ export class AddCommentComponent implements OnInit {
   commentPeriodId = input.required<string>();
 
   public baseRouteUrl: string;
+  /** The `:projId` or `:notificationProjectId` route param; `project()._id` is null on a DEMI-minted project. */
+  private parentId: string;
   public commentFiles: Array<File> = [];
   public documents: Document[] = [];
   loading = signal(false);
@@ -66,7 +68,9 @@ export class AddCommentComponent implements OnInit {
   public anonymousName = 'Anonymous';
 
   ngOnInit() {
-    this.baseRouteUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
+    const params = this.route.snapshot.paramMap;
+    this.baseRouteUrl = params.has('projId') ? '/p' : '/pn';
+    this.parentId = params.get('projId') ?? params.get('notificationProjectId');
     this.initForm();
   }
 
@@ -104,6 +108,10 @@ export class AddCommentComponent implements OnInit {
   }
 
   public onSubmit() {
+    if (this.commentPeriod().readOnly) {
+      this.toastService.error('Failed to add comment. This comment period is read-only.');
+      return;
+    }
     this.loading.set(true);
     const form = this.addCommentForm.getRawValue();
     const comment: CommentCreate = {
@@ -122,7 +130,7 @@ export class AddCommentComponent implements OnInit {
     } else if (form.isDeferred) {
       Object.assign(comment, { eaoStatus: 'Deferred', eaoNotes: form.deferralNotesText });
     } else if (form.isRejected) {
-      Object.assign(comment, { eaoStatus: 'Rejected', eaoNotes: form.rejectionNotesText });
+      Object.assign(comment, { eaoStatus: 'Rejected', rejectedNotes: form.rejectionNotesText });
     } else {
       comment.eaoStatus = 'Pending';
     }
@@ -133,14 +141,14 @@ export class AddCommentComponent implements OnInit {
         finalize(() => this.loading.set(false))
       )
       .subscribe(() => {
-        this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
-        this.toastService.success('This comment was updated successfuly.');
+        this.router.navigate([this.baseRouteUrl, this.parentId, 'cp', this.commentPeriodId()]);
+        this.toastService.success('Comment added.');
       });
   }
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
+      this.router.navigate([this.baseRouteUrl, this.parentId, 'cp', this.commentPeriodId()]);
     }
   }
 

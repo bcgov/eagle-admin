@@ -44,6 +44,8 @@ export class ReviewCommentComponent implements OnChanges {
   comment = input.required<ReviewComment>();
 
   public baseRouteUrl: string;
+  /** The `:projId` or `:notificationProjectId` route param; `project()._id` is null on a DEMI-minted project. */
+  private parentId: string;
   public commentData: ReviewComment;
   loading = signal(false);
   public isRejectedRequired = false;
@@ -68,7 +70,9 @@ export class ReviewCommentComponent implements OnChanges {
     if (!changes['comment']) {
       return;
     }
-    this.baseRouteUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
+    const params = this.route.snapshot.paramMap;
+    this.baseRouteUrl = params.has('projId') ? '/p' : '/pn';
+    this.parentId = params.get('projId') ?? params.get('notificationProjectId');
     this.storageService.state.selectedTab = 1;
     const comment = this.comment();
     this.commentData = { ...comment, documentsList: comment.documentsList.map(document => ({ ...document })) };
@@ -109,7 +113,7 @@ export class ReviewCommentComponent implements OnChanges {
     } else if (form.isDeferred) {
       Object.assign(edits, { eaoStatus: 'Deferred', eaoNotes: form.deferralNotesText });
     } else if (form.isRejected) {
-      Object.assign(edits, { eaoStatus: 'Rejected', eaoNotes: form.rejectionNotesText });
+      Object.assign(edits, { eaoStatus: 'Rejected', rejectedNotes: form.rejectionNotesText });
     } else {
       edits.eaoStatus = 'Pending';
     }
@@ -126,14 +130,14 @@ export class ReviewCommentComponent implements OnChanges {
         )
         .subscribe(() => {
           this.toastService.success(`Comment #${this.commentData.commentId} updated.`);
-          const periodUrl = [this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()];
+          const periodUrl = [this.baseRouteUrl, this.parentId, 'cp', this.commentPeriodId()];
           this.router.navigate(action === 'next' && nextId ? [...periodUrl, 'c', nextId, 'comment-details'] : periodUrl);
         });
   }
 
   public onCancel() {
     if (confirm(`Are you sure you want to discard all changes?`)) {
-      this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
+      this.router.navigate([this.baseRouteUrl, this.parentId, 'cp', this.commentPeriodId()]);
     }
   }
 

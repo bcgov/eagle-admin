@@ -186,13 +186,23 @@ describe('CommentService', () => {
       expect((await result).comment).toBe('saved');
     });
 
-    it('publish PUTs comments/<id>/status {status: \'Published\'}', () => {
-      service.publish(nativeComment()).subscribe();
+    it('an over-limit comment is refused before any upload', () => {
+      service.add({ periodId: 'demi-period', comment: 'x'.repeat(50001) }, [new FormData()]).subscribe();
 
-      const req = http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}/status`);
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual({ status: 'Published' });
-      req.flush(nativeComment());
+      expect(documents.add).not.toHaveBeenCalled();
+      http.expectNone(() => true);
+      expect(toast.error).toHaveBeenCalledWith('Failed to add comment. comment: must be at most 50000 characters');
+    });
+
+    it('a refused save publishes no attachments', () => {
+      service.save(nativeComment(), [{ _id: 'shown', eaoStatus: 'Published' }]).subscribe();
+
+      http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}`).flush(
+        { error: 'Invalid request body.', fields: { body: 'must name at least one field' } },
+        { status: 400, statusText: 'Bad Request' }
+      );
+
+      expect(documents.publish).not.toHaveBeenCalled();
     });
   });
 });
