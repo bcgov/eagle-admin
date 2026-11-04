@@ -1,4 +1,4 @@
-/** A native DEMI contact row (`GET <DEMI_API_PATH>/users`). `id` is the Eagle User `_id`. */
+/** A native DEMI contact row (`GET <DEMI_API_PATH>/users`). `id` is the Eagle User `_id`, or a UUID for a contact made in DEMI. */
 export interface User {
   id: string;
   firstName: string;
@@ -29,28 +29,30 @@ export interface User {
 /** Fields DEMI sorts `/users` by; the contact list column values use the same names. `email` and `phoneNumber` need a staff bearer, which admin always sends. */
 export const USER_SORT_KEYS = ['displayName', 'orgName', 'email', 'phoneNumber'];
 
-/** Fields eagle-api's `PUT user/:id` and `POST user/` read. */
-const EAGLE_USER_FIELDS = [
+/** The only organization whose contacts DEMI lets be public. */
+export const PUBLIC_ORG_NAME = 'Environmental Assessment Office';
+
+/** The fields DEMI's `POST /users` and `PUT /users/:id` take besides `isPublished`; any other key is a 400. */
+const WRITABLE_FIELDS = [
   'firstName', 'middleName', 'lastName', 'displayName', 'email', 'org', 'orgName', 'title',
   'phoneNumber', 'salutation', 'department', 'faxNumber', 'cellPhoneNumber', 'address1',
   'address2', 'city', 'province', 'country', 'postalCode', 'notes'
 ] as const;
 
+export type UserWriteFields = Partial<Pick<User, typeof WRITABLE_FIELDS[number]>>;
+
 /**
- * Write body for eagle-api. A body with `_id`, or with no `id`, is already Eagle-shaped and is sent unchanged;
- * a native row (`id`, no `_id`) is renamed to `_id` and trimmed to the fields eagle-api reads.
+ * DEMI write body: the writable fields `input` holds, plus `isPublished`. A PUT replaces every field,
+ * so send the whole contact. Public follows the organization, as eagle-api's read rule did.
  */
-export function toEagleUserBody(input: object): Record<string, unknown> {
-  if ('_id' in input || !('id' in input)) {
-    return input as Record<string, unknown>;
+export function toDemiUserBody(input: UserWriteFields): Record<string, unknown> {
+  const body: Record<string, unknown> = Object.fromEntries(
+    WRITABLE_FIELDS.filter(field => field in input).map(field => [field, input[field]])
+  );
+  if ('org' in body) {
+    body['org'] = input.org || null;
   }
-  const row = input as User;
-  const body: Record<string, unknown> = { _id: row.id };
-  for (const field of EAGLE_USER_FIELDS) {
-    if (field in row) {
-      body[field] = row[field];
-    }
-  }
+  body['isPublished'] = input.orgName === PUBLIC_ORG_NAME;
   return body;
 }
 

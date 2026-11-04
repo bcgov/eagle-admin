@@ -1,11 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, concat, of } from 'rxjs';
+import { catchError, last } from 'rxjs/operators';
 
-import { ApiService } from './api';
-import { DemiApiService } from './demi-api.service';
-import { User as LegacyUser } from '../models/user';
-import { User, toEagleUserBody } from '../models/demi/user';
+import { DEMI_MAX_IDS, DemiApiService } from './demi-api.service';
+import { User, UserWriteFields, toDemiUserBody } from '../models/demi/user';
 import { Group } from '../models/demi/group';
 import { DemiList } from '../models/demi/demi-list';
 
@@ -24,10 +22,12 @@ export function emptyPageOnError<T>(onError: (err: unknown) => void) {
   });
 }
 
-/** Contacts and project contact groups: reads from DEMI, writes to eagle-api. */
+/**
+ * Contacts and project contact groups on DEMI. Write errors pass through with DEMI's
+ * `{error, fields}` joined into `message`; callers toast them.
+ */
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  private api = inject(ApiService);
   private demi = inject(DemiApiService);
 
   listUsers({ q, page, pageSize, sort }: UserListQuery): Observable<DemiList<User>> {
@@ -51,16 +51,41 @@ export class UserService {
     return this.demi.list<Group>('groups', { filters: { project: projectId }, page, pageSize, sort, count: true });
   }
 
-  save(user: LegacyUser | User): Observable<LegacyUser> {
-    const body = toEagleUserBody(user);
-    return this.api.put<LegacyUser>(`user/${body._id}`, body).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  /** Replaces every field of contact `id`; a field `user` leaves out goes back to empty. */
+  save(id: string, user: UserWriteFields): Observable<User> {
+    return this.demi.update<User>('users', id, toDemiUserBody(user));
   }
 
-  add(user: LegacyUser | User): Observable<LegacyUser> {
-    return this.api.post<LegacyUser>('user/', toEagleUserBody(user)).pipe(
-      catchError(error => this.api.handleError(error))
-    );
+  add(user: UserWriteFields): Observable<User> {
+    return this.demi.create<User>('users', toDemiUserBody(user));
+  }
+
+  /** `demiProjectId` is `LegacyProject.demiId`; DEMI refuses an Eagle project id. */
+  addGroup(demiProjectId: string, name: string): Observable<Group> {
+    return this.demi.create<Group>('groups', { projectId: demiProjectId, name });
+  }
+
+  renameGroup(groupId: string, name: string): Observable<Group> {
+    return this.demi.update<Group>('groups', groupId, { name });
+  }
+
+  deleteGroup(groupId: string): Observable<Group> {
+    return this.demi.remove<Group>('groups', groupId);
+  }
+
+  /**
+   * Adds at least one member, in bodies of at most {@link DEMI_MAX_IDS} ids. The bodies go one after
+   * another, since each rewrites the same group row; emits the group after the last one.
+   */
+  addGroupMembers(groupId: string, userIds: string[]): Observable<Group> {
+    const chunks: string[][] = [];
+    for (let i = 0; i < userIds.length; i += DEMI_MAX_IDS) {
+      chunks.push(userIds.slice(i, i + DEMI_MAX_IDS));
+    }
+    return concat(...chunks.map(chunk => this.demi.addGroupMembers<Group>(groupId, chunk))).pipe(last());
+  }
+
+  removeGroupMember(groupId: string, userId: string): Observable<Group> {
+    return this.demi.removeGroupMember<Group>(groupId, userId);
   }
 }
