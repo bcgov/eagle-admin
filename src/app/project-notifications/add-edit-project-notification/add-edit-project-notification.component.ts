@@ -1,23 +1,36 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 import { KeyValuePipe } from '@angular/common';
 import { FormGroup, FormControl } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
-import { DateTime } from 'luxon';
-import { ProjectNotification } from 'src/app/models/projectNotification';
+import { DemiNotification, LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
 import { ConfigService } from 'src/app/services/config.service';
-import { NotificationProjectService } from 'src/app/services/notification-project.service';
+import { NotificationProjectService, NotificationWrite } from 'src/app/services/notification-project.service';
 import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { Constants } from 'src/app/shared/utils/constants';
-import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, isNgbDate } from 'src/app/shared/utils/utils';
+
+// eagle-api stored `new Date(null)` read in Pacific time for a missing date; the form shows it as this day.
+const NO_DATE = convertJSDateToNGBDate(new Date('1969-12-31T08:00:00.000Z'));
+
+function toDate(date: unknown): Date | null {
+  if (!isNgbDate(date) || (date.year === NO_DATE.year && date.month === NO_DATE.month && date.day === NO_DATE.day)) {
+    return null;
+  }
+  return convertFormGroupNGBDateToJSDate(date);
+}
+
+/** True for an empty date control or a date the datepicker parsed; false for text it could not parse. */
+const isDateOrEmpty = (date: unknown): boolean => date == null || date === '' || isNgbDate(date);
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,6 +55,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
   public isAdd = false;
   public isPublished = false;
   public loading = false;
+  private saving = false;
   public myForm: FormGroup<{
     name: FormControl<string | null>;
     type: FormControl<string | null>;
@@ -54,14 +68,14 @@ export class AddEditProjectNotificationComponent implements OnInit {
     decisionDate: FormControl<unknown>;
     notificationReceivedDate: FormControl<unknown>;
     description: FormControl<string | null>;
-    notificationThresholdValue: FormControl<string | null>;
+    notificationThresholdValue: FormControl<number | null>;
     notificationThresholdUnits: FormControl<string | null>;
     project: FormControl<string | null>;
     longitude: FormControl<number | null>;
     latitude: FormControl<number | null>;
     trigger: FormControl<unknown>;
   }>;
-  public projectNotification: ProjectNotification = null;
+  public projectNotification: LegacyNotification = null;
   public regions: any[] = [];
   public subTypeSelected = [];
   public unitsSelected = [];
@@ -156,85 +170,50 @@ export class AddEditProjectNotificationComponent implements OnInit {
       });
   }
 
-  public onSubmit(publish) {
-    if (!this.validateForm()) {
+  /** `publish` null keeps the current visibility; true or false also publishes or unpublishes. */
+  public onSubmit(publish: boolean | null) {
+    if (this.saving || !this.validateForm()) {
       return;
     }
 
-    if (publish === null && this.isPublished) {
-      publish = true;
-    } else if (publish === null && !this.isPublished) {
-      publish = false;
-    }
+    const form = this.myForm.value;
+    const referred = form.decision === Constants.NOTIFICATION_DECISIONS.REFERRED;
+    const fields: NotificationWrite = {
+      name: form.name,
+      type: form.type,
+      subType: form.subType,
+      proponent: form.proponent,
+      nature: form.nature,
+      trigger: this.triggers.map(trigger => trigger.name).join(),
+      region: form.region,
+      location: form.location,
+      decisionDate: form.decision !== Constants.NOTIFICATION_DECISIONS.INPROGRESS ? toDate(form.decisionDate) : null,
+      notificationReceivedDate: toDate(form.notificationReceivedDate),
+      decision: form.decision,
+      associatedProjectId: referred ? form.project : null,
+      associatedProjectName: referred ? this.projects.find(project => project._id === form.project)?.name : null,
+      description: form.description,
+      notificationThresholdValue: form.notificationThresholdValue,
+      notificationThresholdUnits: form.notificationThresholdUnits,
+      centroid: [String(form.latitude), String(form.longitude)]
+    };
 
-    let associatedProjectName;
-    for (const project in this.projects) {
-      if (this.projects[project]['_id'] === this.myForm.value.project) {
-        associatedProjectName = this.projects[project]['name'];
-        break;
-      }
-    }
-    const triggerCSV = [];
-    this.triggers.forEach(trigger => {
-      triggerCSV.push(trigger.name);
-    });
-
-    const notificationProject = new ProjectNotification({
-      name: this.myForm.value.name,
-      type: this.myForm.value.type,
-      subType: this.myForm.value.subType,
-      proponent: this.myForm.value.proponent,
-      nature: this.myForm.value.nature,
-      trigger: triggerCSV.join(),
-      region: this.myForm.value.region,
-      location: this.myForm.value.location,
-      decisionDate: this.myForm.value.decisionDate !== null && this.myForm.value.decision !== 'In Progress' ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.value.decisionDate)).toJSDate() : null,
-      notificationReceivedDate: this.myForm.value.notificationReceivedDate !== null ? DateTime.fromJSDate(convertFormGroupNGBDateToJSDate(this.myForm.value.notificationReceivedDate)).toJSDate() : null,
-      decision: this.myForm.value.decision,
-      associatedProjectId: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? this.myForm.value.project : null,
-      associatedProjectName: this.myForm.value.decision === Constants.NOTIFICATION_DECISIONS.REFERRED ? associatedProjectName : null,
-
-      description: this.myForm.value.description,
-      notificationThresholdValue: this.myForm.value.notificationThresholdValue,
-      notificationThresholdUnits: this.myForm.value.notificationThresholdUnits,
-      centroid: [this.myForm.value.latitude, this.myForm.value.longitude]
-    });
-
-    // Failsafe: if the dates are set to new Date(null) it'll create a date in 1969.
-    // we can assume a date of 31/12/1969@8:00 should actually be null
-    if (notificationProject.decisionDate && notificationProject.decisionDate.toISOString() === '1969-12-31T08:00:00.000Z') {
-      notificationProject.decisionDate = null;
-    }
-
-    if (notificationProject.notificationReceivedDate && notificationProject.notificationReceivedDate.toISOString() === '1969-12-31T08:00:00.000Z') {
-      notificationProject.notificationReceivedDate = null;
-    }
-
+    this.saving = true;
+    const done = finalize<DemiNotification>(() => { this.saving = false; });
     if (this.isAdd) {
-      this.notificationProjectService.add(notificationProject, publish)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          error: () => {
-            alert('An error has occurred.');
-          },
-          complete: () => { this.router.navigate(['/project-notifications']); }
-        });
+      this.notificationProjectService.add(fields, publish === true)
+        .pipe(done, takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.router.navigate(['/project-notifications']));
     } else {
-      notificationProject._id = this.projectNotification._id;
-      this.notificationProjectService.save(notificationProject, publish)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-          next: (updated) => {
-            this.storageService.state.currentProject = {
-              type: 'currentProjectNotification',
-              data: updated,
-              docTotal: 0
-            };
-            this.router.navigate(['/pn', this.projectNotification._id, 'details']);
-          },
-          error: () => {
-            alert('An error has occurred.');
-          }
+      this.notificationProjectService.save(this.projectNotification.demiId, fields, publish)
+        .pipe(done, takeUntilDestroyed(this.destroyRef))
+        .subscribe(updated => {
+          this.storageService.state.currentProject = {
+            type: 'currentProjectNotification',
+            data: legacyNotification(updated),
+            docTotal: 0
+          };
+          this.router.navigate(['/pn', this.projectNotification._id, 'details']);
         });
     }
   }
@@ -270,7 +249,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
       'decisionDate': new FormControl<unknown>(data.decisionDate),
       'notificationReceivedDate': new FormControl<unknown>(data.notificationReceivedDate),
       'description': new FormControl<string | null>(data.description),
-      'notificationThresholdValue': new FormControl<string | null>(data.notificationThresholdValue),
+      'notificationThresholdValue': new FormControl<number | null>(data.notificationThresholdValue),
       'notificationThresholdUnits': new FormControl<string | null>(data.notificationThresholdUnits),
       'project': new FormControl<string | null>(data.associatedProjectId),
       'longitude': new FormControl<number | null>(data.centroid[1]),
@@ -343,6 +322,16 @@ export class AddEditProjectNotificationComponent implements OnInit {
 
     if (!this.myForm.value.notificationReceivedDate) {
       alert('Notification Received Date cannot be empty.');
+      return false;
+    }
+
+    if (!isDateOrEmpty(this.myForm.value.notificationReceivedDate)) {
+      alert('Notification Received Date is not a valid date.');
+      return false;
+    }
+
+    if (this.myForm.value.decision !== Constants.NOTIFICATION_DECISIONS.INPROGRESS && !isDateOrEmpty(this.myForm.value.decisionDate)) {
+      alert('Decision Date is not a valid date.');
       return false;
     }
 

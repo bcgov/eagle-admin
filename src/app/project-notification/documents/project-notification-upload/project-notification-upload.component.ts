@@ -15,6 +15,9 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { isEagleId } from 'src/app/models/demi/demi-ids';
+
+const NO_EAGLE_ID = 'Documents can be added once this notification has an Eagle id.';
 
 
 @Component({
@@ -66,12 +69,20 @@ export class ProjectNotificationUploadComponent implements OnInit {
   public documentMilestone = ['Project Notification'];
   public documentAuthor = ['Proponent', 'EAO'];
   public documentPhase = ['Project Designation'];
+  /** eagle-api casts a document's `project` to an ObjectId, so a notification DEMI created cannot hold one yet. */
+  public canUpload = true;
 
   ngOnInit() {
     this.currentProject = this.storageService.currentProjectData;
     this.docTotal = this.storageService.state.currentProject.docTotal;
     this.buildForm();
     this.configService.ensureListsLoaded();
+    if (!isEagleId(this.currentProject._id)) {
+      this.canUpload = false;
+      // A disabled form is not valid, which disables the Upload button.
+      this.myForm.disable();
+      this.toastService.warning(NO_EAGLE_ID);
+    }
   }
 
   buildForm() {
@@ -111,6 +122,10 @@ export class ProjectNotificationUploadComponent implements OnInit {
   }
 
   public uploadDocuments() {
+    if (!this.canUpload) {
+      this.toastService.warning(NO_EAGLE_ID);
+      return;
+    }
     this.loading = true;
     const observables = [];
 

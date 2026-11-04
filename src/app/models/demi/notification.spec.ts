@@ -40,7 +40,14 @@ describe('legacyNotification', () => {
     expect(Object.keys(row)).not.toContain('isPublished');
   });
 
-  it('keeps the period fields eagle-api writes back from the body', () => {
+  it('legacyNotification carries demiId = row id when eagleId differs', () => {
+    const row = legacyNotification({ ...NATIVE, id: '0b0f3c9e-5d0a-4a8e-9a43-0c1d2e3f4a5b', eagleId: 'eagle-1' });
+
+    expect(row.demiId).toBe('0b0f3c9e-5d0a-4a8e-9a43-0c1d2e3f4a5b');
+    expect(row._id).toBe('eagle-1');
+  });
+
+  it('keeps the native fields beside the Eagle id', () => {
     const row = legacyNotification(NATIVE);
 
     expect(row.pcp).toBe('open');
