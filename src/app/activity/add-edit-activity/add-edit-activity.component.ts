@@ -9,20 +9,20 @@ import { NgbDatepickerModule, NgbModal, NgbTimepickerModule } from '@ng-bootstra
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AbstractControl, UntypedFormArray, UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
-import { RecentActivity, UpdateImage } from 'src/app/models/recentActivity';
+import { UpdateImage } from 'src/app/models/recentActivity';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { DemiApiService } from 'src/app/services/demi-api.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
-import { RecentActivityService } from 'src/app/services/recent-activity';
+import { RecentActivityService, UpdateWrite } from 'src/app/services/recent-activity';
 import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { DemiCommentPeriod } from 'src/app/models/demi/comment-period';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { LegacyProject, toLegacyProject } from 'src/app/models/demi/project-legacy';
-import { DemiUpdate, updateParentId } from 'src/app/models/demi/update';
+import { updateParentId } from 'src/app/models/demi/update';
 import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
@@ -38,6 +38,12 @@ import {
 } from '../update-image-field/update-images';
 
 const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featuredImageCredit: '' };
+
+// DEMI checks an Update's images and attachments by document `id`, which differs from the Eagle `_id` on a
+// DEMI-owned document. A fresh eagle-api upload has only `_id`, and its DEMI mirror takes that id.
+const docKey = (doc: any): string => doc.id ?? doc._id;
+// An older Update may store the Eagle id.
+const isDocument = (doc: any, id: string | null): boolean => !!id && (docKey(doc) === id || doc._id === id);
 
 interface PreviewImage { url: string; alt: string; caption: string }
 
@@ -90,7 +96,7 @@ export class AddEditActivityComponent implements OnInit {
   public projectNotifications = [];
   public types = [];
   public activityTypes = Constants.activityTypes.map(type => type.name);
-  public periods = [];
+  public periods: DemiCommentPeriod[] = [];
   public activity: any;
   public typeIsPCP = false;
   public typeIsNotification = false;
@@ -173,10 +179,9 @@ export class AddEditActivityComponent implements OnInit {
     this.configService.ensureListsLoaded();
     const activityId = this.route.snapshot.paramMap.get('activityId');
     if (activityId) {
-      this.recentActivityService.getNative(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((row: DemiUpdate) => {
+      this.recentActivityService.getNative(activityId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(row => {
         this.isEditing = true;
-        // Eagle ids, as the form and eagle-api writes use them.
-        const data = { ...row, _id: eagleWriteId(row), project: updateParentId(row) };
+        const data = { ...row, project: updateParentId(row) };
         this.buildForm(data);
         this.activity = data;
         this.statusText = statusLabel(data);
@@ -188,7 +193,6 @@ export class AddEditActivityComponent implements OnInit {
       this.buildForm({
         'headline': '',
         'content': '',
-        'dateAdded': new Date(),
         'project': '',
         'projectLocation': '',
         'pinned': false,
@@ -294,19 +298,19 @@ export class AddEditActivityComponent implements OnInit {
       this.toastService.error((e as Error).message);
       return;
     }
-    const activity = new RecentActivity({
-      _id: this.isEditing ? this.activity._id : undefined,
+    const projectId = form.project.value || null;
+    const activity: UpdateWrite = {
+      id: this.isEditing ? this.activity.id : undefined,
+      _etag: this.isEditing ? this.activity._etag : undefined,
       headline: form.headline.value,
       content: form.content.value,
-      dateAdded: this.isEditing ? convertFormGroupNGBDateToJSDate(form.dateAdded.value) : new Date(),
-      project: form.project.value || null,
+      // An unchanged parent stays out: DEMI refuses a projectId it does not hold, which an old row may carry.
+      projectId: !this.isEditing || projectId !== this.activity.project ? projectId : undefined,
       type,
       pcp: form.pcp.value || null,
       notificationName: type === 'Project Notification Public Comment Period' ? form.notificationName.value : null,
       contentUrl: form.contentUrl.value,
       documentUrl: form.documentUrl.value,
-      pinned: this.isEditing ? this.activity.pinned === true : false,
-      dateUpdated: this.isEditing ? this.activity.dateUpdated : null,
       complianceAndEnforcement: form.complianceAndEnforcement.value,
       category: form.category.value,
       shortHeadline: form.shortHeadline.value,
@@ -321,10 +325,10 @@ export class AddEditActivityComponent implements OnInit {
       engagementUrl: form.engagementUrl.value?.trim() || null,
       subject: form.category.value === CORPORATE_CATEGORY ? form.subject.value : null,
       ...statusFields
-    });
-    // DEMI rows do not carry the flag, so the edit form hides it; leave Eagle's value alone.
+    };
+    // The flag is set only when an Update is added; an edit leaves the stored value alone.
     if (this.isEditing) {
-      delete (activity as Partial<RecentActivity>).complianceAndEnforcement;
+      delete activity.complianceAndEnforcement;
     }
 
     this.saving = true;
@@ -372,14 +376,14 @@ export class AddEditActivityComponent implements OnInit {
   /** Picked images and attachments the public cannot see. The API refuses to publish an Update that shows them. */
   public get nonPublicImages(): string[] {
     const attachments = (this.myForm.get('attachments')!.value || [])
-      .map((id: any) => this.documents.find(doc => doc._id === documentId(id)));
+      .map((id: any) => this.documents.find(doc => isDocument(doc, documentId(id))));
     return [...this.pickedImageIds().map(id => this.imageDocs().get(id)), ...attachments].filter(blocksPublish).map(documentName);
   }
 
   /** nonPublicImages cannot vouch for an attachment missing from the loaded documents: still loading, failed, or past the first 1000. */
   public get attachmentsUnchecked(): boolean {
     const ids: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
-    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => doc._id === id)));
+    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => isDocument(doc, id))));
   }
 
   private pickedImageIds(): string[] {
@@ -427,7 +431,7 @@ export class AddEditActivityComponent implements OnInit {
 
   public addFeaturedImage([image]: AddedImage[]) {
     this.addImageDocs([image]);
-    this.myForm.patchValue({ featuredImageDocument: image.doc._id, ...NO_FEATURED_TEXT });
+    this.myForm.patchValue({ featuredImageDocument: docKey(image.doc), ...NO_FEATURED_TEXT });
     this.syncImageRows();
   }
 
@@ -440,7 +444,7 @@ export class AddEditActivityComponent implements OnInit {
     // Never drops in practice: the field caps adds at remaining(), which counts uploads in flight.
     const room = added.slice(0, IMAGES_MAX - this.images.length);
     this.addImageDocs(room);
-    room.forEach(({ doc }) => this.images.push(this.imageRow({ document: doc._id })));
+    room.forEach(({ doc }) => this.images.push(this.imageRow({ document: docKey(doc) })));
     this.syncImageRows();
   }
 
@@ -458,7 +462,7 @@ export class AddEditActivityComponent implements OnInit {
 
   private addImageDocs(added: AddedImage[]) {
     this.rememberDocs(added.map(({ doc }) => doc));
-    added.forEach(({ doc, src }) => src && this.setImageSrc(doc._id, src));
+    added.forEach(({ doc, src }) => src && this.setImageSrc(docKey(doc), src));
   }
 
   private setImageSrc(id: string, url: string) {
@@ -481,7 +485,7 @@ export class AddEditActivityComponent implements OnInit {
 
   private rememberDocs(docs: any[]) {
     if (docs.length) {
-      this.imageDocs.update(current => new Map([...current, ...docs.map(doc => [doc._id, doc] as [string, any])]));
+      this.imageDocs.update(current => new Map([...current, ...docs.map(doc => [docKey(doc), doc] as [string, any])]));
     }
   }
 
@@ -625,16 +629,28 @@ export class AddEditActivityComponent implements OnInit {
       this.documentsFailed = docs === null;
       this.setDocuments(docs ?? []);
       this.rememberDocs([...this.imageDocuments, ...(updateImages ?? [])]);
+      this.toDemiDocumentIds();
       this.documentsLoading = false;
       this.loadPrivateThumbnails();
       this._cdr.markForCheck();
     });
   }
 
+  /** Rewrites picked ids that name a loaded document by its Eagle id to its DEMI id, the one DEMI checks. */
+  private toDemiDocumentIds() {
+    const known = [...this.documents, ...this.imageDocs().values()];
+    const demiId = (id: string | null) => (id && known.find(doc => doc.id && doc._id === id)?.id) || id;
+    const form = this.myForm.controls;
+    form.attachments.setValue((form.attachments.value || []).map((id: any) => demiId(documentId(id))), { emitEvent: false });
+    form.featuredImageDocument.setValue(demiId(form.featuredImageDocument.value), { emitEvent: false });
+    this.images.controls.forEach(row => row.get('document')!.setValue(demiId(row.get('document')!.value), { emitEvent: false }));
+    this.syncImageRows();
+  }
+
   private setDocuments(docs: any[]) {
     this.documents = docs;
-    const attached = new Set((this.myForm.get('attachments')!.value || []).map(documentId));
-    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.has(doc._id));
+    const attached: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
+    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.some(id => isDocument(doc, id)));
     this.imageDocuments = docs.filter(d =>
       d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }
@@ -680,13 +696,13 @@ export class AddEditActivityComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(page => {
-        // An update's pcp is the period's Eagle id; a period eagle-api does not hold cannot be picked.
-        this.periods = page.rows
-          .map((period: DemiCommentPeriod) => ({ ...period, _id: eagleWriteId(period) }))
-          .filter(period => period._id);
+        // DEMI matches an update's pcp against the period's DEMI id.
+        this.periods = page.rows;
         // Keep the PCP selection when the loaded periods still hold it (a project switch clears it).
+        // An older row may store the period's Eagle id instead.
         const currentPcp = this.myForm.controls['pcp'].value || (this.isEditing ? this.activity?.pcp : '');
-        this.myForm.controls['pcp'].setValue(this.periods.some((p: any) => p._id === currentPcp) ? currentPcp : '');
+        const kept = this.periods.find(p => p.id === currentPcp) ?? this.periods.find(p => currentPcp && eagleWriteId(p) === currentPcp);
+        this.myForm.controls['pcp'].setValue(kept ? kept.id : '');
         // Enable pcp select only when periods exist — prevents black bar on empty select
         if (this.typeIsPCP && this.periods.length > 0) {
           this.myForm.get('pcp')!.enable();
@@ -705,7 +721,6 @@ export class AddEditActivityComponent implements OnInit {
     this.myForm = new UntypedFormGroup({
       'headline': new UntypedFormControl(data.headline, Validators.required),
       'content': new UntypedFormControl(data.content, Validators.required),
-      'dateAdded': new UntypedFormControl(convertJSDateToNGBDate(new Date(data.dateAdded)), Validators.required),
       'project': new UntypedFormControl(data.project),
       'projectLocation': new UntypedFormControl({ value: data.projectLocation, disabled: true }),
       'type': new UntypedFormControl(data.type, Validators.required),

@@ -1,8 +1,8 @@
 import { UpdateImage } from '../recentActivity';
 
 /**
- * Native DEMI update row (`GET <DEMI_API_PATH>/updates`); `id`, `projectId` (parent project or notification) and image and
- * attachment ids are Eagle ids. `projectName`, `projectEagleId` join from the parent project when the caller may read it.
+ * Native DEMI update row (`GET <DEMI_API_PATH>/updates`). `id` and the image and attachment ids are DEMI ids, equal to the
+ * Eagle id on mirrored rows; `projectId` is the parent's Eagle id. `projectName`, `projectEagleId` join from the parent project when the caller may read it.
  */
 export interface DemiUpdate {
   id: string;

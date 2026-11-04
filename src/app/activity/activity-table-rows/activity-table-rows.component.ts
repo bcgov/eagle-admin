@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -11,7 +12,7 @@ import { DatePipe } from '@angular/common';
 import { LoggingService } from 'src/app/services/logging.service';
 import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/services/toast.service';
-import { StatusLabel, UPDATE_CONFLICT_MESSAGE, isConflict, statusLabel } from '../update-rules';
+import { StatusLabel, statusLabel } from '../update-rules';
 
 /** What archiving changes for the public, by current status; drafts were never public. */
 const ARCHIVE_MESSAGE: Partial<Record<StatusLabel, string>> = {
@@ -50,6 +51,8 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   };
   public columns: TableColumn[];
   public useSmallTable: boolean;
+  /** Rows whose pin PUT is in flight; a second click on one is ignored. */
+  private pinning = new Set<string>();
 
   async ngOnInit() {
     this.entries = this.data().data;
@@ -84,8 +87,7 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
                 this._changeDetectionRef.markForCheck();
               },
               error: error => {
-                this.toastService.error('Update not archived. Try again.');
-                this.logger.error('archive activity failed', 'ActivityTableRowsComponent', error);
+                this.toastService.error(`Failed to archive update. ${error.message}`);
               }
             });
         }
@@ -96,15 +98,17 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   }
 
   togglePin(activity) {
+    if (this.pinning.has(activity.id)) {
+      return;
+    }
+    this.pinning.add(activity.id);
     this.recentActivityService.togglePin(activity)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(finalize(() => this.pinning.delete(activity.id)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => { this._changeDetectionRef.markForCheck(); },
         error: error => {
-          if (isConflict(error)) {
-            this.toastService.error(UPDATE_CONFLICT_MESSAGE);
-          }
-          this.logger.error('save activity failed', 'ActivityTableRowsComponent', error);
+          // togglePin has flipped the row back by now.
+          this.toastService.error(`Failed to ${activity.pinned ? 'unpin' : 'pin'} update. ${error.message}`);
           this._changeDetectionRef.markForCheck();
         }
       });
