@@ -131,8 +131,9 @@ export class ProjectService {
    */
   save(project: Project): Observable<LegacyProject> {
     return this.onFreshRow(refId(project), row => {
-      if (project.legislationYear && row.legislationYear && Number(project.legislationYear) !== Number(row.legislationYear)) {
-        return throwError(() => new Error(otherActMessage(row.legislationYear, project.legislationYear)));
+      const year = actYear(row);
+      if (project.legislationYear && year && Number(project.legislationYear) !== year) {
+        return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
       return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
         mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body)),
@@ -255,7 +256,16 @@ function refId(project: ProjectRef): string {
 }
 
 export function otherActMessage(projectYear: number, tabYear: number): string {
-  return `This project is under the ${projectYear} Act, so the ${tabYear} tab is read-only.`;
+  return `Changes on the ${tabYear} tab cannot be saved: this project is under the ${projectYear} Act.`;
+}
+
+/** The project's Act: `legislationYear`, else the year in `currentLegislationYear` or the `legislation` label. */
+function actYear(row: DemiProject): number | null {
+  if (row.legislationYear) {
+    return Number(row.legislationYear);
+  }
+  const match = /\d{4}/.exec(String(row.currentLegislationYear ?? '')) ?? /\b\d{4}\b/.exec(String(row.legislation ?? ''));
+  return match ? Number(match[0]) : null;
 }
 
 function extensionsOf(row: DemiProject): string {

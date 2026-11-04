@@ -12,6 +12,7 @@ const LISTS: List[] = [
 ];
 
 const PHASE1 = { _id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018 };
+const PHASE2 = { _id: 'phase2', name: 'Application Review', type: 'projectPhase', legislation: 2018 };
 
 // Built the way the edit form builds its save: `new Project` over the form values.
 const write = (form: object, row: Partial<DemiProject> = {}) =>
@@ -42,6 +43,12 @@ describe('toDemiProjectWrite', () => {
     const body = write({ currentPhaseName: 'phase2' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1] });
 
     expect((body.phaseHistory as { _id: string }[]).map(ref => ref._id)).toEqual(['phase1', 'phase2']);
+  });
+
+  it('compares a new phase with the last history entry, as eagle-api did', () => {
+    const body = write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2] });
+
+    expect((body.phaseHistory as { _id: string }[]).map(ref => ref._id)).toEqual(['phase1', 'phase2', 'phase1']);
   });
 
   it('leaves the phase history alone when the phase is unchanged', () => {

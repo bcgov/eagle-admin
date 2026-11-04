@@ -247,6 +247,21 @@ describe('ProjectService', () => {
       http.expectNone('/demi/api/projects/7');
     });
 
+    it('save from another Act\'s tab is refused when only the block key and label name the Act', async () => {
+      const save = firstValueFrom(service.save(formProject({ legislationYear: 2018 })));
+      answerRead({ currentLegislationYear: 'legislation_2002', legislation: '2002 Environmental Assessment Act' });
+
+      await expectAsync(save).toBeRejectedWithError(otherActMessage(2002, 2018));
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('save on a row that names no Act PUTs the form', () => {
+      service.save(formProject({ legislationYear: 2018 })).subscribe({ error: () => undefined });
+      answerRead();
+
+      expect(http.expectOne('/demi/api/projects/7').request.method).toBe('PUT');
+    });
+
     it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
       service.publish(formProject({ legislationYear: 2018 })).subscribe();
       answerRead();
@@ -265,7 +280,7 @@ describe('ProjectService', () => {
     });
 
     it('reads a legacy project by its DEMI id when it carries one', () => {
-      service.unPublish({ _id: null, demiId: '7' }).subscribe();
+      service.unPublish({ _id: EAGLE_ID, demiId: '7' }).subscribe();
 
       http.expectOne('/demi/api/projects/7').flush(nativeRow());
       http.expectOne('/demi/api/projects/7/level').flush(nativeRow());

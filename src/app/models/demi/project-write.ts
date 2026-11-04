@@ -54,9 +54,11 @@ export function toDemiProjectWrite(project: Project, lists: List[], row: DemiPro
     body.proponentName = project.proponent.name;
   }
   const phase = body.currentPhaseName as WriteListRef | null;
-  // eagle-api's PUT appended each new phase to the history.
-  if (phase && phase._id !== row.currentPhaseName?._id) {
-    body.phaseHistory = [...((row.phaseHistory as unknown[]) ?? []), phase];
+  const history = Array.isArray(row.phaseHistory) ? row.phaseHistory : [];
+  const last = history.length ? history[history.length - 1] : row.currentPhaseName;
+  // eagle-api's PUT appended a phase that differs from the last one in the history.
+  if (phase && phase._id !== (last && typeof last === 'object' ? (last as DemiListRef)._id : last)) {
+    body.phaseHistory = [...history, phase];
   }
   return body;
 }
