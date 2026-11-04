@@ -12,13 +12,12 @@ import { CommentPeriodSummary } from '../models/commentPeriodSummary';
 import { DemiCommentPeriod, DemiCommentPeriodQuery, DemiCommentPeriodSummary } from '../models/demi/comment-period';
 import { DemiList } from '../models/demi/demi-list';
 
-// DEMI's comment period PUT and POST take only these (domain/comment-periods.js UPDATE_SCHEMA, LISTS,
+// The CommentPeriod fields DEMI's PUT and POST take (domain/comment-periods.js UPDATE_SCHEMA, LISTS,
 // CREATE_SCHEMA); any other key is a 400.
 const UPDATE_FIELDS = [
-  'commentTip', 'dateCompleted', 'dateStarted', 'isMet', 'instructions', 'informationLabel', 'metURL', 'metBannerImageUrl',
-  'milestone', 'openHouses', 'relatedDocuments'
+  'commentTip', 'dateCompleted', 'dateStarted', 'isMet', 'instructions', 'informationLabel', 'milestone', 'openHouses', 'relatedDocuments'
 ] as const;
-const CREATE_FIELDS = [...UPDATE_FIELDS, 'metURLAdmin', 'isPublished'] as const;
+const CREATE_FIELDS = [...UPDATE_FIELDS, 'isPublished'] as const;
 // DEMI refuses null in every other field; on a legacy period null means the field was never set.
 const NULLABLE_FIELDS: readonly string[] = ['dateStarted', 'dateCompleted', 'milestone'];
 
@@ -98,22 +97,19 @@ export class CommentPeriodService {
   }
 
   /**
-   * Writes the fields DEMI's PUT takes. DEMI ignores `isPublished` there, so a changed published state goes in
-   * `publish` and is set after the save.
+   * Writes the fields DEMI's PUT takes. DEMI ignores `isPublished` there, so `publish` is set after the save when the
+   * saved row differs from it. A refused write fails the stream, after a toast.
    */
   save(period: Partial<CommentPeriod> & CommentPeriodRef, publish?: boolean): Observable<DemiCommentPeriod> {
-    const saved$ = this.demi.update<DemiCommentPeriod>('comment-periods', period.demiId, writeBody(period, UPDATE_FIELDS)).pipe(
-      catchError(error => this.writeFailed('save', error))
+    return this.demi.update<DemiCommentPeriod>('comment-periods', period.demiId, writeBody(period, UPDATE_FIELDS)).pipe(
+      catchError(error => this.writeFailed('save', error)),
+      mergeMap(row => publish === undefined || row.isPublished === publish ? of(row) : this.setPublished(period, publish).pipe(
+        catchError(error => {
+          this.toast.error(`Comment period saved, but it was not ${publish ? 'published' : 'un-published'}. ${error.message}`);
+          return throwError(() => error);
+        })
+      ))
     );
-    if (publish === undefined) {
-      return saved$;
-    }
-    return saved$.pipe(mergeMap(() => this.setPublished(period, publish).pipe(
-      catchError(error => {
-        this.toast.error(`Comment period saved, but it was not ${publish ? 'published' : 'un-published'}. ${error.message}`);
-        return throwError(() => error);
-      })
-    )));
   }
 
   delete(period: CommentPeriodRef): Observable<DemiCommentPeriod> {

@@ -124,6 +124,8 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
+          this.loading = false;
+          this._cdr.markForCheck();
           this.toastService.success('This comment period has been deleted');
           this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
         },

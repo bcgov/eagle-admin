@@ -73,7 +73,7 @@ describe('AddEditCommentPeriodComponent', () => {
 
     submitNew(component);
 
-    expect(commentPeriodService.add).toHaveBeenCalledOnceWith(jasmine.any(CommentPeriod), 'demi-p1');
+    expect(commentPeriodService.add).toHaveBeenCalledOnceWith(jasmine.any(Object), 'demi-p1');
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/p', 'demi-p1', 'comment-periods']);
   });
 
@@ -83,7 +83,7 @@ describe('AddEditCommentPeriodComponent', () => {
 
     submitNew(component);
 
-    expect(commentPeriodService.add).toHaveBeenCalledOnceWith(jasmine.any(CommentPeriod), notification.demiId);
+    expect(commentPeriodService.add).toHaveBeenCalledOnceWith(jasmine.any(Object), notification.demiId);
     expect(TestBed.inject(Router).navigate).toHaveBeenCalledWith(['/pn', notification._id, 'comment-periods']);
   });
 
@@ -111,6 +111,83 @@ describe('AddEditCommentPeriodComponent', () => {
 
     // No published state to set: the form showed the legacy period as published.
     expect(commentPeriodService.save.calls.mostRecent().args[1]).toBeUndefined();
+  });
+
+  describe('published state on save', () => {
+    function editStaffPeriod(isPublished: boolean) {
+      const period = toLegacyCommentPeriod(nativeCommentPeriod({ isPublished }), ['sysadmin']);
+      return { period, component: openForEdit(period) };
+    }
+
+    it('asks to publish when the form turns a hidden period published', () => {
+      const { period, component } = editStaffPeriod(false);
+      component.commentPeriodForm.patchValue({ publishedStateSel: 'published' });
+
+      component.onSubmit();
+
+      expect(commentPeriodService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ demiId: period.demiId }), true);
+    });
+
+    it('asks to un-publish when the form hides a published period', () => {
+      const { component } = editStaffPeriod(true);
+      component.commentPeriodForm.patchValue({ publishedStateSel: 'unpublished' });
+
+      component.onSubmit();
+
+      expect(commentPeriodService.save.calls.mostRecent().args[1]).toBeFalse();
+    });
+
+    it('leaves the loaded period unchanged when the save is refused', () => {
+      const { period, component } = editStaffPeriod(false);
+      commentPeriodService.save.and.returnValue(throwError(() => new Error('refused')));
+      component.commentPeriodForm.patchValue({ publishedStateSel: 'published', commentTipText: 'New tip' });
+
+      component.onSubmit();
+
+      expect(period.isPublished).toBeFalse();
+      expect(period.commentTip).not.toBe('New tip');
+      expect(component.loading).toBeFalse();
+    });
+  });
+
+  describe('open houses', () => {
+    const DATE = { year: 2026, month: 3, day: 10 };
+
+    function openWithRow(row: { description: string | null; eventDate: unknown }) {
+      const component = open({ projId: 'p1' }, 'add', { _id: 'p1', demiId: 'demi-p1', name: 'Site C' });
+      component.commentPeriodForm.get('openHouses').setValue([row]);
+      return component;
+    }
+
+    for (const [label, row] of [
+      ['a blank description', { description: '   ', eventDate: DATE }],
+      ['no date', { description: 'Town hall', eventDate: null }],
+      ['a date that does not parse', { description: 'Town hall', eventDate: '31/02/20x6' }]
+    ] as const) {
+      it(`stops the submit and sends nothing for a row with ${label}`, () => {
+        const component = openWithRow(row);
+
+        submitNew(component);
+
+        expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith('Each open house needs a description and a valid event date.');
+        expect(commentPeriodService.add).not.toHaveBeenCalled();
+        expect(component.loading).toBeFalse();
+      });
+    }
+
+    it('drops a row left blank', () => {
+      submitNew(openWithRow({ description: '', eventDate: null }));
+
+      expect(commentPeriodService.add.calls.mostRecent().args[0].openHouses).toEqual([]);
+    });
+
+    it('lets the last row be removed', () => {
+      const component = openWithRow({ description: '', eventDate: null });
+
+      component.removeOpenHouseRow(0);
+
+      expect(component.commentPeriodForm.get('openHouses').value).toEqual([]);
+    });
   });
 
   it('sends a read-only period back to its details page without opening the form', () => {

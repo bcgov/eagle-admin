@@ -153,11 +153,21 @@ describe('CommentPeriodService', () => {
     it('says the period was saved when only setting its published state is refused', async () => {
       const result = firstValueFrom(service.save(period(), true));
 
-      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod());
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod({ isPublished: false }));
       http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}/publish`).flush({ error: ABOVE_PROJECT }, { status: 409, statusText: 'Conflict' });
 
       await expectAsync(result).toBeRejected();
       expect(TestBed.inject(ToastService).error).toHaveBeenCalledOnceWith(`Comment period saved, but it was not published. ${ABOVE_PROJECT}`);
+    });
+
+    it('sets no published state when the save is refused', async () => {
+      const result = firstValueFrom(service.save(period(), false));
+
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush({ error: 'bad', fields: { milestone: 'must be an id' } }, { status: 400, statusText: 'Bad Request' });
+
+      await expectAsync(result).toBeRejected();
+      http.expectNone(`/demi/api/comment-periods/${DEMI_PERIOD}/unpublish`);
+      expect(TestBed.inject(ToastService).error).toHaveBeenCalledOnceWith('Failed to save comment period. bad milestone: must be an id');
     });
 
     it('toasts DEMI\'s reason and fails the stream when a write is refused', async () => {
