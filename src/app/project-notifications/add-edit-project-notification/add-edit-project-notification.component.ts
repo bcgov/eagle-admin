@@ -19,12 +19,14 @@ import { ToastService } from 'src/app/services/toast.service';
 import { Constants } from 'src/app/shared/utils/constants';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, isNgbDate } from 'src/app/shared/utils/utils';
 
-// eagle-api stored `new Date(null)` read in Pacific time for a missing date; it means no date.
-const NO_DATE = '1969-12-31T08:00:00.000Z';
+// eagle-api stored `new Date(null)` read in Pacific time for a missing date; the form shows it as this day.
+const NO_DATE = convertJSDateToNGBDate(new Date('1969-12-31T08:00:00.000Z'));
 
 function toDate(date: unknown): Date | null {
-  const value = isNgbDate(date) ? convertFormGroupNGBDateToJSDate(date) : null;
-  return value?.toISOString() === NO_DATE ? null : value;
+  if (!isNgbDate(date) || (date.year === NO_DATE.year && date.month === NO_DATE.month && date.day === NO_DATE.day)) {
+    return null;
+  }
+  return convertFormGroupNGBDateToJSDate(date);
 }
 
 /** True for an empty date control or a date the datepicker parsed; false for text it could not parse. */
@@ -185,7 +187,7 @@ export class AddEditProjectNotificationComponent implements OnInit {
       trigger: this.triggers.map(trigger => trigger.name).join(),
       region: form.region,
       location: form.location,
-      decisionDate: form.decision !== 'In Progress' ? toDate(form.decisionDate) : null,
+      decisionDate: form.decision !== Constants.NOTIFICATION_DECISIONS.INPROGRESS ? toDate(form.decisionDate) : null,
       notificationReceivedDate: toDate(form.notificationReceivedDate),
       decision: form.decision,
       associatedProjectId: referred ? form.project : null,
@@ -324,12 +326,12 @@ export class AddEditProjectNotificationComponent implements OnInit {
     }
 
     if (!isDateOrEmpty(this.myForm.value.notificationReceivedDate)) {
-      this.toastService.error('Notification Received Date is not a valid date.');
+      alert('Notification Received Date is not a valid date.');
       return false;
     }
 
-    if (this.myForm.value.decision !== 'In Progress' && !isDateOrEmpty(this.myForm.value.decisionDate)) {
-      this.toastService.error('Decision Date is not a valid date.');
+    if (this.myForm.value.decision !== Constants.NOTIFICATION_DECISIONS.INPROGRESS && !isDateOrEmpty(this.myForm.value.decisionDate)) {
+      alert('Decision Date is not a valid date.');
       return false;
     }
 

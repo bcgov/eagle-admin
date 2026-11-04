@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
-import { Observable, forkJoin, of } from 'rxjs';
-import { finalize, map, switchMap } from 'rxjs/operators';
+import { Observable, forkJoin } from 'rxjs';
+import { finalize, switchMap, tap } from 'rxjs/operators';
 import { DemiNotification, LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
 import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { DocumentService } from 'src/app/services/document.service';
@@ -86,17 +86,21 @@ export class ProjectNotificationDetailComponent implements OnInit {
 
   /**
    * The notification first, its documents only once DEMI accepts it. A refused notification
-   * completes empty and a failed document toasts; either way the badge stays as it was.
+   * completes empty and keeps the badge; a failed document toasts after the badge moves.
    */
   private setPublished(action: 'publish' | 'unpublish', notification: Observable<DemiNotification>,
     documents: () => Observable<unknown>[]) {
     this.loading = true;
     notification
       .pipe(
-        switchMap((row): Observable<DemiNotification> => {
-          const writes = documents();
-          return writes.length ? forkJoin(writes).pipe(map(() => row)) : of(row);
+        tap(row => {
+          this.projectNotification = legacyNotification(row);
+          this.isPublished = row.isPublished;
+          // The edit screen reads the publish state from here.
+          this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
         }),
+        // forkJoin of no documents completes at once, with the badge already set.
+        switchMap(() => forkJoin(documents())),
         takeUntilDestroyed(this.destroyRef),
         finalize(() => {
           this.loading = false;
@@ -104,13 +108,8 @@ export class ProjectNotificationDetailComponent implements OnInit {
         })
       )
       .subscribe({
-        next: row => {
-          this.projectNotification = legacyNotification(row);
-          this.isPublished = row.isPublished;
-          // The edit screen reads the publish state from here.
-          this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
-        },
-        error: (error: Error) => this.toast.error(`Failed to ${action} documents. ${error.message}`)
+        error: (error: Error) =>
+          this.toast.error(`The notification was ${action}ed, but its documents were not. ${error.message}`)
       });
   }
 

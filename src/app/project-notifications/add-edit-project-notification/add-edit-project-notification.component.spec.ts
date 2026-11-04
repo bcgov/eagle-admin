@@ -11,6 +11,7 @@ import { ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { Constants } from 'src/app/shared/utils/constants';
+import { convertJSDateToNGBDate } from 'src/app/shared/utils/utils';
 
 describe('AddEditProjectNotificationComponent', () => {
   let projectService: jasmine.SpyObj<ProjectService>;
@@ -148,11 +149,38 @@ describe('AddEditProjectNotificationComponent', () => {
     create(of({ rows }));
     fillForm();
     fixture.componentInstance.myForm.patchValue({ notificationReceivedDate: '2026-13-45' });
+    const alert = spyOn(window, 'alert');
 
     fixture.componentInstance.onSubmit(null);
 
     expect(notifications.save).not.toHaveBeenCalled();
-    expect(toastService.error).toHaveBeenCalledOnceWith('Notification Received Date is not a valid date.');
+    expect(alert).toHaveBeenCalledOnceWith('Notification Received Date is not a valid date.');
+  });
+
+  it('refuses a decision date the datepicker could not parse once a decision is made', () => {
+    create(of({ rows }));
+    fillForm();
+    fixture.componentInstance.myForm.patchValue({ decision: Constants.NOTIFICATION_DECISIONS.REFERRED, decisionDate: '2026-13-45' });
+    const alert = spyOn(window, 'alert');
+
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalledOnceWith('Decision Date is not a valid date.');
+  });
+
+  it('saves the 1969 day old eagle-api rows use for no date as null', () => {
+    create(of({ rows }));
+    notifications.save.and.returnValue(NEVER);
+    fillForm();
+    fixture.componentInstance.myForm.patchValue({
+      decision: Constants.NOTIFICATION_DECISIONS.REFERRED,
+      decisionDate: convertJSDateToNGBDate(new Date('1969-12-31T08:00:00.000Z'))
+    });
+
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).toHaveBeenCalledOnceWith('demi-pn1', jasmine.objectContaining({ decisionDate: null }), null);
   });
 
   it('sends one save while the first is in flight', () => {
@@ -164,5 +192,16 @@ describe('AddEditProjectNotificationComponent', () => {
     fixture.componentInstance.onSubmit(null);
 
     expect(notifications.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows a second save after DEMI refuses the first', () => {
+    create(of({ rows }));
+    notifications.save.and.returnValue(EMPTY);
+    fillForm();
+
+    fixture.componentInstance.onSubmit(null);
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).toHaveBeenCalledTimes(2);
   });
 });

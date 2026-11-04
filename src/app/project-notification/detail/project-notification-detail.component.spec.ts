@@ -90,23 +90,15 @@ describe('ProjectNotificationDetailComponent', () => {
     expect(component.loading).toBeFalse();
   });
 
-  it('publishes a notification that has no documents', () => {
-    documents.listNative.and.returnValue(of({ rows: [], total: 0 }));
-    create();
-
-    component.publish();
-
-    expect(component.isPublished).toBeTrue();
-  });
-
-  it('toasts a failed document publish and keeps the badge', () => {
+  it('shows the notification published and toasts when a document publish fails', () => {
     documents.publish.and.returnValue(throwError(() => new Error('Document is locked')));
     create();
 
     component.publish();
 
-    expect(toast.error).toHaveBeenCalledOnceWith('Failed to publish documents. Document is locked');
-    expect(component.isPublished).toBeFalse();
+    expect(component.isPublished).toBeTrue();
+    expect(storage.state.currentProject.data.read).toContain('public');
+    expect(toast.error).toHaveBeenCalledOnceWith('The notification was published, but its documents were not. Document is locked');
     expect(component.loading).toBeFalse();
   });
 
