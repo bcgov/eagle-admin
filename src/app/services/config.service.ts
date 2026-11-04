@@ -49,7 +49,7 @@ function pick(source: EnvConfig, keys: readonly (keyof EnvConfig)[]): EnvConfig 
 }
 
 /**
- * env.js holds test values with configEndpoint true; DEMI /config/public and /config merge over them.
+ * env.js holds test values with configEndpoint true; DEMI /config/public and, deployed, /config merge over them.
  * The app calls relative /api, never API_LOCATION.
  */
 @Injectable({ providedIn: 'root' })
@@ -101,9 +101,10 @@ export class ConfigService {
 
   private async fetchRemoteConfig(): Promise<void> {
     const base = this.getDemiApiPath();
+    // ng serve keeps env.js Keycloak, which `yarn start` sets from .env.local.
     const [site, keycloak] = await Promise.all([
       this.fetchSiteConfig(`${base}/config/public`),
-      this.fetchKeycloakConfig(`${base}/config`)
+      this.devMode() ? {} : this.fetchKeycloakConfig(`${base}/config`)
     ]);
     this._config.set({ ...this._config(), ...site, ...keycloak });
     this.logger.debug('merged with DEMI config:', 'ConfigService', this._config());

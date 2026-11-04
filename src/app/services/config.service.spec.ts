@@ -52,6 +52,7 @@ describe('ConfigService', () => {
   });
 
   it('rejects when DEMI /config returns a non-2xx response', async () => {
+    spyOn<any>(service, 'devMode').and.returnValue(false);
     window.__env = { ...deployedEnv };
     stubFetch(fakeResponse(false, {}));
 
@@ -59,6 +60,7 @@ describe('ConfigService', () => {
   });
 
   it('rejects when the fetch itself fails', async () => {
+    spyOn<any>(service, 'devMode').and.returnValue(false);
     window.__env = { ...deployedEnv };
     stubFetch(Promise.reject(new TypeError('Failed to fetch')));
 
@@ -66,6 +68,7 @@ describe('ConfigService', () => {
   });
 
   it('rejects a 200 with no KEYCLOAK_URL and merges nothing from it', async () => {
+    spyOn<any>(service, 'devMode').and.returnValue(false);
     window.__env = { ...deployedEnv };
     stubFetch(fakeResponse(true, { KEYCLOAK_REALM: 'eao-epic' }), fakeResponse(true, { BANNER_COLOUR: 'orange' }));
 
@@ -120,7 +123,22 @@ describe('ConfigService', () => {
     expect(service.config().APPINSIGHTS_CONNECTION_STRING).toBe('');
   });
 
+  it('keeps env.js Keycloak values under ng serve and never asks DEMI /config', async () => {
+    window.__env = { ...deployedEnv, BANNER_COLOUR: 'blue' };
+    const fetchSpy = stubFetch(
+      fakeResponse(true, { ...keycloakConfig, KEYCLOAK_REALM: 'demi-realm' }),
+      fakeResponse(true, { BANNER_COLOUR: 'orange' })
+    );
+
+    await service.init();
+    expect(fetchSpy.calls.allArgs().map(args => args[0])).toEqual(['/demi/api/config/public']);
+    expect(service.config().KEYCLOAK_URL).toBe(deployedEnv.KEYCLOAK_URL);
+    expect(service.config().KEYCLOAK_REALM).toBe(deployedEnv.KEYCLOAK_REALM);
+    expect(service.config().BANNER_COLOUR).toBe('orange');
+  });
+
   it('boots on env.js site values when DEMI /config/public is unavailable', async () => {
+    spyOn<any>(service, 'devMode').and.returnValue(false);
     window.__env = { ...deployedEnv, BANNER_COLOUR: 'blue' };
     stubFetch(fakeResponse(true, keycloakConfig), fakeResponse(false, { error: 'Public configuration is unavailable.' }));
 
