@@ -7,7 +7,7 @@ import { ConfigService } from './config.service';
 import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
-import { ProjectService, READ_ONLY_PROJECT } from './project.service';
+import { ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
 import { ToastService } from './toast.service';
 import { Project } from '../models/project';
 import { DemiProject } from '../models/demi/project';
@@ -222,13 +222,38 @@ describe('ProjectService', () => {
       expect(http.expectOne('/demi/api/projects/7').request.body.proponentName).toBe('Teck Coal');
     });
 
-    it('publish PUTs level 4 with confirm and reason, without legislationYear', () => {
+    it('a failed proponent lookup fails the save and sends no PUT', async () => {
+      const save = firstValueFrom(service.save(formProject({ proponent: 'org2' })));
+      answerRead();
+
+      http.expectOne('/demi/api/organizations/org2').flush({ error: 'Organization not found' }, { status: 404, statusText: 'Not Found' });
+
+      await expectAsync(save).toBeRejectedWithError('Organization not found');
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('save from the tab of the project\'s own Act PUTs the form', () => {
+      service.save(formProject({ legislationYear: 2018 })).subscribe();
+      answerRead({ legislationYear: 2018 });
+
+      expect(http.expectOne('/demi/api/projects/7').request.body.legislationYear).toBe(2018);
+    });
+
+    it('save from another Act\'s tab is refused and sends no PUT', async () => {
+      const save = firstValueFrom(service.save(formProject({ legislationYear: 2018 })));
+      answerRead({ legislationYear: 2002 });
+
+      await expectAsync(save).toBeRejectedWithError(otherActMessage(2002, 2018));
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
       service.publish(formProject({ legislationYear: 2018 })).subscribe();
       answerRead();
 
       const req = http.expectOne('/demi/api/projects/7/level');
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin' });
+      expect(req.request.body).toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin', legislationYear: 2018 });
       req.flush(nativeRow());
     });
 
@@ -239,15 +264,54 @@ describe('ProjectService', () => {
       expect(http.expectOne('/demi/api/projects/7/level').request.body).toEqual({ level: 2 });
     });
 
-    it('addExtension POSTs projects/<demiId>/extensions with only type, appliedTo, start, end', () => {
-      const extension = { type: 'Extension', appliedTo: 'Review', start: '2026-01-05', end: '2026-02-05', id: 'x', old: {} };
+    it('reads a legacy project by its DEMI id when it carries one', () => {
+      service.unPublish({ _id: null, demiId: '7' }).subscribe();
 
-      service.addExtension(EAGLE_ID, extension).subscribe();
-      answerRead();
+      http.expectOne('/demi/api/projects/7').flush(nativeRow());
+      http.expectOne('/demi/api/projects/7/level').flush(nativeRow());
+    });
 
-      const req = http.expectOne('/demi/api/projects/7/extensions');
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ type: 'Extension', appliedTo: 'Review', start: '2026-01-05', end: '2026-02-05' });
+    describe('extensions', () => {
+      const EXTENSION = { type: 'Extension', appliedTo: 'Review', start: '2026-01-05', end: '2026-02-05' };
+
+      it('addExtension POSTs projects/<demiId>/extensions with only type, appliedTo, start, end', () => {
+        service.addExtension(EAGLE_ID, { ...EXTENSION, id: 'x', old: {} } as typeof EXTENSION).subscribe();
+        answerRead();
+
+        const req = http.expectOne('/demi/api/projects/7/extensions');
+        expect(req.request.method).toBe('POST');
+        expect(req.request.body).toEqual(EXTENSION);
+      });
+
+      it('editExtension PUTs the item by id', () => {
+        service.editExtension(EAGLE_ID, 'e1', EXTENSION).subscribe();
+        answerRead();
+
+        const req = http.expectOne('/demi/api/projects/7/extensions/e1');
+        expect(req.request.method).toBe('PUT');
+        expect(req.request.body).toEqual(EXTENSION);
+      });
+
+      it('editExtension takes the item id from the old item of a { new, old } change', () => {
+        service.editExtension(EAGLE_ID, { new: EXTENSION, old: { id: 'e1' } }).subscribe();
+        answerRead();
+
+        expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.body).toEqual(EXTENSION);
+      });
+
+      it('deleteExtension DELETEs the item by id', () => {
+        service.deleteExtension(EAGLE_ID, 'e1').subscribe();
+        answerRead();
+
+        expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.method).toBe('DELETE');
+      });
+
+      it('deleteExtension takes the id of an item', () => {
+        service.deleteExtension(EAGLE_ID, { id: 'e1' }).subscribe();
+        answerRead();
+
+        expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.method).toBe('DELETE');
+      });
     });
 
     it('a DEMI 409 surfaces its message', async () => {
@@ -255,10 +319,10 @@ describe('ProjectService', () => {
       answerRead();
 
       http.expectOne('/demi/api/projects/7').flush(
-        { error: 'Project is under the 2002 Environmental Assessment Act' }, { status: 409, statusText: 'Conflict' }
+        { error: 'Project is under the Building Canada Act' }, { status: 409, statusText: 'Conflict' }
       );
 
-      await expectAsync(save).toBeRejectedWithError('Project is under the 2002 Environmental Assessment Act');
+      await expectAsync(save).toBeRejectedWithError('Project is under the Building Canada Act');
     });
   });
 

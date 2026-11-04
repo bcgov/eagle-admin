@@ -1,6 +1,6 @@
 import { Project } from '../project';
 import { List } from './list';
-import { DemiListRef } from './project';
+import { DemiListRef, DemiProject } from './project';
 
 /** Eagle field names DEMI stores under another top-level name (DEMI `EAGLE_BLOCK_NAMES`, `vis/catalog/projects.js`). */
 export const DEMI_FIELD_NAMES = Object.freeze({
@@ -25,35 +25,51 @@ const SET_FIELDS = ['legislationYear', 'shortName', 'activeStatus', 'applicableR
 const CLEARED = new Set<string>(CLEARED_FIELDS);
 const LIST_REFS = new Set<string>(['eacDecision', 'currentPhaseName', 'CEAAInvolvement', 'applicableRegulation']);
 
+/** Contact name fields DEMI keeps beside each contact id: cleared with the id. */
+const CONTACT_NAMES = { responsibleEPDId: 'responsibleEPD', projectLeadId: 'projectLead' } as const;
+
 type WriteField = typeof CLEARED_FIELDS[number] | typeof SET_FIELDS[number];
 
+/** A List ref as DEMI stores it; `item` is the List row's link, such as a BC Laws URL. */
+type WriteListRef = DemiListRef & { item?: string };
+
 /**
- * The DEMI `PUT /projects/:id` body for an edit form's `Project`: only catalogued top-level fields, under DEMI's
- * names. `_id` and every other key are left out, since DEMI answers 400 to a key it does not catalogue.
+ * DEMI `PUT /projects/:id` body over the stored `row`: catalogued top-level fields only, under DEMI's names,
+ * since DEMI answers 400 to an uncatalogued key such as `_id`.
  */
-export function toDemiProjectWrite(project: Project, lists: List[]): Record<string, unknown> {
+export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject): Record<string, unknown> {
   const body: Record<string, unknown> = {};
   for (const field of [...CLEARED_FIELDS, ...SET_FIELDS]) {
-    const value = valueOf(project, field, lists);
+    const value = valueOf(project, field, lists, row);
     if (value !== undefined || CLEARED.has(field)) {
       body[DEMI_FIELD_NAMES[field as keyof typeof DEMI_FIELD_NAMES] ?? field] = value ?? null;
+    }
+  }
+  for (const [idField, nameField] of Object.entries(CONTACT_NAMES)) {
+    if (body[idField] === null) {
+      body[nameField] = null;
     }
   }
   if (project.proponent?.name) {
     body.proponentName = project.proponent.name;
   }
+  const phase = body.currentPhaseName as WriteListRef | null;
+  // eagle-api's PUT appended each new phase to the history.
+  if (phase && phase._id !== row.currentPhaseName?._id) {
+    body.phaseHistory = [...((row.phaseHistory as unknown[]) ?? []), phase];
+  }
   return body;
 }
 
-function valueOf(project: Project, field: WriteField, lists: List[]): unknown {
+function valueOf(project: Project, field: WriteField, lists: List[], row: DemiProject): unknown {
   const value = project[field];
   if (LIST_REFS.has(field)) {
-    return value ? listRef(value, lists) : undefined;
+    return value ? listRef(value, lists, row[field]) : undefined;
   }
   switch (field) {
     // eagle-api's PUT took the stage from the phase; the form never sends `status`.
     case 'status':
-      return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists).name : undefined);
+      return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists, row.currentPhaseName).name : undefined);
     case 'proponent':
       return value && typeof value === 'object' ? value._id : value;
     case 'centroid':
@@ -68,14 +84,21 @@ function valueOf(project: Project, field: WriteField, lists: List[]): unknown {
   }
 }
 
-/** The ref DEMI stores for a List pick. The form holds the List id; a row read back already holds the ref. */
-function listRef(value: string | DemiListRef, lists: List[]): DemiListRef {
+/**
+ * The ref DEMI stores for a List pick. The form holds the List id; a row read back already holds the ref.
+ * An id the Lists lack keeps the stored ref when it names the same id, else goes with no name.
+ */
+function listRef(value: string | DemiListRef, lists: List[], stored: unknown): WriteListRef {
   const id = typeof value === 'string' ? value : value._id;
   const row = lists.find(item => item.id === id);
-  if (!row) {
-    return typeof value === 'string' ? { _id: id, name: null } : value;
+  if (row) {
+    return { _id: row.id, name: row.name, type: row.type, legislation: row.legislation, ...(row.item && { item: row.item }) };
   }
-  return { _id: row.id, name: row.name, type: row.type, legislation: row.legislation };
+  const kept = stored as WriteListRef | undefined;
+  if (kept?._id === id) {
+    return kept;
+  }
+  return typeof value === 'string' ? { _id: id, name: null } : value;
 }
 
 /** `[lon, lat]` as the GeoJSON point DEMI stores; undefined when either is blank. */

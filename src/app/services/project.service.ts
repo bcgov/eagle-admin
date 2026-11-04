@@ -20,8 +20,14 @@ interface UserRow {
   id: string;
 }
 
-/** A project by route id (DEMI or Eagle), or a legacy project whose `_id` is one. */
-type ProjectRef = string | Pick<Project, '_id'>;
+/** A project by route id (DEMI or Eagle), or a legacy project: its `demiId`, else its `_id`. */
+type ProjectRef = string | (Pick<Project, '_id'> & { demiId?: string; legislationYear?: number });
+
+/** What DEMI's extension routes answer: the project's two lists, each item with its `id`. */
+export interface ProjectExtensionLists {
+  reviewExtensions: (ProjectExtension & { id: string })[];
+  reviewSuspensions: (ProjectExtension & { id: string })[];
+}
 
 /** An extension or suspension as the extension form sends it; `type` is `Extension` or `Suspension`. */
 export interface ProjectExtension {
@@ -119,40 +125,51 @@ export class ProjectService {
     );
   }
 
-  /** Writes the edit form's fields to DEMI. `project._id` is the route id, DEMI or Eagle. */
+  /**
+   * Writes the edit form's fields to DEMI. `project._id` is the route id, DEMI or Eagle. A tab for another Act
+   * than the project's is refused: DEMI's PUT writes the current Act's fields.
+   */
   save(project: Project): Observable<LegacyProject> {
-    const body = toDemiProjectWrite(project, this.configService.lists);
-    return this.onFreshRow(project._id, row => this.withProponentName(row, body).pipe(
-      mergeMap(named => this.demiApi.update<DemiProject>('projects', row.id, named)),
-      map(toLegacyProject)
-    ));
+    return this.onFreshRow(refId(project), row => {
+      if (project.legislationYear && row.legislationYear && Number(project.legislationYear) !== Number(row.legislationYear)) {
+        return throwError(() => new Error(otherActMessage(row.legislationYear, project.legislationYear)));
+      }
+      return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
+        mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body)),
+        map(toLegacyProject)
+      );
+    });
   }
 
+  /** Publishes to level 4. A project's `legislationYear` makes that Act current, as eagle-api's publish did. */
   publish(project: ProjectRef): Observable<LegacyProject> {
-    return this.setLevel(project, PUBLISH);
+    const year = typeof project === 'string' ? undefined : project.legislationYear;
+    return this.setLevel(project, year ? { ...PUBLISH, legislationYear: year } : PUBLISH);
   }
 
   unPublish(project: ProjectRef): Observable<LegacyProject> {
     return this.setLevel(project, { level: UNPUBLISHED_LEVEL });
   }
 
-  addExtension(project: ProjectRef, extension: ProjectExtension): Observable<DemiProject> {
-    return this.onFreshRow(refId(project), row => this.demiApi.create<DemiProject>(extensionsOf(row), extensionBody(extension)));
+  addExtension(project: ProjectRef, extension: ProjectExtension): Observable<ProjectExtensionLists> {
+    return this.onFreshRow(refId(project), row =>
+      this.demiApi.create<ProjectExtensionLists>(extensionsOf(row), extensionBody(extension)));
   }
 
-  editExtension(project: ProjectRef, itemId: string, extension: ProjectExtension): Observable<DemiProject>;
+  editExtension(project: ProjectRef, itemId: string, extension: ProjectExtension): Observable<ProjectExtensionLists>;
   /** @deprecated The extension screen's `{ new, old }` shape, until it passes the item id. */
-  editExtension(project: ProjectRef, change: { new: ProjectExtension; old: { id: string } }): Observable<DemiProject>;
+  editExtension(project: ProjectRef, change: { new: ProjectExtension; old: { id: string } }): Observable<ProjectExtensionLists>;
   editExtension(
     project: ProjectRef, item: string | { new: ProjectExtension; old: { id: string } }, extension?: ProjectExtension
-  ): Observable<DemiProject> {
+  ): Observable<ProjectExtensionLists> {
     const [itemId, body] = typeof item === 'string' ? [item, extension] : [item.old.id, item.new];
-    return this.onFreshRow(refId(project), row => this.demiApi.update<DemiProject>(extensionsOf(row), itemId, extensionBody(body)));
+    return this.onFreshRow(refId(project), row =>
+      this.demiApi.update<ProjectExtensionLists>(extensionsOf(row), itemId, extensionBody(body)));
   }
 
-  deleteExtension(project: ProjectRef, item: string | { id: string }): Observable<DemiProject> {
+  deleteExtension(project: ProjectRef, item: string | { id: string }): Observable<ProjectExtensionLists> {
     const itemId = typeof item === 'string' ? item : item.id;
-    return this.onFreshRow(refId(project), row => this.demiApi.remove<DemiProject>(extensionsOf(row), itemId));
+    return this.onFreshRow(refId(project), row => this.demiApi.remove<ProjectExtensionLists>(extensionsOf(row), itemId));
   }
 
   /** Adds organizations to the project's pin list in DEMI. `projId` is the DEMI or Eagle id. */
@@ -234,7 +251,11 @@ function pinIds(row: DemiProject): string[] {
 }
 
 function refId(project: ProjectRef): string {
-  return typeof project === 'string' ? project : project._id;
+  return typeof project === 'string' ? project : project.demiId || project._id;
+}
+
+export function otherActMessage(projectYear: number, tabYear: number): string {
+  return `This project is under the ${projectYear} Act, so the ${tabYear} tab is read-only.`;
 }
 
 function extensionsOf(row: DemiProject): string {
