@@ -99,7 +99,7 @@ describe('ReviewCommentComponent', () => {
     expect(saveNextButton()).toBeUndefined();
   });
 
-  it('saves the review to eagle-api under the Eagle id, then opens the next pending comment', () => {
+  it('saves the review to DEMI under the row id, then opens the next pending comment', () => {
     create(reviewComment());
     answerNextPending(3);
     const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
@@ -107,12 +107,11 @@ describe('ReviewCommentComponent', () => {
     fixture.componentInstance.commentReviewForm.controls.publishedNotesText.setValue('Fine');
 
     saveNextButton().click();
-    const put = http.expectOne(`/api/comment/${COMMENT_ID}`);
-    put.flush({ acknowledged: true });
+    const put = http.expectOne(`/demi/api/comments/${COMMENT_ID}`);
+    put.flush(reviewComment({ eaoStatus: 'Published' }));
 
     expect(put.request.method).toBe('PUT');
-    expect(put.request.body).toEqual(jasmine.objectContaining({ _id: COMMENT_ID, eaoStatus: 'Published', publishedNotes: 'Fine' }));
-    expect(put.request.body.periodId).toBeUndefined();
+    expect(put.request.body).toEqual(jasmine.objectContaining({ eaoStatus: 'Published', publishedNotes: 'Fine' }));
     expect(navigate).toHaveBeenCalledWith(['/pn', PROJECT_ID, 'cp', PERIOD_ID, 'c', NEXT_ID, 'comment-details']);
   });
 
@@ -124,7 +123,7 @@ describe('ReviewCommentComponent', () => {
 
     fixture.componentInstance.onSubmit('exit');
 
-    expect(http.expectOne(`/api/comment/${COMMENT_ID}`).request.body.eaoStatus).toBe('Pending');
+    expect(http.expectOne(`/demi/api/comments/${COMMENT_ID}`).request.body.eaoStatus).toBe('Pending');
   });
 
   it('publishes attachments by their Eagle id', () => {
@@ -135,7 +134,7 @@ describe('ReviewCommentComponent', () => {
     documents.publish.and.returnValue(of(null));
 
     fixture.componentInstance.onSubmit('exit');
-    http.expectOne(`/api/comment/${COMMENT_ID}`).flush({});
+    http.expectOne(`/demi/api/comments/${COMMENT_ID}`).flush(reviewComment());
 
     expect(documents.publish).toHaveBeenCalledWith('5a0000000000000000000001');
   });
@@ -151,6 +150,6 @@ describe('ReviewCommentComponent', () => {
 
     expect(fixture.componentInstance.commentReviewForm.controls.isPublished.value).toBeFalse();
     fixture.componentInstance.onSubmit('exit');
-    expect(http.expectOne(`/api/comment/${NEXT_ID}`).request.body.eaoStatus).toBe('Pending');
+    expect(http.expectOne(`/demi/api/comments/${NEXT_ID}`).request.body.eaoStatus).toBe('Pending');
   });
 });

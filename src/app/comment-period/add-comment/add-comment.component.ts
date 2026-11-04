@@ -8,10 +8,9 @@ import { DatePipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from '../../file-upload/file-upload.component';
-import { CommentPeriod } from 'src/app/models/commentPeriod';
-import { CommentService } from 'src/app/services/comment.service';
+import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
+import { CommentCreate, CommentService } from 'src/app/services/comment.service';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
-import { Comment } from 'src/app/models/comment';
 import { Document } from 'src/app/models/document';
 import { DateTime } from 'luxon';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -40,12 +39,11 @@ export class AddCommentComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   project = input.required<any>();
-  commentPeriod = input.required<CommentPeriod>();
+  commentPeriod = input.required<LegacyCommentPeriod>();
   /** Route param; the period resolver's row shape is not relied on for ids. */
   commentPeriodId = input.required<string>();
 
   public baseRouteUrl: string;
-  public comment = new Comment();
   public commentFiles: Array<File> = [];
   public documents: Document[] = [];
   loading = signal(false);
@@ -77,7 +75,7 @@ export class AddCommentComponent implements OnInit {
       'authorText': new FormControl<string | null>({ value: this.anonymousName, disabled: true }),
       'commentText': new FormControl<string | null>(null),
       'dateAdded': new FormControl<unknown>(null),
-      'datePosted': new FormControl<unknown>({ value: '', disabled: true }),
+      'datePosted': new FormControl<unknown>({ value: undefined, disabled: true }),
       'deferralNotesText': new FormControl<string | null>(null),
       'isNamePublic': new FormControl<boolean | null>(null),
       'isDeferred': new FormControl<boolean | null>(null),
@@ -90,8 +88,6 @@ export class AddCommentComponent implements OnInit {
     });
     this.addCommentForm.controls.isNamePublic.setValue(false);
     this.addCommentForm.controls.dateAdded.setValue(convertJSDateToNGBDate(new Date()));
-    this.addCommentForm.controls.datePosted.setValue(
-      this.comment.datePosted ? convertJSDateToNGBDate(new Date(this.comment.datePosted)) : undefined);
     this.addCommentForm.get('isNamePublic').valueChanges
       .subscribe(isPublic => {
         if (!isPublic) {
@@ -109,49 +105,36 @@ export class AddCommentComponent implements OnInit {
 
   public onSubmit() {
     this.loading.set(true);
-    this.comment.author = this.addCommentForm.get('authorText').value;
-    this.comment.comment = this.addCommentForm.get('commentText').value;
-    this.comment.dateAdded = convertFormGroupNGBDateToJSDate(this.addCommentForm.get('dateAdded').value);
-    this.comment.isAnonymous = !this.addCommentForm.get('isNamePublic').value;
-    this.comment.location = this.addCommentForm.get('locationText').value;
+    const form = this.addCommentForm.getRawValue();
+    const comment: CommentCreate = {
+      periodId: this.commentPeriod().demiId,
+      author: form.authorText,
+      comment: form.commentText,
+      dateAdded: convertFormGroupNGBDateToJSDate(form.dateAdded).toISOString(),
+      isAnonymous: !form.isNamePublic,
+      location: form.locationText,
+      proponentNotes: form.proponentResponseText
+    };
 
     // TODO: Validation
-    if (this.addCommentForm.get('isPublished').value) {
-      this.comment.publishedNotes = this.addCommentForm.get('publishedNotesText').value;
-      this.comment.eaoStatus = 'Published';
-      this.comment.datePosted = new Date();
-    } else if (this.addCommentForm.get('isDeferred').value) {
-      this.comment.eaoNotes = this.addCommentForm.get('deferralNotesText').value;
-      this.comment.eaoStatus = 'Deferred';
-    } else if (this.addCommentForm.get('isRejected').value) {
-      this.comment.eaoNotes = this.addCommentForm.get('rejectionNotesText').value;
-      this.comment.eaoStatus = 'Rejected';
+    if (form.isPublished) {
+      Object.assign(comment, { eaoStatus: 'Published', publishedNotes: form.publishedNotesText, datePosted: new Date().toISOString() });
+    } else if (form.isDeferred) {
+      Object.assign(comment, { eaoStatus: 'Deferred', eaoNotes: form.deferralNotesText });
+    } else if (form.isRejected) {
+      Object.assign(comment, { eaoStatus: 'Rejected', eaoNotes: form.rejectionNotesText });
     } else {
-      this.comment.eaoStatus = 'Reset';
+      comment.eaoStatus = 'Pending';
     }
-    this.comment.proponentNotes = this.addCommentForm.get('proponentResponseText').value;
 
-    this.comment.period = this.commentPeriodId();
-
-    // go through and upload one at a time.
-    const documentsForm = this.setDocumentForm();
-    this.comment.documentsList = [];
-    this.comment.documents = [];
-
-    this.commentService.add(this.comment, documentsForm)
+    this.commentService.add(comment, this.setDocumentForm())
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.loading.set(false))
       )
-      .subscribe({
-        error: error => {
-          this.logger.error('add comment failed', 'AddCommentComponent', error);
-          this.toastService.error('Uh-oh, couldn\'t add comment');
-        },
-        complete: () => {
-          this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
-          this.toastService.success('This comment was updated successfuly.');
-        }
+      .subscribe(() => {
+        this.router.navigate([this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()]);
+        this.toastService.success('This comment was updated successfuly.');
       });
   }
 

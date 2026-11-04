@@ -114,27 +114,20 @@ export class ReviewCommentComponent implements OnChanges {
       edits.eaoStatus = 'Pending';
     }
     // eagle-api publishes attachments by Eagle id; a DEMI-only document is left as it is.
-    const documentsList = this.commentData.documentsList
+    const documents = this.commentData.documentsList
       .filter(document => eagleWriteId(document))
       .map(document => ({ _id: eagleWriteId(document), eaoStatus: document.eaoStatus }));
     const { nextId } = this.nextPending();
 
-    // save() reads `documentsList` off the comment; a non-literal argument keeps it out of the excess-property check.
-    const body: DemiComment = Object.assign({ ...this.commentData, ...edits }, { documentsList });
-    this.commentService.save(body)
+    this.commentService.save({ id: this.commentData.id, ...edits }, documents)
         .pipe(
           takeUntilDestroyed(this.destroyRef),
           finalize(() => this.loading.set(false))
         )
-        .subscribe({
-          next: () => {
-            this.toastService.success(`Comment #${this.commentData.commentId} updated.`);
-            const periodUrl = [this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()];
-            this.router.navigate(action === 'next' && nextId ? [...periodUrl, 'c', nextId, 'comment-details'] : periodUrl);
-          },
-          error: () => {
-            this.toastService.error('Uh-oh, couldn\'t edit comment');
-          }
+        .subscribe(() => {
+          this.toastService.success(`Comment #${this.commentData.commentId} updated.`);
+          const periodUrl = [this.baseRouteUrl, this.project()._id, 'cp', this.commentPeriodId()];
+          this.router.navigate(action === 'next' && nextId ? [...periodUrl, 'c', nextId, 'comment-details'] : periodUrl);
         });
   }
 
