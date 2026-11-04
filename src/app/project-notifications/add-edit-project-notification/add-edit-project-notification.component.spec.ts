@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
-import { Observable, of, throwError } from 'rxjs';
+import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { EMPTY, Observable, of, throwError } from 'rxjs';
 import { AddEditProjectNotificationComponent } from './add-edit-project-notification.component';
 import { DemiList } from 'src/app/models/demi/demi-list';
 import { DemiProject } from 'src/app/models/demi/project';
@@ -14,6 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
 describe('AddEditProjectNotificationComponent', () => {
   let projectService: jasmine.SpyObj<ProjectService>;
   let toastService: jasmine.SpyObj<ToastService>;
+  let notifications: jasmine.SpyObj<NotificationProjectService>;
   let fixture: ComponentFixture<AddEditProjectNotificationComponent>;
 
   // `id` is the Track id; `eagleId` is set only on projects mirrored from Eagle.
@@ -26,19 +27,20 @@ describe('AddEditProjectNotificationComponent', () => {
   ];
 
   // Edit route on a notification referred to the Minister, so the template renders the project select.
-  function create(list: Observable<DemiList<DemiProject>>, associatedProjectId = '') {
+  function create(list: Observable<DemiList<DemiProject>>, associatedProjectId = '', path = 'edit') {
     projectService = jasmine.createSpyObj('ProjectService', ['list']);
     projectService.list.and.returnValue(list);
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error']);
+    notifications = jasmine.createSpyObj('NotificationProjectService', ['add', 'save']);
 
     TestBed.configureTestingModule({
       imports: [AddEditProjectNotificationComponent],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { url: of([{ path: 'edit' }]) } },
+        { provide: ActivatedRoute, useValue: { url: of([{ path }]) } },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toastService },
-        { provide: NotificationProjectService, useValue: jasmine.createSpyObj('NotificationProjectService', ['add', 'save']) },
+        { provide: NotificationProjectService, useValue: notifications },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['warn', 'error', 'info', 'debug']) },
         { provide: ConfigService, useValue: { regions: [] } }
       ]
@@ -48,7 +50,7 @@ describe('AddEditProjectNotificationComponent', () => {
       data: {
         type: 'currentProjectNotification',
         data: {
-          _id: 'pn1', name: 'Notice', read: ['staff'], type: 'Mines', trigger: '', centroid: [50, -120],
+          _id: 'pn1', demiId: 'demi-pn1', name: 'Notice', read: ['staff'], type: 'Mines', trigger: '', centroid: [50, -120],
           decision: 'Referred to Minister for Designation Decision', decisionDate: null,
           notificationReceivedDate: null, associatedProjectId
         }
@@ -92,5 +94,40 @@ describe('AddEditProjectNotificationComponent', () => {
     create(throwError(() => new Error('DEMI down')));
 
     expect(toastService.error).toHaveBeenCalledOnceWith('Failed to load projects.');
+  });
+
+  // Every control validateForm requires, inside the B.C. bounds.
+  function fillForm() {
+    fixture.componentInstance.myForm.patchValue({
+      name: 'Notice', type: 'Mines', subType: 'Coal Mines', proponent: 'Lynn Valley People', nature: 'New Construction',
+      decision: 'In Progress', region: 'Lower Mainland', location: 'Lynn Valley', description: 'Test',
+      notificationThresholdValue: 75, notificationThresholdUnits: 'tonnes/year',
+      notificationReceivedDate: { year: 2026, month: 6, day: 24 }, latitude: 49.3, longitude: -123.0
+    });
+    fixture.componentInstance.triggers = [{ name: 'Organic/Inorganic Chemicals' }];
+  }
+
+  it('saves an edit to the row\'s DEMI id and opens the details by the route id', () => {
+    create(of({ rows }));
+    notifications.save.and.returnValue(of({ id: 'demi-pn1', eagleId: 'pn1', name: 'Notice', centroid: [] } as any));
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    fillForm();
+
+    fixture.componentInstance.onSubmit(null);
+
+    expect(notifications.save).toHaveBeenCalledOnceWith('demi-pn1', jasmine.objectContaining({ notificationThresholdValue: 75 }), null);
+    expect(navigate).toHaveBeenCalledOnceWith(['/pn', 'pn1', 'details']);
+  });
+
+  it('stays on the form when DEMI refuses the add', () => {
+    create(of({ rows }), '', 'add');
+    notifications.add.and.returnValue(EMPTY);
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    fillForm();
+
+    fixture.componentInstance.onSubmit(true);
+
+    expect(notifications.add).toHaveBeenCalledOnceWith(jasmine.objectContaining({ name: 'Notice' }), true);
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

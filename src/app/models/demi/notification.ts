@@ -1,6 +1,6 @@
 import { nativeSort } from '../../shared/utils/table-template-utils';
 
-/** A native DEMI notification row. `id` is the Eagle `_id`; no project axis, `associatedProjectId` is a loose Eagle project id. */
+/** A native DEMI notification row. `id` is the Eagle `_id` on mirrored rows, a UUID on rows DEMI created; `associatedProjectId` is a loose Eagle project id. */
 export interface DemiNotification {
   id: string;
   eagleId?: string;
@@ -32,9 +32,10 @@ export interface DemiNotification {
   read?: string[];
 }
 
-/** Eagle-shaped notification: native fields under the Eagle `_id`, with `read` always an array. */
+/** Eagle-shaped notification: native fields under the Eagle `_id`, with `read` always an array. Writes go to `demiId`. */
 export type LegacyNotification = Omit<DemiNotification, 'id' | 'eagleId' | 'sourceSystem' | 'isPublished' | 'read'> & {
   _id: string;
+  demiId: string;
   read: string[];
 };
 
@@ -46,13 +47,14 @@ export function notificationSort(sortBy: string | null | undefined): string | un
   return nativeSort(sortBy, '', NOTIFICATION_SORTS) || undefined;
 }
 
-/** Eagle shape for screens and writes. Keeps pcp, isMet, metURL and period dates: eagle-api's PUT blanks any it is not sent. */
+/** Eagle shape for screens. DEMI finds a row to write by its own id only, so `demiId` keeps it beside the Eagle `_id`. */
 export function legacyNotification(row: DemiNotification): LegacyNotification {
   const { id, eagleId, isPublished, read, ...fields } = row;
   delete fields.sourceSystem;
   return {
     ...fields,
     _id: eagleId ?? id,
+    demiId: id,
     read: read ?? (isPublished ? ['public'] : [])
   };
 }

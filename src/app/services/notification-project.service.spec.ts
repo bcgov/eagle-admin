@@ -3,12 +3,11 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { NotificationProjectService } from './notification-project.service';
+import { NotificationProjectService, NotificationWrite } from './notification-project.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
-import { ProjectNotification } from '../models/projectNotification';
 import { DemiNotification, legacyNotification } from '../models/demi/notification';
 
 const NATIVE = {
@@ -108,24 +107,71 @@ describe('NotificationProjectService', () => {
     });
   });
 
-  describe('save', () => {
-    it('puts a notification read from DEMI under its Eagle id with the publish flag', () => {
-      const row = legacyNotification({ ...NATIVE, id: 'native-1' });
-      service.save(row, true).subscribe();
+  describe('writes', () => {
+    const DEMI_ID = '0b0f3c9e-5d0a-4a8e-9a43-0c1d2e3f4a5b';
+    const FIELDS = { name: 'Lynn Valley Coal Mine PN', notificationThresholdValue: 75, centroid: ['49.3', '-123.0'] };
 
-      const req = http.expectOne('/api/projectNotification/6a3c4c034e547e4250daf03b?publish=true');
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toBe(row);
-      req.flush({});
+    it('save PUTs notifications/<demiId>, then /publish when publish=true on an unpublished row', async () => {
+      const saved = firstValueFrom(service.save(DEMI_ID, FIELDS, true));
+
+      const put = http.expectOne(`/demi/api/notifications/${DEMI_ID}`);
+      expect(put.request.method).toBe('PUT');
+      expect(put.request.body.name).toBe('Lynn Valley Coal Mine PN');
+      put.flush({ ...NATIVE, id: DEMI_ID, isPublished: false });
+
+      const publish = http.expectOne(`/demi/api/notifications/${DEMI_ID}/publish`);
+      expect(publish.request.method).toBe('PUT');
+      publish.flush({ ...NATIVE, id: DEMI_ID, isPublished: true });
+
+      expect((await saved).isPublished).toBeTrue();
     });
 
-    it('puts a legacy notification unchanged', () => {
-      const legacy = new ProjectNotification({ _id: 'eagle-1', name: 'Old', associatedProjectId: 'eagle-project-1' });
-      service.save(legacy).subscribe();
+    it('save sends no publish action when the row already has the asked state', async () => {
+      const saved = firstValueFrom(service.save(DEMI_ID, FIELDS, false));
 
-      const req = http.expectOne('/api/projectNotification/eagle-1');
-      expect(req.request.body).toBe(legacy);
-      req.flush({});
+      http.expectOne(`/demi/api/notifications/${DEMI_ID}`).flush({ ...NATIVE, id: DEMI_ID, isPublished: false });
+
+      expect((await saved).id).toBe(DEMI_ID);
+      http.expectNone(`/demi/api/notifications/${DEMI_ID}/unpublish`);
+    });
+
+    it('save sends a cleared field as null, since DEMI keeps any field left out', () => {
+      service.save(DEMI_ID, { ...FIELDS, associatedProjectId: undefined }).subscribe();
+
+      const put = http.expectOne(`/demi/api/notifications/${DEMI_ID}`);
+      expect(put.request.body.associatedProjectId).toBeNull();
+      put.flush(NATIVE);
+    });
+
+    it('add POSTs isPublished and no _id', () => {
+      const legacy = legacyNotification({ ...NATIVE, id: DEMI_ID });
+      service.add(legacy as NotificationWrite, true).subscribe();
+
+      const post = http.expectOne('/demi/api/notifications');
+      expect(post.request.method).toBe('POST');
+      expect(post.request.body.isPublished).toBeTrue();
+      expect(Object.keys(post.request.body)).not.toContain('_id');
+      expect(Object.keys(post.request.body)).not.toContain('demiId');
+      expect(Object.keys(post.request.body)).not.toContain('read');
+      post.flush(NATIVE);
+    });
+
+    it('unpublish PUTs notifications/<demiId>/unpublish', () => {
+      service.unpublish(DEMI_ID).subscribe();
+
+      http.expectOne(`/demi/api/notifications/${DEMI_ID}/unpublish`).flush(NATIVE);
+    });
+
+    it('a 400 toasts DEMI\'s field text and completes with no value', async () => {
+      const saved = firstValueFrom(service.save(DEMI_ID, { notificationThresholdValue: '75' as unknown as number }), { defaultValue: 'none' });
+
+      http.expectOne(`/demi/api/notifications/${DEMI_ID}`).flush(
+        { error: 'Invalid request body.', fields: { notificationThresholdValue: 'must be a number' } },
+        { status: 400, statusText: 'Bad Request' });
+
+      expect(await saved).toBe('none');
+      expect(toast.error).toHaveBeenCalledOnceWith(
+        'Failed to save project notification. Invalid request body. notificationThresholdValue: must be a number');
     });
   });
 });

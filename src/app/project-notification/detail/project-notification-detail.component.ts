@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { LegacyNotification } from 'src/app/models/demi/notification';
+import { Observable, forkJoin } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { DemiNotification, LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
 import { legacyDocumentRow, sourceFilters } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 import { DocumentService } from 'src/app/services/document.service';
 import { NotificationProjectService } from 'src/app/services/notification-project.service';
@@ -71,44 +72,32 @@ export class ProjectNotificationDetailComponent implements OnInit {
   }
 
   publish() {
-    this.loading = true;
-    const observables = [];
-
-    // Publish the documents; one with no Eagle record cannot be written.
-    this.documents.filter(item => item._id).forEach(item => {
-      observables.push(this.documentService.publish(item._id));
-    });
-
-    // Publish notification project
-    observables.push(this.notificationProjectService.save(this.projectNotification, true));
-
-    forkJoin(observables)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.isPublished = true;
-        this.loading = false;
-        this._cdr.markForCheck();
-      });
+    // Documents stay on eagle-api; one with no Eagle record cannot be written.
+    const documents = this.documents.filter(item => item._id).map(item => this.documentService.publish(item._id));
+    this.setPublished(this.notificationProjectService.publish(this.projectNotification.demiId), documents);
   }
 
   unPublish() {
+    const documents = this.documents.filter(item => item._id).map(item => this.documentService.unPublish(item._id));
+    this.setPublished(this.notificationProjectService.unpublish(this.projectNotification.demiId), documents);
+  }
+
+  /** A refused notification write completes empty, so forkJoin emits nothing and the badge stays as it was. */
+  private setPublished(notification: Observable<DemiNotification>, documents: Observable<unknown>[]) {
     this.loading = true;
-    const observables = [];
-
-    // Un-publish the documents
-    this.documents.filter(item => item._id).forEach(item => {
-      observables.push(this.documentService.unPublish(item._id));
-    });
-
-    // Un-publish notification project
-    observables.push(this.notificationProjectService.save(this.projectNotification, false));
-
-    forkJoin(observables)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.isPublished = false;
-        this.loading = false;
-        this._cdr.markForCheck();
+    forkJoin([notification, ...documents])
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          this.loading = false;
+          this._cdr.markForCheck();
+        })
+      )
+      .subscribe(([row]) => {
+        this.projectNotification = legacyNotification(row);
+        this.isPublished = row.isPublished;
+        // The edit screen reads the publish state from here.
+        this.storageService.state.currentProject = { type: 'currentProjectNotification', data: this.projectNotification };
       });
   }
 
