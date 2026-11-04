@@ -43,7 +43,9 @@ export class ApiService {
       message = (error as Error).message || 'Unknown error';
     }
     this.logger.error(message, 'ApiService', error);
-    return throwError(() => new Error(message));
+    // Callers such as isConflict read `status` off the thrown error.
+    const thrown = error instanceof HttpErrorResponse ? Object.assign(new Error(message), { status: error.status }) : new Error(message);
+    return throwError(() => thrown);
   }
 
   // Generic HTTP methods — bearer token added by TokenInterceptor
