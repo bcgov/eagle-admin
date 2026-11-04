@@ -269,7 +269,7 @@ export class GroupContactComponent implements OnInit {
     const membersToAdd = [...chosen].filter(id => !current.has(id));
     const membersToRemove = [...current].filter(id => !chosen.has(id));
 
-    // One write at a time: DEMI answers 503 to concurrent writes on the same group.
+    // One at a time here and in deleteItems: DEMI retries a clashing group write 3 times, then answers 503.
     const writes: Observable<unknown>[] = membersToRemove.map(id => component.userService.removeGroupMember(component.groupId, id));
     if (membersToAdd.length > 0) {
       writes.unshift(component.userService.addGroupMembers(component.groupId, membersToAdd));
@@ -288,6 +288,7 @@ export class GroupContactComponent implements OnInit {
   }
 
   public async deleteItems() {
+    if (this.loading) { return; }
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static', // Prevent closing when clicking outside
       centered: true, // Center the modal
@@ -303,7 +304,8 @@ export class GroupContactComponent implements OnInit {
     const ids = [...new Set(this.selectedRows().map(item => item.id))];
     const removed = new Set<string>();
     const errors: Error[] = [];
-    // One write at a time: DEMI answers 503 to concurrent writes on the same group.
+    this.loading = true;
+    this._changeDetectionRef.markForCheck();
     for (const id of ids) {
       try {
         await firstValueFrom(this.userService.removeGroupMember(this.groupId, id));
@@ -317,6 +319,7 @@ export class GroupContactComponent implements OnInit {
       this.toastService.error(`${errors.length} of ${ids.length} contacts could not be removed. ${errors[0].message}`);
     }
     this.members = this.members.filter(member => !removed.has(member.id));
+    this.loading = false;
     this.showPage();
     this._changeDetectionRef.markForCheck();
   }

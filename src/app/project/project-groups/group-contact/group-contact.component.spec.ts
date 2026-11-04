@@ -242,6 +242,19 @@ describe('GroupContactComponent', () => {
     expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(2);
   }));
 
+  it('ignores a second remove while the first is still writing', fakeAsync(() => {
+    create({ users: members(2) });
+    groupWrites.removeGroupMember.and.returnValue(new Subject<Group>());
+    component.users.forEach(user => user.checkbox = true);
+    component.deleteItems();
+    flushMicrotasks();
+
+    component.deleteItems();
+    flushMicrotasks();
+
+    expect(groupWrites.removeGroupMember).toHaveBeenCalledTimes(1);
+  }));
+
   it('renames the DEMI group by its id', async () => {
     create();
     component.tempGroupName = 'First Nations';
@@ -252,11 +265,11 @@ describe('GroupContactComponent', () => {
   });
 
   it('shows DEMI\'s reason when it refuses the new group name', async () => {
-    groupWrites.renameGroup.and.returnValue(throwError(() => new Error('name: must be at most 500 characters')));
+    groupWrites.renameGroup.and.returnValue(throwError(() => new Error('Invalid request body. name: must be at most 500 characters')));
     create();
 
     await component.saveName();
 
-    expect(toast.error).toHaveBeenCalledWith('The group name could not be saved. name: must be at most 500 characters');
+    expect(toast.error).toHaveBeenCalledWith('The group name could not be saved. Invalid request body. name: must be at most 500 characters');
   });
 });
