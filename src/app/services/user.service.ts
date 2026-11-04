@@ -74,10 +74,13 @@ export class UserService {
   }
 
   /**
-   * Adds at least one member, in bodies of at most {@link DEMI_MAX_IDS} ids. The bodies go one after
-   * another, since each rewrites the same group row; emits the group after the last one.
+   * Adds members in bodies of at most {@link DEMI_MAX_IDS} ids, one after another, since each rewrites
+   * the same group row. Emits the group after the last body; an empty list sends nothing and emits null.
    */
-  addGroupMembers(groupId: string, userIds: string[]): Observable<Group> {
+  addGroupMembers(groupId: string, userIds: string[]): Observable<Group | null> {
+    if (!userIds.length) {
+      return of(null);
+    }
     const chunks: string[][] = [];
     for (let i = 0; i < userIds.length; i += DEMI_MAX_IDS) {
       chunks.push(userIds.slice(i, i + DEMI_MAX_IDS));

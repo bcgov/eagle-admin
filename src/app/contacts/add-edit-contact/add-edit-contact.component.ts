@@ -266,9 +266,8 @@ export class AddEditContactComponent implements OnInit {
     }
   }
 
-  /** The form stays open, so the user can fix the field DEMI names. */
+  /** ApiService.handleError already logged it. The form stays open, so the user can fix the field DEMI names. */
   private writeFailed(action: 'add' | 'save', error: Error) {
-    this.logger.error(`contact ${action} failed`, 'AddEditContactComponent', error);
     this.toastService.error(`Failed to ${action} contact. ${error.message}`);
   }
 

@@ -8,7 +8,7 @@ export interface User {
   salutation: string;
   title: string;
   department: string;
-  /** Eagle Organization id. */
+  /** DEMI organization `id`: the Eagle Organization `_id`, or a UUID for an organization made in DEMI. */
   org: string | null;
   orgName: string;
   email: string;
@@ -49,9 +49,6 @@ export function toDemiUserBody(input: UserWriteFields): Record<string, unknown> 
   const body: Record<string, unknown> = Object.fromEntries(
     WRITABLE_FIELDS.filter(field => field in input).map(field => [field, input[field]])
   );
-  if ('org' in body) {
-    body['org'] = input.org || null;
-  }
   body['isPublished'] = input.orgName === PUBLIC_ORG_NAME;
   return body;
 }

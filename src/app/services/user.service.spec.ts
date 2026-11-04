@@ -144,16 +144,34 @@ describe('UserService', () => {
       http.expectOne(r => r.method === 'DELETE' && r.url === '/demi/api/groups/g1/members/u1').flush({});
     });
 
-    it('addGroupMembers sends 150 ids as two bodies', () => {
+    it('addGroupMembers sends 150 ids as two bodies and emits the group once, after the second', () => {
       const ids = Array.from({ length: 150 }, (_, i) => `u${i}`);
-      service.addGroupMembers('g1', ids).subscribe();
+      const emitted: unknown[] = [];
+      service.addGroupMembers('g1', ids).subscribe(group => emitted.push(group));
 
       const first = http.expectOne('/demi/api/groups/g1/members');
       expect(first.request.body.members.length).toBe(100);
-      first.flush({});
+      first.flush({ id: 'g1', members: ids.slice(0, 100) });
       const second = http.expectOne('/demi/api/groups/g1/members');
       expect(second.request.body.members).toEqual(ids.slice(100));
-      second.flush({});
+      second.flush({ id: 'g1', members: ids });
+
+      expect(emitted).toEqual([{ id: 'g1', members: ids }]);
+    });
+
+    it('addGroupMembers sends no second body when the first is refused', async () => {
+      const ids = Array.from({ length: 150 }, (_, i) => `u${i}`);
+      const result = firstValueFrom(service.addGroupMembers('g1', ids));
+
+      http.expectOne('/demi/api/groups/g1/members')
+        .flush({ error: 'Not found.' }, { status: 404, statusText: 'Not Found' });
+
+      await expectAsync(result).toBeRejectedWithError('Not found.');
+      http.expectNone('/demi/api/groups/g1/members');
+    });
+
+    it('addGroupMembers with no ids sends no request', async () => {
+      expect(await firstValueFrom(service.addGroupMembers('g1', []))).toBeNull();
     });
   });
 });
