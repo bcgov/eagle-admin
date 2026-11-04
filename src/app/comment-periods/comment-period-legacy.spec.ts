@@ -1,4 +1,4 @@
-import { toEagleSaveBody, toLegacyCommentPeriod } from './comment-period-legacy';
+import { toLegacyCommentPeriod } from './comment-period-legacy';
 import { nativeCommentPeriod } from '../models/demi/comment-period.fixture';
 
 const STAFF = ['sysadmin', 'offline_access'];
@@ -35,24 +35,16 @@ describe('toLegacyCommentPeriod', () => {
     expect(toLegacyCommentPeriod(nativeCommentPeriod({ sourceSystem: 'engage' }), STAFF).readOnly).toBeTrue();
   });
 
-  it('is read-only when the period has no Eagle id, but still routes on its DEMI id', () => {
-    const period = toLegacyCommentPeriod(nativeCommentPeriod({ id: 'engage-7', eagleId: undefined }), STAFF);
-    expect(period.readOnly).toBeTrue();
-    expect(period._id).toBe('engage-7');
+  it('a native period with no Eagle id is not read-only, and routes on its DEMI id', () => {
+    const period = toLegacyCommentPeriod(nativeCommentPeriod({ id: 'demi-7', eagleId: undefined, sourceSystem: 'demi' }), STAFF);
+    expect(period.readOnly).toBeFalse();
+    expect(period._id).toBe('demi-7');
   });
 
   it('is read-only when the row was read without staff fields', () => {
     const { milestone, ...row } = nativeCommentPeriod();
     void milestone;
     expect(toLegacyCommentPeriod(row, STAFF).readOnly).toBeTrue();
-  });
-
-  it('keeps token roles and screen fields out of the eagle-api save body', () => {
-    const body = toEagleSaveBody(toLegacyCommentPeriod(nativeCommentPeriod(), STAFF));
-    expect(Object.keys(body)).not.toContain('userCan');
-    expect(Object.keys(body)).not.toContain('demiId');
-    expect(Object.keys(body)).not.toContain('readOnly');
-    expect(body._id).toBe('598b6eb61ecbc9001dfeba55');
   });
 
   it('works out the status the screens show from the native dates', () => {

@@ -2,7 +2,7 @@ import { WriteIds, eagleWriteId } from './demi-ids';
 
 /**
  * Native DEMI comment period row (`GET <DEMI_API_PATH>/comment-periods`), minus fields hidden from the caller. `id` is
- * the Eagle id for periods mirrored from Eagle; an ENGAGE period has its own id and gets `eagleId` once in Eagle.
+ * the Eagle id for periods mirrored from Eagle; ENGAGE and DEMI periods have their own id and get `eagleId` once in Eagle.
  */
 export interface DemiCommentPeriod {
   id: string;
@@ -12,7 +12,7 @@ export interface DemiCommentPeriod {
   /** Sent only when the caller may read the project. */
   projectEagleId?: string;
   projectName?: string;
-  sourceSystem?: 'eagle' | 'engage';
+  sourceSystem?: 'eagle' | 'engage' | 'demi';
 
   dateStarted: string | null;
   dateCompleted: string | null;
@@ -80,8 +80,8 @@ const DEMI_ONLY_FIELDS = [
   'id', 'eagleId', 'periodId', 'projectId', 'projectEagleId', 'projectName', 'sourceSystem', 'read', 'sources', 'isDeleted'
 ];
 
-/** {@link eagleWriteId} for a comment or period write. ENGAGE rows and rows with no Eagle id are read-only here: both throw. */
-export function requireEagleWriteId(row: WriteIds & { sourceSystem?: string }, kind: string): string {
+/** {@link eagleWriteId} for an eagle-api write. ENGAGE rows and rows with no Eagle id throw. */
+function requireEagleWriteId(row: WriteIds & { sourceSystem?: string }, kind: string): string {
   if (!('_id' in row) && row.sourceSystem === 'engage') {
     throw new Error(`This ${kind} is managed in ENGAGE and cannot be changed here.`);
   }
@@ -93,7 +93,7 @@ export function requireEagleWriteId(row: WriteIds & { sourceSystem?: string }, k
 }
 
 /**
- * eagle-api write body for a comment or period. A `_id` body is legacy and goes out unchanged; a native row gets its Eagle
+ * eagle-api write body. A `_id` body is legacy and goes out unchanged; a native row gets its Eagle
  * id and parent ref, minus DEMI-only fields. Throws on a create with no parent or an update of a row with no Eagle id.
  */
 export function toEagleWriteBody(row: object, kind: string, parent: Record<string, string | null>, isNew: boolean): any {

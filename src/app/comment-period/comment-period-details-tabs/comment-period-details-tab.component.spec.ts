@@ -108,6 +108,21 @@ describe('CommentPeriodDetailsTabComponent', () => {
     });
   });
 
+  describe('publish', () => {
+    it('publish refused with 409 toasts the ABOVE_PROJECT text and clears loading', () => {
+      const ABOVE_PROJECT = 'Cannot publish a comment period above the level of its project.';
+      create({ isPublished: false });
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      fixture.componentInstance.togglePublishState();
+      http.expectOne('/demi/api/comment-periods/engage-7/publish').flush({ error: ABOVE_PROJECT }, { status: 409, statusText: 'Conflict' });
+
+      expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith(`Failed to publish comment period. ${ABOVE_PROJECT}`);
+      expect(fixture.componentInstance.loading).toBeFalse();
+      expect(fixture.componentInstance.commentPeriodPublishedStatus).toBe('Not Published');
+    });
+  });
+
   describe('related documents', () => {
     beforeEach(() => create({ relatedDocuments: ['d1', 'd2'] }));
 
