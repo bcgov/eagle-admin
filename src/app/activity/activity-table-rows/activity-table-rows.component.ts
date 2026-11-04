@@ -51,7 +51,7 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   };
   public columns: TableColumn[];
   public useSmallTable: boolean;
-  /** Rows whose pin PUT is in flight; a second click waits for it. */
+  /** Rows whose pin PUT is in flight; a second click on one is ignored. */
   private pinning = new Set<string>();
 
   async ngOnInit() {
@@ -87,7 +87,6 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
                 this._changeDetectionRef.markForCheck();
               },
               error: error => {
-                this.logger.error('archive update failed', 'ActivityTableRowsComponent', error);
                 this.toastService.error(`Failed to archive update. ${error.message}`);
               }
             });
@@ -108,7 +107,6 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
       .subscribe({
         next: () => { this._changeDetectionRef.markForCheck(); },
         error: error => {
-          this.logger.error('pin update failed', 'ActivityTableRowsComponent', error);
           // togglePin has flipped the row back by now.
           this.toastService.error(`Failed to ${activity.pinned ? 'unpin' : 'pin'} update. ${error.message}`);
           this._changeDetectionRef.markForCheck();

@@ -144,8 +144,8 @@
     </div>
     <div class="flex-container">
       @if (isEditing) {
-      <div class="label-pair">
-        <span class="form-label d-block">Date Added</span>
+      <div class="label-pair" role="group" aria-labelledby="dateAddedLabel">
+        <span id="dateAddedLabel" class="form-label d-block">Date Added</span>
         <span id="dateAdded">{{ activity.dateAdded | date: 'yyyy-MM-dd' }}</span>
       </div>
       }
@@ -160,7 +160,7 @@
           <!-- this default value is so that when you are switching between projects and this PCP selector is being populated it doesn't default to the first PCP -->
           <option disabled hidden [ngValue]=""></option>
           @for (period of periods; track period) {
-          <option [ngValue]="period._id">{{period.dateStarted | date: 'MMMM d'}} -
+          <option [ngValue]="period.id">{{period.dateStarted | date: 'MMMM d'}} -
             {{period.dateCompleted | date}}</option>
           }
         </select>

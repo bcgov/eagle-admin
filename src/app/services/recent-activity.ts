@@ -49,7 +49,7 @@ export class RecentActivityService {
     return this.demi.update<LoadedUpdate>('updates', update.id, writeBody(update, UPDATE_FIELDS));
   }
 
-  /** Flips `row.pinned` at once and back on error. Sends no `_etag`, so a pin never clashes with an edit. */
+  /** Flips `row.pinned` at once and back on error. Sends no `_etag`, so a pin is never refused as stale. */
   togglePin(row: UpdateWrite): Observable<LoadedUpdate> {
     const before = row.pinned;
     row.pinned = !before;

@@ -42,6 +42,8 @@ const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featu
 // DEMI checks an Update's images and attachments by document `id`, which differs from the Eagle `_id` on a
 // DEMI-owned document. A fresh eagle-api upload has only `_id`, and its DEMI mirror takes that id.
 const docKey = (doc: any): string => doc.id ?? doc._id;
+// An older Update may store the Eagle id.
+const isDocument = (doc: any, id: string | null): boolean => !!id && (docKey(doc) === id || doc._id === id);
 
 interface PreviewImage { url: string; alt: string; caption: string }
 
@@ -94,7 +96,7 @@ export class AddEditActivityComponent implements OnInit {
   public projectNotifications = [];
   public types = [];
   public activityTypes = Constants.activityTypes.map(type => type.name);
-  public periods = [];
+  public periods: DemiCommentPeriod[] = [];
   public activity: any;
   public typeIsPCP = false;
   public typeIsNotification = false;
@@ -338,7 +340,6 @@ export class AddEditActivityComponent implements OnInit {
       },
       error: (error: Error) => {
         this.saving = false;
-        this.logger.error('save update failed', 'AddEditActivityComponent', error);
         this.toastService.error(isConflict(error) ? UPDATE_CONFLICT_MESSAGE : `Update not saved: ${error.message}`);
         this._cdr.markForCheck();
       }
@@ -375,14 +376,14 @@ export class AddEditActivityComponent implements OnInit {
   /** Picked images and attachments the public cannot see. The API refuses to publish an Update that shows them. */
   public get nonPublicImages(): string[] {
     const attachments = (this.myForm.get('attachments')!.value || [])
-      .map((id: any) => this.documents.find(doc => docKey(doc) === documentId(id)));
+      .map((id: any) => this.documents.find(doc => isDocument(doc, documentId(id))));
     return [...this.pickedImageIds().map(id => this.imageDocs().get(id)), ...attachments].filter(blocksPublish).map(documentName);
   }
 
   /** nonPublicImages cannot vouch for an attachment missing from the loaded documents: still loading, failed, or past the first 1000. */
   public get attachmentsUnchecked(): boolean {
     const ids: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
-    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => docKey(doc) === id)));
+    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => isDocument(doc, id))));
   }
 
   private pickedImageIds(): string[] {
@@ -628,16 +629,28 @@ export class AddEditActivityComponent implements OnInit {
       this.documentsFailed = docs === null;
       this.setDocuments(docs ?? []);
       this.rememberDocs([...this.imageDocuments, ...(updateImages ?? [])]);
+      this.toDemiDocumentIds();
       this.documentsLoading = false;
       this.loadPrivateThumbnails();
       this._cdr.markForCheck();
     });
   }
 
+  /** Rewrites picked ids that name a loaded document by its Eagle id to its DEMI id, the one DEMI checks. */
+  private toDemiDocumentIds() {
+    const known = [...this.documents, ...this.imageDocs().values()];
+    const demiId = (id: string | null) => (id && known.find(doc => doc.id && doc._id === id)?.id) || id;
+    const form = this.myForm.controls;
+    form.attachments.setValue((form.attachments.value || []).map((id: any) => demiId(documentId(id))), { emitEvent: false });
+    form.featuredImageDocument.setValue(demiId(form.featuredImageDocument.value), { emitEvent: false });
+    this.images.controls.forEach(row => row.get('document')!.setValue(demiId(row.get('document')!.value), { emitEvent: false }));
+    this.syncImageRows();
+  }
+
   private setDocuments(docs: any[]) {
     this.documents = docs;
-    const attached = new Set((this.myForm.get('attachments')!.value || []).map(documentId));
-    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.has(docKey(doc)));
+    const attached: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
+    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.some(id => isDocument(doc, id)));
     this.imageDocuments = docs.filter(d =>
       d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }
@@ -683,13 +696,13 @@ export class AddEditActivityComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe(page => {
-        // An update's pcp is the period's Eagle id; a period eagle-api does not hold cannot be picked.
-        this.periods = page.rows
-          .map((period: DemiCommentPeriod) => ({ ...period, _id: eagleWriteId(period) }))
-          .filter(period => period._id);
+        // DEMI matches an update's pcp against the period's DEMI id.
+        this.periods = page.rows;
         // Keep the PCP selection when the loaded periods still hold it (a project switch clears it).
+        // An older row may store the period's Eagle id instead.
         const currentPcp = this.myForm.controls['pcp'].value || (this.isEditing ? this.activity?.pcp : '');
-        this.myForm.controls['pcp'].setValue(this.periods.some((p: any) => p._id === currentPcp) ? currentPcp : '');
+        const kept = this.periods.find(p => p.id === currentPcp) ?? this.periods.find(p => currentPcp && eagleWriteId(p) === currentPcp);
+        this.myForm.controls['pcp'].setValue(kept ? kept.id : '');
         // Enable pcp select only when periods exist — prevents black bar on empty select
         if (this.typeIsPCP && this.periods.length > 0) {
           this.myForm.get('pcp')!.enable();

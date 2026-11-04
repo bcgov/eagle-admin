@@ -2,7 +2,9 @@ import { ApplicationRef, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { NgbConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { HttpErrorResponse } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { UPDATE_CONFLICT_MESSAGE } from '../update-rules';
 import { Subject, of, throwError } from 'rxjs';
 import { AddEditActivityComponent } from './add-edit-activity.component';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
@@ -24,6 +26,10 @@ describe('AddEditActivityComponent', () => {
   let documentService: jasmine.SpyObj<DocumentService>;
   let commentPeriodService: jasmine.SpyObj<CommentPeriodService>;
   let fixture: ComponentFixture<AddEditActivityComponent>;
+  // What DEMI list stubs answer from the first search, for specs that need documents while ngOnInit runs.
+  let listedDocs: any[];
+
+  beforeEach(() => { listedDocs = []; });
 
   // Test rows use Eagle field names; DEMI answers with `id`, `eagleId` and the parent's Eagle id in `projectId`.
   const nativeOf = ({ _id, project, ...rest }: any) => ({ id: _id, eagleId: _id, ...rest, projectId: project ?? null });
@@ -33,10 +39,11 @@ describe('AddEditActivityComponent', () => {
   const searchedSources = () => documentSearches().map(filters => filters.documentSource);
 
   // Form-logic specs skip detectChanges; only the button specs render the template.
-  function create(activityId: string | null, row: any = null, periods: any[] = [], realModal = false): AddEditActivityComponent {
+  // `realHttp` swaps the DEMI and update service stubs for the real ones over HttpTestingController.
+  function create(activityId: string | null, row: any = null, periods: any[] = [], realModal = false, realHttp = false): AddEditActivityComponent {
     demiApi = jasmine.createSpyObj('DemiApiService', ['list']);
-    demiApi.list.and.returnValue(docs([]));
-    recentActivityService = jasmine.createSpyObj('RecentActivityService', ['getNative', 'add', 'save']);
+    demiApi.list.and.callFake(() => docs(listedDocs));
+    recentActivityService =jasmine.createSpyObj('RecentActivityService', ['getNative', 'add', 'save']);
     recentActivityService.getNative.and.returnValue(of(row && nativeOf(row)));
     recentActivityService.add.and.returnValue(of({} as any));
     recentActivityService.save.and.returnValue(of({} as any));
@@ -55,14 +62,17 @@ describe('AddEditActivityComponent', () => {
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(activityId ? { activityId } : {}) } } },
         { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
         ...(realModal ? [] : [{ provide: NgbModal, useValue: jasmine.createSpyObj('NgbModal', ['open']) }]),
-        { provide: DemiApiService, useValue: demiApi },
-        { provide: RecentActivityService, useValue: recentActivityService },
+        ...(realHttp
+          ? [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+          : [{ provide: DemiApiService, useValue: demiApi }, { provide: RecentActivityService, useValue: recentActivityService }]),
         { provide: ToastService, useValue: toastService },
         { provide: ProjectService, useValue: projectService },
         { provide: CommentPeriodService, useValue: commentPeriodService },
         { provide: DocumentService, useValue: documentService },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['warn', 'error', 'info', 'debug']) },
-        { provide: ConfigService, useValue: { ensureListsLoaded: () => Promise.resolve(), listsSignal: signal([]), regions: [] } }
+        { provide: ConfigService, useValue: {
+          ensureListsLoaded: () => Promise.resolve(), listsSignal: signal([]), regions: [], getApiPath: () => '/api', getDemiApiPath: () => '/demi/api'
+        } }
       ]
     });
     fixture = TestBed.createComponent(AddEditActivityComponent);
@@ -349,10 +359,13 @@ describe('AddEditActivityComponent', () => {
     });
 
     it('a 409 toasts UPDATE_CONFLICT_MESSAGE', () => {
-      const component = create('a1', row);
-      recentActivityService.save.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
+      const component = create('a1', null, [], false, true);
+      const http = TestBed.inject(HttpTestingController);
+      http.expectOne('/demi/api/updates/a1').flush(nativeOf(row));
       component.save('keep');
-      expect(toastService.error).toHaveBeenCalledWith('This update was changed by someone else. Reload to see the latest.');
+      http.expectOne(req => req.method === 'PUT' && req.url === '/demi/api/updates/a1')
+        .flush({ error: 'The update was changed by someone else. Reload and try again.' }, { status: 409, statusText: 'Conflict' });
+      expect(toastService.error).toHaveBeenCalledWith(UPDATE_CONFLICT_MESSAGE);
       expect(TestBed.inject(Router).navigate).not.toHaveBeenCalled();
     });
 
@@ -804,10 +817,35 @@ describe('AddEditActivityComponent', () => {
       expect(commentPeriodService.listByProject.calls.mostRecent().args[0]).toBe('track-p9');
     });
 
-    it('offers only comment periods eagle-api holds, under their Eagle id', () => {
-      const component = create('a1', pcpRow, [{ id: 'engage-1' }, { id: 'engage-2', eagleId: 'c1' }]);
-      expect(component.periods.map(period => period._id)).toEqual(['c1']);
-      expect(component.myForm.get('pcp')!.value).toBe('c1');
+    it('offers every comment period and keeps a stored Eagle-id pcp selected under its DEMI id', () => {
+      const component = create('a1', pcpRow, [{ id: 'engage-1' }, { id: 'demi-c1', eagleId: 'c1' }]);
+      expect(component.periods.map(period => period.id)).toEqual(['engage-1', 'demi-c1']);
+      expect(component.myForm.get('pcp')!.value).toBe('demi-c1');
+    });
+
+    it('sends the comment period\'s DEMI id as pcp on a new Update', () => {
+      const component = create(null, null, [{ id: 'demi-c1', eagleId: 'c1' }]);
+      fixture.detectChanges();
+      component.myForm.patchValue({ type: 'Public Comment Period', category: 'Engagement', headline: 'H', content: '<p>B</p>' });
+      component.updateType();
+      component.myForm.patchValue({ project: 'p1' });
+      component.updateProject();
+      fixture.detectChanges();
+      const select = query('select[formControlName="pcp"]') as HTMLSelectElement;
+      select.value = select.options[select.options.length - 1].value;
+      select.dispatchEvent(new Event('change'));
+      component.save('draft');
+      expect(sentBody(recentActivityService.add).pcp).toBe('demi-c1');
+    });
+
+    it('resends a stored Eagle document id as the document\'s DEMI id', () => {
+      listedDocs = [{
+        id: 'demi-d2', eagleId: 'eagle-d2', displayName: 'Report.pdf', documentFileName: 'Report.pdf', documentSource: 'PROJECT', isPublished: true
+      }];
+      const component = create('a1', { _id: 'a1', type: 'News', project: 'p1', category: 'Engagement', headline: 'H', content: '<p>B</p>',
+        attachments: ['eagle-d2'] });
+      component.save('draft');
+      expect(sentBody(recentActivityService.save).attachments).toEqual(['demi-d2']);
     });
 
     it('searches project documents by the DEMI project id', () => {
@@ -835,7 +873,7 @@ describe('AddEditActivityComponent', () => {
       expect(component.myForm.get('projectLocation')!.value).toBe('Kamloops');
     });
 
-    it('leaves the C&E flag out of the save, since DEMI rows do not carry it', () => {
+    it('leaves the C&E flag out of an edit, so the stored value stays', () => {
       const component = create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
       component.myForm.patchValue({ complianceAndEnforcement: true });
       component.save('draft');
