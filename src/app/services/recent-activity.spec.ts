@@ -92,12 +92,19 @@ describe('RecentActivityService', () => {
     expect((await result)._etag).toBe('"etag-2"');
   });
 
-  it('add POSTs updates without the PUT-only pinned and _etag', async () => {
-    const result = firstValueFrom(service.add({ headline: 'New', projectId: EAGLE_PROJECT, pinned: false, _etag: 'stray' }));
+  it('add POSTs every create field the form sets, without the PUT-only pinned and _etag', async () => {
+    const created = {
+      projectId: EAGLE_PROJECT, headline: 'New', content: '<p>x</p>', type: 'News', active: true, complianceAndEnforcement: false,
+      notificationName: null, contentUrl: '', documentUrl: '', pcp: null, projectNotification: 'pn1', category: 'Project News',
+      subject: null, shortHeadline: 'Short', summary: 'Sum', attachments: ['d1'], location: 'Kamloops', engagementUrl: null,
+      status: 'published' as const, publishDate: '2026-10-01T00:00:00.000Z',
+      featuredImage: { document: 'f1', alt: 'Top' }, images: [{ document: 'i1', alt: 'Site', caption: 'Dam' }], regions: ['Thompson-Nicola']
+    };
+    const result = firstValueFrom(service.add({ ...created, pinned: false, _etag: 'stray' }));
 
     const req = http.expectOne('/demi/api/updates');
     expect(req.request.method).toBe('POST');
-    expect(req.request.body).toEqual({ headline: 'New', projectId: EAGLE_PROJECT });
+    expect(req.request.body).toEqual(created);
     req.flush(loadedRow());
 
     expect((await result).id).toBe('demi-update-1');

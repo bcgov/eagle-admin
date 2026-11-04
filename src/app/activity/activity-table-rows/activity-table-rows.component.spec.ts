@@ -67,6 +67,16 @@ describe('ActivityTableRowsComponent', () => {
     expect(row.pinned).toBeTrue();
   });
 
+  it('ignores a second pin click while the first PUT is in flight', () => {
+    const row = { id: 'a1', eagleId: 'e1', pinned: false };
+
+    component.togglePin(row);
+    component.togglePin(row);
+
+    http.expectOne('/demi/api/updates/a1').flush({ ...row, pinned: true });
+    expect(row.pinned).toBeTrue();
+  });
+
   it('flips the pin back and toasts DEMI\'s reason when the PUT is refused', () => {
     const row = { id: 'a1', eagleId: 'e1', pinned: false };
 

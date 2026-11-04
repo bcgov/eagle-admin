@@ -6,14 +6,14 @@ import { DemiApiService } from './demi-api.service';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { DemiUpdate } from '../models/demi/update';
 
-/** A DEMI update row as its writers read it: `_etag` is the version a PUT names. Mirrored rows lack the C&E flag. */
+/** A DEMI update row as its writers read it: `_etag` is the version a PUT names. */
 export type LoadedUpdate = DemiUpdate & { _etag?: string; complianceAndEnforcement?: boolean };
 
 /** What a form or table hands to a write. `projectId` is the parent's Eagle id. */
 export type UpdateWrite = Partial<Omit<LoadedUpdate, 'publishDate'>> & { publishDate?: string | Date | null };
 
 // DEMI's POST /updates takes only these; any other key is a 400 except `_id`, `dateAdded`, `dateUpdated`,
-// `read` and `notifiedAt`, which it drops.
+// `read`, `notifiedAt` and `pinned`, which it drops.
 const CREATE_FIELDS = [
   'projectId', 'headline', 'content', 'type', 'active', 'complianceAndEnforcement', 'notificationName', 'contentUrl',
   'documentUrl', 'pcp', 'projectNotification', 'category', 'subject', 'shortHeadline', 'summary', 'attachments',
@@ -51,10 +51,11 @@ export class RecentActivityService {
 
   /** Flips `row.pinned` at once and back on error. Sends no `_etag`, so a pin never clashes with an edit. */
   togglePin(row: UpdateWrite): Observable<LoadedUpdate> {
-    row.pinned = !row.pinned;
+    const before = row.pinned;
+    row.pinned = !before;
     return this.demi.update<LoadedUpdate>('updates', row.id, { pinned: row.pinned }).pipe(
       catchError(error => {
-        row.pinned = !row.pinned;
+        row.pinned = before;
         return throwError(() => error);
       })
     );

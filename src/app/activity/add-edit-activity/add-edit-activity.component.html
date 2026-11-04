@@ -143,14 +143,12 @@
       </div>
     </div>
     <div class="flex-container">
+      @if (isEditing) {
       <div class="label-pair">
-        <label for="dateAdded">Date Added</label>
-        <div class="input-group">
-          <input required type="text" class="form-control" placeholder="yyyy-mm-dd" name="dateAdded"
-            formControlName="dateAdded" ngbDatepicker #dateAddedPicker="ngbDatepicker" />
-          <button class="btn btn-outline-secondary calendar" (click)="dateAddedPicker.toggle()" type="button"></button>
-        </div>
+        <span class="form-label d-block">Date Added</span>
+        <span id="dateAdded">{{ activity.dateAdded | date: 'yyyy-MM-dd' }}</span>
       </div>
+      }
       <div class="label-pair">
         @if (!typeIsPCP) {
         <label for="pcp">Public Comment Period</label>
@@ -197,7 +195,7 @@
       <div class="label-pair lrg">
         <label for="attachments">Attachments</label>
         <ng-select labelForId="attachments" formControlName="attachments" [items]="attachmentChoices" [multiple]="true"
-          bindValue="_id" bindLabel="displayName" placeholder="Pick project documents"
+          bindValue="id" bindLabel="displayName" placeholder="Pick project documents"
           [notFoundText]="!projectIsSelected ? 'Select a project first'
             : documentsFailed ? 'Could not load project documents' : 'No public documents in this project'"></ng-select>
         <small class="form-text">Only public documents are listed. Publish a document in the project's Documents to attach it.</small>

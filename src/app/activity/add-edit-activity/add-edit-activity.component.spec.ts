@@ -13,6 +13,9 @@ import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService } from 'src/app/services/recent-activity';
 import { DemiApiService } from 'src/app/services/demi-api.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { By } from '@angular/platform-browser';
+import { NgSelectComponent } from '@ng-select/ng-select';
+import { legacyDocumentRow } from 'src/app/project/project-documents/document-edit/legacy-document-row';
 
 describe('AddEditActivityComponent', () => {
   let demiApi: jasmine.SpyObj<DemiApiService>;
@@ -743,12 +746,55 @@ describe('AddEditActivityComponent', () => {
   describe('DEMI reads', () => {
     const pcpRow = { _id: 'a1', type: 'Public Comment Period', project: 'p9', pcp: 'c1', dateAdded: '2026-09-01T00:00:00Z' };
 
-    it('saves to the loaded row\'s DEMI id, not the route id, and keeps the Eagle project id', () => {
+    it('saves to the loaded row\'s DEMI id, not the route id', () => {
       const component = create('a1', { ...pcpRow, id: 'demi-a1' }, [{ id: 'c1', eagleId: 'c1' }]);
       expect(recentActivityService.getNative).toHaveBeenCalledWith('a1');
       component.save('draft');
       expect(sentBody(recentActivityService.save).id).toBe('demi-a1');
-      expect(sentBody(recentActivityService.save).projectId).toBe('p9');
+    });
+
+    it('leaves projectId out of an edit that keeps the parent, so a parent DEMI lacks cannot refuse it', () => {
+      const component = create('a1', pcpRow, [{ id: 'c1', eagleId: 'c1' }]);
+      component.save('draft');
+      // The service leaves undefined keys off the wire.
+      expect(sentBody(recentActivityService.save).projectId).toBeUndefined();
+    });
+
+    it('sends the new parent\'s Eagle id when an edit moves the Update', () => {
+      const component = create('a1', { _id: 'a1', type: 'News', project: 'p1', category: 'Engagement', headline: 'H', content: '<p>B</p>' });
+      component.myForm.patchValue({ project: 'p2' });
+      component.save('draft');
+      expect(sentBody(recentActivityService.save).projectId).toBe('p2');
+    });
+
+    it('shows Date Added as text on edit and sends no dateAdded, which DEMI stamps itself', () => {
+      const component = render('a1', { _id: 'a1', type: 'News', project: 'p1', category: 'Engagement', headline: 'H', content: '<p>B</p>',
+        dateAdded: '2026-09-01T12:00:00Z' });
+      expect(query('#dateAdded').textContent.trim()).toBe('2026-09-01');
+      expect(query('input[name=dateAdded]')).toBeNull();
+      expect(component.myForm.valid).toBeTrue();
+      component.save('draft');
+      expect('dateAdded' in sentBody(recentActivityService.save)).toBeFalse();
+    });
+
+    it('sends DEMI document ids for images and attachments, not Eagle ids', () => {
+      const native = (id: string, name: string) =>
+        legacyDocumentRow({ id, eagleId: `eagle-${id}`, displayName: name, documentFileName: name, documentSource: 'PROJECT', isPublished: true });
+      const component = render(null);
+      demiApi.list.and.returnValue(docs([native('demi-d2', 'Report.pdf')]));
+      fillNews(component);
+      component.addFeaturedImage([{ doc: native('demi-f1', 'top.jpg') }]);
+      component.addPhotos([{ doc: native('demi-i1', 'site.jpg') }]);
+      component.myForm.patchValue({ featuredImageAlt: 'Top' });
+      component.images.at(0).patchValue({ alt: 'Site' });
+      fixture.detectChanges();
+      const picker = fixture.debugElement.query(By.directive(NgSelectComponent)).componentInstance as NgSelectComponent;
+      picker.select(picker.itemsList.items[0]);
+      component.save('draft');
+      const body = sentBody(recentActivityService.add);
+      expect(body.featuredImage.document).toBe('demi-f1');
+      expect(body.images[0].document).toBe('demi-i1');
+      expect(body.attachments).toEqual(['demi-d2']);
     });
 
     it('lists comment periods by the DEMI project id, resolving a project missing from the list by its Eagle id', () => {

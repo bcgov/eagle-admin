@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, inject, DestroyRef, ChangeDetectionStrategy, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
@@ -50,6 +51,8 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   };
   public columns: TableColumn[];
   public useSmallTable: boolean;
+  /** Rows whose pin PUT is in flight; a second click waits for it. */
+  private pinning = new Set<string>();
 
   async ngOnInit() {
     this.entries = this.data().data;
@@ -96,8 +99,12 @@ export class ActivityTableRowsComponent implements OnInit, TableComponent {
   }
 
   togglePin(activity) {
+    if (this.pinning.has(activity.id)) {
+      return;
+    }
+    this.pinning.add(activity.id);
     this.recentActivityService.togglePin(activity)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(finalize(() => this.pinning.delete(activity.id)), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => { this._changeDetectionRef.markForCheck(); },
         error: error => {

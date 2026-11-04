@@ -39,6 +39,10 @@ import {
 
 const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featuredImageCredit: '' };
 
+// DEMI checks an Update's images and attachments by document `id`, which differs from the Eagle `_id` on a
+// DEMI-owned document. A fresh eagle-api upload has only `_id`, and its DEMI mirror takes that id.
+const docKey = (doc: any): string => doc.id ?? doc._id;
+
 interface PreviewImage { url: string; alt: string; caption: string }
 
 interface ToDraft { label: string; message: string; keep: string }
@@ -187,7 +191,6 @@ export class AddEditActivityComponent implements OnInit {
       this.buildForm({
         'headline': '',
         'content': '',
-        'dateAdded': new Date(),
         'project': '',
         'projectLocation': '',
         'pinned': false,
@@ -293,12 +296,14 @@ export class AddEditActivityComponent implements OnInit {
       this.toastService.error((e as Error).message);
       return;
     }
+    const projectId = form.project.value || null;
     const activity: UpdateWrite = {
       id: this.isEditing ? this.activity.id : undefined,
       _etag: this.isEditing ? this.activity._etag : undefined,
       headline: form.headline.value,
       content: form.content.value,
-      projectId: form.project.value || null,
+      // An unchanged parent stays out: DEMI refuses a projectId it does not hold, which an old row may carry.
+      projectId: !this.isEditing || projectId !== this.activity.project ? projectId : undefined,
       type,
       pcp: form.pcp.value || null,
       notificationName: type === 'Project Notification Public Comment Period' ? form.notificationName.value : null,
@@ -319,7 +324,7 @@ export class AddEditActivityComponent implements OnInit {
       subject: form.category.value === CORPORATE_CATEGORY ? form.subject.value : null,
       ...statusFields
     };
-    // DEMI rows do not carry the flag, so the edit form hides it; leave the stored value alone.
+    // The flag is set only when an Update is added; an edit leaves the stored value alone.
     if (this.isEditing) {
       delete activity.complianceAndEnforcement;
     }
@@ -370,14 +375,14 @@ export class AddEditActivityComponent implements OnInit {
   /** Picked images and attachments the public cannot see. The API refuses to publish an Update that shows them. */
   public get nonPublicImages(): string[] {
     const attachments = (this.myForm.get('attachments')!.value || [])
-      .map((id: any) => this.documents.find(doc => doc._id === documentId(id)));
+      .map((id: any) => this.documents.find(doc => docKey(doc) === documentId(id)));
     return [...this.pickedImageIds().map(id => this.imageDocs().get(id)), ...attachments].filter(blocksPublish).map(documentName);
   }
 
   /** nonPublicImages cannot vouch for an attachment missing from the loaded documents: still loading, failed, or past the first 1000. */
   public get attachmentsUnchecked(): boolean {
     const ids: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
-    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => doc._id === id)));
+    return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => docKey(doc) === id)));
   }
 
   private pickedImageIds(): string[] {
@@ -425,7 +430,7 @@ export class AddEditActivityComponent implements OnInit {
 
   public addFeaturedImage([image]: AddedImage[]) {
     this.addImageDocs([image]);
-    this.myForm.patchValue({ featuredImageDocument: image.doc._id, ...NO_FEATURED_TEXT });
+    this.myForm.patchValue({ featuredImageDocument: docKey(image.doc), ...NO_FEATURED_TEXT });
     this.syncImageRows();
   }
 
@@ -438,7 +443,7 @@ export class AddEditActivityComponent implements OnInit {
     // Never drops in practice: the field caps adds at remaining(), which counts uploads in flight.
     const room = added.slice(0, IMAGES_MAX - this.images.length);
     this.addImageDocs(room);
-    room.forEach(({ doc }) => this.images.push(this.imageRow({ document: doc._id })));
+    room.forEach(({ doc }) => this.images.push(this.imageRow({ document: docKey(doc) })));
     this.syncImageRows();
   }
 
@@ -456,7 +461,7 @@ export class AddEditActivityComponent implements OnInit {
 
   private addImageDocs(added: AddedImage[]) {
     this.rememberDocs(added.map(({ doc }) => doc));
-    added.forEach(({ doc, src }) => src && this.setImageSrc(doc._id, src));
+    added.forEach(({ doc, src }) => src && this.setImageSrc(docKey(doc), src));
   }
 
   private setImageSrc(id: string, url: string) {
@@ -479,7 +484,7 @@ export class AddEditActivityComponent implements OnInit {
 
   private rememberDocs(docs: any[]) {
     if (docs.length) {
-      this.imageDocs.update(current => new Map([...current, ...docs.map(doc => [doc._id, doc] as [string, any])]));
+      this.imageDocs.update(current => new Map([...current, ...docs.map(doc => [docKey(doc), doc] as [string, any])]));
     }
   }
 
@@ -632,7 +637,7 @@ export class AddEditActivityComponent implements OnInit {
   private setDocuments(docs: any[]) {
     this.documents = docs;
     const attached = new Set((this.myForm.get('attachments')!.value || []).map(documentId));
-    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.has(doc._id));
+    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.has(docKey(doc)));
     this.imageDocuments = docs.filter(d =>
       d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }
@@ -703,7 +708,6 @@ export class AddEditActivityComponent implements OnInit {
     this.myForm = new UntypedFormGroup({
       'headline': new UntypedFormControl(data.headline, Validators.required),
       'content': new UntypedFormControl(data.content, Validators.required),
-      'dateAdded': new UntypedFormControl(convertJSDateToNGBDate(new Date(data.dateAdded)), Validators.required),
       'project': new UntypedFormControl(data.project),
       'projectLocation': new UntypedFormControl({ value: data.projectLocation, disabled: true }),
       'type': new UntypedFormControl(data.type, Validators.required),
