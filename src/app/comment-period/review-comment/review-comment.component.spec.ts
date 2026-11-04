@@ -155,6 +155,14 @@ describe('ReviewCommentComponent', () => {
     fixture.componentInstance.onSubmit('exit');
     expect(http.expectOne(`/demi/api/comments/${NEXT_ID}`).request.body.eaoStatus).toBe('Pending');
   });
+  it('links the breadcrumbs to the route parent id, not project._id', () => {
+    create(reviewComment());
+    answerNextPending(1);
+
+    const hrefs = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a')).map(a => a.getAttribute('href'));
+    expect(hrefs).toContain(`/pn/${PARENT_ID}/cp/${PERIOD_ID}`);
+  });
+
   it('sends rejection notes as rejectedNotes, which the form reads back', () => {
     create(reviewComment());
     answerNextPending(1);

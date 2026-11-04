@@ -10,13 +10,13 @@
       }
     </li>
     <li class="breadcrumb-item">
-      <a [routerLink]="[baseRouteUrl, project()._id]">{{project().name}}</a>
+      <a [routerLink]="[baseRouteUrl, parentId]">{{project().name}}</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, project()._id, 'comment-periods']">Comment Periods</a>
+      <a [routerLink]="[baseRouteUrl, parentId, 'comment-periods']">Comment Periods</a>
     </li>
     <li class="breadcrumb-item" aria-current="page">
-      <a [routerLink]="[baseRouteUrl, project()._id, 'cp', commentPeriodId()]">{{commentPeriod().dateStarted |
+      <a [routerLink]="[baseRouteUrl, parentId, 'cp', commentPeriodId()]">{{commentPeriod().dateStarted |
         date: 'MMMM d'}} -
       {{commentPeriod().dateCompleted | date}}</a>
     </li>

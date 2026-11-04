@@ -45,7 +45,7 @@ export class ReviewCommentComponent implements OnChanges {
 
   public baseRouteUrl: string;
   /** The `:projId` or `:notificationProjectId` route param; `project()._id` is null on a DEMI-minted project. */
-  private parentId: string;
+  public parentId: string;
   public commentData: ReviewComment;
   loading = signal(false);
   public isRejectedRequired = false;

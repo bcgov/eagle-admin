@@ -45,7 +45,7 @@ export class AddCommentComponent implements OnInit {
 
   public baseRouteUrl: string;
   /** The `:projId` or `:notificationProjectId` route param; `project()._id` is null on a DEMI-minted project. */
-  private parentId: string;
+  public parentId: string;
   public commentFiles: Array<File> = [];
   public documents: Document[] = [];
   loading = signal(false);
