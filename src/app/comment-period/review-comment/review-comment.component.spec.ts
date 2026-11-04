@@ -13,14 +13,15 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { DemiDocument } from 'src/app/models/demi/document';
 
-const COMMENT_ID = '59a0593a6356080019383e16';
+const COMMENT_ID = '3f6c2b1e-8d4a-4e7b-9c2f-5a1d0e9b7c63';
+const COMMENT_EAGLE_ID = '59a0593a6356080019383e16';
 const NEXT_ID = '59a0593a6356080019383e17';
 const PERIOD_ID = '598b6eb61ecbc9001dfeba55';
 const PARENT_ID = 'demi-notification-1';
 
 function reviewComment(overrides: Partial<ReviewComment> = {}): ReviewComment {
   return {
-    id: COMMENT_ID, eagleId: COMMENT_ID, periodId: PERIOD_ID, projectId: '207', projectEagleId: '588511d0aaecd9001b826192',
+    id: COMMENT_ID, eagleId: COMMENT_EAGLE_ID, periodId: PERIOD_ID, projectId: '207', projectEagleId: '588511d0aaecd9001b826192',
     sourceSystem: 'eagle', author: 'Pat', comment: 'Too loud', commentId: 12, dateAdded: '2017-08-25T00:00:00.000Z',
     dateUpdated: null, location: 'Victoria', isAnonymous: false, submittedCAC: false, documents: [],
     eaoStatus: 'Pending', isPublished: false, documentsList: [],
@@ -160,7 +161,20 @@ describe('ReviewCommentComponent', () => {
     answerNextPending(1);
 
     const hrefs = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a')).map(a => a.getAttribute('href'));
+    expect(hrefs).toContain(`/pn/${PARENT_ID}`);
+    expect(hrefs).toContain(`/pn/${PARENT_ID}/comment-periods`);
     expect(hrefs).toContain(`/pn/${PARENT_ID}/cp/${PERIOD_ID}`);
+  });
+
+  it('a read-only period\'s comment sends no PUT', () => {
+    create(reviewComment());
+    answerNextPending(1);
+    fixture.componentRef.setInput('commentPeriod', { _id: PERIOD_ID, readOnly: true });
+
+    fixture.componentInstance.onSubmit('exit');
+
+    http.expectNone(`/demi/api/comments/${COMMENT_ID}`);
+    expect(toast.error).toHaveBeenCalledWith('Failed to save comment. This comment period is read-only.');
   });
 
   it('sends rejection notes as rejectedNotes, which the form reads back', () => {

@@ -31,7 +31,7 @@ function toEaglePeriodBody(period: CommentPeriod | DemiCommentPeriod, isNew = fa
 }
 
 /** Runs a write lazily, so a body that cannot be mapped fails the returned stream instead of throwing at the call site. */
-export function deferWrite<T>(api: ApiService, request: () => Observable<T>): Observable<T> {
+function deferWrite<T>(api: ApiService, request: () => Observable<T>): Observable<T> {
   return defer(request).pipe(catchError(error => api.handleError(error)));
 }
 

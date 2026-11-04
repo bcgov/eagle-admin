@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 
 import { CommentService } from './comment.service';
 import { ConfigService } from './config.service';
@@ -192,6 +192,23 @@ describe('CommentService', () => {
       expect(documents.add).not.toHaveBeenCalled();
       http.expectNone(() => true);
       expect(toast.error).toHaveBeenCalledWith('Failed to add comment. comment: must be at most 50000 characters');
+    });
+
+    it('more than 100 attachments are refused before any upload', () => {
+      service.add({ periodId: 'demi-period' }, Array.from({ length: 101 }, () => new FormData())).subscribe();
+
+      expect(documents.add).not.toHaveBeenCalled();
+      http.expectNone(() => true);
+      expect(toast.error).toHaveBeenCalledWith('Failed to add comment. documents: at most 100 attachments');
+    });
+
+    it('a saved comment whose attachment publish fails says the comment saved', () => {
+      documents.publish.and.returnValue(throwError(() => new Error('eagle-api down')));
+
+      service.save(nativeComment(), [{ _id: 'shown', eaoStatus: 'Published' }]).subscribe();
+      http.expectOne(`/demi/api/comments/${EAGLE_COMMENT}`).flush(nativeComment());
+
+      expect(toast.error).toHaveBeenCalledOnceWith('Comment saved, but its attachments were not updated. eagle-api down');
     });
 
     it('a refused save publishes no attachments', () => {

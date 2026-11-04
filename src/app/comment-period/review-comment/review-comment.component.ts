@@ -4,7 +4,7 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { concat, finalize, of, switchMap } from 'rxjs';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ToastService } from 'src/app/services/toast.service';
-import { CommentPeriod } from 'src/app/models/commentPeriod';
+import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
 import { DemiComment, NextPendingComment } from 'src/app/models/demi/comment';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
@@ -12,7 +12,7 @@ import { ReviewComment } from 'src/app/resolvers/comment.resolver';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentService } from 'src/app/services/comment.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { convertJSDateToNGBDate } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, routeParentId } from 'src/app/shared/utils/utils';
 import { DatePipe } from '@angular/common';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -38,13 +38,12 @@ export class ReviewCommentComponent implements OnChanges {
   private logger = inject(LoggingService);
 
   project = input.required<any>();
-  commentPeriod = input.required<CommentPeriod>();
+  commentPeriod = input.required<LegacyCommentPeriod>();
   /** Route param; the period resolver's row shape is not relied on for ids. */
   commentPeriodId = input.required<string>();
   comment = input.required<ReviewComment>();
 
   public baseRouteUrl: string;
-  /** The `:projId` or `:notificationProjectId` route param; `project()._id` is null on a DEMI-minted project. */
   public parentId: string;
   public commentData: ReviewComment;
   loading = signal(false);
@@ -72,7 +71,7 @@ export class ReviewCommentComponent implements OnChanges {
     }
     const params = this.route.snapshot.paramMap;
     this.baseRouteUrl = params.has('projId') ? '/p' : '/pn';
-    this.parentId = params.get('projId') ?? params.get('notificationProjectId');
+    this.parentId = routeParentId(params);
     this.storageService.state.selectedTab = 1;
     const comment = this.comment();
     this.commentData = { ...comment, documentsList: comment.documentsList.map(document => ({ ...document })) };
@@ -105,6 +104,10 @@ export class ReviewCommentComponent implements OnChanges {
   }
 
   public onSubmit(action: 'exit' | 'next') {
+    if (this.commentPeriod().readOnly) {
+      this.toastService.error('Failed to save comment. This comment period is read-only.');
+      return;
+    }
     this.loading.set(true);
     const form = this.commentReviewForm.getRawValue();
     const edits: Partial<DemiComment> = { isAnonymous: !form.isNamePublic, proponentNotes: form.proponentResponseText };

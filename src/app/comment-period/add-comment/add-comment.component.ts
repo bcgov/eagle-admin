@@ -10,7 +10,7 @@ import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { FileUploadComponent } from '../../file-upload/file-upload.component';
 import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
 import { CommentCreate, CommentService } from 'src/app/services/comment.service';
-import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
+import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, routeParentId } from 'src/app/shared/utils/utils';
 import { Document } from 'src/app/models/document';
 import { DateTime } from 'luxon';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -44,7 +44,6 @@ export class AddCommentComponent implements OnInit {
   commentPeriodId = input.required<string>();
 
   public baseRouteUrl: string;
-  /** The `:projId` or `:notificationProjectId` route param; `project()._id` is null on a DEMI-minted project. */
   public parentId: string;
   public commentFiles: Array<File> = [];
   public documents: Document[] = [];
@@ -70,7 +69,7 @@ export class AddCommentComponent implements OnInit {
   ngOnInit() {
     const params = this.route.snapshot.paramMap;
     this.baseRouteUrl = params.has('projId') ? '/p' : '/pn';
-    this.parentId = params.get('projId') ?? params.get('notificationProjectId');
+    this.parentId = routeParentId(params);
     this.initForm();
   }
 

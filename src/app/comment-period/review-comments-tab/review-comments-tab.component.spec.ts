@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpRequest } from '@angular/common/http';
 import { HttpTestingController, TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { ReviewCommentsTabComponent } from './review-comments-tab.component';
@@ -16,6 +16,7 @@ import { TableTemplateUtils } from 'src/app/shared/utils/table-template-utils';
 import { StorageService } from 'src/app/services/storage.service';
 
 const PERIOD_ID = '598b6eb61ecbc9001dfeba55';
+const PARENT_ID = 'demi-project-1';
 
 // The delete check counts published comments with pageSize=1; the table page is never that small here.
 const isPublishedCount = (req: HttpRequest<unknown>) => req.url === '/demi/api/comments' && req.params.get('pageSize') === '1';
@@ -31,7 +32,10 @@ describe('ReviewCommentsTabComponent', () => {
         provideRouter([]),
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: ActivatedRoute, useValue: { params: of({ commentPeriodId: PERIOD_ID, ...params }) } },
+        {
+          provide: ActivatedRoute,
+          useValue: { params: of({ commentPeriodId: PERIOD_ID, ...params }), snapshot: { paramMap: convertToParamMap({ projId: PARENT_ID }) } }
+        },
         { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
         { provide: KeycloakService, useValue: { keycloakEnabled: true } },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) },
@@ -48,7 +52,6 @@ describe('ReviewCommentsTabComponent', () => {
     });
     http = TestBed.inject(HttpTestingController);
     const fixture = TestBed.createComponent(ReviewCommentsTabComponent);
-    fixture.componentRef.setInput('project', { _id: '588511d0aaecd9001b826192' });
     fixture.detectChanges();
     return fixture;
   }
@@ -103,6 +106,19 @@ describe('ReviewCommentsTabComponent', () => {
     expect(fixture.componentInstance.commentTableData.data[0]).toEqual(jasmine.objectContaining({
       _id: '59a0593a6356080019383e16', period: PERIOD_ID, attachments: 1
     }));
+  });
+
+  it('opens a row under the route parent id, not project._id', () => {
+    const fixture = create({});
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    listRequest().flush(
+      [{ id: 'c1', periodId: PERIOD_ID, commentId: 12, documents: [], eaoStatus: 'Pending' }], { headers: { 'x-total-count': '1' } }
+    );
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('td[data-label="Id"]').click();
+
+    expect(navigate).toHaveBeenCalledWith([`/p/${PARENT_ID}/cp/${PERIOD_ID}/c/c1/comment-details`]);
   });
 
   it('allows deleting the period only when DEMI counts no published comment in it', () => {

@@ -28,6 +28,7 @@ const MAX_LENGTHS: Record<string, number> = {
   comment: 50000, location: 1000, author: 500, proponentStatus: 500,
   eaoNotes: 10000, proponentNotes: 10000, publishedNotes: 10000, rejectedNotes: 10000, rejectedReason: 10000
 };
+const MAX_DOCUMENTS = 100;
 
 /** A new comment as DEMI's POST takes it; `periodId` is the period's DEMI id. */
 export type CommentCreate = Partial<Pick<DemiComment, Exclude<typeof CREATE_FIELDS[number], 'periodId'>>> & { periodId: string };
@@ -58,7 +59,7 @@ export class CommentService {
    */
   add(comment: CommentCreate, documentForms: Array<FormData> = []): Observable<DemiComment> {
     const body = pick(comment, CREATE_FIELDS);
-    const refused = tooLong(body);
+    const refused = documentForms.length > MAX_DOCUMENTS ? `documents: at most ${MAX_DOCUMENTS} attachments` : tooLong(body);
     if (refused) {
       return this.writeFailed('add', new Error(refused));
     }
@@ -75,8 +76,8 @@ export class CommentService {
   }
 
   /**
-   * Writes the DEMI-writable fields of `comment` to the DEMI row `comment.id`, then sets each reviewed attachment's
-   * publish state through eagle-api. Emits the saved row; fails as `add` does.
+   * Writes the DEMI-writable fields to the row `comment.id`, then each attachment's publish state through eagle-api.
+   * Emits the saved row; fails as `add` does, but names a failed attachment update after a saved PUT.
    */
   save(comment: Partial<DemiComment> & Pick<DemiComment, 'id'>, documents: ReviewedDocument[] = []): Observable<DemiComment> {
     return this.demi.update<DemiComment>('comments', comment.id, pick(comment, UPDATE_FIELDS)).pipe(
@@ -87,7 +88,16 @@ export class CommentService {
           }
           return document.eaoStatus === 'Rejected' ? [this.documentService.unPublish(document._id)] : [];
         });
-        return publishes.length ? forkJoin(publishes).pipe(map(() => saved)) : of(saved);
+        if (!publishes.length) {
+          return of(saved);
+        }
+        return forkJoin(publishes).pipe(
+          map(() => saved),
+          catchError(error => {
+            this.toast.error(`Comment saved, but its attachments were not updated. ${error.message}`);
+            return EMPTY;
+          })
+        );
       }),
       catchError(error => this.writeFailed('save', error))
     );

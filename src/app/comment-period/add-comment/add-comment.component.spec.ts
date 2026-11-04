@@ -40,7 +40,7 @@ describe('AddCommentComponent', () => {
     http = TestBed.inject(HttpTestingController);
     toast = TestBed.inject(ToastService) as jasmine.SpyObj<ToastService>;
     fixture = TestBed.createComponent(AddCommentComponent);
-    fixture.componentRef.setInput('project', { _id: 'p1', name: 'Test Project' });
+    fixture.componentRef.setInput('project', { _id: null, name: 'Test Project' });
     setPeriod(false);
     fixture.componentRef.setInput('commentPeriodId', ROUTE_PERIOD_ID);
     fixture.detectChanges();
@@ -56,7 +56,7 @@ describe('AddCommentComponent', () => {
   });
 
   it('add POSTs periodId = the period\'s demiId, not the route id', () => {
-    spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    const navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture.componentInstance.addCommentForm.controls.commentText.setValue('Too loud');
 
     fixture.componentInstance.onSubmit();
@@ -65,6 +65,7 @@ describe('AddCommentComponent', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body.periodId).toBe(DEMI_PERIOD_ID);
     req.flush({ id: 'new' });
+    expect(navigate).toHaveBeenCalledWith(['/p', 'p1', 'cp', ROUTE_PERIOD_ID]);
   });
   it('sends rejection notes as rejectedNotes', () => {
     spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);

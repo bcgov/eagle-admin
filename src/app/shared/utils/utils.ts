@@ -1,3 +1,4 @@
+import type { ParamMap } from '@angular/router';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { DateTime } from 'luxon';
 import { Constants } from './constants';
@@ -146,3 +147,7 @@ export function filterCompareWith(filter: any, filterToCompare: any): boolean {
   return !!key && !!filterToCompare && filter[key] === filterToCompare[key];
 }
 
+/** The `:projId` or `:notificationProjectId` route param. Links use it because `project._id` is null on a DEMI-minted project. */
+export function routeParentId(params: ParamMap): string | null {
+  return params.get('projId') ?? params.get('notificationProjectId');
+}

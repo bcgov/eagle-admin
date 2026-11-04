@@ -6,6 +6,7 @@ import { DatePipe } from '@angular/common';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommentPeriodDetailsTabComponent } from '../comment-period/comment-period-details-tabs/comment-period-details-tab.component';
 import { ReviewCommentsTabComponent } from '../comment-period/review-comments-tab/review-comments-tab.component';
+import { routeParentId } from 'src/app/shared/utils/utils';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,10 +30,12 @@ export class CommentPeriodComponent implements OnInit {
   commentPeriod = input.required<LegacyCommentPeriod>();
 
   public baseRouteUrl: string;
+  public parentId: string;
   public selectedTab = 0;
 
   ngOnInit() {
     this.baseRouteUrl = this.route.snapshot.paramMap.has('projId') ? '/p' : '/pn';
+    this.parentId = routeParentId(this.route.snapshot.paramMap);
     this.storageService.state.selectedDocumentsForCP = null;
     this.storageService.state.addEditCPForm = null;
 
