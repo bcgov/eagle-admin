@@ -1,6 +1,7 @@
 import { ApiService } from './api';
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { ConfigService } from './config.service';
@@ -36,5 +37,14 @@ describe('api', () => {
     TestBed.inject(ApiService).get('project/p1').subscribe();
 
     expect(http.expectOne('https://test-api.gov.bc.ca/api/project/p1').request.method).toBe('GET');
+  });
+
+  it('handleError keeps the HTTP status on the thrown error', async () => {
+    const response = new HttpErrorResponse({ status: 409, statusText: 'Conflict', error: { message: 'Stale version' } });
+
+    const thrown = await firstValueFrom(TestBed.inject(ApiService).handleError(response)).catch((e) => e);
+
+    expect(thrown.message).toBe('Stale version');
+    expect(thrown.status).toBe(409);
   });
 });
