@@ -8,7 +8,6 @@ import { LegacyProject } from 'src/app/models/demi/project-legacy';
 import { Project } from 'src/app/models/project';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
-import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectExtensionLists, ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -34,7 +33,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 export class AddEditProjectComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private config = inject(ConfigService);
   private storageService = inject(StorageService);
   private projectService = inject(ProjectService);
   private logger = inject(LoggingService);
@@ -44,7 +42,6 @@ export class AddEditProjectComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   public documents: any[] = [];
   public back: any = {};
-  public regions: any[] = [];
   public sectorsSelected = [];
   public proponentName = '';
   public proponentId = '';
@@ -82,15 +79,6 @@ export class AddEditProjectComponent implements OnInit {
   }
 
   ngOnInit() {
-    // This is to get Region information from List (db) and put into a list(regions)
-    this.config.lists.map(item => {
-      switch (item.type) {
-        case 'region':
-          this.regions.push(item.name);
-          break;
-      }
-    });
-    //
     this.route.url
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(urls => {

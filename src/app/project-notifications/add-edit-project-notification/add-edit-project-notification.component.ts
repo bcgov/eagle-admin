@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs/operators';
 import { KeyValuePipe } from '@angular/common';
@@ -9,6 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 import { DemiNotification, LegacyNotification, legacyNotification } from 'src/app/models/demi/notification';
+import { listNames } from 'src/app/activity/update-rules';
 import { ConfigService } from 'src/app/services/config.service';
 import { NotificationProjectService, NotificationWrite } from 'src/app/services/notification-project.service';
 import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
@@ -76,7 +77,8 @@ export class AddEditProjectNotificationComponent implements OnInit {
     trigger: FormControl<unknown>;
   }>;
   public projectNotification: LegacyNotification = null;
-  public regions: any[] = [];
+  // The Lists can arrive after the form opens.
+  public readonly regions = computed(() => listNames(this.configService.listsSignal(), 'region'));
   public subTypeSelected = [];
   public unitsSelected = [];
   public projects: any[] = ['Test'];
@@ -105,7 +107,6 @@ export class AddEditProjectNotificationComponent implements OnInit {
   public triggers: any[];
 
   public ngOnInit() {
-    this.regions = this.configService.regions;
     // Determine if this an add or edit.
     this.route.url.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(segments => {
       segments.map(segment => {

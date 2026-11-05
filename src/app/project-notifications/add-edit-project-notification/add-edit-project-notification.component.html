@@ -88,7 +88,7 @@
       <div class="label-pair">
         <label for="region">Region* </label>
         <select name="region" id="region" formControlName="region" class="form-control">
-          @for (region of regions; track region) {
+          @for (region of regions(); track region) {
           <option [ngValue]="region">{{region}}</option>
           }
         </select>
