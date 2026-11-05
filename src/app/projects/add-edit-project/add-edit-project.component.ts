@@ -1,12 +1,17 @@
-import { Component, OnInit, DestroyRef, inject, ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal, ChangeDetectionStrategy} from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FullProject } from 'src/app/models/fullProject';
+import { LegacyProject } from 'src/app/models/demi/project-legacy';
 import { Project } from 'src/app/models/project';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ProjectExtension, ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 import { EDIT_TABS } from './edit-tabs';
 
@@ -19,6 +24,7 @@ import { ReactiveFormsModule } from '@angular/forms';
   templateUrl: './add-edit-project.component.html',
   styleUrl: './add-edit-project.component.css',
   imports: [
+    DatePipe,
     RouterModule,
     NgbDatepickerModule,
     ReactiveFormsModule
@@ -29,7 +35,9 @@ export class AddEditProjectComponent implements OnInit {
   private router = inject(Router);
   private config = inject(ConfigService);
   private storageService = inject(StorageService);
-
+  private projectService = inject(ProjectService);
+  private logger = inject(LoggingService);
+  private toast = inject(ToastService);
 
   public tabLinks: readonly IAddEditTab[] = EDIT_TABS;
   private destroyRef = inject(DestroyRef);
@@ -48,6 +56,8 @@ export class AddEditProjectComponent implements OnInit {
 
   public pageIsEditing = false;
   public loading = true;
+  /** Extensions, then suspensions; `kind` names the list each came from. */
+  public extensions = signal<ExtensionRow[]>([]);
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
@@ -123,6 +133,7 @@ export class AddEditProjectComponent implements OnInit {
             if (this.project) {
               this.storageService.state.projectDetailName = this.project.name;
 
+              this.loadExtensions((this.project as LegacyProject).demiId);
               this.initTabs();
               this.showVisibleTab(this.tabLinks.find(tab => tab.years.includes(this.fullProject.currentLegislationYear)));
             }
@@ -131,5 +142,33 @@ export class AddEditProjectComponent implements OnInit {
         });
   }
 
+  addExtension(kind: ExtensionKind) {
+    this.router.navigate(['/p', this.projectId, 'edit', `add-${kind.toLowerCase()}`]);
+  }
+
+  // The extension screen reads the picked item from storage; its Delete is there too.
+  editExtension(item: ExtensionRow) {
+    this.storageService.state.extension = item;
+    this.router.navigate(['/p', this.projectId, 'edit', `edit-${item.kind.toLowerCase()}`]);
+  }
+
+  private loadExtensions(demiId: string | undefined) {
+    if (!demiId) {
+      return;
+    }
+    this.projectService.getExtensions(demiId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: lists => this.extensions.set([
+        ...(lists.reviewExtensions ?? []).map(item => ({ ...item, kind: 'Extension' as const })),
+        ...(lists.reviewSuspensions ?? []).map(item => ({ ...item, kind: 'Suspension' as const }))
+      ]),
+      error: error => {
+        this.logger.error('load extensions failed', 'AddEditProjectComponent', error);
+        this.toast.error(`Failed to load extensions. ${error.message}`);
+      }
+    });
+  }
 }
+
+type ExtensionKind = 'Extension' | 'Suspension';
+type ExtensionRow = ProjectExtension & { id: string; kind: ExtensionKind };
 

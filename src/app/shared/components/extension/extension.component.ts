@@ -12,6 +12,8 @@ import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from '../../u
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 
+const DONE = { add: 'added', edit: 'saved', delete: 'deleted' } as const;
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-extension',
@@ -123,7 +125,10 @@ export class ExtensionComponent implements OnInit {
   private write(action: 'add' | 'edit' | 'delete', request: Observable<ProjectExtensionLists>) {
     this.saving.set(true);
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => this.goBack(),
+      next: () => {
+        this.toast.success(`${this.extensionType} ${DONE[action]}.`);
+        this.goBack();
+      },
       error: error => {
         this.saving.set(false);
         this.logger.error(`${action} ${this.kind()} failed`, 'ExtensionComponent', error);

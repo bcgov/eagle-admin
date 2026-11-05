@@ -163,6 +163,11 @@ export class ProjectService {
     return this.setLevel(project, { level: UNPUBLISHED_LEVEL });
   }
 
+  /** Both lists, uncached so a list read after a write shows it. Takes the DEMI id only, as the writes do. */
+  getExtensions(demiId: string): Observable<ProjectExtensionLists> {
+    return this.demiApi.get<ProjectExtensionLists>(`projects/${encodeURIComponent(demiId)}`, 'extensions', { fresh: true });
+  }
+
   addExtension(project: ProjectRef, extension: ProjectExtension): Observable<ProjectExtensionLists> {
     return this.onFreshRow(refId(project), row =>
       this.demiApi.create<ProjectExtensionLists>(extensionsOf(row), extensionBody(extension)));

@@ -24,7 +24,7 @@ describe('ExtensionComponent', () => {
 
   function open(path: string, stored: object | null) {
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
-    toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
+    toast = jasmine.createSpyObj<ToastService>('ToastService', ['error', 'success']);
     modal = jasmine.createSpyObj<NgbModal>('NgbModal', ['open']);
     TestBed.configureTestingModule({
       imports: [ExtensionComponent],
@@ -122,6 +122,7 @@ describe('ExtensionComponent', () => {
     req.flush({ reviewExtensions: [], reviewSuspensions: [] });
     fixture.detectChanges();
 
+    expect(toast.success).toHaveBeenCalledWith('Suspension added.');
     expect(router.navigate).toHaveBeenCalledWith(['/p', EAGLE_ID, 'edit']);
     expect(button('button[type="submit"]').disabled).toBe(true);
   });

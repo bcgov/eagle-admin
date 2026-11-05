@@ -8,6 +8,7 @@ import { AddEditProjectComponent } from './add-edit-project.component';
 import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
+import { StorageService } from 'src/app/services/storage.service';
 
 const FULL_PROJECT = {
   _id: null,
@@ -50,6 +51,22 @@ describe('AddEditProjectComponent', () => {
     http.verify();
     expect(component.project.name).toBe('Red Chris');
     expect(component.tabLinks.map(t => t.link)).toEqual(['form-2018']);
+  });
+
+  it('lists the project\'s extensions and suspensions, and Edit opens the picked one', () => {
+    const project = { ...FULL_PROJECT, legislation_2018: { name: 'Red Chris', demiId: 'demi-7' } };
+    create('edit', { fullProject: [{ data: { searchResults: [project] } }] });
+    const suspension = { id: 's1', type: 'Suspension', appliedTo: 'Application', start: '2026-03-01', end: '2026-04-01' };
+    http.expectOne('/demi/api/projects/demi-7/extensions')
+      .flush({ reviewExtensions: [{ id: 'e1', type: 'Extension', appliedTo: 'Review', start: '2026-01-01', end: '2026-02-01' }], reviewSuspensions: [suspension] });
+    fixture.detectChanges();
+
+    const rows: HTMLTableRowElement[] = Array.from(fixture.nativeElement.querySelectorAll('.extensions tbody tr'));
+    expect(rows.map(row => row.cells[0].textContent)).toEqual(['Extension', 'Suspension']);
+    rows[1].querySelector('button').click();
+
+    expect(TestBed.inject(StorageService).state.extension).toEqual({ ...suspension, kind: 'Suspension' });
+    expect(navigate).toHaveBeenCalledWith(['/p', 'demi-7', 'edit', 'edit-suspension']);
   });
 
   it('the edit page breadcrumb links to the route id', () => {
