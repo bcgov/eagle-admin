@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormTab2002Component } from './form-tab-2002.component';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { provideRouter, ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { of, throwError } from 'rxjs';
@@ -12,9 +12,10 @@ import { ProjectService } from 'src/app/services/project.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
-import { AjaxData, regionsData } from 'src/app/shared/utils/mock-data';
+import { AjaxData } from 'src/app/shared/utils/mock-data';
+import { List } from 'src/app/models/demi/list';
 
-const LIST_ROWS = [
+const LIST_ROWS: List[] = [
   { type: 'eaDecisions', id: 'ea-issued', name: 'Certificate Issued', legislation: 2002, listOrder: 2 },
   { type: 'eaDecisions', id: 'ea-refused', name: 'Certificate Refused', legislation: 2002, listOrder: 1 },
   { type: 'eaDecisions', id: 'ea-progress', name: 'In Progress', legislation: 2018, listOrder: 0 },
@@ -25,6 +26,7 @@ const LIST_ROWS = [
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
 const ajaxRow = AjaxData[0].data.searchResults[0];
+const DEMI_ROW = { id: '7', name: 'Ajax Mine' };
 
 function projectResults(row: object) {
   return [{ ...AjaxData[0], data: { ...AjaxData[0].data, searchResults: [row] } }];
@@ -35,7 +37,8 @@ function row2002(block: object = {}, overrides: object = {}) {
   return {
     ...ajaxRow,
     _id: null,
-    legislation_2002: { ...ajaxRow['legislation_2002'], responsibleEPDObj: contact, projectLeadObj: contact, ...block },
+    demiRow: DEMI_ROW,
+    legislation_2002: { ...ajaxRow['legislation_2002'], currentPhaseName: { _id: 'phase-1' }, responsibleEPDObj: contact, projectLeadObj: contact, ...block },
     ...overrides
   };
 }
@@ -44,8 +47,10 @@ describe('FormTab2002', () => {
   let projectService: jasmine.SpyObj<ProjectService>;
   let toast: jasmine.SpyObj<ToastService>;
   let navigate: jasmine.Spy;
+  let lists: ReturnType<typeof signal<List[]>>;
 
-  async function render(fullProject: unknown = AjaxData): Promise<ComponentFixture<FormTab2002Component>> {
+  async function render(fullProject: unknown = AjaxData, listRows: List[] = LIST_ROWS): Promise<ComponentFixture<FormTab2002Component>> {
+    lists = signal(listRows);
     projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'publish', 'save']);
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
@@ -55,7 +60,7 @@ describe('FormTab2002', () => {
       providers: [
         provideRouter([]),
         { provide: ApiService, useValue: jasmine.createSpyObj('ApiService', ['downloadDocument']) },
-        { provide: ConfigService, useValue: jasmine.createSpyObj('ConfigService', [], { regions: regionsData, lists: LIST_ROWS }) },
+        { provide: ConfigService, useValue: { listsSignal: lists } },
         { provide: StorageService, useValue: jasmine.createSpyObj('StorageService', [], { state: { pageIsEditing: true } }) },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toast },
@@ -117,6 +122,7 @@ describe('FormTab2002', () => {
     const contact = { _id: '5c33a481c99e4d002498eeee', displayName: 'Test Contact' };
     const project = {
       ...extractFromSearchResults(AjaxData)[0]['legislation_2002'],
+      currentPhaseName: { _id: 'phase-1' },
       responsibleEPDObj: contact,
       projectLeadObj: contact,
     };
@@ -130,6 +136,15 @@ describe('FormTab2002', () => {
 
   it('offers only 2002 EA Decisions, in list order', async () => {
     const fixture = await render();
+
+    expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
+  });
+
+  it('offers the EA Decisions when the Lists arrive after the form', async () => {
+    const fixture = await render(AjaxData, []);
+
+    lists.set(LIST_ROWS);
+    fixture.detectChanges();
 
     expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
   });
@@ -155,7 +170,7 @@ describe('FormTab2002', () => {
     component.onSubmit();
 
     expect(toast.error).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }), jasmine.any(Array));
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }), jasmine.any(Array), DEMI_ROW);
     // The 2002 form shows none of these, so its save must not clear them.
     const held = projectService.save.calls.mostRecent().args[1];
     expect(held).toContain('name');
@@ -163,6 +178,19 @@ describe('FormTab2002', () => {
     expect(held).not.toContain('substantiallyDate');
     expect(held).not.toContain('dispute');
     expect(held).not.toContain('disputeDate');
+  });
+
+  it('a save after a failed publish compares against the row the last save emitted', async () => {
+    const fixture = await render(projectResults(row2002()));
+    const saved = { ...DEMI_ROW, name: 'Ajax Mine 2' };
+    projectService.save.and.returnValue(of(saved as any));
+    projectService.publish.and.returnValue(throwError(() => new Error('Forbidden')));
+
+    fixture.componentInstance.onPublish();
+    await fixture.whenStable();
+    fixture.componentInstance.onSubmit();
+
+    expect(projectService.save.calls.mostRecent().args[2]).toBe(saved);
   });
 
   it('save on another Act\'s tab toasts and sends nothing', async () => {
@@ -212,6 +240,18 @@ describe('FormTab2002', () => {
 
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
+  });
+
+  it('refuses a save on a row whose phase has no id until one is picked', async () => {
+    const component = (await render(projectResults(row2002({ currentPhaseName: { name: 'Unknown' } })))).componentInstance;
+
+    component.onSubmit();
+    expect(toast.error).toHaveBeenCalledWith('You must select a project phase.');
+    expect(projectService.save).not.toHaveBeenCalled();
+
+    component.myForm.controls.currentPhaseName.setValue('phase-1');
+    component.onSubmit();
+    expect(projectService.save).toHaveBeenCalledTimes(1);
   });
 
   it('a project with no intake builds the edit form', async () => {

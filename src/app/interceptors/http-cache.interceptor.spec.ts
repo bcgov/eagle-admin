@@ -106,4 +106,74 @@ describe('httpCacheInterceptor', () => {
 
     expect(refetches('/demi/api/projects')).toBeFalse();
   });
+
+  it('serves the row a fresh DEMI read got, not the older cached one', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    http.expectOne(url).flush({ name: 'Old' });
+    client.get(url, { headers: { 'cache-control': 'no-cache' } }).subscribe();
+    http.expectOne(url).flush({ name: 'New' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(served).toEqual({ name: 'New' });
+  });
+
+  it('keeps the cached row when a fresh DEMI read fails', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    http.expectOne(url).flush({ name: 'Old' });
+    client.get(url, { headers: { 'cache-control': 'no-cache' } }).subscribe({ error: () => undefined });
+    http.expectOne(url).flush({ error: 'Server error' }, { status: 500, statusText: 'Server Error' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(served).toEqual({ name: 'Old' });
+  });
+
+  it('does not cache a fresh read outside the DEMI path', () => {
+    client.get('/api/project/p1', { headers: { 'cache-control': 'no-cache' } }).subscribe();
+    http.expectOne('/api/project/p1').flush({});
+
+    expect(refetches('/api/project/p1')).toBeTrue();
+  });
+
+  it('keeps a fresh DEMI read over an older cached read that finishes after it', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    client.get(url, { headers: { 'cache-control': 'no-cache' } }).subscribe();
+    const [older, fresh] = http.match(url);
+    fresh.flush({ name: 'New' });
+    older.flush({ name: 'Old' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(served).toEqual({ name: 'New' });
+  });
+
+  it('caches the read started after a DEMI write, not one started before it that finishes later', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    const older = http.expectOne({ method: 'GET', url });
+    client.put(url, {}).subscribe();
+    http.expectOne({ method: 'PUT', url }).flush({});
+    let joined: unknown;
+    client.get(url).subscribe(body => joined = body);
+    const after = http.expectOne({ method: 'GET', url });
+    older.flush({ name: 'Old' });
+    after.flush({ name: 'New' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(joined).toEqual({ name: 'New' });
+    expect(served).toEqual({ name: 'New' });
+  });
 });

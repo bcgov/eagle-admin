@@ -39,6 +39,7 @@ class HttpCacheService {
 
   clear(): void {
     this.cache.clear();
+    this.inFlight.clear();
   }
 
   /** `/api/commentperiod/123/publish` → `commentperiod`. */
@@ -68,16 +69,14 @@ class HttpCacheService {
     return cleared;
   }
 
-  /** Invalidate every cache entry whose path is `base` or below it. */
+  /** Invalidate every cache entry whose path is `base` or below it, and the GETs in flight there. */
   clearUnderPath(base: string): number {
-    let cleared = 0;
-    for (const key of Array.from(this.cache.keys())) {
-      if (isUnderPath(key, base)) {
-        this.cache.delete(key);
-        cleared++;
-      }
-    }
-    return cleared;
+    const under = (entries: Map<string, unknown>) => Array.from(entries.keys()).filter(key => isUnderPath(key, base));
+    // A GET started before the write may answer with the old row; with its entry gone it caches nothing.
+    under(this.inFlight).forEach(key => this.inFlight.delete(key));
+    const stale = under(this.cache);
+    stale.forEach(key => this.cache.delete(key));
+    return stale.length;
   }
 }
 
@@ -112,7 +111,17 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   if (req.headers.has('cache-control') && req.headers.get('cache-control') === 'no-cache') {
-    return next(req);
+    // A fresh DEMI read replaces the cached one, so a later screen does not show an older row.
+    const demiPath = inject(ConfigService).getDemiApiPath();
+    return next(req).pipe(
+      tap(event => {
+        if (event instanceof HttpResponse && event.ok && isUnderPath(req.url, demiPath)) {
+          cacheService.set(req.urlWithParams, event);
+          // A cached GET still in flight started earlier, so its body must not replace this one.
+          cacheService.inFlight.delete(req.urlWithParams);
+        }
+      })
+    );
   }
 
   const cachedResponse = cacheService.get(req.urlWithParams);
@@ -127,14 +136,19 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
     return existing;
   }
 
-  const request$ = next(req).pipe(
+  const current = () => cacheService.inFlight.get(req.urlWithParams) === request$;
+  const request$: Observable<HttpEvent<any>> = next(req).pipe(
     tap(event => {
-      if (event instanceof HttpResponse) {
+      if (event instanceof HttpResponse && current()) {
         logger.debug(`Caching response for: ${req.url}`, 'HttpCache');
         cacheService.set(req.urlWithParams, event);
       }
     }),
-    finalize(() => cacheService.inFlight.delete(req.urlWithParams)),
+    finalize(() => {
+      if (current()) {
+        cacheService.inFlight.delete(req.urlWithParams);
+      }
+    }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

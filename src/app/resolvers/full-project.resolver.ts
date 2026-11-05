@@ -45,6 +45,7 @@ function toFullProject(row: DemiProject, year: number, currentKey: string, orgs:
   const project: Record<string, unknown> = {
     ...row,
     currentLegislationYear: currentKey,
+    demiRow: row,
     legislationYearList: [...new Set([...stored, year])].sort((a, b) => a - b)
   };
   const proponent = row.proponentId ? orgs.get(row.proponentId) : undefined;
@@ -79,7 +80,7 @@ export const fullProjectResolver: ResolveFn<object> = (route: ActivatedRouteSnap
   const toast = inject(ToastService);
 
   const projId = route.pathFromRoot.find(r => r.paramMap.has('projId'))?.paramMap.get('projId') ?? '';
-  return projectService.getNative(projId).pipe(
+  return projectService.getNative(projId, { fresh: route.data?.['freshRead'] === true }).pipe(
     mergeMap(row => {
       const year = currentYear(row);
       const currentKey = `legislation_${year}`;

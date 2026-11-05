@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, of, throwError } from 'rxjs';
@@ -10,19 +10,22 @@ import { StorageService } from 'src/app/services/storage.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
+import { AjaxData } from 'src/app/shared/utils/mock-data';
+import { List } from 'src/app/models/demi/list';
 import { ProjectPublishState } from 'src/app/models/project';
 import { CREATE_UNKNOWN_MESSAGE } from '../edit-tabs';
 
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
 const ajaxRow = AjaxData[0].data.searchResults[0];
+const DEMI_ROW = { id: '7', name: 'Ajax Mine' };
 
 // A 2018 project with no Eagle id, filled in enough to pass validateForm.
 function row2018(block: object = {}) {
   return {
     ...ajaxRow,
     _id: null,
+    demiRow: DEMI_ROW,
     currentLegislationYear: 'legislation_2018',
     legislation_2018: {
       ...ajaxRow['legislation_2018'],
@@ -34,6 +37,11 @@ function row2018(block: object = {}) {
   };
 }
 
+const PHASES: List[] = [
+  { id: 'phase-0', name: 'Early Engagement', type: 'projectPhase', legislation: 2018, listOrder: 0 },
+  { id: 'phase-1', name: 'Readiness Decision', type: 'projectPhase', legislation: 2018, listOrder: 1 }
+];
+
 const results = (row: object) => [{ data: { meta: [], searchResults: [row] } }];
 // fullProjectResolver's answer when it cannot read the project.
 const NO_PROJECT = [{ data: { meta: [], searchResults: [] } }];
@@ -44,6 +52,7 @@ describe('FormTab2018', () => {
   let toast: jasmine.SpyObj<ToastService>;
   let logger: jasmine.SpyObj<LoggingService>;
   let navigate: jasmine.Spy;
+  let lists: ReturnType<typeof signal<List[]>>;
 
   // The add route has no projId and no resolved project.
   function render(fullProject: unknown = AjaxData, { adding = false } = {}) {
@@ -51,11 +60,12 @@ describe('FormTab2018', () => {
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
     logger = jasmine.createSpyObj('LoggingService', ['error']);
+    lists = signal<List[]>([]);
     TestBed.configureTestingModule({
       imports: [FormTab2018Component],
       providers: [
         provideRouter([]),
-        { provide: ConfigService, useValue: { regions: regionsData, getLists: () => eaDecisions, lists: [] } },
+        { provide: ConfigService, useValue: { listsSignal: lists } },
         { provide: StorageService, useValue: { state: { pageIsEditing: !adding } } },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toast },
@@ -98,7 +108,7 @@ describe('FormTab2018', () => {
     render(results(row2018())).onSubmit();
 
     expect(toast.error).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }), jasmine.arrayContaining(['eaStatusDate', 'dispute']));
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }), jasmine.arrayContaining(['eaStatusDate', 'dispute']), DEMI_ROW);
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'project-details']);
   });
 
@@ -131,6 +141,22 @@ describe('FormTab2018', () => {
 
     const saveButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button[type="submit"]');
     const publishButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button.btn-publish');
+
+    it('starts on the first phase once the Lists arrive, and creates the project with it', () => {
+      const component = render(null, { adding: true });
+      lists.set(PHASES);
+      fixture.detectChanges();
+      const filled = component.buildFormFromData({ ...row2018().legislation_2018 }).getRawValue();
+      component.myForm.patchValue({ ...filled, currentPhaseName: component.myForm.controls.currentPhaseName.value });
+      component.proponentId = 'org-1';
+      projectService.add.and.returnValue(of({ _id: null, demiId: MINTED } as any));
+
+      component.onSubmit();
+
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector('#currentPhaseName');
+      expect(select.options[select.selectedIndex]?.textContent.trim()).toBe('Early Engagement');
+      expect(projectService.add).toHaveBeenCalledOnceWith(jasmine.objectContaining({ currentPhaseName: 'phase-0' }), { publish: false });
+    });
 
     it('save creates the project and opens it by the id DEMI returns', () => {
       const component = renderAdd();
@@ -272,6 +298,19 @@ describe('FormTab2018', () => {
     expect(toast.error).toHaveBeenCalledWith('Failed to publish project. Forbidden: not a project admin');
   });
 
+  it('a save after a failed publish compares against the row the last save emitted', async () => {
+    const component = render(results(row2018()));
+    const saved = { ...DEMI_ROW, name: 'Ajax Mine 2' };
+    projectService.save.and.returnValue(of(saved as any));
+    projectService.publish.and.returnValue(throwError(() => new Error('Forbidden')));
+
+    component.onPublish();
+    await fixture.whenStable();
+    component.onSubmit();
+
+    expect(projectService.save.calls.mostRecent().args[2]).toBe(saved);
+  });
+
   it('unpublish failure toasts DEMI\'s 403 text', async () => {
     const component = render(results(row2018()));
     projectService.unPublish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));
@@ -293,6 +332,41 @@ describe('FormTab2018', () => {
 
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
+  });
+
+  it('fills the pickers when the Lists arrive after the form, and keeps the row\'s picks', () => {
+    const component = render(results(row2018({ region: 'Peace', eacDecision: { _id: 'dec-1' } })));
+
+    lists.set([
+      ...PHASES,
+      { id: 'dec-1', name: 'In Progress', type: 'eaDecisions', legislation: 2018, listOrder: 0 },
+      { id: 'region-1', name: 'Peace', type: 'region', legislation: 0, listOrder: 0 }
+    ]);
+    fixture.detectChanges();
+
+    const shown = (selector: string) => {
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector(selector);
+      return select.options[select.selectedIndex]?.textContent.trim();
+    };
+    expect(shown('#currentPhaseName')).toBe('Readiness Decision');
+    expect(shown('select[formControlName="region"]')).toBe('Peace');
+    expect(shown('#eacDecision')).toBe('In Progress');
+    expect(component.myForm.getRawValue()).toEqual(jasmine.objectContaining({ currentPhaseName: 'phase-1', region: 'Peace', eacDecision: 'dec-1' }));
+  });
+
+  it('refuses a save on a row whose phase has no id until one is picked, and does not default it', () => {
+    const component = render(results(row2018({ currentPhaseName: { _id: null, name: 'Unknown' } })));
+    lists.set(PHASES);
+    fixture.detectChanges();
+
+    expect(component.myForm.controls.currentPhaseName.value).toBeFalsy();
+    component.onSubmit();
+    expect(toast.error).toHaveBeenCalledWith('You must select a project phase.');
+    expect(projectService.save).not.toHaveBeenCalled();
+
+    component.myForm.controls.currentPhaseName.setValue('phase-1');
+    component.onSubmit();
+    expect(projectService.save).toHaveBeenCalledTimes(1);
   });
 
   it('a project with no intake builds the edit form', () => {

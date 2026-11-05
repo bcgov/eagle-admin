@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, merge, throwError } from 'rxjs';
+import { Observable, of, forkJoin, throwError } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
 import { ConfigService } from './config.service';
@@ -9,7 +9,7 @@ import { Project } from '../models/project';
 import { Organization } from '../models/demi/organization';
 import { DemiProject } from '../models/demi/project';
 import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
-import { toDemiProjectWrite } from '../models/demi/project-write';
+import { toDemiProjectWrite, withIntakeOver } from '../models/demi/project-write';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { extractFromSearchResults, natureBuildMapper } from '../shared/utils/utils';
 
@@ -52,9 +52,9 @@ export class ProjectService {
     return this.demiApi.list<DemiProject>('projects', { count: true, sort: 'name', ...params });
   }
 
-  /** A DEMI project by DEMI id or Eagle id. */
-  getNative(id: string): Observable<DemiProject> {
-    return this.demiApi.get<DemiProject>('projects', id);
+  /** A DEMI project by DEMI id or Eagle id; `fresh` skips the HTTP cache. */
+  getNative(id: string, { fresh = false } = {}): Observable<DemiProject> {
+    return this.demiApi.get<DemiProject>('projects', id, { fresh });
   }
 
   getUsers<T extends UserRow>(ids: string[]): Observable<T[]> {
@@ -94,24 +94,24 @@ export class ProjectService {
     projectKeys.forEach(key => {
       const project = fullProject[`legislation_${key.toString()}`];
       if (!project || Object.keys(project).length === 0 || !project.name) {
-        return of(data);
+        return;
       }
       project.nature = natureBuildMapper(project.build);
 
       const epdId = (project.responsibleEPDId) ? project.responsibleEPDId.toString() : '';
       const leadId = (project.projectLeadId) ? project.projectLeadId.toString() : '';
       if (!epdId && !leadId) {
-        return of(data);
+        return;
       }
       peopleObjs.push(this.usersById([epdId, leadId]).pipe(
         map(users => {
           project.responsibleEPDObj = users.get(epdId);
           project.projectLeadObj = users.get(leadId);
-          return data;
         })
       ));
     });
-    return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
+    // The resolver takes the first emission, so it waits for every block's contacts.
+    return (peopleObjs.length > 0) ? forkJoin(peopleObjs).pipe(map(() => data)) : of(data);
   }
 
   /**
@@ -141,16 +141,19 @@ export class ProjectService {
   }
 
   /**
-   * Writes the edit form's fields to DEMI. `project._id` is the route id, DEMI or Eagle; `held` names the fields the
-   * tab's form holds. A tab for another Act than the project's is refused: DEMI's PUT writes the current Act's fields.
+   * Writes the edit form's fields to DEMI over `shown`, the row the form was built from, and emits the row the next save
+   * compares against. `held` names the tab's fields. Another Act's tab is refused: DEMI's PUT writes the current Act's fields.
    */
-  save(project: Project, held?: readonly string[]): Observable<LegacyProject> {
+  save(project: Project, held?: readonly string[], shown?: DemiProject): Observable<DemiProject> {
     return this.onFreshRow(refId(project), row => {
       const year = actYear(row);
       if (project.legislationYear && year && Number(project.legislationYear) !== year) {
         return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
-      return this.writeForm(project, row, held).pipe(map(toLegacyProject));
+      // Against the shown row, a field another user changed since is not reverted; a new phase joins the stored
+      // history, and changed intake keys go over the stored intake.
+      const compared = shown ? { ...shown, phaseHistory: row.phaseHistory } : row;
+      return this.writeForm(project, compared, held, row);
     });
   }
 
@@ -215,9 +218,15 @@ export class ProjectService {
     );
   }
 
-  private writeForm(project: Project, row: DemiProject, held?: readonly string[]): Observable<DemiProject> {
+  /** PUTs the form's changes over `row`, intake over `stored`'s, and emits `row` with the changes, as the form shows it. */
+  private writeForm(project: Project, row: DemiProject, held?: readonly string[], stored = row): Observable<DemiProject> {
     return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held)).pipe(
-      mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body))
+      // DEMI rewrites the row on any PUT, so nothing changed sends none.
+      mergeMap(body => (Object.keys(body).length
+        ? this.demiApi.update<DemiProject>('projects', row.id, withIntakeOver(body, stored)).pipe(
+          // Not the PUT's answer: a field another user changed since would then go back on the next save.
+          map(() => ({ ...row, ...withIntakeOver(body, row) } as DemiProject)))
+        : of(row)))
     );
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -18,10 +18,10 @@ import { ContactSelectTableRowsComponent } from 'src/app/shared/components/conta
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, projectTypeKey } from 'src/app/shared/utils/utils';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectCreateFailed, projectWriteFailed, refuseTabWrite } from '../edit-tabs';
+import { isListId, projectCreateFailed, projectWriteFailed, refuseTabWrite, tabLists } from '../edit-tabs';
 
 
 @Component({
@@ -84,14 +84,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }>;
   public documents: any[] = [];
   public back: any = {};
-  public regions: any[] = [];
   public sectorsSelected = [];
-  public projectPhases: Array<any> = [];
   public proponentName = '';
   public proponentId = '';
-  public ceaaInvolvements: Array<any> = [];
-  public eacDecisions: Array<any> = [];
-  public applicableRegulations: Array<any> = [];
 
   public projectName: string;
   public projectId: string;
@@ -103,6 +98,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   public fullProject: FullProject;
   public legislationYear = 2018;
+  // On a direct load the Lists arrive after the form is built.
+  public readonly lists = computed(() => tabLists(this.configService.listsSignal(), this.legislationYear));
   public publishedLegislation: string;
 
   public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
@@ -120,16 +117,23 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public published: boolean;
   public only2018: boolean;
 
-  ngOnInit() {
-    // This is to get Region information from List (db) and put into a list(regions)
-    this.regions = this.configService.regions;
+  constructor() {
+    // A create starts on the first phase, as the legacy form did, once the Lists arrive and until the user picks.
+    effect(() => {
+      const first = this.lists().projectPhases[0]?.id;
+      const phase = this.myForm?.controls.currentPhaseName;
+      if (first && phase && !this.pageIsEditing && !isListId(phase.value)) {
+        phase.setValue(first);
+      }
+    });
+  }
 
+  ngOnInit() {
       this.route.parent.data
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((data: { fullProject: ISearchResults<FullProject>[] }) => {
           this.initProject(data);
           this.initOrg();
-          this.getLists();
 
           this.buildForm();
           this.initContacts();
@@ -224,7 +228,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.myForm = new FormGroup({
         'name': new FormControl<string | null>(null),
         'proponent': new FormControl<string | null>(null),
-        'currentPhaseName': new FormControl<string | null>(this.projectPhases[0]),
+        'currentPhaseName': new FormControl<string | null>(this.lists().projectPhases[0]?.id ?? null),
         'build': new FormControl<string | null>(null),
         'type': new FormControl<string | null>(null),
         'sector': new FormControl<string | null>(null),
@@ -296,18 +300,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   buildFormFromData(formData) {
-    // Preselector for region.
-    if (formData.region) {
-      const theRegion = this.regions.filter((region: any) => {
-        if (region.id === formData.region) {
-          return true;
-        }
-      });
-      if (theRegion && theRegion.length === 1) {
-        formData.region = theRegion[0];
-      }
-    }
-
     if (!formData.substantially) {
       formData.substantially = 'no';
     } else {
@@ -500,7 +492,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.sector.value === '') {
       this.toastService.error('You must select a sub-type.');
       return false;
-    } else if (this.myForm.controls.currentPhaseName.value === '') {
+    } else if (!isListId(this.myForm.controls.currentPhaseName.value)) {
       this.toastService.error('You must select a project phase.');
       return false;
     } else if (this.myForm.controls.description.value === '') {
@@ -547,14 +539,14 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   isRegulatoryTransfer(): boolean {
     const decisionId = this.myForm?.controls?.eacDecision?.value;
     if (!decisionId) return false;
-    const selected = this.eacDecisions?.find(d => d.id === decisionId);
+    const selected = this.lists().eacDecisions.find(d => d.id === decisionId);
     return selected ? selected.name === 'Regulatory Transfer' : false;
   }
 
   isAdministrativeClosure(): boolean {
     const decisionId = this.myForm?.controls?.eacDecision?.value;
     if (!decisionId) return false;
-    const selected = this.eacDecisions?.find(d => d.id === decisionId);
+    const selected = this.lists().eacDecisions.find(d => d.id === decisionId);
     return selected ? selected.name === 'Administrative Closure' : false;
   }
 
@@ -656,21 +648,11 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         _id: this.projectId
       }));
 
-      if (putFunction) {
-          this.projectService.save(project, Object.keys(fields))
-            .pipe(
-              switchMap(() => putFunction(project)),
-            )
-            .subscribe(
-              ...putSubscribe
-            );
-      } else {
-          this.projectService.save(project, Object.keys(fields))
-            .subscribe(
-              ...putSubscribe
-            );
-      }
-
+      // A publish can fail after the PUT, leaving the page open over the saved row.
+      const saved = this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
+        .pipe(tap(row => this.fullProject.demiRow = row));
+      const written: Observable<unknown> = putFunction ? saved.pipe(switchMap(() => putFunction(project))) : saved;
+      written.subscribe(...putSubscribe);
     }
   }
 
@@ -760,56 +742,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     } else {
       this.router.navigate(['/projects', 'add', 'form-2018', 'link-contact', { pageSize: 25 }]);
     }
-  }
-
-  getLists() {
-    // Lists hold only 2002 and 2018 values; a 1996 project uses the 2002 codes.
-
-    this.configService.lists.forEach(item => {
-      const tempLegislationYear = this.legislationYear === 1996 ? 2002 : this.legislationYear;
-      switch (`${item.type}|${item.legislation}`) {
-        case `eaDecisions|${tempLegislationYear}`:
-          this.eacDecisions.push({ ...item });
-          break;
-        case `ceaaInvolvements|${tempLegislationYear}`:
-          this.ceaaInvolvements.push({ ...item });
-          break;
-        case `projectPhase|${tempLegislationYear}`:
-          this.projectPhases.push({ ...item });
-          break;
-        case `applicableRegulations|${tempLegislationYear}`:
-          this.applicableRegulations.push({ ...item });
-          break;
-        default:
-          break;
-      }
-    });
-
-    // Sorts by legislation first and then listOrder for each legislation group.
-    this.applicableRegulations = this.applicableRegulations.slice().sort((a, b) => {
-      if (a.legislation !== b.legislation) {
-        return (a.legislation || 0) - (b.legislation || 0);
-      }
-      return (a.listOrder || 0) - (b.listOrder || 0);
-    });
-    this.eacDecisions = this.eacDecisions.slice().sort((a, b) => {
-      if (a.legislation !== b.legislation) {
-        return (a.legislation || 0) - (b.legislation || 0);
-      }
-      return (a.listOrder || 0) - (b.listOrder || 0);
-    });
-    this.ceaaInvolvements = this.ceaaInvolvements.slice().sort((a, b) => {
-      if (a.legislation !== b.legislation) {
-        return (a.legislation || 0) - (b.legislation || 0);
-      }
-      return (a.listOrder || 0) - (b.listOrder || 0);
-    });
-    this.projectPhases = this.projectPhases.slice().sort((a, b) => {
-      if (a.legislation !== b.legislation) {
-        return (a.legislation || 0) - (b.legislation || 0);
-      }
-      return (a.listOrder || 0) - (b.listOrder || 0);
-    });
   }
 
   ngOnDestroy() {

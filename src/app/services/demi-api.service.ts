@@ -27,7 +27,7 @@ export class DemiApiService {
     );
   }
 
-  /** `fresh` skips the 15-minute HTTP cache, for a read that a write is built on. */
+  /** `fresh` skips the 15-minute HTTP cache, for a read that a write is built on, and replaces the cached entry under the DEMI path. */
   get<T>(kind: string, id: string, { fresh = false } = {}): Observable<T> {
     const headers = fresh ? { 'cache-control': 'no-cache' } : undefined;
     return this.http.get<T>(this.url(kind, id), { headers }).pipe(

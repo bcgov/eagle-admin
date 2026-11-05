@@ -51,8 +51,8 @@ describe('fullProjectResolver', () => {
 
   afterEach(() => http.verify());
 
-  function resolve(projId = EAGLE_ID): Promise<any> {
-    const route = { pathFromRoot: [{ paramMap: convertToParamMap({ projId }) }] } as unknown as ActivatedRouteSnapshot;
+  function resolve(projId = EAGLE_ID, data: object = {}): Promise<any> {
+    const route = { data, pathFromRoot: [{ paramMap: convertToParamMap({ projId }) }] } as unknown as ActivatedRouteSnapshot;
     return firstValueFrom(TestBed.runInInjectionContext(
       () => fullProjectResolver(route, {} as RouterStateSnapshot) as Observable<any>
     ));
@@ -73,6 +73,24 @@ describe('fullProjectResolver', () => {
     expect(project.legislation_2002.name).toBe('Old');
     expect(project.isPublished).toBeTrue();
     expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('keeps the DEMI row as read, for the edit form\'s save to compare against', async () => {
+    const row = demiRow({ proponentId: null });
+    const result = resolve();
+
+    flushProject(row);
+    orgRequest().flush([]);
+
+    expect(projectOf(await result).demiRow).toEqual(row);
+  });
+
+  it('reads the edit route\'s project past the HTTP cache, and other screens\' through it', () => {
+    resolve(EAGLE_ID, { freshRead: true });
+    resolve('other-id');
+
+    expect(http.expectOne(`/demi/projects/${EAGLE_ID}`).request.headers.get('cache-control')).toBe('no-cache');
+    expect(http.expectOne('/demi/projects/other-id').request.headers.has('cache-control')).toBeFalse();
   });
 
   it('swaps every proponent id for its organization, in one read', async () => {

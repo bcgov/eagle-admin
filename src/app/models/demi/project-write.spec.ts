@@ -1,7 +1,7 @@
 import { Project } from '../project';
 import { List } from './list';
 import { DemiProject } from './project';
-import { DEFAULT_CENTROID, toDemiProjectWrite } from './project-write';
+import { DEFAULT_CENTROID, toDemiProjectWrite, withIntakeOver } from './project-write';
 
 const LISTS: List[] = [
   { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 },
@@ -15,8 +15,10 @@ const PHASE1 = { _id: 'phase1', name: 'Pre-Application', type: 'projectPhase', l
 const PHASE2 = { _id: 'phase2', name: 'Application Review', type: 'projectPhase', legislation: 2018 };
 
 // Built the way the edit form builds its save: `new Project` over the form values.
-const write = (form: object, row: Partial<DemiProject> = {}, held?: string[]) =>
-  toDemiProjectWrite(new Project({ _id: 'p1', name: 'Mine', ...form }), LISTS, { id: '7', name: 'Mine', ...row }, held);
+const write = (form: object, row: Partial<DemiProject> = {}, held?: string[]) => {
+  const stored = { id: '7', name: 'Mine', ...row };
+  return withIntakeOver(toDemiProjectWrite(new Project({ _id: 'p1', name: 'Mine', ...form }), LISTS, stored, held), stored);
+};
 
 // What the form sends for the local day it shows a stored date as: that day's local midnight.
 const shownDay = (iso: string, days = 0) => {
@@ -43,7 +45,7 @@ describe('toDemiProjectWrite', () => {
   });
 
   it('leaves out a List row default the user did not pick, with the stage and history, on create and on edit', () => {
-    // The create form's phase starts as the first List row, which has `id` but no `_id`.
+    // A List row itself, with `id` but no `_id`, is no pick.
     const listRow = { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 };
     const created = toDemiProjectWrite(new Project({ name: 'New', currentPhaseName: listRow }), LISTS, {} as DemiProject);
     const edited = write({ currentPhaseName: listRow, eacDecision: { ...listRow, id: 'dec1' } }, { currentPhaseName: PHASE2, projectState: 'Closed' });
@@ -139,6 +141,8 @@ describe('toDemiProjectWrite', () => {
     expect(write({ intake: { investment: null, notes: 'Phase 1' } }, { intake: { investment: null } }).intake)
       .toEqual({ investment: null, investmentNotes: 'Phase 1' });
     expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: 5 } }).intake).toEqual({ investment: null });
+    expect(write({ intake: { investment: 5, notes: '' } }, { intake: { investment: 5, investmentNotes: 'Phase 1' } }).intake)
+      .toEqual({ investment: 5, investmentNotes: null });
     // eagle-api's intake defaulted to a string; one stored that way is replaced, not read as an object.
     expect(write({ intake: { investment: 5, notes: null } }, { intake: 'TBD' }).intake).toEqual({ investment: 5 });
     expect('intake' in write({ intake: { investment: null, notes: null } }, { intake: 'TBD' })).toBeFalse();
@@ -149,8 +153,8 @@ describe('toDemiProjectWrite', () => {
       .toEqual({ investment: 5, notes: null, investmentNotes: 'Phase 1' });
   });
 
-  it('adds no intake key the stored intake lacks when the form leaves it empty', () => {
-    expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: null } }).intake).toEqual({ investment: null });
+  it('leaves out an intake whose fields are empty over stored nulls or missing keys', () => {
+    expect('intake' in write({ intake: { investment: null, notes: '' } }, { intake: { investment: null } })).toBeFalse();
   });
 
   it('writes no intake on a row with none when the form\'s intake is empty', () => {
@@ -166,6 +170,26 @@ describe('toDemiProjectWrite', () => {
     expect('centroid' in write({ centroid: [...DEFAULT_CENTROID] }, { centroid: { type: 'Point', coordinates: [] } })).toBeFalse();
     expect(toDemiProjectWrite(new Project({ name: 'New', centroid: [...DEFAULT_CENTROID] }), LISTS, {} as DemiProject).centroid)
       .toEqual({ type: 'Point', coordinates: [...DEFAULT_CENTROID] });
+  });
+
+  it('sends nothing when every field matches the row', () => {
+    const row = {
+      description: 'Open pit', sector: 'Coal', build: 'new', region: 'Peace', projectType: 'Mines', address: 'Tumbler Ridge',
+      proponentId: 'org1', responsibleEPDId: 'u1', projectLeadId: 'u2', isActive: 'active', legislationYear: 2018,
+      centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+    };
+    const form = {
+      description: 'Open pit', sector: 'Coal', build: 'new', region: 'Peace', type: 'Mines', location: 'Tumbler Ridge',
+      proponent: 'org1', responsibleEPDId: 'u1', projectLeadId: 'u2', activeStatus: 'active', legislationYear: 2018,
+      centroid: [-121.24, 50.72]
+    };
+
+    expect(write(form, row)).toEqual({});
+  });
+
+  it('sends a point moved from the stored one', () => {
+    expect(write({ centroid: [-121.3, 50.72] }, { centroid: { type: 'Point', coordinates: [-121.24, 50.72] } }).centroid)
+      .toEqual({ type: 'Point', coordinates: [-121.3, 50.72] });
   });
 
   it('sends no point when a coordinate is blank', () => {

@@ -102,6 +102,20 @@ describe('ProjectService', () => {
       expect(legislation2002.projectLeadObj._id).toBe('u1');
     });
 
+    it('getPeopleObjs answers once, after every block has its contacts', () => {
+      const legislation2002 = { name: 'Old Mine', responsibleEPDId: 'u1' } as any;
+      const legislation2018 = { name: 'Mine', responsibleEPDId: 'u2' } as any;
+      const data = [{ data: { searchResults: [{ legislationYearList: [2002, 2018], legislation_2002: legislation2002, legislation_2018: legislation2018 }] } }];
+      const answers: (string | undefined)[] = [];
+
+      service.getPeopleObjs(data).subscribe(() => answers.push(legislation2018.responsibleEPDObj?._id));
+      const [first, second] = http.match(r => r.url === '/demi/api/users');
+      first.flush([{ id: 'u1' }]);
+      second.flush([{ id: 'u2' }]);
+
+      expect(answers).toEqual(['u2']);
+    });
+
   });
 
   describe('pin writes', () => {
@@ -211,7 +225,7 @@ describe('ProjectService', () => {
       expect('projectType' in body).toBeFalse();
     });
 
-    it('save PUTs projects/<row.id> with projectType, address, proponentId and a GeoJSON centroid', () => {
+    it('save PUTs projects/<row.id> with projectType, address and a GeoJSON centroid', () => {
       service.save(formProject()).subscribe();
       answerRead();
 
@@ -219,9 +233,7 @@ describe('ProjectService', () => {
       expect(req.request.method).toBe('PUT');
       expect(req.request.body.projectType).toBe('Waste');
       expect(req.request.body.address).toBe('Ashcroft');
-      expect(req.request.body.proponentId).toBe('org1');
       expect(req.request.body.centroid).toEqual({ type: 'Point', coordinates: [-121.24, 50.72] });
-      req.flush(nativeRow());
     });
 
     it('save stores the name of a newly picked proponent', () => {
@@ -229,7 +241,9 @@ describe('ProjectService', () => {
       answerRead();
       http.expectOne('/demi/api/organizations/org2').flush({ id: 'org2', name: 'Teck Coal' });
 
-      expect(http.expectOne('/demi/api/projects/7').request.body.proponentName).toBe('Teck Coal');
+      const body = http.expectOne('/demi/api/projects/7').request.body;
+      expect(body.proponentId).toBe('org2');
+      expect(body.proponentName).toBe('Teck Coal');
     });
 
     it('a failed proponent lookup fails the save and sends no PUT', async () => {
@@ -246,7 +260,7 @@ describe('ProjectService', () => {
       service.save(formProject({ legislationYear: 2018 })).subscribe();
       answerRead({ legislationYear: 2018 });
 
-      expect(http.expectOne('/demi/api/projects/7').request.body.legislationYear).toBe(2018);
+      expect(http.expectOne('/demi/api/projects/7').request.method).toBe('PUT');
     });
 
     it('save from another Act\'s tab is refused and sends no PUT', async () => {
@@ -270,6 +284,65 @@ describe('ProjectService', () => {
       answerRead();
 
       expect(http.expectOne('/demi/api/projects/7').request.method).toBe('PUT');
+    });
+
+    describe('over the row the form was built from', () => {
+      const PHASE1 = { _id: 'phase1', name: 'Pre-Application' };
+      const PHASE2 = { _id: 'phase2', name: 'Application Review' };
+      const shown = nativeRow({ proponentId: 'org1', currentPhaseName: PHASE1, phaseHistory: [PHASE1] });
+
+      it('leaves out a List field the form did not change, though another user changed it since', () => {
+        service.save(formProject({ currentPhaseName: 'phase1' }), undefined, shown).subscribe();
+        answerRead({ currentPhaseName: PHASE2, phaseHistory: [PHASE1, PHASE2] });
+
+        expect('currentPhaseName' in http.expectOne('/demi/api/projects/7').request.body).toBeFalse();
+      });
+
+      it('appends a new phase to the stored phase history, not the shown one', () => {
+        service.save(formProject({ currentPhaseName: 'phase3' }), undefined, shown).subscribe();
+        answerRead({ currentPhaseName: PHASE2, phaseHistory: [PHASE1, PHASE2] });
+
+        const history = http.expectOne('/demi/api/projects/7').request.body.phaseHistory as { _id: string }[];
+        expect(history.map(ref => ref._id)).toEqual(['phase1', 'phase2', 'phase3']);
+      });
+
+      it('sends a changed intake key over the stored intake, not the shown one', () => {
+        const intakeShown = { ...shown, intake: { investment: 4, investmentNotes: 'old' } };
+        service.save(formProject({ intake: { investment: 5, notes: 'old' } }), undefined, intakeShown).subscribe();
+        answerRead({ intake: { investment: 4, investmentNotes: 'new' } });
+
+        expect(http.expectOne('/demi/api/projects/7').request.body.intake).toEqual({ investment: 5, investmentNotes: 'new' });
+      });
+    });
+
+    // The row the form shows for formProject().
+    const unchanged = nativeRow({
+      name: 'Ashcroft Ranch Landfill', projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', isActive: 'active',
+      centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+    });
+
+    it('save with nothing changed sends no PUT and still completes', async () => {
+      const saved = firstValueFrom(service.save(formProject(), undefined, unchanged));
+      answerRead();
+
+      expect((await saved).id).toBe('7');
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('a save over the row the last save emitted sends nothing another user changed since', async () => {
+      const shown = { ...unchanged, region: 'Peace', intake: { investment: 4, investmentNotes: 'old' } };
+      const theirs = { region: 'Omineca', intake: { investment: 9, investmentNotes: 'old' } };
+      const project = formProject({ name: 'Renamed', region: 'Peace', intake: { investment: 4, notes: 'new' } });
+      const first = firstValueFrom(service.save(project, undefined, shown));
+      answerRead(theirs);
+      const stored = { ...unchanged, ...theirs, name: 'Renamed', intake: { investment: 9, investmentNotes: 'new' } };
+      http.expectOne('/demi/api/projects/7').flush(stored);
+
+      const second = firstValueFrom(service.save(project, undefined, await first));
+      answerRead(stored);
+
+      http.expectNone('/demi/api/projects/7');
+      await second;
     });
 
     it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
@@ -331,7 +404,8 @@ describe('ProjectService', () => {
         const put = http.expectOne(PROJECT_URL);
         expect(put.request.method).toBe('PUT');
         expect(put.request.body).toEqual(jasmine.objectContaining({
-          legislationYear: 2018, projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', proponentName: 'Teck Coal'
+          legislationYear: 2018, projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', proponentName: 'Teck Coal',
+          currentPhaseName: jasmine.objectContaining({ _id: 'phase1', name: 'Pre-Application' })
         }));
         put.flush({ id: MINTED });
 
@@ -347,6 +421,17 @@ describe('ProjectService', () => {
 
         expect(http.expectOne(LEVEL_URL).request.body)
           .toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin', legislationYear: 2018 });
+      });
+
+      it('a create whose fields all went in the POST sends no PUT and still publishes', async () => {
+        const created = firstValueFrom(service.add(new Project({ name: 'New', centroid: [-121.24, 50.72] }), { publish: true }));
+        const post = http.expectOne('/demi/api/projects');
+        post.flush({ id: MINTED, eagleId: null, ...post.request.body });
+        http.expectOne(LEVEL_URL).flush({ id: MINTED });
+
+        http.expectNone(PROJECT_URL);
+        http.expectOne(LEVEL_URL).flush({ id: MINTED });
+        expect((await created).demiId).toBe(MINTED);
       });
 
       it('a refused POST fails with DEMI\'s message and sends nothing more', async () => {

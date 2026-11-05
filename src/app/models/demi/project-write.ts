@@ -43,9 +43,11 @@ type WriteListRef = DemiListRef & { item?: string };
 
 /**
  * DEMI `PUT /projects/:id` body over `row`, catalogued fields under DEMI's names (DEMI answers 400 to others such as `_id`).
- * A cleared field outside `held` (the saving form's fields), or empty in form and row, is left out, so DEMI keeps it.
+ * Left out: a field the row holds, a cleared one outside `held` (the tab's fields), one empty in both. Intake: see `withIntakeOver`.
  */
-export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject, held?: readonly string[]): Record<string, unknown> {
+export function toDemiProjectWrite(
+  project: Project, lists: List[], row: DemiProject, held?: readonly string[]
+): Record<string, unknown> {
   const body: Record<string, unknown> = {};
   for (const field of [...CLEARED_FIELDS, ...SET_FIELDS]) {
     const name = DEMI_FIELD_NAMES[field as keyof typeof DEMI_FIELD_NAMES] ?? field;
@@ -55,7 +57,8 @@ export function toDemiProjectWrite(project: Project, lists: List[], row: DemiPro
       continue;
     }
     const value = valueOf(project, field, lists, row);
-    if (value === KEEP || (value == null && isEmpty(row[name]))) {
+    // DEMI reads a sent field as a staff edit, so a value the row already holds is left out.
+    if (value === KEEP || value === row[name] || (value == null && isEmpty(row[name]))) {
       continue;
     }
     if (value !== undefined || CLEARED.has(field)) {
@@ -80,6 +83,11 @@ export function toDemiProjectWrite(project: Project, lists: List[], row: DemiPro
   return body;
 }
 
+/** `body` with its changed intake keys over `row`'s intake. DEMI replaces the whole intake object. */
+export function withIntakeOver(body: Record<string, unknown>, row: DemiProject): Record<string, unknown> {
+  return body.intake ? { ...body, intake: { ...intakeOf(row), ...body.intake as object } } : body;
+}
+
 function valueOf(project: Project, field: WriteField, lists: List[], row: DemiProject): unknown {
   const value = project[field];
   if (LIST_REFS.has(field)) {
@@ -101,23 +109,23 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
     case 'proponent':
       return value && typeof value === 'object' ? value._id : value;
     // The form shows the default point on a stored row with none; that is not the user's pick.
-    case 'centroid':
-      return row.id && !row.centroid?.coordinates?.length && sameCoordinates(value, DEFAULT_CENTROID) ? KEEP : point(value);
-    // Over the stored object, so keys the form does not edit stay.
+    case 'centroid': {
+      const stored = row.centroid?.coordinates;
+      const same = stored?.length ? sameCoordinates(value, stored) : row.id && sameCoordinates(value, DEFAULT_CENTROID);
+      return same ? KEEP : point(value);
+    }
+    // Only the changed keys; withIntakeOver puts them over a row's intake.
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;
       if (!value) {
         return undefined;
       }
-      const storedObject = !!row.intake && typeof row.intake === 'object';
-      // Nothing entered over no intake, or over one eagle-api stored as a string or number, leaves it as stored.
-      if (isEmpty(value.investment) && isEmpty(notes) && !storedObject) {
-        return KEEP;
-      }
-      const stored = (storedObject ? row.intake : {}) as Record<string, unknown>;
-      // A key the stored intake lacks is added only when the form has a value for it.
-      const put = (key: string, entered: unknown) => (key in stored || !isEmpty(entered) ? { [key]: entered ?? null } : {});
-      return { ...stored, ...put('investment', value.investment), ...put('investmentNotes', notes) };
+      const shown = intakeOf(row);
+      // An empty field over an empty or missing key is no change; a cleared one is stored as null.
+      const changed = Object.entries({ investment: value.investment, investmentNotes: notes })
+        .filter(([key, entered]) => (isEmpty(entered) ? !isEmpty(shown[key]) : entered !== shown[key]))
+        .map(([key, entered]) => [key, isEmpty(entered) ? null : entered]);
+      return changed.length ? Object.fromEntries(changed) : KEEP;
     }
     // `new Project` drops a No answer, so a stored false or null stays; a stored Yes becomes false.
     case 'substantially':
@@ -133,6 +141,9 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
 }
 
 const isEmpty = (value: unknown) => value == null || value === '';
+
+// An intake eagle-api stored as a string or number is replaced, not read as an object.
+const intakeOf = (row: DemiProject) => (row.intake && typeof row.intake === 'object' ? row.intake : {}) as Record<string, unknown>;
 
 function sameLocalDay(a: unknown, b: unknown): boolean {
   if (typeof a !== 'string' || typeof b !== 'string') {

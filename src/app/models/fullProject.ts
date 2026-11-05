@@ -1,3 +1,4 @@
+import { DemiProject } from './demi/project';
 import { Project } from './project';
 
 export class FullProject {
@@ -8,4 +9,6 @@ export class FullProject {
   legislation_2018: Project;
   /** DEMI withholds `read`; this mirrors `read.includes('public')`. */
   isPublished: boolean;
+  /** The DEMI row the screen was built from; an edit form's save compares against it. */
+  demiRow?: DemiProject;
 }

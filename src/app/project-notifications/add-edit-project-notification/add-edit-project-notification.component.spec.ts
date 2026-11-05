@@ -1,8 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
 import { EMPTY, NEVER, Observable, of, throwError } from 'rxjs';
 import { AddEditProjectNotificationComponent } from './add-edit-project-notification.component';
 import { DemiList } from 'src/app/models/demi/demi-list';
+import { List } from 'src/app/models/demi/list';
 import { DemiProject } from 'src/app/models/demi/project';
 import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -18,6 +20,7 @@ describe('AddEditProjectNotificationComponent', () => {
   let toastService: jasmine.SpyObj<ToastService>;
   let notifications: jasmine.SpyObj<NotificationProjectService>;
   let fixture: ComponentFixture<AddEditProjectNotificationComponent>;
+  let lists: ReturnType<typeof signal<List[]>>;
 
   // `id` is the Track id; `eagleId` is set only on projects mirrored from Eagle.
   const project = (id: string, name: string, eagleId?: string | null): DemiProject => ({ id, name, eagleId });
@@ -34,6 +37,7 @@ describe('AddEditProjectNotificationComponent', () => {
     projectService.list.and.returnValue(list);
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error']);
     notifications = jasmine.createSpyObj('NotificationProjectService', ['add', 'save']);
+    lists = signal<List[]>([]);
 
     TestBed.configureTestingModule({
       imports: [AddEditProjectNotificationComponent],
@@ -44,7 +48,7 @@ describe('AddEditProjectNotificationComponent', () => {
         { provide: ToastService, useValue: toastService },
         { provide: NotificationProjectService, useValue: notifications },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['warn', 'error', 'info', 'debug']) },
-        { provide: ConfigService, useValue: { regions: [] } }
+        { provide: ConfigService, useValue: { listsSignal: lists } }
       ]
     });
     TestBed.inject(StorageService).state = {
@@ -90,6 +94,16 @@ describe('AddEditProjectNotificationComponent', () => {
     create(of({ rows }), 'e4');
 
     expect(select().selectedOptions[0].textContent.trim()).toBe('Gamma Pipeline');
+  });
+
+  it('offers the regions when the Lists arrive after the form', () => {
+    create(of({ rows }));
+
+    lists.set([{ id: 'r1', name: 'Peace', type: 'region', legislation: 0, listOrder: 0 }]);
+    fixture.detectChanges();
+
+    const regions = fixture.nativeElement.querySelectorAll('select#region option');
+    expect(Array.from<HTMLElement>(regions).map(option => option.textContent.trim())).toEqual(['Peace']);
   });
 
   it('shows an error toast when the project list fails', () => {
