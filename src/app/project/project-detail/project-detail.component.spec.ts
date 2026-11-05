@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { DemiProject } from 'src/app/models/demi/project';
+import { ProjectPublishState } from 'src/app/models/project';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { SideBarService } from 'src/app/services/sidebar.service';
@@ -26,7 +27,9 @@ describe('ProjectDetailComponent', () => {
     ...overrides
   });
 
-  function open(native: DemiProject | Error, legislationYearList = [2018]) {
+  interface OpenOptions { legislationYearList?: number[]; routeId?: string; publishState?: ProjectPublishState }
+
+  function open(native: DemiProject | Error, { legislationYearList = [2018], routeId = 'eagle-1', publishState }: OpenOptions = {}) {
     projectService = jasmine.createSpyObj('ProjectService', ['getNative', 'getUsers', 'getCommentPeriods']);
     projectService.getNative.and.returnValue(native instanceof Error ? throwError(() => native) : of(native));
     projectService.getUsers.and.returnValue(of([
@@ -43,7 +46,7 @@ describe('ProjectDetailComponent', () => {
           useValue: {
             // fullProjectResolver supplies the legislation years in the eagle-api search shape.
             snapshot: { data: { fullProject: [{ data: { searchResults: [{ legislationYearList }] } }] } },
-            parent: { snapshot: { paramMap: convertToParamMap({ projId: 'eagle-1' }) } }
+            parent: { snapshot: { paramMap: convertToParamMap({ projId: routeId }) } }
           }
         },
         { provide: ProjectService, useValue: projectService },
@@ -52,6 +55,9 @@ describe('ProjectDetailComponent', () => {
       ]
     });
     navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    if (publishState) {
+      TestBed.inject(StorageService).state['projectPublishState_' + routeId] = publishState;
+    }
     fixture = TestBed.createComponent(ProjectDetailComponent);
     fixture.detectChanges();
   }
@@ -93,12 +99,12 @@ describe('ProjectDetailComponent', () => {
   });
 
   it('shows the legislation year from the row', () => {
-    open(row({ legislationYear: 2002 }), [2002]);
+    open(row({ legislationYear: 2002 }), { legislationYearList: [2002] });
     expect(text('#legislation')).toBe('2002 Environmental Assessment Act');
   });
 
   it('offers the archived details when an older legislation year exists', () => {
-    open(row(), [2002, 2018]);
+    open(row(), { legislationYearList: [2002, 2018] });
     expect(fixture.nativeElement.textContent).toContain('View Archived Project Details');
   });
 
@@ -113,5 +119,24 @@ describe('ProjectDetailComponent', () => {
     spyOn(window, 'alert');
     open(new Error('Project not found'));
     expect(navigate).toHaveBeenCalledWith(['/search']);
+  });
+
+  it('project details reads the publish flag under the route id', () => {
+    open(row({ isPublished: true }), { routeId: 'demi-7', publishState: ProjectPublishState.unpublished });
+    expect(fixture.nativeElement.querySelector('.badge-unpublished')).not.toBeNull();
+  });
+
+  it('Edit on a row with no Eagle id navigates to /p/<route id>/edit/form-2018', () => {
+    open(row({ eagleId: undefined, legislationYear: undefined }), { legislationYearList: [], routeId: 'demi-7' });
+    fixture.componentInstance.editProject();
+    expect(navigate).toHaveBeenCalledWith(['p', 'demi-7', 'edit', 'form-2018']);
+  });
+
+  [1996, 2002].forEach(year => {
+    it(`Edit on a ${year} project opens the 1996/2002 tab`, () => {
+      open(row({ legislationYear: year }), { legislationYearList: [year] });
+      fixture.componentInstance.editProject();
+      expect(navigate).toHaveBeenCalledWith(['p', 'eagle-1', 'edit', 'form-2002']);
+    });
   });
 });
