@@ -1,4 +1,4 @@
-@if (project && project._id) {
+@if (project) {
   <nav class="action-container">
     <ol class="breadcrumb">
       <li class="breadcrumb-item">
@@ -8,7 +8,7 @@
     </ol>
   </nav>
 }
-@if (project && project._id) {
+@if (project) {
   <main class="container-fluid-padding">
     <h1 id="name" class="heading-bar">{{project.name}}
       <span ngbDropdown container="body" placement="bottom-end top-end">

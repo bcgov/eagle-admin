@@ -209,7 +209,7 @@ export class AddEditActivityComponent implements OnInit {
 
     this.projectService.list({ pageSize: DEMI_MAX_PAGE_SIZE }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: page => {
-        this.projects = page.rows.map(toLegacyProject).filter(project => project._id);
+        this.projects = page.rows.filter(row => row.eagleId).map(toLegacyProject);
         this.loading = false;
         this._cdr.markForCheck();
       },

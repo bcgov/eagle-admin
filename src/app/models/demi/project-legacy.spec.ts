@@ -46,7 +46,7 @@ describe('toLegacyProject', () => {
     expect(project.pins).toEqual([{ _id: 'org2', name: 'Pinned Org' }]);
   });
 
-  it('leaves _id null on a row without an Eagle id', () => {
-    expect(toLegacyProject({ id: '9', name: 'Track only' })._id).toBeNull();
+  it('keys a row without an Eagle id on its DEMI id', () => {
+    expect(toLegacyProject({ id: '9', name: 'Track only' })._id).toBe('9');
   });
 });

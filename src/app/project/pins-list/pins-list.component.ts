@@ -41,7 +41,7 @@ export class PinsListComponent implements OnInit {
   private tableTemplateUtils = inject(TableTemplateUtils);
   public logger = inject(LoggingService);
   public currentProject;
-  /** The URL's `:projId`, Eagle or DEMI id; `currentProject._id` is null for a project with no Eagle id. */
+  /** The URL's `:projId`, Eagle or DEMI id. */
   public projectId: string;
   public tableParams: TableParamsObject = new TableParamsObject();
   public tableData: TableObject;

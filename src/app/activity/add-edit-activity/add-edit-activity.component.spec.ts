@@ -34,6 +34,8 @@ describe('AddEditActivityComponent', () => {
   // Test rows use Eagle field names; DEMI answers with `id`, `eagleId` and the parent's Eagle id in `projectId`.
   const nativeOf = ({ _id, project, ...rest }: any) => ({ id: _id, eagleId: _id, ...rest, projectId: project ?? null });
   const demiProject = (eagleId: string) => ({ id: `track-${eagleId}`, eagleId, name: eagleId, address: 'Kamloops' });
+  // A project with no Eagle id: eagle-api updates cannot name it, so the picker leaves it out.
+  const TRACK_ONLY = { id: '376', name: 'Track only' };
   const docs = (rows: any[]) => of({ rows } as any);
   const documentSearches = () => demiApi.list.calls.allArgs().filter(args => args[0] === 'documents').map(args => args[1]!.filters as any);
   const searchedSources = () => documentSearches().map(filters => filters.documentSource);
@@ -49,7 +51,7 @@ describe('AddEditActivityComponent', () => {
     recentActivityService.save.and.returnValue(of({} as any));
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error']);
     const projectService = jasmine.createSpyObj('ProjectService', ['list', 'getNative']);
-    projectService.list.and.returnValue(of({ rows: [demiProject('p1'), demiProject('p2')] }));
+    projectService.list.and.returnValue(of({ rows: [demiProject('p1'), demiProject('p2'), TRACK_ONLY] }));
     projectService.getNative.and.callFake((id: string) => of(demiProject(id)));
     commentPeriodService = jasmine.createSpyObj('CommentPeriodService', ['listByProject']);
     commentPeriodService.listByProject.and.returnValue(of({ rows: periods }));
@@ -263,6 +265,10 @@ describe('AddEditActivityComponent', () => {
   });
 
   describe('keeping saved project and comment period', () => {
+    it('offers only projects with an Eagle id', () => {
+      expect(create(null).projects.map(project => project._id)).toEqual(['p1', 'p2']);
+    });
+
     it('keeps the stored project of a post type with no project select', () => {
       const component = create('a1', {
         _id: 'a1', type: 'Project Notification Public Comment Period', project: 'pn1', dateAdded: '2026-09-01T00:00:00Z'

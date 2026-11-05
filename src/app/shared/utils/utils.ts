@@ -106,6 +106,11 @@ export function natureBuildMapper(key: string): string {
   return natureObj ? natureObj.nature : key;
 }
 
+/** The type picker's key for a stored project type: Track spaces the hyphen ("Energy - Electricity"), the picker does not. */
+export function projectTypeKey<T extends string | null | undefined>(type: T): T {
+  return (typeof type === 'string' ? type.replace(/\s+-\s+/g, '-') : type) as T;
+}
+
 /** `GET /documents` filters for the application sort screen: application materials and memos at the application milestones, outside amendment phases. */
 export function applicationDocumentFilters(list: Array<any>, project: string): DemiDocumentFilters {
   const types = [
@@ -147,7 +152,7 @@ export function filterCompareWith(filter: any, filterToCompare: any): boolean {
   return !!key && !!filterToCompare && filter[key] === filterToCompare[key];
 }
 
-/** The `:projId` or `:notificationProjectId` route param. Links use it because `project._id` is null on a DEMI-minted project. */
+/** The `:projId` or `:notificationProjectId` route param. */
 export function routeParentId(params: ParamMap): string | null {
   return params.get('projId') ?? params.get('notificationProjectId');
 }

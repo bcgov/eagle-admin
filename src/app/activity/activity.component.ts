@@ -128,7 +128,7 @@ export class ActivityComponent {
     this.projectService.list({ pageSize: DEMI_MAX_PAGE_SIZE })
         .pipe(
           switchMap(page => {
-            this.projects = page.rows.map(toLegacyProject).filter(project => project._id);
+            this.projects = page.rows.filter(row => row.eagleId).map(toLegacyProject);
             this.activityTypes = Constants.activityTypes;
 
             return this.route.params;

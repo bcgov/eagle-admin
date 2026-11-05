@@ -95,11 +95,10 @@ describe('FormTab2018', () => {
   });
 
   it('save on the current Act PUTs through ProjectService.save', () => {
-    spyOn(window, 'alert');
     render(results(row2018())).onSubmit();
 
-    expect(window.alert).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }));
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }), jasmine.arrayContaining(['eaStatusDate', 'dispute']));
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'project-details']);
   });
 
@@ -123,7 +122,6 @@ describe('FormTab2018', () => {
     const MINTED = '0b5e6c1a-3f0e-4a8e-9c35-7d2f1e9a4b10';
 
     function renderAdd() {
-      spyOn(window, 'alert');
       const component = render(null, { adding: true });
       component.myForm = component.buildFormFromData({ ...row2018().legislation_2018 });
       component.proponentId = 'org-1';
@@ -140,7 +138,6 @@ describe('FormTab2018', () => {
 
       component.onSubmit();
 
-      expect(window.alert).not.toHaveBeenCalled();
       expect(projectService.add).toHaveBeenCalledOnceWith(jasmine.objectContaining({ legislationYear: 2018 }), { publish: false });
       expect(toast.error).not.toHaveBeenCalled();
       expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'project-details']);
@@ -255,7 +252,6 @@ describe('FormTab2018', () => {
   });
 
   it('save failure toasts the error text and logs', () => {
-    spyOn(window, 'alert');
     const component = render(results(row2018()));
     const error = new Error('Changes on the 2018 tab cannot be saved: this project is under the 2002 Act.');
     projectService.save.and.returnValue(throwError(() => error));
@@ -267,7 +263,6 @@ describe('FormTab2018', () => {
   });
 
   it('publish failure toasts the error text', async () => {
-    spyOn(window, 'alert');
     const component = render(results(row2018()));
     projectService.publish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));
 
@@ -304,5 +299,12 @@ describe('FormTab2018', () => {
     const component = render(results(row2018({ intake: undefined })));
 
     expect(component.myForm.controls.name.value).toBe('Ajax Mine');
+  });
+
+  it('a Track type with a spaced hyphen selects its picker entry and that entry\'s sub-types', () => {
+    const component = render(results(row2018({ type: 'Energy - Petroleum & Natural Gas' })));
+
+    expect(component.myForm.controls.type.value).toBe('Energy-Petroleum & Natural Gas');
+    expect(component.sectorsSelected).toContain('Natural Gas Processing Plants');
   });
 });

@@ -452,8 +452,7 @@ export class SearchComponent implements OnInit {
       this.documentTableData = new TableObject(SearchDocumentTableRowsComponent, rows, this.tableParams);
     } else {
       const rows = (this.results as DemiProject[]).map(toLegacyProject).map(project => ({
-        // Track-only rows have no Eagle id; the project route also takes the DEMI id.
-        _id: project._id ?? project.demiId,
+        _id: project._id,
         name: project.name,
         proponent: project.proponent,
         type: project.type,

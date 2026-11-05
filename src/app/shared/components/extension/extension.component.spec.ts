@@ -13,7 +13,7 @@ import { ToastService } from 'src/app/services/toast.service';
 
 const EAGLE_ID = '5885109faaecd9001b81314c';
 const DEMI_ID = '7';
-const STORED = { id: 'e1', type: 'Extension', appliedTo: 'Review', start: '2026-01-05T08:00:00.000Z', end: '2026-02-05T08:00:00.000Z' };
+const STORED = { id: 'e1', type: 'Extension', appliedTo: 'Review', start: '2026-01-05T08:00:00.000Z', end: '2026-02-05T08:00:00.000Z', projectId: EAGLE_ID };
 
 describe('ExtensionComponent', () => {
   let fixture: ComponentFixture<ExtensionComponent>;
@@ -24,7 +24,7 @@ describe('ExtensionComponent', () => {
 
   function open(path: string, stored: object | null) {
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
-    toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
+    toast = jasmine.createSpyObj<ToastService>('ToastService', ['error', 'success']);
     modal = jasmine.createSpyObj<NgbModal>('NgbModal', ['open']);
     TestBed.configureTestingModule({
       imports: [ExtensionComponent],
@@ -80,6 +80,7 @@ describe('ExtensionComponent', () => {
     expect(req.request.body.appliedTo).toBe('Review');
     req.flush({ reviewExtensions: [], reviewSuspensions: [] });
 
+    expect(toast.success).toHaveBeenCalledWith('Extension saved.');
     expect(router.navigate).toHaveBeenCalledWith(['/p', EAGLE_ID, 'edit']);
   });
 
@@ -122,6 +123,7 @@ describe('ExtensionComponent', () => {
     req.flush({ reviewExtensions: [], reviewSuspensions: [] });
     fixture.detectChanges();
 
+    expect(toast.success).toHaveBeenCalledWith('Suspension added.');
     expect(router.navigate).toHaveBeenCalledWith(['/p', EAGLE_ID, 'edit']);
     expect(button('button[type="submit"]').disabled).toBe(true);
   });
@@ -142,6 +144,23 @@ describe('ExtensionComponent', () => {
     await confirmed;
     answerRead();
 
-    expect(http.expectOne(`/demi/api/projects/${DEMI_ID}/extensions/e1`).request.method).toBe('DELETE');
+    const req = http.expectOne(`/demi/api/projects/${DEMI_ID}/extensions/e1`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ reviewExtensions: [], reviewSuspensions: [] });
+    expect(toast.success).toHaveBeenCalledWith('Extension deleted.');
+  });
+
+  it('refuses an item stored for another project and clears it', () => {
+    open('edit/edit-extension', { ...STORED, projectId: 'other-project' });
+
+    expect(toast.error).toHaveBeenCalledWith('No extension selected to edit.');
+    expect(TestBed.inject(StorageService).state.extension).toBeNull();
+  });
+
+  it('clears the stored item when the screen is left without Back', () => {
+    open('edit/edit-extension', { ...STORED });
+    fixture.destroy();
+
+    expect(TestBed.inject(StorageService).state.extension).toBeNull();
   });
 });

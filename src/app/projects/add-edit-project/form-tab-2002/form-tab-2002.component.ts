@@ -5,6 +5,7 @@ import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { Observable } from 'rxjs';
 import { ToastService } from 'src/app/services/toast.service';
+import { DEFAULT_CENTROID } from 'src/app/models/demi/project-write';
 
 import { mergeMap } from 'rxjs/operators';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -18,7 +19,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { ContactSelectTableRowsComponent } from 'src/app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
+import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, projectTypeKey } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
 import { projectWriteFailed, refuseTabWrite } from '../edit-tabs';
@@ -298,7 +299,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
 
     if (!formData.centroid) {
-      formData.centroid = [-123.3656, 48.4284];
+      formData.centroid = [...DEFAULT_CENTROID];
     }
 
     if (formData.responsibleEPDId == null || formData.responsibleEPDId === '') {
@@ -324,7 +325,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'name': new FormControl<string | null>(formData.name),
       'proponent': new FormControl<string | null>(formData.proponent),
       'build': new FormControl<string | null>(formData.build),
-      'type': new FormControl<string | null>(formData.type),
+      'type': new FormControl<string | null>(projectTypeKey(formData.type)),
       'currentPhaseName': new FormControl<string | null>(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
       'sector': new FormControl<string | null>(formData.sector),
       'description': new FormControl<string | null>(formData.description),
@@ -353,7 +354,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       'projectLeadId': new FormControl<string | null>(formData.projectLeadObj._id),
       'projectLead': new FormControl<string | null>(formData.projectLeadObj.displayName),
     });
-    this.sectorsSelected = this.PROJECT_SUBTYPES[formData.type];
+    this.sectorsSelected = this.PROJECT_SUBTYPES[projectTypeKey(formData.type)];
     return theForm;
   }
 
@@ -440,58 +441,58 @@ export class FormTab2002Component implements OnInit, OnDestroy {
 
   public validateForm() {
     if (this.myForm.controls.name.value === '' || this.myForm.controls.name.value == null) {
-      alert('Name cannot be empty.');
+      this.toastService.error('Name cannot be empty.');
       return false;
     } else if (this.proponentId === '') {
-      alert('Proponent cannot be empty.');
+      this.toastService.error('Proponent cannot be empty.');
       return false;
     } else if (this.myForm.controls.build.value === '') {
-      alert('You must select a project nature.');
+      this.toastService.error('You must select a project nature.');
       return false;
     } else if (this.myForm.controls.type.value === '') {
-      alert('You must select a type.');
+      this.toastService.error('You must select a type.');
       return false;
     } else if (this.myForm.controls.currentPhaseName.value === '') {
-      alert('You must select a project phase.');
+      this.toastService.error('You must select a project phase.');
       return false;
     } else if (this.myForm.controls.sector.value === '') {
-      alert('You must select a sub-type.');
+      this.toastService.error('You must select a sub-type.');
       return false;
     } else if (this.myForm.controls.description.value === '') {
-      alert('Description cannot be empty.');
+      this.toastService.error('Description cannot be empty.');
       return false;
     } else if (this.myForm.controls.region.value === '') {
-      alert('You must select a region.');
+      this.toastService.error('You must select a region.');
       return false;
     } else if (this.myForm.controls.location.value === '') {
-      alert('Location cannot be empty.');
+      this.toastService.error('Location cannot be empty.');
       return false;
     } else if (this.myForm.controls.lon.value == null) {
-      alert('Longitude cannot be empty.');
+      this.toastService.error('Longitude cannot be empty.');
       return false;
     } else if (this.myForm.controls.lat.value == null) {
-      alert('Latitude cannot be empty.');
+      this.toastService.error('Latitude cannot be empty.');
       return false;
     } else if (this.myForm.controls.lat.value >= 60.01 || this.myForm.controls.lat.value <= 48.20) {
-      alert('Latitude must be between 48.20 and 60.01');
+      this.toastService.error('Latitude must be between 48.20 and 60.01');
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
-      alert('Longitude must be between -114.01 and -139.06');
+      this.toastService.error('Longitude must be between -114.01 and -139.06');
       return false;
     } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
-      alert('You must select an EPD');
+      this.toastService.error('You must select an EPD');
       return false;
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
-      alert('You must select a project lead');
+      this.toastService.error('You must select a project lead');
       return false;
     } else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
-      alert('You must select an EA Decision');
+      this.toastService.error('You must select an EA Decision');
       return false;
     } else if (this.isRegulatoryTransfer() && (!this.myForm.controls.applicableRegulation.value || this.myForm.controls.applicableRegulation.value === '')) {
-      alert('You must select an Applicable Regulation');
+      this.toastService.error('You must select an Applicable Regulation');
       return false;
     } else if (this.isAdministrativeClosure() && (!this.myForm.controls.decisionDate.value || this.myForm.controls.decisionDate.value === '')) {
-      alert('You must enter an EA Decision Date for Administrative Closure');
+      this.toastService.error('You must enter an EA Decision Date for Administrative Closure');
       return false;
     } else {
       return true;
@@ -603,19 +604,20 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.toastService.error('New projects are created on the 2018 Act tab.');
     } else {
       // need to add on legislation year so that we can know where to put it on the root object
+      const fields = this.convertFormToProject(this.myForm);
       const project = (new Project({
-        ...this.convertFormToProject(this.myForm),
+        ...fields,
         legislationYear: this.legislationYear,
         _id: this.projectId
       }));
       if (putFunction) {
-          this.projectService.save(project)
+          this.projectService.save(project, Object.keys(fields))
             .pipe(mergeMap(() => putFunction(project)))
             .subscribe(
               ...putSubscribe
             );
       } else {
-          this.projectService.save(project)
+          this.projectService.save(project, Object.keys(fields))
             .subscribe(
               ...putSubscribe
             );

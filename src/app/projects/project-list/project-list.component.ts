@@ -379,8 +379,7 @@ export class ProjectListComponent implements OnInit {
     if (this.projects && this.projects.length > 0) {
       this.projects.forEach(project => {
         projectList.push({
-          // Track-only rows have no Eagle id; the project route also takes the DEMI id.
-          _id: project._id ?? project.demiId,
+          _id: project._id,
           name: project.name,
           proponent: project.proponent,
           type: project.type,
