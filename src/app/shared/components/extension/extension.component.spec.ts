@@ -22,7 +22,7 @@ describe('ExtensionComponent', () => {
   let toast: jasmine.SpyObj<ToastService>;
   let modal: jasmine.SpyObj<NgbModal>;
 
-  beforeEach(() => {
+  function open(path: string, stored: object | null) {
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     toast = jasmine.createSpyObj<ToastService>('ToastService', ['error']);
     modal = jasmine.createSpyObj<NgbModal>('NgbModal', ['open']);
@@ -41,21 +41,27 @@ describe('ExtensionComponent', () => {
           provide: ActivatedRoute,
           useValue: {
             parent: { snapshot: { paramMap: convertToParamMap({ projId: EAGLE_ID }) } },
-            snapshot: { routeConfig: { path: 'edit/edit-extension' } }
+            snapshot: { routeConfig: { path } }
           }
         }
       ]
     });
-    TestBed.inject(StorageService).state.extension = { ...STORED };
+    TestBed.inject(StorageService).state.extension = stored;
     http = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(ExtensionComponent);
     fixture.detectChanges();
-  });
+  }
 
   afterEach(() => http.verify());
 
-  function clickSave() {
-    fixture.nativeElement.querySelector('button[type="submit"]').click();
+  function button(selector: string): HTMLButtonElement {
+    return fixture.nativeElement.querySelector(selector);
+  }
+
+  function type(id: string, value: string) {
+    const input: HTMLInputElement = fixture.nativeElement.querySelector(`input[name="${id}"]`);
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
   }
 
   // The write goes to the DEMI id from a fresh read, not to the route's Eagle id.
@@ -64,33 +70,66 @@ describe('ExtensionComponent', () => {
   }
 
   it('edit PUTs projects/<demiId>/extensions/<id> and returns to the project edit form', () => {
-    clickSave();
+    open('edit/edit-extension', { ...STORED });
+    button('button[type="submit"]').click();
     answerRead();
 
     const req = http.expectOne(`/demi/api/projects/${DEMI_ID}/extensions/e1`);
     expect(req.request.method).toBe('PUT');
+    expect(req.request.body.type).toBe('Extension');
     expect(req.request.body.appliedTo).toBe('Review');
     req.flush({ reviewExtensions: [], reviewSuspensions: [] });
 
     expect(router.navigate).toHaveBeenCalledWith(['/p', EAGLE_ID, 'edit']);
   });
 
-  it('a refused edit shows DEMI\'s message and stays on the form', () => {
-    clickSave();
+  it('a refused edit shows DEMI\'s message and enables the buttons again', () => {
+    open('edit/edit-extension', { ...STORED });
+    button('button[type="submit"]').click();
+    fixture.detectChanges();
+    expect(button('button[type="submit"]').disabled).toBe(true);
+    expect(button('button.btn-danger').disabled).toBe(true);
     answerRead();
 
     http.expectOne(`/demi/api/projects/${DEMI_ID}/extensions/e1`)
       .flush({ error: 'Invalid extension', fields: { end: 'must be after start' } }, { status: 400, statusText: 'Bad Request' });
+    fixture.detectChanges();
 
     expect(toast.error).toHaveBeenCalledWith('Failed to edit extension. Invalid extension end: must be after start');
+    expect(button('button[type="submit"]').disabled).toBe(false);
+    expect(button('button.btn-danger').disabled).toBe(false);
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
+  it('add ignores a leftover stored item and POSTs a suspension', () => {
+    open('edit/add-suspension', { ...STORED });
+    expect(button('button.btn-danger')).toBeNull();
+    type('appliedTo', 'Application');
+    type('start', '2026-03-01');
+    type('end', '2026-04-01');
+    fixture.detectChanges();
+    button('button[type="submit"]').click();
+    answerRead();
+
+    const req = http.expectOne(`/demi/api/projects/${DEMI_ID}/extensions`);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body.type).toBe('Suspension');
+    expect(req.request.body.appliedTo).toBe('Application');
+  });
+
+  it('edit with no stored item sends nothing and goes back', () => {
+    open('edit/edit-suspension', null);
+
+    expect(toast.error).toHaveBeenCalledWith('No suspension selected to edit.');
+    expect(router.navigate).toHaveBeenCalledWith(['/p', EAGLE_ID, 'edit']);
+  });
+
   it('confirmed delete DELETEs the stored item by id', async () => {
+    open('edit/edit-extension', { ...STORED });
     const confirmed = Promise.resolve(true);
     modal.open.and.returnValue({ componentInstance: {}, result: confirmed } as ReturnType<NgbModal['open']>);
 
-    fixture.nativeElement.querySelector('button.btn-danger').click();
+    button('button.btn-danger').click();
     await confirmed;
     answerRead();
 

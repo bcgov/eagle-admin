@@ -4,11 +4,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, from } from 'rxjs';
+import { Observable, finalize, from } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ProjectExtensionLists, ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
-import { NavigationStackUtils } from '../../utils/navigation-stack-utils';
 import { convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from '../../utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -25,9 +24,8 @@ import { ToastService } from 'src/app/services/toast.service';
 ]
 })
 export class ExtensionComponent implements OnInit {
-  protected router = inject(Router);
+  private router = inject(Router);
   private route = inject(ActivatedRoute);
-  protected navigationStackUtils = inject(NavigationStackUtils);
   private modalService = inject(NgbModal);
   api = inject(ProjectService);
   private storageService = inject(StorageService);
@@ -35,12 +33,10 @@ export class ExtensionComponent implements OnInit {
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
-  public loading = false;
   public saving = signal(false);
   private projectId: string;
   public extensionType = 'Extension';
   public extensionOperation = 'Add';
-  public navigationObject;
   public extensionForm: FormGroup<{
     appliedTo: FormControl<string | null>;
     start: FormControl<unknown>;
@@ -49,27 +45,24 @@ export class ExtensionComponent implements OnInit {
   public isEditing = false;
 
   ngOnInit() {
-    this.navigationObject = this.navigationStackUtils.getLastNavigationObject();
     this.projectId = this.route.parent.snapshot.paramMap.get('projId');
+    const [, operation, type] = /^edit\/(add|edit)-(extension|suspension)$/.exec(this.route.snapshot.routeConfig?.path ?? '') ?? [];
+    this.extensionType = type === 'suspension' ? 'Suspension' : 'Extension';
+    this.extensionOperation = operation === 'edit' ? 'Edit' : 'Add';
+    this.isEditing = operation === 'edit';
 
-    const path = this.route.snapshot.routeConfig?.path ?? '';
-    this.extensionType = path.includes('-extension') ? 'Extension' : 'Suspension';
-    this.extensionOperation = path.includes('add-') ? 'Add' : 'Edit';
+    const ext = this.isEditing ? this.storageService.state.extension : null;
+    this.extensionForm = new FormGroup({
+      'appliedTo': new FormControl<string | null>(ext?.appliedTo ?? null),
+      'start': new FormControl<unknown>(ext ? convertJSDateToNGBDate(new Date(ext.start)) : null),
+      'end': new FormControl<unknown>(ext ? convertJSDateToNGBDate(new Date(ext.end)) : null)
+    });
 
-    if (this.storageService.state.extension) {
-      this.isEditing = true;
-      const ext = this.storageService.state.extension;
-      this.extensionForm = new FormGroup({
-        'appliedTo': new FormControl<string | null>(ext.appliedTo),
-        'start': new FormControl<unknown>(convertJSDateToNGBDate(new Date(ext.start))),
-        'end': new FormControl<unknown>(convertJSDateToNGBDate(new Date(ext.end)))
-      });
-    } else {
-      this.extensionForm = new FormGroup({
-        'appliedTo': new FormControl<string | null>(null),
-        'start': new FormControl<unknown>(null),
-        'end': new FormControl<unknown>(null)
-      });
+    if (!operation) {
+      this.goBack();
+    } else if (this.isEditing && !ext) {
+      this.toast.error(`No ${this.kind()} selected to edit.`);
+      this.goBack();
     }
   }
 
@@ -106,7 +99,7 @@ export class ExtensionComponent implements OnInit {
       end: convertFormGroupNGBDateToJSDate(this.extensionForm.value.end)
     };
 
-    if (this.storageService.state.extension) {
+    if (this.isEditing) {
       this.write('edit', this.api.editExtension(this.project(), { new: newExtension, old: this.storageService.state.extension }));
     } else {
       this.write('add', this.api.addExtension(this.project(), newExtension));
@@ -115,8 +108,11 @@ export class ExtensionComponent implements OnInit {
 
   goBack() {
     this.storageService.state.extension = null;
-    this.navigationStackUtils.popNavigationStack();
     this.router.navigate(['/p', this.projectId, 'edit']);
+  }
+
+  private kind() {
+    return this.extensionType.toLowerCase();
   }
 
   // The route id is the DEMI or Eagle id; the service reads the row fresh and writes on its DEMI id.
@@ -126,12 +122,11 @@ export class ExtensionComponent implements OnInit {
 
   private write(action: 'add' | 'edit' | 'delete', request: Observable<ProjectExtensionLists>) {
     this.saving.set(true);
-    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    request.pipe(finalize(() => this.saving.set(false)), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.goBack(),
       error: error => {
-        this.saving.set(false);
-        this.logger.error(`${action} extension failed`, 'ExtensionComponent', error);
-        this.toast.error(`Failed to ${action} extension. ${error.message}`);
+        this.logger.error(`${action} ${this.kind()} failed`, 'ExtensionComponent', error);
+        this.toast.error(`Failed to ${action} ${this.kind()}. ${error.message}`);
       }
     });
   }
