@@ -110,7 +110,8 @@ export class AddEditProjectComponent implements OnInit {
 
   // The bare edit URL shows no tab, and the bare add URL redirects to form-2002: open `target` then, or when the open tab is hidden.
   private showVisibleTab(target: IAddEditTab | undefined) {
-    const active = this.route.firstChild?.snapshot.url[0]?.path;
+    // A child route still activating has no `snapshot` yet; the snapshot tree always has it.
+    const active = this.route.snapshot.firstChild?.url[0]?.path;
     if (!target || (active && this.tabLinks.some(tab => tab.link === active))) {
       return;
     }

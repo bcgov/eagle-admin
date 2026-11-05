@@ -25,7 +25,7 @@ describe('AddEditProjectComponent', () => {
   let navigate: jasmine.Spy;
 
   function create(path: string, data: object | Observable<object>, tab?: string) {
-    route = <typeof route>{ url: of([{ path }]), data: isObservable(data) ? data : of(data), snapshot: { paramMap: convertToParamMap(path === 'edit' ? { projId: 'demi-7' } : {}) }, firstChild: tab ? { snapshot: { url: [{ path: tab }] } } : null };
+    route = <typeof route>{ url: of([{ path }]), data: isObservable(data) ? data : of(data), snapshot: { paramMap: convertToParamMap(path === 'edit' ? { projId: 'demi-7' } : {}), firstChild: tab ? { url: [{ path: tab }] } : null } };
     TestBed.configureTestingModule({
       imports: [AddEditProjectComponent],
       providers: [
