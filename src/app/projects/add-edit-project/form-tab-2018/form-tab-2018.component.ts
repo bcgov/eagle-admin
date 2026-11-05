@@ -20,7 +20,7 @@ import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, conver
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectCreateFailed, projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
+import { projectCreateFailed, projectWriteFailed, refuseTabWrite } from '../edit-tabs';
 
 
 @Component({
