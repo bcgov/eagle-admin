@@ -7,7 +7,7 @@ import { ConfigService } from './config.service';
 import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
-import { ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
+import { ProjectCreatedPartlyError, ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
 import { ToastService } from './toast.service';
 import { Project } from '../models/project';
 import { DemiProject } from '../models/demi/project';
@@ -284,6 +284,106 @@ describe('ProjectService', () => {
 
       http.expectOne('/demi/api/projects/7').flush(nativeRow());
       http.expectOne('/demi/api/projects/7/level').flush(nativeRow());
+    });
+
+    describe('create', () => {
+      const MINTED = '0b5e6c1a-3f0e-4a8e-9c35-7d2f1e9a4b10';
+      const newProject = () => formProject({
+        _id: undefined, proponent: { _id: 'org1', name: 'Teck Coal' }, sector: 'Mining', region: 'Thompson-Nicola',
+        description: 'Line one\nline two', currentPhaseName: 'phase1', legislationYear: 2018
+      });
+
+      const PROJECT_URL = `/demi/api/projects/${MINTED}`;
+      const LEVEL_URL = `${PROJECT_URL}/level`;
+
+      function answerCreate() {
+        const post = http.expectOne('/demi/api/projects');
+        post.flush({ id: MINTED, eagleId: null, name: post.request.body.name });
+        return post;
+      }
+
+      const refuse = (url: string, error: string) =>
+        http.expectOne(url).flush({ error }, { status: 400, statusText: 'Bad Request' });
+
+      it('add POSTs without trackProjectId and with centroid {type: \'Point\', coordinates: [lon, lat]}, then sets level 2, then PUTs the rest with legislationYear to the returned id', async () => {
+        const created = firstValueFrom(service.add(newProject()));
+
+        const post = answerCreate();
+        expect(post.request.method).toBe('POST');
+        expect(post.request.body).toEqual({
+          name: 'Ashcroft Ranch Landfill', description: 'Line one\\nline two', sector: 'Mining', region: 'Thompson-Nicola',
+          projectState: 'Pre-Application', centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+        });
+        http.expectNone(PROJECT_URL);
+        const level = http.expectOne(LEVEL_URL);
+        expect(level.request.body).toEqual({ level: 2 });
+        level.flush({ id: MINTED, eagleId: null });
+        const put = http.expectOne(PROJECT_URL);
+        expect(put.request.method).toBe('PUT');
+        expect(put.request.body).toEqual(jasmine.objectContaining({
+          legislationYear: 2018, projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', proponentName: 'Teck Coal'
+        }));
+        put.flush({ id: MINTED });
+
+        expect((await created).demiId).toBe(MINTED);
+      });
+
+      it('add-and-publish sets level 4 with confirm and reason after the PUT', () => {
+        service.add(newProject(), { publish: true }).subscribe();
+        answerCreate();
+        http.expectOne(LEVEL_URL).flush({ id: MINTED });
+        http.expectNone(LEVEL_URL);
+        http.expectOne(PROJECT_URL).flush({ id: MINTED });
+
+        expect(http.expectOne(LEVEL_URL).request.body)
+          .toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin', legislationYear: 2018 });
+      });
+
+      it('a refused POST fails with DEMI\'s message and sends nothing more', async () => {
+        const created = firstValueFrom(service.add(newProject(), { publish: true }));
+        refuse('/demi/api/projects', 'Missing required fields: name, centroid');
+
+        const error = await created.catch(e => e);
+        expect(error instanceof ProjectCreatedPartlyError).toBeFalse();
+        expect(error.message).toBe('Missing required fields: name, centroid');
+      });
+
+      describe('a step after the POST fails with the new id and names that step', () => {
+        async function failAt(failing: 'opening' | 'saving' | 'publishing') {
+          const created = firstValueFrom(service.add(newProject(), { publish: true }));
+          answerCreate();
+          for (const [step, url] of [['opening', LEVEL_URL], ['saving', PROJECT_URL], ['publishing', LEVEL_URL]]) {
+            if (step === failing) {
+              refuse(url, 'Unknown field: foo');
+              break;
+            }
+            http.expectOne(url).flush({ id: MINTED });
+          }
+          const error = await created.catch(e => e);
+          expect(error instanceof ProjectCreatedPartlyError).toBeTrue();
+          expect(error.id).toBe(MINTED);
+          expect(error.cause.message).toBe('Unknown field: foo');
+          return error as ProjectCreatedPartlyError;
+        }
+
+        it('level 2', async () => {
+          const error = await failAt('opening');
+          expect(error.message).toBe('Project created, but it could not be opened to staff: Unknown field: foo');
+          expect(error.saved).toBeFalse();
+        });
+
+        it('the PUT', async () => {
+          const error = await failAt('saving');
+          expect(error.message).toBe('Project created, but not every field was saved: Unknown field: foo');
+          expect(error.saved).toBeFalse();
+        });
+
+        it('publishing after the PUT', async () => {
+          const error = await failAt('publishing');
+          expect(error.message).toBe('Project created and saved, but not published: Unknown field: foo');
+          expect(error.saved).toBeTrue();
+        });
+      });
     });
 
     describe('extensions', () => {

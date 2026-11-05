@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -20,7 +20,7 @@ import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, conver
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
+import { projectCreateFailed, projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
 
 
 @Component({
@@ -42,6 +42,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private logger = inject(LoggingService);
   private writeFailed = projectWriteFailed(this.logger, this.toastService, 'FormTab2018Component');
+  private createFailed = projectCreateFailed(this.logger, this.toastService, this.router, 'FormTab2018Component');
+  /** True while a create is in flight, so a second click cannot make a second project. */
+  public creating = signal(false);
 
   public myForm: FormGroup<{
     name: FormControl<string | null>;
@@ -612,29 +615,12 @@ export class FormTab2018Component implements OnInit, OnDestroy {
           (confirmation: boolean) => {
             if (confirmation) {
               this.saveProject(
-                (project: Project, apiRes: Project): Observable<Project> => {
-                  this.clearStorageService();
-                  project = { ...project, _id: apiRes._id };
-                  return this.projectService.publish(project);
-                },
+                true,
                 (project: Project): Observable<Project> => {
                   this.clearStorageService();
                   return this.projectService.publish(project);
 
                 },
-                [
-                  (data) => {
-                    this.projectId = data._id;
-                  },
-                  null,
-                  () => {
-                    this.published = true;
-                    this.loading = false;
-                    this.toastService.success('This project was created and published successfuly.');
-                    this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
-                    this.router.navigate(['/p', this.projectId, 'project-details']);
-                  }
-                ],
                 [
                   null,
                   this.writeFailed('publish'),
@@ -642,7 +628,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
                     this.published = true;
                     this.loading = false;
                     this.router.navigated = false;
-                    this.toastService.success('This project was edited and published successfuly.');
+                    this.toastService.success('This project was edited and published successfully.');
                     this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }
@@ -653,35 +639,13 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         );
   }
 
-  saveProject(postFunction: (_: Project, apiRes: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
-    postSubscribe: ((_: any) => void)[], putSubscribe: ((_: any) => void)[]): void {
+  saveProject(publish: boolean, putFunction: (_: Project) => Observable<Project>, putSubscribe: ((_: any) => void)[]): void {
 
     if (!this.validateForm()) {
       return;
     }
     if (!this.pageIsEditing) {
-      // Make sure to add the legislationYear to the project
-      const project = new Project(
-        {
-          ...this.convertFormToProject(this.myForm),
-          legislationYear: this.legislationYear
-        }
-      );
-      if (postFunction) {
-          this.projectService.add(project)
-            .pipe(
-              switchMap(apiRes => postFunction(project, apiRes)),
-            )
-            .subscribe(
-              ...postSubscribe
-            );
-      } else {
-          this.projectService.add(project)
-            .subscribe(
-              ...postSubscribe
-            );
-      }
-
+      this.create(new Project({ ...this.convertFormToProject(this.myForm), legislationYear: this.legislationYear }), publish);
     } else {
       // need to add on legislation year so that we can know where to put it on the root object
       const project = (new Project({
@@ -713,20 +677,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       return;
     }
     this.saveProject(
+      false,
       null,
-      null,
-      [
-        (data) => {
-          this.projectId = data._id;
-        },
-        null,
-        () => {
-          this.clearStorageService();
-          this.loading = false;
-          this.toastService.success('This project was created successfuly.');
-          this.router.navigate(['/p', this.projectId, 'project-details']);
-        }
-      ],
       [
         null,
         this.writeFailed('save'),
@@ -741,6 +693,34 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     );
   }
 
+
+  private create(project: Project, publish: boolean): void {
+    // A second confirm dialog can still be open when the first one starts the create.
+    if (this.creating()) {
+      return;
+    }
+    this.creating.set(true);
+    this.projectService.add(project, { publish }).subscribe({
+      next: created => {
+        this.projectId = created.demiId;
+        this.clearStorageService();
+        if (publish) {
+          this.published = true;
+          this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
+        }
+        this.toastService.success(publish ? 'This project was created and published successfully.' : 'This project was created successfully.');
+        this.router.navigate(['/p', created.demiId, 'project-details']);
+      },
+      error: (error: Error) => {
+        const outcome = this.createFailed(publish ? 'publish' : 'save')(error);
+        if (outcome === 'created') {
+          this.clearStorageService();
+        } else if (outcome === 'refused') {
+          this.creating.set(false);
+        }
+      }
+    });
+  }
 
   public removeSelectedOrganization() {
     this.storageService.state.selectedOrganization2018 = null;

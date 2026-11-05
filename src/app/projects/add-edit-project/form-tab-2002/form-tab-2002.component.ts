@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy} from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -573,25 +573,8 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                 (project: Project): Observable<Project> => {
                   this.clearStorageService();
                   return this.projectService.publish(project);
-                },
-                (project: Project): Observable<Project> => {
-                  this.clearStorageService();
-                  return this.projectService.publish(project);
 
                 },
-                [
-                  (data) => {
-                    this.projectId = data._id;
-                  },
-                  null,
-                  () => {
-                    this.published = true;
-                    this.loading = false;
-                    this.toastService.success('This project was created and published successfuly.');
-                    this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
-                    this.router.navigate(['/p', this.projectId, 'project-details']);
-                  }
-                ],
                 [
                   null,
                   this.writeFailed('publish'),
@@ -599,7 +582,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                     this.published = true;
                     this.loading = false;
                     this.router.navigated = false;
-                    this.toastService.success('This project was edited and published successfuly.');
+                    this.toastService.success('This project was edited and published successfully.');
                     this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }
@@ -610,26 +593,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         );
   }
 
-  saveProject(postFunction: (_: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
-    postSubscribe: ((_: any) => void)[], putSubscribe: ((_: any) => void)[]): void {
+  saveProject(putFunction: (_: Project) => Observable<Project>, putSubscribe: ((_: any) => void)[]): void {
 
     if (!this.validateForm()) {
       return;
     }
+    // The add page always opens the 2018 tab, which creates; this tab only edits.
     if (!this.pageIsEditing) {
-      const project = new Project(
-        this.convertFormToProject(this.myForm)
-      );
-
-      if (postFunction) {
-        // currently ignored, doesn't match 2018 save process?
-        // why are these different at all, why not use a controller for both?
-      }
-
-        this.projectService.add(project)
-          .subscribe(
-            ...postSubscribe
-          );
+      this.toastService.error('New projects are created on the 2018 Act tab.');
     } else {
       // need to add on legislation year so that we can know where to put it on the root object
       const project = (new Project({
@@ -658,19 +629,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
     this.saveProject(
       null,
-      null,
-      [
-        (data) => {
-          this.projectId = data._id;
-        },
-        null,
-        () => {
-          this.clearStorageService();
-          this.loading = false;
-          this.toastService.success('This project was created successfuly.');
-          this.router.navigate(['/p', this.projectId, 'project-details']);
-        }
-      ],
       [
         null,
         this.writeFailed('save'),

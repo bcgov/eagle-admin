@@ -7,6 +7,7 @@ import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ProjectCreatedPartlyError } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
@@ -43,6 +44,33 @@ export function projectWriteFailed(logger: LoggingService, toast: ToastService, 
   return (action: 'save' | 'publish' | 'unpublish') => (error: Error) => {
     logger.error(`Failed to ${action} project`, source, error);
     toast.error(`Failed to ${action} project. ${error.message}`);
+  };
+}
+
+export const CREATE_UNKNOWN_MESSAGE = 'The create did not finish, so the project may have been created. Check the project list before you try again.';
+export const REENTER_FIELDS_MESSAGE = 'Enter the remaining fields again on the edit page.';
+
+/**
+ * A tab's handler for a failed create. `refused`: nothing was made. `created`: it left for the new project's edit page.
+ * `unknown`: no answer or a 5xx came back, so the create may have gone through.
+ */
+export function projectCreateFailed(logger: LoggingService, toast: ToastService, router: Router, source: string) {
+  const writeFailed = projectWriteFailed(logger, toast, source);
+  return (action: 'save' | 'publish') => (error: Error & { status?: number }): 'refused' | 'created' | 'unknown' => {
+    if (error instanceof ProjectCreatedPartlyError) {
+      logger.error('Project created partly', source, error);
+      toast.error(error.saved ? error.message : `${error.message.replace(/\.$/, '')}. ${REENTER_FIELDS_MESSAGE}`);
+      router.navigate(['/p', error.id, 'edit']);
+      return 'created';
+    }
+    // Status 0 is no answer at all; DEMI can write the row and still answer 5xx.
+    if (error.status === 0 || error.status >= 500) {
+      logger.error('Project create may have gone through', source, error);
+      toast.error(CREATE_UNKNOWN_MESSAGE);
+      return 'unknown';
+    }
+    writeFailed(action)(error);
+    return 'refused';
   };
 }
 

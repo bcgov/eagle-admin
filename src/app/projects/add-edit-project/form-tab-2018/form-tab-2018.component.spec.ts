@@ -2,15 +2,17 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { FormTab2018Component } from './form-tab-2018.component';
 import { ConfigService } from 'src/app/services/config.service';
-import { ProjectService } from 'src/app/services/project.service';
+import { ProjectCreatedPartlyError, ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
+import { ProjectPublishState } from 'src/app/models/project';
+import { CREATE_UNKNOWN_MESSAGE } from '../add-edit-project.component';
 
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
@@ -117,18 +119,124 @@ describe('FormTab2018', () => {
     expect(projectService.publish).not.toHaveBeenCalled();
   });
 
-  it('save on the add route creates the project', () => {
-    spyOn(window, 'alert');
-    const component = render(null, { adding: true });
-    projectService.add.and.returnValue(of({ _id: 'new-1' } as any));
-    component.myForm = component.buildFormFromData({ ...row2018().legislation_2018 });
-    component.proponentId = 'org-1';
+  describe('on the add route', () => {
+    const MINTED = '0b5e6c1a-3f0e-4a8e-9c35-7d2f1e9a4b10';
 
-    component.onSubmit();
+    function renderAdd() {
+      spyOn(window, 'alert');
+      const component = render(null, { adding: true });
+      component.myForm = component.buildFormFromData({ ...row2018().legislation_2018 });
+      component.proponentId = 'org-1';
+      fixture.detectChanges();
+      return component;
+    }
 
-    expect(window.alert).not.toHaveBeenCalled();
-    expect(projectService.add).toHaveBeenCalledTimes(1);
-    expect(toast.error).not.toHaveBeenCalled();
+    const saveButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button[type="submit"]');
+    const publishButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button.btn-publish');
+
+    it('save creates the project and opens it by the id DEMI returns', () => {
+      const component = renderAdd();
+      projectService.add.and.returnValue(of({ _id: null, demiId: MINTED } as any));
+
+      component.onSubmit();
+
+      expect(window.alert).not.toHaveBeenCalled();
+      expect(projectService.add).toHaveBeenCalledOnceWith(jasmine.objectContaining({ legislationYear: 2018 }), { publish: false });
+      expect(toast.error).not.toHaveBeenCalled();
+      expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'project-details']);
+    });
+
+    it('save and publish creates and publishes in one call', async () => {
+      const component = renderAdd();
+      projectService.add.and.returnValue(of({ _id: null, demiId: MINTED } as any));
+
+      component.onPublish();
+      await fixture.whenStable();
+
+      expect(projectService.add).toHaveBeenCalledOnceWith(jasmine.anything(), { publish: true });
+      expect(projectService.publish).not.toHaveBeenCalled();
+      expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'project-details']);
+      expect(TestBed.inject(StorageService).state['projectPublishState_' + MINTED]).toBe(ProjectPublishState.published2018);
+    });
+
+    it('Save & Publish stays disabled in flight, and a second confirm does not create twice', async () => {
+      const component = renderAdd();
+      projectService.add.and.returnValue(new Subject<any>());
+
+      component.onPublish();
+      component.onPublish();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(publishButton().disabled).toBeTrue();
+      expect(projectService.add).toHaveBeenCalledTimes(1);
+    });
+
+    it('Save stays disabled while the create is in flight, and a refused create toasts, logs and enables it again', () => {
+      const component = renderAdd();
+      const answer = new Subject<any>();
+      projectService.add.and.returnValue(answer);
+
+      component.onSubmit();
+      component.onSubmit();
+      fixture.detectChanges();
+      expect(saveButton().disabled).toBeTrue();
+      expect(projectService.add).toHaveBeenCalledTimes(1);
+
+      const error = new Error('Missing required fields: name, centroid');
+      answer.error(error);
+      fixture.detectChanges();
+
+      expect(toast.error).toHaveBeenCalledWith(`Failed to save project. ${error.message}`);
+      expect(logger.error).toHaveBeenCalledWith('Failed to save project', 'FormTab2018Component', error);
+      expect(saveButton().disabled).toBeFalse();
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('a failed PUT after create toasts and opens the edit page', () => {
+      const component = renderAdd();
+      const error = new ProjectCreatedPartlyError(MINTED, 'Project created, but not every field was saved', new Error('Unknown field: foo.'), false);
+      projectService.add.and.returnValue(throwError(() => error));
+
+      component.onSubmit();
+      fixture.detectChanges();
+
+      expect(toast.error).toHaveBeenCalledWith(
+        'Project created, but not every field was saved: Unknown field: foo. Enter the remaining fields again on the edit page.'
+      );
+      expect(logger.error).toHaveBeenCalledWith('Project created partly', 'FormTab2018Component', error);
+      expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'edit']);
+      expect(saveButton().disabled).toBeTrue();
+    });
+
+    it('a failed publish after the fields were saved toasts DEMI\'s message alone', () => {
+      const component = renderAdd();
+      const error = new ProjectCreatedPartlyError(MINTED, 'Project created and saved, but not published', new Error('Forbidden'), true);
+      projectService.add.and.returnValue(throwError(() => error));
+
+      component.onPublish();
+
+      return fixture.whenStable().then(() => {
+        expect(toast.error).toHaveBeenCalledOnceWith('Project created and saved, but not published: Forbidden');
+        expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'edit']);
+      });
+    });
+
+    for (const status of [0, 500]) {
+      it(`a create answered with status ${status} says the project may exist and keeps Save disabled`, () => {
+        const component = renderAdd();
+        const error = Object.assign(new Error('Server error'), { status });
+        projectService.add.and.returnValue(throwError(() => error));
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        expect(toast.error).toHaveBeenCalledOnceWith(CREATE_UNKNOWN_MESSAGE);
+        expect(logger.error).toHaveBeenCalledWith('Project create may have gone through', 'FormTab2018Component', error);
+        expect(saveButton().disabled).toBeTrue();
+        expect(navigate).not.toHaveBeenCalled();
+      });
+    }
   });
 
   it('link-contact on an edit route with no loaded project toasts and does not navigate', () => {

@@ -41,6 +41,10 @@ const PUBLISH = { level: 4, confirm: true, reason: 'Published in EPIC admin' };
 // Level 2 is staff only, where eagle-api's unpublish left a project.
 const UNPUBLISHED_LEVEL = 2;
 
+const NOT_OPENED = 'Project created, but it could not be opened to staff';
+const NOT_SAVED = 'Project created, but not every field was saved';
+const NOT_PUBLISHED = 'Project created and saved, but not published';
+
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
   private api = inject(ApiService);
@@ -114,14 +118,29 @@ export class ProjectService {
     return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
   }
 
-  // create new project
-  add(item: Project): Observable<Project> {
-    delete item._id;
-    if (item.description) {
-      item.description = item.description.replace(/\n/g, '\\n');
-    }
-    return this.api.post<Project>('project/', item).pipe(
-      catchError(error => this.api.handleError(error))
+  /**
+   * Creates the project in DEMI, which makes its id, sets level 2, writes the form's other fields, then publishes when
+   * `publish`. A step after the create fails with `ProjectCreatedPartlyError`, which names the new id.
+   */
+  add(project: Project, { publish = false } = {}): Observable<LegacyProject> {
+    const { name, description, sector, region, projectState, centroid } =
+      toDemiProjectWrite(project, this.configService.lists, {} as DemiProject);
+    return this.demiApi.create<DemiProject>('projects', { name, description, sector, region, projectState, centroid }).pipe(
+      mergeMap(row => {
+        const step = (request: Observable<DemiProject>, failure: string, saved = false) => request.pipe(
+          catchError(error => throwError(() => new ProjectCreatedPartlyError(row.id, failure, error, saved)))
+        );
+        // Level 2 first, so a failed PUT leaves an unpublished row that a normal save repairs.
+        const written = step(this.demiApi.action<DemiProject>('projects', row.id, 'level', { level: UNPUBLISHED_LEVEL }), NOT_OPENED).pipe(
+          mergeMap(() => step(this.writeForm(project, row), NOT_SAVED))
+        );
+        // Publishing after the PUT, so DEMI checks the year the PUT stored.
+        return publish
+          ? written.pipe(mergeMap(() => step(this.demiApi.action<DemiProject>('projects', row.id, 'level',
+            publishBody(project.legislationYear)), NOT_PUBLISHED, true)))
+          : written;
+      }),
+      map(toLegacyProject)
     );
   }
 
@@ -135,17 +154,13 @@ export class ProjectService {
       if (project.legislationYear && year && Number(project.legislationYear) !== year) {
         return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
-      return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
-        mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body)),
-        map(toLegacyProject)
-      );
+      return this.writeForm(project, row).pipe(map(toLegacyProject));
     });
   }
 
   /** Publishes to level 4. A project's `legislationYear` makes that Act current, as eagle-api's publish did. */
   publish(project: ProjectRef): Observable<LegacyProject> {
-    const year = project.legislationYear;
-    return this.setLevel(project, year ? { ...PUBLISH, legislationYear: year } : PUBLISH);
+    return this.setLevel(project, publishBody(project.legislationYear));
   }
 
   unPublish(project: ProjectRef): Observable<LegacyProject> {
@@ -223,6 +238,12 @@ export class ProjectService {
     );
   }
 
+  private writeForm(project: Project, row: DemiProject): Observable<DemiProject> {
+    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
+      mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body))
+    );
+  }
+
   // DEMI stores the proponent's name beside its id and does not look it up itself.
   private withProponentName(row: DemiProject, body: Record<string, unknown>): Observable<Record<string, unknown>> {
     const id = body.proponentId;
@@ -238,6 +259,19 @@ export class ProjectService {
     const request = legacy._id ? send(legacy) : throwError(() => new Error(READ_ONLY_PROJECT));
     return request.pipe(catchError(error => this.api.handleError(error)));
   }
+}
+
+/** A create whose POST went through but a later step failed. `id` is the new DEMI id; `saved` is true once the form's fields are stored. */
+export class ProjectCreatedPartlyError extends Error {
+  override name = 'ProjectCreatedPartlyError';
+
+  constructor(readonly id: string, failure: string, cause: Error, readonly saved: boolean) {
+    super(`${failure}: ${cause.message}`, { cause });
+  }
+}
+
+function publishBody(year: number | undefined): object {
+  return year ? { ...PUBLISH, legislationYear: year } : PUBLISH;
 }
 
 function pinIds(row: DemiProject): string[] {
