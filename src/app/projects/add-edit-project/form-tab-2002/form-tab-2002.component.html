@@ -62,7 +62,7 @@
         <div class="label-pair">
           <label for="currentPhaseName">Project Phase* </label>
           <select name="currentPhaseName" id="currentPhaseName" formControlName="currentPhaseName" class="form-control">
-            @for (projectPhase of projectPhases; track projectPhase) {
+            @for (projectPhase of lists().projectPhases; track projectPhase) {
               <option [ngValue]="projectPhase.id">{{projectPhase.name}}</option>
             }
           </select>
@@ -83,7 +83,7 @@
         <div class="label-pair">
           <label for="region">Region* </label>
           <select required class="form-control" formControlName="region">
-            @for (region of regions; track region) {
+            @for (region of lists().regions; track region) {
               <option [ngValue]="region">{{region}}</option>
             }
           </select>
@@ -105,7 +105,7 @@
           <label for="CEAAInvolvement">IAAC Involvement </label>
           <select name="CEAAInvolvement" id="CEAAInvolvement" formControlName="CEAAInvolvement" class="form-control">
             <option value=''>---Select---</option>
-            @for (involvement of ceaaInvolvements; track involvement) {
+            @for (involvement of lists().ceaaInvolvements; track involvement) {
               <option [ngValue]="involvement.id">{{involvement.name}}</option>
             }
           </select>
@@ -160,7 +160,7 @@
             <label for="eacDecision">EA Decision* </label>
             <select class="form-control" name="eacDecision" id="eacDecision" formControlName="eacDecision">
               <option value=''>---Select---</option>
-              @for (eacDecision of eacDecisions; track eacDecision) {
+              @for (eacDecision of lists().eacDecisions; track eacDecision) {
                 <option [ngValue]="eacDecision.id">{{eacDecision.name}}</option>
               }
             </select>
@@ -170,7 +170,7 @@
               <label for="applicableRegulation">Applicable Regulation* </label>
               <select class="form-control" name="applicableRegulation" id="applicableRegulation" formControlName="applicableRegulation">
                 <option value="">---Select---</option>
-                @for (regulation of applicableRegulations; track regulation.id) {
+                @for (regulation of lists().applicableRegulations; track regulation.id) {
                   <option [ngValue]="regulation.id">{{regulation.name}}</option>
                 }
               </select>

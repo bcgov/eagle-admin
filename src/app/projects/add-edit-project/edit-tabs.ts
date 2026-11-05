@@ -1,4 +1,6 @@
 import { Router } from '@angular/router';
+import { listNames } from 'src/app/activity/update-rules';
+import { List } from 'src/app/models/demi/list';
 import { FullProject } from 'src/app/models/fullProject';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -15,6 +17,21 @@ export const EDIT_TABS: readonly IAddEditTab[] = [
   { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
   { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
 ];
+
+/** A tab's pickers, in list order. Lists hold only 2002 and 2018 values; a 1996 project uses the 2002 codes. */
+export function tabLists(lists: List[], year: number) {
+  const act = year === 1996 ? 2002 : year;
+  const ofType = (type: string) => lists
+    .filter(item => item.type === type && Number(item.legislation) === act)
+    .sort((a, b) => (a.listOrder || 0) - (b.listOrder || 0));
+  return {
+    regions: listNames(lists, 'region'),
+    projectPhases: ofType('projectPhase'),
+    eacDecisions: ofType('eaDecisions'),
+    ceaaInvolvements: ofType('ceaaInvolvements'),
+    applicableRegulations: ofType('applicableRegulations')
+  };
+}
 
 // DEMI's PUT writes only the current Act's fields. With no loaded project, an edit route's Save would POST a new one.
 /** Toasts and returns true when a tab must not write. */

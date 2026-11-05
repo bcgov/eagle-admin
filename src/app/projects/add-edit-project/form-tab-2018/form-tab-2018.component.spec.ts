@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject, of, throwError } from 'rxjs';
@@ -10,7 +10,8 @@ import { StorageService } from 'src/app/services/storage.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
+import { AjaxData } from 'src/app/shared/utils/mock-data';
+import { List } from 'src/app/models/demi/list';
 import { ProjectPublishState } from 'src/app/models/project';
 import { CREATE_UNKNOWN_MESSAGE } from '../edit-tabs';
 
@@ -44,6 +45,7 @@ describe('FormTab2018', () => {
   let toast: jasmine.SpyObj<ToastService>;
   let logger: jasmine.SpyObj<LoggingService>;
   let navigate: jasmine.Spy;
+  let lists: ReturnType<typeof signal<List[]>>;
 
   // The add route has no projId and no resolved project.
   function render(fullProject: unknown = AjaxData, { adding = false } = {}) {
@@ -51,11 +53,12 @@ describe('FormTab2018', () => {
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
     logger = jasmine.createSpyObj('LoggingService', ['error']);
+    lists = signal<List[]>([]);
     TestBed.configureTestingModule({
       imports: [FormTab2018Component],
       providers: [
         provideRouter([]),
-        { provide: ConfigService, useValue: { regions: regionsData, getLists: () => eaDecisions, lists: [] } },
+        { provide: ConfigService, useValue: { listsSignal: lists } },
         { provide: StorageService, useValue: { state: { pageIsEditing: !adding } } },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toast },
@@ -293,6 +296,27 @@ describe('FormTab2018', () => {
 
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
+  });
+
+  it('fills the pickers when the Lists arrive after the form, and keeps the row\'s picks', () => {
+    const component = render(results(row2018({ region: 'Peace', eacDecision: { _id: 'dec-1' } })));
+
+    lists.set([
+      { id: 'phase-0', name: 'Early Engagement', type: 'projectPhase', legislation: 2018, listOrder: 0 },
+      { id: 'phase-1', name: 'Readiness Decision', type: 'projectPhase', legislation: 2018, listOrder: 1 },
+      { id: 'dec-1', name: 'In Progress', type: 'eaDecisions', legislation: 2018, listOrder: 0 },
+      { id: 'region-1', name: 'Peace', type: 'region', legislation: 0, listOrder: 0 }
+    ]);
+    fixture.detectChanges();
+
+    const shown = (selector: string) => {
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector(selector);
+      return select.options[select.selectedIndex]?.textContent.trim();
+    };
+    expect(shown('#currentPhaseName')).toBe('Readiness Decision');
+    expect(shown('select[formControlName="region"]')).toBe('Peace');
+    expect(shown('#eacDecision')).toBe('In Progress');
+    expect(component.myForm.getRawValue()).toEqual(jasmine.objectContaining({ currentPhaseName: 'phase-1', region: 'Peace', eacDecision: 'dec-1' }));
   });
 
   it('a project with no intake builds the edit form', () => {

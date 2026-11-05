@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormTab2002Component } from './form-tab-2002.component';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, signal } from '@angular/core';
 import { provideRouter, ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { of, throwError } from 'rxjs';
@@ -12,9 +12,10 @@ import { ProjectService } from 'src/app/services/project.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
-import { AjaxData, regionsData } from 'src/app/shared/utils/mock-data';
+import { AjaxData } from 'src/app/shared/utils/mock-data';
+import { List } from 'src/app/models/demi/list';
 
-const LIST_ROWS = [
+const LIST_ROWS: List[] = [
   { type: 'eaDecisions', id: 'ea-issued', name: 'Certificate Issued', legislation: 2002, listOrder: 2 },
   { type: 'eaDecisions', id: 'ea-refused', name: 'Certificate Refused', legislation: 2002, listOrder: 1 },
   { type: 'eaDecisions', id: 'ea-progress', name: 'In Progress', legislation: 2018, listOrder: 0 },
@@ -44,8 +45,10 @@ describe('FormTab2002', () => {
   let projectService: jasmine.SpyObj<ProjectService>;
   let toast: jasmine.SpyObj<ToastService>;
   let navigate: jasmine.Spy;
+  let lists: ReturnType<typeof signal<List[]>>;
 
-  async function render(fullProject: unknown = AjaxData): Promise<ComponentFixture<FormTab2002Component>> {
+  async function render(fullProject: unknown = AjaxData, listRows: List[] = LIST_ROWS): Promise<ComponentFixture<FormTab2002Component>> {
+    lists = signal(listRows);
     projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'publish', 'save']);
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
@@ -55,7 +58,7 @@ describe('FormTab2002', () => {
       providers: [
         provideRouter([]),
         { provide: ApiService, useValue: jasmine.createSpyObj('ApiService', ['downloadDocument']) },
-        { provide: ConfigService, useValue: jasmine.createSpyObj('ConfigService', [], { regions: regionsData, lists: LIST_ROWS }) },
+        { provide: ConfigService, useValue: { listsSignal: lists } },
         { provide: StorageService, useValue: jasmine.createSpyObj('StorageService', [], { state: { pageIsEditing: true } }) },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toast },
@@ -130,6 +133,15 @@ describe('FormTab2002', () => {
 
   it('offers only 2002 EA Decisions, in list order', async () => {
     const fixture = await render();
+
+    expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
+  });
+
+  it('offers the EA Decisions when the Lists arrive after the form', async () => {
+    const fixture = await render(AjaxData, []);
+
+    lists.set(LIST_ROWS);
+    fixture.detectChanges();
 
     expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
   });
