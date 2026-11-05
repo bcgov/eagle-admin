@@ -58,6 +58,7 @@ export class AddEditProjectComponent implements OnInit {
   public loading = true;
   /** Extensions, then suspensions; `kind` names the list each came from. */
   public extensions = signal<ExtensionRow[]>([]);
+  private extensionsOf: string | null = null;
 
   ngOnInit() {
     // This is to get Region information from List (db) and put into a list(regions)
@@ -153,10 +154,12 @@ export class AddEditProjectComponent implements OnInit {
     this.router.navigate(['/p', this.projectId, 'edit', `edit-${item.kind.toLowerCase()}`]);
   }
 
+  // The resolver runs again on every tab change; read the lists once per project.
   private loadExtensions(demiId: string | undefined) {
-    if (!demiId) {
+    if (!demiId || demiId === this.extensionsOf) {
       return;
     }
+    this.extensionsOf = demiId;
     this.projectService.getExtensions(demiId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: lists => this.extensions.set([
         ...(lists.reviewExtensions ?? []).map(item => ({ ...item, kind: 'Extension' as const })),
