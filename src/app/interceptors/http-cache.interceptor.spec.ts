@@ -156,4 +156,24 @@ describe('httpCacheInterceptor', () => {
     http.expectNone(url);
     expect(served).toEqual({ name: 'New' });
   });
+
+  it('caches the read started after a DEMI write, not one started before it that finishes later', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    const older = http.expectOne({ method: 'GET', url });
+    client.put(url, {}).subscribe();
+    http.expectOne({ method: 'PUT', url }).flush({});
+    let joined: unknown;
+    client.get(url).subscribe(body => joined = body);
+    const after = http.expectOne({ method: 'GET', url });
+    older.flush({ name: 'Old' });
+    after.flush({ name: 'New' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(joined).toEqual({ name: 'New' });
+    expect(served).toEqual({ name: 'New' });
+  });
 });

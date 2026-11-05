@@ -39,6 +39,7 @@ class HttpCacheService {
 
   clear(): void {
     this.cache.clear();
+    this.inFlight.clear();
   }
 
   /** `/api/commentperiod/123/publish` → `commentperiod`. */
@@ -68,16 +69,14 @@ class HttpCacheService {
     return cleared;
   }
 
-  /** Invalidate every cache entry whose path is `base` or below it. */
+  /** Invalidate every cache entry whose path is `base` or below it, and the GETs in flight there. */
   clearUnderPath(base: string): number {
-    let cleared = 0;
-    for (const key of Array.from(this.cache.keys())) {
-      if (isUnderPath(key, base)) {
-        this.cache.delete(key);
-        cleared++;
-      }
-    }
-    return cleared;
+    const under = (entries: Map<string, unknown>) => Array.from(entries.keys()).filter(key => isUnderPath(key, base));
+    // A GET started before the write may answer with the old row; with its entry gone it caches nothing.
+    under(this.inFlight).forEach(key => this.inFlight.delete(key));
+    const stale = under(this.cache);
+    stale.forEach(key => this.cache.delete(key));
+    return stale.length;
   }
 }
 
