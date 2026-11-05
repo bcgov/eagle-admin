@@ -1,5 +1,3 @@
-import { WriteIds, eagleWriteId } from './demi-ids';
-
 /**
  * Native DEMI comment period row (`GET <DEMI_API_PATH>/comment-periods`), minus fields hidden from the caller. `id` is
  * the Eagle id for periods mirrored from Eagle; ENGAGE and DEMI periods have their own id and get `eagleId` once in Eagle.
@@ -73,43 +71,4 @@ export interface DemiCommentPeriodQuery {
   /** `dateStarted` or `dateCompleted`, `-` prefix for descending. DEMI defaults to `-dateStarted`. */
   sort?: string;
   status?: Array<'open' | 'upcoming' | 'closed'>;
-}
-
-/** Fields only DEMI rows carry; eagle-api has no use for them. */
-const DEMI_ONLY_FIELDS = [
-  'id', 'eagleId', 'periodId', 'projectId', 'projectEagleId', 'projectName', 'sourceSystem', 'read', 'sources', 'isDeleted'
-];
-
-/** {@link eagleWriteId} for an eagle-api write. ENGAGE rows and rows with no Eagle id throw. */
-function requireEagleWriteId(row: WriteIds & { sourceSystem?: string }, kind: string): string {
-  if (!('_id' in row) && row.sourceSystem === 'engage') {
-    throw new Error(`This ${kind} is managed in ENGAGE and cannot be changed here.`);
-  }
-  const id = eagleWriteId(row);
-  if (!id) {
-    throw new Error(notInEagle(kind));
-  }
-  return id;
-}
-
-/**
- * eagle-api write body. A `_id` body is legacy and goes out unchanged; a native row gets its Eagle
- * id and parent ref, minus DEMI-only fields. Throws on a create with no parent or an update of a row with no Eagle id.
- */
-export function toEagleWriteBody(row: object, kind: string, parent: Record<string, string | null>, isNew: boolean): any {
-  if ('_id' in row) {
-    return row;
-  }
-  const parentKnown = Object.values(parent).every(Boolean);
-  if (isNew && !parentKnown) {
-    throw new Error(notInEagle(kind));
-  }
-  const _id = isNew ? null : requireEagleWriteId(row, kind);
-  const body: any = { ...row, ...(parentKnown ? parent : {}), _id };
-  DEMI_ONLY_FIELDS.forEach(field => delete body[field]);
-  return body;
-}
-
-function notInEagle(kind: string): string {
-  return `This ${kind} is not in Eagle yet and cannot be changed here.`;
 }
