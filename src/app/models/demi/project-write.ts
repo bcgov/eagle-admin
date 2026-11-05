@@ -99,7 +99,7 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;
       if (!value || (isEmpty(value.investment) && isEmpty(notes) && row.intake == null)) {
-        return row.intake == null ? KEEP : undefined;
+        return undefined;
       }
       return { ...(row.intake as object), investment: value.investment, investmentNotes: notes ?? null };
     }
