@@ -114,14 +114,20 @@ export class ProjectService {
     return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
   }
 
-  // create new project
-  add(item: Project): Observable<Project> {
-    delete item._id;
-    if (item.description) {
-      item.description = item.description.replace(/\n/g, '\\n');
-    }
-    return this.api.post<Project>('project/', item).pipe(
-      catchError(error => this.api.handleError(error))
+  /**
+   * Creates the project in DEMI, which makes its id, then writes the form's other fields and sets level 2, or 4 when
+   * `publish`. A step after the create fails with `ProjectCreatedPartlyError`, which names the new id.
+   */
+  add(project: Project, { publish = false } = {}): Observable<LegacyProject> {
+    const { name, description, sector, region, projectState, centroid } =
+      toDemiProjectWrite(project, this.configService.lists, {} as DemiProject);
+    return this.demiApi.create<DemiProject>('projects', { name, description, sector, region, projectState, centroid }).pipe(
+      mergeMap(row => this.writeForm(project, row).pipe(
+        mergeMap(() => this.demiApi.action<DemiProject>('projects', row.id, 'level',
+          publish ? publishBody(project.legislationYear) : { level: UNPUBLISHED_LEVEL })),
+        catchError(error => throwError(() => new ProjectCreatedPartlyError(row.id, error)))
+      )),
+      map(toLegacyProject)
     );
   }
 
@@ -135,17 +141,13 @@ export class ProjectService {
       if (project.legislationYear && year && Number(project.legislationYear) !== year) {
         return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
-      return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
-        mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body)),
-        map(toLegacyProject)
-      );
+      return this.writeForm(project, row).pipe(map(toLegacyProject));
     });
   }
 
   /** Publishes to level 4. A project's `legislationYear` makes that Act current, as eagle-api's publish did. */
   publish(project: ProjectRef): Observable<LegacyProject> {
-    const year = project.legislationYear;
-    return this.setLevel(project, year ? { ...PUBLISH, legislationYear: year } : PUBLISH);
+    return this.setLevel(project, publishBody(project.legislationYear));
   }
 
   unPublish(project: ProjectRef): Observable<LegacyProject> {
@@ -223,6 +225,12 @@ export class ProjectService {
     );
   }
 
+  private writeForm(project: Project, row: DemiProject): Observable<DemiProject> {
+    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
+      mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body))
+    );
+  }
+
   // DEMI stores the proponent's name beside its id and does not look it up itself.
   private withProponentName(row: DemiProject, body: Record<string, unknown>): Observable<Record<string, unknown>> {
     const id = body.proponentId;
@@ -238,6 +246,17 @@ export class ProjectService {
     const request = legacy._id ? send(legacy) : throwError(() => new Error(READ_ONLY_PROJECT));
     return request.pipe(catchError(error => this.api.handleError(error)));
   }
+}
+
+/** A create whose POST went through but a later write failed; `id` is the new project's DEMI id. */
+export class ProjectCreatedPartlyError extends Error {
+  constructor(readonly id: string, cause: Error) {
+    super(`Project created, but not every field was saved: ${cause.message}`);
+  }
+}
+
+function publishBody(year: number | undefined): object {
+  return year ? { ...PUBLISH, legislationYear: year } : PUBLISH;
 }
 
 function pinIds(row: DemiProject): string[] {

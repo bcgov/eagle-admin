@@ -7,7 +7,7 @@ import { ConfigService } from './config.service';
 import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
-import { ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
+import { ProjectCreatedPartlyError, ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
 import { ToastService } from './toast.service';
 import { Project } from '../models/project';
 import { DemiProject } from '../models/demi/project';
@@ -284,6 +284,64 @@ describe('ProjectService', () => {
 
       http.expectOne('/demi/api/projects/7').flush(nativeRow());
       http.expectOne('/demi/api/projects/7/level').flush(nativeRow());
+    });
+
+    describe('create', () => {
+      const MINTED = '0b5e6c1a-3f0e-4a8e-9c35-7d2f1e9a4b10';
+      const newProject = () => formProject({
+        _id: undefined, proponent: { _id: 'org1', name: 'Teck Coal' }, sector: 'Mining', region: 'Thompson-Nicola',
+        description: 'Line one\nline two', currentPhaseName: 'phase1', legislationYear: 2018
+      });
+
+      function answerCreate() {
+        const post = http.expectOne('/demi/api/projects');
+        post.flush({ id: MINTED, eagleId: null, name: post.request.body.name });
+        return post;
+      }
+
+      it('add POSTs without trackProjectId and with centroid {type: \'Point\', coordinates: [lon, lat]}, then PUTs the rest with legislationYear to the returned id, then sets level 2', async () => {
+        const created = firstValueFrom(service.add(newProject()));
+
+        const post = answerCreate();
+        expect(post.request.method).toBe('POST');
+        expect(post.request.body).toEqual({
+          name: 'Ashcroft Ranch Landfill', description: 'Line one\\nline two', sector: 'Mining', region: 'Thompson-Nicola',
+          projectState: 'Pre-Application', centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+        });
+        const put = http.expectOne(`/demi/api/projects/${MINTED}`);
+        expect(put.request.method).toBe('PUT');
+        expect(put.request.body).toEqual(jasmine.objectContaining({
+          legislationYear: 2018, projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', proponentName: 'Teck Coal'
+        }));
+        put.flush({ id: MINTED });
+        const level = http.expectOne(`/demi/api/projects/${MINTED}/level`);
+        expect(level.request.body).toEqual({ level: 2 });
+        level.flush({ id: MINTED, eagleId: null });
+
+        expect((await created).demiId).toBe(MINTED);
+      });
+
+      it('add-and-publish sets level 4 with confirm and reason', () => {
+        service.add(newProject(), { publish: true }).subscribe();
+        answerCreate();
+        http.expectOne(`/demi/api/projects/${MINTED}`).flush({ id: MINTED });
+
+        expect(http.expectOne(`/demi/api/projects/${MINTED}/level`).request.body)
+          .toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin', legislationYear: 2018 });
+      });
+
+      it('a failed PUT after create fails with the new id and DEMI\'s message, and sets no level', async () => {
+        const created = firstValueFrom(service.add(newProject()));
+        answerCreate();
+        http.expectOne(`/demi/api/projects/${MINTED}`)
+          .flush({ error: 'Unknown field: foo' }, { status: 400, statusText: 'Bad Request' });
+
+        const error = await created.catch(e => e);
+        expect(error instanceof ProjectCreatedPartlyError).toBeTrue();
+        expect(error.id).toBe(MINTED);
+        expect(error.message).toBe('Project created, but not every field was saved: Unknown field: foo');
+        http.expectNone(`/demi/api/projects/${MINTED}/level`);
+      });
     });
 
     describe('extensions', () => {

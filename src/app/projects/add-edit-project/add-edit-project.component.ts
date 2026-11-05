@@ -7,6 +7,7 @@ import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ProjectCreatedPartlyError } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
@@ -43,6 +44,21 @@ export function projectWriteFailed(logger: LoggingService, toast: ToastService, 
   return (action: 'save' | 'publish' | 'unpublish') => (error: Error) => {
     logger.error(`Failed to ${action} project`, source, error);
     toast.error(`Failed to ${action} project. ${error.message}`);
+  };
+}
+
+/** A tab's handler for a failed create. Returns true when it left for the edit page of a project the create made. */
+export function projectCreateFailed(logger: LoggingService, toast: ToastService, router: Router, source: string) {
+  const writeFailed = projectWriteFailed(logger, toast, source);
+  return (action: 'save' | 'publish') => (error: Error): boolean => {
+    if (!(error instanceof ProjectCreatedPartlyError)) {
+      writeFailed(action)(error);
+      return false;
+    }
+    logger.error(error.message, source, error);
+    toast.error(error.message);
+    router.navigate(['/p', error.id, 'edit']);
+    return true;
   };
 }
 
