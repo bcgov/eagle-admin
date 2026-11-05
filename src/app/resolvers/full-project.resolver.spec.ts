@@ -79,7 +79,7 @@ describe('fullProjectResolver', () => {
   it('swaps every proponent id for its organization, in one read', async () => {
     const result = resolve();
 
-    flushProject(demiRow());
+    flushProject(demiRow({ legislation_2018: { name: 'Copper Mine', proponent: 'stale-org' } }));
     const req = orgRequest();
     expect(req.request.params.get('ids')).toBe(`${ORG_A},${ORG_B}`);
     req.flush([{ id: ORG_A, name: 'Copper Co.' }, { id: ORG_B, name: 'Old Copper Co.' }]);
@@ -124,7 +124,24 @@ describe('fullProjectResolver', () => {
     expect(project.currentLegislationYear).toBe('legislation_2018');
     expect(project.legislationYearList).toEqual([2018]);
     expect(project.legislation_2018.name).toBe('Copper Mine');
+    expect(project.legislation_2018.centroid).toBeUndefined();
     expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('a row with no Act whose only named block is legislation_2002 resolves that block as current', async () => {
+    const result = resolve();
+
+    flushProject(demiRow({
+      proponentId: null,
+      currentLegislationYear: undefined,
+      legislationYearList: [2002],
+      legislation_2002: { name: 'Old Copper Mine' },
+      legislation_2018: {}
+    }));
+
+    const project = projectOf(await result);
+    expect(project.currentLegislationYear).toBe('legislation_2002');
+    expect(project.legislationYearList).toEqual([2002]);
   });
 
   it('a DEMI-created row with a UUID id and legislationYear 2018 resolves that block and isPublished', async () => {
@@ -165,16 +182,17 @@ describe('fullProjectResolver', () => {
 
     flushProject(demiRow({
       proponentId: null,
-      legislationYear: 2002,
-      currentLegislationYear: 'legislation_2002',
-      legislationYearList: [2002],
-      legislation_2002: { name: 'Copper Mine', sector: 'Mining' },
+      currentLegislationYear: 'legislation_1996',
+      legislationYearList: ['2002', '1996'],
+      legislation_1996: { name: 'Stale Name', currentPhaseCode: 'decision' },
+      legislation_2002: { name: 'Old' },
       legislation_2018: undefined
     }));
 
     const project = projectOf(await result);
-    expect(project.currentLegislationYear).toBe('legislation_2002');
-    expect(project.legislation_2002.name).toBe('Copper Mine');
-    expect(project.legislation_2002.sector).toBeUndefined();
+    expect(project.currentLegislationYear).toBe('legislation_1996');
+    expect(project.legislationYearList).toEqual([1996, 2002]);
+    expect(project.legislation_1996.name).toBe('Copper Mine');
+    expect(project.legislation_1996.currentPhaseCode).toBeUndefined();
   });
 });

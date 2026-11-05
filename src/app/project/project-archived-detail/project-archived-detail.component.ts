@@ -32,7 +32,9 @@ export class ProjectArchivedDetailComponent implements OnInit {
 
     const data = this.route.snapshot.data['fullProject'] as ISearchResults<FullProject>[];
     const row = data?.[0]?.data?.searchResults?.[0] as FullProject | undefined;
-    const archived = [row?.legislation_2002, row?.legislation_1996].find(block => block?.name);
+    const currentYear = Number(row?.currentLegislationYear?.replace('legislation_', ''));
+    const older = [{ year: 2002, block: row?.legislation_2002 }, { year: 1996, block: row?.legislation_1996 }];
+    const archived = older.find(({ year, block }) => year < currentYear && block?.name)?.block;
     if (!archived) {
       alert('Uh-oh, couldn\'t load project');
       this.router.navigate(['/search']);

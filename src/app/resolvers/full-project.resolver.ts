@@ -22,12 +22,16 @@ const asSearchResults = (searchResults: object[]) =>
 const blockKeys = (row: DemiProject) =>
   Object.keys(row).filter(key => LEGISLATION_KEY.test(key) && row[key] && typeof row[key] === 'object');
 
-/** The project's Act; a row that names none, such as a Track-only one, is a 2018 Act project. */
-const currentYear = (row: DemiProject) => actYear(row) ?? 2018;
+/** The project's Act, else its newest named block's year; a row with neither, such as a Track-only one, is 2018. */
+function currentYear(row: DemiProject): number {
+  const storedYears = blockKeys(row)
+    .filter(key => (row[key] as { name?: unknown }).name)
+    .map(key => Number(key.slice('legislation_'.length)));
+  return actYear(row) ?? (storedYears.length ? Math.max(...storedYears) : 2018);
+}
 
 /** The Organization ids a row names: its `proponentId` and each older-Act block's `proponent`. */
-function proponentIds(row: DemiProject): string[] {
-  const currentKey = `legislation_${currentYear(row)}`;
+function proponentIds(row: DemiProject, currentKey: string): string[] {
   const blockIds = blockKeys(row).filter(key => key !== currentKey).map(key => (row[key] as { proponent?: unknown }).proponent);
   return [...new Set([row.proponentId, ...blockIds].filter((id): id is string => typeof id === 'string' && id !== ''))];
 }
@@ -36,9 +40,7 @@ function proponentIds(row: DemiProject): string[] {
  * eagle-api's `projectLegislation=all&populate=true` shape from a DEMI row; `_id` is the Eagle id. The current Act's block is
  * the top level, since DEMI's PUT writes only there. Proponent ids become Organizations; unknown ones are left off, as eagle-api did.
  */
-function toFullProject(row: DemiProject, orgs: Map<string, Org>): FullProject {
-  const year = currentYear(row);
-  const currentKey = `legislation_${year}`;
+function toFullProject(row: DemiProject, year: number, currentKey: string, orgs: Map<string, Org>): FullProject {
   const stored = Array.isArray(row.legislationYearList) ? row.legislationYearList.map(Number) : [];
   const project: Record<string, unknown> = {
     ...row,
@@ -61,6 +63,10 @@ function toFullProject(row: DemiProject, orgs: Map<string, Org>): FullProject {
   } else {
     delete current.proponent;
   }
+  if (!row.centroid) {
+    // The edit tabs default an absent centroid to Victoria; Project's [] would skip that.
+    current.centroid = undefined;
+  }
   project[currentKey] = current;
   return project as unknown as FullProject;
 }
@@ -77,9 +83,13 @@ export const fullProjectResolver: ResolveFn<object> = (route: ActivatedRouteSnap
 
   const projId = route.pathFromRoot.find(r => r.paramMap.has('projId'))?.paramMap.get('projId') ?? '';
   return projectService.getNative(projId).pipe(
-    mergeMap(row => demiApi.byIds<Organization>('organizations', proponentIds(row)).pipe(
-      map(orgs => toFullProject(row, new Map<string, Org>(orgs.map(org => [org.id, toEagleOrg(org)]))))
-    )),
+    mergeMap(row => {
+      const year = currentYear(row);
+      const currentKey = `legislation_${year}`;
+      return demiApi.byIds<Organization>('organizations', proponentIds(row, currentKey)).pipe(
+        map(orgs => toFullProject(row, year, currentKey, new Map<string, Org>(orgs.map(org => [org.id, toEagleOrg(org)]))))
+      );
+    }),
     map(project => asSearchResults([project])),
     catchError(error => {
       logger.error('Failed to load project', 'fullProjectResolver', error);
