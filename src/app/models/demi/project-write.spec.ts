@@ -1,7 +1,7 @@
 import { Project } from '../project';
 import { List } from './list';
 import { DemiProject } from './project';
-import { DEFAULT_CENTROID, toDemiProjectWrite } from './project-write';
+import { DEFAULT_CENTROID, toDemiProjectWrite, withIntakeOver } from './project-write';
 
 const LISTS: List[] = [
   { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 },
@@ -15,8 +15,10 @@ const PHASE1 = { _id: 'phase1', name: 'Pre-Application', type: 'projectPhase', l
 const PHASE2 = { _id: 'phase2', name: 'Application Review', type: 'projectPhase', legislation: 2018 };
 
 // Built the way the edit form builds its save: `new Project` over the form values.
-const write = (form: object, row: Partial<DemiProject> = {}, held?: string[]) =>
-  toDemiProjectWrite(new Project({ _id: 'p1', name: 'Mine', ...form }), LISTS, { id: '7', name: 'Mine', ...row }, held);
+const write = (form: object, row: Partial<DemiProject> = {}, held?: string[]) => {
+  const stored = { id: '7', name: 'Mine', ...row };
+  return withIntakeOver(toDemiProjectWrite(new Project({ _id: 'p1', name: 'Mine', ...form }), LISTS, stored, held), stored);
+};
 
 // What the form sends for the local day it shows a stored date as: that day's local midnight.
 const shownDay = (iso: string, days = 0) => {

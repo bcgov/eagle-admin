@@ -180,7 +180,7 @@ describe('FormTab2002', () => {
     expect(held).not.toContain('disputeDate');
   });
 
-  it('a save after a failed publish compares against the row the PUT stored', async () => {
+  it('a save after a failed publish compares against the row the last save emitted', async () => {
     const fixture = await render(projectResults(row2002()));
     const saved = { ...DEMI_ROW, name: 'Ajax Mine 2' };
     projectService.save.and.returnValue(of(saved as any));

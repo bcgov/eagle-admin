@@ -298,7 +298,7 @@ describe('FormTab2018', () => {
     expect(toast.error).toHaveBeenCalledWith('Failed to publish project. Forbidden: not a project admin');
   });
 
-  it('a save after a failed publish compares against the row the PUT stored', async () => {
+  it('a save after a failed publish compares against the row the last save emitted', async () => {
     const component = render(results(row2018()));
     const saved = { ...DEMI_ROW, name: 'Ajax Mine 2' };
     projectService.save.and.returnValue(of(saved as any));

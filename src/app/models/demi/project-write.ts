@@ -43,11 +43,10 @@ type WriteListRef = DemiListRef & { item?: string };
 
 /**
  * DEMI `PUT /projects/:id` body over `row`, catalogued fields under DEMI's names (DEMI answers 400 to others such as `_id`).
- * A field the row holds, a cleared one outside `held` (the saving form's fields), or one empty in both is left out.
- * `stored` is the latest row, whose intake keeps the keys the form did not change.
+ * Left out: a field the row holds, a cleared one outside `held` (the tab's fields), one empty in both. Intake: see `withIntakeOver`.
  */
 export function toDemiProjectWrite(
-  project: Project, lists: List[], row: DemiProject, held?: readonly string[], stored: DemiProject = row
+  project: Project, lists: List[], row: DemiProject, held?: readonly string[]
 ): Record<string, unknown> {
   const body: Record<string, unknown> = {};
   for (const field of [...CLEARED_FIELDS, ...SET_FIELDS]) {
@@ -74,10 +73,6 @@ export function toDemiProjectWrite(
   if (project.proponent?.name) {
     body.proponentName = project.proponent.name;
   }
-  // DEMI replaces the whole intake object.
-  if (body.intake) {
-    body.intake = { ...intakeOf(stored), ...body.intake as object };
-  }
   const phase = body.currentPhaseName as WriteListRef | null;
   const history = Array.isArray(row.phaseHistory) ? row.phaseHistory : [];
   const last = history.length ? history[history.length - 1] : row.currentPhaseName;
@@ -86,6 +81,11 @@ export function toDemiProjectWrite(
     body.phaseHistory = [...history, phase];
   }
   return body;
+}
+
+/** `body` with its changed intake keys over `row`'s intake. DEMI replaces the whole intake object. */
+export function withIntakeOver(body: Record<string, unknown>, row: DemiProject): Record<string, unknown> {
+  return body.intake ? { ...body, intake: { ...intakeOf(row), ...body.intake as object } } : body;
 }
 
 function valueOf(project: Project, field: WriteField, lists: List[], row: DemiProject): unknown {
@@ -114,7 +114,7 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
       const same = stored?.length ? sameCoordinates(value, stored) : row.id && sameCoordinates(value, DEFAULT_CENTROID);
       return same ? KEEP : point(value);
     }
-    // Only the changed keys; toDemiProjectWrite puts them over the stored intake.
+    // Only the changed keys; withIntakeOver puts them over a row's intake.
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;
       if (!value) {

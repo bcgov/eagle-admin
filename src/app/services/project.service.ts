@@ -9,7 +9,7 @@ import { Project } from '../models/project';
 import { Organization } from '../models/demi/organization';
 import { DemiProject } from '../models/demi/project';
 import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
-import { toDemiProjectWrite } from '../models/demi/project-write';
+import { toDemiProjectWrite, withIntakeOver } from '../models/demi/project-write';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { extractFromSearchResults, natureBuildMapper } from '../shared/utils/utils';
 
@@ -218,10 +218,15 @@ export class ProjectService {
     );
   }
 
+  /** PUTs the form's changes over `row`, intake over `stored`'s, and emits `row` with the changes, as the form shows it. */
   private writeForm(project: Project, row: DemiProject, held?: readonly string[], stored = row): Observable<DemiProject> {
-    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held, stored)).pipe(
+    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held)).pipe(
       // DEMI rewrites the row on any PUT, so nothing changed sends none.
-      mergeMap(body => (Object.keys(body).length ? this.demiApi.update<DemiProject>('projects', row.id, body) : of(row)))
+      mergeMap(body => (Object.keys(body).length
+        ? this.demiApi.update<DemiProject>('projects', row.id, withIntakeOver(body, stored)).pipe(
+          // Not the PUT's answer: a field another user changed since would then go back on the next save.
+          map(() => ({ ...row, ...withIntakeOver(body, row) } as DemiProject)))
+        : of(row)))
     );
   }
 

@@ -225,8 +225,8 @@ describe('ProjectService', () => {
       expect('projectType' in body).toBeFalse();
     });
 
-    it('save PUTs projects/<row.id> with projectType, address and a GeoJSON centroid, and emits the stored row', async () => {
-      const saved = firstValueFrom(service.save(formProject()));
+    it('save PUTs projects/<row.id> with projectType, address and a GeoJSON centroid', () => {
+      service.save(formProject()).subscribe();
       answerRead();
 
       const req = http.expectOne('/demi/api/projects/7');
@@ -234,8 +234,6 @@ describe('ProjectService', () => {
       expect(req.request.body.projectType).toBe('Waste');
       expect(req.request.body.address).toBe('Ashcroft');
       expect(req.request.body.centroid).toEqual({ type: 'Point', coordinates: [-121.24, 50.72] });
-      req.flush(nativeRow({ name: 'Stored' }));
-      expect((await saved).name).toBe('Stored');
     });
 
     it('save stores the name of a newly picked proponent', () => {
@@ -317,16 +315,34 @@ describe('ProjectService', () => {
       });
     });
 
+    // The row the form shows for formProject().
+    const unchanged = nativeRow({
+      name: 'Ashcroft Ranch Landfill', projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', isActive: 'active',
+      centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+    });
+
     it('save with nothing changed sends no PUT and still completes', async () => {
-      const shown = nativeRow({
-        name: 'Ashcroft Ranch Landfill', projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', isActive: 'active',
-        centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
-      });
-      const saved = firstValueFrom(service.save(formProject(), undefined, shown));
+      const saved = firstValueFrom(service.save(formProject(), undefined, unchanged));
       answerRead();
 
       expect((await saved).id).toBe('7');
       http.expectNone('/demi/api/projects/7');
+    });
+
+    it('a save over the row the last save emitted sends nothing another user changed since', async () => {
+      const shown = { ...unchanged, region: 'Peace', intake: { investment: 4, investmentNotes: 'old' } };
+      const theirs = { region: 'Omineca', intake: { investment: 9, investmentNotes: 'old' } };
+      const project = formProject({ name: 'Renamed', region: 'Peace', intake: { investment: 4, notes: 'new' } });
+      const first = firstValueFrom(service.save(project, undefined, shown));
+      answerRead(theirs);
+      const stored = { ...unchanged, ...theirs, name: 'Renamed', intake: { investment: 9, investmentNotes: 'new' } };
+      http.expectOne('/demi/api/projects/7').flush(stored);
+
+      const second = firstValueFrom(service.save(project, undefined, await first));
+      answerRead(stored);
+
+      http.expectNone('/demi/api/projects/7');
+      await second;
     });
 
     it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
