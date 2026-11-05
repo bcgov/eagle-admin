@@ -273,7 +273,7 @@ describe('ProjectService', () => {
     });
 
     it('unPublish PUTs level 2', () => {
-      service.unPublish(EAGLE_ID).subscribe();
+      service.unPublish({ _id: EAGLE_ID }).subscribe();
       answerRead();
 
       expect(http.expectOne('/demi/api/projects/7/level').request.body).toEqual({ level: 2 });
@@ -290,7 +290,7 @@ describe('ProjectService', () => {
       const EXTENSION = { type: 'Extension', appliedTo: 'Review', start: '2026-01-05', end: '2026-02-05' };
 
       it('addExtension POSTs projects/<demiId>/extensions with only type, appliedTo, start, end', () => {
-        service.addExtension(EAGLE_ID, { ...EXTENSION, id: 'x', old: {} } as typeof EXTENSION).subscribe();
+        service.addExtension({ _id: EAGLE_ID }, { ...EXTENSION, id: 'x', old: {} } as typeof EXTENSION).subscribe();
         answerRead();
 
         const req = http.expectOne('/demi/api/projects/7/extensions');
@@ -298,8 +298,8 @@ describe('ProjectService', () => {
         expect(req.request.body).toEqual(EXTENSION);
       });
 
-      it('editExtension PUTs the item by id', () => {
-        service.editExtension(EAGLE_ID, 'e1', EXTENSION).subscribe();
+      it('editExtension PUTs the new item to the old item\'s id', () => {
+        service.editExtension({ _id: EAGLE_ID }, { new: EXTENSION, old: { id: 'e1' } }).subscribe();
         answerRead();
 
         const req = http.expectOne('/demi/api/projects/7/extensions/e1');
@@ -307,22 +307,8 @@ describe('ProjectService', () => {
         expect(req.request.body).toEqual(EXTENSION);
       });
 
-      it('editExtension takes the item id from the old item of a { new, old } change', () => {
-        service.editExtension(EAGLE_ID, { new: EXTENSION, old: { id: 'e1' } }).subscribe();
-        answerRead();
-
-        expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.body).toEqual(EXTENSION);
-      });
-
       it('deleteExtension DELETEs the item by id', () => {
-        service.deleteExtension(EAGLE_ID, 'e1').subscribe();
-        answerRead();
-
-        expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.method).toBe('DELETE');
-      });
-
-      it('deleteExtension takes the id of an item', () => {
-        service.deleteExtension(EAGLE_ID, { id: 'e1' }).subscribe();
+        service.deleteExtension({ _id: EAGLE_ID }, { id: 'e1' }).subscribe();
         answerRead();
 
         expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.method).toBe('DELETE');
