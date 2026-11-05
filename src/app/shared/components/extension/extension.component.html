@@ -64,11 +64,11 @@
       <div class="btn-group" role="group" aria-label="First group">
         <button class="btn btn-outline-primary me-1" type="button" id="button-cl" (click)="goBack()"><i
         class="material-icons">arrow_back</i>Back</button>
-        <button [disabled]="!extensionForm.valid" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
+        <button [disabled]="!extensionForm.valid || saving()" class="btn btn-primary" type="submit" (click)="onSubmit()">Save</button>
       </div>
       <div class="input-group">
         @if (isEditing) {
-          <button class="btn btn-danger" type="button" (click)="onDelete()">Delete</button>
+          <button class="btn btn-danger" type="button" [disabled]="saving()" (click)="onDelete()">Delete</button>
         }
       </div>
     </div>
