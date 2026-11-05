@@ -118,6 +118,8 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
       tap(event => {
         if (event instanceof HttpResponse && event.ok && isUnderPath(req.url, demiPath)) {
           cacheService.set(req.urlWithParams, event);
+          // A cached GET still in flight started earlier, so its body must not replace this one.
+          cacheService.inFlight.delete(req.urlWithParams);
         }
       })
     );
@@ -135,14 +137,19 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
     return existing;
   }
 
-  const request$ = next(req).pipe(
+  const current = () => cacheService.inFlight.get(req.urlWithParams) === request$;
+  const request$: Observable<HttpEvent<any>> = next(req).pipe(
     tap(event => {
-      if (event instanceof HttpResponse) {
+      if (event instanceof HttpResponse && current()) {
         logger.debug(`Caching response for: ${req.url}`, 'HttpCache');
         cacheService.set(req.urlWithParams, event);
       }
     }),
-    finalize(() => cacheService.inFlight.delete(req.urlWithParams)),
+    finalize(() => {
+      if (current()) {
+        cacheService.inFlight.delete(req.urlWithParams);
+      }
+    }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

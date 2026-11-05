@@ -120,4 +120,40 @@ describe('httpCacheInterceptor', () => {
     http.expectNone(url);
     expect(served).toEqual({ name: 'New' });
   });
+
+  it('keeps the cached row when a fresh DEMI read fails', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    http.expectOne(url).flush({ name: 'Old' });
+    client.get(url, { headers: { 'cache-control': 'no-cache' } }).subscribe({ error: () => undefined });
+    http.expectOne(url).flush({ error: 'Server error' }, { status: 500, statusText: 'Server Error' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(served).toEqual({ name: 'Old' });
+  });
+
+  it('does not cache a fresh read outside the DEMI path', () => {
+    client.get('/api/project/p1', { headers: { 'cache-control': 'no-cache' } }).subscribe();
+    http.expectOne('/api/project/p1').flush({});
+
+    expect(refetches('/api/project/p1')).toBeTrue();
+  });
+
+  it('keeps a fresh DEMI read over an older cached read that finishes after it', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    client.get(url, { headers: { 'cache-control': 'no-cache' } }).subscribe();
+    const [older, fresh] = http.match(url);
+    fresh.flush({ name: 'New' });
+    older.flush({ name: 'Old' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(served).toEqual({ name: 'New' });
+  });
 });
