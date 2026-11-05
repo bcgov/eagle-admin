@@ -35,10 +35,10 @@ describe('toDemiProjectWrite', () => {
       .toBe('https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/243_2019');
   });
 
-  it('keeps the stored ref for an id the Lists lack', () => {
-    const stored = { _id: 'old-dec', name: 'Certificate Issued (2002)', type: 'eaDecisions', legislation: 2002 };
+  it('leaves a stored ref, with its extra keys, out when its id is picked again', () => {
+    const stored = { _id: 'dec1', name: 'Certificate Issued', type: 'eaDecisions', legislation: 2018, listOrder: 2, _schemaName: 'List' };
 
-    expect(write({ eacDecision: 'old-dec' }, { eacDecision: stored }).eacDecision).toEqual(stored);
+    expect('eacDecision' in write({ eacDecision: 'dec1' }, { eacDecision: stored })).toBeFalse();
   });
 
   it('sets the stage to the phase name, as eagle-api did on save', () => {
@@ -52,9 +52,10 @@ describe('toDemiProjectWrite', () => {
   });
 
   it('compares a new phase with the last history entry, as eagle-api did', () => {
-    const body = write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2] });
+    const body = write({ currentPhaseName: 'phase2' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2] });
 
-    expect((body.phaseHistory as { _id: string }[]).map(ref => ref._id)).toEqual(['phase1', 'phase2', 'phase1']);
+    expect(body.currentPhaseName).toEqual(PHASE2);
+    expect('phaseHistory' in body).toBeFalse();
   });
 
   it('leaves the phase history alone when the phase is unchanged', () => {
@@ -117,6 +118,10 @@ describe('toDemiProjectWrite', () => {
   it('stores intake notes as investmentNotes over the stored intake', () => {
     expect(write({ intake: { investment: 5, notes: 'Phase 1' } }, { intake: { investment: 4, notes: null, investmentNotes: null } }).intake)
       .toEqual({ investment: 5, notes: null, investmentNotes: 'Phase 1' });
+  });
+
+  it('adds no intake key the stored intake lacks when the form leaves it empty', () => {
+    expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: null } }).intake).toEqual({ investment: null });
   });
 
   it('writes no intake on a row with none when the form\'s intake is empty', () => {

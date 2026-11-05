@@ -83,6 +83,10 @@ export function toDemiProjectWrite(project: Project, lists: List[], row: DemiPro
 function valueOf(project: Project, field: WriteField, lists: List[], row: DemiProject): unknown {
   const value = project[field];
   if (LIST_REFS.has(field)) {
+    // The stored ref's id picked again leaves the stored ref, with keys such as listOrder, as it is.
+    if (value && (typeof value === 'string' ? value : value._id) === (row[field] as DemiListRef | undefined)?._id) {
+      return KEEP;
+    }
     return value ? listRef(value, lists, row[field]) : undefined;
   }
   switch (field) {
@@ -100,7 +104,10 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
       if (!value || (isEmpty(value.investment) && isEmpty(notes) && row.intake == null)) {
         return undefined;
       }
-      return { ...(row.intake as object), investment: value.investment, investmentNotes: notes ?? null };
+      const stored = (row.intake ?? {}) as Record<string, unknown>;
+      // A key the stored intake lacks is added only when the form has a value for it.
+      const put = (key: string, entered: unknown) => (key in stored || !isEmpty(entered) ? { [key]: entered ?? null } : {});
+      return { ...stored, ...put('investment', value.investment), ...put('investmentNotes', notes) };
     }
     // `new Project` drops a No answer, so a stored false or null stays; a stored Yes becomes false.
     case 'substantially':
