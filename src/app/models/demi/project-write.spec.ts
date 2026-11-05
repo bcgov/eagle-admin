@@ -139,6 +139,8 @@ describe('toDemiProjectWrite', () => {
     expect(write({ intake: { investment: null, notes: 'Phase 1' } }, { intake: { investment: null } }).intake)
       .toEqual({ investment: null, investmentNotes: 'Phase 1' });
     expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: 5 } }).intake).toEqual({ investment: null });
+    expect(write({ intake: { investment: 5, notes: '' } }, { intake: { investment: 5, investmentNotes: 'Phase 1' } }).intake)
+      .toEqual({ investment: 5, investmentNotes: null });
     // eagle-api's intake defaulted to a string; one stored that way is replaced, not read as an object.
     expect(write({ intake: { investment: 5, notes: null } }, { intake: 'TBD' }).intake).toEqual({ investment: 5 });
     expect('intake' in write({ intake: { investment: null, notes: null } }, { intake: 'TBD' })).toBeFalse();
@@ -149,8 +151,8 @@ describe('toDemiProjectWrite', () => {
       .toEqual({ investment: 5, notes: null, investmentNotes: 'Phase 1' });
   });
 
-  it('adds no intake key the stored intake lacks when the form leaves it empty', () => {
-    expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: null } }).intake).toEqual({ investment: null });
+  it('leaves out an intake whose fields are empty over stored nulls or missing keys', () => {
+    expect('intake' in write({ intake: { investment: null, notes: '' } }, { intake: { investment: null } })).toBeFalse();
   });
 
   it('writes no intake on a row with none when the form\'s intake is empty', () => {

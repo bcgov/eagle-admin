@@ -109,15 +109,13 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
       if (!value) {
         return undefined;
       }
-      const storedObject = !!row.intake && typeof row.intake === 'object';
-      // Nothing entered over no intake, or over one eagle-api stored as a string or number, leaves it as stored.
-      if (isEmpty(value.investment) && isEmpty(notes) && !storedObject) {
-        return KEEP;
-      }
-      const stored = (storedObject ? row.intake : {}) as Record<string, unknown>;
-      // A key the stored intake lacks is added only when the form has a value for it.
-      const put = (key: string, entered: unknown) => (key in stored || !isEmpty(entered) ? { [key]: entered ?? null } : {});
-      return { ...stored, ...put('investment', value.investment), ...put('investmentNotes', notes) };
+      // An intake eagle-api stored as a string or number is replaced, not read as an object.
+      const stored = (row.intake && typeof row.intake === 'object' ? row.intake : {}) as Record<string, unknown>;
+      // An empty field over an empty or missing key is no change; a cleared one is stored as null.
+      const changed = Object.entries({ investment: value.investment, investmentNotes: notes })
+        .filter(([key, entered]) => (isEmpty(entered) ? !isEmpty(stored[key]) : entered !== stored[key]))
+        .map(([key, entered]) => [key, isEmpty(entered) ? null : entered]);
+      return changed.length ? { ...stored, ...Object.fromEntries(changed) } : KEEP;
     }
     // `new Project` drops a No answer, so a stored false or null stays; a stored Yes becomes false.
     case 'substantially':
