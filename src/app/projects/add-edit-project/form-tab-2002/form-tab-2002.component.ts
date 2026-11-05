@@ -5,6 +5,7 @@ import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DateTime } from 'luxon';
 import { Observable } from 'rxjs';
 import { ToastService } from 'src/app/services/toast.service';
+import { DEFAULT_CENTROID } from 'src/app/models/demi/project-write';
 
 import { mergeMap } from 'rxjs/operators';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
@@ -298,7 +299,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     }
 
     if (!formData.centroid) {
-      formData.centroid = [-123.3656, 48.4284];
+      formData.centroid = [...DEFAULT_CENTROID];
     }
 
     if (formData.responsibleEPDId == null || formData.responsibleEPDId === '') {
@@ -603,19 +604,20 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       this.toastService.error('New projects are created on the 2018 Act tab.');
     } else {
       // need to add on legislation year so that we can know where to put it on the root object
+      const fields = this.convertFormToProject(this.myForm);
       const project = (new Project({
-        ...this.convertFormToProject(this.myForm),
+        ...fields,
         legislationYear: this.legislationYear,
         _id: this.projectId
       }));
       if (putFunction) {
-          this.projectService.save(project)
+          this.projectService.save(project, Object.keys(fields))
             .pipe(mergeMap(() => putFunction(project)))
             .subscribe(
               ...putSubscribe
             );
       } else {
-          this.projectService.save(project)
+          this.projectService.save(project, Object.keys(fields))
             .subscribe(
               ...putSubscribe
             );

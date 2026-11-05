@@ -98,7 +98,7 @@ describe('FormTab2018', () => {
     render(results(row2018())).onSubmit();
 
     expect(toast.error).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }));
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }), jasmine.arrayContaining(['eaStatusDate', 'dispute']));
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'project-details']);
   });
 

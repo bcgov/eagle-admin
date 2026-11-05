@@ -141,16 +141,16 @@ export class ProjectService {
   }
 
   /**
-   * Writes the edit form's fields to DEMI. `project._id` is the route id, DEMI or Eagle. A tab for another Act
-   * than the project's is refused: DEMI's PUT writes the current Act's fields.
+   * Writes the edit form's fields to DEMI. `project._id` is the route id, DEMI or Eagle; `held` names the fields the
+   * tab's form holds. A tab for another Act than the project's is refused: DEMI's PUT writes the current Act's fields.
    */
-  save(project: Project): Observable<LegacyProject> {
+  save(project: Project, held?: readonly string[]): Observable<LegacyProject> {
     return this.onFreshRow(refId(project), row => {
       const year = actYear(row);
       if (project.legislationYear && year && Number(project.legislationYear) !== year) {
         return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
-      return this.writeForm(project, row).pipe(map(toLegacyProject));
+      return this.writeForm(project, row, held).pipe(map(toLegacyProject));
     });
   }
 
@@ -215,8 +215,8 @@ export class ProjectService {
     );
   }
 
-  private writeForm(project: Project, row: DemiProject): Observable<DemiProject> {
-    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
+  private writeForm(project: Project, row: DemiProject, held?: readonly string[]): Observable<DemiProject> {
+    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held)).pipe(
       mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body))
     );
   }

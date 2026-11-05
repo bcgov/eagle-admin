@@ -311,7 +311,7 @@ describe('ProjectService', () => {
         const post = answerCreate();
         expect(post.request.method).toBe('POST');
         expect(post.request.body).toEqual({
-          name: 'Ashcroft Ranch Landfill', description: 'Line one\\nline two', sector: 'Mining', region: 'Thompson-Nicola',
+          name: 'Ashcroft Ranch Landfill', description: 'Line one\nline two', sector: 'Mining', region: 'Thompson-Nicola',
           projectState: 'Pre-Application', centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
         });
         http.expectNone(PROJECT_URL);

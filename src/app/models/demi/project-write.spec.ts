@@ -1,7 +1,7 @@
 import { Project } from '../project';
 import { List } from './list';
 import { DemiProject } from './project';
-import { toDemiProjectWrite } from './project-write';
+import { DEFAULT_CENTROID, toDemiProjectWrite } from './project-write';
 
 const LISTS: List[] = [
   { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 },
@@ -15,8 +15,14 @@ const PHASE1 = { _id: 'phase1', name: 'Pre-Application', type: 'projectPhase', l
 const PHASE2 = { _id: 'phase2', name: 'Application Review', type: 'projectPhase', legislation: 2018 };
 
 // Built the way the edit form builds its save: `new Project` over the form values.
-const write = (form: object, row: Partial<DemiProject> = {}) =>
-  toDemiProjectWrite(new Project({ _id: 'p1', name: 'Mine', ...form }), LISTS, { id: '7', name: 'Mine', ...row });
+const write = (form: object, row: Partial<DemiProject> = {}, held?: string[]) =>
+  toDemiProjectWrite(new Project({ _id: 'p1', name: 'Mine', ...form }), LISTS, { id: '7', name: 'Mine', ...row }, held);
+
+// What the form sends for the local day it shows a stored date as: that day's local midnight.
+const shownDay = (iso: string, days = 0) => {
+  const day = new Date(iso);
+  return new Date(day.getFullYear(), day.getMonth(), day.getDate() + days).toISOString();
+};
 
 describe('toDemiProjectWrite', () => {
   it('turns a picked List id into the ref DEMI stores', () => {
@@ -56,25 +62,45 @@ describe('toDemiProjectWrite', () => {
   });
 
   it('sends null for an emptied field, so DEMI clears it', () => {
-    expect(write({ CEAALink: '' }).CEAALink).toBeNull();
+    expect(write({ CEAALink: '' }, { CEAALink: 'https://iaac.example/1' }).CEAALink).toBeNull();
+  });
+
+  it('leaves out a field empty in both the form and the row', () => {
+    expect('CEAALink' in write({ CEAALink: '' })).toBeFalse();
+  });
+
+  it('leaves out a cleared field the tab\'s form does not hold, and holds the stage with the phase', () => {
+    const row = { eaStatusDate: '2024-03-15T07:00:00.000Z', dispute: true, projectState: 'Closed' };
+
+    const body = write({ currentPhaseName: 'phase1' }, row, ['name']);
+    expect('eaStatusDate' in body).toBeFalse();
+    expect('dispute' in body).toBeFalse();
+    expect('projectState' in body).toBeFalse();
+    expect(write({ currentPhaseName: 'phase1' }, row, ['currentPhaseName']).projectState).toBe('Pre-Application');
+  });
+
+  it('keeps a stored date the form shows as the same day, and sends another day', () => {
+    const stored = '2024-03-15T07:00:00.000Z';
+
+    expect('eaStatusDate' in write({ eaStatusDate: shownDay(stored) }, { eaStatusDate: stored })).toBeFalse();
+    expect(write({ decisionDate: shownDay(stored, 1) }, { decisionDate: stored }).decisionDate).toBe(shownDay(stored, 1));
   });
 
   it('keeps a stored No or unset answer on a No, and turns a stored Yes into false', () => {
     const body = write({ substantially: false, dispute: false }, { substantially: false, dispute: null });
 
-    expect(body.substantially).toBeFalse();
-    expect(body.dispute).toBeNull();
+    expect('substantially' in body).toBeFalse();
+    expect('dispute' in body).toBeFalse();
     expect(write({ substantially: false }, { substantially: true }).substantially).toBeFalse();
   });
 
   it('keeps the stored Track type when the picker key differs only in spacing', () => {
-    expect(write({ type: 'Energy-Petroleum & Natural Gas' }, { projectType: 'Energy - Petroleum & Natural Gas' }).projectType)
-      .toBe('Energy - Petroleum & Natural Gas');
+    expect('projectType' in write({ type: 'Energy-Petroleum & Natural Gas' }, { projectType: 'Energy - Petroleum & Natural Gas' })).toBeFalse();
     expect(write({ type: 'Mines' }, { projectType: 'Energy - Petroleum & Natural Gas' }).projectType).toBe('Mines');
   });
 
   it('clears a contact\'s stored name with its id', () => {
-    const body = write({ responsibleEPDId: null, projectLeadId: 'u1' });
+    const body = write({ responsibleEPDId: null, projectLeadId: 'u1' }, { responsibleEPDId: 'u0' });
 
     expect(body.responsibleEPD).toBeNull();
     expect('projectLead' in body).toBeFalse();
@@ -93,7 +119,21 @@ describe('toDemiProjectWrite', () => {
       .toEqual({ investment: 5, notes: null, investmentNotes: 'Phase 1' });
   });
 
+  it('writes no intake on a row with none when the form\'s intake is empty', () => {
+    expect('intake' in write({ intake: { investment: null, notes: '' } })).toBeFalse();
+  });
+
+  it('keeps real newlines in the description', () => {
+    expect(write({ description: 'Line 1\nLine 2' }).description).toBe('Line 1\nLine 2');
+  });
+
+  it('writes no default point on a stored row with none, but sends it on create', () => {
+    expect('centroid' in write({ centroid: [...DEFAULT_CENTROID] }, { centroid: null })).toBeFalse();
+    expect(toDemiProjectWrite(new Project({ name: 'New', centroid: [...DEFAULT_CENTROID] }), LISTS, {} as DemiProject).centroid)
+      .toEqual({ type: 'Point', coordinates: [...DEFAULT_CENTROID] });
+  });
+
   it('sends no point when a coordinate is blank', () => {
-    expect(write({ centroid: ['', '50.7'] }).centroid).toBeNull();
+    expect(write({ centroid: ['', '50.7'] }, { centroid: { type: 'Point', coordinates: [-120, 50] } }).centroid).toBeNull();
   });
 });

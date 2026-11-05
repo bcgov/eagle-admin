@@ -13,7 +13,7 @@ export const DEMI_FIELD_NAMES = Object.freeze({
   proponent: 'proponentId'
 } as const);
 
-/** Fields eagle-api's PUT wrote on every save: one the form left empty is sent as null, so DEMI clears it. */
+/** Fields eagle-api's PUT wrote on every save: one the user emptied is sent as null, so DEMI clears it. */
 const CLEARED_FIELDS = [
   'name', 'description', 'sector', 'region', 'build', 'CEAALink', 'eaStatus', 'eaStatusDate', 'decisionDate',
   'substantially', 'substantiallyDate', 'dispute', 'disputeDate', 'intake', 'responsibleEPDId', 'projectLeadId',
@@ -31,19 +31,36 @@ const CONTACT_NAMES = { responsibleEPDId: 'responsibleEPD', projectLeadId: 'proj
 
 type WriteField = typeof CLEARED_FIELDS[number] | typeof SET_FIELDS[number];
 
+/** The edit form's lon and lat for a project with no location; create needs a point, as DEMI refuses a project without one. */
+export const DEFAULT_CENTROID: readonly [number, number] = [-123.3656, 48.4284];
+
+// valueOf's answer for a field the save must leave out, so DEMI keeps the stored value.
+const KEEP = Symbol('keep');
+const DATE_FIELDS = new Set<string>(['eaStatusDate', 'decisionDate', 'substantiallyDate', 'disputeDate']);
+
 /** A List ref as DEMI stores it; `item` is the List row's link, such as a BC Laws URL. */
 type WriteListRef = DemiListRef & { item?: string };
 
 /**
  * DEMI `PUT /projects/:id` body over the stored `row`: catalogued top-level fields only, under DEMI's names,
- * since DEMI answers 400 to an uncatalogued key such as `_id`.
+ * since DEMI answers 400 to an uncatalogued key such as `_id`. `held` names the fields the saving form holds;
+ * a cleared field outside it, or one empty in both the form and the row, is left out, so DEMI keeps it.
  */
-export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject): Record<string, unknown> {
+export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject, held?: readonly string[]): Record<string, unknown> {
   const body: Record<string, unknown> = {};
   for (const field of [...CLEARED_FIELDS, ...SET_FIELDS]) {
+    const name = DEMI_FIELD_NAMES[field as keyof typeof DEMI_FIELD_NAMES] ?? field;
+    // The stage follows the phase, so it is held with it.
+    const holder = field === 'status' ? 'currentPhaseName' : field;
+    if (CLEARED.has(field) && held && !held.includes(holder)) {
+      continue;
+    }
     const value = valueOf(project, field, lists, row);
+    if (value === KEEP || (value == null && isEmpty(row[name]))) {
+      continue;
+    }
     if (value !== undefined || CLEARED.has(field)) {
-      body[DEMI_FIELD_NAMES[field as keyof typeof DEMI_FIELD_NAMES] ?? field] = value ?? null;
+      body[name] = value ?? null;
     }
   }
   for (const [idField, nameField] of Object.entries(CONTACT_NAMES)) {
@@ -75,24 +92,42 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
       return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists, row.currentPhaseName).name : undefined);
     case 'proponent':
       return value && typeof value === 'object' ? value._id : value;
+    // The form shows the default point on a stored row with none; that is not the user's pick.
     case 'centroid':
-      return point(value);
+      return row.id && !row.centroid && sameCoordinates(value, DEFAULT_CENTROID) ? KEEP : point(value);
     // Over the stored object, so keys the form does not edit stay.
-    case 'intake':
-      return value ? { ...(row.intake as object), investment: value.investment, investmentNotes: value.notes ?? value.investmentNotes ?? null } : undefined;
+    case 'intake': {
+      const notes = value?.notes ?? value?.investmentNotes;
+      if (!value || (isEmpty(value.investment) && isEmpty(notes) && row.intake == null)) {
+        return row.intake == null ? KEEP : undefined;
+      }
+      return { ...(row.intake as object), investment: value.investment, investmentNotes: notes ?? null };
+    }
     // `new Project` drops a No answer, so a stored false or null stays; a stored Yes becomes false.
     case 'substantially':
     case 'dispute':
-      return value || (row[field] ? false : row[field]);
+      return value || (row[field] ? false : KEEP);
     // The picker key differs from Track's stored type only in spacing; keep the stored one.
     case 'type':
-      return value && projectTypeKey(row.projectType) === value ? row.projectType : value;
-    // Stored escaped, as eagle-api's save always sent it.
-    case 'description':
-      return value?.replace(/\n/g, '\\n');
+      return value && projectTypeKey(row.projectType) === value ? KEEP : value;
     default:
-      return value;
+      // The form shows a date as the local day; the same day back keeps the stored time and zone.
+      return DATE_FIELDS.has(field) && sameLocalDay(value, row[field]) ? KEEP : value;
   }
+}
+
+const isEmpty = (value: unknown) => value == null || value === '';
+
+function sameLocalDay(a: unknown, b: unknown): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') {
+    return false;
+  }
+  const [x, y] = [new Date(a), new Date(b)];
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}
+
+function sameCoordinates(centroid: unknown[] | undefined, [lon, lat]: readonly number[]): boolean {
+  return Number(centroid?.[0]) === lon && Number(centroid?.[1]) === lat;
 }
 
 /**

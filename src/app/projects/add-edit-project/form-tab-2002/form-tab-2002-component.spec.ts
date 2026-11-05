@@ -155,7 +155,14 @@ describe('FormTab2002', () => {
     component.onSubmit();
 
     expect(toast.error).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }));
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }), jasmine.any(Array));
+    // The 2002 form shows none of these, so its save must not clear them.
+    const held = projectService.save.calls.mostRecent().args[1];
+    expect(held).toContain('name');
+    expect(held).not.toContain('eaStatusDate');
+    expect(held).not.toContain('substantiallyDate');
+    expect(held).not.toContain('dispute');
+    expect(held).not.toContain('disputeDate');
   });
 
   it('save on another Act\'s tab toasts and sends nothing', async () => {
