@@ -42,9 +42,8 @@ const DATE_FIELDS = new Set<string>(['eaStatusDate', 'decisionDate', 'substantia
 type WriteListRef = DemiListRef & { item?: string };
 
 /**
- * DEMI `PUT /projects/:id` body over the stored `row`: catalogued top-level fields only, under DEMI's names,
- * since DEMI answers 400 to an uncatalogued key such as `_id`. `held` names the fields the saving form holds;
- * a cleared field outside it, or one empty in both the form and the row, is left out, so DEMI keeps it.
+ * DEMI `PUT /projects/:id` body over `row`, catalogued fields under DEMI's names (DEMI answers 400 to others such as `_id`).
+ * A cleared field outside `held` (the saving form's fields), or empty in form and row, is left out, so DEMI keeps it.
  */
 export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject, held?: readonly string[]): Record<string, unknown> {
   const body: Record<string, unknown> = {};
