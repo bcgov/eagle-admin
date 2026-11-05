@@ -20,7 +20,7 @@ import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, conver
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { OTHER_ACT_TAB_MESSAGE } from '../add-edit-project.component';
+import { projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
 
 
 @Component({
@@ -41,6 +41,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
   private logger = inject(LoggingService);
+  private writeFailed = projectWriteFailed(this.logger, this.toastService, 'FormTab2018Component');
 
   public myForm: FormGroup<{
     name: FormControl<string | null>;
@@ -138,6 +139,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
     const fullProjectSearchData = extractFromSearchResults(data.fullProject);
     this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
+    this.projectId = this.route.snapshot.paramMap.get('projId');
     if (this.fullProject) {
       if (this.fullProject['legislation_2002'] && Object.keys(this.fullProject['legislation_2002']).length > 0 && this.fullProject['legislation_2002'].name) {
         this.oldProject = this.fullProject['legislation_2002'];
@@ -150,7 +152,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       // tslint:disable-next-line: triple-equals
       this.tabIsEditing = !isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
       this.pageIsEditing = this.storageService.state.pageIsEditing;
-      this.projectId = this.route.snapshot.paramMap.get('projId');
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
       this.published = this.fullProject.isPublished && ['legislation_2018'].includes(this.fullProject.currentLegislationYear);
     } else {
@@ -554,22 +555,6 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
-  // DEMI's PUT writes the current Act's fields only, so another Act's tab is read-only.
-  private onCurrentAct(): boolean {
-    if (!this.pageIsEditing || this.fullProject?.currentLegislationYear === `legislation_${this.legislationYear}`) {
-      return true;
-    }
-    this.toastService.error(OTHER_ACT_TAB_MESSAGE);
-    return false;
-  }
-
-  private writeFailed(action: 'save' | 'publish' | 'unpublish'): (error: Error) => void {
-    return error => {
-      this.logger.error(`Failed to ${action} project`, 'FormTab2018Component', error);
-      this.toastService.error(`Failed to ${action} project. ${error.message}`);
-    };
-  }
-
   confirmGuard(message: string): Observable<boolean> {
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static',
@@ -616,7 +601,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
-    if (!this.onCurrentAct() || !this.validateForm()) {
+    if (refuseTabWrite(this.toastService, this.projectId, this.fullProject, this.legislationYear) || !this.validateForm()) {
       return;
     }
       this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>2018 Environmental Assessment Act</strong>?`)
@@ -728,7 +713,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (!this.onCurrentAct()) {
+    if (refuseTabWrite(this.toastService, this.projectId, this.fullProject, this.legislationYear)) {
       return;
     }
     this.saveProject(

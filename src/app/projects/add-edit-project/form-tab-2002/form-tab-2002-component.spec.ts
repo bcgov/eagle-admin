@@ -162,14 +162,30 @@ describe('FormTab2002', () => {
   });
 
   it('save on another Act\'s tab toasts and sends nothing', async () => {
-    const component = (await render(projectResults(row2002({}, { currentLegislationYear: 'legislation_2018' })))).componentInstance;
+    (await render(projectResults(row2002({}, { currentLegislationYear: 'legislation_2018' })))).componentInstance.onSubmit();
 
-    component.onSubmit();
-    component.onPublish();
+    expect(toast.error).toHaveBeenCalledWith('Only the current Act\'s fields can be changed here');
+    expect(projectService.save).not.toHaveBeenCalled();
+  });
+
+  it('publish on another Act\'s tab toasts and sends nothing', async () => {
+    const fixture = await render(projectResults(row2002({}, { currentLegislationYear: 'legislation_2018' })));
+
+    fixture.componentInstance.onPublish();
+    await fixture.whenStable();
 
     expect(toast.error).toHaveBeenCalledWith('Only the current Act\'s fields can be changed here');
     expect(projectService.save).not.toHaveBeenCalled();
     expect(projectService.publish).not.toHaveBeenCalled();
+  });
+
+  it('save on an edit route with no loaded project sends neither add nor save', async () => {
+    // fullProjectResolver's answer when it cannot read the project.
+    (await render([{ data: { meta: [], searchResults: [] } }])).componentInstance.onSubmit();
+
+    expect(toast.error).toHaveBeenCalledWith('This project could not be loaded for edit, so nothing was saved.');
+    expect(projectService.add).not.toHaveBeenCalled();
+    expect(projectService.save).not.toHaveBeenCalled();
   });
 
   it('unpublish failure toasts DEMI\'s 403 text', async () => {
@@ -183,7 +199,7 @@ describe('FormTab2002', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('projectId, unpublish and link-contact use the route id, not fullProject._id', async () => {
+  it('projectId, unpublish and link-contact use the route id, not the Eagle id', async () => {
     const component = (await render(projectResults(row2002()))).componentInstance;
     projectService.unPublish.and.returnValue(of({} as any));
 
@@ -191,7 +207,6 @@ describe('FormTab2002', () => {
     await Promise.resolve();
     component.linkContact('epd');
 
-    expect(component.projectId).toBe(ROUTE_ID);
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
   });

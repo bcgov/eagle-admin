@@ -33,17 +33,21 @@ function row2018(block: object = {}) {
 }
 
 const results = (row: object) => [{ data: { meta: [], searchResults: [row] } }];
+// fullProjectResolver's answer when it cannot read the project.
+const NO_PROJECT = [{ data: { meta: [], searchResults: [] } }];
 
 describe('FormTab2018', () => {
   let fixture: ComponentFixture<FormTab2018Component>;
   let projectService: jasmine.SpyObj<ProjectService>;
   let toast: jasmine.SpyObj<ToastService>;
+  let logger: jasmine.SpyObj<LoggingService>;
   let navigate: jasmine.Spy;
 
   function render(fullProject: unknown = AjaxData) {
     projectService = jasmine.createSpyObj('ProjectService', ['add', 'save', 'publish', 'unPublish']);
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
+    logger = jasmine.createSpyObj('LoggingService', ['error']);
     TestBed.configureTestingModule({
       imports: [FormTab2018Component],
       providers: [
@@ -52,7 +56,7 @@ describe('FormTab2018', () => {
         { provide: StorageService, useValue: { state: { pageIsEditing: true } } },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toast },
-        { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error']) },
+        { provide: LoggingService, useValue: logger },
         { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: Promise.resolve(true) }) } },
         {
           provide: ActivatedRoute,
@@ -97,24 +101,50 @@ describe('FormTab2018', () => {
   });
 
   it('save on another Act\'s tab toasts and sends nothing', () => {
-    const component = render(results({ ...row2018(), currentLegislationYear: 'legislation_2002' }));
+    render(results({ ...row2018(), currentLegislationYear: 'legislation_2002' })).onSubmit();
 
-    component.onSubmit();
-    component.onPublish();
+    expect(toast.error).toHaveBeenCalledWith('Only the current Act\'s fields can be changed here');
+    expect(projectService.save).not.toHaveBeenCalled();
+  });
+
+  it('publish on another Act\'s tab toasts and sends nothing', async () => {
+    render(results({ ...row2018(), currentLegislationYear: 'legislation_2002' })).onPublish();
+    await fixture.whenStable();
 
     expect(toast.error).toHaveBeenCalledWith('Only the current Act\'s fields can be changed here');
     expect(projectService.save).not.toHaveBeenCalled();
     expect(projectService.publish).not.toHaveBeenCalled();
   });
 
-  it('save failure toasts DEMI\'s refusal', () => {
+  it('save on an edit route with no loaded project sends neither add nor save', () => {
+    render(NO_PROJECT).onSubmit();
+
+    expect(toast.error).toHaveBeenCalledWith('This project could not be loaded for edit, so nothing was saved.');
+    expect(projectService.add).not.toHaveBeenCalled();
+    expect(projectService.save).not.toHaveBeenCalled();
+  });
+
+  it('save failure toasts the error text and logs', () => {
     spyOn(window, 'alert');
     const component = render(results(row2018()));
-    projectService.save.and.returnValue(throwError(() => new Error('Changes on the 2018 tab cannot be saved: this project is under the 2002 Act.')));
+    const error = new Error('Changes on the 2018 tab cannot be saved: this project is under the 2002 Act.');
+    projectService.save.and.returnValue(throwError(() => error));
 
     component.onSubmit();
 
-    expect(toast.error).toHaveBeenCalledWith('Failed to save project. Changes on the 2018 tab cannot be saved: this project is under the 2002 Act.');
+    expect(toast.error).toHaveBeenCalledWith(`Failed to save project. ${error.message}`);
+    expect(logger.error).toHaveBeenCalledWith('Failed to save project', 'FormTab2018Component', error);
+  });
+
+  it('publish failure toasts the error text', async () => {
+    spyOn(window, 'alert');
+    const component = render(results(row2018()));
+    projectService.publish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));
+
+    component.onPublish();
+    await fixture.whenStable();
+
+    expect(toast.error).toHaveBeenCalledWith('Failed to publish project. Forbidden: not a project admin');
   });
 
   it('unpublish failure toasts DEMI\'s 403 text', async () => {
@@ -128,7 +158,7 @@ describe('FormTab2018', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('projectId, unpublish and link-contact use the route id, not fullProject._id', async () => {
+  it('projectId, unpublish and link-contact use the route id, not the Eagle id', async () => {
     const component = render(results(row2018()));
     projectService.unPublish.and.returnValue(of({} as any));
 

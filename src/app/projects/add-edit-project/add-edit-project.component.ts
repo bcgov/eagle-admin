@@ -6,13 +6,45 @@ import { Project } from 'src/app/models/project';
 import { IAddEditTab } from 'src/app/models/ProjectDetails';
 import { ISearchResults } from 'src/app/models/search';
 import { ConfigService } from 'src/app/services/config.service';
+import { LoggingService } from 'src/app/services/logging.service';
 import { StorageService } from 'src/app/services/storage.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 
 export const OTHER_ACT_TAB_MESSAGE = 'Only the current Act\'s fields can be changed here';
+export const NOT_LOADED_MESSAGE = 'This project could not be loaded for edit, so nothing was saved.';
+
+// Order matters: tabs show in this order, and the add page shows only the last (newest) Act.
+export const EDIT_TABS: IAddEditTab[] = [
+  { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
+  { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
+];
+
+// DEMI's PUT writes only the current Act's fields. With no loaded project, an edit route's Save would POST a new one.
+/** Toasts and returns true when a tab must not write. */
+export function refuseTabWrite(toast: ToastService, projectId: string | null, fullProject: FullProject | null, tabYear: number): boolean {
+  let refusal: string | null = null;
+  if (projectId && !fullProject) {
+    refusal = NOT_LOADED_MESSAGE;
+  } else if (projectId && fullProject.currentLegislationYear !== `legislation_${tabYear}`) {
+    refusal = OTHER_ACT_TAB_MESSAGE;
+  }
+  if (refusal) {
+    toast.error(refusal);
+  }
+  return refusal !== null;
+}
+
+/** A tab's handler for a failed project write: logs, then toasts the error text. */
+export function projectWriteFailed(logger: LoggingService, toast: ToastService, source: string) {
+  return (action: 'save' | 'publish' | 'unpublish') => (error: Error) => {
+    logger.error(`Failed to ${action} project`, source, error);
+    toast.error(`Failed to ${action} project. ${error.message}`);
+  };
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,13 +64,7 @@ export class AddEditProjectComponent implements OnInit {
   private storageService = inject(StorageService);
 
 
-  // order of items in this tabLinks array is important because it orders the tabs and for the add page we are only adding information to the newest legislations
-  public tabLinks: IAddEditTab[] = [
-    // If we ever need the 1996 tab this would be the logic needed
-    // { label: '1996 Environmental Assessment Act', link: 'form-1996', years: ['legislation_1996']  },
-    { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
-    { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
-  ];
+  public tabLinks = EDIT_TABS;
   private destroyRef = inject(DestroyRef);
   public documents: any[] = [];
   public back: any = {};

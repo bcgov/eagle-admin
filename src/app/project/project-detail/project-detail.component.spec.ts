@@ -27,7 +27,9 @@ describe('ProjectDetailComponent', () => {
     ...overrides
   });
 
-  function open(native: DemiProject | Error, legislationYearList = [2018], routeId = 'eagle-1', publishState?: ProjectPublishState) {
+  interface OpenOptions { legislationYearList?: number[]; routeId?: string; publishState?: ProjectPublishState }
+
+  function open(native: DemiProject | Error, { legislationYearList = [2018], routeId = 'eagle-1', publishState }: OpenOptions = {}) {
     projectService = jasmine.createSpyObj('ProjectService', ['getNative', 'getUsers', 'getCommentPeriods']);
     projectService.getNative.and.returnValue(native instanceof Error ? throwError(() => native) : of(native));
     projectService.getUsers.and.returnValue(of([
@@ -97,12 +99,12 @@ describe('ProjectDetailComponent', () => {
   });
 
   it('shows the legislation year from the row', () => {
-    open(row({ legislationYear: 2002 }), [2002]);
+    open(row({ legislationYear: 2002 }), { legislationYearList: [2002] });
     expect(text('#legislation')).toBe('2002 Environmental Assessment Act');
   });
 
   it('offers the archived details when an older legislation year exists', () => {
-    open(row(), [2002, 2018]);
+    open(row(), { legislationYearList: [2002, 2018] });
     expect(fixture.nativeElement.textContent).toContain('View Archived Project Details');
   });
 
@@ -120,19 +122,21 @@ describe('ProjectDetailComponent', () => {
   });
 
   it('project details reads the publish flag under the route id', () => {
-    open(row({ isPublished: true }), [2018], 'demi-7', ProjectPublishState.unpublished);
+    open(row({ isPublished: true }), { routeId: 'demi-7', publishState: ProjectPublishState.unpublished });
     expect(fixture.nativeElement.querySelector('.badge-unpublished')).not.toBeNull();
   });
 
   it('Edit on a row with no Eagle id navigates to /p/<route id>/edit/form-2018', () => {
-    open(row({ eagleId: undefined, legislationYear: undefined }), [], 'demi-7');
+    open(row({ eagleId: undefined, legislationYear: undefined }), { legislationYearList: [], routeId: 'demi-7' });
     fixture.componentInstance.editProject();
     expect(navigate).toHaveBeenCalledWith(['p', 'demi-7', 'edit', 'form-2018']);
   });
 
-  it('Edit on a 2002 project opens the 1996/2002 tab', () => {
-    open(row({ legislationYear: 2002 }), [2002]);
-    fixture.componentInstance.editProject();
-    expect(navigate).toHaveBeenCalledWith(['p', 'eagle-1', 'edit', 'form-2002']);
+  [1996, 2002].forEach(year => {
+    it(`Edit on a ${year} project opens the 1996/2002 tab`, () => {
+      open(row({ legislationYear: year }), { legislationYearList: [year] });
+      fixture.componentInstance.editProject();
+      expect(navigate).toHaveBeenCalledWith(['p', 'eagle-1', 'edit', 'form-2002']);
+    });
   });
 });

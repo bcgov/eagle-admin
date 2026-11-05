@@ -60,6 +60,14 @@ describe('AddEditProjectComponent', () => {
     expect(projectCrumb.getAttribute('href')).toBe('/p/demi-7');
   });
 
+  it('the edit page breadcrumb renders when the project could not be loaded', () => {
+    create('edit', { fullProject: [{ data: { searchResults: [] } }] });
+    fixture.detectChanges();
+
+    const projectCrumb: HTMLAnchorElement = fixture.nativeElement.querySelectorAll('.breadcrumb a')[1];
+    expect(projectCrumb.getAttribute('href')).toBe('/p/demi-7');
+  });
+
   it('marks the published legislation tab from isPublished', () => {
     const published = (isPublished: boolean) => {
       create('edit', { fullProject: [{ data: { searchResults: [{ ...FULL_PROJECT, isPublished }] } }] });
