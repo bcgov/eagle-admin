@@ -80,7 +80,7 @@ export const fullProjectResolver: ResolveFn<object> = (route: ActivatedRouteSnap
   const toast = inject(ToastService);
 
   const projId = route.pathFromRoot.find(r => r.paramMap.has('projId'))?.paramMap.get('projId') ?? '';
-  return projectService.getNative(projId).pipe(
+  return projectService.getNative(projId, { fresh: route.data?.['freshRead'] === true }).pipe(
     mergeMap(row => {
       const year = currentYear(row);
       const currentKey = `legislation_${year}`;

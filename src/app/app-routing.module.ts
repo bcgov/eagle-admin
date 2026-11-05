@@ -269,6 +269,8 @@ export const routes: Routes = [
         path: 'edit',
         component: AddEditProjectComponent,
         resolve: { fullProject: fullProjectResolver },
+        // The form's save compares against this row, so it must not come from the HTTP cache.
+        data: { freshRead: true },
         // No redirect: the page opens the project's current-Act tab once the project loads.
         children: [{
           path: '',

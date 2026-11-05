@@ -52,9 +52,9 @@ export class ProjectService {
     return this.demiApi.list<DemiProject>('projects', { count: true, sort: 'name', ...params });
   }
 
-  /** A DEMI project by DEMI id or Eagle id. */
-  getNative(id: string): Observable<DemiProject> {
-    return this.demiApi.get<DemiProject>('projects', id);
+  /** A DEMI project by DEMI id or Eagle id; `fresh` skips the HTTP cache. */
+  getNative(id: string, { fresh = false } = {}): Observable<DemiProject> {
+    return this.demiApi.get<DemiProject>('projects', id, { fresh });
   }
 
   getUsers<T extends UserRow>(ids: string[]): Observable<T[]> {
