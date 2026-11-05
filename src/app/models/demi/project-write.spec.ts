@@ -41,8 +41,9 @@ describe('toDemiProjectWrite', () => {
     expect('eacDecision' in write({ eacDecision: 'dec1' }, { eacDecision: stored })).toBeFalse();
   });
 
-  it('sets the stage to the phase name, as eagle-api did on save', () => {
+  it('sets the stage to the phase name when the phase changes, as eagle-api did on save', () => {
     expect(write({ currentPhaseName: 'phase1' }).projectState).toBe('Pre-Application');
+    expect(write({ currentPhaseName: 'phase2' }, { currentPhaseName: PHASE1, projectState: 'Closed' }).projectState).toBe('Application Review');
   });
 
   it('appends a new phase to the stored phase history', () => {
@@ -58,8 +59,12 @@ describe('toDemiProjectWrite', () => {
     expect('phaseHistory' in body).toBeFalse();
   });
 
-  it('leaves the phase history alone when the phase is unchanged', () => {
-    expect('phaseHistory' in write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1 })).toBeFalse();
+  it('leaves the phase, its history and the stage alone when the phase is unchanged', () => {
+    const body = write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2], projectState: 'Closed' });
+
+    expect('currentPhaseName' in body).toBeFalse();
+    expect('phaseHistory' in body).toBeFalse();
+    expect('projectState' in body).toBeFalse();
   });
 
   it('sends null for an emptied field, so DEMI clears it', () => {
@@ -113,6 +118,14 @@ describe('toDemiProjectWrite', () => {
     expect('abbreviation' in body).toBeFalse();
     expect('legislationYear' in body).toBeFalse();
     expect('applicableRegulation' in body).toBeFalse();
+  });
+
+  it('adds an intake key the user fills in, and clears a stored value the user empties', () => {
+    expect(write({ intake: { investment: null, notes: 'Phase 1' } }, { intake: { investment: null } }).intake)
+      .toEqual({ investment: null, investmentNotes: 'Phase 1' });
+    expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: 5 } }).intake).toEqual({ investment: null });
+    // eagle-api's intake defaulted to a string; one stored that way is replaced, not read as an object.
+    expect(write({ intake: { investment: 5, notes: null } }, { intake: 'TBD' }).intake).toEqual({ investment: 5 });
   });
 
   it('stores intake notes as investmentNotes over the stored intake', () => {
