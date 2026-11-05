@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, finalize, from } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { ProjectExtensionLists, ProjectService } from 'src/app/services/project.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -122,9 +122,10 @@ export class ExtensionComponent implements OnInit {
 
   private write(action: 'add' | 'edit' | 'delete', request: Observable<ProjectExtensionLists>) {
     this.saving.set(true);
-    request.pipe(finalize(() => this.saving.set(false)), takeUntilDestroyed(this.destroyRef)).subscribe({
+    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.goBack(),
       error: error => {
+        this.saving.set(false);
         this.logger.error(`${action} ${this.kind()} failed`, 'ExtensionComponent', error);
         this.toast.error(`Failed to ${action} ${this.kind()}. ${error.message}`);
       }

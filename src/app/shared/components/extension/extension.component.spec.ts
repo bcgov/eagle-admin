@@ -89,6 +89,7 @@ describe('ExtensionComponent', () => {
     fixture.detectChanges();
     expect(button('button[type="submit"]').disabled).toBe(true);
     expect(button('button.btn-danger').disabled).toBe(true);
+    expect(button('#button-cl').disabled).toBe(true);
     answerRead();
 
     http.expectOne(`/demi/api/projects/${DEMI_ID}/extensions/e1`)
@@ -98,10 +99,11 @@ describe('ExtensionComponent', () => {
     expect(toast.error).toHaveBeenCalledWith('Failed to edit extension. Invalid extension end: must be after start');
     expect(button('button[type="submit"]').disabled).toBe(false);
     expect(button('button.btn-danger').disabled).toBe(false);
+    expect(button('#button-cl').disabled).toBe(false);
     expect(router.navigate).not.toHaveBeenCalled();
   });
 
-  it('add ignores a leftover stored item and POSTs a suspension', () => {
+  it('add ignores a leftover stored item, POSTs a suspension and keeps Save off while leaving', () => {
     open('edit/add-suspension', { ...STORED });
     expect(button('button.btn-danger')).toBeNull();
     type('appliedTo', 'Application');
@@ -115,6 +117,13 @@ describe('ExtensionComponent', () => {
     expect(req.request.method).toBe('POST');
     expect(req.request.body.type).toBe('Suspension');
     expect(req.request.body.appliedTo).toBe('Application');
+    expect(req.request.body.start).toEqual(new Date(2026, 2, 1));
+    expect(req.request.body.end).toEqual(new Date(2026, 3, 1));
+    req.flush({ reviewExtensions: [], reviewSuspensions: [] });
+    fixture.detectChanges();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/p', EAGLE_ID, 'edit']);
+    expect(button('button[type="submit"]').disabled).toBe(true);
   });
 
   it('edit with no stored item sends nothing and goes back', () => {
