@@ -83,12 +83,21 @@ export function toDemiProjectWrite(project: Project, lists: List[], row: DemiPro
 function valueOf(project: Project, field: WriteField, lists: List[], row: DemiProject): unknown {
   const value = project[field];
   if (LIST_REFS.has(field)) {
-    return value ? listRef(value, lists, row[field]) : undefined;
+    // The stored ref's id picked again leaves the stored ref, with keys such as listOrder, as it is.
+    // A List row with no `_id` is a form default the user did not pick.
+    if (sameRef(value, row[field]) || (value && !refId(value))) {
+      return KEEP;
+    }
+    return value ? listRef(value, lists) : undefined;
   }
   switch (field) {
     // eagle-api's PUT took the stage from the phase; the form never sends `status`.
+    // An unchanged phase leaves the stored stage alone too.
     case 'status':
-      return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists, row.currentPhaseName).name : undefined);
+      if (value === undefined && project.currentPhaseName && (sameRef(project.currentPhaseName, row.currentPhaseName) || !refId(project.currentPhaseName))) {
+        return KEEP;
+      }
+      return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists).name : undefined);
     case 'proponent':
       return value && typeof value === 'object' ? value._id : value;
     // The form shows the default point on a stored row with none; that is not the user's pick.
@@ -97,10 +106,18 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
     // Over the stored object, so keys the form does not edit stay.
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;
-      if (!value || (isEmpty(value.investment) && isEmpty(notes) && row.intake == null)) {
+      if (!value) {
         return undefined;
       }
-      return { ...(row.intake as object), investment: value.investment, investmentNotes: notes ?? null };
+      const storedObject = !!row.intake && typeof row.intake === 'object';
+      // Nothing entered over no intake, or over one eagle-api stored as a string or number, leaves it as stored.
+      if (isEmpty(value.investment) && isEmpty(notes) && !storedObject) {
+        return KEEP;
+      }
+      const stored = (storedObject ? row.intake : {}) as Record<string, unknown>;
+      // A key the stored intake lacks is added only when the form has a value for it.
+      const put = (key: string, entered: unknown) => (key in stored || !isEmpty(entered) ? { [key]: entered ?? null } : {});
+      return { ...stored, ...put('investment', value.investment), ...put('investmentNotes', notes) };
     }
     // `new Project` drops a No answer, so a stored false or null stays; a stored Yes becomes false.
     case 'substantially':
@@ -129,19 +146,22 @@ function sameCoordinates(centroid: unknown[] | undefined, [lon, lat]: readonly n
   return Number(centroid?.[0]) === lon && Number(centroid?.[1]) === lat;
 }
 
-/**
- * The ref DEMI stores for a List pick. The form holds the List id; a row read back already holds the ref.
- * An id the Lists lack keeps the stored ref when it names the same id, else goes with no name.
- */
-function listRef(value: string | DemiListRef, lists: List[], stored: unknown): WriteListRef {
+/** Whether a pick (List id or ref) names the stored ref, held as a ref or a bare id. */
+function sameRef(value: unknown, stored: unknown): boolean {
+  return !!refId(value) && refId(value) === refId(stored);
+}
+
+/** A List ref's id, held as a ref or a bare id string. */
+function refId(ref: unknown): string | undefined {
+  return typeof ref === 'string' ? ref : (ref as DemiListRef | null | undefined)?._id;
+}
+
+/** The ref DEMI stores for a new List pick. The form holds the List id; an id the Lists lack goes with no name. */
+function listRef(value: string | DemiListRef, lists: List[]): WriteListRef {
   const id = typeof value === 'string' ? value : value._id;
   const row = lists.find(item => item.id === id);
   if (row) {
     return { _id: row.id, name: row.name, type: row.type, legislation: row.legislation, ...(row.item && { item: row.item }) };
-  }
-  const kept = stored as WriteListRef | undefined;
-  if (kept?._id === id) {
-    return kept;
   }
   return typeof value === 'string' ? { _id: id, name: null } : value;
 }

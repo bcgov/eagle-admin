@@ -35,14 +35,30 @@ describe('toDemiProjectWrite', () => {
       .toBe('https://www.bclaws.gov.bc.ca/civix/document/id/complete/statreg/243_2019');
   });
 
-  it('keeps the stored ref for an id the Lists lack', () => {
-    const stored = { _id: 'old-dec', name: 'Certificate Issued (2002)', type: 'eaDecisions', legislation: 2002 };
+  it('leaves a stored ref, with its extra keys, out when its id is picked again', () => {
+    const stored = { _id: 'dec1', name: 'Certificate Issued', type: 'eaDecisions', legislation: 2018, listOrder: 2, _schemaName: 'List' };
 
-    expect(write({ eacDecision: 'old-dec' }, { eacDecision: stored }).eacDecision).toEqual(stored);
+    expect('eacDecision' in write({ eacDecision: 'dec1' }, { eacDecision: stored })).toBeFalse();
+    expect('applicableRegulation' in write({ applicableRegulation: 'reg1' }, { applicableRegulation: 'reg1' })).toBeFalse();
   });
 
-  it('sets the stage to the phase name, as eagle-api did on save', () => {
+  it('leaves out a List row default the user did not pick, with the stage and history, on create and on edit', () => {
+    // The create form's phase starts as the first List row, which has `id` but no `_id`.
+    const listRow = { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 };
+    const created = toDemiProjectWrite(new Project({ name: 'New', currentPhaseName: listRow }), LISTS, {} as DemiProject);
+    const edited = write({ currentPhaseName: listRow, eacDecision: { ...listRow, id: 'dec1' } }, { currentPhaseName: PHASE2, projectState: 'Closed' });
+
+    for (const body of [created, edited]) {
+      expect('currentPhaseName' in body).toBeFalse();
+      expect('projectState' in body).toBeFalse();
+      expect('phaseHistory' in body).toBeFalse();
+    }
+    expect('eacDecision' in edited).toBeFalse();
+  });
+
+  it('sets the stage to the phase name when the phase changes, as eagle-api did on save', () => {
     expect(write({ currentPhaseName: 'phase1' }).projectState).toBe('Pre-Application');
+    expect(write({ currentPhaseName: 'phase2' }, { currentPhaseName: PHASE1, projectState: 'Closed' }).projectState).toBe('Application Review');
   });
 
   it('appends a new phase to the stored phase history', () => {
@@ -52,13 +68,18 @@ describe('toDemiProjectWrite', () => {
   });
 
   it('compares a new phase with the last history entry, as eagle-api did', () => {
-    const body = write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2] });
+    const body = write({ currentPhaseName: 'phase2' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2] });
 
-    expect((body.phaseHistory as { _id: string }[]).map(ref => ref._id)).toEqual(['phase1', 'phase2', 'phase1']);
+    expect(body.currentPhaseName).toEqual(PHASE2);
+    expect('phaseHistory' in body).toBeFalse();
   });
 
-  it('leaves the phase history alone when the phase is unchanged', () => {
-    expect('phaseHistory' in write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1 })).toBeFalse();
+  it('leaves the phase, its history and the stage alone when the phase is unchanged', () => {
+    const body = write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1, phaseHistory: [PHASE1, PHASE2], projectState: 'Closed' });
+
+    expect('currentPhaseName' in body).toBeFalse();
+    expect('phaseHistory' in body).toBeFalse();
+    expect('projectState' in body).toBeFalse();
   });
 
   it('sends null for an emptied field, so DEMI clears it', () => {
@@ -114,9 +135,22 @@ describe('toDemiProjectWrite', () => {
     expect('applicableRegulation' in body).toBeFalse();
   });
 
+  it('adds an intake key the user fills in, and clears a stored value the user empties', () => {
+    expect(write({ intake: { investment: null, notes: 'Phase 1' } }, { intake: { investment: null } }).intake)
+      .toEqual({ investment: null, investmentNotes: 'Phase 1' });
+    expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: 5 } }).intake).toEqual({ investment: null });
+    // eagle-api's intake defaulted to a string; one stored that way is replaced, not read as an object.
+    expect(write({ intake: { investment: 5, notes: null } }, { intake: 'TBD' }).intake).toEqual({ investment: 5 });
+    expect('intake' in write({ intake: { investment: null, notes: null } }, { intake: 'TBD' })).toBeFalse();
+  });
+
   it('stores intake notes as investmentNotes over the stored intake', () => {
     expect(write({ intake: { investment: 5, notes: 'Phase 1' } }, { intake: { investment: 4, notes: null, investmentNotes: null } }).intake)
       .toEqual({ investment: 5, notes: null, investmentNotes: 'Phase 1' });
+  });
+
+  it('adds no intake key the stored intake lacks when the form leaves it empty', () => {
+    expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: null } }).intake).toEqual({ investment: null });
   });
 
   it('writes no intake on a row with none when the form\'s intake is empty', () => {
