@@ -201,6 +201,16 @@ describe('ProjectService', () => {
       expect(body.isActive).toBe('active');
     });
 
+    it('save writes only the fields the tab holds', () => {
+      service.save(formProject(), ['name', 'location']).subscribe();
+      answerRead({ eaStatusDate: '2024-03-15T07:00:00.000Z' });
+
+      const body = http.expectOne('/demi/api/projects/7').request.body;
+      expect(body.address).toBe('Ashcroft');
+      expect('eaStatusDate' in body).toBeFalse();
+      expect('projectType' in body).toBeFalse();
+    });
+
     it('save PUTs projects/<row.id> with projectType, address, proponentId and a GeoJSON centroid', () => {
       service.save(formProject()).subscribe();
       answerRead();

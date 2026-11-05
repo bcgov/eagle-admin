@@ -186,6 +186,7 @@ export class AddEditProjectComponent implements OnInit {
     }
     this.extensionsOf = demiId;
     this.extensions.set([]);
+    this.extensionsFailed.set(false);
     this.extensionReads.next(demiId);
   }
 }

@@ -77,6 +77,20 @@ describe('AddEditProjectComponent', () => {
     expect(navigate).toHaveBeenCalledWith(['/p', 'demi-7', 'edit', 'edit-suspension']);
   });
 
+  it('drops a list read for a project the page has left', () => {
+    const data = new Subject<object>();
+    const component = create('edit', data);
+    const forProject = (demiId: string) => ({ fullProject: [{ data: { searchResults: [{ ...FULL_PROJECT, legislation_2018: { name: demiId, demiId } }] } }] });
+    data.next(forProject('demi-a'));
+    const readA = http.expectOne('/demi/api/projects/demi-a/extensions');
+    data.next(forProject('demi-b'));
+    http.expectOne('/demi/api/projects/demi-b/extensions')
+      .flush({ reviewExtensions: [{ id: 'b1', type: 'Extension', appliedTo: 'B', start: '2026-01-01', end: '2026-02-01' }], reviewSuspensions: [] });
+
+    expect(readA.cancelled).toBeTrue();
+    expect(component.extensions().map(item => item.id)).toEqual(['b1']);
+  });
+
   it('a failed extension read says so instead of the empty text, and Try again reads again', () => {
     create('edit', WITH_DEMI_ID);
     http.expectOne('/demi/api/projects/demi-7/extensions').flush({ error: 'Forbidden' }, { status: 403, statusText: 'Forbidden' });

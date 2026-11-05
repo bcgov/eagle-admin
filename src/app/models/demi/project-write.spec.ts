@@ -129,6 +129,7 @@ describe('toDemiProjectWrite', () => {
 
   it('writes no default point on a stored row with none, but sends it on create', () => {
     expect('centroid' in write({ centroid: [...DEFAULT_CENTROID] }, { centroid: null })).toBeFalse();
+    expect('centroid' in write({ centroid: [...DEFAULT_CENTROID] }, { centroid: { type: 'Point', coordinates: [] } })).toBeFalse();
     expect(toDemiProjectWrite(new Project({ name: 'New', centroid: [...DEFAULT_CENTROID] }), LISTS, {} as DemiProject).centroid)
       .toEqual({ type: 'Point', coordinates: [...DEFAULT_CENTROID] });
   });

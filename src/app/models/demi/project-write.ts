@@ -93,7 +93,7 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
       return value && typeof value === 'object' ? value._id : value;
     // The form shows the default point on a stored row with none; that is not the user's pick.
     case 'centroid':
-      return row.id && !row.centroid && sameCoordinates(value, DEFAULT_CENTROID) ? KEEP : point(value);
+      return row.id && !row.centroid?.coordinates?.length && sameCoordinates(value, DEFAULT_CENTROID) ? KEEP : point(value);
     // Over the stored object, so keys the form does not edit stay.
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;
