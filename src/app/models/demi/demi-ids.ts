@@ -6,7 +6,7 @@ export function isEagleId(id: string | null | undefined): boolean {
 }
 
 /** Ids a row may carry: legacy `_id`, or native `id` and `eagleId`. */
-export interface WriteIds {
+interface WriteIds {
   _id?: string | null;
   id?: string | null;
   eagleId?: string | null;
