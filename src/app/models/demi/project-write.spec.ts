@@ -39,6 +39,21 @@ describe('toDemiProjectWrite', () => {
     const stored = { _id: 'dec1', name: 'Certificate Issued', type: 'eaDecisions', legislation: 2018, listOrder: 2, _schemaName: 'List' };
 
     expect('eacDecision' in write({ eacDecision: 'dec1' }, { eacDecision: stored })).toBeFalse();
+    expect('applicableRegulation' in write({ applicableRegulation: 'reg1' }, { applicableRegulation: 'reg1' })).toBeFalse();
+  });
+
+  it('leaves out a List row default the user did not pick, with the stage and history, on create and on edit', () => {
+    // The create form's phase starts as the first List row, which has `id` but no `_id`.
+    const listRow = { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 };
+    const created = toDemiProjectWrite(new Project({ name: 'New', currentPhaseName: listRow }), LISTS, {} as DemiProject);
+    const edited = write({ currentPhaseName: listRow, eacDecision: { ...listRow, id: 'dec1' } }, { currentPhaseName: PHASE2, projectState: 'Closed' });
+
+    for (const body of [created, edited]) {
+      expect('currentPhaseName' in body).toBeFalse();
+      expect('projectState' in body).toBeFalse();
+      expect('phaseHistory' in body).toBeFalse();
+    }
+    expect('eacDecision' in edited).toBeFalse();
   });
 
   it('sets the stage to the phase name when the phase changes, as eagle-api did on save', () => {
@@ -126,6 +141,7 @@ describe('toDemiProjectWrite', () => {
     expect(write({ intake: { investment: null, notes: null } }, { intake: { investment: 5 } }).intake).toEqual({ investment: null });
     // eagle-api's intake defaulted to a string; one stored that way is replaced, not read as an object.
     expect(write({ intake: { investment: 5, notes: null } }, { intake: 'TBD' }).intake).toEqual({ investment: 5 });
+    expect('intake' in write({ intake: { investment: null, notes: null } }, { intake: 'TBD' })).toBeFalse();
   });
 
   it('stores intake notes as investmentNotes over the stored intake', () => {

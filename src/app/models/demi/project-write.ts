@@ -84,7 +84,8 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
   const value = project[field];
   if (LIST_REFS.has(field)) {
     // The stored ref's id picked again leaves the stored ref, with keys such as listOrder, as it is.
-    if (sameRef(value, row[field])) {
+    // A List row with no `_id` is a form default the user did not pick.
+    if (sameRef(value, row[field]) || (value && !refId(value))) {
       return KEEP;
     }
     return value ? listRef(value, lists) : undefined;
@@ -93,7 +94,7 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
     // eagle-api's PUT took the stage from the phase; the form never sends `status`.
     // An unchanged phase leaves the stored stage alone too.
     case 'status':
-      if (value === undefined && sameRef(project.currentPhaseName, row.currentPhaseName)) {
+      if (value === undefined && project.currentPhaseName && (sameRef(project.currentPhaseName, row.currentPhaseName) || !refId(project.currentPhaseName))) {
         return KEEP;
       }
       return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists).name : undefined);
@@ -105,10 +106,15 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
     // Over the stored object, so keys the form does not edit stay.
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;
-      if (!value || (isEmpty(value.investment) && isEmpty(notes) && row.intake == null)) {
+      if (!value) {
         return undefined;
       }
-      const stored = (row.intake && typeof row.intake === 'object' ? row.intake : {}) as Record<string, unknown>;
+      const storedObject = !!row.intake && typeof row.intake === 'object';
+      // Nothing entered over no intake, or over one eagle-api stored as a string or number, leaves it as stored.
+      if (isEmpty(value.investment) && isEmpty(notes) && !storedObject) {
+        return KEEP;
+      }
+      const stored = (storedObject ? row.intake : {}) as Record<string, unknown>;
       // A key the stored intake lacks is added only when the form has a value for it.
       const put = (key: string, entered: unknown) => (key in stored || !isEmpty(entered) ? { [key]: entered ?? null } : {});
       return { ...stored, ...put('investment', value.investment), ...put('investmentNotes', notes) };
@@ -142,8 +148,12 @@ function sameCoordinates(centroid: unknown[] | undefined, [lon, lat]: readonly n
 
 /** Whether a pick (List id or ref) names the stored ref, held as a ref or a bare id. */
 function sameRef(value: unknown, stored: unknown): boolean {
-  const idOf = (ref: unknown) => (typeof ref === 'string' ? ref : (ref as DemiListRef | null | undefined)?._id);
-  return !!idOf(value) && idOf(value) === idOf(stored);
+  return !!refId(value) && refId(value) === refId(stored);
+}
+
+/** A List ref's id, held as a ref or a bare id string. */
+function refId(ref: unknown): string | undefined {
+  return typeof ref === 'string' ? ref : (ref as DemiListRef | null | undefined)?._id;
 }
 
 /** The ref DEMI stores for a new List pick. The form holds the List id; an id the Lists lack goes with no name. */
