@@ -104,14 +104,14 @@ describe('FormTab2002', () => {
 
   it('form invalid when empty', async () => {
     const component = (await render()).componentInstance;
-    spyOn(window, 'alert');
 
     component.buildForm();
 
     expect(component.validateForm()).toBeFalsy();
+    expect(toast.error).toHaveBeenCalled();
   });
 
-  it('should display alert on empty EA Decision', async () => {
+  it('toasts on an empty EA Decision', async () => {
     const component = (await render()).componentInstance;
     // validateForm checks EPD and lead before the EA Decision.
     const contact = { _id: '5c33a481c99e4d002498eeee', displayName: 'Test Contact' };
@@ -122,11 +122,10 @@ describe('FormTab2002', () => {
     };
     component.myForm = component.buildFormFromData(project);
     component.myForm.controls.eacDecision.setValue(null);
-    spyOn(window, 'alert');
 
     component.onSubmit();
 
-    expect(window.alert).toHaveBeenCalledWith('You must select an EA Decision');
+    expect(toast.error).toHaveBeenCalledWith('You must select an EA Decision');
   });
 
   it('offers only 2002 EA Decisions, in list order', async () => {
@@ -151,12 +150,11 @@ describe('FormTab2002', () => {
   });
 
   it('save on the current Act PUTs through ProjectService.save', async () => {
-    spyOn(window, 'alert');
     const component = (await render(projectResults(row2002()))).componentInstance;
 
     component.onSubmit();
 
-    expect(window.alert).not.toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
     expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }));
   });
 

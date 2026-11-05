@@ -485,58 +485,58 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
   private validateForm() {
     if (this.myForm.controls.name.value === '' || this.myForm.controls.name.value == null) {
-      alert('Name cannot be empty.');
+      this.toastService.error('Name cannot be empty.');
       return false;
     } else if (this.proponentId === '') {
-      alert('Proponent cannot be empty.');
+      this.toastService.error('Proponent cannot be empty.');
       return false;
     } else if (this.myForm.controls.build.value === '') {
-      alert('You must select a project nature.');
+      this.toastService.error('You must select a project nature.');
       return false;
     } else if (this.myForm.controls.type.value === '') {
-      alert('You must select a type.');
+      this.toastService.error('You must select a type.');
       return false;
     } else if (this.myForm.controls.sector.value === '') {
-      alert('You must select a sub-type.');
+      this.toastService.error('You must select a sub-type.');
       return false;
     } else if (this.myForm.controls.currentPhaseName.value === '') {
-      alert('You must select a project phase.');
+      this.toastService.error('You must select a project phase.');
       return false;
     } else if (this.myForm.controls.description.value === '') {
-      alert('Description cannot be empty.');
+      this.toastService.error('Description cannot be empty.');
       return false;
     } else if (this.myForm.controls.region.value === '') {
-      alert('You must select a region.');
+      this.toastService.error('You must select a region.');
       return false;
     } else if (this.myForm.controls.location.value === '') {
-      alert('Location cannot be empty.');
+      this.toastService.error('Location cannot be empty.');
       return false;
     } else if (this.myForm.controls.lon.value == null) {
-      alert('Longitude cannot be empty.');
+      this.toastService.error('Longitude cannot be empty.');
       return false;
     } else if (this.myForm.controls.lat.value == null) {
-      alert('Latitude cannot be empty.');
+      this.toastService.error('Latitude cannot be empty.');
       return false;
     } else if (this.myForm.controls.lat.value >= 60.01 || this.myForm.controls.lat.value <= 48.20) {
-      alert('Latitude must be between 48.20 and 60.01');
+      this.toastService.error('Latitude must be between 48.20 and 60.01');
       return false;
     } else if (this.myForm.controls.lon.value >= -114.01 || this.myForm.controls.lon.value <= -139.06) {
-      alert('Longitude must be between -114.01 and -139.06');
+      this.toastService.error('Longitude must be between -114.01 and -139.06');
       return;
     } else if (this.myForm.controls.responsibleEPDId.value == null || this.myForm.controls.responsibleEPDId.value === '') {
-      alert('You must select an EPD');
+      this.toastService.error('You must select an EPD');
       return;
     } else if (this.myForm.controls.projectLeadId.value == null || this.myForm.controls.projectLeadId.value === '') {
-      alert('You must select a project lead');
+      this.toastService.error('You must select a project lead');
       return;
     } else if (this.myForm.controls.eacDecision.value === '' || this.myForm.controls.eacDecision.value === null) {
-      alert('You must select an EA Decision');
+      this.toastService.error('You must select an EA Decision');
       return;
     } else if (this.isRegulatoryTransfer() && (!this.myForm.controls.applicableRegulation.value || this.myForm.controls.applicableRegulation.value === '')) {
-      alert('You must select an Applicable Regulation');
+      this.toastService.error('You must select an Applicable Regulation');
       return;
     } else if (this.isAdministrativeClosure() && (!this.myForm.controls.decisionDate.value || this.myForm.controls.decisionDate.value === '')) {
-      alert('You must enter an EA Decision Date for Administrative Closure');
+      this.toastService.error('You must enter an EA Decision Date for Administrative Closure');
       return;
     } else {
       return true;
