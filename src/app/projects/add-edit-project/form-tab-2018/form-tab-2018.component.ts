@@ -628,7 +628,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
                     this.published = true;
                     this.loading = false;
                     this.router.navigated = false;
-                    this.toastService.success('This project was edited and published successfuly.');
+                    this.toastService.success('This project was edited and published successfully.');
                     this.setGlobalProjectPublishFlag(ProjectPublishState.published2018);
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }

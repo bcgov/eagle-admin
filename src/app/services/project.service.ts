@@ -263,6 +263,8 @@ export class ProjectService {
 
 /** A create whose POST went through but a later step failed. `id` is the new DEMI id; `saved` is true once the form's fields are stored. */
 export class ProjectCreatedPartlyError extends Error {
+  override name = 'ProjectCreatedPartlyError';
+
   constructor(readonly id: string, failure: string, cause: Error, readonly saved: boolean) {
     super(`${failure}: ${cause.message}`, { cause });
   }

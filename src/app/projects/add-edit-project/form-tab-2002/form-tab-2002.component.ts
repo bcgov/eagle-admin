@@ -582,7 +582,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                     this.published = true;
                     this.loading = false;
                     this.router.navigated = false;
-                    this.toastService.success('This project was edited and published successfuly.');
+                    this.toastService.success('This project was edited and published successfully.');
                     this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }

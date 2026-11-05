@@ -46,8 +46,7 @@ describe('FormTab2002', () => {
   let navigate: jasmine.Spy;
 
   async function render(fullProject: unknown = AjaxData): Promise<ComponentFixture<FormTab2002Component>> {
-    projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'publish', 'add', 'save']);
-    projectService.add.and.returnValue(of({} as any));
+    projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'publish', 'save']);
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
 
@@ -179,12 +178,11 @@ describe('FormTab2002', () => {
     expect(projectService.publish).not.toHaveBeenCalled();
   });
 
-  it('save on an edit route with no loaded project sends neither add nor save', async () => {
+  it('save on an edit route with no loaded project sends no save', async () => {
     // fullProjectResolver's answer when it cannot read the project.
     (await render([{ data: { meta: [], searchResults: [] } }])).componentInstance.onSubmit();
 
     expect(toast.error).toHaveBeenCalledWith('This project could not be loaded for edit, so nothing was saved.');
-    expect(projectService.add).not.toHaveBeenCalled();
     expect(projectService.save).not.toHaveBeenCalled();
   });
 

@@ -195,7 +195,7 @@ describe('FormTab2018', () => {
 
     it('a failed PUT after create toasts and opens the edit page', () => {
       const component = renderAdd();
-      const error = new ProjectCreatedPartlyError(MINTED, 'Project created, but not every field was saved', new Error('Unknown field: foo'), false);
+      const error = new ProjectCreatedPartlyError(MINTED, 'Project created, but not every field was saved', new Error('Unknown field: foo.'), false);
       projectService.add.and.returnValue(throwError(() => error));
 
       component.onSubmit();
@@ -209,19 +209,34 @@ describe('FormTab2018', () => {
       expect(saveButton().disabled).toBeTrue();
     });
 
-    it('a create with no answer says the project may exist and keeps Save disabled', () => {
+    it('a failed publish after the fields were saved toasts DEMI\'s message alone', () => {
       const component = renderAdd();
-      const error = Object.assign(new Error('0 - Unknown Error'), { status: 0 });
+      const error = new ProjectCreatedPartlyError(MINTED, 'Project created and saved, but not published', new Error('Forbidden'), true);
       projectService.add.and.returnValue(throwError(() => error));
 
-      component.onSubmit();
-      fixture.detectChanges();
+      component.onPublish();
 
-      expect(toast.error).toHaveBeenCalledOnceWith(CREATE_UNKNOWN_MESSAGE);
-      expect(logger.error).toHaveBeenCalledWith('Project create got no answer', 'FormTab2018Component', error);
-      expect(saveButton().disabled).toBeTrue();
-      expect(navigate).not.toHaveBeenCalled();
+      return fixture.whenStable().then(() => {
+        expect(toast.error).toHaveBeenCalledOnceWith('Project created and saved, but not published: Forbidden');
+        expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'edit']);
+      });
     });
+
+    for (const status of [0, 500]) {
+      it(`a create answered with status ${status} says the project may exist and keeps Save disabled`, () => {
+        const component = renderAdd();
+        const error = Object.assign(new Error('Server error'), { status });
+        projectService.add.and.returnValue(throwError(() => error));
+
+        component.onSubmit();
+        fixture.detectChanges();
+
+        expect(toast.error).toHaveBeenCalledOnceWith(CREATE_UNKNOWN_MESSAGE);
+        expect(logger.error).toHaveBeenCalledWith('Project create may have gone through', 'FormTab2018Component', error);
+        expect(saveButton().disabled).toBeTrue();
+        expect(navigate).not.toHaveBeenCalled();
+      });
+    }
   });
 
   it('link-contact on an edit route with no loaded project toasts and does not navigate', () => {
