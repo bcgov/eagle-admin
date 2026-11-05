@@ -106,4 +106,18 @@ describe('httpCacheInterceptor', () => {
 
     expect(refetches('/demi/api/projects')).toBeFalse();
   });
+
+  it('serves the row a fresh DEMI read got, not the older cached one', () => {
+    const url = '/demi/api/projects/p1';
+    client.get(url).subscribe();
+    http.expectOne(url).flush({ name: 'Old' });
+    client.get(url, { headers: { 'cache-control': 'no-cache' } }).subscribe();
+    http.expectOne(url).flush({ name: 'New' });
+
+    let served: unknown;
+    client.get(url).subscribe(body => served = body);
+
+    http.expectNone(url);
+    expect(served).toEqual({ name: 'New' });
+  });
 });

@@ -112,7 +112,15 @@ export const httpCacheInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   if (req.headers.has('cache-control') && req.headers.get('cache-control') === 'no-cache') {
-    return next(req);
+    // A fresh DEMI read replaces the cached one, so a later screen does not show an older row.
+    const demiPath = inject(ConfigService).getDemiApiPath();
+    return next(req).pipe(
+      tap(event => {
+        if (event instanceof HttpResponse && event.ok && isUnderPath(req.url, demiPath)) {
+          cacheService.set(req.urlWithParams, event);
+        }
+      })
+    );
   }
 
   const cachedResponse = cacheService.get(req.urlWithParams);
