@@ -102,6 +102,20 @@ describe('ProjectService', () => {
       expect(legislation2002.projectLeadObj._id).toBe('u1');
     });
 
+    it('getPeopleObjs answers once, after every block has its contacts', () => {
+      const legislation2002 = { name: 'Old Mine', responsibleEPDId: 'u1' } as any;
+      const legislation2018 = { name: 'Mine', responsibleEPDId: 'u2' } as any;
+      const data = [{ data: { searchResults: [{ legislationYearList: [2002, 2018], legislation_2002: legislation2002, legislation_2018: legislation2018 }] } }];
+      const answers: (string | undefined)[] = [];
+
+      service.getPeopleObjs(data).subscribe(() => answers.push(legislation2018.responsibleEPDObj?._id));
+      const [first, second] = http.match(r => r.url === '/demi/api/users');
+      first.flush([{ id: 'u1' }]);
+      second.flush([{ id: 'u2' }]);
+
+      expect(answers).toEqual(['u2']);
+    });
+
   });
 
   describe('pin writes', () => {

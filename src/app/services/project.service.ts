@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, merge, throwError } from 'rxjs';
+import { Observable, of, forkJoin, throwError } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
 import { ConfigService } from './config.service';
@@ -94,24 +94,24 @@ export class ProjectService {
     projectKeys.forEach(key => {
       const project = fullProject[`legislation_${key.toString()}`];
       if (!project || Object.keys(project).length === 0 || !project.name) {
-        return of(data);
+        return;
       }
       project.nature = natureBuildMapper(project.build);
 
       const epdId = (project.responsibleEPDId) ? project.responsibleEPDId.toString() : '';
       const leadId = (project.projectLeadId) ? project.projectLeadId.toString() : '';
       if (!epdId && !leadId) {
-        return of(data);
+        return;
       }
       peopleObjs.push(this.usersById([epdId, leadId]).pipe(
         map(users => {
           project.responsibleEPDObj = users.get(epdId);
           project.projectLeadObj = users.get(leadId);
-          return data;
         })
       ));
     });
-    return (peopleObjs.length > 0) ? merge(...peopleObjs) : of(data);
+    // The resolver takes the first emission, so it waits for every block's contacts.
+    return (peopleObjs.length > 0) ? forkJoin(peopleObjs).pipe(map(() => data)) : of(data);
   }
 
   /**
