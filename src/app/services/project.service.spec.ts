@@ -306,6 +306,14 @@ describe('ProjectService', () => {
         const history = http.expectOne('/demi/api/projects/7').request.body.phaseHistory as { _id: string }[];
         expect(history.map(ref => ref._id)).toEqual(['phase1', 'phase2', 'phase3']);
       });
+
+      it('sends a changed intake key over the stored intake, not the shown one', () => {
+        const intakeShown = { ...shown, intake: { investment: 4, investmentNotes: 'old' } };
+        service.save(formProject({ intake: { investment: 5, notes: 'old' } }), undefined, intakeShown).subscribe();
+        answerRead({ intake: { investment: 4, investmentNotes: 'new' } });
+
+        expect(http.expectOne('/demi/api/projects/7').request.body.intake).toEqual({ investment: 5, investmentNotes: 'new' });
+      });
     });
 
     it('save with nothing changed sends no PUT and still completes', async () => {

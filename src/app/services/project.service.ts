@@ -150,9 +150,10 @@ export class ProjectService {
       if (project.legislationYear && year && Number(project.legislationYear) !== year) {
         return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
-      // Against the shown row, a List field another user changed since is not reverted; a new phase joins the stored history.
+      // Against the shown row, a field another user changed since is not reverted; a new phase joins the stored
+      // history, and changed intake keys go over the stored intake.
       const compared = shown ? { ...shown, phaseHistory: row.phaseHistory } : row;
-      return this.writeForm(project, compared, held).pipe(map(toLegacyProject));
+      return this.writeForm(project, compared, held, row).pipe(map(toLegacyProject));
     });
   }
 
@@ -217,8 +218,8 @@ export class ProjectService {
     );
   }
 
-  private writeForm(project: Project, row: DemiProject, held?: readonly string[]): Observable<DemiProject> {
-    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held)).pipe(
+  private writeForm(project: Project, row: DemiProject, held?: readonly string[], stored = row): Observable<DemiProject> {
+    return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held, stored)).pipe(
       // DEMI rewrites the row on any PUT, so nothing changed sends none.
       mergeMap(body => (Object.keys(body).length ? this.demiApi.update<DemiProject>('projects', row.id, body) : of(row)))
     );
