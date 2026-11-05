@@ -8,6 +8,8 @@ describe('toLegacyProject', () => {
     projectType: 'Waste Disposal',
     projectState: 'Closed',
     address: 'Ashcroft Ranch, Ashcroft, BC',
+    abbreviation: 'ARL',
+    isActive: 'active',
     proponentId: 'org1',
     proponentName: 'Greater Vancouver Sewerage and Drainage District',
     centroid: { type: 'Point', coordinates: [-121.3333, 50.7167] },
@@ -32,6 +34,8 @@ describe('toLegacyProject', () => {
     expect(project.centroid).toEqual([-121.3333, 50.7167]);
     expect(project.status).toBe('Closed');
     expect(project.location).toBe('Ashcroft Ranch, Ashcroft, BC');
+    expect(project.shortName).toBe('ARL');
+    expect(project.activeStatus).toBe('active');
   });
 
   it('passes fields that share the Eagle name through', () => {
