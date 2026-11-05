@@ -37,14 +37,13 @@ function proponentIds(row: DemiProject, currentKey: string): string[] {
 }
 
 /**
- * eagle-api's `projectLegislation=all&populate=true` shape from a DEMI row; `_id` is the Eagle id. The current Act's block is
+ * eagle-api's `projectLegislation=all&populate=true` shape from a DEMI row. The current Act's block is
  * the top level, since DEMI's PUT writes only there. Proponent ids become Organizations; older blocks drop unknown ones, as eagle-api did.
  */
 function toFullProject(row: DemiProject, year: number, currentKey: string, orgs: Map<string, Org>): FullProject {
   const stored = Array.isArray(row.legislationYearList) ? row.legislationYearList.map(Number) : [];
   const project: Record<string, unknown> = {
     ...row,
-    _id: row.eagleId ?? null,
     currentLegislationYear: currentKey,
     legislationYearList: [...new Set([...stored, year])].sort((a, b) => a - b)
   };

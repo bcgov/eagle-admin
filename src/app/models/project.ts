@@ -4,8 +4,6 @@ import { DateTime } from 'luxon';
 export class Project {
   // the following are retrieved from the API
 
-  // even though _id is not saved in the db anymore (its on rootlevel project, represented as fullProject on the frontend)
-  // this field is still used for saving the project
   _id: string;
   CEAAInvolvement: any;
   CELead: string;
