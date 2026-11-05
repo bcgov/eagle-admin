@@ -3,56 +3,49 @@ import { Observable, of, merge, throwError } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
 import { ApiService } from './api';
+import { ConfigService } from './config.service';
 import { DemiApiService } from './demi-api.service';
-import { LoadingStateService } from './loading-state.service';
-import { LoggingService } from './logging.service';
-import { ToastService } from './toast.service';
-import { withLoading } from 'src/app/shared/utils/rxjs-operators';
-import { CommentPeriod } from '../models/commentPeriod';
 import { FullProject } from '../models/fullProject';
 import { Project } from '../models/project';
+import { Organization } from '../models/demi/organization';
 import { DemiProject } from '../models/demi/project';
-import { toLegacyProject } from '../models/demi/project-legacy';
+import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
+import { toDemiProjectWrite } from '../models/demi/project-write';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { extractFromSearchResults, natureBuildMapper } from '../shared/utils/utils';
 
 export const READ_ONLY_PROJECT = 'This project has no Eagle id, so it cannot be changed here.';
 
-interface GetParameters {
-  getresponsibleEPD?: boolean;
-  getprojectLead?: boolean;
-}
-
 interface UserRow {
   id: string;
 }
 
-const PROJECT_FIELDS = [
-  'CEAAInvolvement', 'CELead', 'CELeadEmail', 'CELeadPhone', 'centroid',
-  'description', 'eacDecision', 'activeStatus', 'location', 'name',
-  'projectLeadId', 'projectLead', 'projectLeadEmail', 'projectLeadPhone',
-  'proponent', 'region', 'responsibleEPDId', 'responsibleEPD',
-  'responsibleEPDEmail', 'responsibleEPDPhone', 'subtype', 'type',
-  'addedBy', 'build', 'intake', 'CEAALink', 'code', 'eaDecision',
-  'operational', 'substantiallyStarted', 'nature', 'commodity',
-  'currentPhaseName', 'dateAdded', 'dateCommentsClosed', 'dateCommentsOpen',
-  'dateUpdated', 'decisionDate', 'duration', 'eaoMember', 'epicProjectID',
-  'fedElecDist', 'hasMetCommentPeriods', 'isTermsAgreed', 'overallProgress',
-  'primaryContact', 'proMember', 'provElecDist', 'sector', 'shortName',
-  'status', 'substantiallyDate', 'substantially', 'substitution',
-  'eaStatus', 'eaStatusDate', 'projectStatusDate', 'activeDate',
-  'updatedBy', 'projLead', 'execProjectDirector', 'complianceLead',
-  'review180Start', 'review45Start', 'reviewSuspensions', 'reviewExtensions',
-  'pins', 'read', 'write', 'delete'
-];
+/** A legacy project, read by its `demiId`, else its `_id`. */
+type ProjectRef = Pick<Project, '_id'> & { demiId?: string; legislationYear?: number };
+
+/** What DEMI's extension routes answer: the project's two lists, each item with its `id`. */
+export interface ProjectExtensionLists {
+  reviewExtensions: (ProjectExtension & { id: string })[];
+  reviewSuspensions: (ProjectExtension & { id: string })[];
+}
+
+/** An extension or suspension as the extension form sends it; `type` is `Extension` or `Suspension`. */
+export interface ProjectExtension {
+  type: string;
+  appliedTo: string;
+  start: Date | string | null;
+  end: Date | string | null;
+}
+
+const PUBLISH = { level: 4, confirm: true, reason: 'Published in EPIC admin' };
+// Level 2 is staff only, where eagle-api's unpublish left a project.
+const UNPUBLISHED_LEVEL = 2;
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
   private api = inject(ApiService);
+  private configService = inject(ConfigService);
   private demiApi = inject(DemiApiService);
-  private loadingState = inject(LoadingStateService);
-  private toast = inject(ToastService);
-  private logger = inject(LoggingService);
 
   /** One page of DEMI projects, sorted by name unless `params.sort` says otherwise. */
   list(params: DemiListParams = {}): Observable<DemiList<DemiProject>> {
@@ -79,64 +72,6 @@ export class ProjectService {
       ...params,
       filters: { ...params.filters, project: demiProjectId }
     });
-  }
-
-  /** The project as eagle-api stores it, for the edit form. Reads `project/<eagleId>` until the form saves through DEMI. */
-  getForEdit(projId: string): Observable<Project> {
-    const qs = `project/${projId}?populate=true&fields=${this.api.buildValues(PROJECT_FIELDS)}`;
-    return this.api.get<Project[]>(qs).pipe(
-      withLoading(this.loadingState, `project-${projId}`),
-      map(projects => {
-        // get upcoming comment period if there is one and convert it into a comment period object.
-        if (projects && projects.length > 0 && projects[0]) {
-          if (projects[0].commentPeriodForBanner && projects[0].commentPeriodForBanner.length > 0) {
-            projects[0].commentPeriodForBanner = new CommentPeriod(projects[0].commentPeriodForBanner[0]);
-          } else {
-            projects[0].commentPeriodForBanner = null;
-          }
-        }
-        // return the first (only) project
-        return projects && projects.length > 0 && projects[0] ? new Project(projects[0]) : null;
-      }),
-      mergeMap(res => {
-        const project = res;
-        if (!project) {
-          return of(null as Project);
-        }
-        if (!project.projectLeadId && !project.responsibleEPDId) {
-          return of(new Project(project));
-        }
-        // now get the rest of the data for this project
-        return this._getExtraAppData(
-          new Project(project),
-          {
-            getresponsibleEPD: !!project.responsibleEPDId,
-            getprojectLead: !!project.projectLeadId
-          }
-        );
-      }),
-      catchError(error => {
-        this.logger.error(`Failed to get project ${projId}`, 'ProjectService', error);
-        this.toast.error('Failed to load project.');
-        return of(null as Project);
-      })
-    );
-  }
-
-  private _getExtraAppData(project: Project, { getresponsibleEPD = false, getprojectLead = false }: GetParameters): Observable<Project> {
-    const epdId = getresponsibleEPD ? project.responsibleEPDId.toString() : '';
-    const leadId = getprojectLead ? project.projectLeadId.toString() : '';
-    return this.usersById([epdId, leadId]).pipe(
-      map(users => {
-        if (getresponsibleEPD) {
-          project.responsibleEPDObj = users.get(epdId);
-        }
-        if (getprojectLead) {
-          project.projectLeadObj = users.get(leadId);
-        }
-        return project;
-      })
-    );
   }
 
   // Contact pickers and the edit forms read the Eagle `_id`; DEMI user ids are the Eagle ids.
@@ -190,41 +125,45 @@ export class ProjectService {
     );
   }
 
-  // update existing project
-  save(orig: Project | DemiProject): Observable<Project> {
-    return this.eagleWrite(orig, legacy => {
-      const proj = JSON.parse(JSON.stringify(legacy));
-      if (proj.description) {
-        proj.description = proj.description.replace(/\n/g, '\\n');
+  /**
+   * Writes the edit form's fields to DEMI. `project._id` is the route id, DEMI or Eagle. A tab for another Act
+   * than the project's is refused: DEMI's PUT writes the current Act's fields.
+   */
+  save(project: Project): Observable<LegacyProject> {
+    return this.onFreshRow(refId(project), row => {
+      const year = actYear(row);
+      if (project.legislationYear && year && Number(project.legislationYear) !== year) {
+        return throwError(() => new Error(otherActMessage(year, project.legislationYear)));
       }
-      return this.api.put<Project>(`project/${proj._id}`, proj);
+      return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row)).pipe(
+        mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body)),
+        map(toLegacyProject)
+      );
     });
   }
 
-  delete(proj: Project | DemiProject): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.delete<Project>(`project/${p._id}`));
+  /** Publishes to level 4. A project's `legislationYear` makes that Act current, as eagle-api's publish did. */
+  publish(project: ProjectRef): Observable<LegacyProject> {
+    const year = project.legislationYear;
+    return this.setLevel(project, year ? { ...PUBLISH, legislationYear: year } : PUBLISH);
   }
 
-  publish(proj: Project | DemiProject): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.put<Project>(`project/${p._id}/publish`, p));
+  unPublish(project: ProjectRef): Observable<LegacyProject> {
+    return this.setLevel(project, { level: UNPUBLISHED_LEVEL });
   }
 
-  unPublish(proj: Project | DemiProject): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.put<Project>(`project/${p._id}/unpublish`, p));
+  addExtension(project: ProjectRef, extension: ProjectExtension): Observable<ProjectExtensionLists> {
+    return this.onFreshRow(refId(project), row =>
+      this.demiApi.create<ProjectExtensionLists>(extensionsOf(row), extensionBody(extension)));
   }
 
-  addExtension(proj: Project | DemiProject, extension: any): Observable<any> {
-    return this.eagleWrite(proj, p => this.api.post<any>(`project/${p._id}/extension`, extension));
+  editExtension(project: ProjectRef, change: { new: ProjectExtension; old: { id: string } }): Observable<ProjectExtensionLists> {
+    return this.onFreshRow(refId(project), row =>
+      this.demiApi.update<ProjectExtensionLists>(extensionsOf(row), change.old.id, extensionBody(change.new)));
   }
 
-  editExtension(proj: Project | DemiProject, extension: any): Observable<any> {
-    return this.eagleWrite(proj, p => this.api.put<any>(`project/${p._id}/extension`, extension));
-  }
-
-  deleteExtension(proj: Project | DemiProject, extension: any): Observable<any> {
-    return this.eagleWrite(proj, p =>
-      this.api.delete<any>(`project/${p._id}/extension?item=${encodeURIComponent(JSON.stringify(extension))}`)
-    );
+  deleteExtension(project: ProjectRef, item: { id: string }): Observable<ProjectExtensionLists> {
+    return this.onFreshRow(refId(project), row => this.demiApi.remove<ProjectExtensionLists>(extensionsOf(row), item.id));
   }
 
   /** Adds organizations to the project's pin list in DEMI. `projId` is the DEMI or Eagle id. */
@@ -268,12 +207,29 @@ export class ProjectService {
     );
   }
 
-  // DEMI's PUT takes the full pin list and only the DEMI id, so the row is read first, uncached.
-  // Pins this caller cannot read are missing from the read, and DEMI keeps them.
+  // DEMI's PUT takes the full pin list. Pins this caller cannot read are missing from the read, and DEMI keeps them.
   private writePins(projId: string, body: (row: DemiProject) => object): Observable<DemiProject> {
-    return this.demiApi.get<DemiProject>('projects', projId, { fresh: true }).pipe(
-      mergeMap(row => this.demiApi.update<DemiProject>('projects', row.id, body(row)))
+    return this.onFreshRow(projId, row => this.demiApi.update<DemiProject>('projects', row.id, body(row)));
+  }
+
+  /** DEMI writes take the DEMI id only, and a body built on the row needs it uncached: read it first, by DEMI or Eagle id. */
+  private onFreshRow<T>(projId: string, write: (row: DemiProject) => Observable<T>): Observable<T> {
+    return this.demiApi.get<DemiProject>('projects', projId, { fresh: true }).pipe(mergeMap(write));
+  }
+
+  private setLevel(project: ProjectRef, body: object): Observable<LegacyProject> {
+    return this.onFreshRow(refId(project), row => this.demiApi.action<DemiProject>('projects', row.id, 'level', body)).pipe(
+      map(toLegacyProject)
     );
+  }
+
+  // DEMI stores the proponent's name beside its id and does not look it up itself.
+  private withProponentName(row: DemiProject, body: Record<string, unknown>): Observable<Record<string, unknown>> {
+    const id = body.proponentId;
+    if (typeof id !== 'string' || !id || id === row.proponentId || body.proponentName !== undefined) {
+      return of(body);
+    }
+    return this.demiApi.get<Organization>('organizations', id).pipe(map(org => ({ ...body, proponentName: org.name })));
   }
 
   /** Eagle writes key on the Eagle id: a DEMI row maps to the legacy project first, and one without an Eagle id is read-only. */
@@ -286,4 +242,30 @@ export class ProjectService {
 
 function pinIds(row: DemiProject): string[] {
   return (row.pins ?? []).map(pin => pin._id);
+}
+
+function refId(project: ProjectRef): string {
+  return project.demiId || project._id;
+}
+
+export function otherActMessage(projectYear: number, tabYear: number): string {
+  return `Changes on the ${tabYear} tab cannot be saved: this project is under the ${projectYear} Act.`;
+}
+
+/** The project's Act: `legislationYear`, else the year in `currentLegislationYear` or the `legislation` label. */
+export function actYear(row: DemiProject): number | null {
+  if (row.legislationYear) {
+    return Number(row.legislationYear);
+  }
+  const match = /\d{4}/.exec(String(row.currentLegislationYear ?? '')) ?? /\b\d{4}\b/.exec(String(row.legislation ?? ''));
+  return match ? Number(match[0]) : null;
+}
+
+function extensionsOf(row: DemiProject): string {
+  return `projects/${encodeURIComponent(row.id)}/extensions`;
+}
+
+// DEMI's extension schema takes these four only (domain/extensions.js ITEM_SCHEMA).
+function extensionBody({ type, appliedTo, start, end }: ProjectExtension): ProjectExtension {
+  return { type, appliedTo, start, end };
 }

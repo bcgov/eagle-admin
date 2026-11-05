@@ -7,13 +7,14 @@ import { ConfigService } from './config.service';
 import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
-import { ProjectService, READ_ONLY_PROJECT } from './project.service';
+import { ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
 import { ToastService } from './toast.service';
 import { Project } from '../models/project';
 import { DemiProject } from '../models/demi/project';
-import { toLegacyProject } from '../models/demi/project-legacy';
+import { List } from '../models/demi/list';
 
 const EAGLE_ID = '5885109faaecd9001b81314c';
+const LISTS: List[] = [{ id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 }];
 
 function nativeRow(overrides: Partial<DemiProject> = {}): DemiProject {
   return { id: '7', eagleId: EAGLE_ID, name: 'Ashcroft Ranch Landfill', ...overrides };
@@ -30,7 +31,7 @@ describe('ProjectService', () => {
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
-        { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
+        { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api', lists: LISTS } },
         { provide: KeycloakService, useValue: { keycloakEnabled: true } },
         { provide: ToastService, useValue: toast },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) }
@@ -87,31 +88,7 @@ describe('ProjectService', () => {
     });
   });
 
-  describe('eagle-api reads', () => {
-    it('getForEdit reads the project from eagle-api by Eagle id', async () => {
-      const project = firstValueFrom(service.getForEdit(EAGLE_ID));
-
-      http.expectOne(r => r.url.startsWith(`/api/project/${EAGLE_ID}?`)).flush([{ _id: EAGLE_ID, name: 'Ashcroft' }]);
-
-      expect((await project)._id).toBe(EAGLE_ID);
-    });
-
-    it('getForEdit fills only the lead when the EPD is null, from DEMI users', async () => {
-      const project = firstValueFrom(service.getForEdit('p1'));
-
-      http.expectOne(r => r.url.startsWith('/api/project/p1?'))
-        .flush([{ _id: 'p1', projectLeadId: 'u1', responsibleEPDId: null }]);
-      const users = http.expectOne(r => r.url === '/demi/api/users');
-      expect(users.request.params.get('ids')).toBe('u1');
-      users.flush([{ id: 'u1', displayName: 'Lead Person' }]);
-
-      const result = await project;
-      expect(result.projectLeadObj.displayName).toBe('Lead Person');
-      expect(result.projectLeadObj._id).toBe('u1');
-      expect(result.responsibleEPDObj).toBeUndefined();
-      expect(toast.error).not.toHaveBeenCalled();
-    });
-
+  describe('contacts', () => {
     it('getPeopleObjs gives the edit form contacts keyed on the Eagle user _id', async () => {
       const legislation2002 = { name: 'Mine', responsibleEPDId: 'u2', projectLeadId: 'u1' } as any;
       const data = [{ data: { searchResults: [{ legislationYearList: [2002], legislation_2002: legislation2002 }] } }];
@@ -125,15 +102,6 @@ describe('ProjectService', () => {
       expect(legislation2002.projectLeadObj._id).toBe('u1');
     });
 
-    it('getForEdit fills the EPD when the lead is null', async () => {
-      const project = firstValueFrom(service.getForEdit('p1'));
-
-      http.expectOne(r => r.url.startsWith('/api/project/p1?'))
-        .flush([{ _id: 'p1', projectLeadId: null, responsibleEPDId: 'u2' }]);
-      http.expectOne(r => r.url === '/demi/api/users').flush([{ id: 'u2', displayName: 'EPD Person' }]);
-
-      expect((await project).responsibleEPDObj.displayName).toBe('EPD Person');
-    });
   });
 
   describe('pin writes', () => {
@@ -188,7 +156,7 @@ describe('ProjectService', () => {
           providers: [
             provideHttpClient(withInterceptors([httpCacheInterceptor])),
             provideHttpClientTesting(),
-            { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api' } },
+            { provide: ConfigService, useValue: { getApiPath: () => '/api', getDemiApiPath: () => '/demi/api', lists: LISTS } },
             { provide: KeycloakService, useValue: { keycloakEnabled: true } },
             { provide: ToastService, useValue: toast },
             { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'warn', 'info', 'debug']) }
@@ -212,15 +180,154 @@ describe('ProjectService', () => {
     });
   });
 
-  describe('writes', () => {
-    it('publishes a legacy project built from a DEMI row under its Eagle id', () => {
-      service.publish(toLegacyProject(nativeRow())).subscribe();
-
-      const req = http.expectOne(`/api/project/${EAGLE_ID}/publish`);
-      expect(req.request.method).toBe('PUT');
-      req.flush({});
+  describe('project writes', () => {
+    // The edit form saves `new Project` over its values, with `_id` the route id.
+    const formProject = (form: object = {}) => new Project({
+      _id: EAGLE_ID, name: 'Ashcroft Ranch Landfill', type: 'Waste', location: 'Ashcroft', proponent: 'org1',
+      centroid: [-121.24, 50.72], activeStatus: 'active', ...form
     });
 
+    function answerRead(row: Partial<DemiProject> = {}) {
+      http.expectOne(`/demi/api/projects/${EAGLE_ID}`).flush(nativeRow({ proponentId: 'org1', ...row }));
+    }
+
+    it('save body has no _id and no activeStatus, and isActive carries the form value', () => {
+      service.save(formProject()).subscribe();
+      answerRead();
+
+      const body = http.expectOne('/demi/api/projects/7').request.body;
+      expect('_id' in body).toBeFalse();
+      expect('activeStatus' in body).toBeFalse();
+      expect(body.isActive).toBe('active');
+    });
+
+    it('save PUTs projects/<row.id> with projectType, address, proponentId and a GeoJSON centroid', () => {
+      service.save(formProject()).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body.projectType).toBe('Waste');
+      expect(req.request.body.address).toBe('Ashcroft');
+      expect(req.request.body.proponentId).toBe('org1');
+      expect(req.request.body.centroid).toEqual({ type: 'Point', coordinates: [-121.24, 50.72] });
+      req.flush(nativeRow());
+    });
+
+    it('save stores the name of a newly picked proponent', () => {
+      service.save(formProject({ proponent: 'org2' })).subscribe();
+      answerRead();
+      http.expectOne('/demi/api/organizations/org2').flush({ id: 'org2', name: 'Teck Coal' });
+
+      expect(http.expectOne('/demi/api/projects/7').request.body.proponentName).toBe('Teck Coal');
+    });
+
+    it('a failed proponent lookup fails the save and sends no PUT', async () => {
+      const save = firstValueFrom(service.save(formProject({ proponent: 'org2' })));
+      answerRead();
+
+      http.expectOne('/demi/api/organizations/org2').flush({ error: 'Organization not found' }, { status: 404, statusText: 'Not Found' });
+
+      await expectAsync(save).toBeRejectedWithError('Organization not found');
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('save from the tab of the project\'s own Act PUTs the form', () => {
+      service.save(formProject({ legislationYear: 2018 })).subscribe();
+      answerRead({ legislationYear: 2018 });
+
+      expect(http.expectOne('/demi/api/projects/7').request.body.legislationYear).toBe(2018);
+    });
+
+    it('save from another Act\'s tab is refused and sends no PUT', async () => {
+      const save = firstValueFrom(service.save(formProject({ legislationYear: 2018 })));
+      answerRead({ legislationYear: 2002 });
+
+      await expectAsync(save).toBeRejectedWithError(otherActMessage(2002, 2018));
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('save from another Act\'s tab is refused when only the block key and label name the Act', async () => {
+      const save = firstValueFrom(service.save(formProject({ legislationYear: 2018 })));
+      answerRead({ currentLegislationYear: 'legislation_2002', legislation: '2002 Environmental Assessment Act' });
+
+      await expectAsync(save).toBeRejectedWithError(otherActMessage(2002, 2018));
+      http.expectNone('/demi/api/projects/7');
+    });
+
+    it('save on a row that names no Act PUTs the form', () => {
+      service.save(formProject({ legislationYear: 2018 })).subscribe({ error: () => undefined });
+      answerRead();
+
+      expect(http.expectOne('/demi/api/projects/7').request.method).toBe('PUT');
+    });
+
+    it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
+      service.publish(formProject({ legislationYear: 2018 })).subscribe();
+      answerRead();
+
+      const req = http.expectOne('/demi/api/projects/7/level');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin', legislationYear: 2018 });
+      req.flush(nativeRow());
+    });
+
+    it('unPublish PUTs level 2', () => {
+      service.unPublish({ _id: EAGLE_ID }).subscribe();
+      answerRead();
+
+      expect(http.expectOne('/demi/api/projects/7/level').request.body).toEqual({ level: 2 });
+    });
+
+    it('reads a legacy project by its DEMI id when it carries one', () => {
+      service.unPublish({ _id: EAGLE_ID, demiId: '7' }).subscribe();
+
+      http.expectOne('/demi/api/projects/7').flush(nativeRow());
+      http.expectOne('/demi/api/projects/7/level').flush(nativeRow());
+    });
+
+    describe('extensions', () => {
+      const EXTENSION = { type: 'Extension', appliedTo: 'Review', start: '2026-01-05', end: '2026-02-05' };
+
+      it('addExtension POSTs projects/<demiId>/extensions with only type, appliedTo, start, end', () => {
+        service.addExtension({ _id: EAGLE_ID }, { ...EXTENSION, id: 'x', old: {} } as typeof EXTENSION).subscribe();
+        answerRead();
+
+        const req = http.expectOne('/demi/api/projects/7/extensions');
+        expect(req.request.method).toBe('POST');
+        expect(req.request.body).toEqual(EXTENSION);
+      });
+
+      it('editExtension PUTs the new item to the old item\'s id', () => {
+        service.editExtension({ _id: EAGLE_ID }, { new: EXTENSION, old: { id: 'e1' } }).subscribe();
+        answerRead();
+
+        const req = http.expectOne('/demi/api/projects/7/extensions/e1');
+        expect(req.request.method).toBe('PUT');
+        expect(req.request.body).toEqual(EXTENSION);
+      });
+
+      it('deleteExtension DELETEs the item by id', () => {
+        service.deleteExtension({ _id: EAGLE_ID }, { id: 'e1' }).subscribe();
+        answerRead();
+
+        expect(http.expectOne('/demi/api/projects/7/extensions/e1').request.method).toBe('DELETE');
+      });
+    });
+
+    it('a DEMI 409 surfaces its message', async () => {
+      const save = firstValueFrom(service.save(formProject()));
+      answerRead();
+
+      http.expectOne('/demi/api/projects/7').flush(
+        { error: 'Project is under the Building Canada Act' }, { status: 409, statusText: 'Conflict' }
+      );
+
+      await expectAsync(save).toBeRejectedWithError('Project is under the Building Canada Act');
+    });
+  });
+
+  describe('group writes', () => {
     it('maps a native row to its Eagle id before adding a group', () => {
       service.addGroup(nativeRow(), 'Working Group').subscribe();
 
@@ -229,28 +336,8 @@ describe('ProjectService', () => {
       req.flush({});
     });
 
-    it('sends a legacy project body unchanged', () => {
-      const legacy = new Project({ _id: EAGLE_ID, name: 'Legacy name', type: 'Mines' });
-
-      service.unPublish(legacy).subscribe();
-
-      const req = http.expectOne(`/api/project/${EAGLE_ID}/unpublish`);
-      expect(req.request.body.name).toBe('Legacy name');
-      expect(req.request.body.type).toBe('Mines');
-      req.flush({});
-    });
-
-    it('sends a native row body under Eagle field names', () => {
-      service.publish(nativeRow({ projectType: 'Mines' })).subscribe();
-
-      const req = http.expectOne(`/api/project/${EAGLE_ID}/publish`);
-      expect(req.request.body._id).toBe(EAGLE_ID);
-      expect(req.request.body.type).toBe('Mines');
-      req.flush({});
-    });
-
     it('refuses to write a project without an Eagle id', async () => {
-      const write = firstValueFrom(service.publish(nativeRow({ eagleId: null })));
+      const write = firstValueFrom(service.addGroup(nativeRow({ eagleId: null }), 'Working Group'));
 
       await expectAsync(write).toBeRejectedWithError(READ_ONLY_PROJECT);
       http.expectNone(r => r.url.startsWith('/api/project'));

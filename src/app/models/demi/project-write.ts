@@ -1,0 +1,110 @@
+import { Project } from '../project';
+import { List } from './list';
+import { DemiListRef, DemiProject } from './project';
+
+/** Eagle field names DEMI stores under another top-level name (DEMI `EAGLE_BLOCK_NAMES`, `vis/catalog/projects.js`). */
+export const DEMI_FIELD_NAMES = Object.freeze({
+  type: 'projectType',
+  status: 'projectState',
+  location: 'address',
+  shortName: 'abbreviation',
+  activeStatus: 'isActive',
+  proponent: 'proponentId'
+} as const);
+
+/** Fields eagle-api's PUT wrote on every save: one the form left empty is sent as null, so DEMI clears it. */
+const CLEARED_FIELDS = [
+  'name', 'description', 'sector', 'region', 'build', 'CEAALink', 'eaStatus', 'eaStatusDate', 'decisionDate',
+  'substantially', 'substantiallyDate', 'dispute', 'disputeDate', 'intake', 'responsibleEPDId', 'projectLeadId',
+  'type', 'status', 'location', 'proponent', 'centroid', 'eacDecision', 'currentPhaseName', 'CEAAInvolvement'
+] as const;
+
+/** Fields eagle-api's PUT left alone: sent only when set. */
+const SET_FIELDS = ['legislationYear', 'shortName', 'activeStatus', 'applicableRegulation'] as const;
+
+const CLEARED = new Set<string>(CLEARED_FIELDS);
+const LIST_REFS = new Set<string>(['eacDecision', 'currentPhaseName', 'CEAAInvolvement', 'applicableRegulation']);
+
+/** Contact name fields DEMI keeps beside each contact id: cleared with the id. */
+const CONTACT_NAMES = { responsibleEPDId: 'responsibleEPD', projectLeadId: 'projectLead' } as const;
+
+type WriteField = typeof CLEARED_FIELDS[number] | typeof SET_FIELDS[number];
+
+/** A List ref as DEMI stores it; `item` is the List row's link, such as a BC Laws URL. */
+type WriteListRef = DemiListRef & { item?: string };
+
+/**
+ * DEMI `PUT /projects/:id` body over the stored `row`: catalogued top-level fields only, under DEMI's names,
+ * since DEMI answers 400 to an uncatalogued key such as `_id`.
+ */
+export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject): Record<string, unknown> {
+  const body: Record<string, unknown> = {};
+  for (const field of [...CLEARED_FIELDS, ...SET_FIELDS]) {
+    const value = valueOf(project, field, lists, row);
+    if (value !== undefined || CLEARED.has(field)) {
+      body[DEMI_FIELD_NAMES[field as keyof typeof DEMI_FIELD_NAMES] ?? field] = value ?? null;
+    }
+  }
+  for (const [idField, nameField] of Object.entries(CONTACT_NAMES)) {
+    if (body[idField] === null) {
+      body[nameField] = null;
+    }
+  }
+  if (project.proponent?.name) {
+    body.proponentName = project.proponent.name;
+  }
+  const phase = body.currentPhaseName as WriteListRef | null;
+  const history = Array.isArray(row.phaseHistory) ? row.phaseHistory : [];
+  const last = history.length ? history[history.length - 1] : row.currentPhaseName;
+  // eagle-api's PUT appended a phase that differs from the last one in the history.
+  if (phase && phase._id !== (last && typeof last === 'object' ? (last as DemiListRef)._id : last)) {
+    body.phaseHistory = [...history, phase];
+  }
+  return body;
+}
+
+function valueOf(project: Project, field: WriteField, lists: List[], row: DemiProject): unknown {
+  const value = project[field];
+  if (LIST_REFS.has(field)) {
+    return value ? listRef(value, lists, row[field]) : undefined;
+  }
+  switch (field) {
+    // eagle-api's PUT took the stage from the phase; the form never sends `status`.
+    case 'status':
+      return value ?? (project.currentPhaseName ? listRef(project.currentPhaseName, lists, row.currentPhaseName).name : undefined);
+    case 'proponent':
+      return value && typeof value === 'object' ? value._id : value;
+    case 'centroid':
+      return point(value);
+    case 'intake':
+      return value ? { investment: value.investment, investmentNotes: value.notes ?? value.investmentNotes } : undefined;
+    // Stored escaped, as eagle-api's save always sent it.
+    case 'description':
+      return value?.replace(/\n/g, '\\n');
+    default:
+      return value;
+  }
+}
+
+/**
+ * The ref DEMI stores for a List pick. The form holds the List id; a row read back already holds the ref.
+ * An id the Lists lack keeps the stored ref when it names the same id, else goes with no name.
+ */
+function listRef(value: string | DemiListRef, lists: List[], stored: unknown): WriteListRef {
+  const id = typeof value === 'string' ? value : value._id;
+  const row = lists.find(item => item.id === id);
+  if (row) {
+    return { _id: row.id, name: row.name, type: row.type, legislation: row.legislation, ...(row.item && { item: row.item }) };
+  }
+  const kept = stored as WriteListRef | undefined;
+  if (kept?._id === id) {
+    return kept;
+  }
+  return typeof value === 'string' ? { _id: id, name: null } : value;
+}
+
+/** `[lon, lat]` as the GeoJSON point DEMI stores; undefined when either is blank. */
+function point(centroid: unknown[] | undefined): { type: 'Point'; coordinates: number[] } | undefined {
+  const coordinates = (centroid ?? []).map(value => (value === '' || value == null ? NaN : Number(value)));
+  return coordinates.length === 2 && coordinates.every(Number.isFinite) ? { type: 'Point', coordinates } : undefined;
+}
