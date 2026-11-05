@@ -308,6 +308,18 @@ describe('ProjectService', () => {
       });
     });
 
+    it('save with nothing changed sends no PUT and still completes', async () => {
+      const shown = nativeRow({
+        name: 'Ashcroft Ranch Landfill', projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', isActive: 'active',
+        centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+      });
+      const saved = firstValueFrom(service.save(formProject(), undefined, shown));
+      answerRead();
+
+      expect((await saved).demiId).toBe('7');
+      http.expectNone('/demi/api/projects/7');
+    });
+
     it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
       service.publish(formProject({ legislationYear: 2018 })).subscribe();
       answerRead();
@@ -384,6 +396,17 @@ describe('ProjectService', () => {
 
         expect(http.expectOne(LEVEL_URL).request.body)
           .toEqual({ level: 4, confirm: true, reason: 'Published in EPIC admin', legislationYear: 2018 });
+      });
+
+      it('a create whose fields all went in the POST sends no PUT and still publishes', async () => {
+        const created = firstValueFrom(service.add(new Project({ name: 'New', centroid: [-121.24, 50.72] }), { publish: true }));
+        const post = http.expectOne('/demi/api/projects');
+        post.flush({ id: MINTED, eagleId: null, ...post.request.body });
+        http.expectOne(LEVEL_URL).flush({ id: MINTED });
+
+        http.expectNone(PROJECT_URL);
+        http.expectOne(LEVEL_URL).flush({ id: MINTED });
+        expect((await created).demiId).toBe(MINTED);
       });
 
       it('a refused POST fails with DEMI\'s message and sends nothing more', async () => {

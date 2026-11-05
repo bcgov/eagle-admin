@@ -219,7 +219,8 @@ export class ProjectService {
 
   private writeForm(project: Project, row: DemiProject, held?: readonly string[]): Observable<DemiProject> {
     return this.withProponentName(row, toDemiProjectWrite(project, this.configService.lists, row, held)).pipe(
-      mergeMap(body => this.demiApi.update<DemiProject>('projects', row.id, body))
+      // DEMI rewrites the row on any PUT, so nothing changed sends none.
+      mergeMap(body => (Object.keys(body).length ? this.demiApi.update<DemiProject>('projects', row.id, body) : of(row)))
     );
   }
 
