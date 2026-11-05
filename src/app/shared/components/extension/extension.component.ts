@@ -45,6 +45,8 @@ export class ExtensionComponent implements OnInit {
     end: FormControl<unknown>;
   }>;
   public isEditing = false;
+  // The item the edit page picked; null unless it belongs to this route's project.
+  private picked: { id: string } | null = null;
 
   ngOnInit() {
     this.projectId = this.route.parent.snapshot.paramMap.get('projId');
@@ -53,7 +55,11 @@ export class ExtensionComponent implements OnInit {
     this.extensionOperation = operation === 'edit' ? 'Edit' : 'Add';
     this.isEditing = operation === 'edit';
 
-    const ext = this.isEditing ? this.storageService.state.extension : null;
+    const stored = this.storageService.state.extension;
+    const ext = this.isEditing && stored?.projectId === this.projectId ? stored : null;
+    this.picked = ext;
+    // A stored item outlives a Back button or breadcrumb exit otherwise, and would open on another project.
+    this.destroyRef.onDestroy(() => this.storageService.state.extension = null);
     this.extensionForm = new FormGroup({
       'appliedTo': new FormControl<string | null>(ext?.appliedTo ?? null),
       'start': new FormControl<unknown>(ext ? convertJSDateToNGBDate(new Date(ext.start)) : null),
@@ -82,7 +88,7 @@ export class ExtensionComponent implements OnInit {
     from(modalRef.result).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (isConfirmed: boolean) => {
         if (isConfirmed) {
-          this.write('delete', this.api.deleteExtension(this.project(), this.storageService.state.extension));
+          this.write('delete', this.api.deleteExtension(this.project(), this.picked));
         }
       },
       error: () => {
@@ -102,7 +108,7 @@ export class ExtensionComponent implements OnInit {
     };
 
     if (this.isEditing) {
-      this.write('edit', this.api.editExtension(this.project(), { new: newExtension, old: this.storageService.state.extension }));
+      this.write('edit', this.api.editExtension(this.project(), { new: newExtension, old: this.picked }));
     } else {
       this.write('add', this.api.addExtension(this.project(), newExtension));
     }

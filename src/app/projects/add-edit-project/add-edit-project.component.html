@@ -62,7 +62,10 @@
   @if (pageIsEditing && fullProject) {
     <section class="extensions">
       <h2>Extensions and Suspensions</h2>
-      @if (extensions().length) {
+      @if (extensionsFailed()) {
+        <p>Could not load extensions.</p>
+        <button class="btn btn-outline-primary btn-sm mb-3" type="button" (click)="retryExtensions()">Try again</button>
+      } @else if (extensions().length) {
         <table class="table">
           <thead class="thead-light">
             <tr>
@@ -80,7 +83,8 @@
                 <td>{{item.appliedTo || '-'}}</td>
                 <td>{{item.start | date: 'longDate'}}</td>
                 <td>{{item.end | date: 'longDate'}}</td>
-                <td><button class="btn btn-outline-primary btn-sm" type="button" (click)="editExtension(item)">Edit</button></td>
+                <td><button class="btn btn-outline-primary btn-sm" type="button" (click)="editExtension(item)"
+                  [attr.aria-label]="'Edit ' + item.kind.toLowerCase() + ' starting ' + (item.start | date: 'longDate')">Edit</button></td>
               </tr>
             }
           </tbody>
