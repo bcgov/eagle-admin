@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 import { ToastService } from 'src/app/services/toast.service';
 import { DEFAULT_CENTROID } from 'src/app/models/demi/project-write';
 
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, tap } from 'rxjs/operators';
 import { NgbModal, NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { ConfirmComponent } from 'src/app/confirm/confirm.component';
 import { FullProject } from 'src/app/models/fullProject';
@@ -593,18 +593,11 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         legislationYear: this.legislationYear,
         _id: this.projectId
       }));
-      if (putFunction) {
-          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
-            .pipe(mergeMap(() => putFunction(project)))
-            .subscribe(
-              ...putSubscribe
-            );
-      } else {
-          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
-            .subscribe(
-              ...putSubscribe
-            );
-      }
+      // A publish can fail after the PUT, leaving the page open over the saved row.
+      const saved = this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
+        .pipe(tap(row => this.fullProject.demiRow = row));
+      const written: Observable<unknown> = putFunction ? saved.pipe(mergeMap(() => putFunction(project))) : saved;
+      written.subscribe(...putSubscribe);
     }
   }
 

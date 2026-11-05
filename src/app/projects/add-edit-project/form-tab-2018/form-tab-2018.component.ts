@@ -18,7 +18,7 @@ import { ContactSelectTableRowsComponent } from 'src/app/shared/components/conta
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, projectTypeKey } from 'src/app/shared/utils/utils';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
 import { isListId, projectCreateFailed, projectWriteFailed, refuseTabWrite, tabLists } from '../edit-tabs';
@@ -648,21 +648,11 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         _id: this.projectId
       }));
 
-      if (putFunction) {
-          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
-            .pipe(
-              switchMap(() => putFunction(project)),
-            )
-            .subscribe(
-              ...putSubscribe
-            );
-      } else {
-          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
-            .subscribe(
-              ...putSubscribe
-            );
-      }
-
+      // A publish can fail after the PUT, leaving the page open over the saved row.
+      const saved = this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
+        .pipe(tap(row => this.fullProject.demiRow = row));
+      const written: Observable<unknown> = putFunction ? saved.pipe(switchMap(() => putFunction(project))) : saved;
+      written.subscribe(...putSubscribe);
     }
   }
 

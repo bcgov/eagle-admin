@@ -180,6 +180,19 @@ describe('FormTab2002', () => {
     expect(held).not.toContain('disputeDate');
   });
 
+  it('a save after a failed publish compares against the row the PUT stored', async () => {
+    const fixture = await render(projectResults(row2002()));
+    const saved = { ...DEMI_ROW, name: 'Ajax Mine 2' };
+    projectService.save.and.returnValue(of(saved as any));
+    projectService.publish.and.returnValue(throwError(() => new Error('Forbidden')));
+
+    fixture.componentInstance.onPublish();
+    await fixture.whenStable();
+    fixture.componentInstance.onSubmit();
+
+    expect(projectService.save.calls.mostRecent().args[2]).toBe(saved);
+  });
+
   it('save on another Act\'s tab toasts and sends nothing', async () => {
     (await render(projectResults(row2002({}, { currentLegislationYear: 'legislation_2018' })))).componentInstance.onSubmit();
 

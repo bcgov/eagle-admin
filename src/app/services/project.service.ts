@@ -141,10 +141,10 @@ export class ProjectService {
   }
 
   /**
-   * Writes the edit form's fields to DEMI. `project._id` is the route id; `held` names the tab's fields; `shown` is the row
-   * the form was built from. Another Act's tab is refused: DEMI's PUT writes the current Act's fields.
+   * Writes the edit form's fields to DEMI over `shown`, the row the form was built from, and emits the row the next save
+   * compares against. `held` names the tab's fields. Another Act's tab is refused: DEMI's PUT writes the current Act's fields.
    */
-  save(project: Project, held?: readonly string[], shown?: DemiProject): Observable<LegacyProject> {
+  save(project: Project, held?: readonly string[], shown?: DemiProject): Observable<DemiProject> {
     return this.onFreshRow(refId(project), row => {
       const year = actYear(row);
       if (project.legislationYear && year && Number(project.legislationYear) !== year) {
@@ -153,7 +153,7 @@ export class ProjectService {
       // Against the shown row, a field another user changed since is not reverted; a new phase joins the stored
       // history, and changed intake keys go over the stored intake.
       const compared = shown ? { ...shown, phaseHistory: row.phaseHistory } : row;
-      return this.writeForm(project, compared, held, row).pipe(map(toLegacyProject));
+      return this.writeForm(project, compared, held, row);
     });
   }
 

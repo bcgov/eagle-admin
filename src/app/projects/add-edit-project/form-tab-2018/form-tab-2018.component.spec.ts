@@ -298,6 +298,19 @@ describe('FormTab2018', () => {
     expect(toast.error).toHaveBeenCalledWith('Failed to publish project. Forbidden: not a project admin');
   });
 
+  it('a save after a failed publish compares against the row the PUT stored', async () => {
+    const component = render(results(row2018()));
+    const saved = { ...DEMI_ROW, name: 'Ajax Mine 2' };
+    projectService.save.and.returnValue(of(saved as any));
+    projectService.publish.and.returnValue(throwError(() => new Error('Forbidden')));
+
+    component.onPublish();
+    await fixture.whenStable();
+    component.onSubmit();
+
+    expect(projectService.save.calls.mostRecent().args[2]).toBe(saved);
+  });
+
   it('unpublish failure toasts DEMI\'s 403 text', async () => {
     const component = render(results(row2018()));
     projectService.unPublish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));

@@ -225,8 +225,8 @@ describe('ProjectService', () => {
       expect('projectType' in body).toBeFalse();
     });
 
-    it('save PUTs projects/<row.id> with projectType, address and a GeoJSON centroid', () => {
-      service.save(formProject()).subscribe();
+    it('save PUTs projects/<row.id> with projectType, address and a GeoJSON centroid, and emits the stored row', async () => {
+      const saved = firstValueFrom(service.save(formProject()));
       answerRead();
 
       const req = http.expectOne('/demi/api/projects/7');
@@ -234,7 +234,8 @@ describe('ProjectService', () => {
       expect(req.request.body.projectType).toBe('Waste');
       expect(req.request.body.address).toBe('Ashcroft');
       expect(req.request.body.centroid).toEqual({ type: 'Point', coordinates: [-121.24, 50.72] });
-      req.flush(nativeRow());
+      req.flush(nativeRow({ name: 'Stored' }));
+      expect((await saved).name).toBe('Stored');
     });
 
     it('save stores the name of a newly picked proponent', () => {
@@ -324,7 +325,7 @@ describe('ProjectService', () => {
       const saved = firstValueFrom(service.save(formProject(), undefined, shown));
       answerRead();
 
-      expect((await saved).demiId).toBe('7');
+      expect((await saved).id).toBe('7');
       http.expectNone('/demi/api/projects/7');
     });
 
