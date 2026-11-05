@@ -15,7 +15,7 @@ export interface DemiListRef {
 
 /**
  * Native DEMI project row (`GET <DEMI_API_PATH>/projects`); unlisted fields keep their Eagle names. `id` is the Track
- * project id; `eagleId` is the Eagle project id, absent on Track-only projects.
+ * project id, `eagle-<eagleId>` on an Eagle-only row, or a DEMI-minted UUID; `eagleId` is the Eagle project id, absent on other rows.
  */
 export interface DemiProject {
   id: string;

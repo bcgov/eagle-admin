@@ -52,4 +52,11 @@ describe('ProjectArchivedDetailComponent', () => {
     open([{ data: { searchResults: [] } }]);
     expect(navigate).toHaveBeenCalledWith(['/search']);
   });
+
+  it('archived detail with no 1996 or 2002 block alerts and goes to /search', () => {
+    const alert = spyOn(window, 'alert');
+    open(searchRow({ legislationYearList: [2018], legislation_2018: { name: 'Copper Mine' } }));
+    expect(alert).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(['/search']);
+  });
 });

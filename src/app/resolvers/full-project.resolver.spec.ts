@@ -58,7 +58,7 @@ describe('fullProjectResolver', () => {
     ));
   }
 
-  const flushProject = (body: object) => http.expectOne(`/demi/projects/${EAGLE_ID}`).flush(body);
+  const flushProject = (body: object, projId = EAGLE_ID) => http.expectOne(`/demi/projects/${projId}`).flush(body);
   const orgRequest = () => http.expectOne(r => r.url === '/demi/organizations');
   const projectOf = (result: any) => result[0].data.searchResults[0];
 
@@ -115,22 +115,66 @@ describe('fullProjectResolver', () => {
     expect(toast.error).toHaveBeenCalledWith('Failed to load project.');
   });
 
-  it('yields no results and shows an error when the row has no legislation blocks yet', async () => {
-    const result = resolve();
+  it('a Track-only row (id \'207\', no eagleId, no blocks, no legislationYear) sends one GET and resolves legislation_2018 from the top level, with no toast', async () => {
+    const result = resolve('207');
 
-    flushProject({ id: '207', eagleId: EAGLE_ID, name: 'Copper Mine', proponentId: ORG_A });
+    flushProject({ id: '207', name: 'Copper Mine' }, '207');
 
-    http.expectNone(r => r.url === '/demi/organizations');
-    expect((await result)[0].data.searchResults).toEqual([]);
-    expect(logger.error).toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalled();
+    const project = projectOf(await result);
+    expect(project.currentLegislationYear).toBe('legislation_2018');
+    expect(project.legislationYearList).toEqual([2018]);
+    expect(project.legislation_2018.name).toBe('Copper Mine');
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
-  it('skips DEMI for a Track-only project reached by DEMI id', async () => {
-    const result = await resolve('2e9c6a4e-1b8d-4c51-9a3f-0d6c1f2b7e11');
+  it('a DEMI-created row with a UUID id and legislationYear 2018 resolves that block and isPublished', async () => {
+    const uuid = '2e9c6a4e-1b8d-4c51-9a3f-0d6c1f2b7e11';
+    const result = resolve(uuid);
 
-    http.expectNone(() => true);
-    expect(result[0].data.searchResults).toEqual([]);
-    expect(toast.error).not.toHaveBeenCalled();
+    flushProject({ id: uuid, name: 'New Mine', legislationYear: 2018, isPublished: true }, uuid);
+
+    const project = projectOf(await result);
+    expect(project.currentLegislationYear).toBe('legislation_2018');
+    expect(project.legislation_2018.name).toBe('New Mine');
+    expect(project.isPublished).toBeTrue();
+  });
+
+  it('the current block is the top level renamed: projectType as type, address as location, abbreviation as shortName, isActive as activeStatus, centroid as [lon, lat]', async () => {
+    const result = resolve();
+
+    flushProject(demiRow({
+      proponentId: null,
+      legislation_2002: { name: 'Old' },
+      projectType: 'Mines',
+      address: 'Near Smithers',
+      abbreviation: 'CM',
+      isActive: 'active',
+      centroid: { type: 'Point', coordinates: [-127.2, 54.8] }
+    }));
+
+    const block = projectOf(await result).legislation_2018;
+    expect(block.type).toBe('Mines');
+    expect(block.location).toBe('Near Smithers');
+    expect(block.shortName).toBe('CM');
+    expect(block.activeStatus).toBe('active');
+    expect(block.centroid).toEqual([-127.2, 54.8]);
+  });
+
+  it('a field cleared at the top level shows empty even when the stored block still holds it', async () => {
+    const result = resolve();
+
+    flushProject(demiRow({
+      proponentId: null,
+      legislationYear: 2002,
+      currentLegislationYear: 'legislation_2002',
+      legislationYearList: [2002],
+      legislation_2002: { name: 'Copper Mine', sector: 'Mining' },
+      legislation_2018: undefined
+    }));
+
+    const project = projectOf(await result);
+    expect(project.currentLegislationYear).toBe('legislation_2002');
+    expect(project.legislation_2002.name).toBe('Copper Mine');
+    expect(project.legislation_2002.sector).toBeUndefined();
   });
 });

@@ -31,13 +31,14 @@ export class ProjectArchivedDetailComponent implements OnInit {
     const projId = this.route.parent.snapshot.paramMap.get('projId');
 
     const data = this.route.snapshot.data['fullProject'] as ISearchResults<FullProject>[];
-    const row = data?.[0]?.data?.searchResults?.[0] as any;
-    if (!row) {
+    const row = data?.[0]?.data?.searchResults?.[0] as FullProject | undefined;
+    const archived = [row?.legislation_2002, row?.legislation_1996].find(block => block?.name);
+    if (!archived) {
       alert('Uh-oh, couldn\'t load project');
       this.router.navigate(['/search']);
       return;
     }
-    this.project = row.legislationYearList.includes(2002) ? row.legislation_2002 : row.legislation_1996;
+    this.project = archived;
     this.project._id = projId;
     this.isPublished = row.isPublished === true;
     this.substantiallyStarted = (this.project.substantially === true) ? 'Yes' : 'No';
