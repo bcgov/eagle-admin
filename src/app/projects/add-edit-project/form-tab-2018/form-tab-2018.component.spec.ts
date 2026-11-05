@@ -341,9 +341,12 @@ describe('FormTab2018', () => {
     expect(component.myForm.getRawValue()).toEqual(jasmine.objectContaining({ currentPhaseName: 'phase-1', region: 'Peace', eacDecision: 'dec-1' }));
   });
 
-  it('refuses a save on a row whose phase has no id until one is picked', () => {
-    const component = render(results(row2018({ currentPhaseName: { name: 'Unknown' } })));
+  it('refuses a save on a row whose phase has no id until one is picked, and does not default it', () => {
+    const component = render(results(row2018({ currentPhaseName: { _id: null, name: 'Unknown' } })));
+    lists.set(PHASES);
+    fixture.detectChanges();
 
+    expect(component.myForm.controls.currentPhaseName.value).toBeFalsy();
     component.onSubmit();
     expect(toast.error).toHaveBeenCalledWith('You must select a project phase.');
     expect(projectService.save).not.toHaveBeenCalled();

@@ -122,7 +122,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     effect(() => {
       const first = this.lists().projectPhases[0]?.id;
       const phase = this.myForm?.controls.currentPhaseName;
-      if (first && phase && !this.pageIsEditing && !phase.dirty && !isListId(phase.value)) {
+      if (first && phase && !this.pageIsEditing && !isListId(phase.value)) {
         phase.setValue(first);
       }
     });
