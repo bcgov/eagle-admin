@@ -77,13 +77,14 @@ describe('RecentActivityService', () => {
   });
 
   it('save PUTs updates/<id> with projectId and the loaded _etag', async () => {
-    const result = firstValueFrom(service.save(loadedRow({ headline: 'Edited' })));
+    const result = firstValueFrom(service.save(loadedRow({ headline: 'Edited', summary: undefined })));
 
     const req = http.expectOne('/demi/api/updates/demi-update-1');
     expect(req.request.method).toBe('PUT');
     expect(req.request.body.projectId).toBe(EAGLE_PROJECT);
     expect(req.request.body._etag).toBe('"etag-1"');
     expect(req.request.body.headline).toBe('Edited');
+    expect(Object.keys(req.request.body)).not.toContain('summary');
     // DEMI answers 400 to any key outside its write schema.
     ['id', 'eagleId', 'projectEagleId', 'projectName', 'isPublished', 'dateAdded', 'dateUpdated'].forEach(key =>
       expect(Object.keys(req.request.body)).not.toContain(key));
