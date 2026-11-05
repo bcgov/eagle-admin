@@ -43,7 +43,7 @@ type WriteListRef = DemiListRef & { item?: string };
 
 /**
  * DEMI `PUT /projects/:id` body over `row`, catalogued fields under DEMI's names (DEMI answers 400 to others such as `_id`).
- * A cleared field outside `held` (the saving form's fields), or empty in form and row, is left out, so DEMI keeps it.
+ * A field the row holds, a cleared one outside `held` (the saving form's fields), or one empty in both is left out.
  */
 export function toDemiProjectWrite(project: Project, lists: List[], row: DemiProject, held?: readonly string[]): Record<string, unknown> {
   const body: Record<string, unknown> = {};
@@ -55,7 +55,8 @@ export function toDemiProjectWrite(project: Project, lists: List[], row: DemiPro
       continue;
     }
     const value = valueOf(project, field, lists, row);
-    if (value === KEEP || (value == null && isEmpty(row[name]))) {
+    // DEMI reads a sent field as a staff edit, so a value the row already holds is left out.
+    if (value === KEEP || value === row[name] || (value == null && isEmpty(row[name]))) {
       continue;
     }
     if (value !== undefined || CLEARED.has(field)) {
@@ -101,8 +102,11 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
     case 'proponent':
       return value && typeof value === 'object' ? value._id : value;
     // The form shows the default point on a stored row with none; that is not the user's pick.
-    case 'centroid':
-      return row.id && !row.centroid?.coordinates?.length && sameCoordinates(value, DEFAULT_CENTROID) ? KEEP : point(value);
+    case 'centroid': {
+      const stored = row.centroid?.coordinates;
+      const same = stored?.length ? sameCoordinates(value, stored) : row.id && sameCoordinates(value, DEFAULT_CENTROID);
+      return same ? KEEP : point(value);
+    }
     // Over the stored object, so keys the form does not edit stay.
     case 'intake': {
       const notes = value?.notes ?? value?.investmentNotes;

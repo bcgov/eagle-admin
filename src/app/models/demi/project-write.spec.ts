@@ -170,6 +170,26 @@ describe('toDemiProjectWrite', () => {
       .toEqual({ type: 'Point', coordinates: [...DEFAULT_CENTROID] });
   });
 
+  it('sends nothing when every field matches the row', () => {
+    const row = {
+      description: 'Open pit', sector: 'Coal', build: 'new', region: 'Peace', projectType: 'Mines', address: 'Tumbler Ridge',
+      proponentId: 'org1', responsibleEPDId: 'u1', projectLeadId: 'u2', isActive: 'active', legislationYear: 2018,
+      centroid: { type: 'Point', coordinates: [-121.24, 50.72] }
+    };
+    const form = {
+      description: 'Open pit', sector: 'Coal', build: 'new', region: 'Peace', type: 'Mines', location: 'Tumbler Ridge',
+      proponent: 'org1', responsibleEPDId: 'u1', projectLeadId: 'u2', activeStatus: 'active', legislationYear: 2018,
+      centroid: [-121.24, 50.72]
+    };
+
+    expect(write(form, row)).toEqual({});
+  });
+
+  it('sends a point moved from the stored one', () => {
+    expect(write({ centroid: [-121.3, 50.72] }, { centroid: { type: 'Point', coordinates: [-121.24, 50.72] } }).centroid)
+      .toEqual({ type: 'Point', coordinates: [-121.3, 50.72] });
+  });
+
   it('sends no point when a coordinate is blank', () => {
     expect(write({ centroid: ['', '50.7'] }, { centroid: { type: 'Point', coordinates: [-120, 50] } }).centroid).toBeNull();
   });

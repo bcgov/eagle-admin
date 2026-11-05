@@ -225,7 +225,7 @@ describe('ProjectService', () => {
       expect('projectType' in body).toBeFalse();
     });
 
-    it('save PUTs projects/<row.id> with projectType, address, proponentId and a GeoJSON centroid', () => {
+    it('save PUTs projects/<row.id> with projectType, address and a GeoJSON centroid', () => {
       service.save(formProject()).subscribe();
       answerRead();
 
@@ -233,7 +233,6 @@ describe('ProjectService', () => {
       expect(req.request.method).toBe('PUT');
       expect(req.request.body.projectType).toBe('Waste');
       expect(req.request.body.address).toBe('Ashcroft');
-      expect(req.request.body.proponentId).toBe('org1');
       expect(req.request.body.centroid).toEqual({ type: 'Point', coordinates: [-121.24, 50.72] });
       req.flush(nativeRow());
     });
@@ -243,7 +242,9 @@ describe('ProjectService', () => {
       answerRead();
       http.expectOne('/demi/api/organizations/org2').flush({ id: 'org2', name: 'Teck Coal' });
 
-      expect(http.expectOne('/demi/api/projects/7').request.body.proponentName).toBe('Teck Coal');
+      const body = http.expectOne('/demi/api/projects/7').request.body;
+      expect(body.proponentId).toBe('org2');
+      expect(body.proponentName).toBe('Teck Coal');
     });
 
     it('a failed proponent lookup fails the save and sends no PUT', async () => {
@@ -260,7 +261,7 @@ describe('ProjectService', () => {
       service.save(formProject({ legislationYear: 2018 })).subscribe();
       answerRead({ legislationYear: 2018 });
 
-      expect(http.expectOne('/demi/api/projects/7').request.body.legislationYear).toBe(2018);
+      expect(http.expectOne('/demi/api/projects/7').request.method).toBe('PUT');
     });
 
     it('save from another Act\'s tab is refused and sends no PUT', async () => {
