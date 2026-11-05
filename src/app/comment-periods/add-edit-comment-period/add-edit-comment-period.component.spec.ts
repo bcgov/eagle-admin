@@ -137,6 +137,26 @@ describe('AddEditCommentPeriodComponent', () => {
       expect(commentPeriodService.save.calls.mostRecent().args[1]).toBeFalse();
     });
 
+    it('copies the saved form values onto the loaded period', () => {
+      const { period, component } = editStaffPeriod(false);
+      component.commentPeriodForm.patchValue({ commentTipText: 'New tip' });
+
+      component.onSubmit();
+
+      expect(period.commentTip).toBe('New tip');
+    });
+
+    it('keeps the saved fields but not the published state when only publishing is refused', () => {
+      const { period, component } = editStaffPeriod(false);
+      commentPeriodService.save.and.returnValue(throwError(() => Object.assign(new Error('refused'), { saved: true })));
+      component.commentPeriodForm.patchValue({ publishedStateSel: 'published', commentTipText: 'New tip' });
+
+      component.onSubmit();
+
+      expect(period.commentTip).toBe('New tip');
+      expect(period.isPublished).toBeFalse();
+    });
+
     it('leaves the loaded period unchanged when the save is refused', () => {
       const { period, component } = editStaffPeriod(false);
       commentPeriodService.save.and.returnValue(throwError(() => new Error('refused')));

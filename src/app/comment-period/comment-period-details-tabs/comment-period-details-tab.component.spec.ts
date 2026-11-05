@@ -35,7 +35,7 @@ describe('CommentPeriodDetailsTabComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        // The route's parent id differs from project()._id, which is null on a DEMI-minted project.
+        // The route's parent id differs from project()._id, so a link built from _id shows up.
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ projId: 'demi-p1', commentPeriodId: 'engage-7' }) } } },
         { provide: ConfigService, useValue: { getDemiApiPath: () => '/demi/api', lists: [] } },
         { provide: DocumentService, useValue: documents },

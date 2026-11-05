@@ -259,10 +259,16 @@ export class AddEditCommentPeriodComponent implements OnInit {
       return;
     }
     draft.openHouses = openHouses
-      .map(openHouse => ({ description: openHouse.description, eventDate: convertFormGroupNGBDateToJSDate(openHouse.eventDate) }));
+      .map(openHouse => ({ description: openHouse.description.trim(), eventDate: convertFormGroupNGBDateToJSDate(openHouse.eventDate) }));
 
     // The service has shown why a write failed; the form stays open for another try.
-    const failed = () => {
+    const failed = (error: { saved?: boolean }) => {
+      if (error?.saved) {
+        // The fields landed; only the published state did not.
+        const fields: Partial<CommentPeriod> = { ...draft };
+        delete fields.isPublished;
+        Object.assign(this.currentCommentPeriod, fields);
+      }
       this.loading = false;
       this.cdr.markForCheck();
     };

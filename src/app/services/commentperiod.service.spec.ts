@@ -150,13 +150,22 @@ describe('CommentPeriodService', () => {
       req.flush(nativePeriod({ isPublished: false }));
     });
 
+    it('sets no published state when the saved row already has it', async () => {
+      const result = firstValueFrom(service.save(period(), true));
+
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod({ isPublished: true }));
+
+      expect((await result).isPublished).toBeTrue();
+      http.expectNone(`/demi/api/comment-periods/${DEMI_PERIOD}/publish`);
+    });
+
     it('says the period was saved when only setting its published state is refused', async () => {
       const result = firstValueFrom(service.save(period(), true));
 
       http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod({ isPublished: false }));
       http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}/publish`).flush({ error: ABOVE_PROJECT }, { status: 409, statusText: 'Conflict' });
 
-      await expectAsync(result).toBeRejected();
+      await expectAsync(result).toBeRejectedWith(jasmine.objectContaining({ saved: true }));
       expect(TestBed.inject(ToastService).error).toHaveBeenCalledOnceWith(`Comment period saved, but it was not published. ${ABOVE_PROJECT}`);
     });
 

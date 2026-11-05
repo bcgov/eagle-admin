@@ -98,7 +98,8 @@ export class CommentPeriodService {
 
   /**
    * Writes the fields DEMI's PUT takes. DEMI ignores `isPublished` there, so `publish` is set after the save when the
-   * saved row differs from it. A refused write fails the stream, after a toast.
+   * saved row differs from it. A refused write fails the stream, after a toast; the error has `saved: true` when only
+   * setting the published state was refused.
    */
   save(period: Partial<CommentPeriod> & CommentPeriodRef, publish?: boolean): Observable<DemiCommentPeriod> {
     return this.demi.update<DemiCommentPeriod>('comment-periods', period.demiId, writeBody(period, UPDATE_FIELDS)).pipe(
@@ -106,7 +107,7 @@ export class CommentPeriodService {
       mergeMap(row => publish === undefined || row.isPublished === publish ? of(row) : this.setPublished(period, publish).pipe(
         catchError(error => {
           this.toast.error(`Comment period saved, but it was not ${publish ? 'published' : 'un-published'}. ${error.message}`);
-          return throwError(() => error);
+          return throwError(() => Object.assign(error, { saved: true }));
         })
       ))
     );
