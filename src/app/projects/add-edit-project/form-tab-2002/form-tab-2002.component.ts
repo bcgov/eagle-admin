@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +21,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectCreateFailed, projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
+import { projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
 
 
 @Component({
@@ -43,9 +43,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   private storageService = inject(StorageService);
   private logger = inject(LoggingService);
   private writeFailed = projectWriteFailed(this.logger, this.toastService, 'FormTab2002Component');
-  private createFailed = projectCreateFailed(this.logger, this.toastService, this.router, 'FormTab2002Component');
-  /** True while a create is in flight, so a second click cannot make a second project. */
-  public creating = signal(false);
 
   public myForm: FormGroup<{
     name: FormControl<string | null>;
@@ -573,7 +570,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           (confirmation: boolean) => {
             if (confirmation) {
               this.saveProject(
-                true,
                 (project: Project): Observable<Project> => {
                   this.clearStorageService();
                   return this.projectService.publish(project);
@@ -597,13 +593,14 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         );
   }
 
-  saveProject(publish: boolean, putFunction: (_: Project) => Observable<Project>, putSubscribe: ((_: any) => void)[]): void {
+  saveProject(putFunction: (_: Project) => Observable<Project>, putSubscribe: ((_: any) => void)[]): void {
 
     if (!this.validateForm()) {
       return;
     }
+    // The add page always opens the 2018 tab, which creates; this tab only edits.
     if (!this.pageIsEditing) {
-      this.create(new Project({ ...this.convertFormToProject(this.myForm), legislationYear: this.legislationYear }), publish);
+      this.toastService.error('New projects are created on the 2018 Act tab.');
     } else {
       // need to add on legislation year so that we can know where to put it on the root object
       const project = (new Project({
@@ -631,7 +628,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       return;
     }
     this.saveProject(
-      false,
       null,
       [
         null,
@@ -645,33 +641,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         }
       ]
     );
-  }
-
-  private create(project: Project, publish: boolean): void {
-    // A second confirm dialog can still be open when the first one starts the create.
-    if (this.creating()) {
-      return;
-    }
-    this.creating.set(true);
-    this.projectService.add(project, { publish }).subscribe({
-      next: created => {
-        this.projectId = created.demiId;
-        this.clearStorageService();
-        if (publish) {
-          this.published = true;
-          this.setGlobalProjectPublishFlag(ProjectPublishState.published2002);
-        }
-        this.toastService.success(publish ? 'This project was created and published successfully.' : 'This project was created successfully.');
-        this.router.navigate(['/p', created.demiId, 'project-details']);
-      },
-      error: (error: Error) => {
-        if (this.createFailed(publish ? 'publish' : 'save')(error)) {
-          this.clearStorageService();
-        } else {
-          this.creating.set(false);
-        }
-      }
-    });
   }
 
   public removeSelectedOrganization() {

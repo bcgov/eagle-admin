@@ -712,9 +712,10 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         this.router.navigate(['/p', created.demiId, 'project-details']);
       },
       error: (error: Error) => {
-        if (this.createFailed(publish ? 'publish' : 'save')(error)) {
+        const outcome = this.createFailed(publish ? 'publish' : 'save')(error);
+        if (outcome === 'created') {
           this.clearStorageService();
-        } else {
+        } else if (outcome === 'refused') {
           this.creating.set(false);
         }
       }

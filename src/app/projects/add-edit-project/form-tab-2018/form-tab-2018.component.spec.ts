@@ -11,6 +11,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
+import { ProjectPublishState } from 'src/app/models/project';
+import { CREATE_UNKNOWN_MESSAGE } from '../add-edit-project.component';
 
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
@@ -130,6 +132,7 @@ describe('FormTab2018', () => {
     }
 
     const saveButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button[type="submit"]');
+    const publishButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button.btn-publish');
 
     it('save creates the project and opens it by the id DEMI returns', () => {
       const component = renderAdd();
@@ -153,6 +156,20 @@ describe('FormTab2018', () => {
       expect(projectService.add).toHaveBeenCalledOnceWith(jasmine.anything(), { publish: true });
       expect(projectService.publish).not.toHaveBeenCalled();
       expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'project-details']);
+      expect(TestBed.inject(StorageService).state['projectPublishState_' + MINTED]).toBe(ProjectPublishState.published2018);
+    });
+
+    it('Save & Publish stays disabled in flight, and a second confirm does not create twice', async () => {
+      const component = renderAdd();
+      projectService.add.and.returnValue(new Subject<any>());
+
+      component.onPublish();
+      component.onPublish();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(publishButton().disabled).toBeTrue();
+      expect(projectService.add).toHaveBeenCalledTimes(1);
     });
 
     it('Save stays disabled while the create is in flight, and a refused create toasts, logs and enables it again', () => {
@@ -178,16 +195,32 @@ describe('FormTab2018', () => {
 
     it('a failed PUT after create toasts and opens the edit page', () => {
       const component = renderAdd();
-      const error = new ProjectCreatedPartlyError(MINTED, new Error('Unknown field: foo'));
+      const error = new ProjectCreatedPartlyError(MINTED, 'Project created, but not every field was saved', new Error('Unknown field: foo'), false);
       projectService.add.and.returnValue(throwError(() => error));
 
       component.onSubmit();
       fixture.detectChanges();
 
-      expect(toast.error).toHaveBeenCalledWith('Project created, but not every field was saved: Unknown field: foo');
-      expect(logger.error).toHaveBeenCalledWith(error.message, 'FormTab2018Component', error);
+      expect(toast.error).toHaveBeenCalledWith(
+        'Project created, but not every field was saved: Unknown field: foo. Enter the remaining fields again on the edit page.'
+      );
+      expect(logger.error).toHaveBeenCalledWith('Project created partly', 'FormTab2018Component', error);
       expect(navigate).toHaveBeenCalledWith(['/p', MINTED, 'edit']);
       expect(saveButton().disabled).toBeTrue();
+    });
+
+    it('a create with no answer says the project may exist and keeps Save disabled', () => {
+      const component = renderAdd();
+      const error = Object.assign(new Error('0 - Unknown Error'), { status: 0 });
+      projectService.add.and.returnValue(throwError(() => error));
+
+      component.onSubmit();
+      fixture.detectChanges();
+
+      expect(toast.error).toHaveBeenCalledOnceWith(CREATE_UNKNOWN_MESSAGE);
+      expect(logger.error).toHaveBeenCalledWith('Project create got no answer', 'FormTab2018Component', error);
+      expect(saveButton().disabled).toBeTrue();
+      expect(navigate).not.toHaveBeenCalled();
     });
   });
 

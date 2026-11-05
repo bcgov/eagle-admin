@@ -47,18 +47,30 @@ export function projectWriteFailed(logger: LoggingService, toast: ToastService, 
   };
 }
 
-/** A tab's handler for a failed create. Returns true when it left for the edit page of a project the create made. */
+export const CREATE_UNKNOWN_MESSAGE = 'No answer came back, so the project may have been created. Check the project list before you try again.';
+export const REENTER_FIELDS_MESSAGE = 'Enter the remaining fields again on the edit page.';
+
+/**
+ * A tab's handler for a failed create. `refused`: nothing was made. `created`: it left for the new project's edit page.
+ * `unknown`: no answer came back, so the create may have gone through.
+ */
 export function projectCreateFailed(logger: LoggingService, toast: ToastService, router: Router, source: string) {
   const writeFailed = projectWriteFailed(logger, toast, source);
-  return (action: 'save' | 'publish') => (error: Error): boolean => {
-    if (!(error instanceof ProjectCreatedPartlyError)) {
-      writeFailed(action)(error);
-      return false;
+  return (action: 'save' | 'publish') => (error: Error & { status?: number }): 'refused' | 'created' | 'unknown' => {
+    if (error instanceof ProjectCreatedPartlyError) {
+      logger.error('Project created partly', source, error);
+      toast.error(error.saved ? error.message : `${error.message}. ${REENTER_FIELDS_MESSAGE}`);
+      router.navigate(['/p', error.id, 'edit']);
+      return 'created';
     }
-    logger.error(error.message, source, error);
-    toast.error(error.message);
-    router.navigate(['/p', error.id, 'edit']);
-    return true;
+    // Status 0 is no answer at all; a gateway timeout can still commit the POST behind it.
+    if (error.status === 0 || error.status === 504) {
+      logger.error('Project create got no answer', source, error);
+      toast.error(CREATE_UNKNOWN_MESSAGE);
+      return 'unknown';
+    }
+    writeFailed(action)(error);
+    return 'refused';
   };
 }
 
