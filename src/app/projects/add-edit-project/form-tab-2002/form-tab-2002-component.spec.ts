@@ -1,14 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormTab2002Component } from './form-tab-2002.component';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { provideRouter, ActivatedRoute } from '@angular/router';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { of } from 'rxjs';
+import { provideRouter, ActivatedRoute, Router, convertToParamMap } from '@angular/router';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { of, throwError } from 'rxjs';
 import { ApiService } from 'src/app/services/api';
 import { StorageService } from 'src/app/services/storage.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { ProjectService } from 'src/app/services/project.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 import { AjaxData, regionsData } from 'src/app/shared/utils/mock-data';
 
@@ -20,15 +22,34 @@ const LIST_ROWS = [
   { type: 'ceaaInvolvements', id: 'ceaa-panel', name: 'Panel Review', legislation: 2018, listOrder: 0 },
 ];
 
+const ROUTE_ID = 'demi-7';
+const contact = { _id: 'user-1', displayName: 'Test Contact' };
+const ajaxRow = AjaxData[0].data.searchResults[0];
+
 function projectResults(row: object) {
   return [{ ...AjaxData[0], data: { ...AjaxData[0].data, searchResults: [row] } }];
 }
 
+// A 2002 project with no Eagle id, filled in enough to pass validateForm.
+function row2002(block: object = {}, overrides: object = {}) {
+  return {
+    ...ajaxRow,
+    _id: null,
+    legislation_2002: { ...ajaxRow['legislation_2002'], responsibleEPDObj: contact, projectLeadObj: contact, ...block },
+    ...overrides
+  };
+}
+
 describe('FormTab2002', () => {
+  let projectService: jasmine.SpyObj<ProjectService>;
+  let toast: jasmine.SpyObj<ToastService>;
+  let navigate: jasmine.Spy;
+
   async function render(fullProject: unknown = AjaxData): Promise<ComponentFixture<FormTab2002Component>> {
-    const projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'Publish', 'add', 'save']);
-    projectService.add.and.returnValue(of({}));
-    projectService.save.and.returnValue(of({}));
+    projectService = jasmine.createSpyObj('ProjectService', ['unPublish', 'publish', 'add', 'save']);
+    projectService.add.and.returnValue(of({} as any));
+    projectService.save.and.returnValue(of({} as any));
+    toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
 
     await TestBed.configureTestingModule({
       imports: [FormTab2002Component],
@@ -36,14 +57,21 @@ describe('FormTab2002', () => {
         provideRouter([]),
         { provide: ApiService, useValue: jasmine.createSpyObj('ApiService', ['downloadDocument']) },
         { provide: ConfigService, useValue: jasmine.createSpyObj('ConfigService', [], { regions: regionsData, lists: LIST_ROWS }) },
-        { provide: StorageService, useValue: jasmine.createSpyObj('StorageService', [], { state: { currentProject: { data: AjaxData } } }) },
+        { provide: StorageService, useValue: jasmine.createSpyObj('StorageService', [], { state: { pageIsEditing: true } }) },
         { provide: ProjectService, useValue: projectService },
+        { provide: ToastService, useValue: toast },
+        { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error']) },
         { provide: NgbActiveModal, useValue: {} },
-        { provide: ActivatedRoute, useValue: { parent: { data: of({ fullProject }) } } },
-        { provide: NavigationStackUtils, useValue: jasmine.createSpyObj('NavigationStackUtils', ['getNavigationStack']) },
+        { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: Promise.resolve(true) }) } },
+        {
+          provide: ActivatedRoute,
+          useValue: { parent: { data: of({ fullProject }) }, snapshot: { paramMap: convertToParamMap({ projId: ROUTE_ID }) } }
+        },
+        { provide: NavigationStackUtils, useValue: jasmine.createSpyObj('NavigationStackUtils', ['pushNavigationStack', 'popNavigationStack']) },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
+    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
 
     const fixture = TestBed.createComponent(FormTab2002Component);
     fixture.detectChanges();
@@ -121,5 +149,56 @@ describe('FormTab2002', () => {
 
     expect(fixture.componentInstance.legislationYear).toBe(1996);
     expect(optionNames(fixture, 'eacDecision')).toEqual(['Certificate Refused', 'Certificate Issued']);
+  });
+
+  it('save on the current Act PUTs through ProjectService.save', async () => {
+    spyOn(window, 'alert');
+    const component = (await render(projectResults(row2002()))).componentInstance;
+
+    component.onSubmit();
+
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }));
+  });
+
+  it('save on another Act\'s tab toasts and sends nothing', async () => {
+    const component = (await render(projectResults(row2002({}, { currentLegislationYear: 'legislation_2018' })))).componentInstance;
+
+    component.onSubmit();
+    component.onPublish();
+
+    expect(toast.error).toHaveBeenCalledWith('Only the current Act\'s fields can be changed here');
+    expect(projectService.save).not.toHaveBeenCalled();
+    expect(projectService.publish).not.toHaveBeenCalled();
+  });
+
+  it('unpublish failure toasts DEMI\'s 403 text', async () => {
+    const component = (await render(projectResults(row2002()))).componentInstance;
+    projectService.unPublish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));
+
+    component.onUnpublish();
+    await Promise.resolve();
+
+    expect(toast.error).toHaveBeenCalledWith('Failed to unpublish project. Forbidden: not a project admin');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('projectId, unpublish and link-contact use the route id, not fullProject._id', async () => {
+    const component = (await render(projectResults(row2002()))).componentInstance;
+    projectService.unPublish.and.returnValue(of({} as any));
+
+    component.onUnpublish();
+    await Promise.resolve();
+    component.linkContact('epd');
+
+    expect(component.projectId).toBe(ROUTE_ID);
+    expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
+    expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
+  });
+
+  it('a project with no intake builds the edit form', async () => {
+    const component = (await render(projectResults(row2002({ intake: undefined })))).componentInstance;
+
+    expect(component.myForm.controls.name.value).toBe(ajaxRow['legislation_2002'].name);
   });
 });

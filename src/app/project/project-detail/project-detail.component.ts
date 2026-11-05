@@ -9,7 +9,7 @@ import { Project, ProjectPublishState } from 'src/app/models/project';
 import { ISearchResults } from 'src/app/models/search';
 import { DemiProject } from 'src/app/models/demi/project';
 import { toLegacyProject } from 'src/app/models/demi/project-legacy';
-import { ProjectService } from 'src/app/services/project.service';
+import { ProjectService, actYear } from 'src/app/services/project.service';
 import { SideBarService } from 'src/app/services/sidebar.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { DatePipe } from '@angular/common';
@@ -45,6 +45,7 @@ export class ProjectDetailComponent implements OnInit {
   public showArchivedButton = false;
   public legislationYearList: number[] = [];
   public projectID: string;
+  private projectAct: number | null = null;
   public substantiallyStarted: string;
   public disputeResolution: string;
 
@@ -58,9 +59,12 @@ export class ProjectDetailComponent implements OnInit {
       switchMap(row => forkJoin({
         users: this.projectService.getUsers<ProjectUser>([row.responsibleEPDId as string, row.projectLeadId as string]),
         periods: this.projectService.getCommentPeriods<BannerPeriodRow>(row.id, { sort: '-dateStarted', pageSize: 100 })
-      }).pipe(map(({ users, periods }) => ({ project: this.toProject(row, users, periods.rows), published: row.isPublished === true }))))
+      }).pipe(map(({ users, periods }) => ({ project: this.toProject(row, users, periods.rows), published: row.isPublished === true, year: actYear(row) }))))
     ).subscribe({
-      next: ({ project, published }) => this.show(project, published),
+      next: ({ project, published, year }) => {
+        this.projectAct = year;
+        this.show(project, published);
+      },
       error: error => {
         this.logger.error('load project failed', 'ProjectDetailComponent', error);
         alert('Uh-oh, couldn\'t load project');
@@ -71,9 +75,6 @@ export class ProjectDetailComponent implements OnInit {
 
   private toProject(row: DemiProject, users: ProjectUser[], periods: BannerPeriodRow[]): Project {
     const project = toLegacyProject(row);
-    // DEMI renamed these two Eagle fields.
-    project.status = row['projectState'] as string;
-    project.location = row['address'] as string;
     project.responsibleEPDObj = users.find(user => user.id === row.responsibleEPDId);
     project.projectLeadObj = users.find(user => user.id === row.projectLeadId);
     project.commentPeriodForBanner = bannerPeriod(periods);
@@ -85,7 +86,7 @@ export class ProjectDetailComponent implements OnInit {
     this.disputeResolution = (project.dispute === true) ? 'Yes' : 'No';
 
     // The edit form leaves this flag so the badge is right before the saved project reads back.
-    const projectPublishState = this.storageService.state['projectPublishState_' + project._id];
+    const projectPublishState = this.storageService.state['projectPublishState_' + this.projectID];
     if (projectPublishState && projectPublishState !== ProjectPublishState.unpublished) {
       this.currentLegYear = projectPublishState;
       this.isPublished = true;
@@ -123,7 +124,8 @@ export class ProjectDetailComponent implements OnInit {
     this.storageService.state.selectedContactType = null;
     this.storageService.state.componentModel = null;
     this.storageService.state.rowComponent = null;
-    this.storageService.state.back = { url: ['/p', this.project._id, 'project-details'], label: 'Edit Project' };
-    this.router.navigate(['p', this.project._id, 'edit', { 1996: 'form-2002', 2002: 'form-2002', 2018: 'form-2018' }[this.project.legislationYear]]);
+    this.storageService.state.back = { url: ['/p', this.projectID, 'project-details'], label: 'Edit Project' };
+    const tab = this.projectAct === 1996 || this.projectAct === 2002 ? 'form-2002' : 'form-2018';
+    this.router.navigate(['p', this.projectID, 'edit', tab]);
   }
 }

@@ -12,6 +12,8 @@ import { extractFromSearchResults } from 'src/app/shared/utils/utils';
 import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule } from '@angular/forms';
 
+export const OTHER_ACT_TAB_MESSAGE = 'Only the current Act\'s fields can be changed here';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-edit-project',
@@ -71,6 +73,7 @@ export class AddEditProjectComponent implements OnInit {
         this.storageService.state.pageIsEditing = this.pageIsEditing;
       });
 
+    this.projectId = this.route.snapshot.paramMap.get('projId');
     this.initProject();
 
     // hide tabs corresponding to old legislations on new project creation
@@ -113,7 +116,7 @@ export class AddEditProjectComponent implements OnInit {
   }
 
   initProject() {
-    // Not getForEdit: it returns only the current legislation's fields, and the tabs read every legislation_* block.
+    // The tabs read every legislation_* block, so the edit page reads the resolver's full project.
     this.route.data
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((data: { fullProject?: ISearchResults<FullProject>[] }) => {
@@ -125,8 +128,6 @@ export class AddEditProjectComponent implements OnInit {
               this.project = this.fullProject[this.publishedLegislation];
             }
             if (this.project) {
-              // we don't have ids on project here, have to use id from fullProject
-              this.storageService.state.projectDetailId = this.fullProject._id;
               this.storageService.state.projectDetailName = this.project.name;
 
               this.initTabs();

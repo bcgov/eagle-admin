@@ -20,6 +20,7 @@ import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, conver
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
+import { OTHER_ACT_TAB_MESSAGE } from '../add-edit-project.component';
 
 
 @Component({
@@ -149,7 +150,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       // tslint:disable-next-line: triple-equals
       this.tabIsEditing = !isEmptyObject(this.project) && ('name' in this.project && this.project.name !== '');
       this.pageIsEditing = this.storageService.state.pageIsEditing;
-      this.projectId = this.fullProject._id;
+      this.projectId = this.route.snapshot.paramMap.get('projId');
       this.projectName = this.tabIsEditing ? this.project.name : this.storageService.state.projectDetailName;
       this.published = this.fullProject.isPublished && ['legislation_2018'].includes(this.fullProject.currentLegislationYear);
     } else {
@@ -371,8 +372,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'CEAAInvolvement': new FormControl<string | null>(formData.CEAAInvolvement && formData.CEAAInvolvement._id || null),
       'CEAALink': new FormControl<string | null>(formData.CEAALink),
       'ea': new FormControl<string | null>(formData.ea),
-      'capital': new FormControl<number | null>(formData.intake.investment),
-      'notes': new FormControl<string | null>(formData.intake.investmentNotes),
+      'capital': new FormControl<number | null>(formData.intake?.investment),
+      'notes': new FormControl<string | null>(formData.intake?.investmentNotes),
       'eaStatus': new FormControl<string | null>(formData.eaStatus),
       'eaStatusDate': new FormControl<unknown>(formData.eaStatusDate),
       'projectStatusDate': new FormControl<unknown>(null),
@@ -553,6 +554,22 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     this.storageService.state['projectPublishState_' + this.projectId] = state;
   }
 
+  // DEMI's PUT writes the current Act's fields only, so another Act's tab is read-only.
+  private onCurrentAct(): boolean {
+    if (!this.pageIsEditing || this.fullProject?.currentLegislationYear === `legislation_${this.legislationYear}`) {
+      return true;
+    }
+    this.toastService.error(OTHER_ACT_TAB_MESSAGE);
+    return false;
+  }
+
+  private writeFailed(action: 'save' | 'publish' | 'unpublish'): (error: Error) => void {
+    return error => {
+      this.logger.error(`Failed to ${action} project`, 'FormTab2018Component', error);
+      this.toastService.error(`Failed to ${action} project. ${error.message}`);
+    };
+  }
+
   confirmGuard(message: string): Observable<boolean> {
     const modalRef = this.modalService.open(ConfirmComponent, {
       backdrop: 'static',
@@ -583,18 +600,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
         .subscribe(
           (confirmation: boolean) => {
             if (confirmation) {
-                this.projectService.unPublish({
-                  ...this.project,
-                  _id: this.fullProject._id
-                })
+                this.projectService.unPublish({ _id: this.projectId })
                   .subscribe({
-                    next: () => {
-                      // onNext
-                    },
-                    error: (error) => {
-                      this.logger.error('unpublish project failed', 'FormTab2018Component', error);
-                      this.toastService.error('Uh-oh, couldn\'t un-publish project');
-                    },
+                    error: this.writeFailed('unpublish'),
                     complete: () => {
                       this.published = false;
                       this.toastService.success('Project un-published...');
@@ -608,7 +616,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onPublish(): void {
-    if (!this.validateForm()) {
+    if (!this.onCurrentAct() || !this.validateForm()) {
       return;
     }
       this.confirmGuard(`Are you sure you want to <strong>Publish</strong> this project under the <strong>2018 Environmental Assessment Act</strong>?`)
@@ -645,7 +653,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
                 // PUT SUBSCRIBE
                 [
                   null,
-                  null,
+                  this.writeFailed('publish'),
                   () => {
                     this.published = true;
                     this.loading = false;
@@ -720,6 +728,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
+    if (!this.onCurrentAct()) {
+      return;
+    }
     this.saveProject(
       null,
       null,
@@ -739,7 +750,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       // PUT SUBSCRIBE
       [
         null,
-        null,
+        this.writeFailed('save'),
         () => {
           this.clearStorageService();
           this.loading = false;
@@ -781,7 +792,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     this.storageService.state.componentModel = 'User';
     this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
     if (this.tabIsEditing) {
-      this.router.navigate(['/p', this.storageService.currentProjectData._id, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
+      this.router.navigate(['/p', this.projectId, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
     } else {
       this.router.navigate(['/projects', 'add', 'form-2018', 'link-contact', { pageSize: 25 }]);
     }

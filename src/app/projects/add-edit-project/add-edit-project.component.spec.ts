@@ -1,17 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { AddEditProjectComponent } from './add-edit-project.component';
 import { ConfigService } from 'src/app/services/config.service';
 import { KeycloakService } from 'src/app/services/keycloak.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { StorageService } from 'src/app/services/storage.service';
 
 const FULL_PROJECT = {
-  _id: 'eagle-1',
+  _id: null,
   currentLegislationYear: 'legislation_2018',
   legislationYearList: [2018],
   legislation_2018: { name: 'Red Chris' },
@@ -20,13 +19,12 @@ const FULL_PROJECT = {
 
 describe('AddEditProjectComponent', () => {
   let http: HttpTestingController;
-  let storage: StorageService;
   let fixture: ComponentFixture<AddEditProjectComponent>;
   let route: object;
   let navigate: jasmine.Spy;
 
   function create(path: string, data: object, tab?: string) {
-    route = { url: of([{ path }]), data: of(data), snapshot: {}, firstChild: tab ? { snapshot: { url: [{ path: tab }] } } : null };
+    route = { url: of([{ path }]), data: of(data), snapshot: { paramMap: convertToParamMap(path === 'edit' ? { projId: 'demi-7' } : {}) }, firstChild: tab ? { snapshot: { url: [{ path: tab }] } } : null };
     TestBed.configureTestingModule({
       imports: [AddEditProjectComponent],
       providers: [
@@ -40,7 +38,6 @@ describe('AddEditProjectComponent', () => {
       ]
     });
     http = TestBed.inject(HttpTestingController);
-    storage = TestBed.inject(StorageService);
     navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
     fixture = TestBed.createComponent(AddEditProjectComponent);
     fixture.componentInstance.ngOnInit();
@@ -52,8 +49,15 @@ describe('AddEditProjectComponent', () => {
 
     http.verify();
     expect(component.project.name).toBe('Red Chris');
-    expect(storage.state.projectDetailId).toBe('eagle-1');
     expect(component.tabLinks.map(t => t.link)).toEqual(['form-2018']);
+  });
+
+  it('the edit page breadcrumb links to the route id', () => {
+    create('edit', { fullProject: [{ data: { searchResults: [FULL_PROJECT] } }] });
+    fixture.detectChanges();
+
+    const projectCrumb: HTMLAnchorElement = fixture.nativeElement.querySelectorAll('.breadcrumb a')[1];
+    expect(projectCrumb.getAttribute('href')).toBe('/p/demi-7');
   });
 
   it('marks the published legislation tab from isPublished', () => {
