@@ -23,7 +23,7 @@ const CREATE_FIELDS = [
 // PUT also takes these. A row changed since its `_etag` was read is a 409.
 const UPDATE_FIELDS = [...CREATE_FIELDS, 'pinned', '_etag'] as const;
 
-function writeBody(update: UpdateWrite, fields: readonly string[]): Record<string, unknown> {
+function writeBody(update: UpdateWrite, fields: readonly (keyof UpdateWrite & string)[]): Record<string, unknown> {
   return pickFields(update, fields, value => value !== undefined);
 }
 

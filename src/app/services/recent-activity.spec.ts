@@ -76,7 +76,7 @@ describe('RecentActivityService', () => {
     expect((await result)._etag).toBe('"etag-1"');
   });
 
-  it('save PUTs updates/<id> with projectId and the loaded _etag', async () => {
+  it('save PUTs updates/<id> with projectId and the loaded _etag and no undefined fields', async () => {
     const result = firstValueFrom(service.save(loadedRow({ headline: 'Edited', summary: undefined })));
 
     const req = http.expectOne('/demi/api/updates/demi-update-1');
