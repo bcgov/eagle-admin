@@ -8,6 +8,7 @@ import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
+import { pickFields } from 'src/app/shared/utils/utils';
 
 import { Document } from '../models/document';
 import { DemiComment, DemiCommentQuery, NextPendingComment } from '../models/demi/comment';
@@ -36,10 +37,6 @@ export type CommentCreate = Partial<Pick<DemiComment, Exclude<typeof CREATE_FIEL
 /** An attachment whose publish state the review sets, by Eagle document id. */
 export type ReviewedDocument = Pick<Document, '_id' | 'eaoStatus'>;
 
-function pick(row: object, keys: readonly string[]): Record<string, unknown> {
-  return Object.fromEntries(keys.filter(key => key in row).map(key => [key, (row as Record<string, unknown>)[key]]));
-}
-
 function tooLong(body: Record<string, unknown>): string | null {
   const field = Object.keys(MAX_LENGTHS).find(key => typeof body[key] === 'string' && (body[key] as string).length > MAX_LENGTHS[key]);
   return field ? `${field}: must be at most ${MAX_LENGTHS[field]} characters` : null;
@@ -58,7 +55,7 @@ export class CommentService {
    * A refused add shows the reason and completes with no value, so the form stays open.
    */
   add(comment: CommentCreate, documentForms: Array<FormData> = []): Observable<DemiComment> {
-    const body = pick(comment, CREATE_FIELDS);
+    const body = pickFields(comment, CREATE_FIELDS);
     const refused = documentForms.length > MAX_DOCUMENTS ? `documents: at most ${MAX_DOCUMENTS} attachments` : tooLong(body);
     if (refused) {
       return this.writeFailed('add', new Error(refused));
@@ -80,7 +77,7 @@ export class CommentService {
    * Emits the saved row; fails as `add` does, but names a failed attachment update after a saved PUT.
    */
   save(comment: Partial<DemiComment> & Pick<DemiComment, 'id'>, documents: ReviewedDocument[] = []): Observable<DemiComment> {
-    return this.demi.update<DemiComment>('comments', comment.id, pick(comment, UPDATE_FIELDS)).pipe(
+    return this.demi.update<DemiComment>('comments', comment.id, pickFields(comment, UPDATE_FIELDS)).pipe(
       mergeMap(saved => {
         const publishes = documents.flatMap(document => {
           if (document.eaoStatus === 'Published') {

@@ -9,6 +9,7 @@ import { LoadingStateService } from './loading-state.service';
 import { ToastService } from './toast.service';
 import { LoggingService } from './logging.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
+import { pickFields } from 'src/app/shared/utils/utils';
 
 /** Loading-state key for {@link OrgService.listOrganizations}. */
 export const ORG_LIST_LOADING = 'orgs-list';
@@ -19,10 +20,6 @@ const WRITABLE_FIELDS = [
   'name', 'description', 'country', 'postal', 'province', 'city', 'address1', 'address2',
   'companyType', 'companyLegal', 'company', 'parentCompany'
 ] as const;
-
-function writeBody(org: Partial<Organization>): Partial<Organization> {
-  return Object.fromEntries(WRITABLE_FIELDS.filter(key => key in org).map(key => [key, org[key]]));
-}
 
 /** The legacy `Org` a DEMI organization row maps to. */
 export function toEagleOrg(row: Partial<Organization>): Org {
@@ -41,14 +38,14 @@ export class OrgService {
    * A refused save shows DEMI's message and completes with no value, so the form stays open.
    */
   save(org: Partial<Organization>): Observable<Organization> {
-    return this.demiApi.update<Organization>('organizations', org.id, writeBody(org)).pipe(
+    return this.demiApi.update<Organization>('organizations', org.id, pickFields(org, WRITABLE_FIELDS)).pipe(
       catchError(error => this.writeFailed('save', error))
     );
   }
 
   /** Creates a published organization; DEMI's default is unpublished. Fails as `save` does. */
   add(org: Partial<Organization>): Observable<Organization> {
-    return this.demiApi.create<Organization>('organizations', { ...writeBody(org), isPublished: true }).pipe(
+    return this.demiApi.create<Organization>('organizations', { ...pickFields(org, WRITABLE_FIELDS), isPublished: true }).pipe(
       catchError(error => this.writeFailed('add', error))
     );
   }

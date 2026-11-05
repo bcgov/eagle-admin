@@ -7,7 +7,7 @@ import { ConfigService } from './config.service';
 import { HttpCacheService, httpCacheInterceptor } from '../interceptors/http-cache.interceptor';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
-import { ProjectCreatedPartlyError, ProjectService, READ_ONLY_PROJECT, otherActMessage } from './project.service';
+import { ProjectCreatedPartlyError, ProjectService, otherActMessage } from './project.service';
 import { ToastService } from './toast.service';
 import { Project } from '../models/project';
 import { DemiProject } from '../models/demi/project';
@@ -424,23 +424,6 @@ describe('ProjectService', () => {
       );
 
       await expectAsync(save).toBeRejectedWithError('Project is under the Building Canada Act');
-    });
-  });
-
-  describe('group writes', () => {
-    it('maps a native row to its Eagle id before adding a group', () => {
-      service.addGroup(nativeRow(), 'Working Group').subscribe();
-
-      const req = http.expectOne(`/api/project/${EAGLE_ID}/group`);
-      expect(req.request.body).toEqual({ group: 'Working Group' });
-      req.flush({});
-    });
-
-    it('refuses to write a project without an Eagle id', async () => {
-      const write = firstValueFrom(service.addGroup(nativeRow({ eagleId: null }), 'Working Group'));
-
-      await expectAsync(write).toBeRejectedWithError(READ_ONLY_PROJECT);
-      http.expectNone(r => r.url.startsWith('/api/project'));
     });
   });
 });

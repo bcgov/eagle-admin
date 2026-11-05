@@ -5,6 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { DemiApiService } from './demi-api.service';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { DemiUpdate } from '../models/demi/update';
+import { pickFields } from '../shared/utils/utils';
 
 /** A DEMI update row as its writers read it: `_etag` is the version a PUT names. */
 export type LoadedUpdate = DemiUpdate & { _etag?: string; complianceAndEnforcement?: boolean };
@@ -22,8 +23,8 @@ const CREATE_FIELDS = [
 // PUT also takes these. A row changed since its `_etag` was read is a 409.
 const UPDATE_FIELDS = [...CREATE_FIELDS, 'pinned', '_etag'] as const;
 
-function writeBody(update: UpdateWrite, fields: readonly (keyof UpdateWrite)[]): UpdateWrite {
-  return Object.fromEntries(fields.filter(key => update[key] !== undefined).map(key => [key, update[key]]));
+function writeBody(update: UpdateWrite, fields: readonly (keyof UpdateWrite & string)[]): Record<string, unknown> {
+  return pickFields(update, fields, value => value !== undefined);
 }
 
 /** DEMI `/updates` reads and writes. Writes go to the row's DEMI `id`; errors pass through for the caller to toast. */

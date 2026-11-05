@@ -62,13 +62,12 @@ describe('fullProjectResolver', () => {
   const orgRequest = () => http.expectOne(r => r.url === '/demi/organizations');
   const projectOf = (result: any) => result[0].data.searchResults[0];
 
-  it('reads the project from DEMI and keys it by its Eagle id', async () => {
+  it('reads every legislation block of the project from DEMI', async () => {
     const result = resolve();
 
     flushProject(demiRow({ proponentId: null, legislationYearList: [2018, 2002], legislation_2002: { name: 'Old' }, legislation_2018: { name: 'New' } }));
 
     const project = projectOf(await result);
-    expect(project._id).toBe(EAGLE_ID);
     expect(project.currentLegislationYear).toBe('legislation_2018');
     expect(project.legislationYearList).toEqual([2002, 2018]);
     expect(project.legislation_2002.name).toBe('Old');

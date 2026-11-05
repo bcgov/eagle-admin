@@ -10,7 +10,7 @@ import { ISearchResults } from 'src/app/models/search';
 import { DemiProject } from 'src/app/models/demi/project';
 import { toLegacyProject } from 'src/app/models/demi/project-legacy';
 import { ProjectService, actYear } from 'src/app/services/project.service';
-import { EDIT_TABS } from 'src/app/projects/add-edit-project/add-edit-project.component';
+import { EDIT_TABS } from 'src/app/projects/add-edit-project/edit-tabs';
 import { SideBarService } from 'src/app/services/sidebar.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { DatePipe } from '@angular/common';

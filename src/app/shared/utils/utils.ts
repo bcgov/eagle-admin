@@ -151,3 +151,9 @@ export function filterCompareWith(filter: any, filterToCompare: any): boolean {
 export function routeParentId(params: ParamMap): string | null {
   return params.get('projId') ?? params.get('notificationProjectId');
 }
+
+/** The `keys` that `row` has and `keep` accepts, for an allowlisted write body. */
+export function pickFields(row: object, keys: readonly string[], keep: (value: unknown, key: string) => boolean = () => true): Record<string, unknown> {
+  const source = row as Record<string, unknown>;
+  return Object.fromEntries(keys.filter(key => key in source && keep(source[key], key)).map(key => [key, source[key]]));
+}

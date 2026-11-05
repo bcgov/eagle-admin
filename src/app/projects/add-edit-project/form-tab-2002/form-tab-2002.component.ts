@@ -21,7 +21,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectWriteFailed, refuseTabWrite } from '../add-edit-project.component';
+import { projectWriteFailed, refuseTabWrite } from '../edit-tabs';
 
 
 @Component({

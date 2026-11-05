@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, of, merge, throwError } from 'rxjs';
 import { mergeMap, map, catchError } from 'rxjs/operators';
 
-import { ApiService } from './api';
 import { ConfigService } from './config.service';
 import { DemiApiService } from './demi-api.service';
 import { FullProject } from '../models/fullProject';
@@ -13,8 +12,6 @@ import { LegacyProject, toLegacyProject } from '../models/demi/project-legacy';
 import { toDemiProjectWrite } from '../models/demi/project-write';
 import { DemiList, DemiListParams } from '../models/demi/demi-list';
 import { extractFromSearchResults, natureBuildMapper } from '../shared/utils/utils';
-
-export const READ_ONLY_PROJECT = 'This project has no Eagle id, so it cannot be changed here.';
 
 interface UserRow {
   id: string;
@@ -47,7 +44,6 @@ const NOT_PUBLISHED = 'Project created and saved, but not published';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
-  private api = inject(ApiService);
   private configService = inject(ConfigService);
   private demiApi = inject(DemiApiService);
 
@@ -198,30 +194,6 @@ export class ProjectService {
     return this.writePins(projId, () => ({ pinsPublished: false }));
   }
 
-  addGroup(proj: Project | DemiProject, group: any): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/group`, { group }));
-  }
-
-  saveGroup(projectId: any, groupId: any, groupObj: any): Observable<Project> {
-    return this.api.put<Project>(`project/${projectId}/group/${groupId}`, groupObj).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
-  deleteGroup(proj: Project | DemiProject, group: string): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.delete<Project>(`project/${p._id}/group/${group}`));
-  }
-
-  addGroupMembers(proj: Project | DemiProject, groupId: string, members: any): Observable<Project> {
-    return this.eagleWrite(proj, p => this.api.post<Project>(`project/${p._id}/group/${groupId}/members`, members));
-  }
-
-  deleteGroupMembers(projectId: string, groupId: string, member: string): Observable<Project> {
-    return this.api.delete<Project>(`project/${projectId}/group/${groupId}/members/${member}`).pipe(
-      catchError(error => this.api.handleError(error))
-    );
-  }
-
   // DEMI's PUT takes the full pin list. Pins this caller cannot read are missing from the read, and DEMI keeps them.
   private writePins(projId: string, body: (row: DemiProject) => object): Observable<DemiProject> {
     return this.onFreshRow(projId, row => this.demiApi.update<DemiProject>('projects', row.id, body(row)));
@@ -251,13 +223,6 @@ export class ProjectService {
       return of(body);
     }
     return this.demiApi.get<Organization>('organizations', id).pipe(map(org => ({ ...body, proponentName: org.name })));
-  }
-
-  /** Eagle writes key on the Eagle id: a DEMI row maps to the legacy project first, and one without an Eagle id is read-only. */
-  private eagleWrite<T>(proj: Project | DemiProject, send: (legacy: Project) => Observable<T>): Observable<T> {
-    const legacy = '_id' in proj ? proj as Project : toLegacyProject(proj as DemiProject);
-    const request = legacy._id ? send(legacy) : throwError(() => new Error(READ_ONLY_PROJECT));
-    return request.pipe(catchError(error => this.api.handleError(error)));
   }
 }
 

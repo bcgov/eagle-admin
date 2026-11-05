@@ -12,7 +12,7 @@ import { ToastService } from 'src/app/services/toast.service';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
 import { AjaxData, regionsData, eaDecisions } from 'src/app/shared/utils/mock-data';
 import { ProjectPublishState } from 'src/app/models/project';
-import { CREATE_UNKNOWN_MESSAGE } from '../add-edit-project.component';
+import { CREATE_UNKNOWN_MESSAGE } from '../edit-tabs';
 
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
