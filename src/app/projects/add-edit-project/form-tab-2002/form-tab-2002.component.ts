@@ -566,18 +566,15 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           (confirmation: boolean) => {
             if (confirmation) {
               this.saveProject(
-                // POST
                 (project: Project): Observable<Project> => {
                   this.clearStorageService();
                   return this.projectService.publish(project);
                 },
-                // PUT
                 (project: Project): Observable<Project> => {
                   this.clearStorageService();
                   return this.projectService.publish(project);
 
                 },
-                // POST SUBSCRIBE
                 [
                   (data) => {
                     this.projectId = data._id;
@@ -591,7 +588,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
                     this.router.navigate(['/p', this.projectId, 'project-details']);
                   }
                 ],
-                // PUT SUBSCRIBE
                 [
                   null,
                   this.writeFailed('publish'),
@@ -609,7 +605,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           }
         );
   }
-  // TODO: don't lose this
 
   saveProject(postFunction: (_: Project) => Observable<Project>, putFunction: (_: Project) => Observable<Project>,
     postSubscribe: ((_: any) => void)[], putSubscribe: ((_: any) => void)[]): void {
@@ -618,7 +613,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
       return;
     }
     if (!this.pageIsEditing) {
-      // POST
       const project = new Project(
         this.convertFormToProject(this.myForm)
       );
@@ -633,7 +627,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
             ...postSubscribe
           );
     } else {
-      // PUT
       // need to add on legislation year so that we can know where to put it on the root object
       const project = (new Project({
         ...this.convertFormToProject(this.myForm),
@@ -662,7 +655,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     this.saveProject(
       null,
       null,
-      // POST SUBSCRIBE
       [
         (data) => {
           this.projectId = data._id;
@@ -675,7 +667,6 @@ export class FormTab2002Component implements OnInit, OnDestroy {
           this.router.navigate(['/p', this.projectId, 'project-details']);
         }
       ],
-      // PUT SUBSCRIBE
       [
         null,
         this.writeFailed('save'),
