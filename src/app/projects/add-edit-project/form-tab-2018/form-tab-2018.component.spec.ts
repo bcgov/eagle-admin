@@ -37,6 +37,11 @@ function row2018(block: object = {}) {
   };
 }
 
+const PHASES: List[] = [
+  { id: 'phase-0', name: 'Early Engagement', type: 'projectPhase', legislation: 2018, listOrder: 0 },
+  { id: 'phase-1', name: 'Readiness Decision', type: 'projectPhase', legislation: 2018, listOrder: 1 }
+];
+
 const results = (row: object) => [{ data: { meta: [], searchResults: [row] } }];
 // fullProjectResolver's answer when it cannot read the project.
 const NO_PROJECT = [{ data: { meta: [], searchResults: [] } }];
@@ -136,6 +141,22 @@ describe('FormTab2018', () => {
 
     const saveButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button[type="submit"]');
     const publishButton = (): HTMLButtonElement => fixture.nativeElement.querySelector('button.btn-publish');
+
+    it('starts on the first phase once the Lists arrive, and creates the project with it', () => {
+      const component = render(null, { adding: true });
+      lists.set(PHASES);
+      fixture.detectChanges();
+      const filled = component.buildFormFromData({ ...row2018().legislation_2018 }).getRawValue();
+      component.myForm.patchValue({ ...filled, currentPhaseName: component.myForm.controls.currentPhaseName.value });
+      component.proponentId = 'org-1';
+      projectService.add.and.returnValue(of({ _id: null, demiId: MINTED } as any));
+
+      component.onSubmit();
+
+      const select: HTMLSelectElement = fixture.nativeElement.querySelector('#currentPhaseName');
+      expect(select.options[select.selectedIndex]?.textContent.trim()).toBe('Early Engagement');
+      expect(projectService.add).toHaveBeenCalledOnceWith(jasmine.objectContaining({ currentPhaseName: 'phase-0' }), { publish: false });
+    });
 
     it('save creates the project and opens it by the id DEMI returns', () => {
       const component = renderAdd();
@@ -304,8 +325,7 @@ describe('FormTab2018', () => {
     const component = render(results(row2018({ region: 'Peace', eacDecision: { _id: 'dec-1' } })));
 
     lists.set([
-      { id: 'phase-0', name: 'Early Engagement', type: 'projectPhase', legislation: 2018, listOrder: 0 },
-      { id: 'phase-1', name: 'Readiness Decision', type: 'projectPhase', legislation: 2018, listOrder: 1 },
+      ...PHASES,
       { id: 'dec-1', name: 'In Progress', type: 'eaDecisions', legislation: 2018, listOrder: 0 },
       { id: 'region-1', name: 'Peace', type: 'region', legislation: 0, listOrder: 0 }
     ]);
@@ -319,6 +339,18 @@ describe('FormTab2018', () => {
     expect(shown('select[formControlName="region"]')).toBe('Peace');
     expect(shown('#eacDecision')).toBe('In Progress');
     expect(component.myForm.getRawValue()).toEqual(jasmine.objectContaining({ currentPhaseName: 'phase-1', region: 'Peace', eacDecision: 'dec-1' }));
+  });
+
+  it('refuses a save on a row whose phase has no id until one is picked', () => {
+    const component = render(results(row2018({ currentPhaseName: { name: 'Unknown' } })));
+
+    component.onSubmit();
+    expect(toast.error).toHaveBeenCalledWith('You must select a project phase.');
+    expect(projectService.save).not.toHaveBeenCalled();
+
+    component.myForm.controls.currentPhaseName.setValue('phase-1');
+    component.onSubmit();
+    expect(projectService.save).toHaveBeenCalledTimes(1);
   });
 
   it('a project with no intake builds the edit form', () => {

@@ -367,7 +367,8 @@ describe('ProjectService', () => {
         const put = http.expectOne(PROJECT_URL);
         expect(put.request.method).toBe('PUT');
         expect(put.request.body).toEqual(jasmine.objectContaining({
-          legislationYear: 2018, projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', proponentName: 'Teck Coal'
+          legislationYear: 2018, projectType: 'Waste', address: 'Ashcroft', proponentId: 'org1', proponentName: 'Teck Coal',
+          currentPhaseName: jasmine.objectContaining({ _id: 'phase1', name: 'Pre-Application' })
         }));
         put.flush({ id: MINTED });
 

@@ -38,7 +38,7 @@ function row2002(block: object = {}, overrides: object = {}) {
     ...ajaxRow,
     _id: null,
     demiRow: DEMI_ROW,
-    legislation_2002: { ...ajaxRow['legislation_2002'], responsibleEPDObj: contact, projectLeadObj: contact, ...block },
+    legislation_2002: { ...ajaxRow['legislation_2002'], currentPhaseName: { _id: 'phase-1' }, responsibleEPDObj: contact, projectLeadObj: contact, ...block },
     ...overrides
   };
 }
@@ -122,6 +122,7 @@ describe('FormTab2002', () => {
     const contact = { _id: '5c33a481c99e4d002498eeee', displayName: 'Test Contact' };
     const project = {
       ...extractFromSearchResults(AjaxData)[0]['legislation_2002'],
+      currentPhaseName: { _id: 'phase-1' },
       responsibleEPDObj: contact,
       projectLeadObj: contact,
     };
@@ -226,6 +227,18 @@ describe('FormTab2002', () => {
 
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);
+  });
+
+  it('refuses a save on a row whose phase has no id until one is picked', async () => {
+    const component = (await render(projectResults(row2002({ currentPhaseName: { name: 'Unknown' } })))).componentInstance;
+
+    component.onSubmit();
+    expect(toast.error).toHaveBeenCalledWith('You must select a project phase.');
+    expect(projectService.save).not.toHaveBeenCalled();
+
+    component.myForm.controls.currentPhaseName.setValue('phase-1');
+    component.onSubmit();
+    expect(projectService.save).toHaveBeenCalledTimes(1);
   });
 
   it('a project with no intake builds the edit form', async () => {

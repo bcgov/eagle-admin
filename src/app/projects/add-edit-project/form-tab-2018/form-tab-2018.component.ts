@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, DestroyRef, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormGroup, FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +21,7 @@ import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, conver
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectCreateFailed, projectWriteFailed, refuseTabWrite, tabLists } from '../edit-tabs';
+import { isListId, projectCreateFailed, projectWriteFailed, refuseTabWrite, tabLists } from '../edit-tabs';
 
 
 @Component({
@@ -116,6 +116,17 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   public loading = true;
   public published: boolean;
   public only2018: boolean;
+
+  constructor() {
+    // A create starts on the first phase, as the legacy form did, once the Lists arrive and until the user picks.
+    effect(() => {
+      const first = this.lists().projectPhases[0]?.id;
+      const phase = this.myForm?.controls.currentPhaseName;
+      if (first && phase && !this.pageIsEditing && !phase.dirty && !isListId(phase.value)) {
+        phase.setValue(first);
+      }
+    });
+  }
 
   ngOnInit() {
       this.route.parent.data
@@ -217,8 +228,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       this.myForm = new FormGroup({
         'name': new FormControl<string | null>(null),
         'proponent': new FormControl<string | null>(null),
-        // The List row, not its id: the write leaves out a default the user did not pick.
-        'currentPhaseName': new FormControl<string | null>(this.lists().projectPhases[0] as unknown as string),
+        'currentPhaseName': new FormControl<string | null>(this.lists().projectPhases[0]?.id ?? null),
         'build': new FormControl<string | null>(null),
         'type': new FormControl<string | null>(null),
         'sector': new FormControl<string | null>(null),
@@ -482,7 +492,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.sector.value === '') {
       this.toastService.error('You must select a sub-type.');
       return false;
-    } else if (this.myForm.controls.currentPhaseName.value === '') {
+    } else if (!isListId(this.myForm.controls.currentPhaseName.value)) {
       this.toastService.error('You must select a project phase.');
       return false;
     } else if (this.myForm.controls.description.value === '') {

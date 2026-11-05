@@ -43,7 +43,7 @@ describe('toDemiProjectWrite', () => {
   });
 
   it('leaves out a List row default the user did not pick, with the stage and history, on create and on edit', () => {
-    // The create form's phase starts as the first List row, which has `id` but no `_id`.
+    // A List row itself, with `id` but no `_id`, is no pick.
     const listRow = { id: 'phase1', name: 'Pre-Application', type: 'projectPhase', legislation: 2018, listOrder: 1 };
     const created = toDemiProjectWrite(new Project({ name: 'New', currentPhaseName: listRow }), LISTS, {} as DemiProject);
     const edited = write({ currentPhaseName: listRow, eacDecision: { ...listRow, id: 'dec1' } }, { currentPhaseName: PHASE2, projectState: 'Closed' });

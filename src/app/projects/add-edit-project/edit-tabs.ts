@@ -33,6 +33,9 @@ export function tabLists(lists: List[], year: number) {
   };
 }
 
+/** Whether a picker holds a List id, not a blank or a List row. */
+export const isListId = (value: unknown): value is string => typeof value === 'string' && value !== '';
+
 // DEMI's PUT writes only the current Act's fields. With no loaded project, an edit route's Save would POST a new one.
 /** Toasts and returns true when a tab must not write. */
 export function refuseTabWrite(toast: ToastService, projectId: string | null, fullProject: FullProject | null, tabYear: number): boolean {

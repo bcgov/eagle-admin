@@ -22,7 +22,7 @@ import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-util
 import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, projectTypeKey } from 'src/app/shared/utils/utils';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
-import { projectWriteFailed, refuseTabWrite, tabLists } from '../edit-tabs';
+import { isListId, projectWriteFailed, refuseTabWrite, tabLists } from '../edit-tabs';
 
 
 @Component({
@@ -435,7 +435,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
     } else if (this.myForm.controls.type.value === '') {
       this.toastService.error('You must select a type.');
       return false;
-    } else if (this.myForm.controls.currentPhaseName.value === '') {
+    } else if (!isListId(this.myForm.controls.currentPhaseName.value)) {
       this.toastService.error('You must select a project phase.');
       return false;
     } else if (this.myForm.controls.sector.value === '') {
