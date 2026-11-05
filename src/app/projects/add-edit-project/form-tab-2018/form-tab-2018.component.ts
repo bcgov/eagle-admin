@@ -639,7 +639,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       }));
 
       if (putFunction) {
-          this.projectService.save(project, Object.keys(fields))
+          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
             .pipe(
               switchMap(() => putFunction(project)),
             )
@@ -647,7 +647,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
               ...putSubscribe
             );
       } else {
-          this.projectService.save(project, Object.keys(fields))
+          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
             .subscribe(
               ...putSubscribe
             );

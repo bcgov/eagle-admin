@@ -594,13 +594,13 @@ export class FormTab2002Component implements OnInit, OnDestroy {
         _id: this.projectId
       }));
       if (putFunction) {
-          this.projectService.save(project, Object.keys(fields))
+          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
             .pipe(mergeMap(() => putFunction(project)))
             .subscribe(
               ...putSubscribe
             );
       } else {
-          this.projectService.save(project, Object.keys(fields))
+          this.projectService.save(project, Object.keys(fields), this.fullProject.demiRow)
             .subscribe(
               ...putSubscribe
             );

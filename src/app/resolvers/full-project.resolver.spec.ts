@@ -75,6 +75,16 @@ describe('fullProjectResolver', () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
+  it('keeps the DEMI row as read, for the edit form\'s save to compare against', async () => {
+    const row = demiRow({ proponentId: null });
+    const result = resolve();
+
+    flushProject(row);
+    orgRequest().flush([]);
+
+    expect(projectOf(await result).demiRow).toEqual(row);
+  });
+
   it('swaps every proponent id for its organization, in one read', async () => {
     const result = resolve();
 

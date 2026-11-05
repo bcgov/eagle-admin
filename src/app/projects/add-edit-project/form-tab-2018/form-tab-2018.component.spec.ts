@@ -18,12 +18,14 @@ import { CREATE_UNKNOWN_MESSAGE } from '../edit-tabs';
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
 const ajaxRow = AjaxData[0].data.searchResults[0];
+const DEMI_ROW = { id: '7', name: 'Ajax Mine' };
 
 // A 2018 project with no Eagle id, filled in enough to pass validateForm.
 function row2018(block: object = {}) {
   return {
     ...ajaxRow,
     _id: null,
+    demiRow: DEMI_ROW,
     currentLegislationYear: 'legislation_2018',
     legislation_2018: {
       ...ajaxRow['legislation_2018'],
@@ -101,7 +103,7 @@ describe('FormTab2018', () => {
     render(results(row2018())).onSubmit();
 
     expect(toast.error).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }), jasmine.arrayContaining(['eaStatusDate', 'dispute']));
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2018 }), jasmine.arrayContaining(['eaStatusDate', 'dispute']), DEMI_ROW);
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'project-details']);
   });
 

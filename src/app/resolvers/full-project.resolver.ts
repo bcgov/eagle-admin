@@ -45,6 +45,7 @@ function toFullProject(row: DemiProject, year: number, currentKey: string, orgs:
   const project: Record<string, unknown> = {
     ...row,
     currentLegislationYear: currentKey,
+    demiRow: row,
     legislationYearList: [...new Set([...stored, year])].sort((a, b) => a - b)
   };
   const proponent = row.proponentId ? orgs.get(row.proponentId) : undefined;

@@ -272,6 +272,27 @@ describe('ProjectService', () => {
       expect(http.expectOne('/demi/api/projects/7').request.method).toBe('PUT');
     });
 
+    describe('over the row the form was built from', () => {
+      const PHASE1 = { _id: 'phase1', name: 'Pre-Application' };
+      const PHASE2 = { _id: 'phase2', name: 'Application Review' };
+      const shown = nativeRow({ proponentId: 'org1', currentPhaseName: PHASE1, phaseHistory: [PHASE1] });
+
+      it('leaves out a List field the form did not change, though another user changed it since', () => {
+        service.save(formProject({ currentPhaseName: 'phase1' }), undefined, shown).subscribe();
+        answerRead({ currentPhaseName: PHASE2, phaseHistory: [PHASE1, PHASE2] });
+
+        expect('currentPhaseName' in http.expectOne('/demi/api/projects/7').request.body).toBeFalse();
+      });
+
+      it('appends a new phase to the stored phase history, not the shown one', () => {
+        service.save(formProject({ currentPhaseName: 'phase3' }), undefined, shown).subscribe();
+        answerRead({ currentPhaseName: PHASE2, phaseHistory: [PHASE1, PHASE2] });
+
+        const history = http.expectOne('/demi/api/projects/7').request.body.phaseHistory as { _id: string }[];
+        expect(history.map(ref => ref._id)).toEqual(['phase1', 'phase2', 'phase3']);
+      });
+    });
+
     it('publish PUTs level 4 with confirm, reason and the tab\'s legislationYear', () => {
       service.publish(formProject({ legislationYear: 2018 })).subscribe();
       answerRead();

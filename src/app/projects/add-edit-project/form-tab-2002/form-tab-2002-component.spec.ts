@@ -26,6 +26,7 @@ const LIST_ROWS: List[] = [
 const ROUTE_ID = 'demi-7';
 const contact = { _id: 'user-1', displayName: 'Test Contact' };
 const ajaxRow = AjaxData[0].data.searchResults[0];
+const DEMI_ROW = { id: '7', name: 'Ajax Mine' };
 
 function projectResults(row: object) {
   return [{ ...AjaxData[0], data: { ...AjaxData[0].data, searchResults: [row] } }];
@@ -36,6 +37,7 @@ function row2002(block: object = {}, overrides: object = {}) {
   return {
     ...ajaxRow,
     _id: null,
+    demiRow: DEMI_ROW,
     legislation_2002: { ...ajaxRow['legislation_2002'], responsibleEPDObj: contact, projectLeadObj: contact, ...block },
     ...overrides
   };
@@ -167,7 +169,7 @@ describe('FormTab2002', () => {
     component.onSubmit();
 
     expect(toast.error).not.toHaveBeenCalled();
-    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }), jasmine.any(Array));
+    expect(projectService.save).toHaveBeenCalledOnceWith(jasmine.objectContaining({ _id: ROUTE_ID, legislationYear: 2002 }), jasmine.any(Array), DEMI_ROW);
     // The 2002 form shows none of these, so its save must not clear them.
     const held = projectService.save.calls.mostRecent().args[1];
     expect(held).toContain('name');
