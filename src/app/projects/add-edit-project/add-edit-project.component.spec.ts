@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { ActivatedRoute, ParamMap, Router, convertToParamMap, provideRouter } from '@angular/router';
+import { Observable, Subject, isObservable, of } from 'rxjs';
 
 import { AddEditProjectComponent } from './add-edit-project.component';
 import { ConfigService } from 'src/app/services/config.service';
@@ -20,11 +20,11 @@ const FULL_PROJECT = {
 describe('AddEditProjectComponent', () => {
   let http: HttpTestingController;
   let fixture: ComponentFixture<AddEditProjectComponent>;
-  let route: object;
+  let route: { snapshot: { paramMap: ParamMap } } & object;
   let navigate: jasmine.Spy;
 
-  function create(path: string, data: object, tab?: string) {
-    route = { url: of([{ path }]), data: of(data), snapshot: { paramMap: convertToParamMap(path === 'edit' ? { projId: 'demi-7' } : {}) }, firstChild: tab ? { snapshot: { url: [{ path: tab }] } } : null };
+  function create(path: string, data: object | Observable<object>, tab?: string) {
+    route = <typeof route>{ url: of([{ path }]), data: isObservable(data) ? data : of(data), snapshot: { paramMap: convertToParamMap(path === 'edit' ? { projId: 'demi-7' } : {}) }, firstChild: tab ? { snapshot: { url: [{ path: tab }] } } : null };
     TestBed.configureTestingModule({
       imports: [AddEditProjectComponent],
       providers: [
@@ -66,6 +66,17 @@ describe('AddEditProjectComponent', () => {
 
     const projectCrumb: HTMLAnchorElement = fixture.nativeElement.querySelectorAll('.breadcrumb a')[1];
     expect(projectCrumb.getAttribute('href')).toBe('/p/demi-7');
+  });
+
+  it('takes the route id again when the page is reused for another project', () => {
+    const data = new Subject<object>();
+    const component = create('edit', data);
+    data.next({ fullProject: [{ data: { searchResults: [FULL_PROJECT] } }] });
+
+    route.snapshot.paramMap = convertToParamMap({ projId: 'demi-8' });
+    data.next({ fullProject: [{ data: { searchResults: [FULL_PROJECT] } }] });
+
+    expect(component.projectId).toBe('demi-8');
   });
 
   it('marks the published legislation tab from isPublished', () => {

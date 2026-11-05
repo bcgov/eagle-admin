@@ -139,7 +139,8 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   initProject(data: { fullProject: ISearchResults<FullProject>[] }) {
     const fullProjectSearchData = extractFromSearchResults(data.fullProject);
     this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
-    this.projectId = this.route.snapshot.paramMap.get('projId');
+    // The parent's snapshot, as the router can emit its data before this tab's snapshot moves to a new project.
+    this.projectId = this.route.parent.snapshot.paramMap.get('projId');
     if (this.fullProject) {
       if (this.fullProject['legislation_2002'] && Object.keys(this.fullProject['legislation_2002']).length > 0 && this.fullProject['legislation_2002'].name) {
         this.oldProject = this.fullProject['legislation_2002'];
@@ -255,7 +256,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   private setNavigation() {
-    if (!this.pageIsEditing) {
+    if (!this.projectId) {
       this.navigationStackUtils.pushNavigationStack(
         ['/projects', 'add', 'form-2018'],
         [
@@ -465,11 +466,14 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   public linkOrganization() {
+    if (refuseTabWrite(this.toastService, this.projectId, this.fullProject, this.legislationYear)) {
+      return;
+    }
     // Safe way to clear out .add
     this.storageService.state.add = null;
     this.storageService.state.form2018 = this.myForm;
     this.setNavigation();
-    if (!this.pageIsEditing) {
+    if (!this.projectId) {
       this.router.navigate(['/projects', 'add', 'form-2018', 'link-org']);
     } else {
       this.router.navigate(['/p', this.projectId, 'edit', 'form-2018', 'link-org']);
@@ -747,6 +751,9 @@ export class FormTab2018Component implements OnInit, OnDestroy {
   }
 
   public linkContact(type) {
+    if (refuseTabWrite(this.toastService, this.projectId, this.fullProject, this.legislationYear)) {
+      return;
+    }
     this.setNavigation();
     this.storageService.state.sortBy = '+displayName';
     this.storageService.state.form2018 = this.myForm;
@@ -766,7 +773,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
 
     this.storageService.state.componentModel = 'User';
     this.storageService.state.rowComponent = ContactSelectTableRowsComponent;
-    if (this.tabIsEditing) {
+    if (this.projectId) {
       this.router.navigate(['/p', this.projectId, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
     } else {
       this.router.navigate(['/projects', 'add', 'form-2018', 'link-contact', { pageSize: 25 }]);

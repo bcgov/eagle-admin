@@ -18,7 +18,7 @@ export const OTHER_ACT_TAB_MESSAGE = 'Only the current Act\'s fields can be chan
 export const NOT_LOADED_MESSAGE = 'This project could not be loaded for edit, so nothing was saved.';
 
 // Order matters: tabs show in this order, and the add page shows only the last (newest) Act.
-export const EDIT_TABS: IAddEditTab[] = [
+export const EDIT_TABS: readonly IAddEditTab[] = [
   { label: '1996/2002 Environmental Assessment Acts', link: 'form-2002', years: ['legislation_1996', 'legislation_2002'] },
   { label: '2018 Environmental Assessment Act', link: 'form-2018', years: ['legislation_2018'] },
 ];
@@ -64,7 +64,7 @@ export class AddEditProjectComponent implements OnInit {
   private storageService = inject(StorageService);
 
 
-  public tabLinks = EDIT_TABS;
+  public tabLinks: readonly IAddEditTab[] = EDIT_TABS;
   private destroyRef = inject(DestroyRef);
   public documents: any[] = [];
   public back: any = {};
@@ -99,7 +99,6 @@ export class AddEditProjectComponent implements OnInit {
         this.storageService.state.pageIsEditing = this.pageIsEditing;
       });
 
-    this.projectId = this.route.snapshot.paramMap.get('projId');
     this.initProject();
 
     // hide tabs corresponding to old legislations on new project creation
@@ -146,6 +145,7 @@ export class AddEditProjectComponent implements OnInit {
     this.route.data
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((data: { fullProject?: ISearchResults<FullProject>[] }) => {
+          this.projectId = this.route.snapshot.paramMap.get('projId');
           const fullProjectSearchData = data.fullProject ? extractFromSearchResults(data.fullProject) : null;
           this.fullProject = fullProjectSearchData ? fullProjectSearchData[0] : null;
           if (this.pageIsEditing && this.fullProject) {

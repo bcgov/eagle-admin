@@ -65,7 +65,7 @@ describe('FormTab2002', () => {
         { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: Promise.resolve(true) }) } },
         {
           provide: ActivatedRoute,
-          useValue: { parent: { data: of({ fullProject }) }, snapshot: { paramMap: convertToParamMap({ projId: ROUTE_ID }) } }
+          useValue: { parent: { data: of({ fullProject }), snapshot: { paramMap: convertToParamMap({ projId: ROUTE_ID }) } } }
         },
         { provide: NavigationStackUtils, useValue: jasmine.createSpyObj('NavigationStackUtils', ['pushNavigationStack', 'popNavigationStack']) },
       ],
@@ -189,23 +189,23 @@ describe('FormTab2002', () => {
   });
 
   it('unpublish failure toasts DEMI\'s 403 text', async () => {
-    const component = (await render(projectResults(row2002()))).componentInstance;
+    const fixture = await render(projectResults(row2002()));
     projectService.unPublish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));
 
-    component.onUnpublish();
-    await Promise.resolve();
+    fixture.componentInstance.onUnpublish();
+    await fixture.whenStable();
 
     expect(toast.error).toHaveBeenCalledWith('Failed to unpublish project. Forbidden: not a project admin');
     expect(navigate).not.toHaveBeenCalled();
   });
 
   it('projectId, unpublish and link-contact use the route id, not the Eagle id', async () => {
-    const component = (await render(projectResults(row2002()))).componentInstance;
+    const fixture = await render(projectResults(row2002()));
     projectService.unPublish.and.returnValue(of({} as any));
 
-    component.onUnpublish();
-    await Promise.resolve();
-    component.linkContact('epd');
+    fixture.componentInstance.onUnpublish();
+    await fixture.whenStable();
+    fixture.componentInstance.linkContact('epd');
 
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2002', 'link-contact', { pageSize: 25 }]);

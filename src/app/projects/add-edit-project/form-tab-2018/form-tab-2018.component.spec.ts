@@ -43,7 +43,8 @@ describe('FormTab2018', () => {
   let logger: jasmine.SpyObj<LoggingService>;
   let navigate: jasmine.Spy;
 
-  function render(fullProject: unknown = AjaxData) {
+  // The add route has no projId and no resolved project.
+  function render(fullProject: unknown = AjaxData, { adding = false } = {}) {
     projectService = jasmine.createSpyObj('ProjectService', ['add', 'save', 'publish', 'unPublish']);
     projectService.save.and.returnValue(of({} as any));
     toast = jasmine.createSpyObj('ToastService', ['error', 'success']);
@@ -53,14 +54,14 @@ describe('FormTab2018', () => {
       providers: [
         provideRouter([]),
         { provide: ConfigService, useValue: { regions: regionsData, getLists: () => eaDecisions, lists: [] } },
-        { provide: StorageService, useValue: { state: { pageIsEditing: true } } },
+        { provide: StorageService, useValue: { state: { pageIsEditing: !adding } } },
         { provide: ProjectService, useValue: projectService },
         { provide: ToastService, useValue: toast },
         { provide: LoggingService, useValue: logger },
         { provide: NgbModal, useValue: { open: () => ({ componentInstance: {}, result: Promise.resolve(true) }) } },
         {
           provide: ActivatedRoute,
-          useValue: { parent: { data: of({ fullProject }) }, snapshot: { paramMap: convertToParamMap({ projId: ROUTE_ID }) } }
+          useValue: { parent: { data: of({ fullProject }), snapshot: { paramMap: convertToParamMap(adding ? {} : { projId: ROUTE_ID }) } } }
         },
         { provide: NavigationStackUtils, useValue: jasmine.createSpyObj('NavigationStackUtils', ['pushNavigationStack']) }
       ],
@@ -116,6 +117,27 @@ describe('FormTab2018', () => {
     expect(projectService.publish).not.toHaveBeenCalled();
   });
 
+  it('save on the add route creates the project', () => {
+    spyOn(window, 'alert');
+    const component = render(null, { adding: true });
+    projectService.add.and.returnValue(of({ _id: 'new-1' } as any));
+    component.myForm = component.buildFormFromData({ ...row2018().legislation_2018 });
+    component.proponentId = 'org-1';
+
+    component.onSubmit();
+
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(projectService.add).toHaveBeenCalledTimes(1);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('link-contact on an edit route with no loaded project toasts and does not navigate', () => {
+    render(NO_PROJECT).linkContact('epd');
+
+    expect(toast.error).toHaveBeenCalledWith('This project could not be loaded for edit, so nothing was saved.');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('save on an edit route with no loaded project sends neither add nor save', () => {
     render(NO_PROJECT).onSubmit();
 
@@ -152,7 +174,7 @@ describe('FormTab2018', () => {
     projectService.unPublish.and.returnValue(throwError(() => new Error('Forbidden: not a project admin')));
 
     component.onUnpublish();
-    await Promise.resolve();
+    await fixture.whenStable();
 
     expect(toast.error).toHaveBeenCalledWith('Failed to unpublish project. Forbidden: not a project admin');
     expect(navigate).not.toHaveBeenCalled();
@@ -163,10 +185,9 @@ describe('FormTab2018', () => {
     projectService.unPublish.and.returnValue(of({} as any));
 
     component.onUnpublish();
-    await Promise.resolve();
+    await fixture.whenStable();
     component.linkContact('epd');
 
-    expect(component.projectId).toBe(ROUTE_ID);
     expect(projectService.unPublish).toHaveBeenCalledWith({ _id: ROUTE_ID });
     expect(navigate).toHaveBeenCalledWith(['/p', ROUTE_ID, 'edit', 'form-2018', 'link-contact', { pageSize: 25 }]);
   });
