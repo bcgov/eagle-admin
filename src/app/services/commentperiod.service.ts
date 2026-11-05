@@ -7,6 +7,7 @@ import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
+import { pickFields } from 'src/app/shared/utils/utils';
 import { CommentPeriod } from '../models/commentPeriod';
 import { CommentPeriodSummary } from '../models/commentPeriodSummary';
 import { DemiCommentPeriod, DemiCommentPeriodQuery, DemiCommentPeriodSummary } from '../models/demi/comment-period';
@@ -25,10 +26,7 @@ const NULLABLE_FIELDS: readonly string[] = ['dateStarted', 'dateCompleted', 'mil
 type CommentPeriodRef = { demiId: string };
 
 function writeBody(period: object, keys: readonly string[]): Record<string, unknown> {
-  const row = period as Record<string, unknown>;
-  return Object.fromEntries(keys
-    .filter(key => row[key] !== undefined && (row[key] !== null || NULLABLE_FIELDS.includes(key)))
-    .map(key => [key, row[key]]));
+  return pickFields(period, keys, (value, key) => value !== undefined && (value !== null || NULLABLE_FIELDS.includes(key)));
 }
 
 @Injectable({ providedIn: 'root' })
