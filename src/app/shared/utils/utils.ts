@@ -152,7 +152,7 @@ export function filterCompareWith(filter: any, filterToCompare: any): boolean {
   return !!key && !!filterToCompare && filter[key] === filterToCompare[key];
 }
 
-/** The `:projId` or `:notificationProjectId` route param. Links use it because `project._id` is null on a DEMI-minted project. */
+/** The `:projId` or `:notificationProjectId` route param. */
 export function routeParentId(params: ParamMap): string | null {
   return params.get('projId') ?? params.get('notificationProjectId');
 }
