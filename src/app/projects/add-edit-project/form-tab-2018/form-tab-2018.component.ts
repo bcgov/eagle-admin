@@ -16,7 +16,7 @@ import { StorageService } from 'src/app/services/storage.service';
 import { ContactSelectTableRowsComponent } from 'src/app/shared/components/contact-select-table-rows/contact-select-table-rows.component';
 import { Constants } from 'src/app/shared/utils/constants';
 import { NavigationStackUtils } from 'src/app/shared/utils/navigation-stack-utils';
-import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate } from 'src/app/shared/utils/utils';
+import { extractFromSearchResults, isEmptyObject, convertJSDateToNGBDate, convertFormGroupNGBDateToJSDate, projectTypeKey } from 'src/app/shared/utils/utils';
 import { switchMap } from 'rxjs/operators';
 import { LoggingService } from 'src/app/services/logging.service';
 import { TrackOwnedFieldsNoteComponent } from '../track-owned-fields-note/track-owned-fields-note.component';
@@ -364,7 +364,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'name': new FormControl<string | null>(formData.name),
       'proponent': new FormControl<string | null>(formData.proponent),
       'build': new FormControl<string | null>(formData.build),
-      'type': new FormControl<string | null>(formData.type),
+      'type': new FormControl<string | null>(projectTypeKey(formData.type)),
       'currentPhaseName': new FormControl<string | null>(formData.currentPhaseName ? formData.currentPhaseName._id : ''),
       'sector': new FormControl<string | null>(formData.sector),
       'description': new FormControl<string | null>(formData.description),
@@ -395,7 +395,7 @@ export class FormTab2018Component implements OnInit, OnDestroy {
       'projectLeadId': new FormControl<string | null>(formData.projectLeadObj._id),
       'projectLead': new FormControl<string | null>(formData.projectLeadObj.displayName),
     });
-    this.sectorsSelected = this.PROJECT_SUBTYPES[formData.type];
+    this.sectorsSelected = this.PROJECT_SUBTYPES[projectTypeKey(formData.type)];
     return theForm;
   }
 

@@ -305,4 +305,11 @@ describe('FormTab2018', () => {
 
     expect(component.myForm.controls.name.value).toBe('Ajax Mine');
   });
+
+  it('a Track type with a spaced hyphen selects its picker entry and that entry\'s sub-types', () => {
+    const component = render(results(row2018({ type: 'Energy - Petroleum & Natural Gas' })));
+
+    expect(component.myForm.controls.type.value).toBe('Energy-Petroleum & Natural Gas');
+    expect(component.sectorsSelected).toContain('Natural Gas Processing Plants');
+  });
 });

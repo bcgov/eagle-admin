@@ -1,4 +1,5 @@
 import { Project } from '../project';
+import { projectTypeKey } from '../../shared/utils/utils';
 import { List } from './list';
 import { DemiListRef, DemiProject } from './project';
 
@@ -76,8 +77,16 @@ function valueOf(project: Project, field: WriteField, lists: List[], row: DemiPr
       return value && typeof value === 'object' ? value._id : value;
     case 'centroid':
       return point(value);
+    // Over the stored object, so keys the form does not edit stay.
     case 'intake':
-      return value ? { investment: value.investment, investmentNotes: value.notes ?? value.investmentNotes } : undefined;
+      return value ? { ...(row.intake as object), investment: value.investment, investmentNotes: value.notes ?? value.investmentNotes ?? null } : undefined;
+    // `new Project` drops a No answer, so a stored false or null stays; a stored Yes becomes false.
+    case 'substantially':
+    case 'dispute':
+      return value || (row[field] ? false : row[field]);
+    // The picker key differs from Track's stored type only in spacing; keep the stored one.
+    case 'type':
+      return value && projectTypeKey(row.projectType) === value ? row.projectType : value;
     // Stored escaped, as eagle-api's save always sent it.
     case 'description':
       return value?.replace(/\n/g, '\\n');

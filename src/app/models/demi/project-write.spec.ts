@@ -55,11 +55,22 @@ describe('toDemiProjectWrite', () => {
     expect('phaseHistory' in write({ currentPhaseName: 'phase1' }, { currentPhaseName: PHASE1 })).toBeFalse();
   });
 
-  it('sends null for a No answer and an emptied field, so DEMI clears them', () => {
-    const body = write({ substantially: false, CEAALink: '' });
+  it('sends null for an emptied field, so DEMI clears it', () => {
+    expect(write({ CEAALink: '' }).CEAALink).toBeNull();
+  });
 
-    expect(body.substantially).toBeNull();
-    expect(body.CEAALink).toBeNull();
+  it('keeps a stored No or unset answer on a No, and turns a stored Yes into false', () => {
+    const body = write({ substantially: false, dispute: false }, { substantially: false, dispute: null });
+
+    expect(body.substantially).toBeFalse();
+    expect(body.dispute).toBeNull();
+    expect(write({ substantially: false }, { substantially: true }).substantially).toBeFalse();
+  });
+
+  it('keeps the stored Track type when the picker key differs only in spacing', () => {
+    expect(write({ type: 'Energy-Petroleum & Natural Gas' }, { projectType: 'Energy - Petroleum & Natural Gas' }).projectType)
+      .toBe('Energy - Petroleum & Natural Gas');
+    expect(write({ type: 'Mines' }, { projectType: 'Energy - Petroleum & Natural Gas' }).projectType).toBe('Mines');
   });
 
   it('clears a contact\'s stored name with its id', () => {
@@ -77,8 +88,9 @@ describe('toDemiProjectWrite', () => {
     expect('applicableRegulation' in body).toBeFalse();
   });
 
-  it('stores intake notes as investmentNotes', () => {
-    expect(write({ intake: { investment: 5, notes: 'Phase 1' } }).intake).toEqual({ investment: 5, investmentNotes: 'Phase 1' });
+  it('stores intake notes as investmentNotes over the stored intake', () => {
+    expect(write({ intake: { investment: 5, notes: 'Phase 1' } }, { intake: { investment: 4, notes: null, investmentNotes: null } }).intake)
+      .toEqual({ investment: 5, notes: null, investmentNotes: 'Phase 1' });
   });
 
   it('sends no point when a coordinate is blank', () => {
