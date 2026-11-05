@@ -38,7 +38,7 @@ function proponentIds(row: DemiProject, currentKey: string): string[] {
 
 /**
  * eagle-api's `projectLegislation=all&populate=true` shape from a DEMI row; `_id` is the Eagle id. The current Act's block is
- * the top level, since DEMI's PUT writes only there. Proponent ids become Organizations; unknown ones are left off, as eagle-api did.
+ * the top level, since DEMI's PUT writes only there. Proponent ids become Organizations; older blocks drop unknown ones, as eagle-api did.
  */
 function toFullProject(row: DemiProject, year: number, currentKey: string, orgs: Map<string, Org>): FullProject {
   const stored = Array.isArray(row.legislationYearList) ? row.legislationYearList.map(Number) : [];
@@ -60,11 +60,9 @@ function toFullProject(row: DemiProject, year: number, currentKey: string, orgs:
   const current = toLegacyProject(row);
   if (proponent) {
     current.proponent = proponent;
-  } else {
-    delete current.proponent;
   }
-  if (!row.centroid) {
-    // The edit tabs default an absent centroid to Victoria; Project's [] would skip that.
+  if (!current.centroid?.length) {
+    // The edit tabs default an absent centroid to Victoria; an empty array would skip that.
     current.centroid = undefined;
   }
   project[currentKey] = current;

@@ -65,7 +65,7 @@ describe('fullProjectResolver', () => {
   it('reads the project from DEMI and keys it by its Eagle id', async () => {
     const result = resolve();
 
-    flushProject(demiRow({ proponentId: null, legislation_2002: { name: 'Old' }, legislation_2018: { name: 'New' } }));
+    flushProject(demiRow({ proponentId: null, legislationYearList: [2018, 2002], legislation_2002: { name: 'Old' }, legislation_2018: { name: 'New' } }));
 
     const project = projectOf(await result);
     expect(project._id).toBe(EAGLE_ID);
@@ -92,7 +92,7 @@ describe('fullProjectResolver', () => {
     expect(project.legislation_2002.proponent).toEqual(jasmine.objectContaining({ _id: ORG_B, name: 'Old Copper Co.' }));
   });
 
-  it('leaves off a proponent DEMI does not have, keeping the id fields', async () => {
+  it('keeps the proponent id and name on the current block when DEMI has no such organization', async () => {
     const result = resolve();
 
     flushProject(demiRow({ legislation_2002: { name: 'Old' } }));
@@ -100,7 +100,7 @@ describe('fullProjectResolver', () => {
 
     const project = projectOf(await result);
     expect(project.proponent).toBeUndefined();
-    expect('proponent' in project.legislation_2018).toBeFalse();
+    expect(project.legislation_2018.proponent).toEqual({ _id: ORG_A, name: 'Copper Co.' });
     expect(project.proponentId).toBe(ORG_A);
     expect(project.proponentName).toBe('Copper Co.');
     expect(toast.error).not.toHaveBeenCalled();
@@ -148,11 +148,12 @@ describe('fullProjectResolver', () => {
     const uuid = '2e9c6a4e-1b8d-4c51-9a3f-0d6c1f2b7e11';
     const result = resolve(uuid);
 
-    flushProject({ id: uuid, name: 'New Mine', legislationYear: 2018, isPublished: true }, uuid);
+    flushProject({ id: uuid, name: 'New Mine', legislationYear: 2018, isPublished: true, centroid: { type: 'Point', coordinates: [] } }, uuid);
 
     const project = projectOf(await result);
     expect(project.currentLegislationYear).toBe('legislation_2018');
     expect(project.legislation_2018.name).toBe('New Mine');
+    expect(project.legislation_2018.centroid).toBeUndefined();
     expect(project.isPublished).toBeTrue();
   });
 
@@ -183,15 +184,15 @@ describe('fullProjectResolver', () => {
     flushProject(demiRow({
       proponentId: null,
       currentLegislationYear: 'legislation_1996',
-      legislationYearList: ['2002', '1996'],
+      legislationYearList: ['1996'],
       legislation_1996: { name: 'Stale Name', currentPhaseCode: 'decision' },
-      legislation_2002: { name: 'Old' },
+      legislation_2002: undefined,
       legislation_2018: undefined
     }));
 
     const project = projectOf(await result);
     expect(project.currentLegislationYear).toBe('legislation_1996');
-    expect(project.legislationYearList).toEqual([1996, 2002]);
+    expect(project.legislationYearList).toEqual([1996]);
     expect(project.legislation_1996.name).toBe('Copper Mine');
     expect(project.legislation_1996.currentPhaseCode).toBeUndefined();
   });
