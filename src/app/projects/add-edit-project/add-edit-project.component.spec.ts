@@ -114,6 +114,14 @@ describe('AddEditProjectComponent', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('opens the current Act\'s tab on the bare edit URL of a project with older-Act data', () => {
+    const project = { ...FULL_PROJECT, legislationYearList: [2002, 2018], legislation_2002: { name: 'Old Mine' } };
+    const component = create('edit', { fullProject: [{ data: { searchResults: [project] } }] });
+
+    expect(component.tabLinks.map(t => t.link)).toEqual(['form-2002', 'form-2018']);
+    expect(navigate).toHaveBeenCalledOnceWith(['form-2018'], { relativeTo: route, replaceUrl: true });
+  });
+
   it('moves the add page off the hidden form-2002 tab', () => {
     create('add', {}, 'form-2002');
 

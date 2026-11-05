@@ -269,10 +269,10 @@ export const routes: Routes = [
         path: 'edit',
         component: AddEditProjectComponent,
         resolve: { fullProject: fullProjectResolver },
+        // No redirect: the page opens the project's current-Act tab once the project loads.
         children: [{
           path: '',
-          redirectTo: 'form-2002',
-          pathMatch: 'full',
+          children: [],
         },
         {
           path: 'form-2002',

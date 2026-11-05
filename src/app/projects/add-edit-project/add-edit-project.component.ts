@@ -98,10 +98,10 @@ export class AddEditProjectComponent implements OnInit {
     });
   }
 
-  // The bare edit/add URL redirects to form-2002 before the project loads; move off a tab this project hides.
+  // The bare edit URL shows no tab, and the bare add URL redirects to form-2002: open `target` then, or when the open tab is hidden.
   private showVisibleTab(target: IAddEditTab | undefined) {
     const active = this.route.firstChild?.snapshot.url[0]?.path;
-    if (!target || !active || this.tabLinks.some(tab => tab.link === active)) {
+    if (!target || (active && this.tabLinks.some(tab => tab.link === active))) {
       return;
     }
     this.router.navigate([target.link], { relativeTo: this.route, replaceUrl: true });
