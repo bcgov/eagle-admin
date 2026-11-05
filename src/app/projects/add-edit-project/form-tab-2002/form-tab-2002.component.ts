@@ -85,7 +85,7 @@ export class FormTab2002Component implements OnInit, OnDestroy {
   public proponentId = '';
   public legislationYear = 2002;
   // On a direct load the Lists arrive after the form is built.
-  public readonly lists = computed(() => tabLists(this.configService.listsSignal(), this.legislationYear));
+  public readonly lists = computed(() => tabLists(this.configService.listsSignal(), 2002));
 
   public PROJECT_SUBTYPES = Constants.PROJECT_SUBTYPES(this.legislationYear);
 
