@@ -10,18 +10,13 @@ import { LoggingService } from './logging.service';
 import { ToastService } from './toast.service';
 import { CommentPeriod } from '../models/commentPeriod';
 import { DemiCommentPeriod } from '../models/demi/comment-period';
+import { nativeCommentPeriod } from '../models/demi/comment-period.fixture';
 
 const EAGLE_PERIOD = '5d0a6c1b2e3f4a5b6c7d8e9f';
 const EAGLE_PROJECT = '588511d0aaecd9001b826192';
 
 function nativePeriod(overrides: Partial<DemiCommentPeriod> = {}): DemiCommentPeriod {
-  return {
-    id: EAGLE_PERIOD, eagleId: EAGLE_PERIOD, projectId: '207', projectEagleId: EAGLE_PROJECT, projectName: 'Mine',
-    sourceSystem: 'eagle', dateStarted: '2026-01-01T00:00:00Z', dateCompleted: '2026-02-01T00:00:00Z', dateAdded: null,
-    isMet: false, metURL: '', informationLabel: '', instructions: 'Comment here', additionalText: '', commentTip: '',
-    openHouses: [], relatedDocuments: [], milestone: '5c0a6c1b2e3f4a5b6c7d8e00', isPublished: true,
-    ...overrides
-  };
+  return nativeCommentPeriod({ id: EAGLE_PERIOD, eagleId: EAGLE_PERIOD, projectEagleId: EAGLE_PROJECT, ...overrides });
 }
 
 describe('CommentPeriodService', () => {
@@ -121,106 +116,79 @@ describe('CommentPeriodService', () => {
     });
   });
 
-  describe('write body', () => {
-    it('sends a legacy period to eagle-api unchanged', () => {
-      const legacy = new CommentPeriod({ _id: EAGLE_PERIOD, project: EAGLE_PROJECT, instructions: 'Comment here' });
+  describe('writes', () => {
+    const DEMI_PERIOD = '3f2b8a1e-6c1d-4b8e-9f3a-2d7c5e0a1b4c';
+    const ABOVE_PROJECT = 'Cannot publish a comment period above the level of its project.';
+    const period = () => Object.assign(new CommentPeriod({ ...nativePeriod({ commentTip: 'Be brief' }), _id: EAGLE_PERIOD, project: EAGLE_PROJECT }), { demiId: DEMI_PERIOD });
 
-      service.save(legacy).subscribe();
+    it('save PUTs comment-periods/<demiId> with only UPDATE fields', () => {
+      service.save(period()).subscribe();
 
-      const req = http.expectOne(`/api/commentperiod/${EAGLE_PERIOD}`);
-      expect(req.request.body).toEqual(JSON.parse(JSON.stringify(legacy)));
-      req.flush({});
-    });
-
-    it('saves a native period under its Eagle id with the Eagle project id', () => {
-      service.save(nativePeriod()).subscribe();
-
-      const req = http.expectOne(`/api/commentperiod/${EAGLE_PERIOD}`);
+      const req = http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body.project).toBe(EAGLE_PROJECT);
-      expect(req.request.body._id).toBe(EAGLE_PERIOD);
-      expect(req.request.body.projectId).toBeUndefined();
-      req.flush({});
+      expect(Object.keys(req.request.body).sort()).toEqual([
+        'commentTip', 'dateCompleted', 'dateStarted', 'instructions', 'isMet', 'milestone', 'openHouses', 'relatedDocuments'
+      ]);
+      req.flush(nativePeriod());
     });
 
-    it('adds a native period with the Eagle project id and no DEMI-only fields', () => {
-      service.add(nativePeriod({ id: undefined, eagleId: undefined })).subscribe();
+    it('add POSTs the parent id as projectId and leaves out unset fields DEMI would refuse as null', () => {
+      service.add(new CommentPeriod({ instructions: 'Comment here', isPublished: false }), DEMI_PERIOD).subscribe();
 
-      const req = http.expectOne('/api/commentperiod/');
-      expect(req.request.body.project).toBe(EAGLE_PROJECT);
-      expect(req.request.body._id).toBeNull();
-      expect(Object.keys(req.request.body)).not.toContain('projectEagleId');
-      expect(Object.keys(req.request.body)).not.toContain('projectName');
-      req.flush({});
+      const req = http.expectOne('/demi/api/comment-periods');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ instructions: 'Comment here', isPublished: false, milestone: null, projectId: DEMI_PERIOD });
+      req.flush(nativePeriod());
     });
 
-    it('saves a native period whose project is hidden without a project field, as eagle-api ignores it on update', () => {
-      service.save(nativePeriod({ projectEagleId: undefined })).subscribe();
+    it('sets a changed published state after the save', () => {
+      service.save(period(), false).subscribe();
 
-      const req = http.expectOne(`/api/commentperiod/${EAGLE_PERIOD}`);
-      expect(Object.keys(req.request.body)).not.toContain('project');
-      req.flush({});
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod());
+      const req = http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}/unpublish`);
+      expect(req.request.method).toBe('PUT');
+      req.flush(nativePeriod({ isPublished: false }));
     });
 
-    it('refuses to save a native period read without staff fields, sending nothing', async () => {
-      const withoutStaffFields = nativePeriod();
-      delete withoutStaffFields.milestone;
+    it('sets no published state when the saved row already has it', async () => {
+      const result = firstValueFrom(service.save(period(), true));
 
-      await expectAsync(firstValueFrom(service.save(withoutStaffFields))).toBeRejectedWithError(/staff fields/);
-      http.expectNone(() => true);
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod({ isPublished: true }));
+
+      expect((await result).isPublished).toBeTrue();
+      http.expectNone(`/demi/api/comment-periods/${DEMI_PERIOD}/publish`);
     });
 
-    it('uses the notification id as project for a notification-parented period', () => {
-      const notification = '6a1b2c3d4e5f6a7b8c9d0e1f';
+    it('says the period was saved when only setting its published state is refused', async () => {
+      const result = firstValueFrom(service.save(period(), true));
 
-      service.add(nativePeriod({ id: undefined, eagleId: undefined, projectId: notification, projectEagleId: undefined })).subscribe();
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush(nativePeriod({ isPublished: false }));
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}/publish`).flush({ error: ABOVE_PROJECT }, { status: 409, statusText: 'Conflict' });
 
-      const req = http.expectOne('/api/commentperiod/');
-      expect(req.request.body.project).toBe(notification);
-      req.flush({});
+      await expectAsync(result).toBeRejectedWith(jasmine.objectContaining({ saved: true }));
+      expect(TestBed.inject(ToastService).error).toHaveBeenCalledOnceWith(`Comment period saved, but it was not published. ${ABOVE_PROJECT}`);
     });
 
-    it('refuses to add a period whose project has no Eagle id, sending nothing', async () => {
-      const result = firstValueFrom(service.add(nativePeriod({ id: undefined, eagleId: undefined, projectEagleId: undefined })));
+    it('sets no published state when the save is refused', async () => {
+      const result = firstValueFrom(service.save(period(), false));
 
-      await expectAsync(result).toBeRejectedWithError(/not in Eagle/);
-      http.expectNone(() => true);
+      http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`).flush({ error: 'bad', fields: { milestone: 'must be an id' } }, { status: 400, statusText: 'Bad Request' });
+
+      await expectAsync(result).toBeRejected();
+      http.expectNone(`/demi/api/comment-periods/${DEMI_PERIOD}/unpublish`);
+      expect(TestBed.inject(ToastService).error).toHaveBeenCalledOnceWith('Failed to save comment period. bad milestone: must be an id');
     });
 
-    it('refuses to write an ENGAGE period that has no Eagle id', async () => {
-      const result = firstValueFrom(service.publish(nativePeriod({ id: 'engage-42', eagleId: undefined })));
+    it('toasts DEMI\'s reason and fails the stream when a write is refused', async () => {
+      const result = firstValueFrom(service.delete(period()));
 
-      await expectAsync(result).toBeRejectedWithError(/not in Eagle/);
-      http.expectNone(() => true);
-    });
-
-    it('refuses to publish an ENGAGE period even when it has an Eagle id', async () => {
-      const result = firstValueFrom(service.publish(nativePeriod({ id: 'engage-42', sourceSystem: 'engage' })));
-
-      await expectAsync(result).toBeRejectedWithError(/ENGAGE/);
-      http.expectNone(() => true);
-    });
-
-    it('publishes a native period with no body', () => {
-      service.publish(nativePeriod()).subscribe();
-
-      const req = http.expectOne(`/api/commentperiod/${EAGLE_PERIOD}/publish`);
-      expect(req.request.body).toEqual({});
-      req.flush({});
-    });
-
-    it('unpublishes a native period under its id when it is the Eagle id', () => {
-      service.unPublish(nativePeriod({ eagleId: undefined })).subscribe();
-
-      http.expectOne(`/api/commentperiod/${EAGLE_PERIOD}/unpublish`).flush({});
-    });
-
-    it('deletes a native period by its Eagle id', () => {
-      service.delete(nativePeriod()).subscribe();
-
-      const req = http.expectOne(`/api/commentperiod/${EAGLE_PERIOD}`);
+      const req = http.expectOne(`/demi/api/comment-periods/${DEMI_PERIOD}`);
       expect(req.request.method).toBe('DELETE');
-      req.flush({});
+      req.flush({ error: 'This comment period is run in ENGAGE. Change it there.' }, { status: 409, statusText: 'Conflict' });
+
+      await expectAsync(result).toBeRejected();
+      expect(TestBed.inject(ToastService).error)
+        .toHaveBeenCalledWith('Failed to delete comment period. This comment period is run in ENGAGE. Change it there.');
     });
   });
 });

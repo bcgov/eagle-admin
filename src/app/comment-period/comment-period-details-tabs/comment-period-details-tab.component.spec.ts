@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
 import { CommentPeriodDetailsTabComponent } from './comment-period-details-tab.component';
@@ -35,6 +35,8 @@ describe('CommentPeriodDetailsTabComponent', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
+        // The route's parent id differs from project()._id, so a link built from _id shows up.
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ projId: 'demi-p1', commentPeriodId: 'engage-7' }) } } },
         { provide: ConfigService, useValue: { getDemiApiPath: () => '/demi/api', lists: [] } },
         { provide: DocumentService, useValue: documents },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error', 'debug']) },
@@ -105,6 +107,53 @@ describe('CommentPeriodDetailsTabComponent', () => {
     it('offers only the exports on an ENGAGE period', () => {
       create({ sourceSystem: 'engage' });
       expect(menuItems()).toEqual(['Export All Comments', 'Export Comments For Proponents']);
+    });
+  });
+
+  describe('publish', () => {
+    it('publish refused with 409 toasts the ABOVE_PROJECT text and clears loading', () => {
+      const ABOVE_PROJECT = 'Cannot publish a comment period above the level of its project.';
+      create({ isPublished: false });
+      spyOn(window, 'confirm').and.returnValue(true);
+
+      fixture.componentInstance.togglePublishState();
+      http.expectOne('/demi/api/comment-periods/engage-7/publish').flush({ error: ABOVE_PROJECT }, { status: 409, statusText: 'Conflict' });
+
+      expect(TestBed.inject(ToastService).error).toHaveBeenCalledWith(`Failed to publish comment period. ${ABOVE_PROJECT}`);
+      expect(fixture.componentInstance.loading).toBeFalse();
+      expect(fixture.componentInstance.commentPeriodPublishedStatus).toBe('Not Published');
+    });
+  });
+
+  describe('links', () => {
+    beforeEach(() => {
+      create();
+      spyOn(window, 'confirm').and.returnValue(true);
+    });
+
+    it('opens edit and add-comment under the route parent id', () => {
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigateByUrl');
+      spyOn(router, 'navigate');
+
+      fixture.componentInstance.editCommentPeriod();
+      fixture.componentInstance.addComment();
+
+      expect(router.navigateByUrl).toHaveBeenCalledWith('/p/demi-p1/cp/598b6eb61ecbc9001dfeba55/edit');
+      expect(router.navigate).toHaveBeenCalledWith(['/p', 'demi-p1', 'cp', '598b6eb61ecbc9001dfeba55', 'add-comment']);
+    });
+
+    it('deletes by the DEMI id, then returns to the period list under the route parent id', () => {
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+
+      fixture.componentInstance.deleteCommentPeriod();
+      const req = http.expectOne('/demi/api/comment-periods/engage-7');
+      expect(req.request.method).toBe('DELETE');
+      req.flush({});
+
+      expect(router.navigate).toHaveBeenCalledWith(['/p', 'demi-p1', 'comment-periods']);
+      expect(fixture.componentInstance.loading).toBeFalse();
     });
   });
 

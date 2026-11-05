@@ -3,10 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { ToastService } from 'src/app/services/toast.service';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { LegacyCommentPeriod } from 'src/app/comment-periods/comment-period-legacy';
 import { ConfigService } from 'src/app/services/config.service';
-import { encodeString, formatDate, saveBlob } from 'src/app/shared/utils/utils';
+import { encodeString, formatDate, routeParentId, saveBlob } from 'src/app/shared/utils/utils';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { DocumentService } from 'src/app/services/document.service';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
@@ -38,6 +38,7 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
   private http = inject(HttpClient);
   private configService = inject(ConfigService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toastService = inject(ToastService);
   private storageService = inject(StorageService);
   private logger = inject(LoggingService);
@@ -62,7 +63,8 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
     const projectData = this.project();
     // project() is the raw project from the resolver; storageService has the { type, data } wrapper
     const storedProject = this.storageService.state.currentProject;
-    this.projectId = projectData._id ?? projectData.data?._id;
+    // The route's parent id, as `_id` is null on a DEMI-minted project.
+    this.projectId = routeParentId(this.route.snapshot.paramMap);
     this.projectName = projectData.name ?? projectData.data?.name;
     this.projectType = storedProject?.type ?? 'currentProject';
     this.baseRouteUrl = this.projectType === 'currentProject' ? '/p' : '/pn';
@@ -87,34 +89,26 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
   }
 
   public togglePublishState() {
-    if (confirm(`Are you sure you want to ${this.publishAction} this comment period?`)) {
-      this.loading = true;
-      if (this.commentPeriod().isPublished) {
-        this.commentPeriodService.unPublish(this.commentPeriod())
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(
-              (() => {
-                this.commentPeriod().isPublished = false;
-                this.setPublishStatus();
-                this.toastService.success('This comment period has been un-published.');
-                this.loading = false;
-                this._cdr.markForCheck();
-              })
-            );
-      } else {
-        this.commentPeriodService.publish(this.commentPeriod())
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(
-              (() => {
-                this.commentPeriod().isPublished = true;
-                this.setPublishStatus();
-                this.toastService.success('This comment period has been published.');
-                this.loading = false;
-                this._cdr.markForCheck();
-              })
-            );
-      }
+    if (!confirm(`Are you sure you want to ${this.publishAction} this comment period?`)) {
+      return;
     }
+    this.loading = true;
+    const publish = !this.commentPeriod().isPublished;
+    const write$ = publish ? this.commentPeriodService.publish(this.commentPeriod()) : this.commentPeriodService.unPublish(this.commentPeriod());
+    // The service shows the error toast.
+    write$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.commentPeriod().isPublished = publish;
+        this.setPublishStatus();
+        this.toastService.success(`This comment period has been ${publish ? 'published' : 'un-published'}.`);
+        this.loading = false;
+        this._cdr.markForCheck();
+      },
+      error: () => {
+        this.loading = false;
+        this._cdr.markForCheck();
+      }
+    });
   }
 
   editCommentPeriod() {
@@ -122,28 +116,28 @@ export class CommentPeriodDetailsTabComponent implements OnInit {
   }
 
   deleteCommentPeriod() {
-    if (confirm(`Are you sure you want to delete this comment period?`)) {
-      this.loading = true;
-      this.commentPeriodService.delete(this.commentPeriod())
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe({
-            error: () => {
-              alert('Uh-oh, couldn\'t delete comment period');
-              this.loading = false;
-              this._cdr.markForCheck();
-            },
-            complete: () => {
-              this.loading = false;
-              this._cdr.markForCheck();
-              this.toastService.success('This comment period has been deleted');
-              this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
-            }
-          });
+    if (!confirm(`Are you sure you want to delete this comment period?`)) {
+      return;
     }
+    this.loading = true;
+    this.commentPeriodService.delete(this.commentPeriod())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this._cdr.markForCheck();
+          this.toastService.success('This comment period has been deleted');
+          this.router.navigate([this.baseRouteUrl, this.projectId, 'comment-periods']);
+        },
+        error: () => {
+          this.loading = false;
+          this._cdr.markForCheck();
+        }
+      });
   }
 
   public addComment() {
-    this.router.navigate([this.baseRouteUrl, this.commentPeriod().project, 'cp', this.commentPeriod()._id, 'add-comment']);
+    this.router.navigate([this.baseRouteUrl, this.projectId, 'cp', this.commentPeriod()._id, 'add-comment']);
   }
 
   public exportCommentsForStaff() {

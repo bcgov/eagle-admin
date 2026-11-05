@@ -1,8 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, defer, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { map, catchError, mergeMap } from 'rxjs/operators';
 
-import { ApiService } from './api';
 import { DemiApiService } from './demi-api.service';
 import { LoadingStateService } from './loading-state.service';
 import { LoggingService } from './logging.service';
@@ -10,34 +9,30 @@ import { ToastService } from './toast.service';
 import { withLoading } from 'src/app/shared/utils/rxjs-operators';
 import { CommentPeriod } from '../models/commentPeriod';
 import { CommentPeriodSummary } from '../models/commentPeriodSummary';
-import {
-  DemiCommentPeriod, DemiCommentPeriodQuery, DemiCommentPeriodSummary, requireEagleWriteId, toEagleWriteBody
-} from '../models/demi/comment-period';
+import { DemiCommentPeriod, DemiCommentPeriodQuery, DemiCommentPeriodSummary } from '../models/demi/comment-period';
 import { DemiList } from '../models/demi/demi-list';
-import { isEagleId } from '../models/demi/demi-ids';
 
-/** eagle-api POST/PUT body; see {@link toEagleWriteBody}. `project` is the Eagle project id. */
-function toEaglePeriodBody(period: CommentPeriod | DemiCommentPeriod, isNew = false): any {
-  if ('_id' in period) {
-    return period;
-  }
-  // A row read without staff fields lacks the key; saving it would blank them in Eagle.
-  if (!('milestone' in period)) {
-    throw new Error('This comment period was read without its staff fields and cannot be saved.');
-  }
-  // A notification-parented period's projectId is the notification id, which is also its Eagle id.
-  const project = period.projectEagleId ?? (isEagleId(period.projectId) ? period.projectId : null);
-  return toEagleWriteBody(period, 'comment period', { project }, isNew);
-}
+// The CommentPeriod fields DEMI's PUT and POST take (domain/comment-periods.js UPDATE_SCHEMA, LISTS,
+// CREATE_SCHEMA); any other key is a 400.
+const UPDATE_FIELDS = [
+  'commentTip', 'dateCompleted', 'dateStarted', 'isMet', 'instructions', 'informationLabel', 'milestone', 'openHouses', 'relatedDocuments'
+] as const;
+const CREATE_FIELDS = [...UPDATE_FIELDS, 'isPublished'] as const;
+// DEMI refuses null in every other field; on a legacy period null means the field was never set.
+const NULLABLE_FIELDS: readonly string[] = ['dateStarted', 'dateCompleted', 'milestone'];
 
-/** Runs a write lazily, so a body that cannot be mapped fails the returned stream instead of throwing at the call site. */
-function deferWrite<T>(api: ApiService, request: () => Observable<T>): Observable<T> {
-  return defer(request).pipe(catchError(error => api.handleError(error)));
+/** A period a write targets. DEMI finds the row by its own id only, never the Eagle `_id`. */
+type CommentPeriodRef = { demiId: string };
+
+function writeBody(period: object, keys: readonly string[]): Record<string, unknown> {
+  const row = period as Record<string, unknown>;
+  return Object.fromEntries(keys
+    .filter(key => row[key] !== undefined && (row[key] !== null || NULLABLE_FIELDS.includes(key)))
+    .map(key => [key, row[key]]));
 }
 
 @Injectable({ providedIn: 'root' })
 export class CommentPeriodService {
-  private api = inject(ApiService);
   private demi = inject(DemiApiService);
   private loadingState = inject(LoadingStateService);
   private toast = inject(ToastService);
@@ -94,30 +89,42 @@ export class CommentPeriodService {
     );
   }
 
-  add(commentPeriod: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
-    return deferWrite(this.api, () => this.api.post<CommentPeriod>('commentperiod/', toEaglePeriodBody(commentPeriod, true)));
+  /** Creates the period under `projectId`, the DEMI id of its project or parent notification. */
+  add(period: Partial<CommentPeriod>, projectId: string): Observable<DemiCommentPeriod> {
+    return this.demi.create<DemiCommentPeriod>('comment-periods', { ...writeBody(period, CREATE_FIELDS), projectId }).pipe(
+      catchError(error => this.writeFailed('add', error))
+    );
   }
 
-  save(orig: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
-    return deferWrite(this.api, () => {
-      const period = toEaglePeriodBody(JSON.parse(JSON.stringify(orig)));
-      return this.api.put<CommentPeriod>(`commentperiod/${period._id}`, period);
-    });
+  /**
+   * Writes the fields DEMI's PUT takes. DEMI ignores `isPublished` there, so `publish` is set after the save when the
+   * saved row differs from it. A refused write fails the stream, after a toast; the error has `saved: true` when only
+   * setting the published state was refused.
+   */
+  save(period: Partial<CommentPeriod> & CommentPeriodRef, publish?: boolean): Observable<DemiCommentPeriod> {
+    return this.demi.update<DemiCommentPeriod>('comment-periods', period.demiId, writeBody(period, UPDATE_FIELDS)).pipe(
+      catchError(error => this.writeFailed('save', error)),
+      mergeMap(row => publish === undefined || row.isPublished === publish ? of(row) : this.setPublished(period, publish).pipe(
+        catchError(error => {
+          this.toast.error(`Comment period saved, but it was not ${publish ? 'published' : 'un-published'}. ${error.message}`);
+          return throwError(() => Object.assign(error, { saved: true }));
+        })
+      ))
+    );
   }
 
-  delete(period: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
-    return deferWrite(this.api, () => this.api.delete<CommentPeriod>(`commentperiod/${requireEagleWriteId(period, 'comment period')}`));
+  delete(period: CommentPeriodRef): Observable<DemiCommentPeriod> {
+    return this.demi.remove<DemiCommentPeriod>('comment-periods', period.demiId).pipe(
+      catchError(error => this.writeFailed('delete', error))
+    );
   }
 
-  // eagle-api's publish routes read only the id, so a native row sends no body.
-  publish(period: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
-    return deferWrite(this.api, () =>
-      this.api.put<CommentPeriod>(`commentperiod/${requireEagleWriteId(period, 'comment period')}/publish`, '_id' in period ? period : {}));
+  publish(period: CommentPeriodRef): Observable<DemiCommentPeriod> {
+    return this.setPublished(period, true).pipe(catchError(error => this.writeFailed('publish', error)));
   }
 
-  unPublish(period: CommentPeriod | DemiCommentPeriod): Observable<CommentPeriod> {
-    return deferWrite(this.api, () =>
-      this.api.put<CommentPeriod>(`commentperiod/${requireEagleWriteId(period, 'comment period')}/unpublish`, '_id' in period ? period : {}));
+  unPublish(period: CommentPeriodRef): Observable<DemiCommentPeriod> {
+    return this.setPublished(period, false).pipe(catchError(error => this.writeFailed('un-publish', error)));
   }
 
   getCurrent(periods: CommentPeriod[]): CommentPeriod {
@@ -141,4 +148,14 @@ export class CommentPeriodService {
   isClosed(period: CommentPeriod): boolean      { return this.getStatus(period) === this.commentStatuses['Closed']; }
   isNotStarted(period: CommentPeriod): boolean  { return this.getStatus(period) === this.commentStatuses['Not Started']; }
   isOpen(period: CommentPeriod): boolean        { return this.getStatus(period) === this.commentStatuses['Open']; }
+
+  private setPublished(period: CommentPeriodRef, publish: boolean): Observable<DemiCommentPeriod> {
+    return this.demi.action<DemiCommentPeriod>('comment-periods', period.demiId, publish ? 'publish' : 'unpublish');
+  }
+
+  // Request errors are already logged by ApiService.handleError; the caller still sees the error to stop its spinner.
+  private writeFailed(action: string, error: Error): Observable<never> {
+    this.toast.error(`Failed to ${action} comment period. ${error.message}`);
+    return throwError(() => error);
+  }
 }
