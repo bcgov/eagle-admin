@@ -2,10 +2,10 @@ import { ApplicationRef, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { NgbConfig, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { UPDATE_CONFLICT_MESSAGE } from '../update-rules';
-import { Subject, of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { AddEditActivityComponent } from './add-edit-activity.component';
 import { CommentPeriodService } from 'src/app/services/commentperiod.service';
 import { ConfigService } from 'src/app/services/config.service';
@@ -28,8 +28,15 @@ describe('AddEditActivityComponent', () => {
   let fixture: ComponentFixture<AddEditActivityComponent>;
   // What DEMI list stubs answer from the first search, for specs that need documents while ngOnInit runs.
   let listedDocs: any[];
+  // DEMI rows an `ids=` read can return, as a native row; `byIdsReply` replaces the answer, e.g. with one still loading.
+  let docsById: any[];
+  let byIdsReply: Observable<any[]> | null;
 
-  beforeEach(() => { listedDocs = []; });
+  beforeEach(() => {
+    listedDocs = [];
+    docsById = [];
+    byIdsReply = null;
+  });
 
   // Test rows use Eagle field names; DEMI answers with `id`, `eagleId` and the parent's Eagle id in `projectId`.
   const nativeOf = ({ _id, project, ...rest }: any) => ({ id: _id, eagleId: _id, ...rest, projectId: project ?? null });
@@ -55,8 +62,9 @@ describe('AddEditActivityComponent', () => {
     projectService.getNative.and.callFake((id: string) => of(demiProject(id)));
     commentPeriodService = jasmine.createSpyObj('CommentPeriodService', ['listByProject']);
     commentPeriodService.listByProject.and.returnValue(of({ rows: periods }));
-    documentService = jasmine.createSpyObj('DocumentService', ['addWithProgress', 'downloadUrlNative']);
+    documentService = jasmine.createSpyObj('DocumentService', ['addWithProgress', 'byIdsNative', 'downloadUrlNative']);
     documentService.downloadUrlNative.and.returnValue(of('https://files.example/plan.jpg'));
+    documentService.byIdsNative.and.callFake((ids: string[]) => byIdsReply ?? of(docsById.filter(doc => ids.includes(doc.id))));
 
     TestBed.configureTestingModule({
       imports: [AddEditActivityComponent],
@@ -296,13 +304,28 @@ describe('AddEditActivityComponent', () => {
 
     it('loads Project Notification News documents from the project notification source', () => {
       create('a1', row);
-      // A second search loads the images uploaded from Update forms.
-      expect(searchedSources()).toEqual(['PROJECT-NOTIFICATION', 'UPDATE']);
+      expect(searchedSources()).toEqual(['PROJECT-NOTIFICATION']);
     });
 
     it('keeps the saved featured image on load', () => {
       const component = create('a1', row);
       expect(component.myForm.get('featuredImageDocument')!.value).toBe('d1');
+    });
+
+    it('reads a saved image the document lists leave out by its id, and shows it from its presigned DEMI URL', () => {
+      docsById = [{ id: 'd1', eagleId: 'd1', displayName: 'site.png', documentSource: 'UPDATE', isPublished: false }];
+      const component = create('a1', row);
+      expect(component.imageDocs().get('d1')?.displayName).toBe('site.png');
+      expect(component.imageSrcs().get('d1')).toBe('https://files.example/plan.jpg');
+    });
+
+    it('offers a saved attachment older than the newest 500 documents, read by its id, once', () => {
+      const pdf = (id: string, name: string) => ({ id, eagleId: id, displayName: name, documentSource: 'PROJECT', isPublished: true });
+      listedDocs = [{ ...pdf('new', 'New.pdf'), _id: 'new' }];
+      docsById = [pdf('new', 'New.pdf'), pdf('old', 'Old.pdf')];
+      const component = create('a1', { ...row, attachments: ['new', 'old'] });
+      expect(component.attachmentChoices.map(doc => doc.displayName)).toEqual(['New.pdf', 'Old.pdf']);
+      expect(component.attachmentsUnchecked).toBeFalse();
     });
 
     it('clears picked documents when the project changes', () => {
@@ -656,13 +679,38 @@ describe('AddEditActivityComponent', () => {
       expect(component.imageSrcs().get('i3')).toBe('https://files.example/plan.jpg');
     });
 
+    const unread = () => ({ _id: 'u1', documentFileName: 'new.png', documentSource: 'UPDATE', read: [] });
+
+    it('shows a new photo that came back before its local preview from its presigned DEMI URL', () => {
+      const component = create(null);
+      fillNews(component);
+      component.addPhotos([{ doc: unread() }]);
+      expect(component.imageSrcs().get('u1')).toBe('https://files.example/plan.jpg');
+    });
+
+    it('fetches a presigned URL only for the new photo while a saved image is still being read', () => {
+      byIdsReply = new Subject();
+      const component = create('a1', { _id: 'a1', type: 'News', project: 'p1', dateAdded: '2026-09-01T00:00:00Z', featuredImage: { document: 'd1', alt: 'Site' } });
+      component.addPhotos([{ doc: unread() }]);
+      expect(documentService.downloadUrlNative.calls.allArgs()).toEqual([['u1']]);
+    });
+
+    it('shows a new featured image that came back before its local preview from its presigned DEMI URL', () => {
+      const component = create(null);
+      fillNews(component);
+      component.addFeaturedImage([{ doc: unread() }]);
+      expect(component.imageSrcs().get('u1')).toBe('https://files.example/plan.jpg');
+    });
+
     it('previews public photos from the fetch URL and new uploads from their local copy, caption and credit on one line', () => {
       const component = render(null, null, true);
       TestBed.inject(NgbConfig).animation = false;
       fillNews(component);
+      // DEMI gives i3 no presigned URL either, so the preview leaves it out.
+      documentService.downloadUrlNative.and.returnValue(of(null));
       component.addPhotos([
         { doc: publicDoc('i1', 'dam.jpg') },
-        { doc: { _id: 'u1', documentFileName: 'new.png', documentSource: 'UPDATE', read: [] }, src: 'blob:local-u1' },
+        { doc: unread(), src: 'data:image/png;base64,AA==' },
         { doc: privateDoc('i3', 'plan.jpg') }
       ]);
       component.images.at(0).patchValue({ alt: 'Dam', caption: 'Spillway', credit: 'EAO' });
@@ -670,7 +718,7 @@ describe('AddEditActivityComponent', () => {
       footerButton('Preview').click();
       TestBed.inject(ApplicationRef).tick();
       const figures = Array.from(document.querySelectorAll('ngb-modal-window .row figure'));
-      expect(figures.map(f => f.querySelector('img')!.getAttribute('src'))).toEqual(['/api/document/i1/fetch/dam.jpg', 'blob:local-u1']);
+      expect(figures.map(f => f.querySelector('img')!.getAttribute('src'))).toEqual(['/api/document/i1/fetch/dam.jpg', 'data:image/png;base64,AA==']);
       expect(figures.map(f => f.querySelector('img')!.getAttribute('alt'))).toEqual(['Dam', 'New']);
       expect(figures.map(f => f.querySelector('figcaption')?.textContent!.trim() ?? null)).toEqual(['Spillway Credit: EAO', null]);
       TestBed.inject(NgbModal).dismissAll();
@@ -717,6 +765,18 @@ describe('AddEditActivityComponent', () => {
   describe('project document search', () => {
     const found = (id: string) => docs([{ _id: id, documentFileName: `${id}.pdf` }]);
 
+    it('loads documents from DEMI, which refuses a sorted list of more than 500 rows', () => {
+      const component = create(null);
+      demiApi.list.and.callFake(((_kind: string, params: any) => params.sort && params.pageSize > 500
+        ? throwError(() => new HttpErrorResponse({ status: 400, error: { error: 'pageSize takes at most 500 on this list' } }))
+        : found('d1')) as any);
+      fillNews(component);
+      expect(component.documentsFailed).toBeFalse();
+      expect(component.documents.map(doc => doc._id)).toEqual(['d1']);
+      // Unsorted, DEMI would serve up to 1000 rows in id order, which cuts the newest documents of a big project.
+      expect(demiApi.list.calls.mostRecent().args[1]).toEqual(jasmine.objectContaining({ sort: '-datePosted' }));
+    });
+
     it('clears the load error as soon as a new project search starts', () => {
       const component = create(null);
       demiApi.list.and.returnValue(throwError(() => new Error('search down')));
@@ -759,7 +819,7 @@ describe('AddEditActivityComponent', () => {
       demiApi.list.calls.reset();
       component.myForm.patchValue({ type: 'Project Notification News' });
       component.updateType(true);
-      expect(searchedSources()).toEqual(['PROJECT-NOTIFICATION', 'UPDATE']);
+      expect(searchedSources()).toEqual(['PROJECT-NOTIFICATION']);
     });
   });
   describe('DEMI reads', () => {
@@ -857,12 +917,12 @@ describe('AddEditActivityComponent', () => {
     it('searches project documents by the DEMI project id', () => {
       const component = create(null);
       fillNews(component);
-      expect(documentSearches().map(filters => filters.project)).toEqual(['track-p1', 'track-p1']);
+      expect(documentSearches().map(filters => filters.project)).toEqual(['track-p1']);
     });
 
     it('searches project notification documents by the notification id', () => {
       create('a1', { _id: 'a1', type: 'Project Notification News', project: 'pn1', dateAdded: '2026-09-01T00:00:00Z' });
-      expect(documentSearches().map(filters => filters.project)).toEqual(['pn1', 'pn1']);
+      expect(documentSearches().map(filters => filters.project)).toEqual(['pn1']);
     });
 
     it('offers project notifications from DEMI under their Eagle id', () => {

@@ -1,6 +1,9 @@
 /** DEMI's largest `pageSize` for a signed-in read. */
 export const DEMI_MAX_PAGE_SIZE = 1000;
 
+/** DEMI's largest `pageSize` for a list served from its search index, such as a sorted documents list. */
+export const DEMI_INDEX_MAX_PAGE_SIZE = 500;
+
 /** One page of a DEMI native list. `total` is set only when the request asked for `count=true`. */
 export interface DemiList<T> {
   rows: T[];

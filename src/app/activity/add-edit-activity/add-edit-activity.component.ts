@@ -17,7 +17,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ProjectService } from 'src/app/services/project.service';
 import { RecentActivityService, UpdateWrite } from 'src/app/services/recent-activity';
-import { DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
+import { DEMI_INDEX_MAX_PAGE_SIZE, DEMI_MAX_PAGE_SIZE } from 'src/app/models/demi/demi-list';
 import { DemiDocument } from 'src/app/models/demi/document';
 import { DemiCommentPeriod } from 'src/app/models/demi/comment-period';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
@@ -34,7 +34,7 @@ import {
 } from '../update-rules';
 import { AddedImage, ImageRow, UpdateImageFieldComponent } from '../update-image-field/update-image-field.component';
 import {
-  IMAGE_MAX_MB, UPDATE_IMAGE_SOURCE, blocksPublish, captionLine, documentName, imageSrc, imageType, isPublicDocument, toUpdateImage
+  IMAGE_MAX_MB, blocksPublish, captionLine, documentName, imageSrc, imageType, isPublicDocument, toUpdateImage
 } from '../update-image-field/update-images';
 
 const NO_FEATURED_TEXT = { featuredImageAlt: '', featuredImageCaption: '', featuredImageCredit: '' };
@@ -171,10 +171,7 @@ export class AddEditActivityComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.destroyRef.onDestroy(() => {
-      this.destroyed = true;
-      this.imageSrcs().forEach(url => URL.revokeObjectURL(url));
-    });
+    this.destroyRef.onDestroy(() => this.destroyed = true);
     this.watchProjectDocuments();
     this.configService.ensureListsLoaded();
     const activityId = this.route.snapshot.paramMap.get('activityId');
@@ -375,15 +372,18 @@ export class AddEditActivityComponent implements OnInit {
 
   /** Picked images and attachments the public cannot see. The API refuses to publish an Update that shows them. */
   public get nonPublicImages(): string[] {
-    const attachments = (this.myForm.get('attachments')!.value || [])
-      .map((id: any) => this.documents.find(doc => isDocument(doc, documentId(id))));
+    const attachments = this.attachedIds().map(id => this.documents.find(doc => isDocument(doc, id)));
     return [...this.pickedImageIds().map(id => this.imageDocs().get(id)), ...attachments].filter(blocksPublish).map(documentName);
   }
 
-  /** nonPublicImages cannot vouch for an attachment missing from the loaded documents: still loading, failed, or past the first 1000. */
+  /** nonPublicImages cannot vouch for an attachment missing from the loaded documents: still loading, failed, or past the newest 500. */
   public get attachmentsUnchecked(): boolean {
-    const ids: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
+    const ids = this.attachedIds();
     return ids.length > 0 && (this.documentsLoading || ids.some(id => !this.documents.some(doc => isDocument(doc, id))));
+  }
+
+  private attachedIds(): string[] {
+    return (this.myForm.get('attachments')!.value || []).map(documentId);
   }
 
   private pickedImageIds(): string[] {
@@ -433,6 +433,7 @@ export class AddEditActivityComponent implements OnInit {
     this.addImageDocs([image]);
     this.myForm.patchValue({ featuredImageDocument: docKey(image.doc), ...NO_FEATURED_TEXT });
     this.syncImageRows();
+    this.loadPrivateThumbnails([docKey(image.doc)]);
   }
 
   public removeFeaturedImage() {
@@ -446,6 +447,7 @@ export class AddEditActivityComponent implements OnInit {
     this.addImageDocs(room);
     room.forEach(({ doc }) => this.images.push(this.imageRow({ document: docKey(doc) })));
     this.syncImageRows();
+    this.loadPrivateThumbnails(room.map(({ doc }) => docKey(doc)));
   }
 
   public moveImage({ index, step }: { index: number; step: -1 | 1 }) {
@@ -466,19 +468,13 @@ export class AddEditActivityComponent implements OnInit {
   }
 
   private setImageSrc(id: string, url: string) {
-    const old = this.imageSrcs().get(id);
-    if (old && old !== url) {
-      URL.revokeObjectURL(old);
-    }
     this.imageSrcs.update(current => new Map(current).set(id, url));
   }
 
-  /** Revoke previews no row shows any more. */
+  /** Drop previews no row shows any more. */
   private releaseImageSrcs() {
     const picked = new Set(this.pickedImageIds());
-    const stale = [...this.imageSrcs()].filter(([id]) => !picked.has(id));
-    if (stale.length) {
-      stale.forEach(([, url]) => URL.revokeObjectURL(url));
+    if ([...this.imageSrcs().keys()].some(id => !picked.has(id))) {
       this.imageSrcs.update(current => new Map([...current].filter(([id]) => picked.has(id))));
     }
   }
@@ -490,8 +486,8 @@ export class AddEditActivityComponent implements OnInit {
   }
 
   /** The admin fetch URL needs no token only for public documents; the rest show from a presigned DEMI URL. */
-  private loadPrivateThumbnails() {
-    this.pickedImageIds()
+  private loadPrivateThumbnails(ids = this.pickedImageIds()) {
+    ids
       .filter(id => !this.imageSrcs().has(id) && !this.srcsLoading.has(id) && !isPublicDocument(this.imageDocs().get(id)))
       .forEach(id => {
         this.srcsLoading.add(id);
@@ -600,9 +596,9 @@ export class AddEditActivityComponent implements OnInit {
 
   /** Loads documents for the latest project only; a newer pick cancels the older search. */
   private watchProjectDocuments() {
-    // First 1000 of the parent's documents of one source, newest first. Null marks a failed search.
+    // Newest 500 of the parent's documents of one source: DEMI sorts in its search index, which pages at most 500. Null marks a failed search.
     const search = (parentId: string | null, source: string): Observable<any[] | null> => parentId
-      ? this.demiApi.list<DemiDocument>('documents', { pageSize: DEMI_MAX_PAGE_SIZE, sort: '-datePosted', filters: sourceFilters(parentId, source) })
+      ? this.demiApi.list<DemiDocument>('documents', { pageSize: DEMI_INDEX_MAX_PAGE_SIZE, sort: '-datePosted', filters: sourceFilters(parentId, source) })
         .pipe(
           map(page => page.rows.map(legacyDocumentRow)),
           catchError(error => {
@@ -618,17 +614,24 @@ export class AddEditActivityComponent implements OnInit {
         this.documentsLoading = !!request;
         this.documentsFailed = false;
         this._cdr.markForCheck();
-        // Images uploaded from Update forms live apart from the project's Documents list.
+        // The list leaves out Update-form images and stops at 500, so picks the form does not know yet are read by id.
+        const unknown = [...this.pickedImageIds().filter(id => !this.imageDocs().has(id)), ...this.attachedIds()];
         return request
-          ? this.documentParent(request.projectId, request.source).pipe(
-            switchMap(parentId => forkJoin([search(parentId, request.source), search(parentId, UPDATE_IMAGE_SOURCE)])))
+          ? forkJoin([
+            this.documentParent(request.projectId, request.source).pipe(switchMap(parentId => search(parentId, request.source))),
+            this.documentService.byIdsNative(unknown).pipe(map(rows => rows.map(legacyDocumentRow)))
+          ])
           : of([[], []]);
       }),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(([docs, updateImages]) => {
+    ).subscribe(([docs, picked]) => {
       this.documentsFailed = docs === null;
-      this.setDocuments(docs ?? []);
-      this.rememberDocs([...this.imageDocuments, ...(updateImages ?? [])]);
+      const listed = docs ?? [];
+      const attached = this.attachedIds();
+      const olderAttachments = picked.filter(row =>
+        attached.some(id => isDocument(row, id)) && !listed.some(doc => isDocument(doc, docKey(row))));
+      this.setDocuments(listed, olderAttachments);
+      this.rememberDocs([...this.imageDocuments, ...picked]);
       this.toDemiDocumentIds();
       this.documentsLoading = false;
       this.loadPrivateThumbnails();
@@ -647,11 +650,12 @@ export class AddEditActivityComponent implements OnInit {
     this.syncImageRows();
   }
 
-  private setDocuments(docs: any[]) {
-    this.documents = docs;
-    const attached: string[] = (this.myForm.get('attachments')!.value || []).map(documentId);
-    this.attachmentChoices = docs.filter(doc => isPublicDocument(doc) || attached.some(id => isDocument(doc, id)));
-    this.imageDocuments = docs.filter(d =>
+  /** Older attachments, read by id, are offered as attachments only, not as images to pick. */
+  private setDocuments(listed: any[], olderAttachments: any[]) {
+    this.documents = [...listed, ...olderAttachments];
+    const attached = this.attachedIds();
+    this.attachmentChoices = this.documents.filter(doc => isPublicDocument(doc) || attached.some(id => isDocument(doc, id)));
+    this.imageDocuments = listed.filter(d =>
       d.internalMime ? d.internalMime.startsWith('image/') : !!imageType(d.documentFileName || ''));
   }
 
