@@ -23,5 +23,11 @@ module.exports = {
     secure: false,
     changeOrigin: true,
     pathRewrite: { '^/demi/api': '/api' }
+  },
+  // View Document's cached public route. The edge serves /demi-search itself, so no pathRewrite.
+  '/demi-search': {
+    target: env.DEMI_SEARCH_TARGET || 'https://test.projects.eao.gov.bc.ca',
+    secure: false,
+    changeOrigin: true
   }
 };

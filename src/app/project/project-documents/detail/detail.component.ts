@@ -9,7 +9,6 @@ import { DemiDocument } from 'src/app/models/demi/document';
 import { eagleWriteId } from 'src/app/models/demi/demi-ids';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { LoggingService } from 'src/app/services/logging.service';
-import { ConfigService } from 'src/app/services/config.service';
 
 @Component({
     selector: 'app-detail',
@@ -24,7 +23,6 @@ export class DocumentDetailComponent implements OnInit {
   private toastService = inject(ToastService);
   private logger = inject(LoggingService);
   private documentService = inject(DocumentService);
-  private configService = inject(ConfigService);
 
   // Parent route (p/:projId) resolver populates StorageService before this component initializes,
   // for both direct URL loads and in-app navigation. Signal captures the value at construction time.
@@ -51,10 +49,13 @@ export class DocumentDetailComponent implements OnInit {
     this.router.navigate(['p', projId, 'project-documents', 'edit']);
   }
 
-  /** Opens a published file in a new tab. The navigation carries no bearer, so DEMI serves it only when public. */
+  /**
+   * Opens a published file in a new tab on the edge's cached public route, so the link stays on our host.
+   * The navigation carries no bearer, so DEMI serves it only when public.
+   */
   openDocument() {
     const id = encodeURIComponent(this.resolvedDocument().id);
-    window.open(`${this.configService.getDemiApiPath()}/documents/${id}/download?inline=1`, '_blank', 'noopener');
+    window.open(`/demi-search/documents/${id}/download?inline=1`, '_blank', 'noopener');
   }
 
   downloadDocument() {
