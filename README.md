@@ -76,6 +76,7 @@ Copy `.env.example` to `.env.local`, edit it, and restart `yarn start`. Use `yar
 | `KEYCLOAK_REALM` | Keycloak realm | `eao-epic` |
 | `EAGLE_API_TARGET` | Where `/api` and `/analytics` go | `API_LOCATION` in `src/env.js` (eagle-api test) |
 | `DEMI_API_TARGET` | Where `/demi/api` goes | `https://demi-apim-test.azure-api.net` |
+| `DEMI_SEARCH_TARGET` | Where `/demi-search` goes | `https://test.projects.eao.gov.bc.ca` |
 
 A variable set in your shell wins over `.env.local`. Change the Keycloak and API lines together, so they name the same environment.
 

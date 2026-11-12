@@ -3,7 +3,6 @@ import { Router, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { DocumentDetailComponent } from './detail.component';
 import { DemiDocument } from 'src/app/models/demi/document';
-import { ConfigService } from 'src/app/services/config.service';
 import { DocumentService } from 'src/app/services/document.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { StorageService } from 'src/app/services/storage.service';
@@ -43,7 +42,6 @@ describe('DocumentDetailComponent', () => {
       providers: [
         provideRouter([]),
         { provide: DocumentService, useValue: documentService },
-        { provide: ConfigService, useValue: { getDemiApiPath: () => '/demi/api' } },
         { provide: StorageService, useValue: storage },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) },
         { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['error']) }
@@ -97,7 +95,7 @@ describe('DocumentDetailComponent', () => {
 
     menuItem(menu, 'Open').click();
 
-    expect(open).toHaveBeenCalledWith('/demi/api/documents/uuid-1/download?inline=1', '_blank', 'noopener');
+    expect(open).toHaveBeenCalledWith('/demi-search/documents/uuid-1/download?inline=1', '_blank', 'noopener');
   });
 
   it('publishes by the Eagle id', async () => {
