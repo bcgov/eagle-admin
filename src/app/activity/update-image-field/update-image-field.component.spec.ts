@@ -4,6 +4,7 @@ import { FormControl } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subject } from 'rxjs';
 import { DocumentService } from 'src/app/services/document.service';
+import { LoggingService } from 'src/app/services/logging.service';
 import { AddedImage, ImageRow, UpdateImageFieldComponent } from './update-image-field.component';
 
 const MB = 1024 * 1024;
@@ -18,8 +19,16 @@ describe('UpdateImageFieldComponent', () => {
   let server: Subject<HttpEvent<any>>;
   let added: AddedImage[][];
   let outside: HTMLInputElement | null;
+  // Preview reads the field started; every spec waits for them so none finishes during the next spec.
+  let reads: Promise<unknown>[];
 
   beforeEach(() => {
+    reads = [];
+    const read = FileReader.prototype.readAsDataURL;
+    spyOn(FileReader.prototype, 'readAsDataURL').and.callFake(function (this: FileReader, file: Blob) {
+      reads.push(new Promise(resolve => this.addEventListener('loadend', resolve)));
+      read.call(this, file);
+    });
     server = new Subject();
     documentService = jasmine.createSpyObj('DocumentService', ['addWithProgress']);
     documentService.addWithProgress.and.returnValue(server);
@@ -27,6 +36,7 @@ describe('UpdateImageFieldComponent', () => {
       imports: [UpdateImageFieldComponent],
       providers: [
         { provide: DocumentService, useValue: documentService },
+        { provide: LoggingService, useValue: jasmine.createSpyObj('LoggingService', ['warn']) },
         { provide: NgbModal, useValue: jasmine.createSpyObj('NgbModal', ['open']) }
       ]
     });
@@ -44,7 +54,10 @@ describe('UpdateImageFieldComponent', () => {
     outside = null;
   });
 
-  afterEach(() => outside?.remove());
+  afterEach(async () => {
+    outside?.remove();
+    await Promise.all(reads);
+  });
 
   const text = (): string => fixture.nativeElement.textContent;
   const query = (selector: string) => fixture.nativeElement.querySelector(selector);
@@ -61,6 +74,11 @@ describe('UpdateImageFieldComponent', () => {
 
   function respond(event: HttpEvent<any>) {
     server.next(event);
+    fixture.detectChanges();
+  }
+
+  async function previewsRead() {
+    await Promise.all(reads);
     fixture.detectChanges();
   }
 
@@ -134,12 +152,20 @@ describe('UpdateImageFieldComponent', () => {
       expect(text()).not.toContain('Upload failed');
     });
 
-    it('hands the saved document to the form as an Update image with its local preview', () => {
+    // The deployed CSP allows `img-src 'self' data: https:`, so a blob: preview shows blank there.
+    it('shows the picked file as a data: URL thumbnail while it uploads', async () => {
       choose(image());
+      await previewsRead();
+      expect(query('.image-frame img').getAttribute('src')).toMatch(/^data:image\/jpeg;base64,/);
+    });
+
+    it('hands the saved document to the form as an Update image with its data: URL preview', async () => {
+      choose(image());
+      await previewsRead();
       respond(new HttpResponse({ body: { _id: 'n1', displayName: 'dam.jpg' } }));
       expect(added.length).toBe(1);
       expect(added[0][0].doc).toEqual({ _id: 'n1', displayName: 'dam.jpg', documentSource: 'UPDATE', read: [] });
-      expect(added[0][0].src).toMatch(/^blob:/);
+      expect(added[0][0].src).toMatch(/^data:image\/jpeg;base64,/);
       expect(query('[role=progressbar]')).toBeNull();
     });
   });

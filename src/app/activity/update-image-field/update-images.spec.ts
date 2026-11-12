@@ -67,7 +67,7 @@ describe('update images', () => {
     });
 
     it('prefers a loaded preview over the fetch URL', () => {
-      expect(imageSrc('d1', docs, new Map([['d1', 'blob:local-d1']]))).toBe('blob:local-d1');
+      expect(imageSrc('d1', docs, new Map([['d1', 'data:image/jpeg;base64,AA==']]))).toBe('data:image/jpeg;base64,AA==');
     });
   });
 

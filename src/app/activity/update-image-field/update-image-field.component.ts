@@ -5,6 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
 import { FileUploadComponent } from 'src/app/file-upload/file-upload.component';
 import { DocumentService } from 'src/app/services/document.service';
+import { LoggingService } from 'src/app/services/logging.service';
 import { UpdateImagePickerComponent } from '../update-image-picker/update-image-picker.component';
 import { IMAGE_CAPTION_MAX, IMAGE_CREDIT_MAX } from '../update-rules';
 import {
@@ -32,6 +33,7 @@ interface Upload {
   progress: number;
   error: string | null;
   sub?: Subscription;
+  reader?: FileReader;
 }
 
 @Component({
@@ -43,6 +45,7 @@ interface Upload {
 })
 export class UpdateImageFieldComponent {
   private documentService = inject(DocumentService);
+  private logger = inject(LoggingService);
   private modalService = inject(NgbModal);
   private host: HTMLElement = inject(ElementRef).nativeElement;
 
@@ -130,16 +133,30 @@ export class UpdateImageFieldComponent {
     const started: Upload[] = picked.map(file => {
       const error = imageType(file.name) !== file.type ? 'Not a JPG, PNG, WebP or GIF image, or its name does not match its type.'
         : file.size > IMAGE_MAX_MB * 1024 * 1024 ? `Larger than ${IMAGE_MAX_MB} MB.` : null;
-      return { file, error, progress: 0, src: error ? null : URL.createObjectURL(file) };
+      return { file, error, progress: 0, src: null };
     });
     this.uploads.update(list => [...list, ...started]);
-    started.filter(item => !item.error).forEach(item => this.upload(item, project));
+    started.filter(item => !item.error).forEach(item => {
+      this.preview(item);
+      this.upload(item, project);
+    });
     const failed = started.filter(item => item.error);
     const uploading = started.length - failed.length;
     this.status.set([
       uploading ? `Uploading ${uploading} ${uploading === 1 ? 'file' : 'files'}.` : '',
       ...failed.map(item => `${item.file.name}: ${item.error}`)
     ].join(' ').trim());
+  }
+
+  /**
+   * Reads the file as a data: URL; the deployed CSP allows data: images but not blob: ones.
+   * Removing the upload aborts the read; a failed read keeps the placeholder.
+   */
+  private preview(item: Upload) {
+    const reader = item.reader = new FileReader();
+    reader.onload = () => typeof reader.result === 'string' && this.patch(item, { src: reader.result });
+    reader.onerror = () => this.logger.warn(`Could not preview ${item.file.name}`, 'UpdateImageFieldComponent', reader.error);
+    reader.readAsDataURL(item.file);
   }
 
   private upload(item: Upload, project: string) {
@@ -170,6 +187,8 @@ export class UpdateImageFieldComponent {
 
   private uploaded(item: Upload, doc: any) {
     const index = this.rows().length;
+    // A read still running loses the race; the form then previews the saved document instead.
+    this.drop(item);
     this.uploads.update(list => list.filter(u => u !== item));
     this.status.set(`Uploaded ${item.file.name}. Add its alt text.`);
     this.added.emit([{ doc: { documentSource: UPDATE_IMAGE_SOURCE, read: [], ...doc }, src: item.src ?? undefined }]);
@@ -200,9 +219,7 @@ export class UpdateImageFieldComponent {
 
   private drop(item: Upload) {
     item.sub?.unsubscribe();
-    if (item.src) {
-      URL.revokeObjectURL(item.src);
-    }
+    item.reader?.abort();
   }
 
   private clearUploads() {
