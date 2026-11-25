@@ -3,7 +3,7 @@ import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http'
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { DemiApiService } from './demi-api.service';
+import { DEMI_MAX_IDS_CHARS, DemiApiService } from './demi-api.service';
 import { ConfigService } from './config.service';
 import { KeycloakService } from './keycloak.service';
 import { LoggingService } from './logging.service';
@@ -208,6 +208,15 @@ describe('DemiApiService', () => {
       const sizes = http.match(r => r.url === '/demi/api/users')
         .map(req => req.request.params.get('ids').split(',').length);
       expect(sizes).toEqual([100, 100, 50]);
+    });
+
+    it('keeps each ids value within the length budget, sending every ObjectId once in order', () => {
+      const ids = Array.from({ length: 200 }, (_, i) => i.toString(16).padStart(24, '0'));
+      service.byIds('users', ids).subscribe();
+
+      const values = http.match(r => r.url === '/demi/api/users').map(req => req.request.params.get('ids'));
+      expect(Math.max(...values.map(v => v.length))).toBeLessThanOrEqual(DEMI_MAX_IDS_CHARS);
+      expect(values.flatMap(v => v.split(','))).toEqual(ids);
     });
 
     it('asks for a page as large as the chunk so no row is cut off', () => {

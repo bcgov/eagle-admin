@@ -10,6 +10,9 @@ import { DemiList, DemiListParams } from '../models/demi/demi-list';
 /** DEMI caps `ids=` at this many values per request. */
 export const DEMI_MAX_IDS = 100;
 
+/** Longest comma-joined `ids=` value per GET; the edge answers 404 for a query string over 2048 chars. */
+export const DEMI_MAX_IDS_CHARS = 1800;
+
 /**
  * Reads and writes DEMI's native routes (`<DEMI_API_PATH>/<kind>`). Bearer comes from TokenInterceptor.
  * Errors arrive already mapped by `ApiService.handleError`, so callers get the same `Error` as eagle-api reads.
@@ -35,15 +38,26 @@ export class DemiApiService {
     );
   }
 
-  /** Rows for every id, fetched in chunks of {@link DEMI_MAX_IDS}. Ids DEMI does not return are left out. */
+  /**
+   * Rows for every id, fetched in chunks of at most {@link DEMI_MAX_IDS} ids and {@link DEMI_MAX_IDS_CHARS} chars of joined ids.
+   * Ids DEMI does not return are left out.
+   */
   byIds<T>(kind: string, ids: string[]): Observable<T[]> {
     const unique = [...new Set(ids.filter(Boolean))];
     if (!unique.length) {
       return of([]);
     }
     const chunks: string[][] = [];
-    for (let i = 0; i < unique.length; i += DEMI_MAX_IDS) {
-      chunks.push(unique.slice(i, i + DEMI_MAX_IDS));
+    let chars = 0;
+    for (const id of unique) {
+      const last = chunks.at(-1);
+      if (last && last.length < DEMI_MAX_IDS && chars + 1 + id.length <= DEMI_MAX_IDS_CHARS) {
+        last.push(id);
+        chars += 1 + id.length;
+      } else {
+        chunks.push([id]);
+        chars = id.length;
+      }
     }
     return forkJoin(chunks.map(chunk => this.list<T>(kind, { ids: chunk, pageSize: chunk.length }))).pipe(
       map(pages => pages.flatMap(page => page.rows))
